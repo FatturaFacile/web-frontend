@@ -5,7 +5,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-treasury',
@@ -17,40 +17,41 @@ import { PageHeaderComponent } from '@shared';
     NzGridModule,
     NzStatisticModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Tesoreria & Gestione Bancaria"
-      subtitle="Import estratti conto ISO 20022 (camt.053 / camt.054), formato CBI e riconciliazione automatica"
+      [title]="'TREASURY.TITLE' | translate"
+      [subtitle]="'TREASURY.SUBTITLE' | translate"
     />
 
     <div nz-row [nzGutter]="16" class="stats-row">
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="'CHF 218.450'" nzTitle="Saldo UBS Svizzera (CHF)" />
+          <nz-statistic [nzValue]="'CHF 218.450'" [nzTitle]="'TREASURY.KPI_UBS' | translate" />
         </nz-card>
       </div>
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="'€ 145.200'" nzTitle="Saldo Intesa Sanpaolo (EUR)" />
+          <nz-statistic [nzValue]="'€ 145.200'" [nzTitle]="'TREASURY.KPI_INTESA' | translate" />
         </nz-card>
       </div>
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="'96%'" nzTitle="Accuratezza Auto-Match" />
+          <nz-statistic [nzValue]="'96%'" [nzTitle]="'TREASURY.KPI_ACCURACY' | translate" />
         </nz-card>
       </div>
     </div>
 
-    <nz-card nzTitle="Movimenti Bancari da Riconciliare">
+    <nz-card [nzTitle]="'TREASURY.CARD_TITLE' | translate">
       <nz-table #tTable [nzData]="transactions" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Data Valuta</th>
-            <th>Banca / Conto</th>
-            <th>Descrizione / Riferimento</th>
-            <th>Importo</th>
-            <th>Stato Riconciliazione</th>
+            <th>{{ 'TREASURY.COL_VALUE_DATE' | translate }}</th>
+            <th>{{ 'TREASURY.COL_BANK' | translate }}</th>
+            <th>{{ 'TREASURY.COL_DESC' | translate }}</th>
+            <th>{{ 'COMMON.AMOUNT' | translate }}</th>
+            <th>{{ 'TREASURY.COL_STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -60,7 +61,7 @@ import { PageHeaderComponent } from '@shared';
               <td><strong>{{ tx.bank }}</strong></td>
               <td>{{ tx.desc }}</td>
               <td>
-                <span [style.color]="tx.amount.startsWith('-') ? '#ff4d4f' : '#52c41a'">
+                <span [style.color]="tx.amount.startsWith('-') ? '#ef4444' : '#10b981'">
                   <strong>{{ tx.amount }}</strong>
                 </span>
               </td>

@@ -7,7 +7,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { PageHeaderComponent, CurrencyFormatPipe } from '@shared';
+import { PageHeaderComponent, CurrencyFormatPipe, TranslatePipe } from '@shared';
 import { OrderStore } from '../../state/order.store';
 
 @Component({
@@ -23,11 +23,12 @@ import { OrderStore } from '../../state/order.store';
     NzGridModule,
     PageHeaderComponent,
     CurrencyFormatPipe,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Storico Ordini e Fatture"
-      subtitle="Visualizza e gestisci l'elenco degli ordini recenti"
+      [title]="'ORDERS.TITLE' | translate"
+      [subtitle]="'ORDERS.SUBTITLE' | translate"
     />
 
     <div nz-row [nzGutter]="16" class="stats-row">
@@ -35,7 +36,7 @@ import { OrderStore } from '../../state/order.store';
         <nz-card>
           <nz-statistic
             [nzValue]="store.ordersCount()"
-            nzTitle="Numero Ordini"
+            [nzTitle]="'ORDERS.COUNT' | translate"
           />
         </nz-card>
       </div>
@@ -43,7 +44,7 @@ import { OrderStore } from '../../state/order.store';
         <nz-card>
           <nz-statistic
             [nzValue]="store.totalRevenue() | appCurrency"
-            nzTitle="Fatturato Totale"
+            [nzTitle]="'ORDERS.REVENUE' | translate"
           />
         </nz-card>
       </div>
@@ -68,12 +69,12 @@ import { OrderStore } from '../../state/order.store';
       >
         <thead>
           <tr>
-            <th>ID Ordine</th>
-            <th>Codice Riferimento</th>
-            <th>Data Creazione</th>
-            <th>Numero Articoli</th>
-            <th>Totale</th>
-            <th>Dettaglio</th>
+            <th>{{ 'ORDERS.COL_ID' | translate }}</th>
+            <th>{{ 'ORDERS.COL_REF' | translate }}</th>
+            <th>{{ 'ORDERS.COL_DATE' | translate }}</th>
+            <th>{{ 'ORDERS.COL_ITEMS_COUNT' | translate }}</th>
+            <th>{{ 'ORDERS.COL_TOTAL' | translate }}</th>
+            <th>{{ 'ORDERS.COL_DETAIL' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -95,7 +96,7 @@ import { OrderStore } from '../../state/order.store';
                   class="select-btn"
                   (click)="store.setSelectedOrderId(order.id); $event.stopPropagation()"
                 >
-                  Seleziona
+                  {{ 'COMMON.SELECT' | translate }}
                 </button>
               </td>
             </tr>
@@ -105,11 +106,11 @@ import { OrderStore } from '../../state/order.store';
     </nz-spin>
 
     @if (store.selectedOrder(); as selected) {
-      <nz-card nzTitle="Dettaglio Ordine Selezionato" class="detail-card">
+      <nz-card [nzTitle]="'ORDERS.SELECTED_TITLE' | translate" class="detail-card">
         <p><strong>ID:</strong> {{ selected.id }}</p>
-        <p><strong>Codice:</strong> {{ selected.referenceNumber }}</p>
-        <p><strong>Totale:</strong> {{ selected.totalAmount | appCurrency }}</p>
-        <h4>Articoli:</h4>
+        <p><strong>{{ 'ORDERS.COL_REF' | translate }}:</strong> {{ selected.referenceNumber }}</p>
+        <p><strong>{{ 'COMMON.TOTAL' | translate }}:</strong> {{ selected.totalAmount | appCurrency }}</p>
+        <h4>{{ 'ORDERS.ITEMS_LABEL' | translate }}</h4>
         <ul>
           @for (item of selected.items; track item.id) {
             <li>
@@ -131,19 +132,21 @@ import { OrderStore } from '../../state/order.store';
       margin-top: 16px;
     }
     .selected-row {
-      background-color: #f0f7ff;
+      background-color: rgba(13, 148, 136, 0.12) !important;
     }
     .select-btn {
-      padding: 4px 8px;
+      padding: 4px 10px;
       font-size: 12px;
-      border: 1px solid #d9d9d9;
+      border: 1px solid var(--border-color, #d9d9d9);
       border-radius: 4px;
-      background: #fff;
+      background: var(--bg-card, #fff);
+      color: var(--text-primary);
       cursor: pointer;
+      transition: all 0.2s;
     }
     .select-btn:hover {
-      border-color: #1677ff;
-      color: #1677ff;
+      border-color: var(--primary-color, #0d9488);
+      color: var(--primary-color, #0d9488);
     }
     .detail-card {
       margin-top: 24px;

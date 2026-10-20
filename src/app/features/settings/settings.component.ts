@@ -4,27 +4,27 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { AuthStore } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-settings',
-  imports: [NzCardModule, NzTableModule, NzTagModule, NzButtonModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, NzButtonModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Amministrazione Multi-Tenant & Impostazioni ERP"
-      subtitle="Gestione filiali, tassi di cambio ECB / BNS, ruoli RBAC e audit log conforme GDPR / LPD svizzera"
+      [title]="'SETTINGS.TITLE' | translate"
+      [subtitle]="'SETTINGS.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Configurazione Aziende / Tenant">
+    <nz-card [nzTitle]="'SETTINGS.CARD_TITLE' | translate">
       <nz-table #tenTable [nzData]="authStore.tenants()" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Nome Tenant</th>
-            <th>Giurisdizione</th>
-            <th>Valuta Principale</th>
-            <th>Identificativo Fiscale</th>
-            <th>Indirizzo Sede</th>
-            <th>Stato</th>
+            <th>{{ 'SETTINGS.COL_NAME' | translate }}</th>
+            <th>{{ 'SETTINGS.COL_JURISDICTION' | translate }}</th>
+            <th>{{ 'SETTINGS.COL_CURRENCY' | translate }}</th>
+            <th>{{ 'SETTINGS.COL_FISCAL_ID' | translate }}</th>
+            <th>{{ 'SETTINGS.COL_ADDRESS' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -33,12 +33,12 @@ import { PageHeaderComponent } from '@shared';
               <td>
                 <strong>{{ t.name }}</strong>
                 @if (t.id === authStore.activeTenantId()) {
-                  <nz-tag nzColor="processing" style="margin-left: 8px;">Attivo</nz-tag>
+                  <nz-tag nzColor="processing" style="margin-left: 8px;">{{ 'COMMON.ACTIVE' | translate }}</nz-tag>
                 }
               </td>
               <td>
                 <nz-tag [nzColor]="t.jurisdiction === 'IT' ? 'blue' : 'red'">
-                  {{ t.jurisdiction === 'IT' ? '🇮🇹 Italia' : '🇨🇭 Svizzera' }}
+                  {{ t.jurisdiction === 'IT' ? ('🇮🇹 ' + ('COMMON.ITALY' | translate)) : ('🇨🇭 ' + ('COMMON.SWITZERLAND' | translate)) }}
                 </nz-tag>
               </td>
               <td><strong>{{ t.currency }}</strong></td>
@@ -59,7 +59,7 @@ import { PageHeaderComponent } from '@shared';
                   [nzType]="t.id === authStore.activeTenantId() ? 'primary' : 'default'"
                   (click)="authStore.switchTenant(t.id)"
                 >
-                  {{ t.id === authStore.activeTenantId() ? 'Selezionato' : 'Seleziona' }}
+                  {{ t.id === authStore.activeTenantId() ? ('COMMON.SELECTED' | translate) : ('COMMON.SELECT' | translate) }}
                 </button>
               </td>
             </tr>

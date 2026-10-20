@@ -3,27 +3,27 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-inventory',
-  imports: [NzCardModule, NzTableModule, NzTagModule, NzButtonModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, NzButtonModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Magazzino & Logistica Cross-Border"
-      subtitle="Cataloghi articoli, DDT, codici doganali HS/TARIC e gestione export IT-CH"
+      [title]="'INVENTORY.TITLE' | translate"
+      [subtitle]="'INVENTORY.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Giacenze Multimagazzino (Milano / Chiasso)">
+    <nz-card [nzTitle]="'INVENTORY.CARD_TITLE' | translate">
       <nz-table #sTable [nzData]="items" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Codice SKU</th>
-            <th>Descrizione</th>
-            <th>Magazzino</th>
-            <th>Giacenza</th>
-            <th>Codice Doganale HS</th>
-            <th>Valore Unitario</th>
+            <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_DESC' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_QTY' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_HS' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_PRICE' | translate }}</th>
           </tr>
         </thead>
         <tbody>

@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-manufacturing',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Produzione & Pianificazione MRP"
-      subtitle="Distinte base multilivello (BOM), centri di lavoro, ordini di produzione (OdP) e certificazioni CE / CH"
+      [title]="'MANUFACTURING.TITLE' | translate"
+      [subtitle]="'MANUFACTURING.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Ordini di Produzione Attivi (OdP)">
+    <nz-card [nzTitle]="'MANUFACTURING.CARD_TITLE' | translate">
       <nz-table #mTable [nzData]="orders" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>N. Ordine</th>
-            <th>Prodotto Finito</th>
-            <th>Quantità</th>
-            <th>Linea / Centro Lavoro</th>
-            <th>Avanzamento</th>
-            <th>Stato Qualità</th>
+            <th>{{ 'MANUFACTURING.COL_ORDER_NUM' | translate }}</th>
+            <th>{{ 'MANUFACTURING.COL_PRODUCT' | translate }}</th>
+            <th>{{ 'MANUFACTURING.COL_QTY' | translate }}</th>
+            <th>{{ 'MANUFACTURING.COL_LINE' | translate }}</th>
+            <th>{{ 'MANUFACTURING.COL_PROGRESS' | translate }}</th>
+            <th>{{ 'MANUFACTURING.COL_QA' | translate }}</th>
           </tr>
         </thead>
         <tbody>

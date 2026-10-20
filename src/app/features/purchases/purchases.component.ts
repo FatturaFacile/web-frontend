@@ -5,7 +5,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-purchases',
@@ -17,42 +17,43 @@ import { PageHeaderComponent } from '@shared';
     NzGridModule,
     NzStatisticModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Acquisti & Ciclo Passivo AP"
-      subtitle="Ricezione fatture SDI, scanner Swiss QR-Bill e generazione lotti di pagamento ISO 20022 pain.001"
+      [title]="'PURCHASES.TITLE' | translate"
+      [subtitle]="'PURCHASES.SUBTITLE' | translate"
     />
 
     <div nz-row [nzGutter]="16" class="stats-row">
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="12" nzTitle="Fatture Passive da Riconciliare" />
+          <nz-statistic [nzValue]="12" [nzTitle]="'PURCHASES.KPI_RECONCILE' | translate" />
         </nz-card>
       </div>
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="'CHF 45.120'" nzTitle="Pagamenti pain.001 in Coda" />
+          <nz-statistic [nzValue]="'CHF 45.120'" [nzTitle]="'PURCHASES.KPI_PAIN001' | translate" />
         </nz-card>
       </div>
       <div nz-col [nzSpan]="8">
         <nz-card>
-          <nz-statistic [nzValue]="'€ 18.900'" nzTitle="Bonifici SEPA Programmati" />
+          <nz-statistic [nzValue]="'€ 18.900'" [nzTitle]="'PURCHASES.KPI_SEPA' | translate" />
         </nz-card>
       </div>
     </div>
 
-    <nz-card nzTitle="Fatture Fornitori in Arrivo (SDI / QR-Bill)">
+    <nz-card [nzTitle]="'PURCHASES.CARD_TITLE' | translate">
       <nz-table #pTable [nzData]="items" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Protocollo / Rif.</th>
-            <th>Fornitore</th>
-            <th>Canale Ricezione</th>
-            <th>Importo</th>
-            <th>Scadenza</th>
-            <th>Stato Approvazione</th>
-            <th>Azione</th>
+            <th>{{ 'PURCHASES.COL_PROTOCOL' | translate }}</th>
+            <th>{{ 'PURCHASES.COL_VENDOR' | translate }}</th>
+            <th>{{ 'PURCHASES.COL_CHANNEL' | translate }}</th>
+            <th>{{ 'COMMON.AMOUNT' | translate }}</th>
+            <th>{{ 'PURCHASES.COL_DUE' | translate }}</th>
+            <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
+            <th>{{ 'COMMON.ACTION' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -72,7 +73,7 @@ import { PageHeaderComponent } from '@shared';
               </td>
               <td>
                 <button nz-button nzSize="small" nzType="default">
-                  <i class="fa-solid fa-file-invoice fa-icon-spaced"></i> Riconcilia
+                  <i class="fa-solid fa-file-invoice fa-icon-spaced"></i> {{ 'COMMON.RECONCILE' | translate }}
                 </button>
               </td>
             </tr>

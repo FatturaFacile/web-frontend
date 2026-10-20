@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { TranslatePipe } from '@shared';
 
 interface BreadcrumbItem {
   label: string;
@@ -10,12 +11,12 @@ interface BreadcrumbItem {
 
 @Component({
   selector: 'app-breadcrumb',
-  imports: [RouterLink, NzBreadCrumbModule],
+  imports: [RouterLink, NzBreadCrumbModule, TranslatePipe],
   template: `
     @if (breadcrumbs().length > 0) {
       <nz-breadcrumb class="app-breadcrumb">
         <nz-breadcrumb-item>
-          <a routerLink="/dashboard"><i class="fa-solid fa-house"></i> Home</a>
+          <a routerLink="/dashboard"><i class="fa-solid fa-house"></i> {{ 'BREADCRUMB.HOME' | translate }}</a>
         </nz-breadcrumb-item>
         @for (item of breadcrumbs(); track item.url) {
           <nz-breadcrumb-item>

@@ -17,12 +17,13 @@ import { Component, input } from '@angular/core';
     .page-title {
       font-size: 20px;
       font-weight: 600;
-      color: rgba(0, 0, 0, 0.88);
+      color: var(--text-primary, #0f172a);
       margin: 0;
+      letter-spacing: -0.02em;
     }
     .page-subtitle {
       font-size: 14px;
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--text-secondary, #64748b);
       margin-top: 4px;
       margin-bottom: 0;
     }

@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-retail',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Vendita al Banco & POS Touch"
-      subtitle="Integrazione Registratore Telematico RT (IT) e terminali di pagamento svizzeri (Twint, SumUp, Worldline)"
+      [title]="'RETAIL.TITLE' | translate"
+      [subtitle]="'RETAIL.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Chiusure Fiscali e Sessioni Cassa">
+    <nz-card [nzTitle]="'RETAIL.CARD_TITLE' | translate">
       <nz-table #rTable [nzData]="sessions" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Punto Cassa</th>
-            <th>Operatore</th>
-            <th>Regime Fiscale</th>
-            <th>Totale Incassato</th>
-            <th>Dispositivo Collegato</th>
-            <th>Stato Chiusura</th>
+            <th>{{ 'RETAIL.COL_POS' | translate }}</th>
+            <th>{{ 'RETAIL.COL_CASHIER' | translate }}</th>
+            <th>{{ 'RETAIL.COL_REGIME' | translate }}</th>
+            <th>{{ 'RETAIL.COL_TOTAL' | translate }}</th>
+            <th>{{ 'RETAIL.COL_DEVICE' | translate }}</th>
+            <th>{{ 'RETAIL.COL_STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>

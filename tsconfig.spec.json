@@ -3,9 +3,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": [
-      "vitest/globals"
-    ]
+    "types": ["vitest/globals"],
+    "plugins": [{ "name": "@angular/language-service" }]
   },
   "include": [
     "src/**/*.d.ts",

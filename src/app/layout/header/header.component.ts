@@ -6,7 +6,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { FormsModule } from '@angular/forms';
-import { AppStore, AuthStore } from '@core';
+import { AppStore, AuthStore, SupportedLanguage } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-header',
@@ -17,6 +18,7 @@ import { AppStore, AuthStore } from '@core';
     NzSelectModule,
     NzTagModule,
     NzAvatarModule,
+    TranslatePipe,
   ],
   template: `
     <header class="app-header">
@@ -25,7 +27,8 @@ import { AppStore, AuthStore } from '@core';
           type="button"
           class="sidebar-toggle"
           (click)="appStore.toggleSidebar()"
-          [title]="appStore.isCollapsed() ? 'Espandi menu' : 'Comprimi menu'"
+          [title]="appStore.isCollapsed() ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate) : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)"
+          [attr.aria-label]="appStore.isCollapsed() ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate) : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)"
         >
           <i [class]="appStore.isCollapsed() ? 'fa-solid fa-bars-staggered' : 'fa-solid fa-bars'"></i>
         </button>
@@ -37,6 +40,7 @@ import { AppStore, AuthStore } from '@core';
             (ngModelChange)="onTenantChange($event)"
             nzSize="small"
             class="tenant-select"
+            [attr.aria-label]="'AUTH.TENANT_PRESET' | translate"
           >
             @for (tenant of authStore.tenants(); track tenant.id) {
               <nz-option
@@ -56,7 +60,8 @@ import { AppStore, AuthStore } from '@core';
             class="jurisdiction-pill"
             [class.active]="authStore.activeJurisdiction() === 'IT'"
             (click)="authStore.setJurisdiction('IT')"
-            title="Giurisdizione Italia (SDI, F24, D.Lgs. 66)"
+            [title]="'HEADER.JURISDICTION_IT' | translate"
+            [attr.aria-label]="'HEADER.JURISDICTION_IT' | translate"
           >
             🇮🇹 IT
           </button>
@@ -65,7 +70,8 @@ import { AppStore, AuthStore } from '@core';
             class="jurisdiction-pill"
             [class.active]="authStore.activeJurisdiction() === 'CH'"
             (click)="authStore.setJurisdiction('CH')"
-            title="Giurisdizione Svizzera (QR-Bill, ArG, KMU)"
+            [title]="'HEADER.JURISDICTION_CH' | translate"
+            [attr.aria-label]="'HEADER.JURISDICTION_CH' | translate"
           >
             🇨🇭 CH
           </button>
@@ -77,22 +83,24 @@ import { AppStore, AuthStore } from '@core';
           (ngModelChange)="authStore.setCurrency($event)"
           nzSize="small"
           class="currency-select"
+          [attr.aria-label]="'SWISS_QR.CURRENCY_LBL' | translate"
         >
           <nz-option nzValue="EUR" nzLabel="€ EUR" />
           <nz-option nzValue="CHF" nzLabel="CHF" />
         </nz-select>
 
-        <!-- Locale Switcher -->
+        <!-- Locale Switcher (en default, it, de, fr) -->
         <nz-select
           [ngModel]="authStore.activeLocale()"
-          (ngModelChange)="authStore.setLocale($event)"
+          (ngModelChange)="onLocaleChange($event)"
           nzSize="small"
           class="locale-select"
+          aria-label="Language selector"
         >
-          <nz-option nzValue="IT" nzLabel="🇮🇹 IT" />
-          <nz-option nzValue="DE" nzLabel="🇩🇪 DE" />
-          <nz-option nzValue="FR" nzLabel="🇫🇷 FR" />
-          <nz-option nzValue="EN" nzLabel="🇬🇧 EN" />
+          <nz-option nzValue="en" nzLabel="🇬🇧 EN" />
+          <nz-option nzValue="it" nzLabel="🇮🇹 IT" />
+          <nz-option nzValue="de" nzLabel="🇩🇪 DE" />
+          <nz-option nzValue="fr" nzLabel="🇫🇷 FR" />
         </nz-select>
 
         <!-- Dark/Light Theme Toggle -->
@@ -100,7 +108,8 @@ import { AppStore, AuthStore } from '@core';
           type="button"
           class="action-btn theme-toggle"
           (click)="authStore.toggleTheme()"
-          [title]="authStore.isDarkMode() ? 'Attiva tema chiaro' : 'Attiva tema scuro'"
+          [title]="authStore.isDarkMode() ? ('HEADER.THEME_LIGHT' | translate) : ('HEADER.THEME_DARK' | translate)"
+          [attr.aria-label]="authStore.isDarkMode() ? ('HEADER.THEME_LIGHT' | translate) : ('HEADER.THEME_DARK' | translate)"
         >
           @if (authStore.isDarkMode()) {
             <i class="fa-solid fa-sun" style="color: #fadb14;"></i>
@@ -132,11 +141,11 @@ import { AppStore, AuthStore } from '@core';
               </li>
               <li nz-menu-divider></li>
               <li nz-menu-item (click)="router.navigate(['/settings'])">
-                <i class="fa-solid fa-sliders fa-icon-spaced"></i> Preferenze ERP
+                <i class="fa-solid fa-sliders fa-icon-spaced"></i> {{ 'HEADER.PREFERENCES' | translate }}
               </li>
               <li nz-menu-divider></li>
               <li nz-menu-item (click)="logout()" class="logout-item">
-                <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i> Disconnetti
+                <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i> {{ 'HEADER.LOGOUT' | translate }}
               </li>
             </ul>
           </nz-dropdown-menu>
@@ -152,8 +161,8 @@ import { AppStore, AuthStore } from '@core';
       height: 64px;
       padding: 0 20px;
       background: var(--header-bg, #ffffff);
-      border-bottom: 1px solid var(--border-color, #f0f0f0);
-      box-shadow: 0 1px 4px rgba(0, 21, 41, 0.04);
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       gap: 16px;
     }
 
@@ -169,14 +178,15 @@ import { AppStore, AuthStore } from '@core';
       border: none;
       font-size: 18px;
       cursor: pointer;
-      color: var(--text-primary, #333333);
+      color: var(--text-primary, #0f172a);
       padding: 8px 10px;
       border-radius: 6px;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
 
     .sidebar-toggle:hover {
-      background: rgba(0, 0, 0, 0.05);
+      background: rgba(13, 148, 136, 0.1);
+      color: var(--primary-color, #0d9488);
     }
 
     .tenant-select {
@@ -188,14 +198,15 @@ import { AppStore, AuthStore } from '@core';
     }
 
     .locale-select {
-      width: 90px;
+      width: 92px;
     }
 
     .jurisdiction-toggle {
       display: inline-flex;
-      background: #eef2f6;
+      background: var(--bg-card-secondary, #f1f5f9);
       padding: 2px;
       border-radius: 6px;
+      border: 1px solid var(--border-color, #e2e8f0);
     }
 
     .jurisdiction-pill {
@@ -207,12 +218,12 @@ import { AppStore, AuthStore } from '@core';
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s;
-      color: #64748b;
+      color: var(--text-secondary, #64748b);
     }
 
     .jurisdiction-pill.active {
-      background: #ffffff;
-      color: #1677ff;
+      background: var(--bg-card, #ffffff);
+      color: var(--primary-color, #0d9488);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
@@ -226,13 +237,14 @@ import { AppStore, AuthStore } from '@core';
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      color: var(--text-primary, #333333);
+      color: var(--text-primary, #0f172a);
       transition: all 0.2s;
     }
 
     .action-btn:hover {
-      border-color: #1677ff;
-      color: #1677ff;
+      border-color: var(--primary-color, #0d9488);
+      color: var(--primary-color, #0d9488);
+      background: rgba(13, 148, 136, 0.08);
     }
 
     .profile-link {
@@ -242,7 +254,7 @@ import { AppStore, AuthStore } from '@core';
       padding: 4px 8px;
       border-radius: 6px;
       cursor: pointer;
-      color: var(--text-primary, #333333);
+      color: var(--text-primary, #0f172a);
       transition: background 0.2s;
     }
 
@@ -251,17 +263,18 @@ import { AppStore, AuthStore } from '@core';
     }
 
     .avatar {
-      background-color: #1677ff;
+      background-color: var(--primary-color, #0d9488);
     }
 
     .user-name {
       font-size: 13px;
       font-weight: 500;
+      color: var(--text-primary, #0f172a);
     }
 
     .dropdown-arrow {
       font-size: 10px;
-      color: #94a3b8;
+      color: var(--text-secondary, #94a3b8);
     }
 
     .user-info-panel {
@@ -273,17 +286,17 @@ import { AppStore, AuthStore } from '@core';
 
     .user-role {
       font-size: 11px;
-      color: #64748b;
+      color: var(--text-secondary, #64748b);
     }
 
     .tenant-active {
       font-size: 11px;
-      color: #1677ff;
-      font-weight: 500;
+      color: var(--primary-color, #0d9488);
+      font-weight: 600;
     }
 
     .logout-item {
-      color: #ff4d4f !important;
+      color: #ef4444 !important;
     }
   `,
 })
@@ -294,6 +307,10 @@ export class HeaderComponent {
 
   onTenantChange(tenantId: string): void {
     this.authStore.switchTenant(tenantId);
+  }
+
+  onLocaleChange(locale: SupportedLanguage): void {
+    this.authStore.setLocale(locale);
   }
 
   logout(): void {

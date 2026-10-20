@@ -14,7 +14,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { QrBill } from '@domain/models/qr-bill.model';
 import { QrBillStore } from '../../state/qr-bill.store';
 
@@ -37,11 +37,12 @@ import { QrBillStore } from '../../state/qr-bill.store';
     NzStatisticModule,
     NzDividerModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Swiss QR-Bill (QR-Rechnung)"
-      subtitle="Generazione e gestione fatture svizzere con QR-IBAN, SCOR Reference e arrotondamento a 0.05 CHF"
+      [title]="'SWISS_QR.TITLE' | translate"
+      [subtitle]="'SWISS_QR.SUBTITLE' | translate"
     />
 
     <!-- Summary KPI cards -->
@@ -50,7 +51,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
         <nz-card>
           <nz-statistic
             [nzValue]="store.billsCount()"
-            nzTitle="Fatture QR Totali"
+            [nzTitle]="'SWISS_QR.TOTAL_BILLS' | translate"
             [nzPrefix]="billPrefix"
           />
           <ng-template #billPrefix><i class="fa-solid fa-qrcode fa-icon-spaced"></i></ng-template>
@@ -60,7 +61,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
         <nz-card>
           <nz-statistic
             [nzValue]="(store.totalChfRevenue() | number: '1.2-2') + ' CHF'"
-            nzTitle="Fatturato Totale (CHF)"
+            [nzTitle]="'SWISS_QR.TOTAL_REVENUE' | translate"
             [nzPrefix]="chfPrefix"
           />
           <ng-template #chfPrefix><i class="fa-solid fa-coins fa-icon-spaced"></i></ng-template>
@@ -70,8 +71,8 @@ import { QrBillStore } from '../../state/qr-bill.store';
         <nz-card>
           <nz-statistic
             [nzValue]="store.pendingBillsCount()"
-            nzTitle="In Attesa di Incasso"
-            [nzValueStyle]="{ color: '#faad14' }"
+            [nzTitle]="'SWISS_QR.PENDING_COLLECTION' | translate"
+            [nzValueStyle]="{ color: '#f59e0b' }"
           />
         </nz-card>
       </div>
@@ -81,26 +82,36 @@ import { QrBillStore } from '../../state/qr-bill.store';
       <!-- Left Column: Form & Table -->
       <div nz-col [nzXs]="24" [nzLg]="13">
         <!-- New QR-Bill Generator Form -->
-        <nz-card nzTitle="Crea Nuova QR-Rechnung" [nzExtra]="swissBadge" class="generator-card">
+        <nz-card [nzTitle]="'SWISS_QR.CREATE_CARD_TITLE' | translate" [nzExtra]="swissBadge" class="generator-card">
           <ng-template #swissBadge>
-            <nz-tag nzColor="red">🇨🇭 Swiss Standards v2.2</nz-tag>
+            <nz-tag nzColor="red">🇨🇭 {{ 'SWISS_QR.STANDARDS_TAG' | translate }}</nz-tag>
           </ng-template>
 
           <form nz-form [formGroup]="billForm" (ngSubmit)="onCreateBill()" nzLayout="vertical">
             <div nz-row [nzGutter]="16">
               <div nz-col [nzSpan]="12">
                 <nz-form-item>
-                  <nz-form-label nzRequired>Debitore / Cliente</nz-form-label>
+                  <nz-form-label nzRequired>{{ 'SWISS_QR.DEBTOR_LABEL' | translate }}</nz-form-label>
                   <nz-form-control>
-                    <input nz-input formControlName="debtorName" placeholder="Es. Bernasconi SA" />
+                    <input
+                      nz-input
+                      formControlName="debtorName"
+                      [placeholder]="'SWISS_QR.DEBTOR_PLACEHOLDER' | translate"
+                      [attr.aria-label]="'SWISS_QR.DEBTOR_LABEL' | translate"
+                    />
                   </nz-form-control>
                 </nz-form-item>
               </div>
               <div nz-col [nzSpan]="12">
                 <nz-form-item>
-                  <nz-form-label nzRequired>Indirizzo e N. Civico</nz-form-label>
+                  <nz-form-label nzRequired>{{ 'SWISS_QR.ADDRESS_LABEL' | translate }}</nz-form-label>
                   <nz-form-control>
-                    <input nz-input formControlName="debtorAddress" placeholder="Es. Corso Elvezia 18" />
+                    <input
+                      nz-input
+                      formControlName="debtorAddress"
+                      [placeholder]="'SWISS_QR.ADDRESS_PLACEHOLDER' | translate"
+                      [attr.aria-label]="'SWISS_QR.ADDRESS_LABEL' | translate"
+                    />
                   </nz-form-control>
                 </nz-form-item>
               </div>
@@ -109,29 +120,40 @@ import { QrBillStore } from '../../state/qr-bill.store';
             <div nz-row [nzGutter]="16">
               <div nz-col [nzSpan]="8">
                 <nz-form-item>
-                  <nz-form-label nzRequired>CAP (NPA)</nz-form-label>
+                  <nz-form-label nzRequired>{{ 'SWISS_QR.POSTAL_LABEL' | translate }}</nz-form-label>
                   <nz-form-control>
-                    <input nz-input formControlName="debtorPostalCode" placeholder="6900" />
+                    <input
+                      nz-input
+                      formControlName="debtorPostalCode"
+                      placeholder="6900"
+                      [attr.aria-label]="'SWISS_QR.POSTAL_LABEL' | translate"
+                    />
                   </nz-form-control>
                 </nz-form-item>
               </div>
               <div nz-col [nzSpan]="8">
                 <nz-form-item>
-                  <nz-form-label nzRequired>Città (Ort)</nz-form-label>
+                  <nz-form-label nzRequired>{{ 'SWISS_QR.CITY_LABEL' | translate }}</nz-form-label>
                   <nz-form-control>
-                    <input nz-input formControlName="debtorCity" placeholder="Lugano" />
+                    <input
+                      nz-input
+                      formControlName="debtorCity"
+                      placeholder="Lugano"
+                      [attr.aria-label]="'SWISS_QR.CITY_LABEL' | translate"
+                    />
                   </nz-form-control>
                 </nz-form-item>
               </div>
               <div nz-col [nzSpan]="8">
                 <nz-form-item>
-                  <nz-form-label nzRequired>Importo Originale</nz-form-label>
+                  <nz-form-label nzRequired>{{ 'SWISS_QR.RAW_AMOUNT_LABEL' | translate }}</nz-form-label>
                   <nz-form-control>
                     <nz-input-number
                       formControlName="rawAmount"
                       [nzMin]="0.05"
                       [nzStep]="0.01"
                       style="width: 100%;"
+                      [attr.aria-label]="'SWISS_QR.RAW_AMOUNT_LABEL' | translate"
                     />
                   </nz-form-control>
                 </nz-form-item>
@@ -141,29 +163,34 @@ import { QrBillStore } from '../../state/qr-bill.store';
             <!-- Dynamic 0.05 CHF rounding callout -->
             <div class="rounding-callout">
               <div class="rounding-info">
-                <span>Arrotondamento Commerciale 0.05 CHF:</span>
+                <span>{{ 'SWISS_QR.ROUNDING_LABEL' | translate }}</span>
                 <strong class="rounded-value">{{ roundedAmount() | number: '1.2-2' }} CHF</strong>
               </div>
               <span class="rounding-diff">
-                Differenza: {{ (roundedAmount() - billForm.controls.rawAmount.value) | number: '1.2-2' }} CHF
+                {{ 'SWISS_QR.DIFF_LABEL' | translate }} {{ (roundedAmount() - billForm.controls.rawAmount.value) | number: '1.2-2' }} CHF
               </span>
             </div>
 
             <nz-form-item>
-              <nz-form-label>Messaggio Non Strutturato (Causale)</nz-form-label>
+              <nz-form-label>{{ 'SWISS_QR.MESSAGE_LABEL' | translate }}</nz-form-label>
               <nz-form-control>
-                <input nz-input formControlName="message" placeholder="Fattura servizi consulenza e licenze" />
+                <input
+                  nz-input
+                  formControlName="message"
+                  [placeholder]="'SWISS_QR.MESSAGE_PLACEHOLDER' | translate"
+                  [attr.aria-label]="'SWISS_QR.MESSAGE_LABEL' | translate"
+                />
               </nz-form-control>
             </nz-form-item>
 
             <button nz-button nzType="primary" nzBlock [disabled]="billForm.invalid">
-              <i class="fa-solid fa-qrcode fa-icon-spaced"></i> Genera Swiss QR-Bill & Valida SCOR
+              <i class="fa-solid fa-qrcode fa-icon-spaced"></i> {{ 'SWISS_QR.SUBMIT_BTN' | translate }}
             </button>
           </form>
         </nz-card>
 
         <!-- QR-Bills List Table -->
-        <nz-card nzTitle="Registro QR-Bills Emesse" class="table-card">
+        <nz-card [nzTitle]="'SWISS_QR.LIST_TITLE' | translate" class="table-card">
           <nz-spin [nzSpinning]="store.isLoading()">
             <nz-table
               #billTable
@@ -174,12 +201,12 @@ import { QrBillStore } from '../../state/qr-bill.store';
             >
               <thead>
                 <tr>
-                  <th>N. Fattura</th>
-                  <th>Debitore</th>
-                  <th>Importo</th>
-                  <th>Scadenza</th>
-                  <th>Stato</th>
-                  <th>Azione</th>
+                  <th>{{ 'SWISS_QR.COL_BILL_NUM' | translate }}</th>
+                  <th>{{ 'SWISS_QR.COL_DEBTOR' | translate }}</th>
+                  <th>{{ 'COMMON.AMOUNT' | translate }}</th>
+                  <th>{{ 'SWISS_QR.COL_DUE_DATE' | translate }}</th>
+                  <th>{{ 'COMMON.STATUS' | translate }}</th>
+                  <th>{{ 'COMMON.ACTION' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,13 +223,13 @@ import { QrBillStore } from '../../state/qr-bill.store';
                     <td>
                       @switch (bill.status) {
                         @case ('PAID') {
-                          <nz-tag nzColor="success">Pagata</nz-tag>
+                          <nz-tag nzColor="success">{{ 'SWISS_QR.STATUS_PAID' | translate }}</nz-tag>
                         }
                         @case ('PENDING') {
-                          <nz-tag nzColor="warning">In Attesa</nz-tag>
+                          <nz-tag nzColor="warning">{{ 'SWISS_QR.STATUS_PENDING' | translate }}</nz-tag>
                         }
                         @default {
-                          <nz-tag nzColor="default">Bozza</nz-tag>
+                          <nz-tag nzColor="default">{{ 'SWISS_QR.STATUS_DRAFT' | translate }}</nz-tag>
                         }
                       }
                     </td>
@@ -212,7 +239,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
                         class="select-action-btn"
                         (click)="store.setSelectedBill(bill); $event.stopPropagation()"
                       >
-                        Anteprima
+                        {{ 'COMMON.PREVIEW' | translate }}
                       </button>
                     </td>
                   </tr>
@@ -226,12 +253,12 @@ import { QrBillStore } from '../../state/qr-bill.store';
       <!-- Right Column: Visual Swiss QR Voucher Preview -->
       <div nz-col [nzXs]="24" [nzLg]="11">
         @if (store.currentBill(); as bill) {
-          <nz-card nzTitle="Anteprima Sezione di Pagamento (Swiss QR Voucher)" class="voucher-card">
+          <nz-card [nzTitle]="'SWISS_QR.VOUCHER_TITLE' | translate" class="voucher-card">
             <div class="qr-voucher-container">
               <!-- Header / Title -->
               <div class="voucher-header">
-                <h3>Sezione di pagamento</h3>
-                <span class="voucher-sub">Zahlteil / Section paiement</span>
+                <h3>{{ 'SWISS_QR.PAYMENT_PART_TITLE' | translate }}</h3>
+                <span class="voucher-sub">{{ 'SWISS_QR.PAYMENT_PART_SUB' | translate }}</span>
               </div>
 
               <!-- Main voucher body -->
@@ -249,11 +276,11 @@ import { QrBillStore } from '../../state/qr-bill.store';
                   </div>
                   <div class="qr-amount-box">
                     <div class="amount-col">
-                      <span class="lbl">Valuta</span>
+                      <span class="lbl">{{ 'SWISS_QR.CURRENCY_LBL' | translate }}</span>
                       <span class="val">{{ bill.currency }}</span>
                     </div>
                     <div class="amount-col">
-                      <span class="lbl">Importo</span>
+                      <span class="lbl">{{ 'SWISS_QR.AMOUNT_LBL' | translate }}</span>
                       <span class="val amount-main">{{ bill.amount | number: '1.2-2' }}</span>
                     </div>
                   </div>
@@ -262,7 +289,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
                 <!-- Creditor & Debtor Info -->
                 <div class="qr-info-col">
                   <div class="info-group">
-                    <span class="info-label">Conto / Pagabile a</span>
+                    <span class="info-label">{{ 'SWISS_QR.ACCOUNT_PAYABLE_TO' | translate }}</span>
                     <span class="info-val strong">{{ bill.creditor.qrIban }}</span>
                     <span class="info-val">{{ bill.creditor.name }}</span>
                     <span class="info-val">{{ bill.creditor.address }}</span>
@@ -270,17 +297,17 @@ import { QrBillStore } from '../../state/qr-bill.store';
                   </div>
 
                   <div class="info-group">
-                    <span class="info-label">Riferimento Strutturato (SCOR)</span>
+                    <span class="info-label">{{ 'SWISS_QR.REFERENCE_SCOR' | translate }}</span>
                     <span class="info-val scor-code">{{ formatScor(bill.reference) }}</span>
                   </div>
 
                   <div class="info-group">
-                    <span class="info-label">Informazioni aggiuntive</span>
+                    <span class="info-label">{{ 'SWISS_QR.ADDITIONAL_INFO' | translate }}</span>
                     <span class="info-val">{{ bill.unstructuredMessage }}</span>
                   </div>
 
                   <div class="info-group">
-                    <span class="info-label">Pagabile da</span>
+                    <span class="info-label">{{ 'SWISS_QR.PAYABLE_BY' | translate }}</span>
                     <span class="info-val">{{ bill.debtor.name }}</span>
                     <span class="info-val">{{ bill.debtor.address }}</span>
                     <span class="info-val">{{ bill.debtor.postalCode }} {{ bill.debtor.city }}</span>
@@ -291,11 +318,11 @@ import { QrBillStore } from '../../state/qr-bill.store';
               <nz-divider />
               <!-- Receipt Part (Empfangsschein) -->
               <div class="receipt-part">
-                <h4>Ricevuta (Empfangsschein)</h4>
+                <h4>{{ 'SWISS_QR.RECEIPT_TITLE' | translate }}</h4>
                 <div class="receipt-content">
                   <div>
-                    <span class="info-label">Conto:</span> {{ bill.creditor.qrIban }}<br />
-                    <span class="info-label">A favore di:</span> {{ bill.creditor.name }}
+                    <span class="info-label">{{ 'SWISS_QR.RECEIPT_ACCOUNT' | translate }}</span> {{ bill.creditor.qrIban }}<br />
+                    <span class="info-label">{{ 'SWISS_QR.RECEIPT_BENEFICIARY' | translate }}</span> {{ bill.creditor.name }}
                   </div>
                   <div class="receipt-amount">
                     <strong>{{ bill.currency }} {{ bill.amount | number: '1.2-2' }}</strong>
@@ -323,8 +350,8 @@ import { QrBillStore } from '../../state/qr-bill.store';
     }
 
     .rounding-callout {
-      background: #f6ffed;
-      border: 1px solid #b7eb8f;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 6px;
       padding: 10px 14px;
       margin-bottom: 16px;
@@ -335,13 +362,13 @@ import { QrBillStore } from '../../state/qr-bill.store';
     }
 
     .rounded-value {
-      color: #389e0d;
+      color: #10b981;
       font-size: 15px;
       margin-left: 6px;
     }
 
     .rounding-diff {
-      color: #73d13d;
+      color: #10b981;
       font-size: 11px;
     }
 
@@ -350,36 +377,38 @@ import { QrBillStore } from '../../state/qr-bill.store';
     }
 
     .clickable-row:hover {
-      background-color: #f5f5f5;
+      background-color: rgba(13, 148, 136, 0.05);
     }
 
     .selected-row {
-      background-color: #e6f4ff !important;
+      background-color: rgba(13, 148, 136, 0.12) !important;
     }
 
     .select-action-btn {
       background: none;
-      border: 1px solid #d9d9d9;
+      border: 1px solid var(--border-color, #d9d9d9);
       border-radius: 4px;
       padding: 2px 8px;
       font-size: 12px;
+      color: var(--text-primary);
       cursor: pointer;
+      transition: all 0.2s;
     }
 
     .select-action-btn:hover {
-      color: #1677ff;
-      border-color: #1677ff;
+      color: var(--primary-color, #0d9488);
+      border-color: var(--primary-color, #0d9488);
     }
 
     /* Swiss QR Voucher styling */
     .voucher-card {
-      border: 1px solid #d9d9d9;
-      background: #fafafa;
+      border: 1px solid var(--border-color, #d9d9d9);
+      background: var(--bg-card, #fafafa);
     }
 
     .qr-voucher-container {
-      background: #ffffff;
-      border: 1px dashed #bfbfbf;
+      background: var(--bg-card, #ffffff);
+      border: 1px dashed var(--border-color, #bfbfbf);
       padding: 20px;
       border-radius: 4px;
     }
@@ -388,11 +417,12 @@ import { QrBillStore } from '../../state/qr-bill.store';
       font-size: 16px;
       font-weight: 700;
       margin: 0;
+      color: var(--text-primary);
     }
 
     .voucher-sub {
       font-size: 11px;
-      color: #8c8c8c;
+      color: var(--text-secondary, #8c8c8c);
     }
 
     .voucher-grid {
@@ -456,7 +486,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
       margin-top: 12px;
       display: flex;
       gap: 16px;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--border-color, #f0f0f0);
       padding-top: 8px;
     }
 
@@ -467,18 +497,19 @@ import { QrBillStore } from '../../state/qr-bill.store';
 
     .amount-col .lbl {
       font-size: 10px;
-      color: #8c8c8c;
+      color: var(--text-secondary, #8c8c8c);
       text-transform: uppercase;
     }
 
     .amount-col .val {
       font-size: 14px;
       font-weight: 600;
+      color: var(--text-primary);
     }
 
     .amount-main {
       font-size: 16px !important;
-      color: #1f1f1f;
+      color: var(--primary-color, #0d9488) !important;
     }
 
     .qr-info-col {
@@ -498,8 +529,12 @@ import { QrBillStore } from '../../state/qr-bill.store';
     .info-label {
       font-size: 10px;
       font-weight: 700;
-      color: #8c8c8c;
+      color: var(--text-secondary, #8c8c8c);
       text-transform: uppercase;
+    }
+
+    .info-val {
+      color: var(--text-primary);
     }
 
     .info-val.strong {
@@ -509,19 +544,20 @@ import { QrBillStore } from '../../state/qr-bill.store';
     .scor-code {
       font-family: 'Courier New', monospace;
       font-weight: 700;
-      color: #0958d9;
+      color: var(--primary-color, #0d9488);
       letter-spacing: 0.5px;
     }
 
     .receipt-part {
       font-size: 11px;
-      color: #595959;
+      color: var(--text-secondary, #595959);
     }
 
     .receipt-part h4 {
       font-size: 12px;
       margin: 0 0 8px 0;
       font-weight: 700;
+      color: var(--text-primary);
     }
 
     .receipt-content {
@@ -532,6 +568,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
 
     .receipt-amount {
       font-size: 14px;
+      color: var(--text-primary);
     }
   `,
 })
@@ -572,7 +609,6 @@ export class SwissQrBillComponent implements OnInit {
   }
 
   formatScor(reference: string): string {
-    // Format 27-digit SCOR into blocks of 5: e.g. 21 00000 00003 13947 14300 09017
     return reference.replace(/(\d{2})(\d{5})(\d{5})(\d{5})(\d{5})(\d{5})/, '$1 $2 $3 $4 $5 $6');
   }
 

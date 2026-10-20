@@ -9,6 +9,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { AuthStore } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-login',
@@ -21,22 +22,23 @@ import { AuthStore } from '@core';
     NzRadioModule,
     NzSelectModule,
     NzDividerModule,
+    TranslatePipe,
   ],
   template: `
     <div class="login-wrapper">
       <div class="login-box">
         <div class="login-header">
           <i class="fa-solid fa-receipt brand-icon"></i>
-          <h1>Fattura Facile ERP</h1>
-          <p class="subtitle">Piattaforma Enterprise Cross-Border Italia / Svizzera</p>
+          <h1>{{ 'AUTH.TITLE' | translate }}</h1>
+          <p class="subtitle">{{ 'AUTH.SUBTITLE' | translate }}</p>
         </div>
 
         <nz-card [nzBordered]="false" class="login-card">
           <form nz-form [formGroup]="loginForm" (ngSubmit)="onSubmit()" nzLayout="vertical">
             <nz-form-item>
-              <nz-form-label nzRequired>Azienda / Tenant Preset</nz-form-label>
+              <nz-form-label nzRequired>{{ 'AUTH.TENANT_PRESET' | translate }}</nz-form-label>
               <nz-form-control>
-                <nz-select formControlName="tenantId" nzSize="large">
+                <nz-select formControlName="tenantId" nzSize="large" [attr.aria-label]="'AUTH.TENANT_PRESET' | translate">
                   @for (tenant of authStore.tenants(); track tenant.id) {
                     <nz-option
                       [nzValue]="tenant.id"
@@ -48,19 +50,31 @@ import { AuthStore } from '@core';
             </nz-form-item>
 
             <nz-form-item>
-              <nz-form-label nzRequired>Email Aziendale</nz-form-label>
-              <nz-form-control nzErrorTip="Inserisci un indirizzo email valido">
+              <nz-form-label nzRequired>{{ 'AUTH.EMAIL' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="'AUTH.EMAIL_ERROR' | translate">
                 <nz-input-group nzPrefixIcon="user" nzSize="large">
-                  <input type="email" nz-input formControlName="email" placeholder="m.rossi@rossiimpianti.it" />
+                  <input
+                    type="email"
+                    nz-input
+                    formControlName="email"
+                    placeholder="m.rossi@rossiimpianti.it"
+                    [attr.aria-label]="'AUTH.EMAIL' | translate"
+                  />
                 </nz-input-group>
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
-              <nz-form-label nzRequired>Password</nz-form-label>
-              <nz-form-control nzErrorTip="Password richiesta">
+              <nz-form-label nzRequired>{{ 'AUTH.PASSWORD' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="'AUTH.PASSWORD_ERROR' | translate">
                 <nz-input-group nzPrefixIcon="lock" nzSize="large">
-                  <input type="password" nz-input formControlName="password" placeholder="••••••••" />
+                  <input
+                    type="password"
+                    nz-input
+                    formControlName="password"
+                    placeholder="••••••••"
+                    [attr.aria-label]="'AUTH.PASSWORD' | translate"
+                  />
                 </nz-input-group>
               </nz-form-control>
             </nz-form-item>
@@ -73,14 +87,14 @@ import { AuthStore } from '@core';
               [nzLoading]="isLoading"
               class="login-btn"
             >
-              <i class="fa-solid fa-right-to-bracket fa-icon-spaced"></i> Accedi a Fattura Facile
+              <i class="fa-solid fa-right-to-bracket fa-icon-spaced"></i> {{ 'AUTH.SUBMIT_BTN' | translate }}
             </button>
           </form>
 
-          <nz-divider nzText="Modalità Demo Attiva" />
+          <nz-divider [nzText]="'AUTH.DEMO_MODE' | translate" />
           <div class="demo-info">
-            <p><i class="fa-solid fa-circle-check" style="color: #52c41a;"></i> Mock Data Engine attivo (nessun server richiesto)</p>
-            <p>Seleziona un tenant per simulare il regime fiscale <strong>Italia (SDI)</strong> o <strong>Svizzera (QR-Bill / ArG)</strong>.</p>
+            <p><i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ 'AUTH.DEMO_INFO1' | translate }}</p>
+            <p>{{ 'AUTH.DEMO_INFO2' | translate }}</p>
           </div>
         </nz-card>
       </div>
@@ -107,43 +121,48 @@ import { AuthStore } from '@core';
     }
 
     .brand-icon {
-      font-size: 42px;
-      color: #38bdf8;
+      font-size: 40px;
+      color: var(--primary-color, #0d9488);
       margin-bottom: 12px;
     }
 
     .login-header h1 {
+      color: #ffffff;
       font-size: 26px;
       font-weight: 700;
-      color: #ffffff;
       margin: 0;
+      letter-spacing: -0.5px;
     }
 
     .subtitle {
-      font-size: 13px;
       color: #94a3b8;
+      font-size: 13px;
       margin-top: 6px;
+      margin-bottom: 0;
     }
 
     .login-card {
       border-radius: 12px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+      background: var(--bg-card, #ffffff);
     }
 
     .login-btn {
-      margin-top: 8px;
-      border-radius: 6px;
+      height: 44px;
+      font-size: 15px;
       font-weight: 600;
+      border-radius: 8px;
+      margin-top: 8px;
     }
 
     .demo-info {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-secondary, #64748b);
       line-height: 1.5;
     }
 
     .demo-info p {
-      margin: 4px 0;
+      margin-bottom: 6px;
     }
   `,
 })
@@ -154,12 +173,12 @@ export class LoginComponent {
   isLoading = false;
 
   readonly loginForm = new FormGroup({
-    tenantId: new FormControl('t-it-01', { nonNullable: true }),
+    tenantId: new FormControl('t-it-01', { nonNullable: true, validators: [Validators.required] }),
     email: new FormControl('m.rossi@rossiimpianti.it', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl('demo-password', {
+    password: new FormControl('password123', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -168,12 +187,12 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      const tenantId = this.loginForm.controls.tenantId.value;
+      const { tenantId } = this.loginForm.getRawValue();
       setTimeout(() => {
         this.authStore.login(tenantId);
         this.isLoading = false;
         this.router.navigate(['/dashboard']);
-      }, 300);
+      }, 400);
     }
   }
 }

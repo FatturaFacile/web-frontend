@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-rent',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Flotta & Noleggio Veicoli"
-      subtitle="Planning noleggio a breve/lungo termine, perizie danni digitali, vignette svizzere e Telepass"
+      [title]="'RENT.TITLE' | translate"
+      [subtitle]="'RENT.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Stato Parco Mezzi & Contratti Attivi">
+    <nz-card [nzTitle]="'RENT.CARD_TITLE' | translate">
       <nz-table #rTable [nzData]="vehicles" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Targa & Modello</th>
-            <th>Tipo Contratto</th>
-            <th>Cliente Assegnatario</th>
-            <th>Vignetta Autostradale CH</th>
-            <th>Rientro Previsto</th>
-            <th>Stato</th>
+            <th>{{ 'RENT.COL_PLATE_MODEL' | translate }}</th>
+            <th>{{ 'RENT.COL_TYPE' | translate }}</th>
+            <th>{{ 'RENT.COL_CLIENT' | translate }}</th>
+            <th>{{ 'RENT.COL_VIGNETTE' | translate }}</th>
+            <th>{{ 'RENT.COL_RETURN' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -33,7 +33,7 @@ import { PageHeaderComponent } from '@shared';
               <td>{{ v.client }}</td>
               <td>
                 <nz-tag [nzColor]="v.vignette ? 'success' : 'default'">
-                  {{ v.vignette ? 'E-Vignetta Attiva' : 'Non richiesta' }}
+                  {{ v.vignette ? ('RENT.VIGNETTE_ACTIVE' | translate) : ('RENT.VIGNETTE_NONE' | translate) }}
                 </nz-tag>
               </td>
               <td>{{ v.returnDate }}</td>
