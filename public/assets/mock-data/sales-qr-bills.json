@@ -1,0 +1,80 @@
+[
+  {
+    "id": "qrb-001",
+    "billNumber": "QR-2026-0042",
+    "issueDate": "2026-10-15",
+    "dueDate": "2026-11-15",
+    "currency": "CHF",
+    "amount": 1450.85,
+    "creditor": {
+      "name": "Helvetia Tech SA",
+      "address": "Via Nassa 12",
+      "postalCode": "6900",
+      "city": "Lugano",
+      "country": "CH",
+      "qrIban": "CH4431999123000889012"
+    },
+    "debtor": {
+      "name": "Bernasconi Costruzioni SA",
+      "address": "Corso Elvezia 18",
+      "postalCode": "6900",
+      "city": "Lugano",
+      "country": "CH"
+    },
+    "reference": "210000000003139471430009017",
+    "unstructuredMessage": "Fattura per fornitura apparecchiature mese Ottobre 2026",
+    "status": "PAID"
+  },
+  {
+    "id": "qrb-002",
+    "billNumber": "QR-2026-0043",
+    "issueDate": "2026-10-18",
+    "dueDate": "2026-11-18",
+    "currency": "CHF",
+    "amount": 3280.40,
+    "creditor": {
+      "name": "Helvetia Tech SA",
+      "address": "Via Nassa 12",
+      "postalCode": "6900",
+      "city": "Lugano",
+      "country": "CH",
+      "qrIban": "CH4431999123000889012"
+    },
+    "debtor": {
+      "name": "Alpine Precision Instruments AG",
+      "address": "Industriestrasse 4",
+      "postalCode": "6300",
+      "city": "Zug",
+      "country": "CH"
+    },
+    "reference": "210000000004561289030018524",
+    "unstructuredMessage": "Assistenza tecnica sistemi ERP Q3/Q4",
+    "status": "PENDING"
+  },
+  {
+    "id": "qrb-003",
+    "billNumber": "QR-2026-0044",
+    "issueDate": "2026-10-19",
+    "dueDate": "2026-11-30",
+    "currency": "CHF",
+    "amount": 890.15,
+    "creditor": {
+      "name": "Helvetia Tech SA",
+      "address": "Via Nassa 12",
+      "postalCode": "6900",
+      "city": "Lugano",
+      "country": "CH",
+      "qrIban": "CH4431999123000889012"
+    },
+    "debtor": {
+      "name": "Fiduciaria San Gottardo Sagl",
+      "address": "Piazza Riforma 5",
+      "postalCode": "6900",
+      "city": "Lugano",
+      "country": "CH"
+    },
+    "reference": "210000000007891234560029871",
+    "unstructuredMessage": "Canone mensile hosting e manutenzione",
+    "status": "DRAFT"
+  }
+]

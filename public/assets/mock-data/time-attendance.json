@@ -1,0 +1,75 @@
+{
+  "summary": {
+    "weeklyHoursWorked": 38.5,
+    "weeklyLimitHours": 45.0,
+    "overtimeHours": 1.5,
+    "vacationDaysAvailable": 22.5,
+    "statutoryRestCompliant": true,
+    "jurisdiction": "CH",
+    "regime": "SWISS_ARG_ART_9"
+  },
+  "todaySession": {
+    "isClockedIn": true,
+    "clockInTime": "08:15",
+    "breakMinutes": 45,
+    "totalTodayHours": 6.25
+  },
+  "records": [
+    {
+      "id": "att-101",
+      "date": "2026-10-20",
+      "clockIn": "08:15",
+      "clockOut": null,
+      "breakMinutes": 45,
+      "hoursWorked": 6.25,
+      "complianceNotice": "ArG OK: Pausa di 45 min rispettata per turno > 7h",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "att-102",
+      "date": "2026-10-19",
+      "clockIn": "08:00",
+      "clockOut": "17:15",
+      "breakMinutes": 45,
+      "hoursWorked": 8.5,
+      "complianceNotice": "Riposo giornaliero: 14h 45m (conforme D.Lgs. 66/2003 e ArG)",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "att-103",
+      "date": "2026-10-18",
+      "clockIn": "08:30",
+      "clockOut": "17:00",
+      "breakMinutes": 30,
+      "hoursWorked": 8.0,
+      "complianceNotice": "Conforme limiti orari",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "att-104",
+      "date": "2026-10-17",
+      "clockIn": "08:00",
+      "clockOut": "16:45",
+      "breakMinutes": 45,
+      "hoursWorked": 8.0,
+      "complianceNotice": "Conforme limiti orari",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "att-105",
+      "date": "2026-10-16",
+      "clockIn": "08:15",
+      "clockOut": "16:00",
+      "breakMinutes": 30,
+      "hoursWorked": 7.75,
+      "complianceNotice": "Conforme limiti orari",
+      "status": "COMPLETED"
+    }
+  ],
+  "vacations": {
+    "annualEntitlementDays": 25,
+    "takenDays": 6.5,
+    "remainingDays": 18.5,
+    "rolHoursAvailable": 32.0
+  }
+}

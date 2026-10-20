@@ -1,0 +1,44 @@
+[
+  {
+    "id": "tire-001",
+    "customerName": "Giacomo Bianchi",
+    "vehiclePlate": "TI 451920",
+    "vehicleModel": "Audi A4 Avant 2.0 TDI",
+    "season": "WINTER",
+    "brandModel": "Michelin Pilot Alpin 5 225/50 R17 98H",
+    "dot": "3824",
+    "treadDepthMm": {
+      "frontLeft": 6.8,
+      "frontRight": 6.9,
+      "rearLeft": 7.2,
+      "rearRight": 7.1
+    },
+    "hasRims": true,
+    "rimType": "ALLOY",
+    "rackLocation": "RACK-B-04-SHELF-2",
+    "depositDate": "2026-04-12",
+    "status": "STORED",
+    "reminderSent": true
+  },
+  {
+    "id": "tire-002",
+    "customerName": "Sara Riva",
+    "vehiclePlate": "GE 789234",
+    "vehicleModel": "Volkswagen Golf 8 1.5 eTSI",
+    "season": "SUMMER",
+    "brandModel": "Continental PremiumContact 6 205/55 R16 91V",
+    "dot": "1223",
+    "treadDepthMm": {
+      "frontLeft": 4.1,
+      "frontRight": 4.0,
+      "rearLeft": 4.8,
+      "rearRight": 4.7
+    },
+    "hasRims": true,
+    "rimType": "STEEL",
+    "rackLocation": "RACK-A-01-SHELF-1",
+    "depositDate": "2026-10-10",
+    "status": "STORED",
+    "reminderSent": false
+  }
+]

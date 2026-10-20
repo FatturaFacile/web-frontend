@@ -1,0 +1,41 @@
+{
+  "id": "usr-001",
+  "name": "Marco Rossi",
+  "email": "m.rossi@rossiimpianti.it",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+  "role": "ERP Administrator",
+  "roles": ["ADMIN", "FINANCE_MANAGER", "OPERATOR"],
+  "defaultTenant": {
+    "id": "t-it-01",
+    "name": "Rossi Impianti S.r.l.",
+    "jurisdiction": "IT",
+    "currency": "EUR",
+    "vatNumber": "IT12345678901",
+    "sdiCode": "M5UXCR1",
+    "address": "Via Manzoni 45, 20121 Milano (MI), Italia"
+  },
+  "tenants": [
+    {
+      "id": "t-it-01",
+      "name": "Rossi Impianti S.r.l.",
+      "jurisdiction": "IT",
+      "currency": "EUR",
+      "vatNumber": "IT12345678901",
+      "sdiCode": "M5UXCR1",
+      "address": "Via Manzoni 45, 20121 Milano (MI), Italia"
+    },
+    {
+      "id": "t-ch-02",
+      "name": "Helvetia Tech SA",
+      "jurisdiction": "CH",
+      "currency": "CHF",
+      "vatNumber": "CHE-114.892.451 IVA",
+      "qrIban": "CH4431999123000889012",
+      "address": "Via Nassa 12, 6900 Lugano (TI), Svizzera"
+    }
+  ],
+  "preferences": {
+    "theme": "light",
+    "locale": "IT"
+  }
+}

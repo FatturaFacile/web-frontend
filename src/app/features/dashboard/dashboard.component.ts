@@ -1,0 +1,172 @@
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { AuthStore } from '@core';
+import { PageHeaderComponent } from '@shared';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [
+    RouterLink,
+    NzCardModule,
+    NzGridModule,
+    NzStatisticModule,
+    NzTableModule,
+    NzTagModule,
+    NzButtonModule,
+    NzAlertModule,
+    PageHeaderComponent,
+  ],
+  template: `
+    <app-page-header
+      title="Dashboard Esecutiva ERP"
+      [subtitle]="'Panoramica finanziaria e operativa (' + authStore.activeTenant().name + ' - ' + authStore.activeJurisdiction() + ')'"
+    />
+
+    <nz-alert
+      nzType="info"
+      nzShowIcon
+      [nzMessage]="alertTitle"
+      [nzDescription]="alertDesc"
+      class="jurisdiction-banner"
+    >
+      <ng-template #alertTitle>
+        Regime Attivo: <strong>{{ authStore.activeJurisdiction() === 'IT' ? 'Italia (SDI, F24, D.Lgs. 66/2003)' : 'Svizzera (QR-Bill, ArG OLL 1, KMU/PME)' }}</strong>
+      </ng-template>
+      <ng-template #alertDesc>
+        Tutte le emissioni fiscali, calcoli IVA, e arrotondamenti seguono i requisiti di giurisdizione del tenant corrente.
+      </ng-template>
+    </nz-alert>
+
+    <!-- Top KPI cards -->
+    <div nz-row [nzGutter]="16" class="stats-grid">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="authStore.activeJurisdiction() === 'IT' ? '€ 142.850' : 'CHF 184.200'"
+            nzTitle="Fatturato Mese Corrente"
+            [nzValueStyle]="{ color: '#1677ff' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="authStore.activeJurisdiction() === 'IT' ? '€ 28.450' : 'CHF 32.100'"
+            nzTitle="Fatture da Incassare"
+            [nzValueStyle]="{ color: '#faad14' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="48"
+            nzTitle="Ordini Attivi"
+            [nzValueStyle]="{ color: '#52c41a' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="'99.8%'"
+            nzTitle="Indice di Conformità Legale"
+            [nzValueStyle]="{ color: '#722ed1' }"
+          />
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- Quick Shortcuts & Recent Activity -->
+    <div nz-row [nzGutter]="16">
+      <div nz-col [nzXs]="24" [nzLg]="14">
+        <nz-card nzTitle="Attività e Documenti Recenti">
+          <nz-table #recentTable [nzData]="recentItems" [nzFrontPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th>Riferimento</th>
+                <th>Tipo</th>
+                <th>Cliente / Controparte</th>
+                <th>Importo</th>
+                <th>Stato</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of recentTable.data; track item.ref) {
+                <tr>
+                  <td><strong>{{ item.ref }}</strong></td>
+                  <td>{{ item.type }}</td>
+                  <td>{{ item.party }}</td>
+                  <td>{{ item.amount }}</td>
+                  <td>
+                    <nz-tag [nzColor]="item.color">{{ item.status }}</nz-tag>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+      </div>
+
+      <div nz-col [nzXs]="24" [nzLg]="10">
+        <nz-card nzTitle="Accesso Rapido Showcase">
+          <div class="shortcut-list">
+            <a nz-button nzType="primary" nzBlock routerLink="/sales/qr-bill" class="shortcut-btn">
+              <i class="fa-solid fa-qrcode fa-icon-spaced"></i> Swiss QR-Bill Generator (0.05 CHF & SCOR)
+            </a>
+            <a nz-button nzType="default" nzBlock routerLink="/time-attendance" class="shortcut-btn">
+              <i class="fa-solid fa-clock fa-icon-spaced"></i> Presenze & Cartellino (ArG / D.Lgs. 66)
+            </a>
+            <a nz-button nzType="default" nzBlock routerLink="/crm/clients" class="shortcut-btn">
+              <i class="fa-solid fa-address-book fa-icon-spaced"></i> Anagrafica Clienti Cross-Border IT-CH
+            </a>
+            <a nz-button nzType="default" nzBlock routerLink="/automotive/tire-hotel" class="shortcut-btn">
+              <i class="fa-solid fa-circle-dot fa-icon-spaced"></i> Hotel Pneumatici (Gommista)
+            </a>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  `,
+  styles: `
+    .jurisdiction-banner {
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      margin-bottom: 20px;
+    }
+
+    .shortcut-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .shortcut-btn {
+      text-align: left;
+      height: 42px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+    }
+  `,
+})
+export class DashboardComponent {
+  readonly authStore = inject(AuthStore);
+
+  readonly recentItems = [
+    { ref: 'QR-2026-0042', type: 'Swiss QR-Bill', party: 'Bernasconi SA', amount: '1\'450.85 CHF', status: 'Pagata', color: 'success' },
+    { ref: 'FPR 12/2026', type: 'Fattura SDI', party: 'Lombarda Manifatture', amount: '€ 5.490,00', status: 'Inviata SDI', color: 'blue' },
+    { ref: 'ODP-891', type: 'Ordine Prod.', party: 'Reparto Assemblaggio', amount: '120 Pz', status: 'In corso', color: 'processing' },
+    { ref: 'HOTEL-002', type: 'Hotel Pneumatici', party: 'Sara Riva (Golf 8)', amount: '4 Ruote Estive', status: 'Stoccato', color: 'purple' },
+  ];
+}
