@@ -1,0 +1,51 @@
+[
+  {
+    "id": "cli-001",
+    "companyName": "Bernasconi Costruzioni SA",
+    "jurisdiction": "CH",
+    "uid": "CHE-245.891.102",
+    "vatNumber": "CHE-245.891.102 MWST",
+    "qrIban": "CH5631999123000987654",
+    "address": "Corso Elvezia 18",
+    "city": "Lugano",
+    "canton": "TI",
+    "postalCode": "6900",
+    "country": "Switzerland",
+    "email": "amministrazione@bernasconi-sa.ch",
+    "phone": "+41 91 922 45 00",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "cli-002",
+    "companyName": "Lombarda Manifatture S.p.A.",
+    "jurisdiction": "IT",
+    "vatNumber": "IT09876543210",
+    "fiscalCode": "09876543210",
+    "sdiCode": "KRRH6B9",
+    "pec": "lombardamanifatture@pec.it",
+    "address": "Via Varesina 110",
+    "city": "Como",
+    "province": "CO",
+    "postalCode": "22100",
+    "country": "Italy",
+    "email": "info@lombardamanifatture.it",
+    "phone": "+39 031 345678",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "cli-003",
+    "companyName": "Alpine Precision Instruments AG",
+    "jurisdiction": "CH",
+    "uid": "CHE-312.456.789",
+    "vatNumber": "CHE-312.456.789 MWST",
+    "qrIban": "CH8931999123000123456",
+    "address": "Industriestrasse 4",
+    "city": "Zug",
+    "canton": "ZG",
+    "postalCode": "6300",
+    "country": "Switzerland",
+    "email": "finance@alpine-precision.ch",
+    "phone": "+41 41 710 88 00",
+    "status": "ACTIVE"
+  }
+]

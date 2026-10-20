@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.app-layout {
+  min-height: 100vh;
+}
+
+.menu-sidebar {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  box-shadow: 2px 0 8px rgba(0, 21, 41, 0.25);
+  background: var(--sidebar-bg, #001529);
+}
+
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary, #f0f2f5);
+}
+
+.main-header {
+  padding: 0;
+  height: 64px;
+  line-height: normal;
+  z-index: 9;
+  background: transparent;
+}
+
+.main-content {
+  margin: 16px 20px 24px;
+  flex: 1;
+}
+
+.content-container {
+  min-height: 280px;
+}

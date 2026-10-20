@@ -1,0 +1,26 @@
+@if (!authStore.isAuthenticated()) {
+  <router-outlet></router-outlet>
+} @else {
+  <nz-layout class="app-layout">
+    <nz-sider
+      class="menu-sidebar"
+      nzCollapsible
+      nzWidth="260px"
+      [nzCollapsed]="appStore.isCollapsed()"
+      [nzTrigger]="null"
+    >
+      <app-sidebar />
+    </nz-sider>
+    <nz-layout class="main-layout">
+      <nz-header class="main-header">
+        <app-header />
+      </nz-header>
+      <nz-content class="main-content">
+        <app-breadcrumb />
+        <div class="content-container">
+          <router-outlet></router-outlet>
+        </div>
+      </nz-content>
+    </nz-layout>
+  </nz-layout>
+}
