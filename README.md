@@ -1,6 +1,17 @@
+
 # Fattura Facile - Enterprise ERP Frontend (IT / CH)
 
 Enterprise ERP web application built with **Angular 22**, **NG-ZORRO (Ant Design)**, **FontAwesome 6 Free**, and **Clean Architecture / DDD**, tailored for cross-border operations between **Italy (IT)** and **Switzerland (CH)**.
+
+---
+
+# FatturaFacile - Web Client Demo
+
+[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
+[![Deploy to Pages](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/<OWNER>/<REPO>?sort=semver&logo=github&color=blue)](https://github.com/<OWNER>/<REPO>/releases/latest)
+[![Demo](https://img.shields.io/badge/demo-online-brightgreen)](https://demo.fatturafacile.eu)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
