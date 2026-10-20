@@ -1,0 +1,171 @@
+name: Deploy to Pages & Release Assets
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+permissions:
+  contents: write # Required to upload assets and update release notes
+  pages: write # Required to publish to GitHub Pages
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to retrieve git history and tags for changelog generation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular application
+        run: npm run build -- --configuration production
+
+      - name: Configure SPA routing for GitHub Pages
+        run: |
+          DIST_DIR=$(find dist -type f -name "index.html" -exec dirname {} \; | head -n 1)
+          echo "Output directory: $DIST_DIR"
+          echo "DIST_DIR=$DIST_DIR" >> $GITHUB_ENV
+          cp "$DIST_DIR/index.html" "$DIST_DIR/404.html"
+
+      - name: Create release archives and generate checksums
+        id: archive
+        run: |
+          TAG="${{ github.event.release.tag_name || 'latest' }}"
+          ARCHIVE_NAME="angular-build-$TAG"
+
+          # Create tar.gz archive
+          tar -czf "${ARCHIVE_NAME}.tar.gz" -C "$DIST_DIR" .
+
+          # Create zip archive
+          (cd "$DIST_DIR" && zip -r "../../${ARCHIVE_NAME}.zip" .)
+
+          # Generate SHA-256 hashes
+          SHA_TAR=$(sha256sum "${ARCHIVE_NAME}.tar.gz" | awk '{print $1}')
+          SHA_ZIP=$(sha256sum "${ARCHIVE_NAME}.zip" | awk '{print $1}')
+
+          # Create SHA256SUMS file
+          CHECKSUM_FILE="SHA256SUMS"
+          echo "$SHA_TAR  ${ARCHIVE_NAME}.tar.gz" > "$CHECKSUM_FILE"
+          echo "$SHA_ZIP  ${ARCHIVE_NAME}.zip" >> "$CHECKSUM_FILE"
+
+          # Export environment variables
+          echo "ARCHIVE_TAR=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_ENV
+          echo "ARCHIVE_ZIP=${ARCHIVE_NAME}.zip" >> $GITHUB_ENV
+          echo "CHECKSUM_FILE=${CHECKSUM_FILE}" >> $GITHUB_ENV
+          echo "SHA_TAR=${SHA_TAR}" >> $GITHUB_ENV
+          echo "SHA_ZIP=${SHA_ZIP}" >> $GITHUB_ENV
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "${{ env.ARCHIVE_TAR }}" \
+            "${{ env.ARCHIVE_ZIP }}" \
+            "${{ env.CHECKSUM_FILE }}" \
+            --clobber
+
+      - name: Generate categorized release notes
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+
+          # Retrieve manually entered release description
+          EXISTING_BODY=$(gh release view "$TAG" --json body --jq '.body // ""')
+
+          # Generate categorized changelog using .github/release.yml
+          GENERATED_NOTES=$(gh api -X POST "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="$TAG" \
+            --jq '.body' || echo "")
+
+          # Build final release notes
+          cat <<EOF > release_notes.md
+          ${EXISTING_BODY}
+
+          ${GENERATED_NOTES}
+
+          ## Integrity Verification (SHA-256)
+
+          | File | SHA-256 Checksum |
+          | :--- | :--- |
+          | \`${{ env.ARCHIVE_TAR }}\` | \`${{ env.SHA_TAR }}\` |
+          | \`${{ env.ARCHIVE_ZIP }}\` | \`${{ env.SHA_ZIP }}\` |
+          EOF
+
+          # Update GitHub release
+          gh release edit "$TAG" --notes-file release_notes.md
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.DIST_DIR }}
+
+  deploy:
+    needs: build
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+#      - name: Send Telegram notification
+#        if: always()
+#        env:
+#          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+#          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+#          DEPLOY_STATUS: ${{ steps.deployment.outcome }}
+#          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+#          TAG: ${{ github.event.release.tag_name || github.ref_name }}
+#          REPO: ${{ github.repository }}
+#        run: |
+#          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+#            echo "Telegram secrets not configured, notification skipped."
+#            exit 0
+#          fi
+#
+#          if [ "$DEPLOY_STATUS" = "success" ]; then
+#            ICON="🚀"
+#            STATUS_TXT="Successful"
+#          else
+#            ICON="❌"
+#            STATUS_TXT="Failed"
+#          fi
+#
+#          MESSAGE="$ICON *Deploy Release $TAG*
+#
+#          *Repository:* \`$REPO\`
+#          *Status:* $STATUS_TXT
+#          *Demo URL:* $PAGE_URL"
+#
+#          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+#            -d chat_id="${TELEGRAM_CHAT_ID}" \
+#            -d parse_mode="Markdown" \
+#            -d text="$MESSAGE"
