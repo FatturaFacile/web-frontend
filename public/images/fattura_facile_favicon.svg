@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Ombra morbida per dare risalto all'icona -->
+    <filter id="soft-shadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+  </defs>
+
+  <!-- Sfondo arrotondato (opzionale per app icon / avatar GitHub) -->
+  <rect width="512" height="512" rx="112" fill="#F8FAFC" />
+
+  <g filter="url(#soft-shadow)">
+    <!-- Sagoma Documento / Foglio -->
+    <!-- Angolo piegato in alto a destra -->
+    <path d="M 330,68 
+             L 155,68 
+             C 120,68 95,93 95,128 
+             L 95,395 
+             C 95,430 120,448 155,448 
+             L 280,448 
+             C 285,448 290,448 295,447" 
+          stroke="#1E293B" 
+          stroke-width="26" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+
+    <!-- Parte superiore destra e angolo piegato -->
+    <path d="M 330,68 
+             L 417,155 
+             L 417,290" 
+          stroke="#1E293B" 
+          stroke-width="26" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+
+    <path d="M 330,68 
+             L 330,155 
+             L 417,155" 
+          stroke="#1E293B" 
+          stroke-width="24" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+
+    <!-- Linee interne del documento -->
+    <line x1="165" y1="185" x2="280" y2="185" stroke="#1E293B" stroke-width="22" stroke-linecap="round" />
+    <line x1="165" y1="245" x2="250" y2="245" stroke="#1E293B" stroke-width="22" stroke-linecap="round" />
+
+    <!-- Spunta Checkmark Offline -->
+    <path d="M 148,340 L 180,372 L 225,315" 
+          stroke="#1E293B" 
+          stroke-width="22" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+
+    <!-- Sagoma di ritaglio bianca per distanziare la nuvola -->
+    <path d="M 235,465 
+             A 58,58 0 0 1 228,355 
+             A 75,75 0 0 1 355,285 
+             A 86,86 0 0 1 472,355 
+             A 62,62 0 0 1 460,465 
+             Z" 
+          fill="#F8FAFC" />
+
+    <!-- Nuvola Cloud/SaaS -->
+    <path d="M 245,450 
+             A 50,50 0 0 1 240,362 
+             A 68,68 0 0 1 350,300 
+             A 78,78 0 0 1 455,362 
+             A 54,54 0 0 1 445,450 
+             Z" 
+          fill="#0D9488" />
+
+    <!-- Circuiti e nodi tecnologici dentro la nuvola -->
+    <!-- Linea e nodo centrale -->
+    <line x1="350" y1="446" x2="350" y2="370" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" />
+    <circle cx="350" cy="366" r="11" fill="#FFFFFF" />
+
+    <!-- Linea e nodo sinistro -->
+    <path d="M 300,446 L 300,410 L 318,392" 
+          stroke="#FFFFFF" 
+          stroke-width="11" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+    <circle cx="318" cy="392" r="9" fill="#FFFFFF" />
+
+    <!-- Linea e nodo destro -->
+    <path d="M 400,446 L 400,412 L 382,394" 
+          stroke="#FFFFFF" 
+          stroke-width="11" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+    <circle cx="382" cy="394" r="9" fill="#FFFFFF" />
+  </g>
+</svg>

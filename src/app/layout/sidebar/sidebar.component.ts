@@ -16,9 +16,9 @@ interface MenuItem {
   imports: [RouterLink, NzMenuModule, NzTooltipModule],
   template: `
     <div class="sidebar-brand">
-      <i class="fa-solid fa-receipt brand-icon"></i>
+      <img src="/images/fattura_facile_favicon_trasparente.svg" alt="Logo" height="50px" />
       @if (!appStore.isCollapsed()) {
-        <span class="brand-text">Fattura Facile</span>
+        <span class="brand-text">Fattura <span style="color:#0D9488;">Facile</span></span>
       }
     </div>
 
@@ -138,7 +138,11 @@ export class SidebarComponent {
       icon: 'fa-solid fa-cart-flatbed',
       children: [
         { title: 'Ciclo Passivo SDI', route: '/purchases/sdi-inbox', icon: 'fa-solid fa-inbox' },
-        { title: 'Scanner QR & pain.001', route: '/purchases/qr-scanner', icon: 'fa-solid fa-file-import' },
+        {
+          title: 'Scanner QR & pain.001',
+          route: '/purchases/qr-scanner',
+          icon: 'fa-solid fa-file-import',
+        },
         { title: 'Note Spese', route: '/purchases/expenses', icon: 'fa-solid fa-wallet' },
       ],
     },
@@ -160,8 +164,16 @@ export class SidebarComponent {
       title: 'Assistenza & Interventi',
       icon: 'fa-solid fa-screwdriver-wrench',
       children: [
-        { title: 'Ticket Helpdesk SLA', route: '/field-service/tickets', icon: 'fa-solid fa-ticket' },
-        { title: 'Rapportini Intervento', route: '/field-service/reports', icon: 'fa-solid fa-screwdriver-wrench' },
+        {
+          title: 'Ticket Helpdesk SLA',
+          route: '/field-service/tickets',
+          icon: 'fa-solid fa-ticket',
+        },
+        {
+          title: 'Rapportini Intervento',
+          route: '/field-service/reports',
+          icon: 'fa-solid fa-screwdriver-wrench',
+        },
       ],
     },
     {
@@ -169,7 +181,11 @@ export class SidebarComponent {
       icon: 'fa-solid fa-car',
       children: [
         { title: 'Officina & Schede', route: '/automotive/workshop', icon: 'fa-solid fa-wrench' },
-        { title: 'Hotel Pneumatici', route: '/automotive/tire-hotel', icon: 'fa-solid fa-circle-dot' },
+        {
+          title: 'Hotel Pneumatici',
+          route: '/automotive/tire-hotel',
+          icon: 'fa-solid fa-circle-dot',
+        },
       ],
     },
     {

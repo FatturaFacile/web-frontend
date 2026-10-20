@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 280" width="100%" height="100%">
+  <defs>
+    <style>
+      .brand-dark { fill: #1E293B; }
+      .brand-teal { fill: #0D9488; }
+      .brand-sub { fill: #475569; }
+      
+      .stroke-dark { 
+        stroke: #1E293B; 
+        stroke-width: 12; 
+        stroke-linecap: round; 
+        stroke-linejoin: round; 
+        fill: none; 
+      }
+      
+      .font-title {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-weight: 800;
+        font-size: 64px;
+        letter-spacing: -0.5px;
+      }
+      
+      .font-subtitle {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-weight: 500;
+        font-size: 26px;
+        letter-spacing: 0.2px;
+      }
+    </style>
+  </defs>
+
+  <!-- ICONA -->
+  <g id="icon">
+    <!-- Bordo piega angolo in alto a destra -->
+    <path d="M 170,18 L 170,55 C 170,62 173,65 180,65 L 218,65" class="stroke-dark" fill="#FFFFFF" />
+
+    <!-- Sagoma Documento / Foglio -->
+    <path d="M 170,18 
+             L 88,18 
+             C 72,18 60,28 60,44 
+             L 60,225 
+             C 60,240 72,250 88,250 
+             L 192,250 
+             C 208,250 220,240 220,225 
+             L 220,65 
+             L 170,18 Z" 
+          class="stroke-dark" />
+
+    <!-- Linee testo fattura -->
+    <line x1="95" y1="95" x2="165" y2="95" class="stroke-dark" stroke-width="10" />
+    <line x1="95" y1="130" x2="145" y2="130" class="stroke-dark" stroke-width="10" />
+
+    <!-- Spunta Checkmark Offline -->
+    <path d="M 85,185 L 102,202 L 125,170" class="stroke-dark" stroke-width="9" />
+
+    <!-- Maschera bianca di ritaglio dietro la nuvola -->
+    <path d="M 125,258 
+             A 32,32 0 0 1 120,198 
+             A 42,42 0 0 1 190,160 
+             A 48,48 0 0 1 254,198 
+             A 34,34 0 0 1 248,258 
+             Z" 
+          fill="#FFFFFF" />
+
+    <!-- Corpo Nuvola Cloud/SaaS -->
+    <path d="M 132,252 
+             A 28,28 0 0 1 128,204 
+             A 38,38 0 0 1 190,168 
+             A 44,44 0 0 1 246,204 
+             A 30,30 0 0 1 240,252 
+             Z" 
+          fill="#0D9488" />
+
+    <!-- Circuiti / Nodi interni alla nuvola -->
+    <!-- Nodo centrale -->
+    <line x1="188" y1="250" x2="188" y2="208" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" />
+    <circle cx="188" cy="206" r="6" fill="#FFFFFF" />
+
+    <!-- Nodo sinistro -->
+    <path d="M 160,250 L 160,230 L 170,220" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <circle cx="170" cy="220" r="5" fill="#FFFFFF" />
+
+    <!-- Nodo destro -->
+    <path d="M 216,250 L 216,232 L 206,222" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <circle cx="206" cy="222" r="5" fill="#FFFFFF" />
+  </g>
+
+  <!-- TESTO / LOGOTIPO -->
+  <g id="brand-text" transform="translate(285, 140)">
+    <text class="font-title">
+      <tspan class="brand-dark">Fattura</tspan><tspan class="brand-teal">Facile</tspan>
+    </text>
+    <text x="5" y="55" class="font-subtitle brand-sub">
+      Fatture semplici, offline e cloud
+    </text>
+  </g>
+</svg>
