@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-construction',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Cantieri, Impianti & Norme SIA / DiCo"
-      subtitle="Stato avanzamento lavori (SAL), conformità SIA 118 / OIBT (CH), dichiarazioni di conformità DiCo (IT) e reverse charge"
+      [title]="'CONSTRUCTION.TITLE' | translate"
+      [subtitle]="'CONSTRUCTION.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Cantieri e Commesse in Esecuzione">
+    <nz-card [nzTitle]="'CONSTRUCTION.CARD_TITLE' | translate">
       <nz-table #cTable [nzData]="sites" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Codice Cantiere</th>
-            <th>Committente</th>
-            <th>Località & Regime</th>
-            <th>SAL Eseguito</th>
-            <th>Conformità Tecnica</th>
-            <th>Regime IVA</th>
+            <th>{{ 'CONSTRUCTION.COL_SITE_CODE' | translate }}</th>
+            <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
+            <th>{{ 'CONSTRUCTION.COL_LOCATION_REGIME' | translate }}</th>
+            <th>{{ 'CONSTRUCTION.COL_SAL' | translate }}</th>
+            <th>{{ 'CONSTRUCTION.COL_TECH_COMPLIANCE' | translate }}</th>
+            <th>{{ 'CONSTRUCTION.COL_VAT_REGIME' | translate }}</th>
           </tr>
         </thead>
         <tbody>

@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-field-service',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Assistenza Tecnica & Field Service"
-      subtitle="Helpdesk ticket con SLA, pianificazione tecnici e rapportini digitali con firma"
+      [title]="'FIELD_SERVICE.TITLE' | translate"
+      [subtitle]="'FIELD_SERVICE.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Ticket di Assistenza in Corso">
+    <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate">
       <nz-table #tkTable [nzData]="tickets" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Ticket ID</th>
-            <th>Cliente</th>
-            <th>Oggetto Intervento</th>
-            <th>Tecnico Assegnato</th>
-            <th>SLA Residuo</th>
-            <th>Stato</th>
+            <th>{{ 'FIELD_SERVICE.COL_TICKET_ID' | translate }}</th>
+            <th>{{ 'FIELD_SERVICE.COL_CLIENT' | translate }}</th>
+            <th>{{ 'FIELD_SERVICE.COL_SUBJECT' | translate }}</th>
+            <th>{{ 'FIELD_SERVICE.COL_TECH' | translate }}</th>
+            <th>{{ 'FIELD_SERVICE.COL_SLA' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>

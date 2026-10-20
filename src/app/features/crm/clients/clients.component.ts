@@ -7,7 +7,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { FormsModule } from '@angular/forms';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 interface ClientItem {
   id: string;
@@ -35,19 +35,20 @@ interface ClientItem {
     NzInputModule,
     NzRadioModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Anagrafica Clienti Cross-Border (IT / CH)"
-      subtitle="Gestione completa profili fiscali italiani (SDI, PEC, P.IVA) e svizzeri (IDI/UID, QR-IBAN)"
+      [title]="'CRM.TITLE' | translate"
+      [subtitle]="'CRM.SUBTITLE' | translate"
     />
 
     <nz-card>
       <div class="table-toolbar">
         <nz-radio-group [(ngModel)]="jurisdictionFilter" (ngModelChange)="filterClients()">
-          <label nz-radio-button nzValue="ALL">Tutti ({{ clients().length }})</label>
-          <label nz-radio-button nzValue="IT">🇮🇹 Italia</label>
-          <label nz-radio-button nzValue="CH">🇨🇭 Svizzera</label>
+          <label nz-radio-button nzValue="ALL">{{ 'COMMON.ALL' | translate }} ({{ clients().length }})</label>
+          <label nz-radio-button nzValue="IT">🇮🇹 {{ 'COMMON.ITALY' | translate }}</label>
+          <label nz-radio-button nzValue="CH">🇨🇭 {{ 'COMMON.SWITZERLAND' | translate }}</label>
         </nz-radio-group>
       </div>
 
@@ -60,12 +61,12 @@ interface ClientItem {
       >
         <thead>
           <tr>
-            <th>Ragione Sociale</th>
-            <th>Giurisdizione</th>
-            <th>Identificativo Fiscale</th>
-            <th>Canale Fatturazione</th>
-            <th>Località</th>
-            <th>Stato</th>
+            <th>{{ 'CRM.COMPANY_NAME' | translate }}</th>
+            <th>{{ 'CRM.JURISDICTION' | translate }}</th>
+            <th>{{ 'CRM.FISCAL_ID' | translate }}</th>
+            <th>{{ 'CRM.BILLING_CHANNEL' | translate }}</th>
+            <th>{{ 'CRM.LOCATION' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -76,9 +77,9 @@ interface ClientItem {
               </td>
               <td>
                 @if (client.jurisdiction === 'IT') {
-                  <nz-tag nzColor="blue">🇮🇹 Italia</nz-tag>
+                  <nz-tag nzColor="blue">🇮🇹 {{ 'COMMON.ITALY' | translate }}</nz-tag>
                 } @else {
-                  <nz-tag nzColor="red">🇨🇭 Svizzera</nz-tag>
+                  <nz-tag nzColor="red">🇨🇭 {{ 'COMMON.SWITZERLAND' | translate }}</nz-tag>
                 }
               </td>
               <td>
@@ -98,7 +99,7 @@ interface ClientItem {
                   <small>PEC: {{ client.pec }}</small>
                 } @else {
                   <div>QR-IBAN:</div>
-                  <small class="iban-text">{{ client.qrIban }}</small>
+                  <small>{{ client.qrIban }}</small>
                 }
               </td>
               <td>{{ client.city }} ({{ client.country }})</td>
@@ -115,14 +116,9 @@ interface ClientItem {
     .table-toolbar {
       margin-bottom: 16px;
     }
-
-    .iban-text {
-      font-family: monospace;
-      color: #0958d9;
-    }
   `,
 })
-export class CrmClientsComponent implements OnInit {
+export class ClientsComponent implements OnInit {
   private readonly http = inject(HttpClient);
 
   readonly clients = signal<ClientItem[]>([]);
@@ -133,25 +129,37 @@ export class CrmClientsComponent implements OnInit {
     this.http.get<ClientItem[]>('/api/crm/clients').subscribe({
       next: (data) => {
         this.clients.set(data);
-        this.filterClients();
+        this.filteredClients.set(data);
       },
       error: () => {
         // Fallback demo data
         const fallback: ClientItem[] = [
           {
-            id: 'cli-01',
-            companyName: 'Bernasconi SA',
+            id: 'c-01',
+            companyName: 'Lombarda Manifatture S.p.A.',
+            jurisdiction: 'IT',
+            vatNumber: 'IT09876543210',
+            fiscalCode: '09876543210',
+            sdiCode: 'SUBM70N',
+            pec: 'lombarda@pec.it',
+            city: 'Como (CO)',
+            country: 'IT',
+            status: 'Attivo',
+          },
+          {
+            id: 'c-02',
+            companyName: 'Bernasconi Costruzioni SA',
             jurisdiction: 'CH',
-            vatNumber: 'CHE-245.891.102 MWST',
-            uid: 'CHE-245.891.102',
-            qrIban: 'CH5631999123000987654',
-            city: 'Lugano',
-            country: 'Svizzera',
-            status: 'ACTIVE',
+            vatNumber: 'CHE-220.109.843',
+            uid: 'CHE-220.109.843',
+            qrIban: 'CH4431999123000889012',
+            city: 'Lugano (TI)',
+            country: 'CH',
+            status: 'Attivo',
           },
         ];
         this.clients.set(fallback);
-        this.filterClients();
+        this.filteredClients.set(fallback);
       },
     });
   }
@@ -166,3 +174,5 @@ export class CrmClientsComponent implements OnInit {
     }
   }
 }
+
+export { ClientsComponent as CrmClientsComponent };

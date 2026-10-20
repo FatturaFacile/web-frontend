@@ -9,25 +9,29 @@
 
 .menu-sidebar {
   position: relative;
-  z-index: 10;
+  z-index: 100;
   min-height: 100vh;
-  box-shadow: 2px 0 8px rgba(0, 21, 41, 0.25);
-  background: var(--sidebar-bg, #001529);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  background: var(--sidebar-bg, #0f172a);
+  border-right: 1px solid var(--sidebar-border, #1e293b);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .main-layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-primary, #f0f2f5);
+  background-color: var(--bg-primary, #f8fafc);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-header {
   padding: 0;
   height: 64px;
   line-height: normal;
-  z-index: 9;
-  background: transparent;
+  z-index: 90;
+  background: var(--header-bg, #ffffff);
 }
 
 .main-content {

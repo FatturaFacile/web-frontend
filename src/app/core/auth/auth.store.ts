@@ -1,5 +1,6 @@
-import { computed } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { I18nService, SupportedLanguage } from '../i18n';
 
 export interface Tenant {
   readonly id: string;
@@ -28,7 +29,7 @@ export interface AuthState {
   readonly activeTenantId: string;
   readonly activeJurisdiction: 'IT' | 'CH';
   readonly activeCurrency: 'EUR' | 'CHF';
-  readonly activeLocale: 'IT' | 'DE' | 'FR' | 'EN';
+  readonly activeLocale: SupportedLanguage;
   readonly theme: 'light' | 'dark';
 }
 
@@ -64,12 +65,25 @@ const DEFAULT_USER: UserProfile = {
 
 function getInitialTheme(): 'light' | 'dark' {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const saved = localStorage.getItem('ff_theme');
+    const saved = localStorage.getItem('theme') || localStorage.getItem('ff_theme');
     if (saved === 'dark' || saved === 'light') {
       return saved;
     }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
   }
   return 'light';
+}
+
+function getInitialLocale(): SupportedLanguage {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const saved = localStorage.getItem('lang') || localStorage.getItem('ff_lang');
+    if (saved === 'en' || saved === 'it' || saved === 'de' || saved === 'fr') {
+      return saved;
+    }
+  }
+  return 'en';
 }
 
 const initialState: AuthState = {
@@ -79,14 +93,14 @@ const initialState: AuthState = {
   activeTenantId: 't-it-01',
   activeJurisdiction: 'IT',
   activeCurrency: 'EUR',
-  activeLocale: 'IT',
+  activeLocale: getInitialLocale(),
   theme: getInitialTheme(),
 };
 
 export const AuthStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ tenants, activeTenantId, activeJurisdiction, activeCurrency, theme }) => ({
+  withComputed(({ tenants, activeTenantId, activeJurisdiction, theme }) => ({
     activeTenant: computed(
       () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]
     ),
@@ -94,7 +108,7 @@ export const AuthStore = signalStore(
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
     isDarkMode: computed(() => theme() === 'dark'),
   })),
-  withMethods((store) => ({
+  withMethods((store, i18n = inject(I18nService)) => ({
     login(tenantId = 't-it-01'): void {
       const tenant = store.tenants().find((t) => t.id === tenantId) ?? store.tenants()[0];
       patchState(store, {
@@ -131,14 +145,23 @@ export const AuthStore = signalStore(
     setCurrency(activeCurrency: 'EUR' | 'CHF'): void {
       patchState(store, { activeCurrency });
     },
-    setLocale(activeLocale: 'IT' | 'DE' | 'FR' | 'EN'): void {
+    setLocale(activeLocale: SupportedLanguage): void {
       patchState(store, { activeLocale });
+      i18n.setLanguage(activeLocale);
     },
     toggleTheme(): void {
       const newTheme: 'light' | 'dark' = store.theme() === 'dark' ? 'light' : 'dark';
       if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('theme', newTheme);
         localStorage.setItem('ff_theme', newTheme);
+      }
+      if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', newTheme);
+        if (newTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
       patchState(store, { theme: newTheme });
     },
@@ -146,6 +169,11 @@ export const AuthStore = signalStore(
       const currentTheme = store.theme();
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     },
   }))

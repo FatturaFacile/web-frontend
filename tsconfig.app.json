@@ -3,7 +3,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": []
+    "types": [],
+    "plugins": [{ "name": "@angular/language-service" }]
   },
   "include": [
     "src/**/*.ts"

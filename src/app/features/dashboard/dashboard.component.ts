@@ -8,7 +8,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { AuthStore } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,11 +22,12 @@ import { PageHeaderComponent } from '@shared';
     NzButtonModule,
     NzAlertModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Dashboard Esecutiva ERP"
-      [subtitle]="'Panoramica finanziaria e operativa (' + authStore.activeTenant().name + ' - ' + authStore.activeJurisdiction() + ')'"
+      [title]="'DASHBOARD.TITLE' | translate"
+      [subtitle]="('DASHBOARD.SUBTITLE' | translate) + ' (' + authStore.activeTenant().name + ' - ' + authStore.activeJurisdiction() + ')'"
     />
 
     <nz-alert
@@ -37,10 +38,11 @@ import { PageHeaderComponent } from '@shared';
       class="jurisdiction-banner"
     >
       <ng-template #alertTitle>
-        Regime Attivo: <strong>{{ authStore.activeJurisdiction() === 'IT' ? 'Italia (SDI, F24, D.Lgs. 66/2003)' : 'Svizzera (QR-Bill, ArG OLL 1, KMU/PME)' }}</strong>
+        {{ 'DASHBOARD.ACTIVE_REGIME' | translate }}
+        <strong>{{ authStore.activeJurisdiction() === 'IT' ? ('DASHBOARD.REGIME_IT_LABEL' | translate) : ('DASHBOARD.REGIME_CH_LABEL' | translate) }}</strong>
       </ng-template>
       <ng-template #alertDesc>
-        Tutte le emissioni fiscali, calcoli IVA, e arrotondamenti seguono i requisiti di giurisdizione del tenant corrente.
+        {{ 'DASHBOARD.REGIME_DESC' | translate }}
       </ng-template>
     </nz-alert>
 
@@ -50,8 +52,8 @@ import { PageHeaderComponent } from '@shared';
         <nz-card>
           <nz-statistic
             [nzValue]="authStore.activeJurisdiction() === 'IT' ? '€ 142.850' : 'CHF 184.200'"
-            nzTitle="Fatturato Mese Corrente"
-            [nzValueStyle]="{ color: '#1677ff' }"
+            [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
+            [nzValueStyle]="{ color: 'var(--primary-color, #0d9488)' }"
           />
         </nz-card>
       </div>
@@ -59,8 +61,8 @@ import { PageHeaderComponent } from '@shared';
         <nz-card>
           <nz-statistic
             [nzValue]="authStore.activeJurisdiction() === 'IT' ? '€ 28.450' : 'CHF 32.100'"
-            nzTitle="Fatture da Incassare"
-            [nzValueStyle]="{ color: '#faad14' }"
+            [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
+            [nzValueStyle]="{ color: '#f59e0b' }"
           />
         </nz-card>
       </div>
@@ -68,8 +70,8 @@ import { PageHeaderComponent } from '@shared';
         <nz-card>
           <nz-statistic
             [nzValue]="48"
-            nzTitle="Ordini Attivi"
-            [nzValueStyle]="{ color: '#52c41a' }"
+            [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
+            [nzValueStyle]="{ color: '#10b981' }"
           />
         </nz-card>
       </div>
@@ -77,8 +79,8 @@ import { PageHeaderComponent } from '@shared';
         <nz-card>
           <nz-statistic
             [nzValue]="'99.8%'"
-            nzTitle="Indice di Conformità Legale"
-            [nzValueStyle]="{ color: '#722ed1' }"
+            [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
+            [nzValueStyle]="{ color: '#8b5cf6' }"
           />
         </nz-card>
       </div>
@@ -87,15 +89,15 @@ import { PageHeaderComponent } from '@shared';
     <!-- Quick Shortcuts & Recent Activity -->
     <div nz-row [nzGutter]="16">
       <div nz-col [nzXs]="24" [nzLg]="14">
-        <nz-card nzTitle="Attività e Documenti Recenti">
+        <nz-card [nzTitle]="'DASHBOARD.RECENT_DOCS' | translate">
           <nz-table #recentTable [nzData]="recentItems" [nzFrontPagination]="false" nzSize="small">
             <thead>
               <tr>
-                <th>Riferimento</th>
-                <th>Tipo</th>
-                <th>Cliente / Controparte</th>
-                <th>Importo</th>
-                <th>Stato</th>
+                <th>{{ 'DASHBOARD.COL_REF' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_TYPE' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_PARTY' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_AMOUNT' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -116,19 +118,19 @@ import { PageHeaderComponent } from '@shared';
       </div>
 
       <div nz-col [nzXs]="24" [nzLg]="10">
-        <nz-card nzTitle="Accesso Rapido Showcase">
+        <nz-card [nzTitle]="'DASHBOARD.SHOWCASE_TITLE' | translate">
           <div class="shortcut-list">
             <a nz-button nzType="primary" nzBlock routerLink="/sales/qr-bill" class="shortcut-btn">
-              <i class="fa-solid fa-qrcode fa-icon-spaced"></i> Swiss QR-Bill Generator (0.05 CHF & SCOR)
+              <i class="fa-solid fa-qrcode fa-icon-spaced"></i> {{ 'DASHBOARD.BTN_QR' | translate }}
             </a>
             <a nz-button nzType="default" nzBlock routerLink="/time-attendance" class="shortcut-btn">
-              <i class="fa-solid fa-clock fa-icon-spaced"></i> Presenze & Cartellino (ArG / D.Lgs. 66)
+              <i class="fa-solid fa-clock fa-icon-spaced"></i> {{ 'DASHBOARD.BTN_ATTENDANCE' | translate }}
             </a>
             <a nz-button nzType="default" nzBlock routerLink="/crm/clients" class="shortcut-btn">
-              <i class="fa-solid fa-address-book fa-icon-spaced"></i> Anagrafica Clienti Cross-Border IT-CH
+              <i class="fa-solid fa-address-book fa-icon-spaced"></i> {{ 'DASHBOARD.BTN_CLIENTS' | translate }}
             </a>
             <a nz-button nzType="default" nzBlock routerLink="/automotive/tire-hotel" class="shortcut-btn">
-              <i class="fa-solid fa-circle-dot fa-icon-spaced"></i> Hotel Pneumatici (Gommista)
+              <i class="fa-solid fa-circle-dot fa-icon-spaced"></i> {{ 'DASHBOARD.BTN_TIRES' | translate }}
             </a>
           </div>
         </nz-card>

@@ -4,7 +4,7 @@ import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { icons } from './icons-provider';
 import { AppComponent } from './app.component';
-import { AppStore, AuthStore } from '@core';
+import { AppStore, AuthStore, I18nService } from '@core';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -13,6 +13,7 @@ describe('AppComponent', () => {
       providers: [
         provideRouter([]),
         provideNzIcons(icons),
+        I18nService,
         AppStore,
         AuthStore,
       ],
@@ -32,13 +33,25 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('.brand-text')?.textContent).toContain('Fattura Facile');
   });
 
-  it('should toggle sidebar via store', () => {
+  it('should toggle sidebar via store and hide brand text when collapsed', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const app = fixture.componentInstance;
     expect(app.appStore.isCollapsed()).toBe(false);
 
     app.appStore.toggleSidebar();
+    fixture.detectChanges();
     expect(app.appStore.isCollapsed()).toBe(true);
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.brand-text')).toBeNull();
+  });
+
+  it('should bind translated title on sidebar menu items for hover tooltips', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstMenuItem = compiled.querySelector('li[nz-menu-item]');
+    expect(firstMenuItem?.getAttribute('title')).toBeTruthy();
   });
 });

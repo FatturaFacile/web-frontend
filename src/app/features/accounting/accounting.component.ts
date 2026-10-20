@@ -2,26 +2,26 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-accounting',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Contabilità Generale & Fiscale Dual-Ledger"
-      subtitle="Piano dei conti italiano CEE e svizzero KMU / PME, liquidazione IVA periodica, Esterometro e rendiconto AFC / ESTV"
+      [title]="'ACCOUNTING.TITLE' | translate"
+      [subtitle]="'ACCOUNTING.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Piano dei Conti & Raccordi Fisc">
+    <nz-card [nzTitle]="'ACCOUNTING.CARD_TITLE' | translate">
       <nz-table #accTable [nzData]="accounts" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Codice Conto</th>
-            <th>Descrizione Conto</th>
-            <th>Standard Contabile</th>
-            <th>Saldo Corrente</th>
-            <th>Mappatura IVA Fiscale</th>
+            <th>{{ 'ACCOUNTING.COL_CODE' | translate }}</th>
+            <th>{{ 'ACCOUNTING.COL_DESC' | translate }}</th>
+            <th>{{ 'ACCOUNTING.COL_STD' | translate }}</th>
+            <th>{{ 'ACCOUNTING.COL_BALANCE' | translate }}</th>
+            <th>{{ 'ACCOUNTING.COL_TAX' | translate }}</th>
           </tr>
         </thead>
         <tbody>

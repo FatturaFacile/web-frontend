@@ -9,7 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { TimeAttendanceStore } from '../state/time-attendance.store';
 
 @Component({
@@ -26,11 +26,12 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
     NzAlertModule,
     NzSpinModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Rilevazione Presenze & Compliance Oraria (IT / CH)"
-      subtitle="Cartellino orario, monitoraggio limiti settimanali ArG (45h/50h) e riposo giornaliero D.Lgs. 66/2003"
+      [title]="'ATTENDANCE.TITLE' | translate"
+      [subtitle]="'ATTENDANCE.SUBTITLE' | translate"
     />
 
     <nz-spin [nzSpinning]="store.isLoading()">
@@ -38,19 +39,19 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
       <div nz-row [nzGutter]="16" class="top-row">
         <!-- Interactive Clock-In Widget -->
         <div nz-col [nzXs]="24" [nzLg]="8">
-          <nz-card nzTitle="Terminale Timbratura Virtuale" class="terminal-card">
+          <nz-card [nzTitle]="'ATTENDANCE.TERMINAL_TITLE' | translate" class="terminal-card">
             <div class="terminal-content">
               <div class="status-indicator">
                 <span class="status-dot" [class.online]="store.isClockedIn()"></span>
                 <span class="status-text">
-                  {{ store.isClockedIn() ? 'In Servizio (Clocked-In)' : 'Non in Servizio' }}
+                  {{ store.isClockedIn() ? ('ATTENDANCE.CLOCKED_IN' | translate) : ('ATTENDANCE.CLOCKED_OUT' | translate) }}
                 </span>
               </div>
 
               <div class="today-details">
-                <p><strong>Inizio Turno Oggi:</strong> {{ store.data()?.todaySession?.clockInTime ?? '--:--' }}</p>
-                <p><strong>Pausa Registrata:</strong> {{ store.data()?.todaySession?.breakMinutes ?? 0 }} min</p>
-                <p><strong>Ore Lavorate Oggi:</strong> {{ store.data()?.todaySession?.totalTodayHours | number: '1.2-2' }} h</p>
+                <p><strong>{{ 'ATTENDANCE.SHIFT_START' | translate }}</strong> {{ store.data()?.todaySession?.clockInTime ?? '--:--' }}</p>
+                <p><strong>{{ 'ATTENDANCE.LOGGED_BREAK' | translate }}</strong> {{ store.data()?.todaySession?.breakMinutes ?? 0 }} min</p>
+                <p><strong>{{ 'ATTENDANCE.HOURS_TODAY' | translate }}</strong> {{ store.data()?.todaySession?.totalTodayHours | number: '1.2-2' }} h</p>
               </div>
 
               <button
@@ -63,9 +64,9 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
                 class="clock-toggle-btn"
               >
                 @if (store.isClockedIn()) {
-                  <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i> Registra Uscita (Clock-Out)
+                  <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i> {{ 'ATTENDANCE.BTN_CLOCK_OUT' | translate }}
                 } @else {
-                  <i class="fa-solid fa-right-to-bracket fa-icon-spaced"></i> Registra Ingresso (Clock-In)
+                  <i class="fa-solid fa-right-to-bracket fa-icon-spaced"></i> {{ 'ATTENDANCE.BTN_CLOCK_IN' | translate }}
                 }
               </button>
             </div>
@@ -74,12 +75,12 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
 
         <!-- Swiss ArG Limit Tracker -->
         <div nz-col [nzXs]="24" [nzLg]="8">
-          <nz-card nzTitle="Compliance Limiti Settimanali (ArG / D.Lgs. 66)" class="gauge-card">
+          <nz-card [nzTitle]="'ATTENDANCE.LIMITS_TITLE' | translate" class="gauge-card">
             <div class="gauge-content">
               <div class="progress-wrap">
                 <nz-progress
                   [nzPercent]="store.weeklyPercent()"
-                  [nzStrokeColor]="store.weeklyPercent() > 90 ? '#ff4d4f' : '#1677ff'"
+                  [nzStrokeColor]="store.weeklyPercent() > 90 ? '#ef4444' : 'var(--primary-color, #0d9488)'"
                   nzType="dashboard"
                   [nzWidth]="120"
                 />
@@ -88,10 +89,10 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
                 <p class="stat-highlight">
                   <strong>{{ store.weeklyWorked() }} h</strong> / {{ store.weeklyLimit() }} h
                 </p>
-                <p class="stat-sub">Regime: {{ store.summary()?.regime }}</p>
+                <p class="stat-sub">{{ 'ATTENDANCE.REGIME_LABEL' | translate }} {{ store.summary()?.regime }}</p>
                 <nz-tag nzColor="success">
                   <i class="fa-solid fa-shield-check fa-icon-spaced"></i>
-                  Riposo 11h Conforme
+                  {{ 'ATTENDANCE.REST_COMPLIANT' | translate }}
                 </nz-tag>
               </div>
             </div>
@@ -100,35 +101,35 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
 
         <!-- Vacation & ROL Accruals -->
         <div nz-col [nzXs]="24" [nzLg]="8">
-          <nz-card nzTitle="Saldo Ferie & Permessi (Accruals)" class="accrual-card">
+          <nz-card [nzTitle]="'ATTENDANCE.ACCRUALS_TITLE' | translate" class="accrual-card">
             <div nz-row [nzGutter]="16">
               <div nz-col [nzSpan]="12">
                 <nz-statistic
                   [nzValue]="store.vacations()?.remainingDays ?? 0"
-                  nzTitle="Ferie Residue"
-                  [nzSuffix]="'gg'"
-                  [nzValueStyle]="{ color: '#52c41a' }"
+                  [nzTitle]="'ATTENDANCE.VACATION_REMAINING' | translate"
+                  [nzSuffix]="'ATTENDANCE.DAYS_SUFFIX' | translate"
+                  [nzValueStyle]="{ color: '#10b981' }"
                 />
               </div>
               <div nz-col [nzSpan]="12">
                 <nz-statistic
                   [nzValue]="store.vacations()?.rolHoursAvailable ?? 0"
-                  nzTitle="ROL / Banca Ore"
-                  [nzSuffix]="'ore'"
-                  [nzValueStyle]="{ color: '#1677ff' }"
+                  [nzTitle]="'ATTENDANCE.TIME_BANK' | translate"
+                  [nzSuffix]="'ATTENDANCE.HOURS_SUFFIX' | translate"
+                  [nzValueStyle]="{ color: 'var(--primary-color, #0d9488)' }"
                 />
               </div>
             </div>
             <div class="accrual-info">
-              <span>Spettanza annuale: {{ store.vacations()?.annualEntitlementDays }} giorni</span>
-              <span>Goduti: {{ store.vacations()?.takenDays }} giorni</span>
+              <span>{{ 'ATTENDANCE.ANNUAL_ENTITLEMENT' | translate: { days: store.vacations()?.annualEntitlementDays ?? 0 } }}</span>
+              <span>{{ 'ATTENDANCE.DAYS_TAKEN' | translate: { days: store.vacations()?.takenDays ?? 0 } }}</span>
             </div>
           </nz-card>
         </div>
       </div>
 
       <!-- Bottom: Attendance Records Table -->
-      <nz-card nzTitle="Registro Timbrature e Dettaglio Settimanale" class="records-card">
+      <nz-card [nzTitle]="'ATTENDANCE.LOG_TITLE' | translate" class="records-card">
         <nz-table
           #attendanceTable
           [nzData]="store.records()"
@@ -138,13 +139,13 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
         >
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Entrata</th>
-              <th>Uscita</th>
-              <th>Pausa (min)</th>
-              <th>Ore Totali</th>
-              <th>Stato Turno</th>
-              <th>Note di Conformità Legale</th>
+              <th>{{ 'COMMON.DATE' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_IN' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_OUT' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_BREAK' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_TOTAL_HOURS' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_SHIFT_STATUS' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_COMPLIANCE_NOTES' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -152,19 +153,19 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
               <tr>
                 <td><strong>{{ rec.date }}</strong></td>
                 <td>{{ rec.clockIn }}</td>
-                <td>{{ rec.clockOut ?? 'In corso...' }}</td>
+                <td>{{ rec.clockOut ?? ('ATTENDANCE.SHIFT_IN_PROGRESS' | translate) }}</td>
                 <td>{{ rec.breakMinutes }} min</td>
                 <td><strong>{{ rec.hoursWorked | number: '1.2-2' }} h</strong></td>
                 <td>
                   @if (rec.status === 'COMPLETED') {
-                    <nz-tag nzColor="blue">Chiuso</nz-tag>
+                    <nz-tag nzColor="blue">{{ 'ATTENDANCE.SHIFT_CLOSED' | translate }}</nz-tag>
                   } @else {
-                    <nz-tag nzColor="processing">Attivo</nz-tag>
+                    <nz-tag nzColor="processing">{{ 'ATTENDANCE.SHIFT_ACTIVE' | translate }}</nz-tag>
                   }
                 </td>
                 <td>
                   <span class="compliance-text">
-                    <i class="fa-solid fa-circle-check" style="color: #52c41a;"></i> {{ rec.complianceNotice }}
+                    <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ rec.complianceNotice }}
                   </span>
                 </td>
               </tr>
@@ -200,60 +201,80 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
     }
 
     .status-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background-color: #d9d9d9;
+      background: #94a3b8;
     }
 
     .status-dot.online {
-      background-color: #52c41a;
-      box-shadow: 0 0 8px rgba(82, 196, 26, 0.6);
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
 
     .status-text {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .today-details {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
     }
 
     .today-details p {
-      margin: 4px 0;
-      font-size: 13px;
-      color: #595959;
+      margin-bottom: 4px;
     }
 
     .clock-toggle-btn {
-      margin-top: 8px;
+      height: 42px;
       font-weight: 600;
+      border-radius: 6px;
+      margin-top: 4px;
     }
 
     .gauge-content {
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 10px 0;
+      padding-top: 8px;
     }
 
-    .gauge-meta .stat-highlight {
-      font-size: 18px;
+    .gauge-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-highlight {
+      font-size: 16px;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
       margin: 0;
     }
 
-    .gauge-meta .stat-sub {
-      font-size: 12px;
-      color: #8c8c8c;
-      margin: 4px 0 10px 0;
+    .accrual-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .accrual-info {
-      margin-top: 20px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      margin-top: 16px;
       font-size: 12px;
-      color: #8c8c8c;
-      border-top: 1px solid #f0f0f0;
-      padding-top: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
     }
 
     .records-card {
@@ -262,7 +283,7 @@ import { TimeAttendanceStore } from '../state/time-attendance.store';
 
     .compliance-text {
       font-size: 12px;
-      color: #262626;
+      color: var(--text-secondary);
     }
   `,
 })

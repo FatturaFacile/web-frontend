@@ -2,27 +2,27 @@ import { Component } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-hr',
-  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent],
+  imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
-      title="Risorse Umane & Payroll Cross-Border (IT / CH)"
-      subtitle="Gestione frontalieri IT-CH, trattenute AVS/LPP, imposta alla fonte cantonale e flussi LUL / Swissdec ELM"
+      [title]="'HR.TITLE' | translate"
+      [subtitle]="'HR.SUBTITLE' | translate"
     />
 
-    <nz-card nzTitle="Personale & Regime Fiscale / Previdenziale">
+    <nz-card [nzTitle]="'HR.CARD_TITLE' | translate">
       <nz-table #hTable [nzData]="employees" [nzFrontPagination]="false" nzSize="middle">
         <thead>
           <tr>
-            <th>Dipendente</th>
-            <th>Qualifica</th>
-            <th>Tipologia Contratto</th>
-            <th>Regime Fiscale</th>
-            <th>Previdenza Obbligatoria</th>
-            <th>Stato Trasmissione</th>
+            <th>{{ 'HR.COL_EMPLOYEE' | translate }}</th>
+            <th>{{ 'HR.COL_ROLE' | translate }}</th>
+            <th>{{ 'HR.COL_CONTRACT' | translate }}</th>
+            <th>{{ 'HR.COL_REGIME' | translate }}</th>
+            <th>{{ 'HR.COL_PENSION' | translate }}</th>
+            <th>{{ 'HR.COL_TRANSMISSION' | translate }}</th>
           </tr>
         </thead>
         <tbody>
