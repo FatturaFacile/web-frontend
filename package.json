@@ -9,7 +9,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
