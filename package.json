@@ -9,8 +9,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "pnpm test --watch=false --coverage",
-    "test:ci": "ng test --watch=false --coverage",
+    "test": "vitest run --coverage",
+    "test:ci": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
