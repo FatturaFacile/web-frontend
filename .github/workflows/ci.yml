@@ -13,9 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,12 +34,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Linter
+      - name: Run linter
         run: pnpm run lint
 
-  test:
-    runs-on: ubuntu-latest
+      - name: Run unit tests with coverage
+        run: pnpm test --watch=false --coverage
 
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,34 +62,49 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Unit Tests
-        run: pnpm test --watch=false
-
-  build-check:
-    needs:
-      - lint
-      - test
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
-        with:
-          version: 12.15.0
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Angular app
+      - name: Build Angular application
         run: pnpm run build --configuration production
+
+  qodana:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@v2026.2.2
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+
+  notify:
+    needs:
+      - validate
+      - build
+      - qodana
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@v1.1.1
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Pipeline Status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'FAILED ❌' || 'SUCCESS ✅' }}
+
+            🚀 Repository: ${{ github.repository }}
+            🌿 Branch / Ref: ${{ github.ref }}
+            👤 Author: ${{ github.actor }}
+            📌 Event: ${{ github.event_name }}
+            🔗 Commit: ${{ github.sha }}
+            📊 Jobs Overview:
+            • Validate: ${{ needs.validate.result }}
+            • Build: ${{ needs.build.result }}
+            • Qodana: ${{ needs.qodana.result }}
