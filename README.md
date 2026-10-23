@@ -102,7 +102,7 @@ Starts the local dev server at `http://localhost:4200/` with demo mode enabled.
 
 ### Run Unit Tests (Vitest)
 ```bash
-npm test -- --watch=false
+npm test --watch=false
 ```
 Executes all 24 unit tests across mappers, repositories, SignalStores, and components.
 
