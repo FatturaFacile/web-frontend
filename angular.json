@@ -94,7 +94,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "runnerConfig": "vitest.config.ts",
-            "codeCoverage": true
+            "coverage": true
           }
         }
       }
