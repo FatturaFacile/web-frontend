@@ -38,18 +38,19 @@ interface ClientItem {
     TranslatePipe,
   ],
   template: `
-    <app-page-header
-      [title]="'CRM.TITLE' | translate"
-      [subtitle]="'CRM.SUBTITLE' | translate"
-    />
+    <app-page-header [title]="'CRM.TITLE' | translate" [subtitle]="'CRM.SUBTITLE' | translate" />
 
     <nz-card>
       <div class="table-toolbar">
+        <!-- eslint-disable @angular-eslint/template/label-has-associated-control -->
         <nz-radio-group [(ngModel)]="jurisdictionFilter" (ngModelChange)="filterClients()">
-          <label nz-radio-button nzValue="ALL">{{ 'COMMON.ALL' | translate }} ({{ clients().length }})</label>
+          <label nz-radio-button nzValue="ALL"
+            >{{ 'COMMON.ALL' | translate }} ({{ clients().length }})</label
+          >
           <label nz-radio-button nzValue="IT">🇮🇹 {{ 'COMMON.ITALY' | translate }}</label>
           <label nz-radio-button nzValue="CH">🇨🇭 {{ 'COMMON.SWITZERLAND' | translate }}</label>
         </nz-radio-group>
+        <!-- eslint-enable @angular-eslint/template/label-has-associated-control -->
       </div>
 
       <nz-table
@@ -95,7 +96,9 @@ interface ClientItem {
               </td>
               <td>
                 @if (client.jurisdiction === 'IT') {
-                  <div>SDI: <strong>{{ client.sdiCode }}</strong></div>
+                  <div>
+                    SDI: <strong>{{ client.sdiCode }}</strong>
+                  </div>
                   <small>PEC: {{ client.pec }}</small>
                 } @else {
                   <div>QR-IBAN:</div>
@@ -169,7 +172,7 @@ export class ClientsComponent implements OnInit {
       this.filteredClients.set(this.clients());
     } else {
       this.filteredClients.set(
-        this.clients().filter((c) => c.jurisdiction === this.jurisdictionFilter)
+        this.clients().filter((c) => c.jurisdiction === this.jurisdictionFilter),
       );
     }
   }
