@@ -27,10 +27,20 @@ import { TranslatePipe } from '@shared';
           type="button"
           class="sidebar-toggle"
           (click)="appStore.toggleSidebar()"
-          [title]="appStore.isCollapsed() ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate) : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)"
-          [attr.aria-label]="appStore.isCollapsed() ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate) : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)"
+          [title]="
+            appStore.isCollapsed()
+              ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate)
+              : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)
+          "
+          [attr.aria-label]="
+            appStore.isCollapsed()
+              ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate)
+              : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)
+          "
         >
-          <i [class]="appStore.isCollapsed() ? 'fa-solid fa-bars-staggered' : 'fa-solid fa-bars'"></i>
+          <i
+            [class]="appStore.isCollapsed() ? 'fa-solid fa-bars-staggered' : 'fa-solid fa-bars'"
+          ></i>
         </button>
 
         <!-- Multi-tenant selector -->
@@ -108,8 +118,16 @@ import { TranslatePipe } from '@shared';
           type="button"
           class="action-btn theme-toggle"
           (click)="authStore.toggleTheme()"
-          [title]="authStore.isDarkMode() ? ('HEADER.THEME_LIGHT' | translate) : ('HEADER.THEME_DARK' | translate)"
-          [attr.aria-label]="authStore.isDarkMode() ? ('HEADER.THEME_LIGHT' | translate) : ('HEADER.THEME_DARK' | translate)"
+          [title]="
+            authStore.isDarkMode()
+              ? ('HEADER.THEME_LIGHT' | translate)
+              : ('HEADER.THEME_DARK' | translate)
+          "
+          [attr.aria-label]="
+            authStore.isDarkMode()
+              ? ('HEADER.THEME_LIGHT' | translate)
+              : ('HEADER.THEME_DARK' | translate)
+          "
         >
           @if (authStore.isDarkMode()) {
             <i class="fa-solid fa-sun" style="color: #fadb14;"></i>
@@ -140,13 +158,17 @@ import { TranslatePipe } from '@shared';
                 </div>
               </li>
               <li nz-menu-divider></li>
+              <!-- eslint-disable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
               <li nz-menu-item (click)="router.navigate(['/settings'])">
-                <i class="fa-solid fa-sliders fa-icon-spaced"></i> {{ 'HEADER.PREFERENCES' | translate }}
+                <i class="fa-solid fa-sliders fa-icon-spaced"></i>
+                {{ 'HEADER.PREFERENCES' | translate }}
               </li>
               <li nz-menu-divider></li>
               <li nz-menu-item (click)="logout()" class="logout-item">
-                <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i> {{ 'HEADER.LOGOUT' | translate }}
+                <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
+                {{ 'HEADER.LOGOUT' | translate }}
               </li>
+              <!-- eslint-enable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
             </ul>
           </nz-dropdown-menu>
         </div>
@@ -181,7 +203,9 @@ import { TranslatePipe } from '@shared';
       color: var(--text-primary, #0f172a);
       padding: 8px 10px;
       border-radius: 6px;
-      transition: background 0.2s, color 0.2s;
+      transition:
+        background 0.2s,
+        color 0.2s;
     }
 
     .sidebar-toggle:hover {
