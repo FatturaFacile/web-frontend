@@ -57,30 +57,29 @@ jobs:
       - name: Create release archives and generate checksums
         if: github.event_name == 'release'
         run: |
-                # Installa zip se non presente sul runner
-                sudo apt-get update && sudo apt-get install -y zip
+            TAG="${{ github.event.release.tag_name }}"
+            ARCHIVE_NAME="angular-build-$TAG"
 
-                TAG="${{ github.event.release.tag_name }}"
-                ARCHIVE_NAME="angular-build-$TAG"
+            # Crea il tar.gz
+            tar -czf "${ARCHIVE_NAME}.tar.gz" -C "$DIST_DIR" .
 
-                tar -czf "${ARCHIVE_NAME}.tar.gz" -C "$DIST_DIR" .
+            # Usa Python per creare lo zip in modo sicuro e multipiattaforma senza dipendenze esterne
+            python3 -c "
+            import shutil
+            shutil.make_archive('${ARCHIVE_NAME}', 'zip', '${DIST_DIR}')
+            "
 
-                (
-                  cd "$DIST_DIR"
-                  zip -r "../../${ARCHIVE_NAME}.zip" .
-                )
+                    SHA_TAR=$(sha256sum "${ARCHIVE_NAME}.tar.gz" | awk '{print $1}')
+            SHA_ZIP=$(sha256sum "${ARCHIVE_NAME}.zip" | awk '{print $1}')
 
-                SHA_TAR=$(sha256sum "${ARCHIVE_NAME}.tar.gz" | awk '{print $1}')
-                SHA_ZIP=$(sha256sum "${ARCHIVE_NAME}.zip" | awk '{print $1}')
+            echo "$SHA_TAR  ${ARCHIVE_NAME}.tar.gz" > SHA256SUMS
+            echo "$SHA_ZIP  ${ARCHIVE_NAME}.zip" >> SHA256SUMS
 
-                echo "$SHA_TAR  ${ARCHIVE_NAME}.tar.gz" > SHA256SUMS
-                echo "$SHA_ZIP  ${ARCHIVE_NAME}.zip" >> SHA256SUMS
-
-                echo "ARCHIVE_TAR=${ARCHIVE_NAME}.tar.gz" >> "$GITHUB_ENV"
-                echo "ARCHIVE_ZIP=${ARCHIVE_NAME}.zip" >> "$GITHUB_ENV"
-                echo "CHECKSUM_FILE=SHA256SUMS" >> "$GITHUB_ENV"
-                echo "SHA_TAR=${SHA_TAR}" >> "$GITHUB_ENV"
-                echo "SHA_ZIP=${SHA_ZIP}" >> "$GITHUB_ENV"
+            echo "ARCHIVE_TAR=${ARCHIVE_NAME}.tar.gz" >> "$GITHUB_ENV"
+            echo "ARCHIVE_ZIP=${ARCHIVE_NAME}.zip" >> "$GITHUB_ENV"
+            echo "CHECKSUM_FILE=SHA256SUMS" >> "$GITHUB_ENV"
+            echo "SHA_TAR=${SHA_TAR}" >> "$GITHUB_ENV"
+            echo "SHA_ZIP=${SHA_ZIP}" >> "$GITHUB_ENV"
 
       - name: Upload release assets
         if: github.event_name == 'release'
