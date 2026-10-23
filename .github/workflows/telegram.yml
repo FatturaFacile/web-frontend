@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Send Telegram Message
-        uses: appleboy/telegram-action@399be4497e651e70d740eb61e9447de8b71d2b8b
+        uses: appleboy/telegram-action@v1.1.1
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
