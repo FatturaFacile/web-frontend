@@ -88,7 +88,7 @@
   "AUTH.TITLE": "Fattura Facile ERP",
   "AUTH.SUBTITLE": "Enterprise Cross-Border Platform Italy / Switzerland",
   "AUTH.TENANT_PRESET": "Company / Tenant Preset",
-  "AUTH.EMAIL": "Business Email",
+  "AUTH.EMAIL": "Email",
   "AUTH.EMAIL_ERROR": "Please enter a valid email address",
   "AUTH.PASSWORD": "Password",
   "AUTH.PASSWORD_ERROR": "Password is required",
