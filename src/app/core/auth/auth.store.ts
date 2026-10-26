@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { I18nService, SupportedLanguage } from '../i18n';
+import { clearAuthToken, readValidAuthToken, writeAuthToken } from './token-storage';
 
 export interface Tenant {
   readonly id: string;
@@ -87,8 +88,8 @@ function getInitialLocale(): SupportedLanguage {
 }
 
 const initialState: AuthState = {
-  isAuthenticated: true, // Default authenticated in demo mode
-  user: DEFAULT_USER,
+  isAuthenticated: !!readValidAuthToken(),
+  user: readValidAuthToken() ? DEFAULT_USER : null,
   tenants: DEFAULT_TENANTS,
   activeTenantId: 't-it-01',
   activeJurisdiction: 'IT',
@@ -109,7 +110,10 @@ export const AuthStore = signalStore(
     isDarkMode: computed(() => theme() === 'dark'),
   })),
   withMethods((store, i18n = inject(I18nService)) => ({
-    login(tenantId = 't-it-01'): void {
+    login(tenantId = 't-it-01', token?: string, remember = true): void {
+      if (token) {
+        writeAuthToken(token, remember);
+      }
       const tenant = store.tenants().find((t) => t.id === tenantId) ?? store.tenants()[0];
       patchState(store, {
         isAuthenticated: true,
@@ -120,6 +124,7 @@ export const AuthStore = signalStore(
       });
     },
     logout(): void {
+      clearAuthToken();
       patchState(store, {
         isAuthenticated: false,
         user: null,
@@ -178,3 +183,4 @@ export const AuthStore = signalStore(
     },
   }))
 );
+

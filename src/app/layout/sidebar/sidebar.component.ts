@@ -278,6 +278,7 @@ export class SidebarComponent {
       key: 'NAV.SALES',
       icon: 'fa-solid fa-file-invoice-dollar',
       children: [
+        { key: 'NAV.INVOICES', route: '/sales/invoices', icon: 'fa-solid fa-file-invoice' },
         { key: 'NAV.ORDERS', route: '/sales/orders', icon: 'fa-solid fa-cart-shopping' },
         { key: 'NAV.SDI', route: '/sales/sdi', icon: 'fa-solid fa-receipt' },
         { key: 'NAV.QR_BILL', route: '/sales/qr-bill', icon: 'fa-solid fa-qrcode' },
@@ -388,3 +389,4 @@ export class SidebarComponent {
     },
   ];
 }
+
