@@ -88,7 +88,7 @@
   "AUTH.TITLE": "Fattura Facile ERP",
   "AUTH.SUBTITLE": "Plateforme Enterprise Transfrontalière Italie / Suisse",
   "AUTH.TENANT_PRESET": "Entreprise / Préréglage Mandant",
-  "AUTH.EMAIL": "E-mail professionnel",
+  "AUTH.EMAIL": "E-mail",
   "AUTH.EMAIL_ERROR": "Veuillez saisir une adresse e-mail valide",
   "AUTH.PASSWORD": "Mot de passe",
   "AUTH.PASSWORD_ERROR": "Mot de passe requis",

@@ -31,9 +31,12 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
   template: `
     <main class="login-wrapper">
       <div class="login-box">
-        <header class="login-header">
-          <h1>FatturaFacile</h1>
-          <p class="subtitle">{{ 'AUTH.SUBTITLE' | translate }}</p>
+        <header class="login-header text-center">
+            <img
+        src="/images/fattura_facile.svg"
+        alt="Fattura Facile Logo"
+        class="brand-logo"
+      />
         </header>
 
         <nz-card [nzBordered]="false" class="login-card">
@@ -109,7 +112,7 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
               <!-- nz-checkbox renders its own input inside the label -->
               <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label nz-checkbox formControlName="remember">{{ 'AUTH.REMEMBER' | translate }}</label>
-              <a href="mailto:support@fatturafacile.eu">{{ 'AUTH.FORGOT' | translate }}</a>
+              <a href="mailto:info@fatturafacile.eu">{{ 'AUTH.FORGOT' | translate }}</a>
             </div>
 
             <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">

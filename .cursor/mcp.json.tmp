@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "angular-cli": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@angular/cli",
+        "mcp"
+      ]
+    },
+    "webstorm": {
+      "url": "http://127.0.0.1:64619/stream",
+      "type": "http"
+    }
+  }
+}
