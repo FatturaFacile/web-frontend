@@ -123,7 +123,7 @@ jobs:
           gh release edit "$TAG" --notes-file release_notes.md
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
