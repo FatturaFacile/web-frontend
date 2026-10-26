@@ -5,6 +5,12 @@ import { QrBillStore } from './state/qr-bill.store';
 
 export const SALES_ROUTES: Routes = [
   {
+    path: 'invoices',
+    data: { breadcrumb: 'Fatture', title: 'Fatture' },
+    loadComponent: () =>
+      import('./components/invoices/invoices.component').then((m) => m.InvoicesComponent),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'qr-bill',
@@ -46,3 +52,4 @@ export const SALES_ROUTES: Routes = [
       ),
   },
 ];
+

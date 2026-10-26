@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from '@core';
+import { authGuard, guestGuard } from '@core';
 
 export const routes: Routes = [
   {
@@ -9,9 +9,15 @@ export const routes: Routes = [
   },
   {
     path: 'auth/login',
+    pathMatch: 'full',
+    redirectTo: 'login',
+  },
+  {
+    path: 'login',
+    canActivate: [guestGuard],
     data: { title: 'Accedi a Fattura Facile' },
     loadComponent: () =>
-      import('./features/auth/login.component').then((m) => m.LoginComponent),
+      import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'dashboard',

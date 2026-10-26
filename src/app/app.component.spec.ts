@@ -6,6 +6,12 @@ import { icons } from './icons-provider';
 import { AppComponent } from './app.component';
 import { AppStore, AuthStore, I18nService } from '@core';
 
+/** Sessions start unauthenticated unless a valid `ff_token` exists, so sign in first. */
+function createApp() {
+  TestBed.inject(AuthStore).login();
+  return TestBed.createComponent(AppComponent);
+}
+
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -21,20 +27,20 @@ describe('AppComponent', () => {
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = createApp();
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
   it('should render brand title in sidebar', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = createApp();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand-text')?.textContent).toContain('Fattura Facile');
   });
 
   it('should toggle sidebar via store and hide brand text when collapsed', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = createApp();
     fixture.detectChanges();
     const app = fixture.componentInstance;
     expect(app.appStore.isCollapsed()).toBe(false);
@@ -48,7 +54,7 @@ describe('AppComponent', () => {
   });
 
   it('should bind translated title on sidebar menu items for hover tooltips', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+    const fixture = createApp();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const firstMenuItem = compiled.querySelector('li[nz-menu-item]');

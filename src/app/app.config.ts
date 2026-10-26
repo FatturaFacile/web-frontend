@@ -9,7 +9,7 @@ import fr from '@angular/common/locales/fr';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
-import { authInterceptor, mockDataInterceptor } from '@core';
+import { authInterceptor, errorInterceptor, mockDataInterceptor } from '@core';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -23,7 +23,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([mockDataInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([mockDataInterceptor, authInterceptor, errorInterceptor])),
     provideNzIcons(icons),
     provideNzI18n(en_US),
     provideNzDateFnsAdapter(),
@@ -33,3 +33,4 @@ export const appConfig: ApplicationConfig = {
     }),
   ],
 };
+
