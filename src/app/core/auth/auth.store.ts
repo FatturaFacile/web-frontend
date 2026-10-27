@@ -1,7 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { I18nService, SupportedLanguage } from '../i18n';
-import { clearAuthToken, readValidAuthToken, writeAuthToken } from './token-storage';
 
 export interface Tenant {
   readonly id: string;
@@ -34,7 +33,7 @@ export interface AuthState {
   readonly theme: 'light' | 'dark';
 }
 
-const DEFAULT_TENANTS: Tenant[] = [
+export const DEFAULT_TENANTS: Tenant[] = [
   {
     id: 't-it-01',
     name: 'Rossi Impianti S.r.l.',
@@ -55,7 +54,7 @@ const DEFAULT_TENANTS: Tenant[] = [
   },
 ];
 
-const DEFAULT_USER: UserProfile = {
+export const DEFAULT_USER: UserProfile = {
   id: 'usr-001',
   name: 'Marco Rossi',
   email: 'm.rossi@rossiimpianti.it',
@@ -88,8 +87,8 @@ function getInitialLocale(): SupportedLanguage {
 }
 
 const initialState: AuthState = {
-  isAuthenticated: !!readValidAuthToken(),
-  user: readValidAuthToken() ? DEFAULT_USER : null,
+  isAuthenticated: false,
+  user: null,
   tenants: DEFAULT_TENANTS,
   activeTenantId: 't-it-01',
   activeJurisdiction: 'IT',
@@ -110,24 +109,26 @@ export const AuthStore = signalStore(
     isDarkMode: computed(() => theme() === 'dark'),
   })),
   withMethods((store, i18n = inject(I18nService)) => ({
-    login(tenantId = 't-it-01', token?: string, remember = true): void {
-      if (token) {
-        writeAuthToken(token, remember);
-      }
+    login(tenantId = 't-it-01', user?: UserProfile | null): void {
       const tenant = store.tenants().find((t) => t.id === tenantId) ?? store.tenants()[0];
       patchState(store, {
         isAuthenticated: true,
-        user: DEFAULT_USER,
+        user: user ?? DEFAULT_USER,
         activeTenantId: tenant.id,
         activeJurisdiction: tenant.jurisdiction,
         activeCurrency: tenant.currency,
       });
     },
     logout(): void {
-      clearAuthToken();
       patchState(store, {
         isAuthenticated: false,
         user: null,
+      });
+    },
+    setUser(user: UserProfile | null): void {
+      patchState(store, {
+        user,
+        isAuthenticated: !!user,
       });
     },
     switchTenant(tenantId: string): void {
@@ -183,4 +184,3 @@ export const AuthStore = signalStore(
     },
   }))
 );
-
