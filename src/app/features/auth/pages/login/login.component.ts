@@ -10,7 +10,13 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { applyServerErrors, AuthApiService, AuthStore, I18nService, isValidationError } from '@core';
+import {
+  applyServerErrors,
+  AuthApiService,
+  AuthStore,
+  I18nService,
+  isValidationError,
+} from '@core';
 import { TranslatePipe } from '@shared';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
@@ -32,11 +38,8 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
     <main class="login-wrapper">
       <div class="login-box">
         <header class="login-header text-center">
-            <img
-        src="/images/fattura_facile.svg"
-        alt="Fattura Facile Logo"
-        class="brand-logo"
-      />
+          <h1>Fattura <span class="facile-color">Facile</span></h1>
+          <p class="subtitle">{{ 'AUTH.SUBTITLE' | translate }}</p>
         </header>
 
         <nz-card [nzBordered]="false" class="login-card">
@@ -44,10 +47,20 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
             <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" />
           }
 
-          <form nz-form nzLayout="vertical" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+          <form
+            nz-form
+            nzLayout="vertical"
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()"
+            novalidate
+          >
             <nz-form-item>
               <nz-form-label nzRequired nzFor="email">{{ 'AUTH.EMAIL' | translate }}</nz-form-label>
-              <nz-form-control nzHasFeedback [nzValidateStatus]="loginForm.controls.email" [nzErrorTip]="emailError">
+              <nz-form-control
+                nzHasFeedback
+                [nzValidateStatus]="loginForm.controls.email"
+                [nzErrorTip]="emailError"
+              >
                 <nz-input-wrapper>
                   <nz-icon nzInputPrefix nzType="mail" />
                   <input
@@ -73,8 +86,14 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
             </nz-form-item>
 
             <nz-form-item>
-              <nz-form-label nzRequired nzFor="password">{{ 'AUTH.PASSWORD' | translate }}</nz-form-label>
-              <nz-form-control nzHasFeedback [nzValidateStatus]="loginForm.controls.password" [nzErrorTip]="passwordError">
+              <nz-form-label nzRequired nzFor="password">{{
+                'AUTH.PASSWORD' | translate
+              }}</nz-form-label>
+              <nz-form-control
+                nzHasFeedback
+                [nzValidateStatus]="loginForm.controls.password"
+                [nzErrorTip]="passwordError"
+              >
                 <nz-input-wrapper>
                   <nz-icon nzInputPrefix nzType="lock" />
                   <input
@@ -89,7 +108,9 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
                     nzInputSuffix
                     type="button"
                     class="toggle"
-                    [attr.aria-label]="(passwordVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate"
+                    [attr.aria-label]="
+                      (passwordVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                    "
                     [attr.aria-pressed]="passwordVisible()"
                     (click)="passwordVisible.set(!passwordVisible())"
                   >
@@ -111,11 +132,20 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
             <div class="options">
               <!-- nz-checkbox renders its own input inside the label -->
               <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-              <label nz-checkbox formControlName="remember">{{ 'AUTH.REMEMBER' | translate }}</label>
+              <label nz-checkbox formControlName="remember">{{
+                'AUTH.REMEMBER' | translate
+              }}</label>
               <a href="mailto:info@fatturafacile.eu">{{ 'AUTH.FORGOT' | translate }}</a>
             </div>
 
-            <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+            <button
+              nz-button
+              nzType="primary"
+              nzSize="large"
+              nzBlock
+              type="submit"
+              [nzLoading]="isSubmitting()"
+            >
               {{ 'AUTH.SUBMIT_BTN' | translate }}
             </button>
           </form>
@@ -231,7 +261,11 @@ export class LoginComponent {
       return;
     }
     // Other failures (network, 5xx) are already toasted by the error interceptor.
-    this.message.error(this.i18n.translate('ERRORS.GENERIC', { status: err instanceof HttpErrorResponse ? err.status : 0 }));
+    this.message.error(
+      this.i18n.translate('ERRORS.GENERIC', {
+        status: err instanceof HttpErrorResponse ? err.status : 0,
+      }),
+    );
   }
 
   /** `returnUrl` is honoured only for same-app relative paths (open-redirect guard). */
