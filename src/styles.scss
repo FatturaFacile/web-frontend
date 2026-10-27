@@ -21,21 +21,21 @@
   --primary-shadow: 0 4px 14px 0 rgba(13, 148, 136, 0.35);
 
   /* Light Theme Surfaces & Backgrounds */
-  --bg-primary: #f8fafc;        /* slate-50 */
+  --bg-primary: #f8fafc; /* slate-50 */
   --bg-card: #ffffff;
-  --bg-card-secondary: #f1f5f9;  /* slate-100 */
+  --bg-card-secondary: #f1f5f9; /* slate-100 */
   --bg-elevated: #ffffff;
   --header-bg: #ffffff;
-  --sidebar-bg: #0f172a;        /* brand-dark slate-900 */
+  --sidebar-bg: #0f172a; /* brand-dark slate-900 */
   --sidebar-border: #1e293b;
 
   /* Typography */
-  --text-primary: #0f172a;      /* slate-900 */
-  --text-secondary: #64748b;    /* slate-500 */
-  --text-muted: #94a3b8;        /* slate-400 */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #64748b; /* slate-500 */
+  --text-muted: #94a3b8; /* slate-400 */
 
   /* Borders & Shadows */
-  --border-color: #e2e8f0;      /* slate-200 */
+  --border-color: #e2e8f0; /* slate-200 */
   --border-light: #f1f5f9;
   --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 
@@ -48,22 +48,22 @@
 html.dark,
 .dark {
   /* Dark Theme Surfaces & Backgrounds */
-  --bg-primary: #020617;        /* slate-950 */
-  --bg-card: #0f172a;           /* slate-900 */
+  --bg-primary: #020617; /* slate-950 */
+  --bg-card: #0f172a; /* slate-900 */
   --bg-card-secondary: #1e293b; /* slate-800 */
   --bg-elevated: #1e293b;
   --header-bg: #0f172a;
-  --sidebar-bg: #090d16;        /* darker slate */
+  --sidebar-bg: #090d16; /* darker slate */
   --sidebar-border: #1e293b;
 
   /* Typography */
-  --text-primary: #f8fafc;      /* slate-50 */
-  --text-secondary: #94a3b8;    /* slate-400 */
-  --text-muted: #64748b;        /* slate-500 */
+  --text-primary: #f8fafc; /* slate-50 */
+  --text-secondary: #94a3b8; /* slate-400 */
+  --text-muted: #64748b; /* slate-500 */
 
   /* Borders & Shadows */
-  --border-color: #1e293b;      /* slate-800 */
-  --border-light: #334155;      /* slate-700 */
+  --border-color: #1e293b; /* slate-800 */
+  --border-light: #334155; /* slate-700 */
   --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
 
   /* Scrollbars */
@@ -272,4 +272,8 @@ html.dark,
   margin-right: 8px;
   width: 16px;
   text-align: center;
+}
+
+.facile-color {
+  color: #0D9488 !important;
 }

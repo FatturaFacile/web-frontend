@@ -1,6 +1,6 @@
 {
-  "name": "fatturafacile",
-  "short_name": "fatturafacile",
+  "name": "Fattura Facile",
+  "short_name": "Fattura Facile",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
