@@ -6,7 +6,7 @@ import { icons } from './icons-provider';
 import { AppComponent } from './app.component';
 import { AppStore, AuthStore, I18nService } from '@core';
 
-/** Sessions start unauthenticated unless a valid `ff_token` exists, so sign in first. */
+/** Sessions start unauthenticated, so sign in first for shell testing. */
 function createApp() {
   TestBed.inject(AuthStore).login();
   return TestBed.createComponent(AppComponent);

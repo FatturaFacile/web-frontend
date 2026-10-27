@@ -231,10 +231,10 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
 
-    this.authApi.login({ email, password }).subscribe({
+    this.authApi.login({ email, password, remember: remember ?? false }).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
-        this.authStore.login(undefined, res.data.token, remember);
+        this.authStore.login(undefined, res?.data?.user ?? null);
         void this.router.navigateByUrl(this.resolveReturnUrl());
       },
       error: (err: unknown) => {

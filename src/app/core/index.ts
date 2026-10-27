@@ -1,6 +1,6 @@
 export * from './auth/auth.guard';
 export * from './auth/auth.interceptor';
-export * from './auth/token-storage';
+export * from './auth/csrf.utils';
 export * from './api/auth-api.service';
 export * from './auth/auth.store';
 export * from './config/app-config.token';

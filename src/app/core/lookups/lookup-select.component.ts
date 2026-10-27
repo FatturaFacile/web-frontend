@@ -73,8 +73,8 @@ export class LookupSelectComponent implements ControlValueAccessor, OnChanges {
   selectedValue: string | null = null;
   disabled = false;
 
-  private onChange: (value: string | null) => void = () => {};
-  private onTouched: () => void = () => {};
+  private onChange: (value: string | null) => void = () => undefined;
+  private onTouched: () => void = () => undefined;
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes['category'] && this.category) {

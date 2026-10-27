@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: number | string;
   name: string;
   email: string;
   [key: string]: unknown;
@@ -12,7 +12,7 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
   user: User;
+  token?: string;
   expires_in?: number;
 }
