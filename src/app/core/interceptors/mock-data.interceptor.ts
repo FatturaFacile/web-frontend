@@ -3,7 +3,7 @@ import { delay, of } from 'rxjs';
 import { environment } from '@env';
 
 const MOCK_ROUTES: Record<string, string> = {
-  '/api/auth/me': '/assets/mock-data/auth-user.json',
+  '/api/auth/profile': '/assets/mock-data/auth-user.json',
   '/api/auth/login': '/assets/mock-data/auth-user.json',
   '/api/crm/clients': '/assets/mock-data/crm-clients.json',
   '/api/sales/qr-bills': '/assets/mock-data/sales-qr-bills.json',

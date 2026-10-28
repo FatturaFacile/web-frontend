@@ -67,7 +67,7 @@ export class AuthApiService {
    */
   me(): Observable<ApiResponse<UserProfile>> {
     return this.http.get<ApiResponse<UserProfile>>(
-      `${environment.apiBaseUrl}/auth/me`,
+      `${environment.apiBaseUrl}/auth/profile`,
       { withCredentials: true }
     );
   }

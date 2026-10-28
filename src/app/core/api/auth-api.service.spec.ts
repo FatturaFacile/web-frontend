@@ -90,10 +90,10 @@ describe('AuthApiService (Sanctum SPA)', () => {
     req.flush({ data: { message: 'Logged out' } });
   });
 
-  it('should call GET /auth/me with credentials on me()', () => {
+  it('should call GET /auth/profile with credentials on me()', () => {
     service.me().subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/me');
+    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/profile');
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBe(true);
     req.flush({
