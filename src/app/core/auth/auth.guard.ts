@@ -8,7 +8,7 @@ import { AuthApiService } from '../api/auth-api.service';
  * Requires an authenticated session; otherwise bounces to `/login?returnUrl=<current url>`.
  * In cookie-based Sanctum authentication:
  * 1. Checks if the user is already marked as authenticated in the client store.
- * 2. If not, queries `GET /auth/me` with browser session cookies to check for an existing session.
+ * 2. If not, queries `GET /auth/profile` with browser session cookies to check for an existing session.
  * 3. On success, populates the user in `AuthStore` and permits activation.
  * 4. On failure, redirects to `/login` preserving the return URL.
  */
