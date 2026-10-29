@@ -33,7 +33,7 @@ globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise
     }
   }
 
-  const apiMatch = urlStr.match(/\/api\/translations\/([a-z]{2})/i);
+  const apiMatch = urlStr.match(/\/api\/(?:v\d+\/)?translations\/([a-z]{2})/i);
   if (apiMatch) {
     const lang = apiMatch[1];
     const filePath = getFilePath(lang);

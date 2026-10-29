@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { en_US, it_IT, de_DE, fr_FR, NzI18nService } from 'ng-zorro-antd/i18n';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '@env';
 import { SupportedLanguage, SUPPORTED_LANGUAGES, TranslationDictionary } from './i18n.types';
 
 function getInitialLanguage(): SupportedLanguage {
@@ -33,7 +34,7 @@ export class I18nService {
   private readonly http = inject(HttpClient);
   private readonly nzI18n = inject(NzI18nService, { optional: true });
 
-  private readonly apiUrl = '/api'; // URL base del backend Laravel
+  private readonly apiUrl = environment.apiBaseUrl; // URL base del backend Laravel (versionata)
 
   readonly languages = SUPPORTED_LANGUAGES;
   readonly currentLanguage = signal<SupportedLanguage>(getInitialLanguage());
