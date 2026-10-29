@@ -59,7 +59,7 @@ export class InvoiceApiService {
 
   /** SVG payment slip stream. */
   downloadQrBill(id: string): Observable<Blob> {
-    return this.http.get(`/${id}/download-qr-bill`, { responseType: 'blob' });
+    return this.http.get(`${this.url}/${id}/download-qr-bill`, { responseType: 'blob' });
   }
 
   convertProforma(id: string): Observable<ApiResponse<InvoiceResource>> {
