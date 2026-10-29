@@ -100,6 +100,15 @@ npm start
 ```
 Starts the local dev server at `http://localhost:4200/` with demo mode enabled.
 
+### Run Against a Local Backend
+```bash
+# In web-api: php artisan serve   (or ./vendor/bin/sail up, with APP_PORT=8000)
+npm run start:local
+```
+Starts the dev server with demo mode off. `/api` and `/sanctum` are proxied to `http://localhost:8000`
+(`proxy.conf.json`), so requests stay same-origin and Sanctum cookie authentication works with the backend's
+default `SANCTUM_STATEFUL_DOMAINS` (`localhost:4200`).
+
 ### Run Unit Tests (Vitest)
 ```bash
 npm test --watch=false
