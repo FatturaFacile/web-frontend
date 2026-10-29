@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '@env';
 import { I18nService } from '../i18n/i18n.service';
 import { LookupApiResponse, LookupItemDto, SaveLookupTranslationPayload } from './lookup.types';
 
@@ -11,7 +12,7 @@ export class LookupService {
   private readonly http = inject(HttpClient);
   private readonly i18n = inject(I18nService);
 
-  private readonly apiUrl = '/api/lookups';
+  private readonly apiUrl = `${environment.apiBaseUrl}/lookups`;
 
   // In-memory cache keyed by composite string: "{category}_{tenantId}_{locale}"
   private readonly lookupsCache = signal<Record<string, LookupItemDto[]>>({});
