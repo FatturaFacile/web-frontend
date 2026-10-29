@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { catchError, throwError } from 'rxjs';
@@ -13,14 +13,16 @@ import { I18nService } from '../i18n';
  * Auth verification endpoints (/auth/login, /auth/profile, /sanctum/...) manage their own errors.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  // I18nService issues HTTP requests from its constructor, so it (and AuthStore, which
+  // depends on it) is resolved lazily on error to avoid a circular dependency (NG0200).
+  const injector = inject(Injector);
   const message = inject(NzMessageService);
-  const i18n = inject(I18nService);
-  const authStore = inject(AuthStore);
   const router = inject(Router);
 
   return next(req).pipe(
     catchError((err: unknown) => {
       if (err instanceof HttpErrorResponse && err.status !== 422) {
+        const i18n = injector.get(I18nService);
         const isAuthCheck =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
@@ -36,7 +38,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           // The login form and auth guard handle 401 without emitting a session toast.
         } else if (err.status === 401) {
           const returnUrl = router.url;
-          authStore.logout();
+          injector.get(AuthStore).logout();
           if (!router.url.startsWith('/login')) {
             void router.navigate(['/login'], { queryParams: { returnUrl } });
           }
