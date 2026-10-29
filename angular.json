@@ -74,6 +74,17 @@
             "github-pages": {
               "outputHashing": "all",
               "serviceWorker": "ngsw-config.json"
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -86,6 +97,10 @@
             },
             "development": {
               "buildTarget": "fatturafacile:build:development"
+            },
+            "local": {
+              "buildTarget": "fatturafacile:build:local",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
