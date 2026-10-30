@@ -113,6 +113,18 @@ export class I18nService {
       return dict;
     } catch (error) {
       console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
+      return this.loadFallbackDictionary(lang);
+    }
+  }
+
+  // Dizionari statici distribuiti con l'app, usati quando l'API delle traduzioni non risponde
+  private async loadFallbackDictionary(lang: SupportedLanguage): Promise<TranslationDictionary> {
+    try {
+      const dict = await firstValueFrom(this.http.get<TranslationDictionary>(`/assets/i18n/${lang}.json`));
+      this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
+      return dict;
+    } catch (error) {
+      console.error(`Impossibile caricare le traduzioni di fallback per la lingua ${lang}`, error);
       return {};
     }
   }
