@@ -1,18 +1,24 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzGridModule } from 'ng-zorro-antd/grid';
 import { ClientApiService, ContactResource, ContactType, contactDisplayName, I18nService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import {
+  BaseTableComponent,
+  PageHeaderComponent,
+  TableColumnDef,
+  TableQueryParams,
+  TranslatePipe,
+} from '@shared';
 import { ClientFacade } from '../services/client.facade';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
@@ -20,16 +26,17 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
   selector: 'app-crm-clients',
   imports: [
     FormsModule,
-    NzTableModule,
     NzTagModule,
     NzCardModule,
     NzButtonModule,
     NzInputModule,
     NzSelectModule,
     NzIconModule,
-    NzEmptyModule,
-    NzSkeletonModule,
     NzPopconfirmModule,
+    NzModalModule,
+    NzStatisticModule,
+    NzGridModule,
+    BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
     ClientFormDrawerComponent,
@@ -39,14 +46,15 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
     <nz-card>
       <div class="toolbar">
-        <input class="search"
-            nz-input
-            type="search"
-            [attr.aria-label]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
-            [placeholder]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
-            [ngModel]="facade.filterParams().search"
-            (ngModelChange)="facade.setFilter({ search: $event })"
-          />
+        <input
+          class="search"
+          nz-input
+          type="search"
+          [attr.aria-label]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
+          [placeholder]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
+          [ngModel]="facade.filterParams().search"
+          (ngModelChange)="facade.setFilter({ search: $event })"
+        />
 
         <nz-select
           class="type-filter"
@@ -64,94 +72,111 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
         </button>
       </div>
 
-      @if (!facade.loaded()) {
-        <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
-      } @else {
-        <nz-table
-          #table
-          nzSize="middle"
-          [nzData]="facade.items()"
-          [nzFrontPagination]="false"
-          [nzLoading]="facade.loading()"
-          [nzTotal]="facade.totalCount()"
-          [nzPageIndex]="facade.pageIndex()"
-          [nzPageSize]="facade.pageSize()"
-          [nzNoResult]="empty"
-          (nzPageIndexChange)="facade.setPage($event)"
-          (nzPageSizeChange)="facade.setPageSize($event)"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.NAME' | translate }}</th>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.TYPE' | translate }}</th>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.TAX_ID' | translate }}</th>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.EMAIL' | translate }}</th>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.PHONE' | translate }}</th>
-              <th>{{ 'CRM.CLIENTS.COLUMNS.COUNTRY' | translate }}</th>
-              <th nzAlign="right">{{ 'CRM.CLIENTS.COLUMNS.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (c of table.data; track c.id) {
-              <tr>
-                <td>{{ name(c) }}</td>
-                <td><nz-tag [nzColor]="typeColor(c.type)">{{ typeLabel(c.type) }}</nz-tag></td>
-                <td>{{ c.vat_number || c.uid_number || '�' }}</td>
-                <td>
-                  <div>{{ c.email || '�' }}</div>
-                  <small>{{ c.phone }}</small>
-                </td>
-                <td>{{ c.country }}</td>
-                <td nzAlign="right">
-                  <button nz-button nzType="text" type="button" [attr.aria-label]="'CRM.CLIENTS.ACTIONS.EDIT' | translate: { name: name(c) }" (click)="edit(c)">
-                    <nz-icon nzType="edit" />
-                  </button>
-                  <button
-                    nz-button
-                    nzType="text"
-                    nzDanger
-                    type="button"
-                    [attr.aria-label]="'CRM.CLIENTS.ACTIONS.DELETE' | translate: { name: name(c) }"
-                    nz-popconfirm
-                    [nzPopconfirmTitle]="'CRM.CLIENTS.ACTIONS.CONFIRM_DELETE' | translate"
-                    [nzOkText]="'CRM.CLIENTS.ACTIONS.DELETE_OK' | translate"
-                    [nzCancelText]="'COMMON.CANCEL' | translate"
-                    (nzOnConfirm)="remove(c)"
-                  >
-                    <nz-icon nzType="delete" />
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-        <ng-template #empty>
-          <nz-empty [nzNotFoundContent]="'CRM.CLIENTS.EMPTY' | translate">
-            <div nz-empty-footer>
-              <button nz-button nzType="primary" type="button" (click)="create()">{{ 'CRM.CLIENTS.EMPTY_CTA' | translate }}</button>
-            </div>
-          </nz-empty>
-        </ng-template>
-      }
+      <app-base-table
+        [data]="facade.items()"
+        [columns]="columns()"
+        [loading]="facade.loading()"
+        [total]="facade.totalCount()"
+        [pageIndex]="facade.pageIndex()"
+        [pageSize]="facade.pageSize()"
+        [actionsTemplate]="actionsTpl"
+        (paramsChange)="onParamsChange($event)"
+      />
+
+      <!-- Cell Templates -->
+      <ng-template #nameTpl let-c>
+        <strong>{{ name(c) }}</strong>
+        @if (c.company_name && c.first_name) {
+          <div class="sub-text">{{ c.first_name }} {{ c.last_name }}</div>
+        }
+      </ng-template>
+
+      <ng-template #typeTpl let-c>
+        <nz-tag [nzColor]="typeColor(c.type)">{{ typeLabel(c.type) }}</nz-tag>
+      </ng-template>
+
+      <ng-template #taxTpl let-c>
+        {{ c.vat_number || c.fiscal_code || c.uid_number || '-' }}
+      </ng-template>
+
+      <ng-template #countryTpl let-c>
+        <nz-tag>{{ c.country }}</nz-tag>
+      </ng-template>
+
+      <!-- Row Actions Template -->
+      <ng-template #actionsTpl let-c>
+        <div class="actions-group">
+          <button
+            nz-button
+            nzType="text"
+            nzSize="small"
+            type="button"
+            (click)="viewStats(c)"
+            title="Statistiche"
+          >
+            <nz-icon nzType="bar-chart" />
+          </button>
+          <button
+            nz-button
+            nzType="text"
+            nzSize="small"
+            type="button"
+            (click)="edit(c)"
+            [title]="'CRM.CLIENTS.ACTIONS.EDIT' | translate"
+          >
+            <nz-icon nzType="edit" />
+          </button>
+          <button
+            nz-button
+            nzType="text"
+            nzDanger
+            nzSize="small"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'CRM.CLIENTS.ACTIONS.CONFIRM_DELETE' | translate: { name: name(c) }"
+            [nzOkText]="'COMMON.DELETE' | translate"
+            [nzCancelText]="'COMMON.CANCEL' | translate"
+            (nzOnConfirm)="delete(c)"
+            [title]="'CRM.CLIENTS.ACTIONS.DELETE' | translate"
+          >
+            <nz-icon nzType="delete" />
+          </button>
+        </div>
+      </ng-template>
     </nz-card>
 
-    <app-client-form-drawer [(open)]="drawerOpen" [contact]="editing()" (saved)="facade.reload()" />
+    <app-client-form-drawer
+      [contact]="selected()"
+      [open]="drawerOpen()"
+      (openChange)="drawerOpen.set($event)"
+      (saved)="facade.reload()"
+    />
   `,
   styles: `
     .toolbar {
       display: flex;
-      flex-wrap: wrap;
       gap: 12px;
+      align-items: center;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     .search {
-      width: 320px;
+      width: 280px;
     }
     .type-filter {
-      width: 180px;
+      width: 170px;
     }
     .spacer {
       flex: 1;
+    }
+    .sub-text {
+      font-size: 12px;
+      color: #8c8c8c;
+    }
+    .actions-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
     }
   `,
 })
@@ -159,52 +184,119 @@ export class ClientsComponent {
   protected readonly facade = inject(ClientFacade);
   private readonly api = inject(ClientApiService);
   private readonly message = inject(NzMessageService);
+  private readonly modal = inject(NzModalService);
   private readonly i18n = inject(I18nService);
 
   protected readonly drawerOpen = signal(false);
-  protected readonly editing = signal<ContactResource | null>(null);
+  protected readonly selected = signal<ContactResource | null>(null);
 
-  private readonly typeKeys: { key: string; value: ContactType }[] = [
-    { key: 'CRM.CLIENTS.TYPES.CLIENT', value: 'client' },
-    { key: 'CRM.CLIENTS.TYPES.SUPPLIER', value: 'supplier' },
-    { key: 'CRM.CLIENTS.TYPES.BOTH', value: 'both' },
-    { key: 'CRM.CLIENTS.TYPES.LEAD', value: 'lead' },
-  ];
-  /** Recomputed when the UI language changes (nz-select needs plain string labels). */
+  private readonly nameTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('nameTpl');
+  private readonly typeTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('typeTpl');
+  private readonly taxTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('taxTpl');
+  private readonly countryTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('countryTpl');
+
+  readonly columns = computed<TableColumnDef<ContactResource>[]>(() => [
+    {
+      key: 'name',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.NAME'),
+      width: '240px',
+      sortable: true,
+      customCellTemplate: this.nameTpl(),
+    },
+    {
+      key: 'type',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TYPE'),
+      width: '130px',
+      customCellTemplate: this.typeTpl(),
+    },
+    {
+      key: 'vat_number',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TAX_ID'),
+      width: '160px',
+      customCellTemplate: this.taxTpl(),
+    },
+    {
+      key: 'email',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.EMAIL'),
+      width: '200px',
+    },
+    {
+      key: 'phone',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.PHONE'),
+      width: '140px',
+    },
+    {
+      key: 'country',
+      header: this.i18n.translate('CRM.CLIENTS.COLUMNS.COUNTRY'),
+      width: '100px',
+      customCellTemplate: this.countryTpl(),
+    },
+  ]);
+
   protected readonly typeOptions = computed(() => {
     this.i18n.currentLanguage();
-    return this.typeKeys.map((o) => ({ label: this.i18n.translate(o.key), value: o.value }));
+    return [
+      { label: this.i18n.translate('CRM.CLIENTS.TYPES.CLIENT'), value: 'client' },
+      { label: this.i18n.translate('CRM.CLIENTS.TYPES.SUPPLIER'), value: 'supplier' },
+      { label: this.i18n.translate('CRM.CLIENTS.TYPES.BOTH'), value: 'both' },
+    ];
   });
 
   protected name(c: ContactResource): string {
     return contactDisplayName(c);
   }
 
-  protected typeLabel(t: ContactType): string {
-    return this.typeOptions().find((o) => o.value === t)?.label ?? t;
+  protected typeLabel(type: ContactType): string {
+    return this.i18n.translate(`CRM.CLIENTS.TYPES.${type.toUpperCase()}`);
   }
 
-  protected typeColor(t: ContactType): string {
-    return t === 'supplier' ? 'orange' : t === 'lead' ? 'default' : 'blue';
+  protected typeColor(type: ContactType): string {
+    switch (type) {
+      case 'client':
+        return 'blue';
+      case 'supplier':
+        return 'purple';
+      default:
+        return 'cyan';
+    }
+  }
+
+  protected onParamsChange(params: TableQueryParams): void {
+    if (params.pageIndex !== this.facade.pageIndex()) {
+      this.facade.setPage(params.pageIndex);
+    }
+    if (params.pageSize !== this.facade.pageSize()) {
+      this.facade.setPageSize(params.pageSize);
+    }
   }
 
   protected create(): void {
-    this.editing.set(null);
+    this.selected.set(null);
     this.drawerOpen.set(true);
   }
 
   protected edit(c: ContactResource): void {
-    this.editing.set(c);
+    this.selected.set(c);
     this.drawerOpen.set(true);
   }
 
-  protected remove(c: ContactResource): void {
-    this.api.delete(c.id).subscribe(() => {
-      this.message.success(this.i18n.translate('CRM.CLIENTS.MESSAGES.DELETED'));
-      this.facade.reload();
+  protected delete(c: ContactResource): void {
+    this.api.delete(c.id).subscribe({
+      next: () => {
+        this.message.success(this.i18n.translate('CRM.CLIENTS.MESSAGES.DELETED'));
+        this.facade.reload();
+      },
+      error: () => undefined,
+    });
+  }
+
+  protected viewStats(c: ContactResource): void {
+    this.modal.info({
+      nzTitle: `Statistiche ${this.name(c)}`,
+      nzContent: `Anagrafica ${c.country} - Tipo: ${this.typeLabel(c.type)} - Partita IVA/Codice Fiscale: ${c.vat_number || c.fiscal_code || c.uid_number || 'N/D'}`,
+      nzOkText: 'Chiudi',
     });
   }
 }
 
 export { ClientsComponent as CrmClientsComponent };
-

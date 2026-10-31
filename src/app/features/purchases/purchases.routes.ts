@@ -20,8 +20,8 @@ export const PURCHASES_ROUTES: Routes = [
   },
   {
     path: 'expenses',
-    data: { breadcrumb: 'Note Spese', title: 'Note Spese' },
+    data: { breadcrumb: 'Note Spese', title: 'Note Spese & Uscite' },
     loadComponent: () =>
-      import('./purchases.component').then((m) => m.PurchasesComponent),
+      import('./components/expenses/expenses.component').then((m) => m.ExpensesComponent),
   },
 ];

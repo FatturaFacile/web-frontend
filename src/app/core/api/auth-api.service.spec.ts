@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthApiService, LoginPayload } from './auth-api.service';
 import { environment } from '@env';
 
-describe('AuthApiService (Sanctum SPA)', () => {
+describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   let service: AuthApiService;
   let httpTesting: HttpTestingController;
   const originalApiBaseUrl = environment.apiBaseUrl;
@@ -64,14 +64,15 @@ describe('AuthApiService (Sanctum SPA)', () => {
     expect(loginReq.request.body).toEqual(payload);
 
     const mockResponse = {
+      success: true,
+      message: 'Authenticated',
       data: {
-        message: 'Authenticated',
         user: {
           id: 'usr-001',
           name: 'Marco Rossi',
           email: 'm.rossi@rossiimpianti.it',
           avatar: '',
-          role: 'ERP Administrator',
+          role: 'Admin',
           roles: ['ADMIN'],
         },
       },
@@ -87,7 +88,7 @@ describe('AuthApiService (Sanctum SPA)', () => {
     const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/logout');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBe(true);
-    req.flush({ data: { message: 'Logged out' } });
+    req.flush({ success: true, message: 'Logged out', data: null });
   });
 
   it('should call GET /auth/profile with credentials on me()', () => {
@@ -97,6 +98,8 @@ describe('AuthApiService (Sanctum SPA)', () => {
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBe(true);
     req.flush({
+      success: true,
+      message: 'Profile retrieved',
       data: {
         id: 'usr-001',
         name: 'Marco Rossi',
@@ -106,5 +109,15 @@ describe('AuthApiService (Sanctum SPA)', () => {
         roles: ['ADMIN'],
       },
     });
+  });
+
+  it('should call POST /auth/switch-tenant with credentials on switchTenant()', () => {
+    service.switchTenant({ tenant_id: 't-ch-02' }).subscribe();
+
+    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/switch-tenant');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual({ tenant_id: 't-ch-02' });
+    req.flush({ success: true, message: 'Switched', data: null });
   });
 });

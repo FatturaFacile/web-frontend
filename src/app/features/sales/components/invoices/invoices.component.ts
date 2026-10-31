@@ -1,10 +1,9 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { finalize, Observable, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -12,8 +11,6 @@ import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   I18nService,
@@ -24,7 +21,13 @@ import {
   Jurisdiction,
   PaymentStatus,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import {
+  BaseTableComponent,
+  PageHeaderComponent,
+  TableColumnDef,
+  TableQueryParams,
+  TranslatePipe,
+} from '@shared';
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
 
@@ -53,17 +56,15 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     FormsModule,
     CurrencyPipe,
     DatePipe,
-    NzTableModule,
     NzTagModule,
     NzCardModule,
     NzButtonModule,
     NzInputModule,
     NzSelectModule,
     NzIconModule,
-    NzEmptyModule,
-    NzSkeletonModule,
     NzDropdownModule,
     NzMenuModule,
+    BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
     InvoiceFormDrawerComponent,
@@ -73,14 +74,15 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
 
     <nz-card>
       <div class="toolbar">
-        <input class="search"
-            nz-input
-            type="search"
-            [attr.aria-label]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
-            [placeholder]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
-            [ngModel]="facade.filterParams().search"
-            (ngModelChange)="facade.setFilter({ search: $event })"
-          />
+        <input
+          class="search"
+          nz-input
+          type="search"
+          [attr.aria-label]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
+          [placeholder]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
+          [ngModel]="facade.filterParams().search"
+          (ngModelChange)="facade.setFilter({ search: $event })"
+        />
 
         <nz-select
           class="filter"
@@ -107,132 +109,113 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
         </button>
       </div>
 
-      @if (!facade.loaded()) {
-        <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
-      } @else {
-        <nz-table
-          #table
-          nzSize="middle"
-          [nzData]="facade.items()"
-          [nzFrontPagination]="false"
-          [nzLoading]="facade.loading()"
-          [nzTotal]="facade.totalCount()"
-          [nzPageIndex]="facade.pageIndex()"
-          [nzPageSize]="facade.pageSize()"
-          [nzNoResult]="empty"
-          (nzPageIndexChange)="facade.setPage($event)"
-          (nzPageSizeChange)="facade.setPageSize($event)"
+      <app-base-table
+        [data]="facade.items()"
+        [columns]="columns()"
+        [loading]="facade.loading()"
+        [total]="facade.totalCount()"
+        [pageIndex]="facade.pageIndex()"
+        [pageSize]="facade.pageSize()"
+        [actionsTemplate]="actionsTpl"
+        (paramsChange)="onParamsChange($event)"
+      />
+
+      <!-- Cell Templates -->
+      <ng-template #numberTpl let-inv>
+        <strong>{{ inv.invoice_number }}</strong>
+        @if (inv.has_swiss_qr) {
+          <nz-tag nzColor="red" style="margin-left: 6px;">QR</nz-tag>
+        }
+      </ng-template>
+
+      <ng-template #dateTpl let-inv let-val="value">
+        {{ val | date: 'dd.MM.yyyy' }}
+      </ng-template>
+
+      <ng-template #currencyTpl let-inv let-val="value">
+        {{ val | currency: inv.currency : 'symbol' : '1.2-2' }}
+      </ng-template>
+
+      <ng-template #totalTpl let-inv let-val="value">
+        <strong>{{ val | currency: inv.currency : 'symbol' : '1.2-2' }}</strong>
+      </ng-template>
+
+      <ng-template #statusTpl let-inv>
+        <nz-tag [nzColor]="statusOf(inv).color">{{ statusOf(inv).key | translate }}</nz-tag>
+      </ng-template>
+
+      <ng-template #jurisdictionTpl let-inv>
+        <nz-tag>{{ 'SALES.INVOICES.JURISDICTIONS.' + jurisdictionOf(inv) | translate }}</nz-tag>
+      </ng-template>
+
+      <!-- Row Actions Template -->
+      <ng-template #actionsTpl let-inv>
+        <button
+          nz-button
+          nzType="text"
+          type="button"
+          nz-dropdown
+          nzTrigger="click"
+          nzPlacement="bottomRight"
+          [nzDropdownMenu]="menu"
+          [nzLoading]="busyId() === inv.id"
+          [disabled]="busyId() === inv.id"
+          [attr.aria-label]="'SALES.INVOICES.ACTIONS.MORE' | translate: { number: inv.invoice_number }"
         >
-          <thead>
-            <tr>
-              <th>{{ 'SALES.INVOICES.COLUMNS.NUMBER' | translate }}</th>
-              <th>{{ 'SALES.INVOICES.COLUMNS.DATE' | translate }}</th>
-              <th>{{ 'SALES.INVOICES.COLUMNS.DUE_DATE' | translate }}</th>
-              <th nzAlign="right">{{ 'SALES.INVOICES.COLUMNS.NET' | translate }}</th>
-              <th nzAlign="right">{{ 'SALES.INVOICES.COLUMNS.VAT' | translate }}</th>
-              <th nzAlign="right">{{ 'SALES.INVOICES.COLUMNS.TOTAL' | translate }}</th>
-              <th>{{ 'SALES.INVOICES.COLUMNS.PAYMENT_STATUS' | translate }}</th>
-              <th>{{ 'SALES.INVOICES.COLUMNS.JURISDICTION' | translate }}</th>
-              <th nzAlign="right">{{ 'SALES.INVOICES.COLUMNS.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (inv of table.data; track inv.id) {
-              <tr>
-                <td>
-                  {{ inv.invoice_number }}
-                  @if (inv.has_swiss_qr) {
-                    <nz-tag nzColor="red">QR</nz-tag>
-                  }
-                </td>
-                <td>{{ inv.issue_date | date: 'dd.MM.yyyy' }}</td>
-                <td>{{ inv.due_date | date: 'dd.MM.yyyy' }}</td>
-                <td nzAlign="right">{{ inv.subtotal | currency: inv.currency : 'symbol' : '1.2-2' }}</td>
-                <td nzAlign="right">{{ inv.tax_amount | currency: inv.currency : 'symbol' : '1.2-2' }}</td>
-                <td nzAlign="right">
-                  <strong>{{ inv.total | currency: inv.currency : 'symbol' : '1.2-2' }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="statusOf(inv).color">{{ statusOf(inv).key | translate }}</nz-tag>
-                </td>
-                <td>
-                  <nz-tag>{{ 'SALES.INVOICES.JURISDICTIONS.' + jurisdictionOf(inv) | translate }}</nz-tag>
-                </td>
-                <td nzAlign="right">
-                  <button
-                    nz-button
-                    nzType="text"
-                    type="button"
-                    nz-dropdown
-                    nzTrigger="click"
-                    nzPlacement="bottomRight"
-                    [nzDropdownMenu]="menu"
-                    [nzLoading]="busyId() === inv.id"
-                    [disabled]="busyId() === inv.id"
-                    [attr.aria-label]="'SALES.INVOICES.ACTIONS.MORE' | translate: { number: inv.invoice_number }"
-                  >
-                    <nz-icon nzType="more" />
-                  </button>
-                  <nz-dropdown-menu #menu="nzDropdownMenu">
-                    <ul nz-menu>
-                      <li nz-menu-item tabindex="0" (click)="openPdf(inv)" (keydown.enter)="openPdf(inv)">
-                        <nz-icon nzType="file-pdf" /> {{ 'SALES.INVOICES.ACTIONS.DOWNLOAD_PDF' | translate }}
-                      </li>
-                      <li nz-menu-item tabindex="0" (click)="confirmEmail(inv)" (keydown.enter)="confirmEmail(inv)">
-                        <nz-icon nzType="mail" /> {{ 'SALES.INVOICES.ACTIONS.SEND_EMAIL' | translate }}
-                      </li>
-                      @if (jurisdictionOf(inv) === 'IT') {
-                        <li nz-menu-item tabindex="0" (click)="confirmSdi(inv)" (keydown.enter)="confirmSdi(inv)">
-                          <nz-icon nzType="send" /> {{ 'SALES.INVOICES.ACTIONS.SEND_SDI' | translate }}
-                        </li>
-                      }
-                      @if (jurisdictionOf(inv) === 'CH') {
-                        <li nz-menu-item tabindex="0" (click)="generateQrBill(inv)" (keydown.enter)="generateQrBill(inv)">
-                          <nz-icon nzType="qrcode" /> {{ 'SALES.INVOICES.ACTIONS.GENERATE_QR_BILL' | translate }}
-                        </li>
-                      }
-                      @if (inv.invoice_type === 'proforma') {
-                        <li nz-menu-item tabindex="0" (click)="confirmProforma(inv)" (keydown.enter)="confirmProforma(inv)">
-                          <nz-icon nzType="swap" /> {{ 'SALES.INVOICES.ACTIONS.CONVERT_PROFORMA' | translate }}
-                        </li>
-                      }
-                      <li nz-menu-divider></li>
-                      <li nz-menu-item tabindex="0" (click)="duplicate(inv)" (keydown.enter)="duplicate(inv)">
-                        <nz-icon nzType="copy" /> {{ 'SALES.INVOICES.ACTIONS.DUPLICATE' | translate }}
-                      </li>
-                    </ul>
-                  </nz-dropdown-menu>
-                </td>
-              </tr>
+          <nz-icon nzType="more" />
+        </button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item tabindex="0" (click)="openPdf(inv)" (keydown.enter)="openPdf(inv)">
+              <nz-icon nzType="file-pdf" /> {{ 'SALES.INVOICES.ACTIONS.DOWNLOAD_PDF' | translate }}
+            </li>
+            <li nz-menu-item tabindex="0" (click)="confirmEmail(inv)" (keydown.enter)="confirmEmail(inv)">
+              <nz-icon nzType="mail" /> {{ 'SALES.INVOICES.ACTIONS.SEND_EMAIL' | translate }}
+            </li>
+            @if (jurisdictionOf(inv) === 'IT') {
+              <li nz-menu-item tabindex="0" (click)="confirmSdi(inv)" (keydown.enter)="confirmSdi(inv)">
+                <nz-icon nzType="send" /> {{ 'SALES.INVOICES.ACTIONS.SEND_SDI' | translate }}
+              </li>
             }
-          </tbody>
-        </nz-table>
-        <ng-template #empty>
-          <nz-empty [nzNotFoundContent]="'SALES.INVOICES.EMPTY' | translate">
-            <div nz-empty-footer>
-              <button nz-button nzType="primary" type="button" (click)="create()">
-                {{ 'SALES.INVOICES.EMPTY_CTA' | translate }}
-              </button>
-            </div>
-          </nz-empty>
-        </ng-template>
-      }
+            @if (jurisdictionOf(inv) === 'CH') {
+              <li nz-menu-item tabindex="0" (click)="generateQrBill(inv)" (keydown.enter)="generateQrBill(inv)">
+                <nz-icon nzType="qrcode" /> {{ 'SALES.INVOICES.ACTIONS.GENERATE_QR_BILL' | translate }}
+              </li>
+            }
+            @if (inv.invoice_type === 'proforma') {
+              <li nz-menu-item tabindex="0" (click)="confirmProforma(inv)" (keydown.enter)="confirmProforma(inv)">
+                <nz-icon nzType="swap" /> {{ 'SALES.INVOICES.ACTIONS.CONVERT_PROFORMA' | translate }}
+              </li>
+            }
+            <li nz-menu-divider></li>
+            <li nz-menu-item tabindex="0" (click)="duplicate(inv)" (keydown.enter)="duplicate(inv)">
+              <nz-icon nzType="copy" /> {{ 'SALES.INVOICES.ACTIONS.DUPLICATE' | translate }}
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </ng-template>
     </nz-card>
 
-    <app-invoice-form-drawer [(open)]="drawerOpen" [template]="template()" (saved)="facade.reload()" />
+    <app-invoice-form-drawer
+      [open]="drawerOpen()"
+      [template]="template()"
+      (openChange)="drawerOpen.set($event)"
+      (saved)="facade.reload()"
+    />
   `,
   styles: `
     .toolbar {
       display: flex;
-      flex-wrap: wrap;
       gap: 12px;
+      align-items: center;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     .search {
-      width: 320px;
+      width: 280px;
     }
     .filter {
-      width: 180px;
+      width: 170px;
     }
     .spacer {
       flex: 1;
@@ -248,8 +231,73 @@ export class InvoicesComponent {
 
   protected readonly drawerOpen = signal(false);
   protected readonly template = signal<InvoiceDetailResource | null>(null);
-  /** Id of the invoice whose action is currently running (drives the row spinner). */
   protected readonly busyId = signal<string | null>(null);
+
+  // Template views
+  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('numberTpl');
+  private readonly dateTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('dateTpl');
+  private readonly currencyTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('currencyTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('totalTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('statusTpl');
+  private readonly jurisdictionTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('jurisdictionTpl');
+
+  readonly columns = computed<TableColumnDef<InvoiceResource>[]>(() => [
+    {
+      key: 'invoice_number',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.NUMBER'),
+      width: '180px',
+      sortable: true,
+      customCellTemplate: this.numberTpl(),
+    },
+    {
+      key: 'issue_date',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.DATE'),
+      width: '120px',
+      sortable: true,
+      customCellTemplate: this.dateTpl(),
+    },
+    {
+      key: 'due_date',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.DUE_DATE'),
+      width: '120px',
+      sortable: true,
+      customCellTemplate: this.dateTpl(),
+    },
+    {
+      key: 'subtotal',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.NET'),
+      width: '120px',
+      align: 'right',
+      customCellTemplate: this.currencyTpl(),
+    },
+    {
+      key: 'tax_amount',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.VAT'),
+      width: '110px',
+      align: 'right',
+      customCellTemplate: this.currencyTpl(),
+    },
+    {
+      key: 'total',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.TOTAL'),
+      width: '130px',
+      align: 'right',
+      sortable: true,
+      customCellTemplate: this.totalTpl(),
+    },
+    {
+      key: 'status',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.PAYMENT_STATUS'),
+      width: '140px',
+      customCellTemplate: this.statusTpl(),
+    },
+    {
+      key: 'jurisdiction',
+      header: this.i18n.translate('SALES.INVOICES.COLUMNS.JURISDICTION'),
+      width: '120px',
+      customCellTemplate: this.jurisdictionTpl(),
+    },
+  ]);
 
   protected readonly paymentOptions = computed(() => {
     this.i18n.currentLanguage();
@@ -274,12 +322,20 @@ export class InvoicesComponent {
     return STATUS[inv.status] ?? { key: 'SALES.INVOICES.STATUS.DRAFT', color: 'default' };
   }
 
+  protected onParamsChange(params: TableQueryParams): void {
+    if (params.pageIndex !== this.facade.pageIndex()) {
+      this.facade.setPage(params.pageIndex);
+    }
+    if (params.pageSize !== this.facade.pageSize()) {
+      this.facade.setPageSize(params.pageSize);
+    }
+  }
+
   protected create(): void {
     this.template.set(null);
     this.drawerOpen.set(true);
   }
 
-  /** Client-side clone: loads the full document and opens the builder as a new draft. */
   protected duplicate(inv: InvoiceResource): void {
     this.run(inv, this.api.get(inv.id), null, (res) => {
       this.template.set({ ...inv, ...res.data });
@@ -323,12 +379,6 @@ export class InvoicesComponent {
     );
   }
 
-  /**
-   * Confirmation dialog. A modal is used instead of 
-zPopconfirm because the
-   * actions live in a dropdown that closes on click, which would dismiss an
-   * anchored popconfirm before the user can answer.
-   */
   private confirm(titleKey: string, onOk: () => void): void {
     this.modal.confirm({
       nzTitle: this.i18n.translate(titleKey),
@@ -352,7 +402,6 @@ zPopconfirm because the
         }
         onSuccess?.(result);
       },
-      // Errors are surfaced by the global error interceptor.
       error: () => undefined,
     });
   }

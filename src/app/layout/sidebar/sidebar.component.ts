@@ -383,6 +383,16 @@ export class SidebarComponent {
       route: '/accounting',
     },
     {
+      key: 'NAV.ALERTS',
+      icon: 'fa-solid fa-bell',
+      route: '/alerts',
+    },
+    {
+      key: 'NAV.SYSTEM',
+      icon: 'fa-solid fa-server',
+      route: '/system',
+    },
+    {
       key: 'NAV.SETTINGS',
       icon: 'fa-solid fa-gears',
       route: '/settings',

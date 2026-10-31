@@ -132,6 +132,20 @@ export const routes: Routes = [
       import('./features/accounting/accounting.routes').then((m) => m.ACCOUNTING_ROUTES),
   },
   {
+    path: 'alerts',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Centro Avvisi', title: 'Centro Avvisi' },
+    loadChildren: () =>
+      import('./features/alerts/alerts.routes').then((m) => m.ALERTS_ROUTES),
+  },
+  {
+    path: 'system',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Sistema & Backup', title: 'Sistema' },
+    loadChildren: () =>
+      import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     data: { breadcrumb: 'Impostazioni & Tenant', title: 'Impostazioni' },

@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
 import { environment } from '@env';
 
-describe('authInterceptor (Laravel Sanctum SPA)', () => {
+describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', () => {
   let http: HttpClient;
   let httpTesting: HttpTestingController;
   const originalApiBaseUrl = environment.apiBaseUrl;
@@ -92,6 +92,7 @@ describe('authInterceptor (Laravel Sanctum SPA)', () => {
 
     const req = httpTesting.expectOne('https://external-cdn.com/logo.png');
     expect(req.request.withCredentials).toBe(false);
+    expect(req.request.headers.has('Authorization')).toBe(false);
     expect(req.request.headers.has('X-Requested-With')).toBe(false);
     req.flush('');
   });
