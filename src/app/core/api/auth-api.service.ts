@@ -16,17 +16,32 @@ export interface LoginPayload {
 export interface LoginResult {
   user?: UserProfile;
   message?: string;
-  token?: string; // Kept optional for backward compatibility
+  token?: string;
+  access_token?: string;
+  token_type?: string;
+  tenant_id?: string;
 }
 
+export interface SwitchTenantPayload {
+  tenant_id?: string | null;
+}
+
+/**
+ * Service for Laravel Sanctum SPA Cookie-based authentication.
+ *
+ * All requests use HTTP-only session cookies and CSRF tokens instead of client-side token storage,
+ * providing superior security against XSS token exfiltration.
+ */
 @Service()
 export class AuthApiService {
   private readonly http = inject(HttpClient);
   private readonly csrfCookieUrl = getCsrfCookieUrl();
+  private readonly base = environment.apiBaseUrl;
 
   /**
    * Fetches the CSRF cookie from Laravel Sanctum (`GET /sanctum/csrf-cookie`).
-   * This sets the `XSRF-TOKEN` cookie required for state-mutating requests (such as login).
+   * This initializes the browser session and sets the `XSRF-TOKEN` cookie required
+   * for state-mutating requests (such as login).
    */
   getCsrfCookie(): Observable<unknown> {
     return this.http.get(this.csrfCookieUrl, {
@@ -37,13 +52,14 @@ export class AuthApiService {
 
   /**
    * Executes a cookie-based login request.
-   * Ensures the CSRF cookie is obtained before dispatching the `POST /auth/login` mutation.
+   * Ensures the CSRF cookie handshake is performed before dispatching the `POST /auth/login` mutation.
+   * On success, the backend sets the HTTP-only session cookie (`laravel_session`).
    */
   login(payload: LoginPayload): Observable<ApiResponse<LoginResult>> {
     return this.getCsrfCookie().pipe(
       switchMap(() =>
         this.http.post<ApiResponse<LoginResult>>(
-          `${environment.apiBaseUrl}/auth/login`,
+          `${this.base}/auth/login`,
           payload,
           { withCredentials: true }
         )
@@ -52,11 +68,11 @@ export class AuthApiService {
   }
 
   /**
-   * Invalidates the active Laravel Sanctum session on the server.
+   * Invalidates the active Laravel Sanctum cookie session on the server.
    */
   logout(): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(
-      `${environment.apiBaseUrl}/auth/logout`,
+      `${this.base}/auth/logout`,
       {},
       { withCredentials: true }
     );
@@ -64,10 +80,40 @@ export class AuthApiService {
 
   /**
    * Retrieves the currently authenticated user profile from the backend session.
+   * Validates whether the browser cookie session is active.
    */
   me(): Observable<ApiResponse<UserProfile>> {
     return this.http.get<ApiResponse<UserProfile>>(
-      `${environment.apiBaseUrl}/auth/profile`,
+      `${this.base}/auth/profile`,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Alias for me() matching OpenAPI operationId `getProfile`.
+   */
+  getProfile(): Observable<ApiResponse<UserProfile>> {
+    return this.me();
+  }
+
+  /**
+   * Switches active tenant context for the authenticated user session.
+   */
+  switchTenant(payload: SwitchTenantPayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(
+      `${this.base}/auth/switch-tenant`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Refreshes the active session.
+   */
+  refreshToken(): Observable<ApiResponse<{ token: string }>> {
+    return this.http.post<ApiResponse<{ token: string }>>(
+      `${this.base}/auth/refresh`,
+      {},
       { withCredentials: true }
     );
   }

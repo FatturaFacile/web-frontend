@@ -34,6 +34,8 @@ export interface ContactResource {
 
 /** Body of `POST`/`PUT /crm/contacts`. */
 export type ContactPayload = Omit<ContactResource, 'id'>;
+export type CreateContactPayload = ContactPayload;
+export type UpdateContactPayload = Partial<ContactPayload>;
 
 export interface ContactFilterParams extends QueryFilterParams {
   type?: ContactType;
@@ -41,5 +43,5 @@ export interface ContactFilterParams extends QueryFilterParams {
 }
 
 export function contactDisplayName(c: ContactResource): string {
-  return c.company_name || [c.first_name, c.last_name].filter(Boolean).join(' ') || '—';
+  return c.company_name || [c.first_name, c.last_name].filter(Boolean).join(' ') || '-';
 }

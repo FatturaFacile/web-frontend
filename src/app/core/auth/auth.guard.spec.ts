@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, RouterStateSnapshot, provideRouter, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
-import { authGuard, guestGuard } from './auth.guard';
+import { authGuard, guestGuard, roleGuard } from './auth.guard';
 import { AuthStore } from './auth.store';
 import { AuthApiService } from '../api/auth-api.service';
 import { I18nService } from '../i18n';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-describe('Auth Guards (Cookie-based Sanctum)', () => {
+describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
   let authStore: InstanceType<typeof AuthStore>;
   let authApiMock: { me: ReturnType<typeof vi.fn> };
 
@@ -23,7 +23,6 @@ describe('Auth Guards (Cookie-based Sanctum)', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
         AuthStore,
@@ -36,7 +35,7 @@ describe('Auth Guards (Cookie-based Sanctum)', () => {
   });
 
   describe('authGuard', () => {
-    it('should allow activation immediately when already authenticated in store', () => {
+    it('should allow immediately when already marked authenticated in store', () => {
       authStore.login();
 
       const result = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState));
@@ -44,7 +43,7 @@ describe('Auth Guards (Cookie-based Sanctum)', () => {
       expect(authApiMock.me).not.toHaveBeenCalled();
     });
 
-    it('should verify session via authApi.me() and allow when valid', async () => {
+    it('should verify session cookie via authApi.me() and allow when valid', async () => {
       authApiMock.me.mockReturnValue(
         of({
           data: {
@@ -58,24 +57,25 @@ describe('Auth Guards (Cookie-based Sanctum)', () => {
         })
       );
 
-      const obs$ = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState)) as import('rxjs').Observable<boolean>;
+      const obs$ = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState)) as import('rxjs').Observable<boolean | UrlTree>;
       let outcome: boolean | UrlTree | undefined;
-      obs$.subscribe((res) => {
-        outcome = res;
+      obs$.subscribe((val) => {
+        outcome = val;
       });
 
       expect(authApiMock.me).toHaveBeenCalledTimes(1);
       expect(outcome).toBe(true);
       expect(authStore.isAuthenticated()).toBe(true);
+      expect(authStore.user()?.email).toBe('m.rossi@rossiimpianti.it');
     });
 
-    it('should redirect to /login with returnUrl when session check fails', () => {
+    it('should redirect to /login with returnUrl when session cookie check fails', () => {
       authApiMock.me.mockReturnValue(throwError(() => new Error('401 Unauthorized')));
 
       const obs$ = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState)) as import('rxjs').Observable<UrlTree>;
       let outcome: UrlTree | undefined;
-      obs$.subscribe((res) => {
-        outcome = res;
+      obs$.subscribe((val) => {
+        outcome = val;
       });
 
       expect(authApiMock.me).toHaveBeenCalledTimes(1);
@@ -91,12 +91,45 @@ describe('Auth Guards (Cookie-based Sanctum)', () => {
       expect(result).toBe(true);
     });
 
-    it('should redirect authenticated users to /sales/invoices', () => {
+    it('should bounce authenticated users away to /sales/invoices', () => {
       authStore.login();
 
       const result = TestBed.runInInjectionContext(() => guestGuard(dummyRoute, dummyState));
       expect(result).toBeInstanceOf(UrlTree);
       expect((result as UrlTree).toString()).toBe('/sales/invoices');
+    });
+  });
+
+  describe('roleGuard', () => {
+    it('should allow access when user possesses the required role', () => {
+      authStore.login(undefined, {
+        id: 'usr-001',
+        name: 'Marco',
+        email: 'm@example.com',
+        avatar: '',
+        role: 'ADMIN',
+        roles: ['ADMIN'],
+      });
+
+      const guard = roleGuard(['ADMIN', 'SUPER_ADMIN']);
+      const result = TestBed.runInInjectionContext(() => guard(dummyRoute, dummyState));
+      expect(result).toBe(true);
+    });
+
+    it('should redirect to /dashboard when user lacks the required role', () => {
+      authStore.login(undefined, {
+        id: 'usr-002',
+        name: 'Luigi',
+        email: 'l@example.com',
+        avatar: '',
+        role: 'ACCOUNTANT',
+        roles: ['ACCOUNTANT'],
+      });
+
+      const guard = roleGuard(['ADMIN']);
+      const result = TestBed.runInInjectionContext(() => guard(dummyRoute, dummyState));
+      expect(result).toBeInstanceOf(UrlTree);
+      expect((result as UrlTree).toString()).toBe('/dashboard');
     });
   });
 });
