@@ -1,79 +1,79 @@
 <app-page-header
-  title="Impostazioni Aziendali & Sistema"
-  subtitle="Configurazione tenant, anagrafica filiali, gestione utenti e audit log"
+  [title]="'settings.title' | translate"
+  [subtitle]="'settings.subtitle' | translate"
 />
 
 <nz-card>
   <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
     <!-- TAB 1: DATI TENANT -->
-    <nz-tab nzTitle="Dati Organizzazione & Fisco">
+    <nz-tab [nzTitle]="'settings.tabs.orgData' | translate">
       <form nz-form nzLayout="vertical" [formGroup]="tenantForm" (ngSubmit)="saveTenantSettings()">
         <div class="form-grid">
           <nz-form-item>
-            <nz-form-label nzRequired nzFor="name">Ragione Sociale / Nome</nz-form-label>
-            <nz-form-control nzErrorTip="Il nome è obbligatorio">
+            <nz-form-label nzRequired nzFor="name">{{ 'settings.form.companyName' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'validation.nameRequired' | translate">
               <input nz-input id="name" formControlName="name" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="legal_name">Denominazione Legale Estesa</nz-form-label>
+            <nz-form-label nzFor="legal_name">{{ 'settings.form.legalName' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="legal_name" formControlName="legal_name" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="fiscal_code">Codice Fiscale (IT)</nz-form-label>
+            <nz-form-label nzFor="fiscal_code">{{ 'settings.form.taxId' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="fiscal_code" formControlName="fiscal_code" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="vat_number">Partita IVA (IT / CH)</nz-form-label>
+            <nz-form-label nzFor="vat_number">{{ 'settings.form.vatNumber' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="vat_number" formControlName="vat_number" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="uid_number">Numero IDI / UID (CH)</nz-form-label>
+            <nz-form-label nzFor="uid_number">{{ 'settings.form.uidNumber' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="uid_number" formControlName="uid_number" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="default_currency">Valuta Predefinita</nz-form-label>
+            <nz-form-label nzFor="default_currency">{{ 'settings.form.currency' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="default_currency" formControlName="default_currency" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="iban">IBAN Aziendale Ordinario</nz-form-label>
+            <nz-form-label nzFor="iban">{{ 'settings.form.iban' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="iban" formControlName="iban" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="qr_iban">QR-IBAN Svizzero</nz-form-label>
+            <nz-form-label nzFor="qr_iban">{{ 'settings.form.qrIban' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="qr_iban" formControlName="qr_iban" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="sdi_code">Codice Destinatario SDI (7 caratteri)</nz-form-label>
+            <nz-form-label nzFor="sdi_code">{{ 'settings.form.sdiCode' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="sdi_code" formControlName="sdi_code" maxlength="7" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label nzFor="pec_email">Indirizzo PEC</nz-form-label>
+            <nz-form-label nzFor="pec_email">{{ 'settings.form.pecEmail' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="pec_email" formControlName="pec_email" type="email" />
             </nz-form-control>
@@ -82,14 +82,14 @@
 
         <div class="form-actions">
           <button nz-button nzType="primary" type="submit" [nzLoading]="isSavingTenant()">
-            Salva Modifiche Azienda
+            {{ 'settings.form.save' | translate }}
           </button>
         </div>
       </form>
     </nz-tab>
 
     <!-- TAB 2: FILIALI -->
-    <nz-tab nzTitle="Filiali & Sedi">
+    <nz-tab [nzTitle]="'settings.tabs.branches' | translate">
       <app-base-table
         [data]="branches()"
         [columns]="branchColumns()"
@@ -100,7 +100,7 @@
     </nz-tab>
 
     <!-- TAB 3: UTENTI -->
-    <nz-tab nzTitle="Utenti & Accessi">
+    <nz-tab [nzTitle]="'settings.tabs.users' | translate">
       <app-base-table
         [data]="users()"
         [columns]="userColumns()"
@@ -111,7 +111,7 @@
     </nz-tab>
 
     <!-- TAB 4: RUOLI & PERMESSI -->
-    <nz-tab nzTitle="Ruoli & Permessi">
+    <nz-tab [nzTitle]="'settings.tabs.roles' | translate">
       <app-base-table
         [data]="roles()"
         [columns]="roleColumns()"
@@ -122,7 +122,7 @@
     </nz-tab>
 
     <!-- TAB 5: AUDIT LOG -->
-    <nz-tab nzTitle="Audit Log di Sistema">
+    <nz-tab [nzTitle]="'settings.tabs.audit' | translate">
       <div style="margin-bottom: 12px; display: flex; justify-content: flex-end">
         <button
           nz-button
@@ -130,7 +130,7 @@
           (click)="syncExchangeRates()"
           [nzLoading]="isSyncingRates()"
         >
-          <nz-icon nzType="sync" /> Sincronizza Tassi di Cambio
+          <nz-icon nzType="sync" /> {{ 'settings.messages.ratesSynced' | translate }}
         </button>
       </div>
       <app-base-table
@@ -151,7 +151,7 @@
 
 <ng-template #activeTpl let-item let-val="value">
   <nz-tag [nzColor]="val ? 'success' : 'default'">
-    {{ val ? "ATTIVO" : "DISATTIVATO" }}
+    {{ (val ? 'common.status.active' : 'common.status.inactive') | translate }}
   </nz-tag>
 </ng-template>
 

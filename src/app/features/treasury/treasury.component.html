@@ -1,13 +1,13 @@
 <app-page-header
-  title="Tesoreria & Riconciliazione Bancaria"
-  subtitle="Gestione conti multi-valuta (EUR/CHF), import estratti conto CAMT.053/CBI e riconciliazione automatica"
+  [title]="'treasury.title' | translate"
+  [subtitle]="'treasury.subtitle' | translate"
 />
 
 <!-- Header Stats -->
 <div nz-row [nzGutter]="16" class="stats-row">
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="totalEurBalance()" [nzPrefix]="'€'" nzTitle="Liquidità Totale EUR" />
+      <nz-statistic [nzValue]="totalEurBalance()" [nzPrefix]="'€'" [nzTitle]="'treasury.stats.eurLiquidity' | translate" />
     </nz-card>
   </div>
   <div nz-col [nzSpan]="8">
@@ -15,13 +15,13 @@
       <nz-statistic
         [nzValue]="totalChfBalance()"
         [nzPrefix]="'CHF'"
-        nzTitle="Liquidità Totale CHF"
+        [nzTitle]="'treasury.stats.chfLiquidity' | translate"
       />
     </nz-card>
   </div>
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="unreconciledCount()" nzTitle="Transazioni da Riconciliare" />
+      <nz-statistic [nzValue]="unreconciledCount()" [nzTitle]="'treasury.stats.toReconcile' | translate" />
     </nz-card>
   </div>
 </div>
@@ -29,13 +29,13 @@
 <nz-card>
   <nz-tabs [(nzSelectedIndex)]="selectedTab">
     <!-- TAB 1: MOVIMENTI BANCARI -->
-    <nz-tab nzTitle="Movimenti Bancari">
+    <nz-tab [nzTitle]="'treasury.tabs.bankMovements' | translate">
       <div class="tab-toolbar">
         <input
           class="search-input"
           nz-input
           type="search"
-          placeholder="Cerca descrizione o controparte..."
+          [placeholder]="'treasury.searchPlaceholder' | translate"
           [ngModel]="tableState.search()"
           (ngModelChange)="onSearchChange($event)"
         />
@@ -51,7 +51,7 @@
           <nz-icon nzType="sync" /> Riconciliazione Automatica
         </button>
         <button nz-button nzType="primary" type="button" (click)="isImportModalVisible.set(true)">
-          <nz-icon nzType="upload" /> Importa Estratto Conto (CAMT/CBI)
+          <nz-icon nzType="upload" /> {{ 'treasury.modal.title' | translate }}
         </button>
       </div>
 
@@ -67,7 +67,7 @@
     </nz-tab>
 
     <!-- TAB 2: CONTI BANCARI -->
-    <nz-tab nzTitle="Conti Correnti">
+    <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
       <app-base-table
         [data]="bankAccounts()"
         [columns]="accountColumns()"
@@ -78,7 +78,7 @@
     </nz-tab>
 
     <!-- TAB 3: ESTRATTI CONTO IMPORTATI -->
-    <nz-tab nzTitle="Estratti Conto Importati">
+    <nz-tab [nzTitle]="'treasury.tabs.statements' | translate">
       <app-base-table
         [data]="statements()"
         [columns]="statementColumns()"
@@ -106,13 +106,13 @@
 <!-- Modal for importing CAMT / CBI file -->
 <nz-modal
   [(nzVisible)]="isImportModalVisible"
-  nzTitle="Importazione File Bancario CAMT.053 / CBI"
+  [nzTitle]="'treasury.modal.title' | translate"
   (nzOnCancel)="isImportModalVisible.set(false)"
   (nzOnOk)="submitImport()"
   [nzOkLoading]="isUploading()"
 >
   <ng-container *nzModalContent>
-    <p>Seleziona il formato del file di estratto conto bancario da importare nel sistema:</p>
+    <p>{{ 'treasury.modal.description' | translate }}</p>
     <div style="margin-bottom: 16px">
       <label style="margin-right: 16px">
         <input

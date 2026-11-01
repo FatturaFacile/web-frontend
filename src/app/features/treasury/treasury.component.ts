@@ -10,7 +10,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
 import {
   BankAccountResource,
@@ -18,6 +18,7 @@ import {
   BankTransactionResource,
   BankingApiService,
   TreasuryApiService,
+  TranslateService,
 } from '@core';
 import {
   BaseTableComponent,
@@ -25,6 +26,7 @@ import {
   TableColumnDef,
   TableQueryParams,
   TableStateService,
+  TranslatePipe,
 } from '@shared';
 
 @Component({
@@ -46,6 +48,7 @@ import {
     NzUploadModule,
     BaseTableComponent,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   providers: [TableStateService],
   templateUrl: './treasury.component.html',
@@ -55,6 +58,7 @@ export class TreasuryComponent implements OnInit {
   private readonly treasuryApi = inject(TreasuryApiService);
   private readonly bankingApi = inject(BankingApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
   protected readonly tableState = inject(TableStateService<BankTransactionResource>);
 
   protected selectedTab = 0;
@@ -87,10 +91,10 @@ export class TreasuryComponent implements OnInit {
     return this.transactions().filter((t) => !t.reconciled).length;
   });
 
-  private readonly dateTpl = viewChild<TemplateRef<any>>('dateTpl');
-  private readonly currencyTpl = viewChild<TemplateRef<any>>('currencyTpl');
-  private readonly reconciledTpl = viewChild<TemplateRef<any>>('reconciledTpl');
-  private readonly statusTpl = viewChild<TemplateRef<any>>('statusTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly currencyTpl = viewChild<TemplateRef<unknown>>('currencyTpl');
+  private readonly reconciledTpl = viewChild<TemplateRef<unknown>>('reconciledTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
 
   readonly txColumns = computed<TableColumnDef<BankTransactionResource>[]>(() => [
     {
@@ -339,16 +343,14 @@ export class TreasuryComponent implements OnInit {
   triggerAutoMatch(): void {
     this.isReconciling.set(true);
     this.treasuryApi.reconcileTransactionsAutoMatch().subscribe({
-      next: (res) => {
+      next: () => {
         this.isReconciling.set(false);
-        this.message.success(
-          `Riconciliazione automatica completata: ${res.data?.matched_count ?? 2} movimenti abbinati.`,
-        );
+        this.message.success(this.translate.instant('treasury.messages.reconciliationSuccess'));
         this.loadTransactions();
       },
       error: () => {
         this.isReconciling.set(false);
-        this.message.success('Riconciliazione automatica completata.');
+        this.message.success(this.translate.instant('treasury.messages.reconciliationSuccess'));
         this.loadTransactions();
       },
     });
@@ -357,12 +359,12 @@ export class TreasuryComponent implements OnInit {
   reconcileStatement(st: BankStatement): void {
     this.bankingApi.reconcileStatement(st.id).subscribe({
       next: () => {
-        this.message.success(`Estratto conto ${st.iban} riconciliato.`);
+        this.message.success(this.translate.instant('treasury.messages.statementReconciled', { iban: st.iban }));
         this.loadStatements();
         this.loadTransactions();
       },
       error: () => {
-        this.message.success('Estratto conto riconciliato con successo.');
+        this.message.success(this.translate.instant('treasury.messages.statementReconciledSuccess'));
       },
     });
   }
@@ -376,7 +378,7 @@ export class TreasuryComponent implements OnInit {
 
   submitImport(): void {
     if (!this.selectedFile) {
-      this.message.warning('Seleziona un file prima di procedere.');
+      this.message.warning(this.translate.instant('treasury.messages.selectFile'));
       return;
     }
 
@@ -388,14 +390,14 @@ export class TreasuryComponent implements OnInit {
         next: () => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success('File CAMT importato con successo.');
+          this.message.success(this.translate.instant('treasury.messages.camtSuccess'));
           this.loadTransactions();
           this.loadStatements();
         },
         error: () => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success('File CAMT importato con successo.');
+          this.message.success(this.translate.instant('treasury.messages.camtSuccess'));
         },
       });
     } else {
@@ -404,14 +406,14 @@ export class TreasuryComponent implements OnInit {
         next: () => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success('File CBI importato con successo.');
+          this.message.success(this.translate.instant('treasury.messages.cbiSuccess'));
           this.loadTransactions();
           this.loadStatements();
         },
         error: () => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success('File CBI importato con successo.');
+          this.message.success(this.translate.instant('treasury.messages.cbiSuccess'));
         },
       });
     }

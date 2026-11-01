@@ -32,9 +32,17 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
               }
             ],
-            "styles": ["src/theme.less", "src/styles.scss"]
+            "styles": [
+              "src/theme.less",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

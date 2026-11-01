@@ -1,14 +1,14 @@
 <app-page-header
-  title="Gestione Backup & Disaster Recovery"
-  subtitle="Backup completi dell'istanza tenant, download archivi crittografati e ripristino point-in-time"
+  [title]="'system.backups.title' | translate"
+  [subtitle]="'system.backups.subtitle' | translate"
 />
 
 <nz-card>
   <div class="toolbar">
-    <span class="toolbar-title">Archivi di Sicurezza del Tenant</span>
+    <span class="toolbar-title">{{ 'system.backups.cardTitle' | translate }}</span>
     <span class="spacer"></span>
     <button nz-button type="button" (click)="isUploadModalVisible.set(true)">
-      <nz-icon nzType="upload" /> Carica & Ripristina Backup
+      <nz-icon nzType="upload" /> {{ 'system.backups.actions.restoreData' | translate }}
     </button>
     <button
       nz-button
@@ -17,7 +17,7 @@
       (click)="createBackup()"
       [nzLoading]="isCreating()"
     >
-      <nz-icon nzType="database" /> Genera Nuovo Backup
+      <nz-icon nzType="database" /> {{ 'system.backups.messages.started' | translate }}
     </button>
   </div>
 
@@ -53,7 +53,7 @@
         nzSize="small"
         type="button"
         (click)="download(b)"
-        title="Scarica Archivio ZIP"
+        [title]="'system.backups.actions.download' | translate"
       >
         <nz-icon nzType="download" />
       </button>
@@ -63,11 +63,11 @@
         nzSize="small"
         type="button"
         nz-popconfirm
-        nzPopconfirmTitle="Attenzione: il ripristino sovrascriverà i dati correnti con questa versione. Vuoi procedere?"
-        nzOkText="Ripristina Dati"
-        nzCancelText="Annulla"
+        [nzPopconfirmTitle]="'system.backups.confirmRestore' | translate"
+        [nzOkText]="'system.backups.actions.restoreData' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
         (nzOnConfirm)="restore(b)"
-        title="Ripristina questo backup"
+        [title]="'system.backups.actions.restore' | translate"
       >
         <nz-icon nzType="cloud-download" />
       </button>
@@ -78,11 +78,11 @@
         nzSize="small"
         type="button"
         nz-popconfirm
-        nzPopconfirmTitle="Vuoi eliminare definitivamente questo archivio di backup?"
-        nzOkText="Elimina"
-        nzCancelText="Annulla"
+        [nzPopconfirmTitle]="'system.backups.confirmDelete' | translate"
+        [nzOkText]="'common.actions.delete' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
         (nzOnConfirm)="delete(b)"
-        title="Elimina Archivio"
+        [title]="'system.backups.actions.delete' | translate"
       >
         <nz-icon nzType="delete" />
       </button>
@@ -92,13 +92,13 @@
 
 <nz-modal
   [(nzVisible)]="isUploadModalVisible"
-  nzTitle="Caricamento e Ripristino Backup ZIP"
+  [nzTitle]="'system.backups.modal.title' | translate"
   (nzOnCancel)="isUploadModalVisible.set(false)"
   (nzOnOk)="submitUploadRestore()"
   [nzOkLoading]="isUploading()"
 >
   <ng-container *nzModalContent>
-    <p>Seleziona l'archivio ZIP di backup (.zip) esportato precedentemente da FatturaFacile:</p>
+    <p>{{ 'system.backups.modal.description' | translate }}</p>
     <input type="file" (change)="onFileSelected($event)" accept=".zip" />
   </ng-container>
 </nz-modal>

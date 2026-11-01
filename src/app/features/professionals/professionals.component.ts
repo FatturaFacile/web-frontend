@@ -3,7 +3,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { LegalCase, ProfessionalsApiService } from '@core';
+import { LegalCase, ProfessionalsApiService, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class ProfessionalsComponent implements OnInit {
   private readonly api = inject(ProfessionalsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -32,8 +33,8 @@ export class ProfessionalsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel caricamento pratiche');
-        this.message.error('Errore nel caricamento delle pratiche legali e fascicoli');
+        this.error.set(err?.message || this.translate.instant('cases.errors.loadFailed'));
+        this.message.error(this.translate.instant('cases.errors.loadFailedDetail'));
         this.cases.set([]);
         this.loading.set(false);
       },

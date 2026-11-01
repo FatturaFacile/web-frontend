@@ -1,25 +1,25 @@
 <nz-drawer
   [nzVisible]="open()"
-  [nzTitle]="alert() ? 'Modifica Avviso' : 'Crea Nuovo Avviso'"
+  [nzTitle]="(alert() ? 'alerts.form.editTitle' : 'alerts.form.createTitle') | translate"
   [nzWidth]="500"
   (nzOnClose)="open.set(false)"
 >
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="title">Titolo Avviso</nz-form-label>
-        <nz-form-control nzErrorTip="Il titolo è obbligatorio">
+        <nz-form-label nzRequired nzFor="title">{{ "alerts.form.title" | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.titleRequired' | translate">
           <input
             nz-input
             id="title"
             formControlName="title"
-            placeholder="Es. Scadenza IVA Trimestrale..."
+            [placeholder]="'alerts.form.titlePlaceholder' | translate"
           />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="severity">Livello di Gravità</nz-form-label>
+        <nz-form-label nzFor="severity">{{ "alerts.form.severity" | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="severity" formControlName="severity">
             <nz-option nzValue="info" nzLabel="Informativo (Blu)" />
@@ -30,29 +30,31 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="message">Messaggio Dettagliato</nz-form-label>
+        <nz-form-label nzFor="message">{{ "alerts.form.message" | translate }}</nz-form-label>
         <nz-form-control>
           <textarea
             nz-input
             id="message"
             formControlName="message"
             rows="4"
-            placeholder="Inserisci ulteriori dettagli sull'avviso..."
+            [placeholder]="'alerts.form.messagePlaceholder' | translate"
           ></textarea>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="is_active">Stato Attivo</nz-form-label>
+        <nz-form-label nzFor="is_active">{{ "alerts.form.isActive" | translate }}</nz-form-label>
         <nz-form-control>
           <nz-switch id="is_active" formControlName="is_active" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="footer-actions">
-        <button nz-button type="button" (click)="open.set(false)">Annulla</button>
+        <button nz-button type="button" (click)="open.set(false)">
+          {{ "common.actions.cancel" | translate }}
+        </button>
         <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
-          Salva Avviso
+          {{ "alerts.form.submit" | translate }}
         </button>
       </div>
     </form>

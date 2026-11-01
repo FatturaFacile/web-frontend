@@ -14,11 +14,11 @@ export interface BillOfMaterial {
   item_code: string;
   description: string;
   revision: string;
-  components: Array<{
+  components: {
     item_id: string;
     quantity: number;
     unit: string;
-  }>;
+  }[];
 }
 
 export interface TrackProductionStagePayload {

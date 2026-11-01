@@ -1,21 +1,21 @@
 <nz-drawer
   [nzVisible]="open()"
-  [nzTitle]="expense() ? 'Modifica Nota Spesa' : 'Nuova Nota Spesa'"
+  [nzTitle]="(expense() ? 'expenses.form.editTitle' : 'expenses.form.createTitle') | translate"
   [nzWidth]="500"
   (nzOnClose)="open.set(false)"
 >
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="date">Data Spesa</nz-form-label>
-        <nz-form-control nzErrorTip="La data è obbligatoria">
+        <nz-form-label nzRequired nzFor="date">{{ 'expenses.form.date' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
           <nz-date-picker id="date" formControlName="date" style="width: 100%" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="amount">Importo</nz-form-label>
-        <nz-form-control nzErrorTip="Inserisci un importo valido">
+        <nz-form-label nzRequired nzFor="amount">{{ 'expenses.form.amount' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.amountRequired' | translate">
           <nz-input-number
             id="amount"
             formControlName="amount"
@@ -27,7 +27,7 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="currency">Valuta</nz-form-label>
+        <nz-form-label nzRequired nzFor="currency">{{ 'expenses.form.currency' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="currency" formControlName="currency">
             <nz-option nzValue="EUR" nzLabel="EUR (€)" />
@@ -37,32 +37,32 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="description">Descrizione / Causale</nz-form-label>
-        <nz-form-control nzErrorTip="La descrizione è obbligatoria">
+        <nz-form-label nzRequired nzFor="description">{{ 'expenses.form.description' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.descriptionRequired' | translate">
           <textarea
             nz-input
             id="description"
             formControlName="description"
             rows="3"
-            placeholder="Es. Pranzo di lavoro con cliente..."
+            [placeholder]="'expenses.form.descriptionPlaceholder' | translate"
           ></textarea>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="merchant">Fornitore / Esercente</nz-form-label>
+        <nz-form-label nzFor="merchant">{{ 'expenses.form.merchant' | translate }}</nz-form-label>
         <nz-form-control>
           <input
             nz-input
             id="merchant"
             formControlName="merchant"
-            placeholder="Es. Ristorante Da Mario"
+            [placeholder]="'expenses.form.merchantPlaceholder' | translate"
           />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="status">Stato</nz-form-label>
+        <nz-form-label nzFor="status">{{ 'common.status.label' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="status" formControlName="status">
             <nz-option nzValue="draft" nzLabel="Bozza" />
@@ -75,9 +75,9 @@
       </nz-form-item>
 
       <div class="footer-actions">
-        <button nz-button type="button" (click)="open.set(false)">Annulla</button>
+        <button nz-button type="button" (click)="open.set(false)">{{ 'common.actions.cancel' | translate }}</button>
         <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
-          Salva Spesa
+          {{ 'expenses.form.submit' | translate }}
         </button>
       </div>
     </form>

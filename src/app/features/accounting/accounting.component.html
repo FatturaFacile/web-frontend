@@ -1,25 +1,25 @@
 <app-page-header
-  title="Contabilità Generale & Dual-Ledger"
-  subtitle="Sistema a doppia partita cross-border per normative fiscali IT (SDI) e CH (CO/PCO)"
+  [title]="'accounting.title' | translate"
+  [subtitle]="'accounting.subtitle' | translate"
 />
 
 <nz-card>
   <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
     <!-- TAB 1: LIBRO GIORNALE -->
-    <nz-tab nzTitle="Libro Giornale">
+    <nz-tab [nzTitle]="'accounting.generalLedger' | translate">
       <div class="tab-toolbar">
         <input
           class="search-input"
           nz-input
           type="search"
-          placeholder="Cerca numero o causale..."
+          [placeholder]="'accounting.searchPlaceholder' | translate"
           [ngModel]="tableState.search()"
           (ngModelChange)="onSearchChange($event)"
         />
 
         <span class="spacer"></span>
         <button nz-button nzType="primary" type="button" (click)="drawerOpen.set(true)">
-          <nz-icon nzType="plus" /> Nuova Registrazione
+          <nz-icon nzType="plus" /> {{ "accounting.form.title" | translate }}
         </button>
       </div>
 
@@ -38,14 +38,14 @@
       <!-- Detail row expandable template -->
       <ng-template #ledgerDetailTpl let-entry>
         <div class="expandable-detail-wrapper">
-          <h5>Dettaglio Righe Registrazione {{ entry.entry_number }}</h5>
+          <h5>{{ "accounting.entryDetailTitle" | translate: { number: entry.entry_number } }}</h5>
           <table class="nested-lines-table">
             <thead>
               <tr>
-                <th>Conto</th>
-                <th>Descrizione</th>
-                <th style="text-align: right">Dare (€/CHF)</th>
-                <th style="text-align: right">Avere (€/CHF)</th>
+                <th>{{ "accounting.table.account" | translate }}</th>
+                <th>{{ "accounting.table.description" | translate }}</th>
+                <th style="text-align: right">{{ "accounting.table.debit" | translate }}</th>
+                <th style="text-align: right">{{ "accounting.table.credit" | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -53,7 +53,7 @@
                 <tr>
                   <td>
                     <code>{{ line.account_code || line.account_id }}</code> -
-                    {{ line.account_name || "Conto Contabile" }}
+                    {{ line.account_name || ("accounting.table.account" | translate) }}
                   </td>
                   <td>{{ line.description || "-" }}</td>
                   <td style="text-align: right">
@@ -73,7 +73,7 @@
     </nz-tab>
 
     <!-- TAB 2: PIANO DEI CONTI -->
-    <nz-tab nzTitle="Piano dei Conti">
+    <nz-tab [nzTitle]="'accounting.chartOfAccounts' | translate">
       <app-base-table
         [data]="chartOfAccounts()"
         [columns]="coaColumns()"
@@ -84,7 +84,7 @@
     </nz-tab>
 
     <!-- TAB 3: LIQUIDAZIONI IVA -->
-    <nz-tab nzTitle="Liquidazioni IVA & Fiscale">
+    <nz-tab [nzTitle]="'accounting.vatSettlement' | translate">
       <app-base-table
         [data]="vatSettlements()"
         [columns]="vatColumns()"

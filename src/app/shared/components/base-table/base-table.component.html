@@ -6,10 +6,10 @@
       @if (selectable() && selectedItems().length > 0) {
         <div class="selection-summary">
           <span class="selection-count">
-            <strong>{{ selectedItems().length }}</strong> elementi selezionati
+            {{ 'common.table.selectedCount' | translate: { count: selectedItems().length } }}
           </span>
           <button nz-button nzType="link" nzSize="small" type="button" (click)="clearSelection()">
-            Deseleziona tutti
+            {{ 'common.table.deselectAll' | translate }}
           </button>
         </div>
       }
@@ -28,7 +28,7 @@
         nz-dropdown
         [nzDropdownMenu]="densityMenu"
         nzTrigger="click"
-        title="Densità tabella"
+        [title]="'common.table.density' | translate"
       >
         <nz-icon nzType="column-height" />
       </button>
@@ -39,21 +39,21 @@
             [nzSelected]="currentDensity() === 'default'"
             (click)="setDensity('default')"
           >
-            Ampia
+            {{ 'common.table.densityDefault' | translate }}
           </li>
           <li
             nz-menu-item
             [nzSelected]="currentDensity() === 'middle'"
             (click)="setDensity('middle')"
           >
-            Media
+            {{ 'common.table.densityMiddle' | translate }}
           </li>
           <li
             nz-menu-item
             [nzSelected]="currentDensity() === 'small'"
             (click)="setDensity('small')"
           >
-            Compatta
+            {{ 'common.table.densitySmall' | translate }}
           </li>
         </ul>
       </nz-dropdown-menu>
@@ -67,13 +67,13 @@
         nz-dropdown
         [nzDropdownMenu]="columnVisibilityMenu"
         nzTrigger="click"
-        title="Colonne visibili"
+        [title]="'common.table.visibleColumns' | translate"
       >
         <nz-icon nzType="setting" />
       </button>
       <nz-dropdown-menu #columnVisibilityMenu="nzDropdownMenu">
         <div class="column-visibility-dropdown">
-          <div class="dropdown-header">Colonne visibili</div>
+          <div class="dropdown-header">{{ 'common.table.visibleColumns' | translate }}</div>
           <ul nz-menu>
             @for (col of allColumns(); track col.key) {
               <li nz-menu-item (click)="$event.stopPropagation()">
@@ -190,7 +190,7 @@
                         <input
                           nz-input
                           type="text"
-                          [placeholder]="'Cerca ' + col.header"
+                          [placeholder]="('common.table.search' | translate) + ' ' + col.header"
                           [ngModel]="getFilterValue(col.key)"
                           (ngModelChange)="onFilterValueChange(col.key, $event)"
                           (keydown.enter)="applyColumnFilter(col.key)"
@@ -204,7 +204,7 @@
                         type="button"
                         (click)="resetColumnFilter(col.key)"
                       >
-                        Reset
+                        {{ 'common.table.reset' | translate }}
                       </button>
                       <button
                         nz-button
@@ -213,7 +213,7 @@
                         type="button"
                         (click)="applyColumnFilter(col.key)"
                       >
-                        Cerca
+                        {{ 'common.table.search' | translate }}
                       </button>
                     </div>
                   </div>
@@ -223,7 +223,7 @@
           }
 
           @if (actionsTemplate()) {
-            <th nzWidth="90px" nzRight nzAlign="right">Azioni</th>
+            <th nzWidth="90px" nzRight nzAlign="right">{{ 'common.table.actions' | translate }}</th>
           }
         </tr>
       </thead>
@@ -294,6 +294,6 @@
   }
 
   <ng-template #emptyFallback>
-    <nz-empty [nzNotFoundContent]="emptyText()" />
+    <nz-empty [nzNotFoundContent]="emptyText() ?? ('common.table.noData' | translate)" />
   </ng-template>
 </div>

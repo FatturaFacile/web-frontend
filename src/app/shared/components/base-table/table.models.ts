@@ -2,7 +2,7 @@ import { TemplateRef } from '@angular/core';
 
 export type SortOrder = 'ascend' | 'descend' | null;
 
-export interface TableColumnDef<TItem = any> {
+export interface TableColumnDef<TItem = unknown> {
   key: keyof TItem | string;
   header: string;
   width?: string;
@@ -14,7 +14,7 @@ export interface TableColumnDef<TItem = any> {
   fixed?: 'left' | 'right';
   align?: 'left' | 'center' | 'right';
   visible?: boolean;
-  customCellTemplate?: TemplateRef<{ $implicit: any; value: any }> | TemplateRef<any>;
+  customCellTemplate?: TemplateRef<{ $implicit: unknown; value: unknown }> | TemplateRef<unknown>;
   customFilterTemplate?: TemplateRef<{ column: TableColumnDef<TItem> }>;
 }
 

@@ -3,7 +3,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { ManufacturingApiService, ProductionOrder } from '@core';
+import { ManufacturingApiService, ProductionOrder, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class ManufacturingComponent implements OnInit {
   private readonly api = inject(ManufacturingApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -32,8 +33,8 @@ export class ManufacturingComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel caricamento ordini di produzione');
-        this.message.error('Errore nel caricamento degli ordini di produzione');
+        this.error.set(err?.message || this.translate.instant('manufacturing.errors.loadFailed'));
+        this.message.error(this.translate.instant('manufacturing.errors.loadFailedDetail'));
         this.orders.set([]);
         this.loading.set(false);
       },

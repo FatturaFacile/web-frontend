@@ -24,4 +24,4 @@ export interface CreateAlertPayload {
   is_active?: boolean;
 }
 
-export interface UpdateAlertPayload extends Partial<CreateAlertPayload> {}
+export type UpdateAlertPayload = Partial<CreateAlertPayload>;

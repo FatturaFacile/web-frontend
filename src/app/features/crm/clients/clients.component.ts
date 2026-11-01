@@ -166,9 +166,13 @@ export class ClientsComponent {
 
   protected viewStats(c: ContactResource): void {
     this.modal.info({
-      nzTitle: `Statistiche ${this.name(c)}`,
-      nzContent: `Anagrafica ${c.country} - Tipo: ${this.typeLabel(c.type)} - Partita IVA/Codice Fiscale: ${c.vat_number || c.fiscal_code || c.uid_number || 'N/D'}`,
-      nzOkText: 'Chiudi',
+      nzTitle: this.i18n.translate('crm.clients.statsModal.title', { name: this.name(c) }),
+      nzContent: this.i18n.translate('crm.clients.statsModal.content', {
+        country: c.country,
+        type: this.typeLabel(c.type),
+        fiscal: c.vat_number || c.fiscal_code || c.uid_number || 'N/D',
+      }),
+      nzOkText: this.i18n.translate('common.actions.close'),
     });
   }
 }

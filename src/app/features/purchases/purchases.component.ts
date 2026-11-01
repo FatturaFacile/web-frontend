@@ -26,6 +26,7 @@ import {
   ProcurementApiService,
   PurchaseOrder,
   PurchaseOrderStatus,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -59,6 +60,7 @@ export class PurchasesComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);
   private readonly procurementApi = inject(ProcurementApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
 
   readonly loading = signal(false);
@@ -143,7 +145,7 @@ export class PurchasesComponent implements OnInit {
   submitApproval(order: PurchaseOrder): void {
     this.procurementApi.submitApproval(order.id).subscribe({
       next: () => {
-        this.message.success(`Ordine ${order.order_number} sottomesso per approvazione`);
+        this.message.success(this.translate.instant('purchases.messages.submitted', { number: order.order_number }));
         this.loadOrders();
       },
     });
@@ -152,16 +154,16 @@ export class PurchasesComponent implements OnInit {
   approve(order: PurchaseOrder): void {
     this.procurementApi.approvePurchaseOrder(order.id).subscribe({
       next: () => {
-        this.message.success(`Ordine ${order.order_number} approvato`);
+        this.message.success(this.translate.instant('purchases.messages.approved', { number: order.order_number }));
         this.loadOrders();
       },
     });
   }
 
   reject(order: PurchaseOrder): void {
-    this.procurementApi.rejectPurchaseOrder(order.id, 'Rifiutato da operatore').subscribe({
+    this.procurementApi.rejectPurchaseOrder(order.id, this.translate.instant('purchases.rejectReason')).subscribe({
       next: () => {
-        this.message.success(`Ordine ${order.order_number} rifiutato`);
+        this.message.success(this.translate.instant('purchases.messages.rejected', { number: order.order_number }));
         this.loadOrders();
       },
     });
@@ -206,7 +208,7 @@ export class PurchasesComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Ordine di acquisto creato con successo');
+        this.message.success(this.translate.instant('purchases.messages.created'));
         this.loadOrders();
       },
       error: () => {
@@ -233,22 +235,6 @@ export class PurchasesComponent implements OnInit {
   }
 
   statusLabel(status: PurchaseOrderStatus): string {
-    switch (status) {
-      case 'approved':
-        return 'Approvato';
-      case 'pending_approval':
-        return 'In Approvazione';
-      case 'ordered':
-        return 'Ordinato';
-      case 'received':
-        return 'Ricevuto';
-      case 'rejected':
-        return 'Rifiutato';
-      case 'cancelled':
-        return 'Annullato';
-      case 'draft':
-      default:
-        return 'Bozza';
-    }
+    return this.translate.instant('purchases.statuses.' + status);
   }
 }

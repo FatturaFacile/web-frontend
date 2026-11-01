@@ -27,6 +27,26 @@ interface ApiResponseTranslations {
   translations: TranslationDictionary;
 }
 
+function resolveTranslation(
+  dict: TranslationDictionary | undefined,
+  key: string
+): string | undefined {
+  if (!dict || !key) return undefined;
+  if (typeof dict[key] === 'string') {
+    return dict[key] as string;
+  }
+  const parts = key.split('.');
+  let current: unknown = dict;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = (current as Record<string, unknown>)[part];
+    } else {
+      return undefined;
+    }
+  }
+  return typeof current === 'string' ? current : undefined;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -168,7 +188,7 @@ export class I18nService {
 
     const dict = this.currentDictionary();
     const fallbackDict = this.dictionaries()['en'] ?? {};
-    let text = dict[key] ?? fallbackDict[key] ?? key;
+    let text = resolveTranslation(dict, key) ?? resolveTranslation(fallbackDict, key) ?? key;
 
     if (params) {
       for (const [paramKey, paramVal] of Object.entries(params)) {
@@ -177,6 +197,10 @@ export class I18nService {
     }
 
     return text;
+  }
+
+  instant(key: string, params?: Record<string, string | number>): string {
+    return this.translate(key, params);
   }
 
   private syncNzLocale(lang: SupportedLanguage): void {
@@ -199,3 +223,5 @@ export class I18nService {
     }
   }
 }
+
+export { I18nService as TranslateService };

@@ -3,7 +3,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { FieldServiceApiService, FieldServiceTicket } from '@core';
+import { FieldServiceApiService, FieldServiceTicket, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class FieldServiceComponent implements OnInit {
   private readonly api = inject(FieldServiceApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -32,8 +33,8 @@ export class FieldServiceComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel caricamento ticket');
-        this.message.error('Errore nel caricamento dei ticket di assistenza');
+        this.error.set(err?.message || this.translate.instant('fieldService.errors.loadFailed'));
+        this.message.error(this.translate.instant('fieldService.errors.loadFailedDetail'));
         this.tickets.set([]);
         this.loading.set(false);
       },

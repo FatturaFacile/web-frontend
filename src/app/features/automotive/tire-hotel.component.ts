@@ -7,7 +7,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { AutomotiveApiService, TireRecord } from '@core';
+import { AutomotiveApiService, TireRecord, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -29,6 +29,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class TireHotelComponent implements OnInit {
   private readonly api = inject(AutomotiveApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -55,7 +56,7 @@ export class TireHotelComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel recupero deposito gomme');
+        this.error.set(err?.message || this.translate.instant('automotive.errors.loadFailed'));
         this.tireRecords.set([]);
         this.loading.set(false);
       },
@@ -68,14 +69,18 @@ export class TireHotelComponent implements OnInit {
         this.tireRecords.update((records) =>
           records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
         );
-        this.message.success(`Notifica inviata con successo per il veicolo ${tire.vehiclePlate}`);
+        this.message.success(
+          this.translate.instant('automotive.tireHotel.notifySuccess', { plate: tire.vehiclePlate }),
+        );
       },
       error: () => {
         // Fallback optimistic notification if endpoint simulation succeeds
         this.tireRecords.update((records) =>
           records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
         );
-        this.message.success(`Notifica inviata con successo per il veicolo ${tire.vehiclePlate}`);
+        this.message.success(
+          this.translate.instant('automotive.tireHotel.notifySuccess', { plate: tire.vehiclePlate }),
+        );
       },
     });
   }

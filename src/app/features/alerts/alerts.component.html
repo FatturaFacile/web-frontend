@@ -1,6 +1,6 @@
 <app-page-header
-  title="Centro Avvisi & Notifiche Operative"
-  subtitle="Monitoraggio scadenze fiscali, anomalie SDI, avvisi bancari e comunicazioni aziendali"
+  [title]="'alerts.title' | translate"
+  [subtitle]="'alerts.subtitle' | translate"
 />
 
 <nz-card>
@@ -9,7 +9,7 @@
       class="search"
       nz-input
       type="search"
-      placeholder="Cerca per titolo avviso..."
+      [placeholder]="'alerts.searchPlaceholder' | translate"
       [ngModel]="tableState.search()"
       (ngModelChange)="onSearchChange($event)"
     />
@@ -17,7 +17,7 @@
     <nz-select
       class="filter"
       nzAllowClear
-      nzPlaceHolder="Filtra gravità"
+      [nzPlaceHolder]="'COMMON.SELECT' | translate"
       [ngModel]="selectedSeverity"
       (ngModelChange)="onSeverityFilterChange($event)"
     >
@@ -28,7 +28,7 @@
 
     <span class="spacer"></span>
     <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> Nuovo Avviso
+      <nz-icon nzType="plus" /> {{ "alerts.actions.create" | translate }}
     </button>
   </div>
 
@@ -59,7 +59,7 @@
 
   <ng-template #statusTpl let-alert>
     <nz-tag [nzColor]="alert.is_active ? 'success' : 'default'">
-      {{ alert.is_active ? "ATTIVO" : "DISATTIVATO" }}
+      {{ (alert.is_active ? "common.status.active" : "common.status.inactive") | translate }}
     </nz-tag>
   </ng-template>
 
@@ -76,7 +76,7 @@
         nzSize="small"
         type="button"
         (click)="edit(alert)"
-        title="Modifica Avviso"
+        [title]="'alerts.actions.edit' | translate"
       >
         <nz-icon nzType="edit" />
       </button>
@@ -87,11 +87,11 @@
         nzSize="small"
         type="button"
         nz-popconfirm
-        nzPopconfirmTitle="Sei sicuro di voler eliminare questo avviso?"
-        nzOkText="Elimina"
-        nzCancelText="Annulla"
+        [nzPopconfirmTitle]="'alerts.confirmDelete' | translate"
+        [nzOkText]="'common.actions.delete' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
         (nzOnConfirm)="delete(alert)"
-        title="Elimina Avviso"
+        [title]="'alerts.actions.delete' | translate"
       >
         <nz-icon nzType="delete" />
       </button>

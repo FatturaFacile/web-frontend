@@ -38,7 +38,7 @@ export interface CreateExpensePayload {
   project_id?: string | null;
 }
 
-export interface UpdateExpensePayload extends Partial<CreateExpensePayload> {}
+export type UpdateExpensePayload = Partial<CreateExpensePayload>;
 
 export interface ExpenseSummaryReport {
   total_amount: number;

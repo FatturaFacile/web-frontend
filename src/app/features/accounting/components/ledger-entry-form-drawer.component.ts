@@ -1,7 +1,6 @@
 import { Component, inject, model, output, signal } from '@angular/core';
 import {
   FormArray,
-  FormControl,
   FormGroup,
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -15,7 +14,8 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AccountingApiService, CreateLedgerEntryPayload } from '@core';
+import { AccountingApiService, CreateLedgerEntryPayload, TranslateService } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-ledger-entry-form-drawer',
@@ -28,6 +28,7 @@ import { AccountingApiService, CreateLedgerEntryPayload } from '@core';
     NzDatePickerModule,
     NzButtonModule,
     NzIconModule,
+    TranslatePipe,
   ],
   templateUrl: './ledger-entry-form-drawer.component.html',
   styleUrl: './ledger-entry-form-drawer.component.scss',
@@ -36,6 +37,7 @@ export class LedgerEntryFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(AccountingApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly open = model.required<boolean>();
   readonly saved = output<void>();
@@ -62,14 +64,14 @@ export class LedgerEntryFormDrawerComponent {
   createLine(accountId = '', debit = 0, credit = 0): FormGroup {
     return this.fb.group({
       account_id: this.fb.control<string>(accountId, [Validators.required]),
-      debit: this.fb.control<number>(debit, [Validators.min(0)]),
-      credit: this.fb.control<number>(credit, [Validators.min(0)]),
+      debit: this.fb.control<number>(debit),
+      credit: this.fb.control<number>(credit),
       description: this.fb.control<string>(''),
     });
   }
 
   addLine(): void {
-    this.linesArray.push(this.createLine());
+    this.linesArray.push(this.createLine('', 0, 0));
   }
 
   removeLine(index: number): void {
@@ -79,14 +81,14 @@ export class LedgerEntryFormDrawerComponent {
   }
 
   totalDebit(): number {
-    return this.linesArray.value.reduce(
+    return (this.linesArray.value || []).reduce(
       (sum: number, line: { debit?: number }) => sum + (Number(line.debit) || 0),
       0,
     );
   }
 
   totalCredit(): number {
-    return this.linesArray.value.reduce(
+    return (this.linesArray.value || []).reduce(
       (sum: number, line: { credit?: number }) => sum + (Number(line.credit) || 0),
       0,
     );
@@ -99,7 +101,7 @@ export class LedgerEntryFormDrawerComponent {
     }
 
     if (this.totalDebit() !== this.totalCredit()) {
-      this.message.error('La scrittura deve essere in pareggio: Dare = Avere');
+      this.message.error(this.translate.instant('accounting.errors.unbalancedEntry'));
       return;
     }
 
@@ -108,12 +110,12 @@ export class LedgerEntryFormDrawerComponent {
     const dateStr =
       val.date instanceof Date ? val.date.toISOString().split('T')[0] : String(val.date);
 
-    const rawLines = val.lines as Array<{
+    const rawLines = val.lines as {
       account_id: string;
       debit: number;
       credit: number;
       description?: string;
-    }>;
+    }[];
     const payload: CreateLedgerEntryPayload = {
       entry_number: val.entry_number,
       date: dateStr,
@@ -129,7 +131,7 @@ export class LedgerEntryFormDrawerComponent {
     this.api.createLedgerEntry(payload).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.message.success('Registrazione a libro giornale completata');
+        this.message.success(this.translate.instant('accounting.messages.entrySaved'));
         this.open.set(false);
         this.saved.emit();
       },

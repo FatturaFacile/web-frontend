@@ -8,7 +8,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AlertsApiService, AlertResource, AlertSeverity } from '@core';
+import { AlertsApiService, AlertResource, AlertSeverity, TranslateService } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-alert-form-drawer',
@@ -21,6 +22,7 @@ import { AlertsApiService, AlertResource, AlertSeverity } from '@core';
     NzSwitchModule,
     NzDatePickerModule,
     NzButtonModule,
+    TranslatePipe,
   ],
   templateUrl: './alert-form-drawer.component.html',
   styleUrl: './alert-form-drawer.component.scss',
@@ -29,6 +31,7 @@ export class AlertFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(AlertsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly open = model.required<boolean>();
   readonly alert = input<AlertResource | null>(null);
@@ -88,7 +91,9 @@ export class AlertFormDrawerComponent {
     req$.subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.message.success(current ? 'Avviso aggiornato' : 'Avviso creato');
+        this.message.success(
+          this.translate.instant(current ? 'alerts.messages.updated' : 'alerts.messages.created'),
+        );
         this.open.set(false);
         this.saved.emit();
       },

@@ -3,7 +3,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { RentApiService, RentalVehicle } from '@core';
+import { RentalVehicle, RentApiService, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class RentComponent implements OnInit {
   private readonly api = inject(RentApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -32,8 +33,8 @@ export class RentComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel caricamento parco veicoli');
-        this.message.error('Errore nel caricamento dei veicoli a noleggio');
+        this.error.set(err?.message || this.translate.instant('rent.errors.loadFailed'));
+        this.message.error(this.translate.instant('rent.errors.loadFailedDetail'));
         this.vehicles.set([]);
         this.loading.set(false);
       },
