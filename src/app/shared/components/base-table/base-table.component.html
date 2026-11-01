@@ -1,0 +1,299 @@
+<!-- eslint-disable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus, @angular-eslint/template/label-has-associated-control -->
+<div class="base-table-container">
+  <!-- Toolbar: density, column visibility, bulk selection bar, custom toolbar slot -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      @if (selectable() && selectedItems().length > 0) {
+        <div class="selection-summary">
+          <span class="selection-count">
+            <strong>{{ selectedItems().length }}</strong> elementi selezionati
+          </span>
+          <button nz-button nzType="link" nzSize="small" type="button" (click)="clearSelection()">
+            Deseleziona tutti
+          </button>
+        </div>
+      }
+      @if (toolbarExtra()) {
+        <ng-container [ngTemplateOutlet]="toolbarExtra()!" />
+      }
+    </div>
+
+    <div class="toolbar-right">
+      <!-- Density Toggle -->
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        nz-dropdown
+        [nzDropdownMenu]="densityMenu"
+        nzTrigger="click"
+        title="Densità tabella"
+      >
+        <nz-icon nzType="column-height" />
+      </button>
+      <nz-dropdown-menu #densityMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'default'"
+            (click)="setDensity('default')"
+          >
+            Ampia
+          </li>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'middle'"
+            (click)="setDensity('middle')"
+          >
+            Media
+          </li>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'small'"
+            (click)="setDensity('small')"
+          >
+            Compatta
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+
+      <!-- Column Visibility Toggle -->
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        nz-dropdown
+        [nzDropdownMenu]="columnVisibilityMenu"
+        nzTrigger="click"
+        title="Colonne visibili"
+      >
+        <nz-icon nzType="setting" />
+      </button>
+      <nz-dropdown-menu #columnVisibilityMenu="nzDropdownMenu">
+        <div class="column-visibility-dropdown">
+          <div class="dropdown-header">Colonne visibili</div>
+          <ul nz-menu>
+            @for (col of allColumns(); track col.key) {
+              <li nz-menu-item (click)="$event.stopPropagation()">
+                <label
+                  nz-checkbox
+                  [ngModel]="isColumnVisible(col.key)"
+                  (ngModelChange)="toggleColumnVisibility(col.key, $event)"
+                >
+                  {{ col.header }}
+                </label>
+              </li>
+            }
+          </ul>
+        </div>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+
+  <!-- Table Skeleton on initial load -->
+  @if (loading() && (!data() || data().length === 0)) {
+    <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
+  } @else {
+    <nz-table
+      #nzTable
+      [nzData]="data()"
+      [nzFrontPagination]="false"
+      [nzLoading]="loading()"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="pageSizeOptions()"
+      [nzShowSizeChanger]="showSizeChanger()"
+      [nzShowQuickJumper]="showQuickJumper()"
+      [nzBordered]="bordered()"
+      [nzSize]="currentDensity()"
+      [nzScroll]="scroll()"
+      [nzNoResult]="customEmptyTemplate() || emptyFallback"
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+    >
+      <thead>
+        <tr>
+          @if (expandable()) {
+            <th nzWidth="48px" nzLeft></th>
+          }
+          @if (selectable()) {
+            <th
+              nzWidth="48px"
+              nzLeft
+              [nzChecked]="isAllSelected()"
+              [nzIndeterminate]="isIndeterminate()"
+              (nzCheckedChange)="onSelectAll($event)"
+            ></th>
+          }
+
+          @for (col of visibleColumns(); track col.key) {
+            <th
+              [nzWidth]="col.width ?? null"
+              [nzLeft]="col.fixed === 'left'"
+              [nzRight]="col.fixed === 'right'"
+              [nzAlign]="col.align ?? 'left'"
+              [nzShowSort]="!!col.sortable"
+              [nzSortOrder]="
+                currentSort()?.key === col.key ? currentSort()!.order : (col.sortOrder ?? null)
+              "
+              (nzSortOrderChange)="onSortChange(col.key, $event)"
+              [nzCustomFilter]="!!col.filterable"
+            >
+              {{ col.header }}
+
+              @if (col.filterable) {
+                <nz-filter-trigger
+                  [nzVisible]="isFilterVisible(col.key)"
+                  (nzVisibleChange)="setFilterVisible(col.key, $event)"
+                  [nzActive]="hasColumnFilter(col.key)"
+                  [nzDropdownMenu]="filterMenu"
+                >
+                  <nz-icon nzType="search" />
+                </nz-filter-trigger>
+              }
+
+              <nz-dropdown-menu #filterMenu="nzDropdownMenu">
+                @if (col.filterable) {
+                  <div class="table-filter-popover">
+                    @if (col.customFilterTemplate) {
+                      <ng-container
+                        [ngTemplateOutlet]="col.customFilterTemplate"
+                        [ngTemplateOutletContext]="{ column: col }"
+                      />
+                    } @else if (col.filterType === "select" && col.filterOptions) {
+                      <div class="popover-content">
+                        <nz-select
+                          class="filter-select"
+                          nzAllowClear
+                          nzPlaceHolder="Tutti"
+                          [ngModel]="getFilterValue(col.key)"
+                          (ngModelChange)="onFilterValueChange(col.key, $event)"
+                        >
+                          @for (opt of col.filterOptions; track opt.value) {
+                            <nz-option [nzLabel]="opt.label" [nzValue]="opt.value" />
+                          }
+                        </nz-select>
+                      </div>
+                    } @else if (col.filterType === "date-range") {
+                      <div class="popover-content">
+                        <nz-range-picker
+                          [ngModel]="getFilterValue(col.key)"
+                          (ngModelChange)="onFilterValueChange(col.key, $event)"
+                        />
+                      </div>
+                    } @else {
+                      <!-- Default text search -->
+                      <div class="popover-content">
+                        <input
+                          nz-input
+                          type="text"
+                          [placeholder]="'Cerca ' + col.header"
+                          [ngModel]="getFilterValue(col.key)"
+                          (ngModelChange)="onFilterValueChange(col.key, $event)"
+                          (keydown.enter)="applyColumnFilter(col.key)"
+                        />
+                      </div>
+                    }
+                    <div class="popover-footer">
+                      <button
+                        nz-button
+                        nzSize="small"
+                        type="button"
+                        (click)="resetColumnFilter(col.key)"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        nz-button
+                        nzType="primary"
+                        nzSize="small"
+                        type="button"
+                        (click)="applyColumnFilter(col.key)"
+                      >
+                        Cerca
+                      </button>
+                    </div>
+                  </div>
+                }
+              </nz-dropdown-menu>
+            </th>
+          }
+
+          @if (actionsTemplate()) {
+            <th nzWidth="90px" nzRight nzAlign="right">Azioni</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of nzTable.data; track getItemKey(item)) {
+          <tr
+            class="table-row"
+            [class.row-selected]="isItemSelected(item)"
+            (click)="onRowClick(item)"
+          >
+            @if (expandable()) {
+              <td
+                nzLeft
+                [nzExpand]="isRowExpanded(item)"
+                (nzExpandChange)="toggleRowExpanded(item, $event)"
+              ></td>
+            }
+            @if (selectable()) {
+              <td
+                nzLeft
+                [nzChecked]="isItemSelected(item)"
+                (nzCheckedChange)="onSelectItem(item, $event)"
+                (click)="$event.stopPropagation()"
+              ></td>
+            }
+
+            @for (col of visibleColumns(); track col.key) {
+              <td
+                [nzLeft]="col.fixed === 'left'"
+                [nzRight]="col.fixed === 'right'"
+                [nzAlign]="col.align ?? 'left'"
+              >
+                @if (col.customCellTemplate) {
+                  <ng-container
+                    [ngTemplateOutlet]="col.customCellTemplate"
+                    [ngTemplateOutletContext]="{
+                      $implicit: item,
+                      value: getCellValue(item, col.key),
+                    }"
+                  />
+                } @else {
+                  {{ getCellValue(item, col.key) }}
+                }
+              </td>
+            }
+
+            @if (actionsTemplate()) {
+              <td nzRight nzAlign="right" (click)="$event.stopPropagation()">
+                <ng-container
+                  [ngTemplateOutlet]="actionsTemplate()!"
+                  [ngTemplateOutletContext]="{ $implicit: item }"
+                />
+              </td>
+            }
+          </tr>
+
+          @if (expandable() && isRowExpanded(item) && detailTemplate()) {
+            <tr [nzExpand]="isRowExpanded(item)">
+              <ng-container
+                [ngTemplateOutlet]="detailTemplate()!"
+                [ngTemplateOutletContext]="{ $implicit: item }"
+              />
+            </tr>
+          }
+        }
+      </tbody>
+    </nz-table>
+  }
+
+  <ng-template #emptyFallback>
+    <nz-empty [nzNotFoundContent]="emptyText()" />
+  </ng-template>
+</div>

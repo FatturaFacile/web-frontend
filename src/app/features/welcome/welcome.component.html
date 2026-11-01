@@ -1,0 +1,12 @@
+<app-page-header
+  [title]="'WELCOME.TITLE' | translate"
+  [subtitle]="'WELCOME.SUBTITLE' | translate"
+/>
+
+<nz-card [nzTitle]="'WELCOME.QUICK_ACCESS' | translate">
+  <p>{{ "WELCOME.DESC" | translate }}</p>
+  <a nz-button nzType="primary" routerLink="/orders">
+    <nz-icon nzType="shopping-cart" />
+    {{ "WELCOME.GO_ORDERS" | translate }}
+  </a>
+</nz-card>

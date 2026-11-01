@@ -1,0 +1,39 @@
+<app-page-header
+  [title]="'MANUFACTURING.TITLE' | translate"
+  [subtitle]="'MANUFACTURING.SUBTITLE' | translate"
+/>
+
+<nz-card [nzTitle]="'MANUFACTURING.CARD_TITLE' | translate">
+  <nz-table #mTable [nzData]="orders" [nzFrontPagination]="false" nzSize="middle">
+    <thead>
+      <tr>
+        <th>{{ "MANUFACTURING.COL_ORDER_NUM" | translate }}</th>
+        <th>{{ "MANUFACTURING.COL_PRODUCT" | translate }}</th>
+        <th>{{ "MANUFACTURING.COL_QTY" | translate }}</th>
+        <th>{{ "MANUFACTURING.COL_LINE" | translate }}</th>
+        <th>{{ "MANUFACTURING.COL_PROGRESS" | translate }}</th>
+        <th>{{ "MANUFACTURING.COL_QA" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (o of mTable.data; track o.num) {
+        <tr>
+          <td>
+            <strong>{{ o.num }}</strong>
+          </td>
+          <td>{{ o.product }}</td>
+          <td>
+            <strong>{{ o.qty }}</strong>
+          </td>
+          <td>{{ o.line }}</td>
+          <td>
+            <nz-tag nzColor="processing">{{ o.progress }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag nzColor="success">{{ o.qa }}</nz-tag>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

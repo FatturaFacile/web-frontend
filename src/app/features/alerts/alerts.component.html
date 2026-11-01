@@ -1,0 +1,107 @@
+<app-page-header
+  title="Centro Avvisi & Notifiche Operative"
+  subtitle="Monitoraggio scadenze fiscali, anomalie SDI, avvisi bancari e comunicazioni aziendali"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <input
+      class="search"
+      nz-input
+      type="search"
+      placeholder="Cerca per titolo avviso..."
+      [ngModel]="tableState.search()"
+      (ngModelChange)="onSearchChange($event)"
+    />
+
+    <nz-select
+      class="filter"
+      nzAllowClear
+      nzPlaceHolder="Filtra gravità"
+      [ngModel]="selectedSeverity"
+      (ngModelChange)="onSeverityFilterChange($event)"
+    >
+      <nz-option nzValue="info" nzLabel="Informativo" />
+      <nz-option nzValue="warning" nzLabel="Attenzione" />
+      <nz-option nzValue="critical" nzLabel="Critico" />
+    </nz-select>
+
+    <span class="spacer"></span>
+    <button nz-button nzType="primary" type="button" (click)="create()">
+      <nz-icon nzType="plus" /> Nuovo Avviso
+    </button>
+  </div>
+
+  <app-base-table
+    [data]="items()"
+    [columns]="columns()"
+    [loading]="tableState.loading()"
+    [total]="tableState.total()"
+    [pageIndex]="tableState.pageIndex()"
+    [pageSize]="tableState.pageSize()"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <!-- Cell Templates -->
+  <ng-template #titleTpl let-alert>
+    <strong>{{ alert.title }}</strong>
+    @if (alert.message) {
+      <div class="alert-desc">{{ alert.message }}</div>
+    }
+  </ng-template>
+
+  <ng-template #severityTpl let-alert>
+    <nz-tag [nzColor]="getSeverityColor(alert.severity)">
+      {{ alert.severity | uppercase }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #statusTpl let-alert>
+    <nz-tag [nzColor]="alert.is_active ? 'success' : 'default'">
+      {{ alert.is_active ? "ATTIVO" : "DISATTIVATO" }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #dateTpl let-alert let-val="value">
+    {{ val | date: "dd.MM.yyyy HH:mm" }}
+  </ng-template>
+
+  <!-- Actions Template -->
+  <ng-template #actionsTpl let-alert>
+    <div class="actions-group">
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        (click)="edit(alert)"
+        title="Modifica Avviso"
+      >
+        <nz-icon nzType="edit" />
+      </button>
+      <button
+        nz-button
+        nzType="text"
+        nzDanger
+        nzSize="small"
+        type="button"
+        nz-popconfirm
+        nzPopconfirmTitle="Sei sicuro di voler eliminare questo avviso?"
+        nzOkText="Elimina"
+        nzCancelText="Annulla"
+        (nzOnConfirm)="delete(alert)"
+        title="Elimina Avviso"
+      >
+        <nz-icon nzType="delete" />
+      </button>
+    </div>
+  </ng-template>
+</nz-card>
+
+<app-alert-form-drawer
+  [alert]="selectedAlert()"
+  [open]="drawerOpen()"
+  (openChange)="drawerOpen.set($event)"
+  (saved)="loadData()"
+/>

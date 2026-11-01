@@ -1,0 +1,188 @@
+<app-page-header
+  [title]="'INVENTORY.TITLE' | translate"
+  [subtitle]="'INVENTORY.SUBTITLE' | translate"
+/>
+
+<nz-card [nzTitle]="'INVENTORY.CARD_TITLE' | translate" [nzExtra]="extraTpl">
+  <ng-template #extraTpl>
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <nz-icon nzType="plus" /> {{ "COMMON.ADD" | translate }}
+    </button>
+  </ng-template>
+
+  <div class="toolbar">
+    <input
+      nz-input
+      type="search"
+      class="search-input"
+      [placeholder]="'COMMON.SEARCH' | translate"
+      [value]="searchTerm()"
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <nz-table
+    #sTable
+    [nzData]="products()"
+    [nzFrontPagination]="false"
+    [nzLoading]="loading()"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>{{ "INVENTORY.COL_SKU" | translate }}</th>
+        <th>{{ "INVENTORY.COL_DESC" | translate }}</th>
+        <th>{{ "INVENTORY.COL_WAREHOUSE" | translate }}</th>
+        <th>{{ "INVENTORY.COL_QTY" | translate }}</th>
+        <th>{{ "INVENTORY.COL_HS" | translate }}</th>
+        <th>{{ "INVENTORY.COL_PRICE" | translate }}</th>
+        <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (it of sTable.data; track it.id || it.sku) {
+        <tr>
+          <td>
+            <strong>{{ it.sku }}</strong>
+          </td>
+          <td>
+            <div>{{ it.name }}</div>
+            @if (it.description) {
+              <small class="desc-text">{{ it.description }}</small>
+            }
+          </td>
+          <td>
+            <nz-tag [nzColor]="it.warehouse.includes('CH') ? 'red' : 'blue'">{{
+              it.warehouse
+            }}</nz-tag>
+          </td>
+          <td>
+            <strong>{{ it.quantity }} {{ it.unit_of_measure }}</strong>
+          </td>
+          <td>
+            <code>{{ it.hs_code || "-" }}</code>
+          </td>
+          <td>
+            {{
+              it.price | currency: it.currency || authStore.activeCurrency() : "symbol" : "1.2-2"
+            }}
+          </td>
+          <td nzAlign="right">
+            <button
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="deleteProduct(it)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        @if (!loading()) {
+          <tr>
+            <td colspan="7">
+              <nz-empty nzNotFoundImage="simple" />
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create Product Modal -->
+<nz-modal
+  [(nzVisible)]="createModalVisible"
+  [nzTitle]="'INVENTORY.NEW_PRODUCT' | translate"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateProduct()"
+  [nzOkLoading]="saving()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="productForm">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ "INVENTORY.COL_SKU" | translate }}</nz-form-label>
+            <nz-form-control nzErrorTip="SKU obbligatorio">
+              <input nz-input formControlName="sku" placeholder="EL-SENS-01" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-label nzRequired>{{ "INVENTORY.COL_WAREHOUSE" | translate }}</nz-form-label>
+          <nz-form-control nzErrorTip="Magazzino obbligatorio">
+            <nz-select formControlName="warehouse">
+              <nz-option nzValue="Chiasso (CH)" nzLabel="Chiasso (CH)" />
+              <nz-option nzValue="Milano (IT)" nzLabel="Milano (IT)" />
+              <nz-option nzValue="Lugano (CH)" nzLabel="Lugano (CH)" />
+            </nz-select>
+          </nz-form-control>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ "INVENTORY.COL_DESC" | translate }}</nz-form-label>
+        <nz-form-control nzErrorTip="Nome/Descrizione obbligatoria">
+          <input nz-input formControlName="name" placeholder="Descrizione prodotto" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ "INVENTORY.COL_QTY" | translate }}</nz-form-label>
+            <nz-form-control nzErrorTip="Quantità obbligatoria">
+              <nz-input-number formControlName="quantity" [nzMin]="0" style="width: 100%" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Unità di Misura</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="unit_of_measure">
+                <nz-option nzValue="Pz" nzLabel="Pz (Pezzi)" />
+                <nz-option nzValue="Kg" nzLabel="Kg (Chilogrammi)" />
+                <nz-option nzValue="m" nzLabel="m (Metri)" />
+                <nz-option nzValue="Ore" nzLabel="Ore" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ "INVENTORY.COL_PRICE" | translate }}</nz-form-label>
+            <nz-form-control nzErrorTip="Prezzo obbligatorio">
+              <nz-input-number
+                formControlName="price"
+                [nzMin]="0"
+                [nzStep]="0.01"
+                style="width: 100%"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ "INVENTORY.COL_HS" | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="hs_code" placeholder="9031.90.00" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

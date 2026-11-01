@@ -1,0 +1,36 @@
+<app-page-header [title]="'RETAIL.TITLE' | translate" [subtitle]="'RETAIL.SUBTITLE' | translate" />
+
+<nz-card [nzTitle]="'RETAIL.CARD_TITLE' | translate">
+  <nz-table #rTable [nzData]="sessions" [nzFrontPagination]="false" nzSize="middle">
+    <thead>
+      <tr>
+        <th>{{ "RETAIL.COL_POS" | translate }}</th>
+        <th>{{ "RETAIL.COL_CASHIER" | translate }}</th>
+        <th>{{ "RETAIL.COL_REGIME" | translate }}</th>
+        <th>{{ "RETAIL.COL_TOTAL" | translate }}</th>
+        <th>{{ "RETAIL.COL_DEVICE" | translate }}</th>
+        <th>{{ "RETAIL.COL_STATUS" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of rTable.data; track s.pos) {
+        <tr>
+          <td>
+            <strong>{{ s.pos }}</strong>
+          </td>
+          <td>{{ s.cashier }}</td>
+          <td>
+            <nz-tag [nzColor]="s.regime === 'IT' ? 'blue' : 'red'">{{ s.regime }}</nz-tag>
+          </td>
+          <td>
+            <strong>{{ s.total }}</strong>
+          </td>
+          <td>{{ s.device }}</td>
+          <td>
+            <nz-tag nzColor="success">{{ s.status }}</nz-tag>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

@@ -1,5 +1,10 @@
 import { Component, effect, inject, input, model, output, signal } from '@angular/core';
-import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -19,7 +24,19 @@ import {
 } from '@core';
 
 interface TextField {
-  key: 'company_name' | 'first_name' | 'last_name' | 'email' | 'phone' | 'vat_number' | 'fiscal_code' | 'uid_number' | 'sdi_code' | 'pec' | 'iban' | 'qr_iban';
+  key:
+    | 'company_name'
+    | 'first_name'
+    | 'last_name'
+    | 'email'
+    | 'phone'
+    | 'vat_number'
+    | 'fiscal_code'
+    | 'uid_number'
+    | 'sdi_code'
+    | 'pec'
+    | 'iban'
+    | 'qr_iban';
   label: string;
 }
 
@@ -37,84 +54,8 @@ const nullable = (v: string): string | null => v.trim() || null;
     NzButtonModule,
     TranslatePipe,
   ],
-  template: `
-    <nz-drawer
-      [nzVisible]="open()"
-      [nzTitle]="(contact() ? 'CRM.CLIENTS.EDIT_TITLE' : 'CRM.CLIENTS.NEW') | translate"
-      [nzWidth]="560"
-      (nzOnClose)="open.set(false)"
-    >
-      <ng-container *nzDrawerContent>
-        <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
-          <nz-form-item>
-            <nz-form-label nzRequired nzFor="type">{{ 'CRM.CLIENTS.FORM.TYPE' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="type" formControlName="type">
-                @for (o of typeOptions; track o.value) {
-                  <nz-option [nzValue]="o.value" [nzLabel]="o.label | translate" />
-                }
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-
-          @for (f of textFields; track f.key) {
-            <nz-form-item>
-              <nz-form-label [nzFor]="f.key">{{ f.label | translate }}</nz-form-label>
-              <nz-form-control
-                nzHasFeedback
-                [nzValidateStatus]="form.controls[f.key]"
-                [nzErrorTip]="errorTip(f.key)"
-              >
-                <input nz-input [id]="f.key" [formControlName]="f.key" />
-              </nz-form-control>
-            </nz-form-item>
-          }
-
-          <nz-form-item>
-            <nz-form-label nzFor="payment_terms_days">{{ 'CRM.CLIENTS.FORM.PAYMENT_TERMS' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="errorTip('payment_terms_days')">
-              <nz-input-number id="payment_terms_days" formControlName="payment_terms_days" [nzMin]="0" />
-            </nz-form-control>
-          </nz-form-item>
-
-          <div formGroupName="address">
-            <h4>{{ 'CRM.CLIENTS.FORM.ADDRESS' | translate }}</h4>
-            @for (a of addressFields; track a.key) {
-              <nz-form-item>
-                <nz-form-label [nzFor]="'address_' + a.key" [nzRequired]="a.required">{{ a.label | translate }}</nz-form-label>
-                <nz-form-control
-                  nzHasFeedback
-                  [nzValidateStatus]="form.controls.address.controls[a.key]"
-                  [nzErrorTip]="errorTip('address.' + a.key)"
-                >
-                  <input nz-input [id]="'address_' + a.key" [formControlName]="a.key" />
-                </nz-form-control>
-              </nz-form-item>
-            }
-          </div>
-
-          <nz-form-item>
-            <nz-form-label nzRequired nzFor="country">{{ 'CRM.CLIENTS.FORM.COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control nzHasFeedback [nzValidateStatus]="form.controls.country" [nzErrorTip]="errorTip('country')">
-              <input nz-input id="country" formControlName="country" maxlength="2" />
-            </nz-form-control>
-          </nz-form-item>
-
-          <div class="actions">
-            <button nz-button type="button" (click)="open.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
-            <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'COMMON.SAVE' | translate }}</button>
-          </div>
-        </form>
-      </ng-container>
-    </nz-drawer>
-  `,
-  styles: `
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-  `,
+  templateUrl: './client-form-drawer.component.html',
+  styleUrl: './client-form-drawer.component.scss',
 })
 export class ClientFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -272,7 +213,11 @@ export class ClientFormDrawerComponent {
     request$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.message.success(this.i18n.translate(current ? 'CRM.CLIENTS.MESSAGES.UPDATED' : 'CRM.CLIENTS.MESSAGES.CREATED'));
+        this.message.success(
+          this.i18n.translate(
+            current ? 'CRM.CLIENTS.MESSAGES.UPDATED' : 'CRM.CLIENTS.MESSAGES.CREATED',
+          ),
+        );
         this.open.set(false);
         this.saved.emit();
       },

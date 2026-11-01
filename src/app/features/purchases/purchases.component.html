@@ -1,0 +1,213 @@
+<app-page-header
+  [title]="'PURCHASES.TITLE' | translate"
+  [subtitle]="'PURCHASES.SUBTITLE' | translate"
+/>
+
+<div nz-row [nzGutter]="16" class="stats-row">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="orders().length" [nzTitle]="'PURCHASES.KPI_RECONCILE' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="totalChfDisplay()" [nzTitle]="'PURCHASES.KPI_PAIN001' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="totalEurDisplay()" [nzTitle]="'PURCHASES.KPI_SEPA' | translate" />
+    </nz-card>
+  </div>
+</div>
+
+<nz-card [nzTitle]="'PURCHASES.CARD_TITLE' | translate" [nzExtra]="extraTpl">
+  <ng-template #extraTpl>
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <nz-icon nzType="plus" /> {{ "COMMON.ADD" | translate }}
+    </button>
+  </ng-template>
+
+  <div class="toolbar">
+    <input
+      nz-input
+      type="search"
+      class="search-input"
+      [placeholder]="'COMMON.SEARCH' | translate"
+      [value]="searchTerm()"
+      (input)="onSearch($event)"
+    />
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'COMMON.STATUS' | translate"
+      [ngModel]="selectedStatus()"
+      (ngModelChange)="onStatusChange($event)"
+    >
+      <nz-option nzValue="draft" nzLabel="Bozza" />
+      <nz-option nzValue="pending_approval" nzLabel="In Approvazione" />
+      <nz-option nzValue="approved" nzLabel="Approvato" />
+      <nz-option nzValue="rejected" nzLabel="Rifiutato" />
+      <nz-option nzValue="ordered" nzLabel="Ordinato" />
+      <nz-option nzValue="received" nzLabel="Ricevuto" />
+    </nz-select>
+  </div>
+
+  <nz-table
+    #pTable
+    [nzData]="orders()"
+    [nzFrontPagination]="false"
+    [nzLoading]="loading()"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
+        <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
+        <th>{{ "PURCHASES.COL_CHANNEL" | translate }}</th>
+        <th>{{ "COMMON.AMOUNT" | translate }}</th>
+        <th>{{ "PURCHASES.COL_DUE" | translate }}</th>
+        <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
+        <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of pTable.data; track item.id || item.order_number) {
+        <tr>
+          <td>
+            <strong>{{ item.order_number }}</strong>
+          </td>
+          <td>{{ item.supplier_name }}</td>
+          <td>
+            <nz-tag
+              [nzColor]="
+                item.channel === 'SDI' ? 'blue' : item.channel === 'QR-Bill' ? 'red' : 'default'
+              "
+            >
+              {{ item.channel }}
+            </nz-tag>
+          </td>
+          <td>
+            <strong>{{ item.total | currency: item.currency : "symbol" : "1.2-2" }}</strong>
+          </td>
+          <td>{{ item.due_date ? (item.due_date | date: "dd.MM.yyyy") : "-" }}</td>
+          <td>
+            <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
+          </td>
+          <td nzAlign="right">
+            <div class="actions">
+              @if (item.status === "draft") {
+                <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
+                  Invia per Approvazione
+                </button>
+              }
+              @if (item.status === "pending_approval") {
+                <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
+                  Approva
+                </button>
+                <button nz-button nzSize="small" nzDanger (click)="reject(item)">Rifiuta</button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        @if (!loading()) {
+          <tr>
+            <td colspan="7">
+              <nz-empty nzNotFoundImage="simple" />
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create Purchase Order Modal -->
+<nz-modal
+  [(nzVisible)]="createModalVisible"
+  [nzTitle]="'Nuovo Ordine di Acquisto'"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateOrder()"
+  [nzOkLoading]="saving()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="orderForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>Fornitore</nz-form-label>
+        <nz-form-control nzErrorTip="Fornitore obbligatorio">
+          <input
+            nz-input
+            formControlName="supplier_name"
+            placeholder="Es. Swisscom AG o TIM S.p.A."
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Canale</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="channel">
+                <nz-option nzValue="QR-Bill" nzLabel="QR-Bill (CH)" />
+                <nz-option nzValue="SDI" nzLabel="SDI (IT)" />
+                <nz-option nzValue="Standard" nzLabel="Standard" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Valuta</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="currency">
+                <nz-option nzValue="CHF" nzLabel="CHF" />
+                <nz-option nzValue="EUR" nzLabel="EUR" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Descrizione Voce</nz-form-label>
+        <nz-form-control nzErrorTip="Descrizione obbligatoria">
+          <input
+            nz-input
+            formControlName="item_description"
+            placeholder="Es. Canone connettività fibra"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Quantità</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="quantity" [nzMin]="1" style="width: 100%" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+            <nz-form-control nzErrorTip="Prezzo obbligatorio">
+              <nz-input-number
+                formControlName="unit_price"
+                [nzMin]="0"
+                [nzStep]="0.01"
+                style="width: 100%"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

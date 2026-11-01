@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, beforeEach, afterEach, it, expect } from 'vitest';
+import { environment } from '@env';
 import { OrderDto } from '../dtos/order.dto';
 import { OrderHttpRepository } from './order-http.repository';
 
@@ -55,7 +56,7 @@ describe('OrderHttpRepository', () => {
       },
     });
 
-    const req = httpMock.expectOne('/api/orders');
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders`);
     expect(req.request.method).toBe('GET');
     req.flush(mockDtos);
   });
@@ -69,7 +70,7 @@ describe('OrderHttpRepository', () => {
       },
     });
 
-    const req = httpMock.expectOne('/api/orders/ord-1');
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders/ord-1`);
     expect(req.request.method).toBe('GET');
     req.flush(mockDtos[0]);
   });
@@ -86,7 +87,7 @@ describe('OrderHttpRepository', () => {
       },
     });
 
-    const req = httpMock.expectOne('/api/orders');
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders`);
     req.flush('Failed to fetch', { status: 500, statusText: 'Internal Server Error' });
 
     expect(errorStatus).toBe(500);

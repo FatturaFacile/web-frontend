@@ -17,7 +17,15 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { catchError, debounceTime, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import { TranslatePipe } from '@shared';
 import {
   applyServerErrors,
@@ -62,212 +70,8 @@ function toIsoDate(d: Date): string {
     NzIconModule,
     TranslatePipe,
   ],
-  template: `
-    <nz-drawer [nzVisible]="open()" [nzTitle]="(template() ? 'SALES.INVOICES.DUPLICATE_TITLE' : 'SALES.INVOICES.NEW') | translate" [nzWidth]="1100" (nzOnClose)="open.set(false)">
-      <ng-container *nzDrawerContent>
-        <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
-          <div class="grid">
-            <nz-form-item class="span-2">
-              <nz-form-label nzRequired nzFor="contact_id">{{ 'SALES.INVOICES.FORM.CONTACT' | translate }}</nz-form-label>
-              <nz-form-control nzHasFeedback [nzValidateStatus]="form.controls.contact_id" [nzErrorTip]="errorTip('contact_id')">
-                <nz-select
-                  id="contact_id"
-                  formControlName="contact_id"
-                  nzShowSearch
-                  nzServerSearch
-                  [nzPlaceHolder]="'SALES.INVOICES.FORM.CONTACT_PLACEHOLDER' | translate"
-                  [nzOptions]="contactOptions()"
-                  (nzOnSearch)="contactSearch.set($event)"
-                />
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="invoice_number">{{ 'SALES.INVOICES.FORM.NUMBER' | translate }}</nz-form-label>
-              <nz-form-control nzHasFeedback [nzValidateStatus]="form.controls.invoice_number" [nzErrorTip]="errorTip('invoice_number')">
-                <input nz-input id="invoice_number" formControlName="invoice_number" />
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="invoice_type">{{ 'SALES.INVOICES.FORM.TYPE' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="errorTip('invoice_type')">
-                <nz-select id="invoice_type" formControlName="invoice_type">
-                  @for (o of typeOptions; track o.value) {
-                    <nz-option [nzValue]="o.value" [nzLabel]="o.label | translate" />
-                  }
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="date">{{ 'SALES.INVOICES.FORM.DATE' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="errorTip('date')" [nzValidateStatus]="form.controls.date">
-                <nz-date-picker id="date" formControlName="date" nzFormat="dd.MM.yyyy" />
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzFor="due_date">{{ 'SALES.INVOICES.FORM.DUE_DATE' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="errorTip('due_date')" [nzValidateStatus]="form.controls.due_date">
-                <nz-date-picker id="due_date" formControlName="due_date" nzFormat="dd.MM.yyyy" />
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="jurisdiction">{{ 'SALES.INVOICES.FORM.JURISDICTION' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="errorTip('jurisdiction')">
-                <nz-select id="jurisdiction" formControlName="jurisdiction">
-                  @for (o of jurisdictionOptions; track o.value) {
-                    <nz-option [nzValue]="o.value" [nzLabel]="o.label | translate" />
-                  }
-                </nz-select>
-              </nz-form-control>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="currency">{{ 'SALES.INVOICES.FORM.CURRENCY' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="errorTip('currency')">
-                <nz-select id="currency" formControlName="currency" [nzOptions]="currencyOptions" />
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-
-          <h4>{{ 'SALES.INVOICES.FORM.ITEMS' | translate }}</h4>
-          <div formArrayName="items">
-            @for (item of form.controls.items.controls; track item; let i = $index) {
-              <div class="line" [formGroupName]="i">
-                <nz-form-item class="desc">
-                  <nz-form-label [nzFor]="'desc' + i" nzRequired>{{ 'SALES.INVOICES.ITEM.DESCRIPTION' | translate }}</nz-form-label>
-                  <nz-form-control nzHasFeedback [nzValidateStatus]="item.controls.description" [nzErrorTip]="errorTip('items.' + i + '.description')">
-                    <input nz-input [id]="'desc' + i" formControlName="description" />
-                  </nz-form-control>
-                </nz-form-item>
-                <nz-form-item>
-                  <nz-form-label [nzFor]="'qty' + i">{{ 'SALES.INVOICES.ITEM.QTY' | translate }}</nz-form-label>
-                  <nz-form-control [nzErrorTip]="errorTip('items.' + i + '.quantity')" [nzValidateStatus]="item.controls.quantity">
-                    <nz-input-number [id]="'qty' + i" formControlName="quantity" [nzMin]="0.01" />
-                  </nz-form-control>
-                </nz-form-item>
-                <nz-form-item>
-                  <nz-form-label [nzFor]="'price' + i">{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</nz-form-label>
-                  <nz-form-control [nzErrorTip]="errorTip('items.' + i + '.unit_price')" [nzValidateStatus]="item.controls.unit_price">
-                    <nz-input-number [id]="'price' + i" formControlName="unit_price" [nzMin]="0" [nzStep]="0.05" />
-                  </nz-form-control>
-                </nz-form-item>
-                <nz-form-item>
-                  <nz-form-label [nzFor]="'vat' + i">{{ 'SALES.INVOICES.ITEM.TAX_RATE' | translate }}</nz-form-label>
-                  <nz-form-control [nzErrorTip]="errorTip('items.' + i + '.tax_rate')" [nzValidateStatus]="item.controls.tax_rate">
-                    <nz-input-number [id]="'vat' + i" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.1" />
-                  </nz-form-control>
-                </nz-form-item>
-                <nz-form-item>
-                  <nz-form-label [nzFor]="'disc' + i">{{ 'SALES.INVOICES.ITEM.DISCOUNT' | translate }}</nz-form-label>
-                  <nz-form-control>
-                    <nz-input-number [id]="'disc' + i" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" />
-                  </nz-form-control>
-                </nz-form-item>
-                <div class="calc">
-                  <span class="calc-label">{{ 'SALES.INVOICES.ITEM.TAX_AMOUNT' | translate }}</span>
-                  <span>{{ lines()[i].tax | currency: currency() : 'symbol' : '1.2-2' }}</span>
-                </div>
-                <div class="calc">
-                  <span class="calc-label">{{ 'SALES.INVOICES.ITEM.SUBTOTAL' | translate }}</span>
-                  <span>{{ lines()[i].sub | currency: currency() : 'symbol' : '1.2-2' }}</span>
-                </div>
-                <button
-                  nz-button
-                  nzType="text"
-                  nzDanger
-                  type="button"
-                  class="remove"
-                  [attr.aria-label]="'SALES.INVOICES.FORM.REMOVE_ITEM' | translate: { n: i + 1 }"
-                  [disabled]="form.controls.items.length === 1"
-                  (click)="removeItem(i)"
-                >
-                  <nz-icon nzType="minus-circle" />
-                </button>
-              </div>
-            }
-          </div>
-          <button nz-button nzType="dashed" type="button" (click)="addItem()">
-            <nz-icon nzType="plus" /> {{ 'SALES.INVOICES.FORM.ADD_ITEM' | translate }}
-          </button>
-
-          <nz-form-item class="notes">
-            <nz-form-label nzFor="notes">{{ 'SALES.INVOICES.FORM.NOTES' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="errorTip('notes')">
-              <textarea nz-input id="notes" formControlName="notes" rows="2"></textarea>
-            </nz-form-control>
-          </nz-form-item>
-
-          <dl class="totals">
-            <dt>{{ 'SALES.INVOICES.TOTALS.NET' | translate }}</dt>
-            <dd>{{ totals().net | currency: currency() : 'symbol' : '1.2-2' }}</dd>
-            <dt>{{ 'SALES.INVOICES.TOTALS.VAT' | translate }}</dt>
-            <dd>{{ totals().vat | currency: currency() : 'symbol' : '1.2-2' }}</dd>
-            <dt>{{ 'SALES.INVOICES.TOTALS.GROSS' | translate }}</dt>
-            <dd>
-              <strong>{{ totals().gross | currency: currency() : 'symbol' : '1.2-2' }}</strong>
-            </dd>
-          </dl>
-
-          <div class="actions">
-            <button nz-button type="button" (click)="open.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
-            <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'SALES.INVOICES.FORM.SUBMIT' | translate }}</button>
-          </div>
-        </form>
-      </ng-container>
-    </nz-drawer>
-  `,
-  styles: `
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      column-gap: 16px;
-    }
-    .span-2 {
-      grid-column: span 2;
-    }
-    .line {
-      display: grid;
-      grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1.2fr 1.2fr auto;
-      gap: 8px;
-      align-items: end;
-    }
-    .calc {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 24px;
-      text-align: right;
-    }
-    .calc-label {
-      font-size: 12px;
-      color: var(--text-secondary, #595959);
-    }
-    .remove {
-      margin-bottom: 24px;
-    }
-    .notes {
-      margin-top: 16px;
-    }
-    .totals {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      max-width: 280px;
-      margin-left: auto;
-    }
-    .totals dd {
-      margin: 0;
-      text-align: right;
-    }
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
-    }
-  `,
+  templateUrl: './invoice-form-drawer.component.html',
+  styleUrl: './invoice-form-drawer.component.scss',
 })
 export class InvoiceFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -335,13 +139,17 @@ export class InvoiceFormDrawerComponent {
     return [{ label: tpl?.contact ? contactDisplayName(tpl.contact) : id, value: id }, ...fetched];
   });
 
-  private readonly formValue = toSignal(this.form.valueChanges.pipe(startWith(this.form.getRawValue())), {
-    initialValue: this.form.getRawValue(),
-  });
+  private readonly formValue = toSignal(
+    this.form.valueChanges.pipe(startWith(this.form.getRawValue())),
+    {
+      initialValue: this.form.getRawValue(),
+    },
+  );
   protected readonly currency = computed(() => this.formValue().currency ?? 'CHF');
   protected readonly lines = computed(() =>
     (this.formValue().items ?? []).map((i) => {
-      const sub = (i.quantity ?? 0) * (i.unit_price ?? 0) * (1 - (i.discount_percentage ?? 0) / 100);
+      const sub =
+        (i.quantity ?? 0) * (i.unit_price ?? 0) * (1 - (i.discount_percentage ?? 0) / 100);
       return { sub, tax: sub * ((i.tax_rate ?? 0) / 100) };
     }),
   );
@@ -385,7 +193,10 @@ export class InvoiceFormDrawerComponent {
       this.fb.group({
         description: this.fb.control(item?.description ?? '', Validators.required),
         quantity: this.fb.control(item?.quantity ?? 1, [Validators.required, Validators.min(0.01)]),
-        unit_price: this.fb.control(item?.unit_price ?? 0, [Validators.required, Validators.min(0)]),
+        unit_price: this.fb.control(item?.unit_price ?? 0, [
+          Validators.required,
+          Validators.min(0),
+        ]),
         tax_rate: this.fb.control(item?.tax_rate ?? 8.1, [Validators.required, Validators.min(0)]),
         discount_percentage: this.fb.control(item?.discount_percentage ?? 0),
       }),

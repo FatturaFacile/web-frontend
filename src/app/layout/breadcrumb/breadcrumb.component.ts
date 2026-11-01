@@ -12,26 +12,8 @@ interface BreadcrumbItem {
 @Component({
   selector: 'app-breadcrumb',
   imports: [RouterLink, NzBreadCrumbModule, TranslatePipe],
-  template: `
-    @if (breadcrumbs().length > 0) {
-      <nz-breadcrumb class="app-breadcrumb">
-        <nz-breadcrumb-item>
-          <a routerLink="/dashboard"><i class="fa-solid fa-house"></i> {{ 'BREADCRUMB.HOME' | translate }}</a>
-        </nz-breadcrumb-item>
-        @for (item of breadcrumbs(); track item.url) {
-          <nz-breadcrumb-item>
-            <a [routerLink]="item.url">{{ item.label }}</a>
-          </nz-breadcrumb-item>
-        }
-      </nz-breadcrumb>
-    }
-  `,
-  styles: `
-    .app-breadcrumb {
-      margin-bottom: 16px;
-      font-size: 13px;
-    }
-  `,
+  templateUrl: './breadcrumb.component.html',
+  styleUrl: './breadcrumb.component.scss',
 })
 export class BreadcrumbComponent {
   private readonly router = inject(Router);
@@ -41,11 +23,9 @@ export class BreadcrumbComponent {
 
   constructor() {
     this.updateBreadcrumbs();
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.updateBreadcrumbs();
-      });
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      this.updateBreadcrumbs();
+    });
   }
 
   private updateBreadcrumbs(): void {

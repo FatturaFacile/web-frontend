@@ -1,0 +1,167 @@
+<app-page-header
+  title="Tesoreria & Riconciliazione Bancaria"
+  subtitle="Gestione conti multi-valuta (EUR/CHF), import estratti conto CAMT.053/CBI e riconciliazione automatica"
+/>
+
+<!-- Header Stats -->
+<div nz-row [nzGutter]="16" class="stats-row">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="totalEurBalance()" [nzPrefix]="'€'" nzTitle="Liquidità Totale EUR" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="totalChfBalance()"
+        [nzPrefix]="'CHF'"
+        nzTitle="Liquidità Totale CHF"
+      />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="unreconciledCount()" nzTitle="Transazioni da Riconciliare" />
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [(nzSelectedIndex)]="selectedTab">
+    <!-- TAB 1: MOVIMENTI BANCARI -->
+    <nz-tab nzTitle="Movimenti Bancari">
+      <div class="tab-toolbar">
+        <input
+          class="search-input"
+          nz-input
+          type="search"
+          placeholder="Cerca descrizione o controparte..."
+          [ngModel]="tableState.search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+
+        <span class="spacer"></span>
+        <button
+          nz-button
+          nzType="default"
+          type="button"
+          (click)="triggerAutoMatch()"
+          [nzLoading]="isReconciling()"
+        >
+          <nz-icon nzType="sync" /> Riconciliazione Automatica
+        </button>
+        <button nz-button nzType="primary" type="button" (click)="isImportModalVisible.set(true)">
+          <nz-icon nzType="upload" /> Importa Estratto Conto (CAMT/CBI)
+        </button>
+      </div>
+
+      <app-base-table
+        [data]="transactions()"
+        [columns]="txColumns()"
+        [loading]="tableState.loading()"
+        [total]="tableState.total()"
+        [pageIndex]="tableState.pageIndex()"
+        [pageSize]="tableState.pageSize()"
+        (paramsChange)="onParamsChange($event)"
+      />
+    </nz-tab>
+
+    <!-- TAB 2: CONTI BANCARI -->
+    <nz-tab nzTitle="Conti Correnti">
+      <app-base-table
+        [data]="bankAccounts()"
+        [columns]="accountColumns()"
+        [loading]="loadingAccounts()"
+        [total]="bankAccounts().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 3: ESTRATTI CONTO IMPORTATI -->
+    <nz-tab nzTitle="Estratti Conto Importati">
+      <app-base-table
+        [data]="statements()"
+        [columns]="statementColumns()"
+        [loading]="loadingStatements()"
+        [total]="statements().length"
+        [scroll]="{ x: '1000px' }"
+        [actionsTemplate]="statementActionsTpl"
+      />
+
+      <ng-template #statementActionsTpl let-st>
+        <button
+          nz-button
+          nzType="link"
+          nzSize="small"
+          type="button"
+          (click)="reconcileStatement(st)"
+        >
+          Riconcilia
+        </button>
+      </ng-template>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Modal for importing CAMT / CBI file -->
+<nz-modal
+  [(nzVisible)]="isImportModalVisible"
+  nzTitle="Importazione File Bancario CAMT.053 / CBI"
+  (nzOnCancel)="isImportModalVisible.set(false)"
+  (nzOnOk)="submitImport()"
+  [nzOkLoading]="isUploading()"
+>
+  <ng-container *nzModalContent>
+    <p>Seleziona il formato del file di estratto conto bancario da importare nel sistema:</p>
+    <div style="margin-bottom: 16px">
+      <label style="margin-right: 16px">
+        <input
+          type="radio"
+          name="format"
+          value="camt"
+          [checked]="importFormat === 'camt'"
+          (change)="importFormat = 'camt'"
+        />
+        CAMT.053 XML (Svizzera / SEPA)
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="format"
+          value="cbi"
+          [checked]="importFormat === 'cbi'"
+          (change)="importFormat = 'cbi'"
+        />
+        CBI Rendicontazione (Italia)
+      </label>
+    </div>
+    <input type="file" (change)="onFileSelected($event)" accept=".xml,.cbi,.txt,.csv" />
+  </ng-container>
+</nz-modal>
+
+<!-- Shared Templates -->
+<ng-template #dateTpl let-item let-val="value">
+  {{ val | date: "dd.MM.yyyy" }}
+</ng-template>
+
+<ng-template #currencyTpl let-item let-val="value">
+  <strong [style.color]="val < 0 ? '#cf1322' : '#389e0d'">
+    {{ val | currency: item.currency || "EUR" : "symbol" : "1.2-2" }}
+  </strong>
+</ng-template>
+
+<ng-template #reconciledTpl let-item let-val="value">
+  <nz-tag [nzColor]="val ? 'success' : 'warning'">
+    {{ val ? "RICONCILIATO" : "DA RICONCILIARE" }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #statusTpl let-item let-val="value">
+  <nz-tag
+    [nzColor]="
+      val === 'reconciled' ? 'success' : val === 'partially_reconciled' ? 'processing' : 'default'
+    "
+  >
+    {{ val | uppercase }}
+  </nz-tag>
+</ng-template>

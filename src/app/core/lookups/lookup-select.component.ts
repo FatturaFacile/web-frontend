@@ -8,11 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ControlValueAccessor,
-  FormsModule,
-  NG_VALUE_ACCESSOR,
-} from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { LookupService } from './lookup.service';
 import { LookupItemDto } from './lookup.types';
@@ -28,31 +24,7 @@ import { LookupItemDto } from './lookup.types';
       multi: true,
     },
   ],
-  template: `
-    <nz-select
-      [ngModel]="selectedValue"
-      (ngModelChange)="onSelectChange($event)"
-      [nzPlaceHolder]="placeholder"
-      [nzDisabled]="disabled"
-      [nzAllowClear]="allowClear"
-      [nzShowSearch]="showSearch"
-      [nzLoading]="loading()"
-      class="w-full"
-    >
-      @for (item of items(); track item.id) {
-        <nz-option
-          [nzValue]="item.code"
-          [nzLabel]="item.label"
-          [nzCustomContent]="showShortLabel && !!item.short_label"
-        >
-          <span>{{ item.label }}</span>
-          @if (showShortLabel && item.short_label) {
-            <span class="text-xs text-gray-400 ml-2">({{ item.short_label }})</span>
-          }
-        </nz-option>
-      }
-    </nz-select>
-  `,
+  templateUrl: './lookup-select.component.html',
 })
 export class LookupSelectComponent implements ControlValueAccessor, OnChanges {
   private readonly lookupService = inject(LookupService);

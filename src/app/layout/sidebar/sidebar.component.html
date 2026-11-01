@@ -1,0 +1,70 @@
+<div class="sidebar-brand" [class.collapsed]="appStore.isCollapsed()">
+  <img
+    src="/images/fattura_facile_favicon_trasparente.svg"
+    alt="Fattura Facile Logo"
+    class="brand-logo"
+  />
+  @if (!appStore.isCollapsed()) {
+    <span class="brand-text">Fattura <span style="color: #0d9488">Facile</span></span>
+  }
+</div>
+
+<ul
+  nz-menu
+  nzTheme="dark"
+  nzMode="inline"
+  [nzInlineCollapsed]="appStore.isCollapsed()"
+  class="sidebar-menu"
+  [class.sidebar-collapsed]="appStore.isCollapsed()"
+>
+  @for (item of menuItems; track item.key) {
+    @if (!item.children) {
+      <li
+        nz-menu-item
+        nzMatchRouter
+        [title]="item.key | translate"
+        nz-tooltip
+        [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
+        [nzTooltipPlacement]="'right'"
+      >
+        <a [routerLink]="item.route" class="menu-item-link" [title]="item.key | translate">
+          <i [class]="item.icon + ' sidebar-icon'"></i>
+          <span class="menu-title-text">{{ item.key | translate }}</span>
+        </a>
+      </li>
+    } @else {
+      <li
+        nz-submenu
+        [nzTitle]="submenuTitle"
+        [title]="item.key | translate"
+        nz-tooltip
+        [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
+        [nzTooltipPlacement]="'right'"
+      >
+        <ng-template #submenuTitle>
+          <div class="submenu-title-wrapper" [title]="item.key | translate">
+            <i [class]="item.icon + ' sidebar-icon'"></i>
+            <span class="menu-title-text">{{ item.key | translate }}</span>
+          </div>
+        </ng-template>
+        <ul>
+          @for (sub of item.children; track sub.route) {
+            <li
+              nz-menu-item
+              nzMatchRouter
+              [title]="sub.key | translate"
+              nz-tooltip
+              [nzTooltipTitle]="appStore.isCollapsed() ? (sub.key | translate) : null"
+              [nzTooltipPlacement]="'right'"
+            >
+              <a [routerLink]="sub.route" class="menu-item-link" [title]="sub.key | translate">
+                <i [class]="sub.icon + ' sidebar-icon'"></i>
+                <span class="menu-title-text">{{ sub.key | translate }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </li>
+    }
+  }
+</ul>

@@ -34,174 +34,8 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
     NzIconModule,
     TranslatePipe,
   ],
-  template: `
-    <main class="login-wrapper">
-      <div class="login-box">
-        <header class="login-header text-center">
-          <h1>Fattura <span class="facile-color">Facile</span></h1>
-          <p class="subtitle">{{ 'AUTH.SUBTITLE' | translate }}</p>
-        </header>
-
-        <nz-card [nzBordered]="false" class="login-card">
-          @if (errorMessage(); as message) {
-            <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" />
-          }
-
-          <form
-            nz-form
-            nzLayout="vertical"
-            [formGroup]="loginForm"
-            (ngSubmit)="onSubmit()"
-            novalidate
-          >
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="email">{{ 'AUTH.EMAIL' | translate }}</nz-form-label>
-              <nz-form-control
-                nzHasFeedback
-                [nzValidateStatus]="loginForm.controls.email"
-                [nzErrorTip]="emailError"
-              >
-                <nz-input-wrapper>
-                  <nz-icon nzInputPrefix nzType="mail" />
-                  <input
-                    nz-input
-                    id="email"
-                    type="email"
-                    formControlName="email"
-                    autocomplete="username"
-                    nzSize="large"
-                    placeholder="name@company.com"
-                  />
-                </nz-input-wrapper>
-              </nz-form-control>
-              <ng-template #emailError let-control>
-                @if (control.hasError('serverError')) {
-                  {{ control.getError('serverError') }}
-                } @else if (control.hasError('email')) {
-                  {{ 'COMMON.VALIDATION.INVALID_EMAIL' | translate }}
-                } @else {
-                  {{ 'AUTH.EMAIL_ERROR' | translate }}
-                }
-              </ng-template>
-            </nz-form-item>
-
-            <nz-form-item>
-              <nz-form-label nzRequired nzFor="password">{{
-                'AUTH.PASSWORD' | translate
-              }}</nz-form-label>
-              <nz-form-control
-                nzHasFeedback
-                [nzValidateStatus]="loginForm.controls.password"
-                [nzErrorTip]="passwordError"
-              >
-                <nz-input-wrapper>
-                  <nz-icon nzInputPrefix nzType="lock" />
-                  <input
-                    nz-input
-                    id="password"
-                    formControlName="password"
-                    autocomplete="current-password"
-                    nzSize="large"
-                    [type]="passwordVisible() ? 'text' : 'password'"
-                  />
-                  <button
-                    nzInputSuffix
-                    type="button"
-                    class="toggle"
-                    [attr.aria-label]="
-                      (passwordVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
-                    "
-                    [attr.aria-pressed]="passwordVisible()"
-                    (click)="passwordVisible.set(!passwordVisible())"
-                  >
-                    <nz-icon [nzType]="passwordVisible() ? 'eye-invisible' : 'eye'" />
-                  </button>
-                </nz-input-wrapper>
-              </nz-form-control>
-              <ng-template #passwordError let-control>
-                @if (control.hasError('serverError')) {
-                  {{ control.getError('serverError') }}
-                } @else if (control.hasError('minlength')) {
-                  {{ 'AUTH.PASSWORD_MIN' | translate }}
-                } @else {
-                  {{ 'AUTH.PASSWORD_ERROR' | translate }}
-                }
-              </ng-template>
-            </nz-form-item>
-
-            <div class="options">
-              <!-- nz-checkbox renders its own input inside the label -->
-              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-              <label nz-checkbox formControlName="remember">{{
-                'AUTH.REMEMBER' | translate
-              }}</label>
-              <a href="mailto:info@fatturafacile.eu">{{ 'AUTH.FORGOT' | translate }}</a>
-            </div>
-
-            <button
-              nz-button
-              nzType="primary"
-              nzSize="large"
-              nzBlock
-              type="submit"
-              [nzLoading]="isSubmitting()"
-            >
-              {{ 'AUTH.SUBMIT_BTN' | translate }}
-            </button>
-          </form>
-        </nz-card>
-      </div>
-    </main>
-  `,
-  styles: `
-    .login-wrapper {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      padding: 24px;
-    }
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-    }
-    .login-header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .login-header h1 {
-      color: #fff;
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0;
-    }
-    .subtitle {
-      color: #cbd5e1;
-      font-size: 14px;
-      margin: 4px 0 0;
-    }
-    .login-card {
-      border-radius: 12px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-    }
-    .login-alert {
-      margin-bottom: 16px;
-    }
-    .options {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .toggle {
-      background: none;
-      border: 0;
-      padding: 0;
-      cursor: pointer;
-      color: inherit;
-    }
-  `,
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -217,8 +51,8 @@ export class LoginComponent {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly loginForm = this.fb.group({
-    email: this.fb.control('', [Validators.required, Validators.email]),
-    password: this.fb.control('', [Validators.required, Validators.minLength(6)]),
+    email: this.fb.control('admin@demo-group.com', [Validators.required, Validators.email]),
+    password: this.fb.control('Password123!', [Validators.required, Validators.minLength(6)]),
     remember: this.fb.control(false),
   });
 
@@ -234,7 +68,16 @@ export class LoginComponent {
     this.authApi.login({ email, password, remember: remember ?? false }).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
-        this.authStore.login(undefined, res?.data?.user ?? null);
+        const token = res?.data?.token ?? res?.data?.access_token;
+        if (token && typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('ff_access_token', token);
+          window.localStorage.setItem('auth_token', token);
+        }
+        if (res?.data?.tenant_id && typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('ff_active_tenant_id', res.data.tenant_id);
+          window.localStorage.setItem('tenant_id', res.data.tenant_id);
+        }
+        this.authStore.login(res?.data?.tenant_id ?? undefined, res?.data?.user ?? null);
         void this.router.navigateByUrl(this.resolveReturnUrl());
       },
       error: (err: unknown) => {

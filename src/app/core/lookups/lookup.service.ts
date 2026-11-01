@@ -58,6 +58,35 @@ export class LookupService {
   }
 
   /**
+   * Strongly-typed helper to fetch dynamic VAT rates for IT or CH jurisdictions.
+   */
+  async getVatRates(jurisdiction?: 'IT' | 'CH'): Promise<LookupItemDto[]> {
+    const category = jurisdiction ? `vat_rates_${jurisdiction.toLowerCase()}` : 'vat_rates';
+    return this.getLookup(category);
+  }
+
+  /**
+   * Strongly-typed helper to fetch units of measure.
+   */
+  async getUnitsOfMeasure(): Promise<LookupItemDto[]> {
+    return this.getLookup('units_of_measure');
+  }
+
+  /**
+   * Strongly-typed helper to fetch ISO country codes.
+   */
+  async getCountryCodes(): Promise<LookupItemDto[]> {
+    return this.getLookup('country_codes');
+  }
+
+  /**
+   * Strongly-typed helper to fetch payment methods.
+   */
+  async getPaymentMethods(): Promise<LookupItemDto[]> {
+    return this.getLookup('payment_methods');
+  }
+
+  /**
    * Retrieves the translated label for a given item code within a category.
    */
   async getLabel(categoryCode: string, itemCode: string): Promise<string> {

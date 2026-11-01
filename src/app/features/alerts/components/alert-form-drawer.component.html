@@ -1,0 +1,60 @@
+<nz-drawer
+  [nzVisible]="open()"
+  [nzTitle]="alert() ? 'Modifica Avviso' : 'Crea Nuovo Avviso'"
+  [nzWidth]="500"
+  (nzOnClose)="open.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="title">Titolo Avviso</nz-form-label>
+        <nz-form-control nzErrorTip="Il titolo è obbligatorio">
+          <input
+            nz-input
+            id="title"
+            formControlName="title"
+            placeholder="Es. Scadenza IVA Trimestrale..."
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="severity">Livello di Gravità</nz-form-label>
+        <nz-form-control>
+          <nz-select id="severity" formControlName="severity">
+            <nz-option nzValue="info" nzLabel="Informativo (Blu)" />
+            <nz-option nzValue="warning" nzLabel="Attenzione (Arancione)" />
+            <nz-option nzValue="critical" nzLabel="Critico / Bloccante (Rosso)" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="message">Messaggio Dettagliato</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            id="message"
+            formControlName="message"
+            rows="4"
+            placeholder="Inserisci ulteriori dettagli sull'avviso..."
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="is_active">Stato Attivo</nz-form-label>
+        <nz-form-control>
+          <nz-switch id="is_active" formControlName="is_active" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="footer-actions">
+        <button nz-button type="button" (click)="open.set(false)">Annulla</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
+          Salva Avviso
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-drawer>

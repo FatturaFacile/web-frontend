@@ -10,12 +10,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import {
-  AccountingApiService,
-  ChartOfAccount,
-  LedgerEntry,
-  VatSettlement,
-} from '@core';
+import { AccountingApiService, ChartOfAccount, LedgerEntry, VatSettlement } from '@core';
 import {
   BaseTableComponent,
   PageHeaderComponent,
@@ -45,157 +40,8 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     LedgerEntryFormDrawerComponent,
   ],
   providers: [TableStateService],
-  template: `
-    <app-page-header
-      title="Contabilità Generale & Dual-Ledger"
-      subtitle="Sistema a doppia partita cross-border per normative fiscali IT (SDI) e CH (CO/PCO)"
-    />
-
-    <nz-card>
-      <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
-        <!-- TAB 1: LIBRO GIORNALE -->
-        <nz-tab nzTitle="Libro Giornale">
-          <div class="tab-toolbar">
-            <input
-              class="search-input"
-              nz-input
-              type="search"
-              placeholder="Cerca numero o causale..."
-              [ngModel]="tableState.search()"
-              (ngModelChange)="onSearchChange($event)"
-            />
-
-            <span class="spacer"></span>
-            <button nz-button nzType="primary" type="button" (click)="drawerOpen.set(true)">
-              <nz-icon nzType="plus" /> Nuova Registrazione
-            </button>
-          </div>
-
-          <app-base-table
-            [data]="ledgerEntries()"
-            [columns]="ledgerColumns()"
-            [loading]="tableState.loading()"
-            [total]="tableState.total()"
-            [pageIndex]="tableState.pageIndex()"
-            [pageSize]="tableState.pageSize()"
-            [expandable]="true"
-            [detailTemplate]="ledgerDetailTpl"
-            (paramsChange)="onParamsChange($event)"
-          />
-
-          <!-- Detail row expandable template -->
-          <ng-template #ledgerDetailTpl let-entry>
-            <div class="expandable-detail-wrapper">
-              <h5>Dettaglio Righe Registrazione {{ entry.entry_number }}</h5>
-              <table class="nested-lines-table">
-                <thead>
-                  <tr>
-                    <th>Conto</th>
-                    <th>Descrizione</th>
-                    <th style="text-align: right;">Dare (€/CHF)</th>
-                    <th style="text-align: right;">Avere (€/CHF)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (line of entry.lines; track $index) {
-                    <tr>
-                      <td><code>{{ line.account_code || line.account_id }}</code> - {{ line.account_name || 'Conto Contabile' }}</td>
-                      <td>{{ line.description || '-' }}</td>
-                      <td style="text-align: right;">{{ line.debit > 0 ? (line.debit | currency: 'EUR' : 'symbol' : '1.2-2') : '-' }}</td>
-                      <td style="text-align: right;">{{ line.credit > 0 ? (line.credit | currency: 'EUR' : 'symbol' : '1.2-2') : '-' }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </ng-template>
-        </nz-tab>
-
-        <!-- TAB 2: PIANO DEI CONTI -->
-        <nz-tab nzTitle="Piano dei Conti">
-          <app-base-table
-            [data]="chartOfAccounts()"
-            [columns]="coaColumns()"
-            [loading]="loadingCoa()"
-            [total]="chartOfAccounts().length"
-            [scroll]="{ x: '900px' }"
-          />
-        </nz-tab>
-
-        <!-- TAB 3: LIQUIDAZIONI IVA -->
-        <nz-tab nzTitle="Liquidazioni IVA & Fiscale">
-          <app-base-table
-            [data]="vatSettlements()"
-            [columns]="vatColumns()"
-            [loading]="loadingVat()"
-            [total]="vatSettlements().length"
-            [scroll]="{ x: '900px' }"
-          />
-        </nz-tab>
-      </nz-tabs>
-    </nz-card>
-
-    <app-ledger-entry-form-drawer
-      [open]="drawerOpen()"
-      (openChange)="drawerOpen.set($event)"
-      (saved)="loadLedgerEntries()"
-    />
-
-    <!-- Shared Templates -->
-    <ng-template #dateTpl let-item let-val="value">
-      {{ val | date: 'dd.MM.yyyy' }}
-    </ng-template>
-
-    <ng-template #currencyTpl let-item let-val="value">
-      {{ val | currency: (item.currency || 'EUR') : 'symbol' : '1.2-2' }}
-    </ng-template>
-
-    <ng-template #accountTypeTpl let-item let-val="value">
-      <nz-tag [nzColor]="getAccountTypeColor(val)">{{ val | uppercase }}</nz-tag>
-    </ng-template>
-
-    <ng-template #vatStatusTpl let-item let-val="value">
-      <nz-tag [nzColor]="val === 'paid' ? 'success' : val === 'settled' ? 'processing' : 'default'">
-        {{ val | uppercase }}
-      </nz-tag>
-    </ng-template>
-  `,
-  styles: `
-    .tab-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .search-input {
-      width: 280px;
-    }
-    .spacer {
-      flex: 1;
-    }
-    .expandable-detail-wrapper {
-      padding: 12px 16px;
-      background: #fafafa;
-      border-radius: 4px;
-      margin: 8px 0;
-    }
-    .nested-lines-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 8px;
-
-      th, td {
-        padding: 6px 12px;
-        border-bottom: 1px solid #f0f0f0;
-      }
-      th {
-        background: #f5f5f5;
-        font-weight: 600;
-      }
-    }
-  `,
+  templateUrl: './accounting.component.html',
+  styleUrl: './accounting.component.scss',
 })
 export class AccountingComponent implements OnInit {
   private readonly api = inject(AccountingApiService);
@@ -353,37 +199,8 @@ export class AccountingComponent implements OnInit {
         this.tableState.setLoading(false);
       },
       error: () => {
-        // Fallback demo data
-        if (this.ledgerEntries().length === 0) {
-          const sample: LedgerEntry[] = [
-            {
-              id: 'gl-1',
-              entry_number: 'GL-2026-0001',
-              date: '2026-10-15',
-              description: 'Incasso fattura cliente INV-2026-0038',
-              lines: [
-                { id: 'l-1', account_id: '1020', account_code: '1020', account_name: 'Banca Popolare c/c', debit: 1250, credit: 0 },
-                { id: 'l-2', account_id: '1100', account_code: '1100', account_name: 'Crediti v/Clienti', debit: 0, credit: 1250 },
-              ],
-              total_debit: 1250,
-              total_credit: 1250,
-            },
-            {
-              id: 'gl-2',
-              entry_number: 'GL-2026-0002',
-              date: '2026-10-18',
-              description: 'Pagamento fornitore Swiss Solutions SA',
-              lines: [
-                { id: 'l-3', account_id: '2100', account_code: '2100', account_name: 'Debiti v/Fornitori CH', debit: 3400, credit: 0 },
-                { id: 'l-4', account_id: '1025', account_code: '1025', account_name: 'UBS Svizzera c/c CHF', debit: 0, credit: 3400 },
-              ],
-              total_debit: 3400,
-              total_credit: 3400,
-            },
-          ];
-          this.ledgerEntries.set(sample);
-          this.tableState.setTotal(2);
-        }
+        this.ledgerEntries.set([]);
+        this.tableState.setTotal(0);
         this.tableState.setLoading(false);
       },
     });
@@ -397,17 +214,7 @@ export class AccountingComponent implements OnInit {
         this.loadingCoa.set(false);
       },
       error: () => {
-        if (this.chartOfAccounts().length === 0) {
-          this.chartOfAccounts.set([
-            { id: 'coa-1', code: '1010', name: 'Cassa contanti', type: 'asset', balance: 2450.8, currency: 'EUR' },
-            { id: 'coa-2', code: '1020', name: 'Banca c/c ordinario Italia', type: 'asset', balance: 54120.0, currency: 'EUR' },
-            { id: 'coa-3', code: '1025', name: 'UBS AG c/c Lugano CHF', type: 'asset', balance: 89450.5, currency: 'CHF' },
-            { id: 'coa-4', code: '1100', name: 'Crediti commerciali Italia', type: 'asset', balance: 32400.0, currency: 'EUR' },
-            { id: 'coa-5', code: '2100', name: 'Debiti fornitori CH & IT', type: 'liability', balance: -18500.0, currency: 'EUR' },
-            { id: 'coa-6', code: '4010', name: 'Ricavi vendite servizi software', type: 'revenue', balance: 145000.0, currency: 'EUR' },
-            { id: 'coa-7', code: '5020', name: 'Costi canoni e licenze cloud', type: 'expense', balance: 28900.0, currency: 'EUR' },
-          ]);
-        }
+        this.chartOfAccounts.set([]);
         this.loadingCoa.set(false);
       },
     });
@@ -421,13 +228,7 @@ export class AccountingComponent implements OnInit {
         this.loadingVat.set(false);
       },
       error: () => {
-        if (this.vatSettlements().length === 0) {
-          this.vatSettlements.set([
-            { id: 'vat-1', period: 'Q3', year: 2026, jurisdiction: 'IT', total_vat_collected: 18450, total_vat_paid: 12200, balance: 6250, status: 'settled' },
-            { id: 'vat-2', period: 'Q2', year: 2026, jurisdiction: 'IT', total_vat_collected: 15300, total_vat_paid: 11100, balance: 4200, status: 'paid' },
-            { id: 'vat-3', period: 'S1', year: 2026, jurisdiction: 'CH', total_vat_collected: 8400, total_vat_paid: 3200, balance: 5200, status: 'settled' },
-          ]);
-        }
+        this.vatSettlements.set([]);
         this.loadingVat.set(false);
       },
     });

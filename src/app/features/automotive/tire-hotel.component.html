@@ -1,0 +1,124 @@
+<app-page-header
+  [title]="'TIRE_HOTEL.TITLE' | translate"
+  [subtitle]="'TIRE_HOTEL.SUBTITLE' | translate"
+/>
+
+<div nz-row [nzGutter]="16" class="kpi-row">
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="tireRecords().length"
+        [nzTitle]="'TIRE_HOTEL.SETS_STORED' | translate"
+        [nzPrefix]="tireIcon"
+      />
+      <ng-template #tireIcon><i class="fa-solid fa-circle-dot fa-icon-spaced"></i></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="winterCount()"
+        [nzTitle]="'TIRE_HOTEL.WINTER_TIRES' | translate"
+        [nzValueStyle]="{ color: 'var(--primary-color, #0d9488)' }"
+      />
+    </nz-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="summerCount()"
+        [nzTitle]="'TIRE_HOTEL.SUMMER_TIRES' | translate"
+        [nzValueStyle]="{ color: '#f59e0b' }"
+      />
+    </nz-card>
+  </div>
+</div>
+
+<nz-card [nzTitle]="'TIRE_HOTEL.LOG_TITLE' | translate">
+  <nz-table
+    #tireTable
+    [nzData]="tireRecords()"
+    [nzFrontPagination]="true"
+    [nzPageSize]="10"
+    [nzLoading]="loading()"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>{{ "TIRE_HOTEL.COL_PLATE_MODEL" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_CUSTOMER" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_SEASON" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_SIZE_BRAND" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_TREAD" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_RACK" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_DATE" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_REMINDER" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (tire of tireTable.data; track tire.id) {
+        <tr>
+          <td>
+            <nz-tag
+              [nzColor]="
+                tire.vehiclePlate.startsWith('TI') || tire.vehiclePlate.startsWith('GE')
+                  ? 'red'
+                  : 'blue'
+              "
+            >
+              {{ tire.vehiclePlate }}
+            </nz-tag>
+            <div>
+              <small>{{ tire.vehicleModel }}</small>
+            </div>
+          </td>
+          <td>
+            <strong>{{ tire.customerName }}</strong>
+          </td>
+          <td>
+            @if (tire.season === "WINTER") {
+              <nz-tag nzColor="blue"
+                ><i class="fa-solid fa-snowflake fa-icon-spaced"></i> Winter</nz-tag
+              >
+            } @else {
+              <nz-tag nzColor="orange"
+                ><i class="fa-solid fa-sun fa-icon-spaced"></i> Summer</nz-tag
+              >
+            }
+          </td>
+          <td>
+            {{ tire.brandModel }}
+            <div>
+              <small>DOT: {{ tire.dot }} • {{ tire.rimType }}</small>
+            </div>
+          </td>
+          <td>
+            <span class="depth-badge">
+              Ant: {{ tire.treadDepthMm.frontLeft }} / {{ tire.treadDepthMm.frontRight }} mm
+            </span>
+            <span class="depth-badge">
+              Post: {{ tire.treadDepthMm.rearLeft }} / {{ tire.treadDepthMm.rearRight }} mm
+            </span>
+          </td>
+          <td>
+            <nz-tag nzColor="geekblue">
+              <i class="fa-solid fa-warehouse fa-icon-spaced"></i> {{ tire.rackLocation }}
+            </nz-tag>
+          </td>
+          <td>{{ tire.depositDate }}</td>
+          <td>
+            @if (tire.reminderSent) {
+              <nz-tag nzColor="success"
+                ><i class="fa-solid fa-check fa-icon-spaced"></i> Sent</nz-tag
+              >
+            } @else {
+              <button nz-button nzSize="small" nzType="dashed" (click)="sendReminder(tire)">
+                <i class="fa-solid fa-bell fa-icon-spaced"></i> SMS/WhatsApp
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
