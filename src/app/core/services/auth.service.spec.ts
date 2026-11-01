@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthService } from './auth.service';
 
 describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', () => {
@@ -14,11 +13,7 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
     sessionStorage.clear();
 
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        AuthService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), AuthService],
     });
 
     service = TestBed.inject(AuthService);
@@ -40,12 +35,16 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
     });
 
     // 1. First request must be GET /sanctum/csrf-cookie
-    const csrfReq = httpTesting.expectOne((req) => req.url.endsWith('/sanctum/csrf-cookie') && req.method === 'GET');
+    const csrfReq = httpTesting.expectOne(
+      (req) => req.url.endsWith('/sanctum/csrf-cookie') && req.method === 'GET',
+    );
     expect(csrfReq.request.method).toBe('GET');
     csrfReq.flush('', { status: 204, statusText: 'No Content' });
 
     // 2. Second request must be POST /login
-    const loginReq = httpTesting.expectOne((req) => req.url.endsWith('/login') && req.method === 'POST');
+    const loginReq = httpTesting.expectOne(
+      (req) => req.url.endsWith('/login') && req.method === 'POST',
+    );
     expect(loginReq.request.method).toBe('POST');
     expect(loginReq.request.body).toEqual(credentials);
     loginReq.flush({ message: 'Authenticated' });
@@ -66,7 +65,9 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
       responseData = res;
     });
 
-    const logoutReq = httpTesting.expectOne((req) => req.url.endsWith('/logout') && req.method === 'POST');
+    const logoutReq = httpTesting.expectOne(
+      (req) => req.url.endsWith('/logout') && req.method === 'POST',
+    );
     expect(logoutReq.request.method).toBe('POST');
     logoutReq.flush({ message: 'Logged out' });
 
@@ -81,7 +82,9 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
       fetchedUser = user;
     });
 
-    const userReq = httpTesting.expectOne((req) => req.url.endsWith('/api/user') && req.method === 'GET');
+    const userReq = httpTesting.expectOne(
+      (req) => req.url.endsWith('/api/user') && req.method === 'GET',
+    );
     expect(userReq.request.method).toBe('GET');
     userReq.flush(mockUser);
 
