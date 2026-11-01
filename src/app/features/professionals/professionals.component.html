@@ -4,7 +4,13 @@
 />
 
 <nz-card [nzTitle]="'PROFESSIONALS.CARD_TITLE' | translate">
-  <nz-table #prTable [nzData]="cases" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #prTable
+    [nzData]="cases()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "PROFESSIONALS.COL_CASE_NUM" | translate }}</th>

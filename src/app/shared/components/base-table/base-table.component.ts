@@ -3,6 +3,7 @@ import {
   computed,
   contentChild,
   input,
+  linkedSignal,
   output,
   signal,
   TemplateRef,
@@ -84,7 +85,7 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly rowClick = output<TItem>();
 
   // Internal states
-  readonly currentDensity = signal<TableDensity>('middle');
+  readonly currentDensity = linkedSignal<TableDensity>(() => this.size());
   readonly hiddenColumns = signal<Set<string | keyof TItem>>(new Set());
   readonly currentSort = signal<TableSortState | null>(null);
   readonly expandedRows = signal<Set<string | number>>(new Set());
@@ -112,11 +113,6 @@ export class BaseTableComponent<TItem extends object = object> {
     const hasSome = d.some((item) => this.isItemSelected(item));
     return hasSome && !this.isAllSelected();
   });
-
-  constructor() {
-    // Sync initial density from input
-    this.currentDensity.set(this.size());
-  }
 
   getItemKey(item: TItem): string | number {
     const key = this.itemKey();

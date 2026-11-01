@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { RentApiService, RentalVehicle } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -9,25 +11,32 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   templateUrl: './rent.component.html',
 })
-export class RentComponent {
-  readonly vehicles = [
-    {
-      plate: 'TI 982104',
-      model: 'BMW 320d xDrive Touring',
-      type: 'Breve Termine (15 gg)',
-      client: 'Alpine Precision AG',
-      vignette: true,
-      returnDate: '2026-10-28',
-      status: 'In Noleggio',
-    },
-    {
-      plate: 'FP 412 ZB',
-      model: 'Fiat Ducato Maxi 2.2 Multijet',
-      type: 'Lungo Termine (24 mesi)',
-      client: 'Rossi Impianti S.r.l.',
-      vignette: true,
-      returnDate: '2027-05-15',
-      status: 'Assegnato',
-    },
-  ];
+export class RentComponent implements OnInit {
+  private readonly api = inject(RentApiService);
+  private readonly message = inject(NzMessageService);
+
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly vehicles = signal<RentalVehicle[]>([]);
+
+  ngOnInit(): void {
+    this.loadVehicles();
+  }
+
+  loadVehicles(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.api.getVehicles().subscribe({
+      next: (res) => {
+        this.vehicles.set(res?.data || []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err?.message || 'Errore nel caricamento parco veicoli');
+        this.message.error('Errore nel caricamento dei veicoli a noleggio');
+        this.vehicles.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
 }

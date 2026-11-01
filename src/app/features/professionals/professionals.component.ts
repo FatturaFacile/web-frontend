@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { LegalCase, ProfessionalsApiService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -9,21 +11,32 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   templateUrl: './professionals.component.html',
 })
-export class ProfessionalsComponent {
-  readonly cases = [
-    {
-      num: 'FASC-2026-08',
-      client: 'Alpine Precision AG',
-      subject: 'Consulenza fiscale cross-border IT-CH',
-      hours: '14.5 h',
-      fee: 'CHF 4.350 (No ritenuta)',
-    },
-    {
-      num: 'FASC-2026-11',
-      client: 'Lombarda Manifatture',
-      subject: 'Parere societario e compliance D.Lgs. 231',
-      hours: '22.0 h',
-      fee: '€ 5.500 (+ 4% CPA - 20% Rit.)',
-    },
-  ];
+export class ProfessionalsComponent implements OnInit {
+  private readonly api = inject(ProfessionalsApiService);
+  private readonly message = inject(NzMessageService);
+
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly cases = signal<LegalCase[]>([]);
+
+  ngOnInit(): void {
+    this.loadCases();
+  }
+
+  loadCases(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.api.getCases().subscribe({
+      next: (res) => {
+        this.cases.set(res?.data || []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err?.message || 'Errore nel caricamento pratiche');
+        this.message.error('Errore nel caricamento delle pratiche legali e fascicoli');
+        this.cases.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
 }

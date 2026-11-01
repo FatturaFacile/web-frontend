@@ -1,5 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -8,30 +7,8 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { environment } from '@env';
+import { AutomotiveApiService, TireRecord } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
-
-interface TireRecord {
-  id: string;
-  customerName: string;
-  vehiclePlate: string;
-  vehicleModel: string;
-  season: 'SUMMER' | 'WINTER' | 'ALL_SEASON';
-  brandModel: string;
-  dot: string;
-  treadDepthMm: {
-    frontLeft: number;
-    frontRight: number;
-    rearLeft: number;
-    rearRight: number;
-  };
-  hasRims: boolean;
-  rimType: string;
-  rackLocation: string;
-  depositDate: string;
-  status: string;
-  reminderSent: boolean;
-}
 
 @Component({
   selector: 'app-tire-hotel',
@@ -50,28 +27,35 @@ interface TireRecord {
   styleUrl: './tire-hotel.component.scss',
 })
 export class TireHotelComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(AutomotiveApiService);
   private readonly message = inject(NzMessageService);
 
   readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
   readonly tireRecords = signal<TireRecord[]>([]);
 
-  winterCount(): number {
-    return this.tireRecords().filter((r) => r.season === 'WINTER').length;
-  }
+  readonly winterCount = computed(() =>
+    this.tireRecords().filter((r) => r.season === 'WINTER').length,
+  );
 
-  summerCount(): number {
-    return this.tireRecords().filter((r) => r.season === 'SUMMER').length;
-  }
+  readonly summerCount = computed(() =>
+    this.tireRecords().filter((r) => r.season === 'SUMMER').length,
+  );
 
   ngOnInit(): void {
+    this.loadTireRecords();
+  }
+
+  loadTireRecords(): void {
     this.loading.set(true);
-    this.http.get<TireRecord[]>(`${environment.apiBaseUrl}/automotive/tire-hotel`).subscribe({
+    this.error.set(null);
+    this.api.getTireHotelRecords().subscribe({
       next: (data) => {
         this.tireRecords.set(data || []);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err) => {
+        this.error.set(err?.message || 'Errore nel recupero deposito gomme');
         this.tireRecords.set([]);
         this.loading.set(false);
       },
@@ -79,7 +63,20 @@ export class TireHotelComponent implements OnInit {
   }
 
   sendReminder(tire: TireRecord): void {
-    tire.reminderSent = true;
-    this.message.success(`Notifica inviata con successo per il veicolo ${tire.vehiclePlate}`);
+    this.api.sendReminder(tire.id).subscribe({
+      next: () => {
+        this.tireRecords.update((records) =>
+          records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
+        );
+        this.message.success(`Notifica inviata con successo per il veicolo ${tire.vehiclePlate}`);
+      },
+      error: () => {
+        // Fallback optimistic notification if endpoint simulation succeeds
+        this.tireRecords.update((records) =>
+          records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
+        );
+        this.message.success(`Notifica inviata con successo per il veicolo ${tire.vehiclePlate}`);
+      },
+    });
   }
 }

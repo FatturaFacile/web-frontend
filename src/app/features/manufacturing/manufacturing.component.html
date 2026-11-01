@@ -4,7 +4,13 @@
 />
 
 <nz-card [nzTitle]="'MANUFACTURING.CARD_TITLE' | translate">
-  <nz-table #mTable [nzData]="orders" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #mTable
+    [nzData]="orders()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "MANUFACTURING.COL_ORDER_NUM" | translate }}</th>

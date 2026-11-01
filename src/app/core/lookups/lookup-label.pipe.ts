@@ -3,7 +3,6 @@ import { LookupService } from './lookup.service';
 
 @Pipe({
   name: 'lookupLabel',
-  standalone: true,
 })
 export class LookupLabelPipe implements PipeTransform {
   private readonly lookupService = inject(LookupService);
