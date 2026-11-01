@@ -1,22 +1,22 @@
 <app-page-header
-  title="Gestione Spese & Note Spese"
-  subtitle="Monitora le spese aziendali, rimborsi dipendenti e uscite di cassa"
+  [title]="'expenses.title' | translate"
+  [subtitle]="'expenses.subtitle' | translate"
 />
 
 <div nz-row [nzGutter]="16" class="stats-row">
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="totalAmount()" [nzPrefix]="'€'" nzTitle="Totale Spese Registrate" />
+      <nz-statistic [nzValue]="totalAmount()" [nzPrefix]="'€'" [nzTitle]="'expenses.stats.total' | translate" />
     </nz-card>
   </div>
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="pendingCount()" nzTitle="Spese in Approvazione" />
+      <nz-statistic [nzValue]="pendingCount()" [nzTitle]="'expenses.stats.pending' | translate" />
     </nz-card>
   </div>
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="tableState.total()" nzTitle="Numero Voci di Spesa" />
+      <nz-statistic [nzValue]="tableState.total()" [nzTitle]="'expenses.stats.count' | translate" />
     </nz-card>
   </div>
 </div>
@@ -27,7 +27,7 @@
       class="search"
       nz-input
       type="search"
-      placeholder="Cerca per descrizione o esercente..."
+      [placeholder]="'expenses.searchPlaceholder' | translate"
       [ngModel]="tableState.search()"
       (ngModelChange)="onSearchChange($event)"
     />
@@ -35,7 +35,7 @@
     <nz-select
       class="filter"
       nzAllowClear
-      nzPlaceHolder="Filtra per stato"
+      [nzPlaceHolder]="'expenses.filterStatus' | translate"
       [ngModel]="tableState.filters()['status']"
       (ngModelChange)="onStatusFilterChange($event)"
     >
@@ -94,7 +94,7 @@
         nzSize="small"
         type="button"
         (click)="edit(exp)"
-        title="Modifica Spesa"
+        [title]="'expenses.actions.edit' | translate"
       >
         <nz-icon nzType="edit" />
       </button>
@@ -105,11 +105,11 @@
         nzSize="small"
         type="button"
         nz-popconfirm
-        nzPopconfirmTitle="Sei sicuro di voler eliminare questa spesa?"
-        nzOkText="Elimina"
-        nzCancelText="Annulla"
+        [nzPopconfirmTitle]="'expenses.confirmDelete' | translate"
+        [nzOkText]="'common.actions.delete' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
         (nzOnConfirm)="delete(exp)"
-        title="Elimina Spesa"
+        [title]="'expenses.actions.delete' | translate"
       >
         <nz-icon nzType="delete" />
       </button>

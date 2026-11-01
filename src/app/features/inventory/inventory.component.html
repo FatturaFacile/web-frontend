@@ -112,14 +112,14 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ "INVENTORY.COL_SKU" | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="SKU obbligatorio">
-              <input nz-input formControlName="sku" placeholder="EL-SENS-01" />
+            <nz-form-control [nzErrorTip]="'validation.skuRequired' | translate">
+              <input nz-input formControlName="sku" [placeholder]="'inventory.form.skuPlaceholder' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-label nzRequired>{{ "INVENTORY.COL_WAREHOUSE" | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Magazzino obbligatorio">
+          <nz-form-control [nzErrorTip]="'validation.warehouseRequired' | translate">
             <nz-select formControlName="warehouse">
               <nz-option nzValue="Chiasso (CH)" nzLabel="Chiasso (CH)" />
               <nz-option nzValue="Milano (IT)" nzLabel="Milano (IT)" />
@@ -131,8 +131,8 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ "INVENTORY.COL_DESC" | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Nome/Descrizione obbligatoria">
-          <input nz-input formControlName="name" placeholder="Descrizione prodotto" />
+        <nz-form-control [nzErrorTip]="'validation.nameRequired' | translate">
+          <input nz-input formControlName="name" [placeholder]="'inventory.form.namePlaceholder' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -140,14 +140,14 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ "INVENTORY.COL_QTY" | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Quantità obbligatoria">
+            <nz-form-control [nzErrorTip]="'validation.quantityRequired' | translate">
               <nz-input-number formControlName="quantity" [nzMin]="0" style="width: 100%" />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Unità di Misura</nz-form-label>
+            <nz-form-label nzRequired>{{ 'inventory.form.unit' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="unit_of_measure">
                 <nz-option nzValue="Pz" nzLabel="Pz (Pezzi)" />
@@ -164,7 +164,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ "INVENTORY.COL_PRICE" | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Prezzo obbligatorio">
+            <nz-form-control [nzErrorTip]="'validation.priceRequired' | translate">
               <nz-input-number
                 formControlName="price"
                 [nzMin]="0"
@@ -178,7 +178,7 @@
           <nz-form-item>
             <nz-form-label>{{ "INVENTORY.COL_HS" | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="hs_code" placeholder="9031.90.00" />
+              <input nz-input formControlName="hs_code" [placeholder]="'inventory.form.customsCodePlaceholder' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>

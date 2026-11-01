@@ -8,7 +8,8 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { ExpensesApiService, ExpenseResource, ExpenseStatus } from '@core';
+import { ExpensesApiService, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-expense-form-drawer',
@@ -21,6 +22,7 @@ import { ExpensesApiService, ExpenseResource, ExpenseStatus } from '@core';
     NzSelectModule,
     NzDatePickerModule,
     NzButtonModule,
+    TranslatePipe,
   ],
   templateUrl: './expense-form-drawer.component.html',
   styleUrl: './expense-form-drawer.component.scss',
@@ -29,6 +31,7 @@ export class ExpenseFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(ExpensesApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly open = model.required<boolean>();
   readonly expense = input<ExpenseResource | null>(null);
@@ -98,7 +101,7 @@ export class ExpenseFormDrawerComponent {
     request$.subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.message.success(exp ? 'Spesa aggiornata con successo' : 'Spesa creata con successo');
+        this.message.success(this.translate.instant(exp ? 'expenses.messages.updated' : 'expenses.messages.created'));
         this.open.set(false);
         this.saved.emit();
       },

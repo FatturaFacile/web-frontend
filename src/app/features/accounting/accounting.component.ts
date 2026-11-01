@@ -17,6 +17,7 @@ import {
   TableColumnDef,
   TableQueryParams,
   TableStateService,
+  TranslatePipe,
 } from '@shared';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
 
@@ -38,6 +39,7 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     BaseTableComponent,
     PageHeaderComponent,
     LedgerEntryFormDrawerComponent,
+    TranslatePipe,
   ],
   providers: [TableStateService],
   templateUrl: './accounting.component.html',
@@ -58,10 +60,10 @@ export class AccountingComponent implements OnInit {
   protected readonly loadingCoa = signal(false);
   protected readonly loadingVat = signal(false);
 
-  private readonly dateTpl = viewChild<TemplateRef<any>>('dateTpl');
-  private readonly currencyTpl = viewChild<TemplateRef<any>>('currencyTpl');
-  private readonly accountTypeTpl = viewChild<TemplateRef<any>>('accountTypeTpl');
-  private readonly vatStatusTpl = viewChild<TemplateRef<any>>('vatStatusTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly currencyTpl = viewChild<TemplateRef<unknown>>('currencyTpl');
+  private readonly accountTypeTpl = viewChild<TemplateRef<unknown>>('accountTypeTpl');
+  private readonly vatStatusTpl = viewChild<TemplateRef<unknown>>('vatStatusTpl');
 
   readonly ledgerColumns = computed<TableColumnDef<LedgerEntry>[]>(() => [
     {

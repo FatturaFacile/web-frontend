@@ -11,13 +11,14 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { ExpensesApiService, ExpenseFilterParams, ExpenseResource, ExpenseStatus } from '@core';
+import { ExpensesApiService, ExpenseFilterParams, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
 import {
   BaseTableComponent,
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
   TableStateService,
+  TranslatePipe,
 } from '@shared';
 import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 
@@ -48,6 +49,7 @@ const STATUS_CONFIG: Record<ExpenseStatus, { label: string; color: string }> = {
     BaseTableComponent,
     PageHeaderComponent,
     ExpenseFormDrawerComponent,
+    TranslatePipe,
   ],
   providers: [TableStateService],
   templateUrl: './expenses.component.html',
@@ -56,6 +58,7 @@ const STATUS_CONFIG: Record<ExpenseStatus, { label: string; color: string }> = {
 export class ExpensesComponent implements OnInit {
   protected readonly api = inject(ExpensesApiService);
   protected readonly message = inject(NzMessageService);
+  protected readonly translate = inject(TranslateService);
   protected readonly tableState = inject(TableStateService<ExpenseResource, ExpenseFilterParams>);
 
   protected readonly items = signal<ExpenseResource[]>([]);
@@ -217,7 +220,7 @@ export class ExpensesComponent implements OnInit {
   delete(exp: ExpenseResource): void {
     this.api.deleteExpense(exp.id).subscribe({
       next: () => {
-        this.message.success('Spesa eliminata');
+        this.message.success(this.translate.instant('expenses.messages.deleted'));
         this.loadData();
       },
       error: () => undefined,
@@ -238,12 +241,16 @@ export class ExpensesComponent implements OnInit {
       },
       error: () => {
         this.isExporting.set(false);
-        this.message.info('Esportazione completata');
+        this.message.info(this.translate.instant('expenses.messages.exported'));
       },
     });
   }
 
   getStatusConfig(status: ExpenseStatus) {
-    return STATUS_CONFIG[status] || { label: status, color: 'default' };
+    const config = STATUS_CONFIG[status];
+    return {
+      label: this.translate.instant('expenses.statuses.' + status) || (config ? config.label : status),
+      color: config ? config.color : 'default',
+    };
   }
 }

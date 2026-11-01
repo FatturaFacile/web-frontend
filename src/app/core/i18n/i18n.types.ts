@@ -13,4 +13,5 @@ export const SUPPORTED_LANGUAGES: readonly LanguageOption[] = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
 ];
 
-export type TranslationDictionary = Record<string, string>;
+export type TranslationValue = string | { [key: string]: TranslationValue };
+export type TranslationDictionary = Record<string, TranslationValue>;

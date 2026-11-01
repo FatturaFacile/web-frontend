@@ -10,13 +10,14 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { AlertsApiService, AlertFilterParams, AlertResource, AlertSeverity } from '@core';
+import { AlertsApiService, AlertFilterParams, AlertResource, AlertSeverity, TranslateService } from '@core';
 import {
   BaseTableComponent,
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
   TableStateService,
+  TranslatePipe,
 } from '@shared';
 import { AlertFormDrawerComponent } from './components/alert-form-drawer.component';
 
@@ -37,6 +38,7 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
     BaseTableComponent,
     PageHeaderComponent,
     AlertFormDrawerComponent,
+    TranslatePipe,
   ],
   providers: [TableStateService],
   templateUrl: './alerts.component.html',
@@ -45,6 +47,7 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
 export class AlertsComponent implements OnInit {
   protected readonly api = inject(AlertsApiService);
   protected readonly message = inject(NzMessageService);
+  protected readonly translate = inject(TranslateService);
   protected readonly tableState = inject(TableStateService<AlertResource, AlertFilterParams>);
 
   protected readonly items = signal<AlertResource[]>([]);
@@ -174,12 +177,12 @@ export class AlertsComponent implements OnInit {
   delete(a: AlertResource): void {
     this.api.deleteAlert(a.id).subscribe({
       next: () => {
-        this.message.success('Avviso eliminato');
+        this.message.success(this.translate.instant('alerts.messages.deleted'));
         this.loadData();
       },
       error: () => {
         this.items.update((list) => list.filter((i) => i.id !== a.id));
-        this.message.success('Avviso eliminato');
+        this.message.success(this.translate.instant('alerts.messages.deleted'));
       },
     });
   }

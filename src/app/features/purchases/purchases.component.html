@@ -44,12 +44,12 @@
       [ngModel]="selectedStatus()"
       (ngModelChange)="onStatusChange($event)"
     >
-      <nz-option nzValue="draft" nzLabel="Bozza" />
-      <nz-option nzValue="pending_approval" nzLabel="In Approvazione" />
-      <nz-option nzValue="approved" nzLabel="Approvato" />
-      <nz-option nzValue="rejected" nzLabel="Rifiutato" />
-      <nz-option nzValue="ordered" nzLabel="Ordinato" />
-      <nz-option nzValue="received" nzLabel="Ricevuto" />
+      <nz-option nzValue="draft" [nzLabel]="'purchases.statuses.draft' | translate" />
+      <nz-option nzValue="pending_approval" [nzLabel]="'purchases.statuses.pending_approval' | translate" />
+      <nz-option nzValue="approved" [nzLabel]="'purchases.statuses.approved' | translate" />
+      <nz-option nzValue="rejected" [nzLabel]="'purchases.statuses.rejected' | translate" />
+      <nz-option nzValue="ordered" [nzLabel]="'purchases.statuses.ordered' | translate" />
+      <nz-option nzValue="received" [nzLabel]="'purchases.statuses.received' | translate" />
     </nz-select>
   </div>
 
@@ -102,14 +102,14 @@
             <div class="actions">
               @if (item.status === "draft") {
                 <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
-                  Invia per Approvazione
+                  {{ 'purchases.actions.submitApproval' | translate }}
                 </button>
               }
               @if (item.status === "pending_approval") {
                 <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
                   Approva
                 </button>
-                <button nz-button nzSize="small" nzDanger (click)="reject(item)">Rifiuta</button>
+                <button nz-button nzSize="small" nzDanger (click)="reject(item)">{{ 'purchases.actions.reject' | translate }}</button>
               }
             </div>
           </td>
@@ -138,12 +138,12 @@
   <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="orderForm">
       <nz-form-item>
-        <nz-form-label nzRequired>Fornitore</nz-form-label>
-        <nz-form-control nzErrorTip="Fornitore obbligatorio">
+        <nz-form-label nzRequired>{{ 'purchases.form.supplier' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.supplierRequired' | translate">
           <input
             nz-input
             formControlName="supplier_name"
-            placeholder="Es. Swisscom AG o TIM S.p.A."
+            [placeholder]="'purchases.form.supplierPlaceholder' | translate"
           />
         </nz-form-control>
       </nz-form-item>
@@ -151,7 +151,7 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Canale</nz-form-label>
+            <nz-form-label nzRequired>{{ 'purchases.form.channel' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="channel">
                 <nz-option nzValue="QR-Bill" nzLabel="QR-Bill (CH)" />
@@ -163,7 +163,7 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Valuta</nz-form-label>
+            <nz-form-label nzRequired>{{ 'purchases.form.currency' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="currency">
                 <nz-option nzValue="CHF" nzLabel="CHF" />
@@ -175,12 +175,12 @@
       </div>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Descrizione Voce</nz-form-label>
-        <nz-form-control nzErrorTip="Descrizione obbligatoria">
+        <nz-form-label nzRequired>{{ 'purchases.form.description' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.descriptionRequired' | translate">
           <input
             nz-input
             formControlName="item_description"
-            placeholder="Es. Canone connettività fibra"
+            [placeholder]="'purchases.form.descriptionPlaceholder' | translate"
           />
         </nz-form-control>
       </nz-form-item>
@@ -188,7 +188,7 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Quantità</nz-form-label>
+            <nz-form-label nzRequired>{{ 'purchases.form.quantity' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-input-number formControlName="quantity" [nzMin]="1" style="width: 100%" />
             </nz-form-control>
@@ -196,8 +196,8 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
-            <nz-form-control nzErrorTip="Prezzo obbligatorio">
+            <nz-form-label nzRequired>{{ 'purchases.form.unitPrice' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'validation.priceRequired' | translate">
               <nz-input-number
                 formControlName="unit_price"
                 [nzMin]="0"

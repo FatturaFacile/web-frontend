@@ -14,7 +14,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { AuthStore, CreateProductPayload, InventoryApiService, ProductItem } from '@core';
+import { AuthStore, CreateProductPayload, InventoryApiService, ProductItem, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -44,6 +44,7 @@ export class InventoryComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);
   private readonly inventoryApi = inject(InventoryApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
 
   readonly loading = signal(false);
@@ -140,7 +141,7 @@ export class InventoryComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Prodotto creato con successo');
+        this.message.success(this.translate.instant('inventory.messages.created'));
         this.loadProducts();
       },
       error: () => {
@@ -152,7 +153,7 @@ export class InventoryComponent implements OnInit {
   deleteProduct(item: ProductItem): void {
     this.inventoryApi.deleteProduct(item.id).subscribe({
       next: () => {
-        this.message.success('Prodotto eliminato');
+        this.message.success(this.translate.instant('inventory.messages.deleted'));
         this.loadProducts();
       },
       error: () => {

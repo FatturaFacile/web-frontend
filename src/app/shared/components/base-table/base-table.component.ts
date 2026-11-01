@@ -1,7 +1,7 @@
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import {
   Component,
   computed,
-  contentChild,
   input,
   linkedSignal,
   output,
@@ -46,6 +46,7 @@ import {
     NzSkeletonModule,
     NzTooltipModule,
     NzDatePickerModule,
+    TranslatePipe,
   ],
   templateUrl: './base-table.component.html',
   styleUrl: './base-table.component.scss',
@@ -68,7 +69,7 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly showSizeChanger = input<boolean>(true);
   readonly showQuickJumper = input<boolean>(false);
   readonly expandable = input<boolean>(false);
-  readonly emptyText = input<string>('Nessun dato trovato');
+  readonly emptyText = input<string | undefined>(undefined);
 
   // Templates
   readonly actionsTemplate = input<TemplateRef<{ $implicit: TItem }>>();

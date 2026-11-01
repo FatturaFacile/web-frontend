@@ -14,10 +14,10 @@ import {
   BranchResource,
   RoleResource,
   SettingsApiService,
-  TenantSettings,
   UserResource,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-settings',
@@ -33,6 +33,7 @@ import { BaseTableComponent, PageHeaderComponent, TableColumnDef } from '@shared
     NzTabsModule,
     BaseTableComponent,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
@@ -41,6 +42,7 @@ export class SettingsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(SettingsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   protected selectedTab = 0;
   protected isSavingTenant = signal(false);
@@ -56,9 +58,9 @@ export class SettingsComponent implements OnInit {
   protected readonly loadingRoles = signal(false);
   protected readonly loadingAudit = signal(false);
 
-  private readonly dateTpl = viewChild<TemplateRef<any>>('dateTpl');
-  private readonly activeTpl = viewChild<TemplateRef<any>>('activeTpl');
-  private readonly hqTpl = viewChild<TemplateRef<any>>('hqTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly activeTpl = viewChild<TemplateRef<unknown>>('activeTpl');
+  private readonly hqTpl = viewChild<TemplateRef<unknown>>('hqTpl');
 
   protected readonly tenantForm = this.fb.group({
     name: this.fb.control<string>('Rossi Impianti S.r.l.', [Validators.required]),
@@ -164,11 +166,11 @@ export class SettingsComponent implements OnInit {
     this.api.updateTenantSettings(this.tenantForm.getRawValue()).subscribe({
       next: () => {
         this.isSavingTenant.set(false);
-        this.message.success('Impostazioni azienda salvate con successo');
+        this.message.success(this.translate.instant('settings.messages.saved'));
       },
       error: () => {
         this.isSavingTenant.set(false);
-        this.message.success('Impostazioni azienda salvate con successo');
+        this.message.success(this.translate.instant('settings.messages.saved'));
       },
     });
   }
@@ -333,11 +335,11 @@ export class SettingsComponent implements OnInit {
     this.api.syncExchangeRates().subscribe({
       next: () => {
         this.isSyncingRates.set(false);
-        this.message.success('Tassi di cambio BCE EUR/CHF sincronizzati');
+        this.message.success(this.translate.instant('settings.messages.ratesSynced'));
       },
       error: () => {
         this.isSyncingRates.set(false);
-        this.message.success('Tassi di cambio sincronizzati');
+        this.message.success(this.translate.instant('settings.messages.ratesSynced'));
       },
     });
   }

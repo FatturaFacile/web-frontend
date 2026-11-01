@@ -71,7 +71,7 @@
         nzSize="small"
         type="button"
         (click)="viewStats(c)"
-        title="Statistiche"
+        [title]="'crm.clients.actions.stats' | translate"
       >
         <nz-icon nzType="bar-chart" />
       </button>

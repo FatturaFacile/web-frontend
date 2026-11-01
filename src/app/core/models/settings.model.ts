@@ -13,7 +13,7 @@ export interface TenantSettings {
   settings?: Record<string, unknown> | null;
 }
 
-export interface UpdateTenantSettingsPayload extends Partial<TenantSettings> {}
+export type UpdateTenantSettingsPayload = Partial<TenantSettings>;
 
 export interface BranchResource {
   id: string;

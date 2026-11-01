@@ -42,6 +42,29 @@ describe('I18nService', () => {
     await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('Dashboard locale'));
   });
 
+  it('resolves hierarchical dot-notation keys and supports instant() with params', async () => {
+    httpTesting.expectOne((req) => req.url.endsWith('/translations/it')).flush({
+      locale: 'it',
+      translations: {
+        cases: {
+          errors: {
+            loadFailed: 'Errore nel caricamento pratiche',
+          },
+          deleteModal: {
+            content: 'Sei sicuro di voler eliminare la pratica {id}?',
+          },
+        },
+      },
+    });
+
+    await vi.waitFor(() => {
+      expect(service.instant('cases.errors.loadFailed')).toBe('Errore nel caricamento pratiche');
+      expect(service.instant('cases.deleteModal.content', { id: 'PR-102' })).toBe(
+        'Sei sicuro di voler eliminare la pratica PR-102?',
+      );
+    });
+  });
+
   it('returns an empty dictionary when the fallback is unavailable too', async () => {
     const result = service.loadDictionary('de');
 

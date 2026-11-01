@@ -3,7 +3,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { ConstructionApiService, ConstructionSite } from '@core';
+import { ConstructionApiService, ConstructionSite, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 export class ConstructionComponent implements OnInit {
   private readonly api = inject(ConstructionApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -32,8 +33,8 @@ export class ConstructionComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Errore nel caricamento cantieri');
-        this.message.error('Errore nel caricamento dei cantieri edili');
+        this.error.set(err?.message || this.translate.instant('construction.errors.loadFailed'));
+        this.message.error(this.translate.instant('construction.errors.loadFailedDetail'));
         this.sites.set([]);
         this.loading.set(false);
       },

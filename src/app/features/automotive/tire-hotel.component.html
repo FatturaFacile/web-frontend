@@ -78,11 +78,13 @@
           <td>
             @if (tire.season === "WINTER") {
               <nz-tag nzColor="blue"
-                ><i class="fa-solid fa-snowflake fa-icon-spaced"></i> Winter</nz-tag
+                ><i class="fa-solid fa-snowflake fa-icon-spaced"></i>
+                {{ "automotive.tireHotel.season.winter" | translate }}</nz-tag
               >
             } @else {
               <nz-tag nzColor="orange"
-                ><i class="fa-solid fa-sun fa-icon-spaced"></i> Summer</nz-tag
+                ><i class="fa-solid fa-sun fa-icon-spaced"></i>
+                {{ "automotive.tireHotel.season.summer" | translate }}</nz-tag
               >
             }
           </td>
@@ -109,7 +111,8 @@
           <td>
             @if (tire.reminderSent) {
               <nz-tag nzColor="success"
-                ><i class="fa-solid fa-check fa-icon-spaced"></i> Sent</nz-tag
+                ><i class="fa-solid fa-check fa-icon-spaced"></i>
+                {{ "automotive.tireHotel.status.sent" | translate }}</nz-tag
               >
             } @else {
               <button nz-button nzSize="small" nzType="dashed" (click)="sendReminder(tire)">

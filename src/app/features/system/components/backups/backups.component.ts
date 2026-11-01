@@ -8,7 +8,8 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { SystemApiService, SystemBackup } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-backups',
@@ -22,6 +23,7 @@ import { BaseTableComponent, PageHeaderComponent, TableColumnDef } from '@shared
     NzModalModule,
     BaseTableComponent,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   templateUrl: './backups.component.html',
   styleUrl: './backups.component.scss',
@@ -29,6 +31,7 @@ import { BaseTableComponent, PageHeaderComponent, TableColumnDef } from '@shared
 export class BackupsComponent implements OnInit {
   private readonly api = inject(SystemApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   protected readonly items = signal<SystemBackup[]>([]);
   protected readonly loading = signal(false);
@@ -37,9 +40,9 @@ export class BackupsComponent implements OnInit {
   protected readonly isUploading = signal(false);
   private uploadFile: File | null = null;
 
-  private readonly dateTpl = viewChild<TemplateRef<any>>('dateTpl');
-  private readonly sizeTpl = viewChild<TemplateRef<any>>('sizeTpl');
-  private readonly statusTpl = viewChild<TemplateRef<any>>('statusTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly sizeTpl = viewChild<TemplateRef<unknown>>('sizeTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
 
   readonly columns = computed<TableColumnDef<SystemBackup>[]>(() => [
     { key: 'filename', header: 'Nome Archivio ZIP', width: '320px', sortable: true },
@@ -100,12 +103,12 @@ export class BackupsComponent implements OnInit {
     this.api.createTenantBackup().subscribe({
       next: () => {
         this.isCreating.set(false);
-        this.message.success('Generazione backup avviata con successo');
+        this.message.success(this.translate.instant('system.backups.messages.started'));
         this.loadBackups();
       },
       error: () => {
         this.isCreating.set(false);
-        this.message.success('Generazione backup completata');
+        this.message.success(this.translate.instant('system.backups.messages.completed'));
         this.loadBackups();
       },
     });
@@ -122,7 +125,7 @@ export class BackupsComponent implements OnInit {
         URL.revokeObjectURL(url);
       },
       error: () => {
-        this.message.info(`Download avviato per ${b.filename}`);
+        this.message.info(this.translate.instant('system.backups.messages.downloadStarted', { filename: b.filename }));
       },
     });
   }
@@ -130,10 +133,10 @@ export class BackupsComponent implements OnInit {
   restore(b: SystemBackup): void {
     this.api.restoreTenantBackup(b.id).subscribe({
       next: () => {
-        this.message.success(`Ripristino dal backup ${b.filename} completato.`);
+        this.message.success(this.translate.instant('system.backups.messages.restoreCompleted', { filename: b.filename }));
       },
       error: () => {
-        this.message.success('Ripristino completato con successo.');
+        this.message.success(this.translate.instant('system.backups.messages.restoreSuccess'));
       },
     });
   }
@@ -141,12 +144,12 @@ export class BackupsComponent implements OnInit {
   delete(b: SystemBackup): void {
     this.api.deleteTenantBackup(b.id).subscribe({
       next: () => {
-        this.message.success('Archivio di backup rimosso');
+        this.message.success(this.translate.instant('system.backups.messages.removed'));
         this.loadBackups();
       },
       error: () => {
         this.items.update((l) => l.filter((x) => x.id !== b.id));
-        this.message.success('Archivio eliminato');
+        this.message.success(this.translate.instant('system.backups.messages.removed'));
       },
     });
   }
@@ -160,7 +163,7 @@ export class BackupsComponent implements OnInit {
 
   submitUploadRestore(): void {
     if (!this.uploadFile) {
-      this.message.warning('Seleziona un file ZIP');
+      this.message.warning(this.translate.instant('system.backups.messages.selectZip'));
       return;
     }
     this.isUploading.set(true);
@@ -170,13 +173,13 @@ export class BackupsComponent implements OnInit {
       next: () => {
         this.isUploading.set(false);
         this.isUploadModalVisible.set(false);
-        this.message.success('File di backup ripristinato con successo');
+        this.message.success(this.translate.instant('system.backups.messages.restoreSuccess'));
         this.loadBackups();
       },
       error: () => {
         this.isUploading.set(false);
         this.isUploadModalVisible.set(false);
-        this.message.success('Ripristino completato con successo');
+        this.message.success(this.translate.instant('system.backups.messages.restoreSuccess'));
       },
     });
   }
