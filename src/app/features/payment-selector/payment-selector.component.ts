@@ -1,14 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { LookupService } from '../../core/lookups/lookup.service';
-import { LookupItemDto } from '../../core/lookups/lookup.types';
+import { LookupItemDto, LookupService } from '@core';
 
 @Component({
   selector: 'app-payment-selector',
-  standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule],
+  imports: [FormsModule, NzSelectModule],
   templateUrl: './payment-selector.component.html',
 })
 export class PaymentSelectorComponent implements OnInit {

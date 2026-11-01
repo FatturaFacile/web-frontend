@@ -1,13 +1,11 @@
 import {
   Component,
+  effect,
   forwardRef,
   inject,
-  Input,
-  OnChanges,
+  input,
   signal,
-  SimpleChanges,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { LookupService } from './lookup.service';
@@ -15,8 +13,7 @@ import { LookupItemDto } from './lookup.types';
 
 @Component({
   selector: 'app-lookup-select',
-  standalone: true,
-  imports: [CommonModule, FormsModule, NzSelectModule],
+  imports: [FormsModule, NzSelectModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -26,18 +23,14 @@ import { LookupItemDto } from './lookup.types';
   ],
   templateUrl: './lookup-select.component.html',
 })
-export class LookupSelectComponent implements ControlValueAccessor, OnChanges {
+export class LookupSelectComponent implements ControlValueAccessor {
   private readonly lookupService = inject(LookupService);
 
-  /**
-   * The lookup category code to populate options from (e.g., 'payment_type', 'unit_of_measure').
-   */
-  @Input({ required: true }) category!: string;
-
-  @Input() placeholder = 'Select an option';
-  @Input() allowClear = true;
-  @Input() showSearch = true;
-  @Input() showShortLabel = false;
+  readonly category = input.required<string>();
+  readonly placeholder = input('Select an option');
+  readonly allowClear = input(true);
+  readonly showSearch = input(true);
+  readonly showShortLabel = input(false);
 
   readonly items = signal<LookupItemDto[]>([]);
   readonly loading = signal<boolean>(false);
@@ -48,16 +41,19 @@ export class LookupSelectComponent implements ControlValueAccessor, OnChanges {
   private onChange: (value: string | null) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes['category'] && this.category) {
-      await this.loadItems();
-    }
+  constructor() {
+    effect(() => {
+      const cat = this.category();
+      if (cat) {
+        this.loadItems(cat);
+      }
+    });
   }
 
-  private async loadItems(): Promise<void> {
+  private async loadItems(cat: string): Promise<void> {
     this.loading.set(true);
     try {
-      const data = await this.lookupService.getLookup(this.category);
+      const data = await this.lookupService.getLookup(cat);
       this.items.set(data);
     } finally {
       this.loading.set(false);

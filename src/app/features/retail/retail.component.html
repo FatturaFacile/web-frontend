@@ -1,7 +1,13 @@
 <app-page-header [title]="'RETAIL.TITLE' | translate" [subtitle]="'RETAIL.SUBTITLE' | translate" />
 
 <nz-card [nzTitle]="'RETAIL.CARD_TITLE' | translate">
-  <nz-table #rTable [nzData]="sessions" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #rTable
+    [nzData]="sessions()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "RETAIL.COL_POS" | translate }}</th>

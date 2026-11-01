@@ -1,7 +1,13 @@
 <app-page-header [title]="'RENT.TITLE' | translate" [subtitle]="'RENT.SUBTITLE' | translate" />
 
 <nz-card [nzTitle]="'RENT.CARD_TITLE' | translate">
-  <nz-table #rTable [nzData]="vehicles" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #rTable
+    [nzData]="vehicles()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "RENT.COL_PLATE_MODEL" | translate }}</th>

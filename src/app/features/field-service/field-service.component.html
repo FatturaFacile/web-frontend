@@ -4,7 +4,13 @@
 />
 
 <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate">
-  <nz-table #tkTable [nzData]="tickets" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #tkTable
+    [nzData]="tickets()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>

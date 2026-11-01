@@ -4,7 +4,13 @@
 />
 
 <nz-card [nzTitle]="'CONSTRUCTION.CARD_TITLE' | translate">
-  <nz-table #cTable [nzData]="sites" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #cTable
+    [nzData]="sites()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "CONSTRUCTION.COL_SITE_CODE" | translate }}</th>

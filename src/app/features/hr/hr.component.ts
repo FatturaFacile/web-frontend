@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { Employee, HrApiService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
@@ -9,23 +11,32 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   imports: [NzCardModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
   templateUrl: './hr.component.html',
 })
-export class HrComponent {
-  readonly employees = [
-    {
-      name: 'Matteo Bianchi',
-      role: 'Software Engineer',
-      type: 'Indeterminato (42h/sett.)',
-      regime: 'Frontaliere CH (Accordo 2024)',
-      pension: 'AVS / AI / LPP 2° Pilastro (AXA)',
-      status: 'Swissdec ELM OK',
-    },
-    {
-      name: 'Laura Colombo',
-      role: 'Responsabile Amministrativa',
-      type: 'Indeterminato (CCNL Commercio)',
-      regime: 'Residente IT',
-      pension: 'INPS Fondo Generale / TFR',
-      status: 'LUL Zucchetti OK',
-    },
-  ];
+export class HrComponent implements OnInit {
+  private readonly api = inject(HrApiService);
+  private readonly message = inject(NzMessageService);
+
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly employees = signal<Employee[]>([]);
+
+  ngOnInit(): void {
+    this.loadEmployees();
+  }
+
+  loadEmployees(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.api.getEmployees().subscribe({
+      next: (res) => {
+        this.employees.set(res?.data || []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err?.message || 'Errore nel caricamento dipendenti');
+        this.message.error('Errore nel caricamento del registro presenze e dipendenti');
+        this.employees.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
 }

@@ -1,7 +1,13 @@
 <app-page-header [title]="'HR.TITLE' | translate" [subtitle]="'HR.SUBTITLE' | translate" />
 
 <nz-card [nzTitle]="'HR.CARD_TITLE' | translate">
-  <nz-table #hTable [nzData]="employees" [nzFrontPagination]="false" nzSize="middle">
+  <nz-table
+    #hTable
+    [nzData]="employees()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    nzSize="middle"
+  >
     <thead>
       <tr>
         <th>{{ "HR.COL_EMPLOYEE" | translate }}</th>
