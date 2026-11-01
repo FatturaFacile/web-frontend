@@ -1,0 +1,22 @@
+.jurisdiction-banner {
+  margin-bottom: 20px;
+}
+
+.stats-grid {
+  margin-bottom: 20px;
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shortcut-btn {
+  text-align: left;
+  height: 42px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}

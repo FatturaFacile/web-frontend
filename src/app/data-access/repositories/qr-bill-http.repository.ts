@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
+import { environment } from '@env';
 import { QrBill } from '@domain/models/qr-bill.model';
 import { QrBillRepository } from '@domain/repositories/qr-bill.repository';
 import { QrBillDto } from '../dtos/qr-bill.dto';
@@ -9,7 +10,7 @@ import { QrBillMapper } from '../mappers/qr-bill.mapper';
 @Injectable()
 export class QrBillHttpRepository implements QrBillRepository {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = '/api/sales/qr-bills';
+  private readonly baseUrl = `${environment.apiBaseUrl}/sales/qr-bills`;
 
   getBills(): Observable<QrBill[]> {
     return this.http

@@ -11,7 +11,13 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { ClientApiService, ContactResource, ContactType, contactDisplayName, I18nService } from '@core';
+import {
+  ClientApiService,
+  ContactResource,
+  ContactType,
+  contactDisplayName,
+  I18nService,
+} from '@core';
 import {
   BaseTableComponent,
   PageHeaderComponent,
@@ -41,144 +47,8 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
     TranslatePipe,
     ClientFormDrawerComponent,
   ],
-  template: `
-    <app-page-header [title]="'CRM.CLIENTS.TITLE' | translate" [subtitle]="'CRM.CLIENTS.SUBTITLE' | translate" />
-
-    <nz-card>
-      <div class="toolbar">
-        <input
-          class="search"
-          nz-input
-          type="search"
-          [attr.aria-label]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
-          [placeholder]="'CRM.CLIENTS.SEARCH_PLACEHOLDER' | translate"
-          [ngModel]="facade.filterParams().search"
-          (ngModelChange)="facade.setFilter({ search: $event })"
-        />
-
-        <nz-select
-          class="type-filter"
-          nzAllowClear
-          [nzPlaceHolder]="'CRM.CLIENTS.FILTER_TYPE' | translate"
-          [attr.aria-label]="'CRM.CLIENTS.FILTER_TYPE' | translate"
-          [nzOptions]="typeOptions()"
-          [ngModel]="facade.filterParams().type"
-          (ngModelChange)="facade.setFilter({ type: $event ?? undefined })"
-        />
-
-        <span class="spacer"></span>
-        <button nz-button nzType="primary" type="button" (click)="create()">
-          <nz-icon nzType="plus" /> {{ 'CRM.CLIENTS.NEW' | translate }}
-        </button>
-      </div>
-
-      <app-base-table
-        [data]="facade.items()"
-        [columns]="columns()"
-        [loading]="facade.loading()"
-        [total]="facade.totalCount()"
-        [pageIndex]="facade.pageIndex()"
-        [pageSize]="facade.pageSize()"
-        [actionsTemplate]="actionsTpl"
-        (paramsChange)="onParamsChange($event)"
-      />
-
-      <!-- Cell Templates -->
-      <ng-template #nameTpl let-c>
-        <strong>{{ name(c) }}</strong>
-        @if (c.company_name && c.first_name) {
-          <div class="sub-text">{{ c.first_name }} {{ c.last_name }}</div>
-        }
-      </ng-template>
-
-      <ng-template #typeTpl let-c>
-        <nz-tag [nzColor]="typeColor(c.type)">{{ typeLabel(c.type) }}</nz-tag>
-      </ng-template>
-
-      <ng-template #taxTpl let-c>
-        {{ c.vat_number || c.fiscal_code || c.uid_number || '-' }}
-      </ng-template>
-
-      <ng-template #countryTpl let-c>
-        <nz-tag>{{ c.country }}</nz-tag>
-      </ng-template>
-
-      <!-- Row Actions Template -->
-      <ng-template #actionsTpl let-c>
-        <div class="actions-group">
-          <button
-            nz-button
-            nzType="text"
-            nzSize="small"
-            type="button"
-            (click)="viewStats(c)"
-            title="Statistiche"
-          >
-            <nz-icon nzType="bar-chart" />
-          </button>
-          <button
-            nz-button
-            nzType="text"
-            nzSize="small"
-            type="button"
-            (click)="edit(c)"
-            [title]="'CRM.CLIENTS.ACTIONS.EDIT' | translate"
-          >
-            <nz-icon nzType="edit" />
-          </button>
-          <button
-            nz-button
-            nzType="text"
-            nzDanger
-            nzSize="small"
-            type="button"
-            nz-popconfirm
-            [nzPopconfirmTitle]="'CRM.CLIENTS.ACTIONS.CONFIRM_DELETE' | translate: { name: name(c) }"
-            [nzOkText]="'COMMON.DELETE' | translate"
-            [nzCancelText]="'COMMON.CANCEL' | translate"
-            (nzOnConfirm)="delete(c)"
-            [title]="'CRM.CLIENTS.ACTIONS.DELETE' | translate"
-          >
-            <nz-icon nzType="delete" />
-          </button>
-        </div>
-      </ng-template>
-    </nz-card>
-
-    <app-client-form-drawer
-      [contact]="selected()"
-      [open]="drawerOpen()"
-      (openChange)="drawerOpen.set($event)"
-      (saved)="facade.reload()"
-    />
-  `,
-  styles: `
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .search {
-      width: 280px;
-    }
-    .type-filter {
-      width: 170px;
-    }
-    .spacer {
-      flex: 1;
-    }
-    .sub-text {
-      font-size: 12px;
-      color: #8c8c8c;
-    }
-    .actions-group {
-      display: flex;
-      justify-content: flex-end;
-      gap: 4px;
-    }
-  `,
+  templateUrl: './clients.component.html',
+  styleUrl: './clients.component.scss',
 })
 export class ClientsComponent {
   protected readonly facade = inject(ClientFacade);
@@ -190,10 +60,14 @@ export class ClientsComponent {
   protected readonly drawerOpen = signal(false);
   protected readonly selected = signal<ContactResource | null>(null);
 
-  private readonly nameTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('nameTpl');
-  private readonly typeTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('typeTpl');
-  private readonly taxTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('taxTpl');
-  private readonly countryTpl = viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('countryTpl');
+  private readonly nameTpl =
+    viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('nameTpl');
+  private readonly typeTpl =
+    viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('typeTpl');
+  private readonly taxTpl =
+    viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('taxTpl');
+  private readonly countryTpl =
+    viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('countryTpl');
 
   readonly columns = computed<TableColumnDef<ContactResource>[]>(() => [
     {

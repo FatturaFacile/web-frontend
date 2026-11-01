@@ -13,10 +13,14 @@ import {
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
-/**
- * Only operations exposed by the backend are implemented. The spec has no
- * update / delete / duplicate endpoint for invoices.
- */
+export interface RecordPaymentPayload {
+  amount: number;
+  payment_date: string;
+  payment_method: string;
+  bank_account_id?: string;
+  notes?: string;
+}
+
 @Service()
 export class InvoiceApiService {
   private readonly http = inject(HttpClient);
@@ -53,8 +57,24 @@ export class InvoiceApiService {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/send-sdi`, {});
   }
 
+  generateSdiXml(id: string): Observable<ApiResponse<{ xml_url?: string; status: string }>> {
+    return this.http.post<ApiResponse<{ xml_url?: string; status: string }>>(
+      `${this.url}/${id}/generate-sdi-xml`,
+      {}
+    );
+  }
+
+  getSdiLogs(id: string): Observable<ApiResponse<unknown[]>> {
+    return this.http.get<ApiResponse<unknown[]>>(`${this.url}/${id}/sdi-logs`);
+  }
+
   generateQrBill(id: string): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/generate-qr-bill`, {});
+  }
+
+  /** Swiss QR-bill payload fetch. */
+  getQrBill(id: string): Observable<ApiResponse<{ qr_bill: unknown }>> {
+    return this.http.get<ApiResponse<{ qr_bill: unknown }>>(`${this.url}/${id}/qr-bill`);
   }
 
   /** SVG payment slip stream. */
@@ -65,6 +85,8 @@ export class InvoiceApiService {
   convertProforma(id: string): Observable<ApiResponse<InvoiceResource>> {
     return this.http.post<ApiResponse<InvoiceResource>>(`${this.url}/${id}/convert-proforma`, {});
   }
+
+  recordPayment(id: string, payload: RecordPaymentPayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/payments`, payload);
+  }
 }
-
-

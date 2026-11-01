@@ -10,3 +10,5 @@ export * from './expenses.model';
 export * from './settings.model';
 export * from './system.model';
 export * from './dashboard.model';
+export * from './inventory.model';
+export * from './procurement.model';

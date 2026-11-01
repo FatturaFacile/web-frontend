@@ -1,0 +1,40 @@
+<app-page-header [title]="'RENT.TITLE' | translate" [subtitle]="'RENT.SUBTITLE' | translate" />
+
+<nz-card [nzTitle]="'RENT.CARD_TITLE' | translate">
+  <nz-table #rTable [nzData]="vehicles" [nzFrontPagination]="false" nzSize="middle">
+    <thead>
+      <tr>
+        <th>{{ "RENT.COL_PLATE_MODEL" | translate }}</th>
+        <th>{{ "RENT.COL_TYPE" | translate }}</th>
+        <th>{{ "RENT.COL_CLIENT" | translate }}</th>
+        <th>{{ "RENT.COL_VIGNETTE" | translate }}</th>
+        <th>{{ "RENT.COL_RETURN" | translate }}</th>
+        <th>{{ "COMMON.STATUS" | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (v of rTable.data; track v.plate) {
+        <tr>
+          <td>
+            <strong>{{ v.plate }}</strong> - {{ v.model }}
+          </td>
+          <td>{{ v.type }}</td>
+          <td>{{ v.client }}</td>
+          <td>
+            <nz-tag [nzColor]="v.vignette ? 'success' : 'default'">
+              {{
+                v.vignette
+                  ? ("RENT.VIGNETTE_ACTIVE" | translate)
+                  : ("RENT.VIGNETTE_NONE" | translate)
+              }}
+            </nz-tag>
+          </td>
+          <td>{{ v.returnDate }}</td>
+          <td>
+            <nz-tag nzColor="blue">{{ v.status }}</nz-tag>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

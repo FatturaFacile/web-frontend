@@ -1,7 +1,6 @@
 export const environment = {
   production: false,
-  demoMode: true,
-  apiUrl: '/api',
-  apiBaseUrl: 'https://api.fatturafacile.eu/api/v1',
+  demoMode: false,
+  apiUrl: 'http://localhost:8000/api/v1',
+  apiBaseUrl: 'http://localhost:8000/api/v1',
 };
-

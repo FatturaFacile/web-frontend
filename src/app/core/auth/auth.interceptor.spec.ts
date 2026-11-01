@@ -11,6 +11,7 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
   const originalApiBaseUrl = environment.apiBaseUrl;
 
   beforeEach(() => {
+    localStorage.clear();
     environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
 
     TestBed.configureTestingModule({
@@ -26,6 +27,8 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
 
   afterEach(() => {
     httpTesting.verify();
+    TestBed.resetTestingModule();
+    localStorage.clear();
     environment.apiBaseUrl = originalApiBaseUrl;
     document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   });
@@ -47,6 +50,7 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
     const req = httpTesting.expectOne('/api/orders');
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.headers.get('X-Requested-With')).toBe('XMLHttpRequest');
+    expect(req.request.headers.get('Accept')).toBe('application/json');
     expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush([]);
   });

@@ -1,0 +1,14 @@
+@if (breadcrumbs().length > 0) {
+  <nz-breadcrumb class="app-breadcrumb">
+    <nz-breadcrumb-item>
+      <a routerLink="/dashboard"
+        ><i class="fa-solid fa-house"></i> {{ "BREADCRUMB.HOME" | translate }}</a
+      >
+    </nz-breadcrumb-item>
+    @for (item of breadcrumbs(); track item.url) {
+      <nz-breadcrumb-item>
+        <a [routerLink]="item.url">{{ item.label }}</a>
+      </nz-breadcrumb-item>
+    }
+  </nz-breadcrumb>
+}

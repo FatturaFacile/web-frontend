@@ -1,0 +1,162 @@
+<app-page-header
+  title="Impostazioni Aziendali & Sistema"
+  subtitle="Configurazione tenant, anagrafica filiali, gestione utenti e audit log"
+/>
+
+<nz-card>
+  <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: DATI TENANT -->
+    <nz-tab nzTitle="Dati Organizzazione & Fisco">
+      <form nz-form nzLayout="vertical" [formGroup]="tenantForm" (ngSubmit)="saveTenantSettings()">
+        <div class="form-grid">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="name">Ragione Sociale / Nome</nz-form-label>
+            <nz-form-control nzErrorTip="Il nome è obbligatorio">
+              <input nz-input id="name" formControlName="name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="legal_name">Denominazione Legale Estesa</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="legal_name" formControlName="legal_name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="fiscal_code">Codice Fiscale (IT)</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="fiscal_code" formControlName="fiscal_code" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="vat_number">Partita IVA (IT / CH)</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="vat_number" formControlName="vat_number" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="uid_number">Numero IDI / UID (CH)</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="uid_number" formControlName="uid_number" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="default_currency">Valuta Predefinita</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="default_currency" formControlName="default_currency" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="iban">IBAN Aziendale Ordinario</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="iban" formControlName="iban" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="qr_iban">QR-IBAN Svizzero</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="qr_iban" formControlName="qr_iban" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="sdi_code">Codice Destinatario SDI (7 caratteri)</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="sdi_code" formControlName="sdi_code" maxlength="7" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="pec_email">Indirizzo PEC</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="pec_email" formControlName="pec_email" type="email" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="form-actions">
+          <button nz-button nzType="primary" type="submit" [nzLoading]="isSavingTenant()">
+            Salva Modifiche Azienda
+          </button>
+        </div>
+      </form>
+    </nz-tab>
+
+    <!-- TAB 2: FILIALI -->
+    <nz-tab nzTitle="Filiali & Sedi">
+      <app-base-table
+        [data]="branches()"
+        [columns]="branchColumns()"
+        [loading]="loadingBranches()"
+        [total]="branches().length"
+        [scroll]="{ x: '800px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 3: UTENTI -->
+    <nz-tab nzTitle="Utenti & Accessi">
+      <app-base-table
+        [data]="users()"
+        [columns]="userColumns()"
+        [loading]="loadingUsers()"
+        [total]="users().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 4: RUOLI & PERMESSI -->
+    <nz-tab nzTitle="Ruoli & Permessi">
+      <app-base-table
+        [data]="roles()"
+        [columns]="roleColumns()"
+        [loading]="loadingRoles()"
+        [total]="roles().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 5: AUDIT LOG -->
+    <nz-tab nzTitle="Audit Log di Sistema">
+      <div style="margin-bottom: 12px; display: flex; justify-content: flex-end">
+        <button
+          nz-button
+          nzType="default"
+          (click)="syncExchangeRates()"
+          [nzLoading]="isSyncingRates()"
+        >
+          <nz-icon nzType="sync" /> Sincronizza Tassi di Cambio
+        </button>
+      </div>
+      <app-base-table
+        [data]="auditLogs()"
+        [columns]="auditColumns()"
+        [loading]="loadingAudit()"
+        [total]="auditLogs().length"
+        [scroll]="{ x: '1000px' }"
+      />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Templates -->
+<ng-template #dateTpl let-item let-val="value">
+  {{ val | date: "dd.MM.yyyy HH:mm" }}
+</ng-template>
+
+<ng-template #activeTpl let-item let-val="value">
+  <nz-tag [nzColor]="val ? 'success' : 'default'">
+    {{ val ? "ATTIVO" : "DISATTIVATO" }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #hqTpl let-item let-val="value">
+  <nz-tag [nzColor]="val ? 'blue' : 'default'">
+    {{ val ? "SEDE CENTRALE" : "FILIALE" }}
+  </nz-tag>
+</ng-template>

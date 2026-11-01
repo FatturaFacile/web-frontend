@@ -1,0 +1,122 @@
+<app-page-header
+  title="Contabilità Generale & Dual-Ledger"
+  subtitle="Sistema a doppia partita cross-border per normative fiscali IT (SDI) e CH (CO/PCO)"
+/>
+
+<nz-card>
+  <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: LIBRO GIORNALE -->
+    <nz-tab nzTitle="Libro Giornale">
+      <div class="tab-toolbar">
+        <input
+          class="search-input"
+          nz-input
+          type="search"
+          placeholder="Cerca numero o causale..."
+          [ngModel]="tableState.search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+
+        <span class="spacer"></span>
+        <button nz-button nzType="primary" type="button" (click)="drawerOpen.set(true)">
+          <nz-icon nzType="plus" /> Nuova Registrazione
+        </button>
+      </div>
+
+      <app-base-table
+        [data]="ledgerEntries()"
+        [columns]="ledgerColumns()"
+        [loading]="tableState.loading()"
+        [total]="tableState.total()"
+        [pageIndex]="tableState.pageIndex()"
+        [pageSize]="tableState.pageSize()"
+        [expandable]="true"
+        [detailTemplate]="ledgerDetailTpl"
+        (paramsChange)="onParamsChange($event)"
+      />
+
+      <!-- Detail row expandable template -->
+      <ng-template #ledgerDetailTpl let-entry>
+        <div class="expandable-detail-wrapper">
+          <h5>Dettaglio Righe Registrazione {{ entry.entry_number }}</h5>
+          <table class="nested-lines-table">
+            <thead>
+              <tr>
+                <th>Conto</th>
+                <th>Descrizione</th>
+                <th style="text-align: right">Dare (€/CHF)</th>
+                <th style="text-align: right">Avere (€/CHF)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of entry.lines; track $index) {
+                <tr>
+                  <td>
+                    <code>{{ line.account_code || line.account_id }}</code> -
+                    {{ line.account_name || "Conto Contabile" }}
+                  </td>
+                  <td>{{ line.description || "-" }}</td>
+                  <td style="text-align: right">
+                    {{ line.debit > 0 ? (line.debit | currency: "EUR" : "symbol" : "1.2-2") : "-" }}
+                  </td>
+                  <td style="text-align: right">
+                    {{
+                      line.credit > 0 ? (line.credit | currency: "EUR" : "symbol" : "1.2-2") : "-"
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 2: PIANO DEI CONTI -->
+    <nz-tab nzTitle="Piano dei Conti">
+      <app-base-table
+        [data]="chartOfAccounts()"
+        [columns]="coaColumns()"
+        [loading]="loadingCoa()"
+        [total]="chartOfAccounts().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 3: LIQUIDAZIONI IVA -->
+    <nz-tab nzTitle="Liquidazioni IVA & Fiscale">
+      <app-base-table
+        [data]="vatSettlements()"
+        [columns]="vatColumns()"
+        [loading]="loadingVat()"
+        [total]="vatSettlements().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<app-ledger-entry-form-drawer
+  [open]="drawerOpen()"
+  (openChange)="drawerOpen.set($event)"
+  (saved)="loadLedgerEntries()"
+/>
+
+<!-- Shared Templates -->
+<ng-template #dateTpl let-item let-val="value">
+  {{ val | date: "dd.MM.yyyy" }}
+</ng-template>
+
+<ng-template #currencyTpl let-item let-val="value">
+  {{ val | currency: item.currency || "EUR" : "symbol" : "1.2-2" }}
+</ng-template>
+
+<ng-template #accountTypeTpl let-item let-val="value">
+  <nz-tag [nzColor]="getAccountTypeColor(val)">{{ val | uppercase }}</nz-tag>
+</ng-template>
+
+<ng-template #vatStatusTpl let-item let-val="value">
+  <nz-tag [nzColor]="val === 'paid' ? 'success' : val === 'settled' ? 'processing' : 'default'">
+    {{ val | uppercase }}
+  </nz-tag>
+</ng-template>

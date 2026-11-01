@@ -1,0 +1,19 @@
+.stats-row {
+  margin-bottom: 20px;
+}
+.toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+}
+.search-input {
+  max-width: 280px;
+}
+.status-filter {
+  width: 180px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

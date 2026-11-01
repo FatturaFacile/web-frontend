@@ -69,158 +69,8 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     TranslatePipe,
     InvoiceFormDrawerComponent,
   ],
-  template: `
-    <app-page-header [title]="'SALES.INVOICES.TITLE' | translate" [subtitle]="'SALES.INVOICES.SUBTITLE' | translate" />
-
-    <nz-card>
-      <div class="toolbar">
-        <input
-          class="search"
-          nz-input
-          type="search"
-          [attr.aria-label]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
-          [placeholder]="'SALES.INVOICES.SEARCH_PLACEHOLDER' | translate"
-          [ngModel]="facade.filterParams().search"
-          (ngModelChange)="facade.setFilter({ search: $event })"
-        />
-
-        <nz-select
-          class="filter"
-          nzAllowClear
-          [nzPlaceHolder]="'SALES.INVOICES.FILTER_PAYMENT' | translate"
-          [attr.aria-label]="'SALES.INVOICES.FILTER_PAYMENT' | translate"
-          [nzOptions]="paymentOptions()"
-          [ngModel]="facade.filterParams().payment_status"
-          (ngModelChange)="facade.setFilter({ payment_status: $event ?? undefined })"
-        />
-        <nz-select
-          class="filter"
-          nzAllowClear
-          [nzPlaceHolder]="'SALES.INVOICES.FILTER_JURISDICTION' | translate"
-          [attr.aria-label]="'SALES.INVOICES.FILTER_JURISDICTION' | translate"
-          [nzOptions]="jurisdictionOptions()"
-          [ngModel]="facade.filterParams().jurisdiction"
-          (ngModelChange)="facade.setFilter({ jurisdiction: $event ?? undefined })"
-        />
-
-        <span class="spacer"></span>
-        <button nz-button nzType="primary" type="button" (click)="create()">
-          <nz-icon nzType="plus" /> {{ 'SALES.INVOICES.NEW' | translate }}
-        </button>
-      </div>
-
-      <app-base-table
-        [data]="facade.items()"
-        [columns]="columns()"
-        [loading]="facade.loading()"
-        [total]="facade.totalCount()"
-        [pageIndex]="facade.pageIndex()"
-        [pageSize]="facade.pageSize()"
-        [actionsTemplate]="actionsTpl"
-        (paramsChange)="onParamsChange($event)"
-      />
-
-      <!-- Cell Templates -->
-      <ng-template #numberTpl let-inv>
-        <strong>{{ inv.invoice_number }}</strong>
-        @if (inv.has_swiss_qr) {
-          <nz-tag nzColor="red" style="margin-left: 6px;">QR</nz-tag>
-        }
-      </ng-template>
-
-      <ng-template #dateTpl let-inv let-val="value">
-        {{ val | date: 'dd.MM.yyyy' }}
-      </ng-template>
-
-      <ng-template #currencyTpl let-inv let-val="value">
-        {{ val | currency: inv.currency : 'symbol' : '1.2-2' }}
-      </ng-template>
-
-      <ng-template #totalTpl let-inv let-val="value">
-        <strong>{{ val | currency: inv.currency : 'symbol' : '1.2-2' }}</strong>
-      </ng-template>
-
-      <ng-template #statusTpl let-inv>
-        <nz-tag [nzColor]="statusOf(inv).color">{{ statusOf(inv).key | translate }}</nz-tag>
-      </ng-template>
-
-      <ng-template #jurisdictionTpl let-inv>
-        <nz-tag>{{ 'SALES.INVOICES.JURISDICTIONS.' + jurisdictionOf(inv) | translate }}</nz-tag>
-      </ng-template>
-
-      <!-- Row Actions Template -->
-      <ng-template #actionsTpl let-inv>
-        <button
-          nz-button
-          nzType="text"
-          type="button"
-          nz-dropdown
-          nzTrigger="click"
-          nzPlacement="bottomRight"
-          [nzDropdownMenu]="menu"
-          [nzLoading]="busyId() === inv.id"
-          [disabled]="busyId() === inv.id"
-          [attr.aria-label]="'SALES.INVOICES.ACTIONS.MORE' | translate: { number: inv.invoice_number }"
-        >
-          <nz-icon nzType="more" />
-        </button>
-        <nz-dropdown-menu #menu="nzDropdownMenu">
-          <ul nz-menu>
-            <li nz-menu-item tabindex="0" (click)="openPdf(inv)" (keydown.enter)="openPdf(inv)">
-              <nz-icon nzType="file-pdf" /> {{ 'SALES.INVOICES.ACTIONS.DOWNLOAD_PDF' | translate }}
-            </li>
-            <li nz-menu-item tabindex="0" (click)="confirmEmail(inv)" (keydown.enter)="confirmEmail(inv)">
-              <nz-icon nzType="mail" /> {{ 'SALES.INVOICES.ACTIONS.SEND_EMAIL' | translate }}
-            </li>
-            @if (jurisdictionOf(inv) === 'IT') {
-              <li nz-menu-item tabindex="0" (click)="confirmSdi(inv)" (keydown.enter)="confirmSdi(inv)">
-                <nz-icon nzType="send" /> {{ 'SALES.INVOICES.ACTIONS.SEND_SDI' | translate }}
-              </li>
-            }
-            @if (jurisdictionOf(inv) === 'CH') {
-              <li nz-menu-item tabindex="0" (click)="generateQrBill(inv)" (keydown.enter)="generateQrBill(inv)">
-                <nz-icon nzType="qrcode" /> {{ 'SALES.INVOICES.ACTIONS.GENERATE_QR_BILL' | translate }}
-              </li>
-            }
-            @if (inv.invoice_type === 'proforma') {
-              <li nz-menu-item tabindex="0" (click)="confirmProforma(inv)" (keydown.enter)="confirmProforma(inv)">
-                <nz-icon nzType="swap" /> {{ 'SALES.INVOICES.ACTIONS.CONVERT_PROFORMA' | translate }}
-              </li>
-            }
-            <li nz-menu-divider></li>
-            <li nz-menu-item tabindex="0" (click)="duplicate(inv)" (keydown.enter)="duplicate(inv)">
-              <nz-icon nzType="copy" /> {{ 'SALES.INVOICES.ACTIONS.DUPLICATE' | translate }}
-            </li>
-          </ul>
-        </nz-dropdown-menu>
-      </ng-template>
-    </nz-card>
-
-    <app-invoice-form-drawer
-      [open]="drawerOpen()"
-      [template]="template()"
-      (openChange)="drawerOpen.set($event)"
-      (saved)="facade.reload()"
-    />
-  `,
-  styles: `
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .search {
-      width: 280px;
-    }
-    .filter {
-      width: 170px;
-    }
-    .spacer {
-      flex: 1;
-    }
-  `,
+  templateUrl: './invoices.component.html',
+  styleUrl: './invoices.component.scss',
 })
 export class InvoicesComponent {
   protected readonly facade = inject(InvoiceFacade);
@@ -234,12 +84,18 @@ export class InvoicesComponent {
   protected readonly busyId = signal<string | null>(null);
 
   // Template views
-  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('numberTpl');
-  private readonly dateTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('dateTpl');
-  private readonly currencyTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('currencyTpl');
-  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('totalTpl');
-  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('statusTpl');
-  private readonly jurisdictionTpl = viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('jurisdictionTpl');
+  private readonly numberTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('numberTpl');
+  private readonly dateTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('dateTpl');
+  private readonly currencyTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('currencyTpl');
+  private readonly totalTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('totalTpl');
+  private readonly statusTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('statusTpl');
+  private readonly jurisdictionTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('jurisdictionTpl');
 
   readonly columns = computed<TableColumnDef<InvoiceResource>[]>(() => [
     {
@@ -367,14 +223,19 @@ export class InvoicesComponent {
 
   protected confirmSdi(inv: InvoiceResource): void {
     this.confirm('SALES.INVOICES.ACTIONS.CONFIRM_SDI', () =>
-      this.run(inv, this.api.sendToSdi(inv.id), 'SALES.INVOICES.MESSAGES.SDI_SENT', () => this.facade.reload()),
+      this.run(inv, this.api.sendToSdi(inv.id), 'SALES.INVOICES.MESSAGES.SDI_SENT', () =>
+        this.facade.reload(),
+      ),
     );
   }
 
   protected confirmProforma(inv: InvoiceResource): void {
     this.confirm('SALES.INVOICES.ACTIONS.CONFIRM_PROFORMA', () =>
-      this.run(inv, this.api.convertProforma(inv.id), 'SALES.INVOICES.MESSAGES.PROFORMA_CONVERTED', () =>
-        this.facade.reload(),
+      this.run(
+        inv,
+        this.api.convertProforma(inv.id),
+        'SALES.INVOICES.MESSAGES.PROFORMA_CONVERTED',
+        () => this.facade.reload(),
       ),
     );
   }

@@ -9,13 +9,7 @@ import { LookupItemDto } from '../../core/lookups/lookup.types';
   selector: 'app-payment-selector',
   standalone: true,
   imports: [CommonModule, FormsModule, NzSelectModule],
-  template: `
-    <nz-select [(ngModel)]="selectedPaymentType" nzPlaceHolder="Select payment type" class="w-full">
-      @for (item of paymentTypes(); track item.id) {
-        <nz-option [nzValue]="item.code" [nzLabel]="item.label"></nz-option>
-      }
-    </nz-select>
-  `,
+  templateUrl: './payment-selector.component.html',
 })
 export class PaymentSelectorComponent implements OnInit {
   private readonly lookupService = inject(LookupService);

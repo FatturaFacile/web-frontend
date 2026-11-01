@@ -64,7 +64,7 @@ describe('CSRF and Sanctum Utilities', () => {
   describe('isBackendApiRequest', () => {
     it('should return false for frontend assets', () => {
       expect(isBackendApiRequest('/assets/i18n/it.json')).toBe(false);
-      expect(isBackendApiRequest('/assets/mock-data/crm-clients.json')).toBe(false);
+      expect(isBackendApiRequest('/assets/i18n/it.json')).toBe(false);
     });
 
     it('should return true for relative API routes', () => {

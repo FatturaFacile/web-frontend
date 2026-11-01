@@ -1,4 +1,4 @@
-import { QueryFilterParams } from './api.models';
+﻿import { QueryFilterParams } from './api.models';
 import { ContactResource } from './client.model';
 
 export type InvoiceStatus = 'draft' | 'issued' | 'paid' | 'cancelled';
@@ -22,6 +22,9 @@ export interface InvoiceResource {
   jurisdiction?: Jurisdiction;
   invoice_type?: InvoiceType;
   payment_status?: PaymentStatus;
+  contact_id?: string;
+  contact?: ContactResource | null;
+  client?: ContactResource | null;
 }
 
 export interface InvoiceItemResource {
@@ -32,10 +35,8 @@ export interface InvoiceItemResource {
   discount_percentage?: number | null;
 }
 
-/** GET /sales/invoices/{id} � documented as including contact and items. */
+/** GET /sales/invoices/{id} — documented as including contact and items. */
 export interface InvoiceDetailResource extends InvoiceResource {
-  contact_id?: string;
-  contact?: ContactResource | null;
   items?: InvoiceItemResource[];
   notes?: string | null;
 }
@@ -75,4 +76,3 @@ export interface SendDocumentEmailPayload {
   to?: string | null;
   message?: string | null;
 }
-

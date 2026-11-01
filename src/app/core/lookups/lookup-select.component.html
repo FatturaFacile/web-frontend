@@ -1,0 +1,23 @@
+<nz-select
+  [ngModel]="selectedValue"
+  (ngModelChange)="onSelectChange($event)"
+  [nzPlaceHolder]="placeholder"
+  [nzDisabled]="disabled"
+  [nzAllowClear]="allowClear"
+  [nzShowSearch]="showSearch"
+  [nzLoading]="loading()"
+  class="w-full"
+>
+  @for (item of items(); track item.id) {
+    <nz-option
+      [nzValue]="item.code"
+      [nzLabel]="item.label"
+      [nzCustomContent]="showShortLabel && !!item.short_label"
+    >
+      <span>{{ item.label }}</span>
+      @if (showShortLabel && item.short_label) {
+        <span class="text-xs text-gray-400 ml-2">({{ item.short_label }})</span>
+      }
+    </nz-option>
+  }
+</nz-select>

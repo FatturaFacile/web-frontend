@@ -1,0 +1,18 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.toolbar-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.spacer {
+  flex: 1;
+}
+.actions-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
