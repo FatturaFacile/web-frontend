@@ -65,14 +65,9 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
 
-    this.authApi.login({ email, password, remember: remember ?? false }).subscribe({
+    this.authApi.login({ email, password, remember: remember ?? false, tenant_id: '' }).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
-        const token = res?.data?.token ?? res?.data?.access_token;
-        if (token && typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem('ff_access_token', token);
-          window.localStorage.setItem('auth_token', token);
-        }
         if (res?.data?.tenant_id && typeof window !== 'undefined' && window.localStorage) {
           window.localStorage.setItem('ff_active_tenant_id', res.data.tenant_id);
           window.localStorage.setItem('tenant_id', res.data.tenant_id);

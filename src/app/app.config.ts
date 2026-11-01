@@ -9,7 +9,7 @@ import fr from '@angular/common/locales/fr';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
-import { tenantAuthInterceptor, errorInterceptor } from '@core';
+import { credentialsInterceptor, csrfRefreshInterceptor, tenantAuthInterceptor, errorInterceptor } from '@core';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -24,11 +24,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([tenantAuthInterceptor, errorInterceptor]),
       withXsrfConfiguration({
         cookieName: 'XSRF-TOKEN',
         headerName: 'X-XSRF-TOKEN',
       }),
+      withInterceptors([credentialsInterceptor, csrfRefreshInterceptor, tenantAuthInterceptor, errorInterceptor]),
     ),
     provideNzIcons(icons),
     provideNzI18n(en_US),
