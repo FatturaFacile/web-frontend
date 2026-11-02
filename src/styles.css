@@ -301,4 +301,16 @@ html.dark .ant-tag:not(.ant-tag-has-color),
   color: #0D9488 !important;
 }
 
+.ant-input-prefix {
+  margin-inline-end: 6px;
+}
+
+.ant-input-affix-wrapper > .ant-input:not(textarea) {
+  padding: 0 5px;
+}
+
+[data-theme=dark] .ant-form-item-label > label, .dark .ant-form-item-label > label, .dark .ant-form-item-label > label.ant-form-item-required, [data-theme=dark] .ant-checkbox-wrapper {
+  color: #fff !important;
+}
+
 /*# sourceMappingURL=styles.css.map */
