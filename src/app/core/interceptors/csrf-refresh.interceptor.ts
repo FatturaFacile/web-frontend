@@ -13,7 +13,8 @@ function resolveBaseUrl(requestUrl?: string): string {
   }
   const env = environment as Record<string, unknown>;
   const custom = (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
-  if (custom) {
+  // An empty baseUrl means same-origin (dev proxy): keep the csrf-cookie URL relative
+  if (custom !== undefined) {
     return custom.replace(/\/$/, '');
   }
   const apiBase = (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
