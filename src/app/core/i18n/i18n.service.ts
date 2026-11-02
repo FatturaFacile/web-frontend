@@ -17,9 +17,9 @@ function getInitialLanguage(): SupportedLanguage {
 
 function getInitialTenantId(): string {
   if (typeof window !== 'undefined' && window.localStorage) {
-    return localStorage.getItem('tenant_id') || localStorage.getItem('ff_tenant_id') || 'default';
+    return localStorage.getItem('tenant_id') || localStorage.getItem('ff_tenant_id') || '';
   }
-  return 'default';
+  return '';
 }
 
 interface ApiResponseTranslations {
