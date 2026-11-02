@@ -24,7 +24,7 @@ function resolveBaseUrl(requestUrl?: string): string {
       // Fallback
     }
   }
-  return 'http://localhost:8000';
+  return 'https://api.fatturafacile.eu';
 }
 
 export const csrfRefreshInterceptor: HttpInterceptorFn = (req, next) => {

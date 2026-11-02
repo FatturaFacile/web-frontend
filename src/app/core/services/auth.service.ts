@@ -23,7 +23,7 @@ function resolveBaseUrl(): string {
       // Fallback
     }
   }
-  return 'http://localhost:8000';
+  return 'https://api.fatturafacile.eu';
 }
 
 @Injectable({
@@ -34,16 +34,16 @@ export class AuthService {
   private readonly baseUrl = resolveBaseUrl();
 
   login(credentials: LoginCredentials): Observable<unknown> {
-    return this.http.get(`${this.baseUrl}/sanctum/csrf-cookie`).pipe(
-      switchMap(() => this.http.post(`${this.baseUrl}/login`, credentials))
+    return this.http.get(`${this.baseUrl}/sanctum/csrf-cookie`, { withCredentials: true }).pipe(
+      switchMap(() => this.http.post(`${this.baseUrl}/login`, credentials, { withCredentials: true }))
     );
   }
 
   logout(): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/logout`, {});
+    return this.http.post(`${this.baseUrl}/logout`, {}, { withCredentials: true });
   }
 
   getUser(): Observable<unknown> {
-    return this.http.get(`${this.baseUrl}/api/user`);
+    return this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true });
   }
 }
