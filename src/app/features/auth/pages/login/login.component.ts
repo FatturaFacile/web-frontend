@@ -18,8 +18,12 @@ import {
   isValidationError,
 } from '@core';
 import { TranslatePipe } from '@shared';
+import { environment } from '@env';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
+
+/** Account recreated by the backend demo reset (`demo:reset` → `erp:bootstrap`); prefilled only in demo builds. */
+const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123!' };
 
 @Component({
   selector: 'app-login',
@@ -51,8 +55,14 @@ export class LoginComponent {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly loginForm = this.fb.group({
-    email: this.fb.control('admin@demo-group.com', [Validators.required, Validators.email]),
-    password: this.fb.control('Password123!', [Validators.required, Validators.minLength(6)]),
+    email: this.fb.control(environment.demoMode ? DEMO_CREDENTIALS.email : '', [
+      Validators.required,
+      Validators.email,
+    ]),
+    password: this.fb.control(environment.demoMode ? DEMO_CREDENTIALS.password : '', [
+      Validators.required,
+      Validators.minLength(6),
+    ]),
     remember: this.fb.control(false),
   });
 
