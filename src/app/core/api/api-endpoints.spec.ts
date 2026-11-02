@@ -9,10 +9,10 @@ import { LookupService } from '../lookups/lookup.service';
 
 /**
  * Every call must go through `environment.apiBaseUrl`: in production the API lives on another origin
- * (api.fatturafacile.eu), so a relative `/api/...` URL would hit the frontend host instead.
+ * (dev-api.fatturafacile.eu), so a relative `/api/...` URL would hit the frontend host instead.
  */
 describe('API endpoints', () => {
-  const base = 'https://api.fatturafacile.eu/api/v1';
+  const base = 'https://dev-api.fatturafacile.eu/api/v1';
   const originalApiBaseUrl = environment.apiBaseUrl;
   let httpTesting: HttpTestingController;
 

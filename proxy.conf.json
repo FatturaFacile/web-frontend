@@ -1,11 +1,11 @@
 {
   "/api": {
-    "target": "https://api.fatturafacile.eu",
+    "target": "https://dev-api.fatturafacile.eu",
     "secure": true,
     "changeOrigin": true
   },
   "/sanctum": {
-    "target": "https://api.fatturafacile.eu",
+    "target": "https://dev-api.fatturafacile.eu",
     "secure": true,
     "changeOrigin": true
   }

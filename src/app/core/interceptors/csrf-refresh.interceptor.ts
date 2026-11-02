@@ -12,12 +12,14 @@ function resolveBaseUrl(requestUrl?: string): string {
     }
   }
   const env = environment as Record<string, unknown>;
-  const custom = (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
+  const custom =
+    (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
   // An empty baseUrl means same-origin (dev proxy): keep the csrf-cookie URL relative
   if (custom !== undefined) {
     return custom.replace(/\/$/, '');
   }
-  const apiBase = (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
+  const apiBase =
+    (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
   if (apiBase?.startsWith('http://') || apiBase?.startsWith('https://')) {
     try {
       return new URL(apiBase).origin;
@@ -25,7 +27,7 @@ function resolveBaseUrl(requestUrl?: string): string {
       // Fallback
     }
   }
-  return 'https://api.fatturafacile.eu';
+  return 'https://dev-api.fatturafacile.eu';
 }
 
 export const csrfRefreshInterceptor: HttpInterceptorFn = (req, next) => {
@@ -45,11 +47,11 @@ export const csrfRefreshInterceptor: HttpInterceptorFn = (req, next) => {
             // Re-execute original failed request with the refreshed token
             return next(req.clone({ withCredentials: true }));
           }),
-          catchError((refreshErr: unknown) => throwError(() => refreshErr))
+          catchError((refreshErr: unknown) => throwError(() => refreshErr)),
         );
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };

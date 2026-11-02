@@ -12,7 +12,7 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
 
   beforeEach(() => {
     localStorage.clear();
-    environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
+    environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
 
     TestBed.configureTestingModule({
       providers: [
@@ -34,9 +34,9 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
   });
 
   it('should include withCredentials: true on outgoing backend requests', () => {
-    http.get('https://api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
+    http.get('https://dev-api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/sales/invoices');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.headers.get('X-Requested-With')).toBe('XMLHttpRequest');
     expect(req.request.headers.get('Accept')).toBe('application/json');
@@ -58,9 +58,11 @@ describe('authInterceptor (Laravel Sanctum SPA Cookie-Based Authentication)', ()
   it('should attach X-XSRF-TOKEN header on mutating requests (POST) when CSRF cookie exists', () => {
     document.cookie = 'XSRF-TOKEN=sanctum-csrf-secret%3D123; path=/';
 
-    http.post('https://api.fatturafacile.eu/api/v1/auth/login', { email: 'test@example.com' }).subscribe();
+    http
+      .post('https://dev-api.fatturafacile.eu/api/v1/auth/login', { email: 'test@example.com' })
+      .subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/login');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/auth/login');
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('sanctum-csrf-secret=123');
     expect(req.request.headers.has('Authorization')).toBe(false);

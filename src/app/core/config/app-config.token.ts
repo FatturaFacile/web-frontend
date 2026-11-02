@@ -11,6 +11,6 @@ export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG', {
   factory: () => ({
     appTitle: 'Fattura Facile',
     defaultLanguage: 'it-IT',
-    apiBaseUrl: 'https://api.fatturafacile.eu/api/v1',
+    apiBaseUrl: 'https://dev-api.fatturafacile.eu/api/v1',
   }),
 });
