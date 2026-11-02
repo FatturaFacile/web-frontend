@@ -1,0 +1,75 @@
+name: Deploy dev
+
+# Every push to dev: full CI, then build with the "dev" configuration and publish to dev.fatturafacile.eu
+# (static files in ~/fatturafacile-dev/fe on the VPS, served by the dev stack defined in web-api deploy/dev/).
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: dev-deploy
+  cancel-in-progress: false
+
+permissions: { }
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      security-events: write
+    secrets: inherit
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: https://dev.fatturafacile.eu
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Angular application
+        run: pnpm run build --configuration dev
+
+      - name: SSH setup
+        env:
+          SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEV_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519
+
+      # Upload to fe.new, then swap the directory contents so the site is never half-updated
+      - name: Deploy
+        env:
+          TARGET: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}
+        run: |
+          DIST_DIR=$(dirname "$(find dist -type f -name index.html | head -n 1)")
+          ssh "$TARGET" 'rm -rf ~/fatturafacile-dev/fe.new && mkdir -p ~/fatturafacile-dev/fe.new ~/fatturafacile-dev/fe'
+          scp -rq "$DIST_DIR"/. "$TARGET":fatturafacile-dev/fe.new/
+          ssh "$TARGET" 'cd ~/fatturafacile-dev && find fe -mindepth 1 -delete && cp -a fe.new/. fe/ && rm -rf fe.new'
+          curl -fsS -o /dev/null https://dev.fatturafacile.eu/
