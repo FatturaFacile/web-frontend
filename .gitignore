@@ -38,6 +38,8 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+/certs/*
+!/certs/README.md
 
 # System files
 .DS_Store
