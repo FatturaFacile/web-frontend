@@ -41,13 +41,14 @@ describe('tenantAuthInterceptor', () => {
     document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   });
 
-  it('should attach Authorization header when token is stored', () => {
+  it('should NOT attach Authorization header even if legacy token is in storage (Cookie-first SPA)', () => {
     localStorage.setItem('auth_token', 'jwt-test-token-123');
 
     http.get('https://dev-api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
 
     const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer jwt-test-token-123');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    expect(req.request.withCredentials).toBe(true);
     req.flush([]);
   });
 

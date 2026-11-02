@@ -2,6 +2,9 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpClient } from '@angular/commo
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '@env';
+import { getXsrfCookie } from '../auth/csrf.utils';
+
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 function resolveBaseUrl(requestUrl?: string): string {
   if (requestUrl?.startsWith('http://') || requestUrl?.startsWith('https://')) {
@@ -44,8 +47,15 @@ export const csrfRefreshInterceptor: HttpInterceptorFn = (req, next) => {
       ) {
         return http.get(`${baseUrl}/sanctum/csrf-cookie`, { withCredentials: true }).pipe(
           switchMap(() => {
-            // Re-execute original failed request with the refreshed token
-            return next(req.clone({ withCredentials: true }));
+            // Re-execute original failed request with the refreshed token and withCredentials
+            const freshXsrf = getXsrfCookie('XSRF-TOKEN');
+            let updatedReq = req.clone({ withCredentials: true });
+            if (freshXsrf && MUTATING_METHODS.has(req.method.toUpperCase())) {
+              updatedReq = updatedReq.clone({
+                setHeaders: { 'X-XSRF-TOKEN': freshXsrf },
+              });
+            }
+            return next(updatedReq);
           }),
           catchError((refreshErr: unknown) => throwError(() => refreshErr)),
         );

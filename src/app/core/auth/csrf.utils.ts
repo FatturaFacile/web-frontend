@@ -2,7 +2,7 @@ import { environment } from '@env';
 
 /**
  * Reads a cookie value by name from `document.cookie` and decodes URI components.
- * Laravel sets the `XSRF-TOKEN` cookie URL-encoded.
+ * Laravel Sanctum sets the `XSRF-TOKEN` cookie URL-encoded.
  */
 export function getXsrfCookie(name = 'XSRF-TOKEN'): string | null {
   if (typeof document === 'undefined' || !document.cookie) {
@@ -25,7 +25,7 @@ export function getXsrfCookie(name = 'XSRF-TOKEN'): string | null {
  * For relative URLs, returns an empty string so paths remain relative.
  */
 export function getSanctumBaseUrl(): string {
-  const base = environment.apiBaseUrl ?? '';
+  const base = environment.apiBaseUrl ?? environment.apiUrl ?? environment.baseUrl ?? '';
   if (base.startsWith('http://') || base.startsWith('https://')) {
     try {
       return new URL(base).origin;
@@ -38,7 +38,7 @@ export function getSanctumBaseUrl(): string {
 
 /**
  * Returns the fully qualified or relative URL to the Laravel Sanctum CSRF cookie initialization endpoint.
- * Typically `GET /sanctum/csrf-cookie`.
+ * Typically `GET /sanctum/csrf-cookie` (or prefixed by backend origin if absolute).
  */
 export function getCsrfCookieUrl(): string {
   const origin = getSanctumBaseUrl();
@@ -47,22 +47,37 @@ export function getCsrfCookieUrl(): string {
 
 /**
  * Determines whether an outgoing HTTP request targets the Laravel backend API.
- * Static frontend assets (`/assets/...`) are excluded.
+ * Static frontend assets (`/assets/...`) and external 3rd-party origins are excluded.
  */
 export function isBackendApiRequest(url: string): boolean {
-  if (url.startsWith('/assets/')) {
+  if (!url || url.startsWith('/assets/')) {
     return false;
   }
 
-  const backendOrigin = getSanctumBaseUrl();
-  if (backendOrigin && url.startsWith(backendOrigin)) {
-    return true;
+  // 1. If absolute URL, check against backend origin candidates
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const backendOrigin = getSanctumBaseUrl();
+    if (backendOrigin && url.startsWith(backendOrigin)) {
+      return true;
+    }
+    // Check known default dev/api origins
+    if (
+      url.startsWith('https://dev-api.fatturafacile.eu') ||
+      url.startsWith('http://dev-api.fatturafacile.eu')
+    ) {
+      return true;
+    }
+    // Any other absolute URL is considered a third-party request
+    return false;
   }
 
+  // 2. Relative URLs targeting backend endpoints
   return (
-    url.startsWith(environment.apiBaseUrl) ||
     url.startsWith('/api') ||
-    url.startsWith(environment.apiUrl) ||
-    url.includes('/sanctum/')
+    url.includes('/sanctum/') ||
+    url.startsWith('/login') ||
+    url.startsWith('/logout') ||
+    (Boolean(environment.apiBaseUrl) && url.startsWith(environment.apiBaseUrl)) ||
+    (Boolean(environment.apiUrl) && url.startsWith(environment.apiUrl))
   );
 }
