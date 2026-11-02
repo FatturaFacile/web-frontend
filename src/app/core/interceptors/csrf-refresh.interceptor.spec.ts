@@ -7,6 +7,7 @@ import {
 } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { environment } from '@env';
 import { csrfRefreshInterceptor } from './csrf-refresh.interceptor';
 
 describe('csrfRefreshInterceptor', () => {
@@ -63,7 +64,7 @@ describe('csrfRefreshInterceptor', () => {
     expect(response).toEqual({ id: 101, title: 'Invoice #1' });
   });
 
-  it('should resolve relative requests to https://dev-api.fatturafacile.eu/sanctum/csrf-cookie on 419', () => {
+  it('should resolve relative requests to the environment baseUrl /sanctum/csrf-cookie on 419', () => {
     http.post('/api/invoices', { title: 'Invoice #2' }).subscribe();
 
     const initialReq = httpTesting.expectOne('/api/invoices');
@@ -72,7 +73,7 @@ describe('csrfRefreshInterceptor', () => {
       { status: 419, statusText: 'unknown status' },
     );
 
-    const csrfReq = httpTesting.expectOne('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie');
+    const csrfReq = httpTesting.expectOne(`${environment.baseUrl}/sanctum/csrf-cookie`);
     expect(csrfReq.request.withCredentials).toBe(true);
     csrfReq.flush('', { status: 204, statusText: 'No Content' });
 
