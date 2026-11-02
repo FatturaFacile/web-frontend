@@ -2,11 +2,23 @@
   "/api": {
     "target": "https://dev-api.fatturafacile.eu",
     "secure": true,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "cookieDomainRewrite": "",
+    "cookiePathRewrite": "/",
+    "headers": {
+      "X-Forwarded-Host": "localhost:4200",
+      "X-Forwarded-Proto": "https"
+    }
   },
   "/sanctum": {
     "target": "https://dev-api.fatturafacile.eu",
     "secure": true,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "cookieDomainRewrite": "",
+    "cookiePathRewrite": "/",
+    "headers": {
+      "X-Forwarded-Host": "localhost:4200",
+      "X-Forwarded-Proto": "https"
+    }
   }
 }

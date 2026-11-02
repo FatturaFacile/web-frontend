@@ -78,6 +78,20 @@ export class LoginComponent {
     this.authApi.login({ email, password, remember: remember ?? false, tenant_id: '' }).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
+        // Cookie-First SPA Authentication:
+        // Laravel Sanctum relies strictly on HttpOnly session cookies (e.g. faturafaciledev-session).
+        // Any returned bearer token (`res?.data?.token`) is intentionally ignored and never stored
+        // in localStorage, sessionStorage, or IndexedDB to prevent XSS exfiltration.
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.removeItem('ff_access_token');
+          window.localStorage.removeItem('token');
+          window.localStorage.removeItem('auth_token');
+        }
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.removeItem('ff_access_token');
+          window.sessionStorage.removeItem('token');
+          window.sessionStorage.removeItem('auth_token');
+        }
         if (res?.data?.tenant_id && typeof window !== 'undefined' && window.localStorage) {
           window.localStorage.setItem('ff_active_tenant_id', res.data.tenant_id);
           window.localStorage.setItem('tenant_id', res.data.tenant_id);

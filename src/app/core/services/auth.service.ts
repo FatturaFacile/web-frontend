@@ -13,7 +13,7 @@ function resolveBaseUrl(): string {
   const env = environment as Record<string, unknown>;
   const custom =
     (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
-  if (custom) {
+  if (custom !== undefined) {
     return custom.replace(/\/$/, '');
   }
   const apiBase =
@@ -25,9 +25,17 @@ function resolveBaseUrl(): string {
       // Fallback
     }
   }
-  return 'https://dev-api.fatturafacile.eu';
+  return '';
 }
 
+/**
+ * Service for session-based authentication with Laravel Sanctum.
+ *
+ * Enforces pure cookie-based SPA authentication:
+ * - Handshakes with `/sanctum/csrf-cookie` to establish the CSRF token and session cookies.
+ * - Authenticates via `/login` using `withCredentials: true`.
+ * - Tokens are NEVER stored in localStorage, sessionStorage, or IndexedDB.
+ */
 @Injectable({
   providedIn: 'root',
 })

@@ -9,15 +9,21 @@ import { getXsrfCookie, isBackendApiRequest } from '../auth/csrf.utils';
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 /**
- * Global Tenant & Auth Interceptor.
+ * Global Tenant & Auth Interceptor for Laravel Sanctum SPA Session Authentication.
  *
- * Enforces:
- * 1. `Authorization: Bearer <token>` when user is authenticated.
- * 2. `X-Tenant-Id: <tenant-uuid>` retrieved dynamically from tenant state / storage.
- * 3. `X-Language-Code: <current-locale>` (e.g. it, en, de, fr).
- * 4. CSRF protection (`X-XSRF-TOKEN`) on state-mutating requests.
- * 5. Global handling of HTTP 401 Unauthorized (session expiry -> redirect to /login)
- *    and HTTP 422 Unprocessable Entity (surfacing server validation messages via NzNotificationService).
+ * Enforces Cookie-First SPA Security:
+ * 1. Strictly relies on HttpOnly session cookies (`faturafaciledev-session`) with `withCredentials: true`.
+ *    Bearer tokens (`Authorization: Bearer <token>`) are deliberately omitted and never sent to prevent
+ *    token storage vulnerabilities (XSS exfiltration) and avoid 401 errors from invalid personal access tokens.
+ * 2. Transmits the CSRF token (`X-XSRF-TOKEN`) read from the decoded `XSRF-TOKEN` cookie on mutating requests.
+ * 3. Transmits `X-Tenant-Id: <tenant-uuid>` dynamically from tenant state / storage.
+ * 4. Transmits `X-Language-Code: <current-locale>` (e.g. it, en, de, fr).
+ * 5. Sends standard SPA headers: `Accept: application/json` and `X-Requested-With: XMLHttpRequest`.
+ * 6. Global error handling:
+ *    - 401 Unauthorized: triggers session termination, purges legacy keys, and redirects to `/login`.
+ *    - 422 Unprocessable Entity: surfaces server validation messages via NzNotificationService.
+ *    - 403 Forbidden: notifies unauthorized operation.
+ *    - 429 Too Many Requests: warns of rate limiting.
  */
 export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
   if (!isBackendApiRequest(req.url)) {
@@ -31,21 +37,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
     'X-Requested-With': 'XMLHttpRequest',
   };
 
-  // 1. Authorization: Bearer <token>
-  // Avoid injecting TokenStorageService or AuthStore synchronously to prevent circular dependency (NG0200)
-  // during app bootstrap when I18nService fires HTTP requests in its constructor.
-  let token: string | null = null;
-  if (typeof window !== 'undefined' && window.localStorage) {
-    token =
-      window.localStorage.getItem('ff_access_token') ||
-      window.localStorage.getItem('token') ||
-      window.localStorage.getItem('auth_token');
-  }
-  if (token && !req.headers.has('Authorization')) {
-    headersToSet['Authorization'] = `Bearer ${token}`;
-  }
-
-  // 2. X-Tenant-Id: <tenant-uuid>
+  // 1. Dynamic X-Tenant-Id
   let tenantId: string | null = null;
   if (typeof window !== 'undefined' && window.localStorage) {
     tenantId =
@@ -57,7 +49,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
     headersToSet['X-Tenant-Id'] = tenantId;
   }
 
-  // 3. X-Language-Code: <current-locale>
+  // 2. Dynamic X-Language-Code
   let languageCode: string | null = null;
   if (typeof window !== 'undefined' && window.localStorage) {
     languageCode = window.localStorage.getItem('lang') || window.localStorage.getItem('ff_lang');
@@ -66,7 +58,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
     headersToSet['X-Language-Code'] = languageCode;
   }
 
-  // 4. Attach CSRF token on mutating requests
+  // 3. Attach CSRF token on mutating requests (POST, PUT, PATCH, DELETE)
   if (MUTATING_METHODS.has(req.method.toUpperCase()) && !req.headers.has('X-XSRF-TOKEN')) {
     const xsrfToken = getXsrfCookie('XSRF-TOKEN');
     if (xsrfToken) {
@@ -74,6 +66,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
     }
   }
 
+  // Note: withCredentials: true ensures browser session cookies (faturafaciledev-session) are sent.
   const configuredReq = req.clone({
     withCredentials: true,
     setHeaders: headersToSet,
@@ -85,7 +78,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
         const isAuthEndpoint =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
-          req.url.endsWith('/sanctum/csrf-cookie');
+          req.url.includes('/sanctum/csrf-cookie');
 
         if (err.status === 401) {
           if (!isAuthEndpoint) {
@@ -94,10 +87,16 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
             const notification = injector.get(NzNotificationService);
 
             authStore?.logout?.();
+            // Purge any legacy token artifacts from storage
             if (typeof window !== 'undefined' && window.localStorage) {
               window.localStorage.removeItem('ff_access_token');
               window.localStorage.removeItem('token');
               window.localStorage.removeItem('auth_token');
+            }
+            if (typeof window !== 'undefined' && window.sessionStorage) {
+              window.sessionStorage.removeItem('ff_access_token');
+              window.sessionStorage.removeItem('token');
+              window.sessionStorage.removeItem('auth_token');
             }
 
             const currentUrl = router.url;

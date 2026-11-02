@@ -24,7 +24,7 @@ describe('credentialsInterceptor', () => {
     httpTesting.verify();
   });
 
-  it('should set withCredentials: true on outgoing GET requests', () => {
+  it('should set withCredentials: true on outgoing GET requests to backend API', () => {
     http.get('/api/test').subscribe();
 
     const req = httpTesting.expectOne('/api/test');
@@ -32,7 +32,7 @@ describe('credentialsInterceptor', () => {
     req.flush({});
   });
 
-  it('should set withCredentials: true on outgoing POST requests', () => {
+  it('should set withCredentials: true on outgoing POST requests to backend', () => {
     http.post('/login', { email: 'user@example.com' }).subscribe();
 
     const req = httpTesting.expectOne('/login');
@@ -47,5 +47,13 @@ describe('credentialsInterceptor', () => {
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.headers.get('Custom-Header')).toBe('val');
     req.flush({});
+  });
+
+  it('should NOT alter non-backend external requests', () => {
+    http.get('https://external-cdn.com/logo.png').subscribe();
+
+    const req = httpTesting.expectOne('https://external-cdn.com/logo.png');
+    expect(req.request.withCredentials).toBe(false);
+    req.flush('');
   });
 });
