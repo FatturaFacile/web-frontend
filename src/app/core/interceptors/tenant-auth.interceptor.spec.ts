@@ -14,7 +14,7 @@ describe('tenantAuthInterceptor', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
+    environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
 
     notificationService = {
       error: vi.fn(),
@@ -44,9 +44,9 @@ describe('tenantAuthInterceptor', () => {
   it('should attach Authorization header when token is stored', () => {
     localStorage.setItem('auth_token', 'jwt-test-token-123');
 
-    http.get('https://api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
+    http.get('https://dev-api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/sales/invoices');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
     expect(req.request.headers.get('Authorization')).toBe('Bearer jwt-test-token-123');
     req.flush([]);
   });
@@ -54,9 +54,9 @@ describe('tenantAuthInterceptor', () => {
   it('should attach X-Tenant-Id header dynamically from storage', () => {
     localStorage.setItem('ff_active_tenant_id', 'tenant-uuid-456');
 
-    http.get('https://api.fatturafacile.eu/api/v1/crm/contacts').subscribe();
+    http.get('https://dev-api.fatturafacile.eu/api/v1/crm/contacts').subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/crm/contacts');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/crm/contacts');
     expect(req.request.headers.get('X-Tenant-Id')).toBe('tenant-uuid-456');
     req.flush([]);
   });
@@ -64,9 +64,11 @@ describe('tenantAuthInterceptor', () => {
   it('should attach X-Language-Code header dynamically from storage', () => {
     localStorage.setItem('lang', 'fr');
 
-    http.get('https://api.fatturafacile.eu/api/v1/dashboard/kpi-summary').subscribe();
+    http.get('https://dev-api.fatturafacile.eu/api/v1/dashboard/kpi-summary').subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/dashboard/kpi-summary');
+    const req = httpTesting.expectOne(
+      'https://dev-api.fatturafacile.eu/api/v1/dashboard/kpi-summary',
+    );
     expect(req.request.headers.get('X-Language-Code')).toBe('fr');
     req.flush({});
   });
@@ -74,13 +76,13 @@ describe('tenantAuthInterceptor', () => {
   it('should handle 422 Unprocessable Entity by surfacing validation errors', () => {
     let errorCaught = false;
 
-    http.post('https://api.fatturafacile.eu/api/v1/sales/invoices', {}).subscribe({
+    http.post('https://dev-api.fatturafacile.eu/api/v1/sales/invoices', {}).subscribe({
       error: () => {
         errorCaught = true;
       },
     });
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/sales/invoices');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
     req.flush(
       {
         message: 'The given data was invalid.',
@@ -89,7 +91,7 @@ describe('tenantAuthInterceptor', () => {
           items: ['Inserire almeno una riga.'],
         },
       },
-      { status: 422, statusText: 'Unprocessable Entity' }
+      { status: 422, statusText: 'Unprocessable Entity' },
     );
 
     expect(errorCaught).toBe(true);

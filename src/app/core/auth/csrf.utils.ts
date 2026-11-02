@@ -21,7 +21,7 @@ export function getXsrfCookie(name = 'XSRF-TOKEN'): string | null {
 
 /**
  * Resolves the base origin of the Laravel backend.
- * For absolute URLs (e.g. `https://api.fatturafacile.eu/api/v1`), returns origin `https://api.fatturafacile.eu`.
+ * For absolute URLs (e.g. `https://dev-api.fatturafacile.eu/api/v1`), returns origin `https://dev-api.fatturafacile.eu`.
  * For relative URLs, returns an empty string so paths remain relative.
  */
 export function getSanctumBaseUrl(): string {

@@ -11,11 +11,13 @@ export interface LoginCredentials {
 
 function resolveBaseUrl(): string {
   const env = environment as Record<string, unknown>;
-  const custom = (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
+  const custom =
+    (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
   if (custom) {
     return custom.replace(/\/$/, '');
   }
-  const apiBase = (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
+  const apiBase =
+    (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
   if (apiBase?.startsWith('http://') || apiBase?.startsWith('https://')) {
     try {
       return new URL(apiBase).origin;
@@ -23,7 +25,7 @@ function resolveBaseUrl(): string {
       // Fallback
     }
   }
-  return 'https://api.fatturafacile.eu';
+  return 'https://dev-api.fatturafacile.eu';
 }
 
 @Injectable({
@@ -34,9 +36,13 @@ export class AuthService {
   private readonly baseUrl = resolveBaseUrl();
 
   login(credentials: LoginCredentials): Observable<unknown> {
-    return this.http.get(`${this.baseUrl}/sanctum/csrf-cookie`, { withCredentials: true }).pipe(
-      switchMap(() => this.http.post(`${this.baseUrl}/login`, credentials, { withCredentials: true }))
-    );
+    return this.http
+      .get(`${this.baseUrl}/sanctum/csrf-cookie`, { withCredentials: true })
+      .pipe(
+        switchMap(() =>
+          this.http.post(`${this.baseUrl}/login`, credentials, { withCredentials: true }),
+        ),
+      );
   }
 
   logout(): Observable<unknown> {

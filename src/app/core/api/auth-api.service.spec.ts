@@ -11,14 +11,10 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   const originalApiBaseUrl = environment.apiBaseUrl;
 
   beforeEach(() => {
-    environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
+    environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
 
     TestBed.configureTestingModule({
-      providers: [
-        AuthApiService,
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [AuthApiService, provideHttpClient(), provideHttpClientTesting()],
     });
 
     service = TestBed.inject(AuthApiService);
@@ -33,7 +29,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   it('should fetch the CSRF cookie via getCsrfCookie()', () => {
     service.getCsrfCookie().subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/sanctum/csrf-cookie');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie');
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBe(true);
     req.flush('');
@@ -52,13 +48,13 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     });
 
     // 1. First request must be to the Sanctum CSRF cookie endpoint
-    const csrfReq = httpTesting.expectOne('https://api.fatturafacile.eu/sanctum/csrf-cookie');
+    const csrfReq = httpTesting.expectOne('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie');
     expect(csrfReq.request.method).toBe('GET');
     expect(csrfReq.request.withCredentials).toBe(true);
     csrfReq.flush('');
 
     // 2. Second request must be the login mutation with credentials
-    const loginReq = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/login');
+    const loginReq = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/auth/login');
     expect(loginReq.request.method).toBe('POST');
     expect(loginReq.request.withCredentials).toBe(true);
     expect(loginReq.request.body).toEqual(payload);
@@ -85,7 +81,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   it('should call POST /auth/logout with credentials on logout()', () => {
     service.logout().subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/logout');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/auth/logout');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBe(true);
     req.flush({ success: true, message: 'Logged out', data: null });
@@ -94,7 +90,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   it('should call GET /auth/profile with credentials on me()', () => {
     service.me().subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/profile');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/auth/profile');
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBe(true);
     req.flush({
@@ -114,7 +110,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   it('should call POST /auth/switch-tenant with credentials on switchTenant()', () => {
     service.switchTenant({ tenant_id: 't-ch-02' }).subscribe();
 
-    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/auth/switch-tenant');
+    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/auth/switch-tenant');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.body).toEqual({ tenant_id: 't-ch-02' });

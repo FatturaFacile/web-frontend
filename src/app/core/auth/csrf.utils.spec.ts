@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getXsrfCookie, getSanctumBaseUrl, getCsrfCookieUrl, isBackendApiRequest } from './csrf.utils';
+import {
+  getXsrfCookie,
+  getSanctumBaseUrl,
+  getCsrfCookieUrl,
+  isBackendApiRequest,
+} from './csrf.utils';
 import { environment } from '@env';
 
 describe('CSRF and Sanctum Utilities', () => {
@@ -39,8 +44,8 @@ describe('CSRF and Sanctum Utilities', () => {
 
   describe('getSanctumBaseUrl', () => {
     it('should extract the origin from an absolute apiBaseUrl', () => {
-      environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
-      expect(getSanctumBaseUrl()).toBe('https://api.fatturafacile.eu');
+      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
+      expect(getSanctumBaseUrl()).toBe('https://dev-api.fatturafacile.eu');
     });
 
     it('should return empty string for relative apiBaseUrl', () => {
@@ -51,8 +56,8 @@ describe('CSRF and Sanctum Utilities', () => {
 
   describe('getCsrfCookieUrl', () => {
     it('should return full URL to /sanctum/csrf-cookie for absolute base URL', () => {
-      environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
-      expect(getCsrfCookieUrl()).toBe('https://api.fatturafacile.eu/sanctum/csrf-cookie');
+      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
+      expect(getCsrfCookieUrl()).toBe('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie');
     });
 
     it('should return relative /sanctum/csrf-cookie for relative base URL', () => {
@@ -73,9 +78,11 @@ describe('CSRF and Sanctum Utilities', () => {
     });
 
     it('should return true for configured apiBaseUrl routes', () => {
-      environment.apiBaseUrl = 'https://api.fatturafacile.eu/api/v1';
-      expect(isBackendApiRequest('https://api.fatturafacile.eu/api/v1/auth/login')).toBe(true);
-      expect(isBackendApiRequest('https://api.fatturafacile.eu/sanctum/csrf-cookie')).toBe(true);
+      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
+      expect(isBackendApiRequest('https://dev-api.fatturafacile.eu/api/v1/auth/login')).toBe(true);
+      expect(isBackendApiRequest('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie')).toBe(
+        true,
+      );
     });
 
     it('should return false for third-party external URLs', () => {
