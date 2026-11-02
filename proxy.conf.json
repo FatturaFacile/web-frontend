@@ -1,12 +1,12 @@
 {
   "/api": {
-    "target": "http://localhost:8000",
-    "secure": false,
-    "changeOrigin": false
+    "target": "https://api.fatturafacile.eu",
+    "secure": true,
+    "changeOrigin": true
   },
   "/sanctum": {
-    "target": "http://localhost:8000",
-    "secure": false,
-    "changeOrigin": false
+    "target": "https://api.fatturafacile.eu",
+    "secure": true,
+    "changeOrigin": true
   }
 }

@@ -39,10 +39,7 @@
                 "output": "assets"
               }
             ],
-            "styles": [
-              "src/theme.less",
-              "src/styles.scss"
-            ]
+            "styles": ["src/theme.less", "src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -99,6 +96,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "ssl": true,
+            "sslCert": "certs/localhost.pem",
+            "sslKey": "certs/localhost-key.pem"
+          },
           "configurations": {
             "production": {
               "buildTarget": "fatturafacile:build:production"
