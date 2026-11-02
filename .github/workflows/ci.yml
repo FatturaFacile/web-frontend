@@ -63,8 +63,10 @@ jobs:
         run: pnpm run build --configuration production
 
   qodana:
-    # Pull requests from forks get no repository secrets: skip what needs them
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Fork and Dependabot pull requests get no repository secrets: skip what needs them
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -87,8 +89,10 @@ jobs:
       - validate
       - build
       - qodana
-    # Pull requests from forks get no repository secrets: skip what needs them
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    # Fork and Dependabot pull requests get no repository secrets: skip what needs them
+    if: >-
+      always() && github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Send Telegram Notification
