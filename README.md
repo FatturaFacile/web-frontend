@@ -103,6 +103,19 @@ npm start
 
 Starts the local dev server at `https://localhost:4200/` with demo mode enabled.
 
+### Local HTTPS Certificates
+
+The dev server runs over HTTPS and needs a locally trusted certificate in `certs/`, generated once per machine
+with [mkcert](https://github.com/FiloSottile/mkcert). The certificate files are git-ignored, so every developer
+creates their own:
+
+```bash
+mkcert -install
+mkcert -cert-file certs/localhost.crt -key-file certs/localhost.key localhost 127.0.0.1
+```
+
+See [`certs/README.md`](certs/README.md) for the full macOS and Windows steps.
+
 ### Run Against a Local Backend
 
 ```bash
