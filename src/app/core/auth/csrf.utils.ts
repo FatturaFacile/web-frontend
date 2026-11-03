@@ -21,11 +21,11 @@ export function getXsrfCookie(name = 'XSRF-TOKEN'): string | null {
 
 /**
  * Resolves the base origin of the Laravel backend.
- * For absolute URLs (e.g. `https://dev-api.fatturafacile.eu/api/v1`), returns origin `https://dev-api.fatturafacile.eu`.
+ * For absolute URLs (e.g. `https://api.example.com/api/v1`), returns origin `https://api.example.com`.
  * For relative URLs, returns an empty string so paths remain relative.
  */
 export function getSanctumBaseUrl(): string {
-  const base = environment.apiBaseUrl ?? environment.apiUrl ?? environment.baseUrl ?? '';
+  const base = environment.apiBaseUrl ?? '';
   if (base.startsWith('http://') || base.startsWith('https://')) {
     try {
       return new URL(base).origin;
@@ -54,21 +54,11 @@ export function isBackendApiRequest(url: string): boolean {
     return false;
   }
 
-  // 1. If absolute URL, check against backend origin candidates
+  // 1. If absolute URL, only the configured backend origin counts as the API
   if (url.startsWith('http://') || url.startsWith('https://')) {
     const backendOrigin = getSanctumBaseUrl();
-    if (backendOrigin && url.startsWith(backendOrigin)) {
-      return true;
-    }
-    // Check known default dev/api origins
-    if (
-      url.startsWith('https://dev-api.fatturafacile.eu') ||
-      url.startsWith('http://dev-api.fatturafacile.eu')
-    ) {
-      return true;
-    }
     // Any other absolute URL is considered a third-party request
-    return false;
+    return Boolean(backendOrigin) && url.startsWith(backendOrigin);
   }
 
   // 2. Relative URLs targeting backend endpoints
@@ -77,7 +67,6 @@ export function isBackendApiRequest(url: string): boolean {
     url.includes('/sanctum/') ||
     url.startsWith('/login') ||
     url.startsWith('/logout') ||
-    (Boolean(environment.apiBaseUrl) && url.startsWith(environment.apiBaseUrl)) ||
-    (Boolean(environment.apiUrl) && url.startsWith(environment.apiUrl))
+    (Boolean(environment.apiBaseUrl) && url.startsWith(environment.apiBaseUrl))
   );
 }

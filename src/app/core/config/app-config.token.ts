@@ -3,7 +3,6 @@ import { InjectionToken } from '@angular/core';
 export interface AppConfig {
   readonly appTitle: string;
   readonly defaultLanguage: string;
-  readonly apiBaseUrl: string;
 }
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG', {
@@ -11,6 +10,5 @@ export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG', {
   factory: () => ({
     appTitle: 'Fattura Facile',
     defaultLanguage: 'it-IT',
-    apiBaseUrl: 'https://dev-api.fatturafacile.eu/api/v1',
   }),
 });

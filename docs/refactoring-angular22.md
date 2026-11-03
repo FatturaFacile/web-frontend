@@ -112,8 +112,7 @@ src/
 │       └── ...
 │
 ├── environments/
-│   ├── environment.ts
-│   └── environment.development.ts
+│   └── environment.ts         # Values injected at build time from env/<configuration>.env
 ├── tsconfig.json
 └── angular.json
 ```

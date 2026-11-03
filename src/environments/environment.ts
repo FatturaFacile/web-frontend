@@ -1,7 +1,10 @@
+// Values are injected at build time with `--define` by scripts/ng-env.mjs, which reads them from
+// env/<configuration>.env, a local .env or the process environment (see README "Environment configuration").
+// The fallbacks only apply when the CLI runs without the wrapper (e.g. Vitest).
+declare const NG_APP_API_BASE_URL: string | undefined;
+declare const NG_APP_DEMO_MODE: boolean | undefined;
+
 export const environment = {
-  production: false,
-  demoMode: false,
-  baseUrl: 'https://api.fatturafacile.eu',
-  apiUrl: 'https://api.fatturafacile.eu/api/v1',
-  apiBaseUrl: 'https://api.fatturafacile.eu/api/v1',
+  demoMode: typeof NG_APP_DEMO_MODE === 'undefined' ? false : NG_APP_DEMO_MODE,
+  apiBaseUrl: typeof NG_APP_API_BASE_URL === 'undefined' ? '/api/v1' : NG_APP_API_BASE_URL,
 };

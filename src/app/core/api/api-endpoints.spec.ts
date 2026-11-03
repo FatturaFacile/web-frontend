@@ -6,13 +6,14 @@ import { environment } from '@env';
 import { InvoiceApiService } from './invoice-api.service';
 import { I18nService } from '../i18n/i18n.service';
 import { LookupService } from '../lookups/lookup.service';
+import { TEST_API_BASE_URL } from '../../../testing/api';
 
 /**
- * Every call must go through `environment.apiBaseUrl`: in production the API lives on another origin
- * (dev-api.fatturafacile.eu), so a relative `/api/...` URL would hit the frontend host instead.
+ * Every call must go through `environment.apiBaseUrl`: in some environments (e.g. production) the API lives
+ * on another origin, so a hardcoded relative `/api/...` URL would hit the frontend host instead.
  */
 describe('API endpoints', () => {
-  const base = 'https://dev-api.fatturafacile.eu/api/v1';
+  const base = TEST_API_BASE_URL;
   const originalApiBaseUrl = environment.apiBaseUrl;
   let httpTesting: HttpTestingController;
 

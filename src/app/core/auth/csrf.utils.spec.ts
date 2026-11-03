@@ -6,6 +6,7 @@ import {
   isBackendApiRequest,
 } from './csrf.utils';
 import { environment } from '@env';
+import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 
 describe('CSRF and Sanctum Utilities', () => {
   const originalCookie = document.cookie;
@@ -44,8 +45,8 @@ describe('CSRF and Sanctum Utilities', () => {
 
   describe('getSanctumBaseUrl', () => {
     it('should extract the origin from an absolute apiBaseUrl', () => {
-      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
-      expect(getSanctumBaseUrl()).toBe('https://dev-api.fatturafacile.eu');
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(getSanctumBaseUrl()).toBe(`${TEST_API_ORIGIN}`);
     });
 
     it('should return empty string for relative apiBaseUrl', () => {
@@ -56,8 +57,8 @@ describe('CSRF and Sanctum Utilities', () => {
 
   describe('getCsrfCookieUrl', () => {
     it('should return full URL to /sanctum/csrf-cookie for absolute base URL', () => {
-      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
-      expect(getCsrfCookieUrl()).toBe('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie');
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(getCsrfCookieUrl()).toBe(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`);
     });
 
     it('should return relative /sanctum/csrf-cookie for relative base URL', () => {
@@ -78,11 +79,9 @@ describe('CSRF and Sanctum Utilities', () => {
     });
 
     it('should return true for configured apiBaseUrl routes', () => {
-      environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
-      expect(isBackendApiRequest('https://dev-api.fatturafacile.eu/api/v1/auth/login')).toBe(true);
-      expect(isBackendApiRequest('https://dev-api.fatturafacile.eu/sanctum/csrf-cookie')).toBe(
-        true,
-      );
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(isBackendApiRequest(`${TEST_API_ORIGIN}/api/v1/auth/login`)).toBe(true);
+      expect(isBackendApiRequest(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`)).toBe(true);
     });
 
     it('should return false for third-party external URLs', () => {
