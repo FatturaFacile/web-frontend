@@ -82,7 +82,7 @@
                   [ngModel]="isColumnVisible(col.key)"
                   (ngModelChange)="toggleColumnVisibility(col.key, $event)"
                 >
-                  {{ col.header }}
+                  {{ col.header | translate }}
                 </label>
               </li>
             }
@@ -142,7 +142,7 @@
               (nzSortOrderChange)="onSortChange(col.key, $event)"
               [nzCustomFilter]="!!col.filterable"
             >
-              {{ col.header }}
+              {{ col.header | translate }}
 
               @if (col.filterable) {
                 <nz-filter-trigger
@@ -190,7 +190,7 @@
                         <input
                           nz-input
                           type="text"
-                          [placeholder]="('common.table.search' | translate) + ' ' + col.header"
+                          [placeholder]="('common.table.search' | translate) + ' ' + (col.header | translate)"
                           [ngModel]="getFilterValue(col.key)"
                           (ngModelChange)="onFilterValueChange(col.key, $event)"
                           (keydown.enter)="applyColumnFilter(col.key)"

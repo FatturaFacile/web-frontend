@@ -98,25 +98,25 @@ export class TreasuryComponent implements OnInit {
   readonly txColumns = computed<TableColumnDef<BankTransactionResource>[]>(() => [
     {
       key: 'transaction_date',
-      header: this.translate.instant('treasury.columns.valueDate'),
+      header: 'treasury.columns.valueDate',
       width: '120px',
       sortable: true,
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'description',
-      header: this.translate.instant('treasury.columns.description'),
+      header: 'treasury.columns.description',
       width: '320px',
       sortable: true,
     },
     {
       key: 'counterparty',
-      header: this.translate.instant('treasury.columns.counterparty'),
+      header: 'treasury.columns.counterparty',
       width: '220px',
     },
     {
       key: 'amount',
-      header: this.translate.instant('treasury.columns.amount'),
+      header: 'treasury.columns.amount',
       width: '140px',
       align: 'right',
       sortable: true,
@@ -124,12 +124,12 @@ export class TreasuryComponent implements OnInit {
     },
     {
       key: 'category',
-      header: this.translate.instant('treasury.columns.category'),
+      header: 'treasury.columns.category',
       width: '160px',
     },
     {
       key: 'reconciled',
-      header: this.translate.instant('treasury.columns.status'),
+      header: 'treasury.columns.status',
       width: '160px',
       customCellTemplate: this.reconciledTpl(),
     },
@@ -138,23 +138,23 @@ export class TreasuryComponent implements OnInit {
   readonly accountColumns = computed<TableColumnDef<BankAccountResource>[]>(() => [
     {
       key: 'bank_name',
-      header: this.translate.instant('treasury.columns.bankName'),
+      header: 'treasury.columns.bankName',
       width: '220px',
       sortable: true,
     },
     {
       key: 'iban',
-      header: this.translate.instant('treasury.columns.bankDetails'),
+      header: 'treasury.columns.bankDetails',
       width: '260px',
     },
     {
       key: 'currency',
-      header: this.translate.instant('treasury.columns.currency'),
+      header: 'treasury.columns.currency',
       width: '100px',
     },
     {
       key: 'balance',
-      header: this.translate.instant('treasury.columns.availableBalance'),
+      header: 'treasury.columns.availableBalance',
       width: '180px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
@@ -164,30 +164,30 @@ export class TreasuryComponent implements OnInit {
   readonly statementColumns = computed<TableColumnDef<BankStatement>[]>(() => [
     {
       key: 'statement_date',
-      header: this.translate.instant('treasury.columns.statementDate'),
+      header: 'treasury.columns.statementDate',
       width: '130px',
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'iban',
-      header: this.translate.instant('treasury.columns.iban'),
+      header: 'treasury.columns.iban',
       width: '240px',
     },
     {
       key: 'source_format',
-      header: this.translate.instant('treasury.columns.format'),
+      header: 'treasury.columns.format',
       width: '120px',
     },
     {
       key: 'closing_balance',
-      header: this.translate.instant('treasury.columns.closingBalance'),
+      header: 'treasury.columns.closingBalance',
       width: '150px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'status',
-      header: this.translate.instant('treasury.columns.reconciliationStatus'),
+      header: 'treasury.columns.reconciliationStatus',
       width: '170px',
       customCellTemplate: this.statusTpl(),
     },

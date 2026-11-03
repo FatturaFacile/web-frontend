@@ -1,6 +1,31 @@
 {
   "accounting": {
+    "accountTypes": {
+      "asset": "Attività",
+      "liability": "Passività",
+      "equity": "Patrimonio Netto",
+      "revenue": "Ricavo",
+      "expense": "Costo"
+    },
     "chartOfAccounts": "Piano dei Conti",
+    "columns": {
+      "entryNumber": "Numero Registrazione",
+      "date": "Data Contabile",
+      "description": "Descrizione / Causale",
+      "totalDebit": "Totale Dare",
+      "totalCredit": "Totale Avere",
+      "accountCode": "Codice Conto",
+      "accountName": "Denominazione Conto",
+      "accountType": "Tipologia",
+      "currentBalance": "Saldo Attuale",
+      "period": "Periodo Fiscale",
+      "year": "Anno",
+      "jurisdiction": "Giurisdizione",
+      "vatCollected": "IVA a Debito (Vendite)",
+      "vatPaid": "IVA a Credito (Acquisti)",
+      "vatBalance": "Saldo IVA",
+      "status": "Stato"
+    },
     "entryDetailTitle": "Dettaglio Scrittura Contabile {number}",
     "errors": {
       "unbalancedEntry": "La scrittura contabile non quadra (Dare ≠ Avere)"
@@ -32,7 +57,12 @@
       "description": "Descrizione"
     },
     "title": "Contabilità",
-    "vatSettlement": "Liquidazione IVA"
+    "vatSettlement": "Liquidazione IVA",
+    "vatStatuses": {
+      "draft": "Bozza",
+      "settled": "Liquidata",
+      "paid": "Versata"
+    }
   },
   "ACCOUNTING.CARD_TITLE": "Piano dei Conti & Raccordi Fisc",
   "ACCOUNTING.COL_BALANCE": "Saldo Corrente",
@@ -181,6 +211,7 @@
   "COMMON.ACTION": "Azione",
   "COMMON.ACTIONS": "Azioni",
   "COMMON.ACTIVE": "Attivo",
+  "COMMON.ADD": "Aggiungi",
   "COMMON.ALL": "Tutti",
   "COMMON.AMOUNT": "Importo",
   "COMMON.CANCEL": "Annulla",
@@ -312,8 +343,18 @@
   "ERRORS.VALIDATION_TITLE": "Errore di Validazione (422)",
   "expenses": {
     "actions": {
+      "create": "Nuova Spesa",
       "delete": "Elimina",
-      "edit": "Modifica"
+      "edit": "Modifica",
+      "exportCsv": "Esporta CSV"
+    },
+    "columns": {
+      "date": "Data",
+      "description": "Descrizione / Causale",
+      "merchant": "Esercente / Fornitore",
+      "category": "Categoria",
+      "amount": "Importo",
+      "status": "Stato"
     },
     "confirmDelete": "Eliminare questa nota spese?",
     "filterStatus": "Filtra per stato",
@@ -458,6 +499,13 @@
   "NAV.SDI": "Fattura Elettronica SDI",
   "NAV.SDI_INBOX": "Ciclo Passivo SDI",
   "NAV.ALERTS": "Centro Avvisi",
+  "NAV.COMPANY_SETTINGS": "Azienda & Utenti",
+  "NAV.PEOPLE": "Persone",
+  "NAV.SECTION_ADMINISTRATION": "Amministrazione",
+  "NAV.SECTION_COMMERCIAL": "Commerciale",
+  "NAV.SECTION_INDUSTRY": "Moduli di settore",
+  "NAV.SECTION_OPERATIONS": "Operatività",
+  "NAV.SECTION_SYSTEM": "Sistema",
   "NAV.SYSTEM": "Sistema & Backup",
   "NAV.SETTINGS": "Impostazioni & Tenant",
   "NAV.STOCK": "Giacenze & Articoli",
