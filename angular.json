@@ -93,10 +93,6 @@
               "extractLicenses": false,
               "sourceMap": true
             },
-            "github-pages": {
-              "outputHashing": "all",
-              "serviceWorker": "ngsw-config.json"
-            },
             "local": {
               "optimization": false,
               "extractLicenses": false,
