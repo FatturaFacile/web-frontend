@@ -7,10 +7,16 @@
 3. **No conversational padding:** Start with the requested result, code, or command.
 4. **No post-explanation unsolicited text:** Do not explain standard language or framework syntax unless explicitly asked.
 
-## Repository workflow
+## Repository workflow & Package Manager
 
 - Do not add third-party dependencies unless they are required.
-- This repository uses pnpm (`packageManager` is declared in `package.json`). Install dependencies with `pnpm install --frozen-lockfile`.
+- This repository uses **pnpm** exclusively (`packageManager` is declared in `package.json` with a preinstall `only-allow pnpm` guard). Never execute `npm` or `yarn`. Install dependencies with `pnpm install --frozen-lockfile`.
+
+## Agent Sandboxing & Execution Boundaries
+
+- **Secret & Credential Protection**: Never read, modify, or leak sensitive repository secrets, `.env*` files, `.git/`, or cryptographic keys in `certs/`.
+- **Ephemeral Scratch**: Working files, temporary artifacts, or scratch scripts should be isolated to designated ephemeral scratch directories (`.sandbox/scratch/`, `.sandbox/output/`).
+- **Sandboxed Execution**: Isolated task executions can be run with `pnpm run agent:sandbox -- <command>` (process sandbox) or `pnpm run agent:docker -- <command>` (walled container).
 
 ## Build, test, and lint
 
