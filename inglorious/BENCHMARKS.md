@@ -35,7 +35,7 @@ What the numbers don't show, to be fair to Angular:
 - **These are stacks, not bare frameworks.** Much of the size gap is ng-zorro (640 kB of raw CSS) and the Font Awesome webfonts. A leaner Angular setup would close some of it, though not the difference in feature code.
 - **The port had a head start.** It was written with the Angular app as its spec, which made shared abstractions easy to spot. A refactor of the Angular code would shrink it too; this report compares the code as it stands.
 - **Maturity is Angular's.** Long-term support, a vast ecosystem, documentation, DevTools and a large hiring pool are real advantages that no benchmark captures. Inglorious is young and maintained by its author. The port turned up a handful of framework bugs; all were fixed during the port, which says something both about its responsiveness and about its age.
-- **Not everything favors Inglorious.** Its lint is a little slower, it makes more (smaller) requests on first load, and Angular has more unit tests. Runtime performance on logged-in pages, memory use and very large lists weren't measured.
+- **Not everything favors Inglorious.** Its lint and test suite are a little slower, it makes more (smaller) requests on first load, and Angular has more unit tests. Runtime performance on logged-in pages, memory use and very large lists weren't measured.
 
 **Bottom line:** for a new app of this kind, with a team willing to adopt a young framework, Inglorious delivers the same product with a fifth of the initial download, about a third less code and a much faster feedback loop. If you need Angular's ecosystem, longevity or scale of team, those are good reasons to choose it, just not ones these benchmarks can measure.
 
@@ -145,16 +145,16 @@ The Angular app also defines 37 components, 7 injectable services, 3 pipes and 2
 
 Times on the same laptop, warm unless stated.
 
-|                            |         Angular |    Inglorious |
-| -------------------------- | --------------: | ------------: |
-| Production build           |       4.0–4.6 s |     1.4–2.0 s |
-| Typecheck (`tsc --noEmit`) |      ~1.0–1.1 s |       ~0.38 s |
-| Lint                       |      ~1.1–1.4 s |    ~1.6–1.8 s |
-| Dev server ready, cold     |           2.9 s |        0.43 s |
-| Dev server ready, warm     |           2.3 s |        0.32 s |
-| Test suite                 |           5.3 s |         3.4 s |
-| Runtime dependencies       |              14 |             8 |
-| Tests                      | 144 in 28 files | 45 in 5 files |
+|                            |        Angular |    Inglorious |
+| -------------------------- | -------------: | ------------: |
+| Production build           |      4.0–4.6 s |     1.4–2.0 s |
+| Typecheck (`tsc --noEmit`) |     ~1.0–1.1 s |       ~0.38 s |
+| Lint                       |     ~1.1–1.4 s |    ~1.6–1.8 s |
+| Dev server ready, cold     |          2.9 s |        0.43 s |
+| Dev server ready, warm     |          2.3 s |        0.32 s |
+| Test suite                 |         ~2.0 s |        ~3.4 s |
+| Runtime dependencies       |             14 |             8 |
+| Tests                      | 99 in 23 files | 45 in 5 files |
 
 - **Dev server:** Vite compiles modules when they're first requested, so the first full page load in dev costs more than the ready time shows.
 - **Lint:** Inglorious lints a little slower because of its stricter rules: sorted imports, no magic numbers.

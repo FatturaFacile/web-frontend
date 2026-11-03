@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import { resolve } from 'node:path';
 import angular from '@analogjs/vite-plugin-angular';
 
@@ -8,6 +8,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
+    // The Inglorious port is a separate project with its own dependencies and tests.
+    exclude: [...configDefaults.exclude, 'inglorious/**'],
     reporters: ['default'],
     coverage: {
       provider: 'v8',
@@ -15,6 +17,7 @@ export default defineConfig({
       exclude: [
         'coverage/**',
         'dist/**',
+        'inglorious/**',
         '**/[.]**',
         '**/*.d.ts',
         'src/environments/**',
