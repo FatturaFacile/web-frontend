@@ -1,6 +1,31 @@
 {
   "accounting": {
+    "accountTypes": {
+      "asset": "Aktiva",
+      "liability": "Passiva",
+      "equity": "Eigenkapital",
+      "revenue": "Ertrag",
+      "expense": "Aufwand"
+    },
     "chartOfAccounts": "Kontenplan",
+    "columns": {
+      "entryNumber": "Buchungsnummer",
+      "date": "Buchungsdatum",
+      "description": "Beschreibung / Buchungstext",
+      "totalDebit": "Total Soll",
+      "totalCredit": "Total Haben",
+      "accountCode": "Kontonummer",
+      "accountName": "Kontobezeichnung",
+      "accountType": "Kontotyp",
+      "currentBalance": "Aktueller Saldo",
+      "period": "Steuerperiode",
+      "year": "Jahr",
+      "jurisdiction": "Rechtsraum",
+      "vatCollected": "Umsatzsteuer (Verkäufe)",
+      "vatPaid": "Vorsteuer (Einkäufe)",
+      "vatBalance": "MWST-Saldo",
+      "status": "Status"
+    },
     "entryDetailTitle": "Buchungsdetail {number}",
     "errors": {
       "unbalancedEntry": "Buchungssatz ist nicht ausgeglichen (Soll ≠ Haben)"
@@ -32,7 +57,12 @@
       "description": "Beschreibung"
     },
     "title": "Buchhaltung",
-    "vatSettlement": "MWST-Abrechnung"
+    "vatSettlement": "MWST-Abrechnung",
+    "vatStatuses": {
+      "draft": "Entwurf",
+      "settled": "Abgerechnet",
+      "paid": "Bezahlt"
+    }
   },
   "ACCOUNTING.CARD_TITLE": "Kontenplan & Steuerabgleich",
   "ACCOUNTING.COL_BALANCE": "Aktueller Saldo",
@@ -181,6 +211,7 @@
   "COMMON.ACTION": "Aktion",
   "COMMON.ACTIONS": "Aktionen",
   "COMMON.ACTIVE": "Aktiv",
+  "COMMON.ADD": "Hinzufügen",
   "COMMON.ALL": "Alle",
   "COMMON.AMOUNT": "Betrag",
   "COMMON.CANCEL": "Abbrechen",
@@ -312,8 +343,18 @@
   "ERRORS.VALIDATION_TITLE": "Validierungsfehler (422)",
   "expenses": {
     "actions": {
+      "create": "Neue Ausgabe",
       "delete": "Löschen",
-      "edit": "Bearbeiten"
+      "edit": "Bearbeiten",
+      "exportCsv": "CSV exportieren"
+    },
+    "columns": {
+      "date": "Datum",
+      "description": "Beschreibung / Zweck",
+      "merchant": "Händler / Lieferant",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "status": "Status"
     },
     "confirmDelete": "Diesen Spesenbeleg löschen?",
     "filterStatus": "Nach Status filtern",
@@ -458,6 +499,13 @@
   "NAV.SDI": "Elektronische Rechnung SDI",
   "NAV.SDI_INBOX": "SDI-Rechnungseingang",
   "NAV.ALERTS": "Warnzentrum",
+  "NAV.COMPANY_SETTINGS": "Unternehmen & Benutzer",
+  "NAV.PEOPLE": "Personal",
+  "NAV.SECTION_ADMINISTRATION": "Verwaltung",
+  "NAV.SECTION_COMMERCIAL": "Vertrieb",
+  "NAV.SECTION_INDUSTRY": "Branchenmodule",
+  "NAV.SECTION_OPERATIONS": "Betrieb",
+  "NAV.SECTION_SYSTEM": "System",
   "NAV.SYSTEM": "System & Sicherungen",
   "NAV.SETTINGS": "Einstellungen & Mandanten",
   "NAV.STOCK": "Bestände & Artikel",
