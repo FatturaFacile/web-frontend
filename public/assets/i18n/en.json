@@ -1,38 +1,38 @@
 {
   "accounting": {
     "chartOfAccounts": "Chart of Accounts",
-    "entryDetailTitle": "Journal Entry Detail {number}",
+    "entryDetailTitle": "Journal Entry Details {number}",
     "errors": {
-      "unbalancedEntry": "Journal entry must be balanced: Debit = Credit"
+      "unbalancedEntry": "Journal entry is not balanced (Debit ≠ Credit)"
     },
     "form": {
-      "accountIdPlaceholder": "Account ID / Code",
-      "creditPlaceholder": "Credit",
-      "date": "Accounting Date",
-      "debitPlaceholder": "Debit",
-      "description": "Description / Reason",
-      "descriptionPlaceholder": "E.g. Bank transfer booking...",
-      "entryNumber": "Entry Number",
-      "entryNumberPlaceholder": "E.g. GL-2026-0042",
-      "linesTitle": "Accounting Lines (Debit / Credit)",
+      "accountIdPlaceholder": "Account code",
+      "creditPlaceholder": "0.00",
+      "date": "Posting date",
+      "debitPlaceholder": "0.00",
+      "description": "Description",
+      "descriptionPlaceholder": "Entry narrative / memo",
+      "entryNumber": "Entry number",
+      "entryNumberPlaceholder": "e.g. JE-2026-001",
+      "linesTitle": "Accounting Lines",
       "title": "New Journal Entry",
       "totalCredit": "Total Credit",
       "totalDebit": "Total Debit"
     },
     "generalLedger": "General Ledger",
     "messages": {
-      "entrySaved": "Journal entry recorded successfully"
+      "entrySaved": "Journal entry saved successfully"
     },
-    "searchPlaceholder": "Search number or reason...",
-    "subtitle": "Cross-border dual-ledger double-entry system for IT (SDI) and CH (CO/PCO) tax rules",
+    "searchPlaceholder": "Search journal entries or accounts...",
+    "subtitle": "General journal, ledgers and balancing",
     "table": {
       "account": "Account",
-      "credit": "Credit (€/CHF)",
-      "debit": "Debit (€/CHF)",
+      "credit": "Credit",
+      "debit": "Debit",
       "description": "Description"
     },
-    "title": "General Accounting & Dual-Ledger",
-    "vatSettlement": "VAT & Tax Settlements"
+    "title": "Accounting",
+    "vatSettlement": "VAT Settlement"
   },
   "ACCOUNTING.CARD_TITLE": "Chart of Accounts & Tax Alignment",
   "ACCOUNTING.COL_BALANCE": "Current Balance",
@@ -52,22 +52,22 @@
     "form": {
       "createTitle": "Create New Alert",
       "editTitle": "Edit Alert",
-      "isActive": "Active Status",
-      "message": "Detailed Message",
-      "messagePlaceholder": "Enter additional alert details...",
+      "isActive": "Alert Active",
+      "message": "Message",
+      "messagePlaceholder": "Notification or alert details",
       "severity": "Severity Level",
       "submit": "Save Alert",
-      "title": "Alert Title",
-      "titlePlaceholder": "E.g. Quarterly VAT Deadline..."
+      "title": "Title",
+      "titlePlaceholder": "e.g. Document Expiration"
     },
     "messages": {
-      "created": "Alert created",
-      "deleted": "Alert deleted",
-      "updated": "Alert updated"
+      "created": "Alert created successfully",
+      "deleted": "Alert deleted successfully",
+      "updated": "Alert updated successfully"
     },
-    "searchPlaceholder": "Search by alert title...",
-    "subtitle": "Monitor tax deadlines, SDI anomalies, bank alerts, and company notices",
-    "title": "Alerts & Operational Notifications Center"
+    "searchPlaceholder": "Search alerts...",
+    "subtitle": "Compliance notifications and system deadlines",
+    "title": "Alert Center"
   },
   "ATTENDANCE.ACCRUALS_TITLE": "Vacation & Leave Accruals",
   "ATTENDANCE.ANNUAL_ENTITLEMENT": "Annual entitlement: {days} days",
@@ -120,10 +120,10 @@
   "AUTH.TITLE": "Fattura Facile ERP",
   "automotive": {
     "errors": {
-      "loadFailed": "Error retrieving tire storage"
+      "loadFailed": "Unable to load automotive data"
     },
     "tireHotel": {
-      "notifySuccess": "Notification sent successfully for vehicle {plate}",
+      "notifySuccess": "Seasonal tire change reminder sent successfully for vehicle {plate}",
       "season": {
         "summer": "Summer",
         "winter": "Winter"
@@ -143,8 +143,8 @@
       "title": "Confirm Deletion"
     },
     "errors": {
-      "loadFailed": "Failed to load records",
-      "loadFailedDetail": "Failed to load legal cases and records"
+      "loadFailed": "Unable to load case files",
+      "loadFailedDetail": "An error occurred while retrieving firm mandates and case files."
     },
     "searchPlaceholder": "Search cases..."
   },
@@ -158,7 +158,7 @@
       "edit": "Edit",
       "save": "Save"
     },
-    "selectPaymentType": "Select payment type",
+    "selectPaymentType": "Select payment method",
     "status": {
       "active": "Active",
       "inactive": "Inactive",
@@ -166,30 +166,34 @@
     },
     "table": {
       "actions": "Actions",
-      "density": "Table density",
+      "density": "Density",
       "densityDefault": "Default",
       "densityMiddle": "Middle",
       "densitySmall": "Compact",
       "deselectAll": "Deselect all",
-      "noData": "No data found",
+      "noData": "No data available",
       "reset": "Reset",
-      "search": "Search",
-      "selectedCount": "{count} items selected",
+      "search": "Search table...",
+      "selectedCount": "{count} selected",
       "visibleColumns": "Visible columns"
     }
   },
   "COMMON.ACTION": "Action",
+  "COMMON.ACTIONS": "Actions",
   "COMMON.ACTIVE": "Active",
   "COMMON.ALL": "All",
   "COMMON.AMOUNT": "Amount",
   "COMMON.CANCEL": "Cancel",
   "COMMON.CLOSE": "Close",
+  "COMMON.CONFIRM_DELETE": "Are you sure you want to delete this item?",
   "COMMON.DATE": "Date",
+  "COMMON.DELETE": "Delete",
   "COMMON.DETAILS": "Details",
   "COMMON.ITALY": "Italy",
   "COMMON.PREVIEW": "Preview",
   "COMMON.RECONCILE": "Reconcile",
   "COMMON.SAVE": "Save",
+  "COMMON.SEARCH": "Search",
   "COMMON.SELECT": "Select",
   "COMMON.SELECTED": "Selected",
   "COMMON.STATUS": "Status",
@@ -200,8 +204,8 @@
   "COMMON.VALIDATION.REQUIRED": "Required field",
   "construction": {
     "errors": {
-      "loadFailed": "Failed to load construction sites",
-      "loadFailedDetail": "Error loading construction sites"
+      "loadFailed": "Unable to load construction sites",
+      "loadFailedDetail": "An error occurred while fetching construction site data. Please try again later."
     }
   },
   "CONSTRUCTION.CARD_TITLE": "Active Construction Sites & Projects",
@@ -220,7 +224,7 @@
       },
       "statsModal": {
         "content": "Record {country} - Type: {type} - VAT / Tax ID: {fiscal}",
-        "title": "Statistics {name}"
+        "title": "Client Statistics {name}"
       }
     }
   },
@@ -261,9 +265,9 @@
   "CRM.CLIENTS.FORM.TYPE": "Type",
   "CRM.CLIENTS.FORM.UID": "UID (CHE-…)",
   "CRM.CLIENTS.FORM.VAT_NUMBER": "VAT number",
-  "CRM.CLIENTS.MESSAGES.CREATED": "Client created",
-  "CRM.CLIENTS.MESSAGES.DELETED": "Client deleted",
-  "CRM.CLIENTS.MESSAGES.UPDATED": "Client updated",
+  "CRM.CLIENTS.MESSAGES.CREATED": "Client successfully created",
+  "CRM.CLIENTS.MESSAGES.DELETED": "Client successfully deleted",
+  "CRM.CLIENTS.MESSAGES.UPDATED": "Client successfully updated",
   "CRM.CLIENTS.NEW": "New client",
   "CRM.CLIENTS.SEARCH_PLACEHOLDER": "Search by company name or VAT number",
   "CRM.CLIENTS.SUBTITLE": "Customer and supplier directory",
@@ -300,7 +304,7 @@
   "DASHBOARD.SUBTITLE": "Financial and operational overview",
   "DASHBOARD.TITLE": "ERP Executive Dashboard",
   "ERRORS.FORBIDDEN_TITLE": "Access Denied (403)",
-  "ERRORS.GENERIC": "Error {status}",
+  "ERRORS.GENERIC": "An error occurred ({status})",
   "ERRORS.NETWORK": "Server unreachable. Check your connection.",
   "ERRORS.SESSION_EXPIRED": "Session expired. Please log in again.",
   "ERRORS.TOO_MANY_REQUESTS_DESC": "Too many requests sent to the server. Please wait a few moments before trying again.",
@@ -308,34 +312,34 @@
   "ERRORS.VALIDATION_TITLE": "Validation Error (422)",
   "expenses": {
     "actions": {
-      "delete": "Delete Expense",
-      "edit": "Edit Expense"
+      "delete": "Delete",
+      "edit": "Edit"
     },
-    "confirmDelete": "Are you sure you want to delete this expense?",
+    "confirmDelete": "Delete this expense report?",
     "filterStatus": "Filter by status",
     "form": {
       "amount": "Amount",
       "createTitle": "New Expense Report",
       "currency": "Currency",
       "date": "Expense Date",
-      "description": "Description / Reason",
-      "descriptionPlaceholder": "E.g. Business lunch with client...",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g. Client lunch or fuel refill",
       "editTitle": "Edit Expense Report",
-      "merchant": "Supplier / Merchant",
-      "merchantPlaceholder": "E.g. Restaurant Mario",
+      "merchant": "Merchant / Vendor",
+      "merchantPlaceholder": "e.g. Mario's Bistro or Eni Station",
       "submit": "Save Expense"
     },
     "messages": {
-      "created": "Expense created successfully",
-      "deleted": "Expense deleted",
-      "exported": "Export completed",
+      "created": "Expense recorded successfully",
+      "deleted": "Expense deleted successfully",
+      "exported": "Expenses exported successfully",
       "updated": "Expense updated successfully"
     },
-    "searchPlaceholder": "Search by description or merchant...",
+    "searchPlaceholder": "Search by merchant or memo...",
     "stats": {
-      "count": "Number of Expense Items",
-      "pending": "Expenses Pending Approval",
-      "total": "Total Recorded Expenses"
+      "count": "Expense Reports",
+      "pending": "Pending Approval",
+      "total": "Total Reimbursements"
     },
     "statuses": {
       "approved": "Approved",
@@ -345,8 +349,8 @@
       "reimbursed": "Reimbursed",
       "rejected": "Rejected"
     },
-    "subtitle": "Track corporate expenses, employee reimbursements, and cash outflows",
-    "title": "Expenses & Expense Reports Management"
+    "subtitle": "Employee reimbursement and expense reporting",
+    "title": "Expense Reports"
   },
   "FIELD_SERVICE.CARD_TITLE": "Active Support Tickets",
   "FIELD_SERVICE.COL_CLIENT": "Customer",
@@ -358,8 +362,8 @@
   "FIELD_SERVICE.TITLE": "Technical Support & Field Service",
   "fieldService": {
     "errors": {
-      "loadFailed": "Failed to load tickets",
-      "loadFailedDetail": "Error loading service tickets"
+      "loadFailed": "Unable to load service tickets",
+      "loadFailedDetail": "Error retrieving field service data. Please try again later."
     }
   },
   "HEADER.JURISDICTION_CH": "Switzerland Jurisdiction (QR-Bill, ArG, SME)",
@@ -372,8 +376,8 @@
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Expand menu",
   "hr": {
     "errors": {
-      "loadFailed": "Failed to load employees",
-      "loadFailedDetail": "Error loading attendance register and employees"
+      "loadFailed": "Unable to load human resources data",
+      "loadFailedDetail": "Error reading employee and payroll records. Please try again later."
     }
   },
   "HR.CARD_TITLE": "Staff & Tax / Social Security Scheme",
@@ -387,14 +391,14 @@
   "HR.TITLE": "Human Resources & Cross-Border Payroll (IT / CH)",
   "inventory": {
     "form": {
-      "customsCodePlaceholder": "9031.90.00",
-      "namePlaceholder": "Product description",
-      "skuPlaceholder": "EL-SENS-01",
-      "unit": "Unit of Measure"
+      "customsCodePlaceholder": "e.g. 8471.30.00",
+      "namePlaceholder": "Item or product name",
+      "skuPlaceholder": "e.g. ART-00123",
+      "unit": "Unit of measure"
     },
     "messages": {
-      "created": "Product created successfully",
-      "deleted": "Product deleted"
+      "created": "Item added to inventory",
+      "deleted": "Item removed from inventory"
     },
     "modal": {
       "createTitle": "New Warehouse Product",
@@ -408,12 +412,13 @@
   "INVENTORY.COL_QTY": "Stock Qty",
   "INVENTORY.COL_SKU": "SKU Code",
   "INVENTORY.COL_WAREHOUSE": "Warehouse",
+  "INVENTORY.NEW_PRODUCT": "New Product",
   "INVENTORY.SUBTITLE": "Item catalogs, DDT delivery notes, HS/TARIC customs codes and IT-CH export management",
   "INVENTORY.TITLE": "Cross-Border Inventory & Logistics",
   "manufacturing": {
     "errors": {
-      "loadFailed": "Failed to load production orders",
-      "loadFailedDetail": "Error loading production orders"
+      "loadFailed": "Unable to load production data",
+      "loadFailedDetail": "Error retrieving production orders or manufacturing lines."
     }
   },
   "MANUFACTURING.CARD_TITLE": "Active Production Orders",
@@ -452,8 +457,8 @@
   "NAV.SALES": "Sales & Invoicing",
   "NAV.SDI": "SDI Electronic Invoicing",
   "NAV.SDI_INBOX": "SDI Inbound AP",
-  "NAV.ALERTS": "Alerts & Notifications",
-  "NAV.SYSTEM": "System",
+  "NAV.ALERTS": "Alert Center",
+  "NAV.SYSTEM": "System & Backups",
   "NAV.SETTINGS": "Settings & Tenants",
   "NAV.STOCK": "Stock & Articles",
   "NAV.SUPPLIERS": "Suppliers & Price Lists",
@@ -488,31 +493,31 @@
     "actions": {
       "approve": "Approve",
       "reject": "Reject",
-      "submitApproval": "Submit for Approval"
+      "submitApproval": "Submit for approval"
     },
     "form": {
-      "channel": "Channel",
+      "channel": "Receipt channel",
       "currency": "Currency",
-      "description": "Item Description",
-      "descriptionPlaceholder": "E.g. Fiber connectivity fee",
+      "description": "Purchase description",
+      "descriptionPlaceholder": "Describe expense or supply",
       "quantity": "Quantity",
       "supplier": "Supplier",
-      "supplierPlaceholder": "E.g. Swisscom AG or Telecom Inc.",
-      "unitPrice": "Unit Price"
+      "supplierPlaceholder": "Select supplier",
+      "unitPrice": "Unit price"
     },
     "messages": {
-      "approved": "Order {number} approved",
-      "created": "Purchase order created successfully",
-      "rejected": "Order {number} rejected",
-      "submitted": "Order {number} submitted for approval"
+      "approved": "Purchase invoice {number} approved",
+      "created": "Purchase successfully recorded",
+      "rejected": "Purchase {number} rejected",
+      "submitted": "{number} successfully submitted for approval"
     },
-    "rejectReason": "Rejected by operator",
+    "rejectReason": "Rejection reason",
     "statuses": {
       "approved": "Approved",
       "cancelled": "Cancelled",
       "draft": "Draft",
       "ordered": "Ordered",
-      "pending_approval": "Pending Approval",
+      "pending_approval": "Pending approval",
       "received": "Received",
       "rejected": "Rejected"
     }
@@ -530,8 +535,8 @@
   "PURCHASES.TITLE": "Purchases & Accounts Payable",
   "rent": {
     "errors": {
-      "loadFailed": "Failed to load vehicle fleet",
-      "loadFailedDetail": "Error loading rental vehicles"
+      "loadFailed": "Unable to load rental vehicles",
+      "loadFailedDetail": "Error retrieving fleet or booking details."
     }
   },
   "RENT.CARD_TITLE": "Fleet Status & Active Contracts",
@@ -546,8 +551,8 @@
   "RENT.VIGNETTE_NONE": "Not Required",
   "retail": {
     "errors": {
-      "loadFailed": "Failed to load cash register sessions",
-      "loadFailedDetail": "Error loading POS cash register sessions"
+      "loadFailed": "Unable to load cash register sessions",
+      "loadFailedDetail": "Error retrieving cash registers or POS daily closings."
     }
   },
   "RETAIL.CARD_TITLE": "Fiscal Daily Closings & Cash Sessions",
@@ -637,31 +642,31 @@
     "form": {
       "companyName": "Company Name",
       "currency": "Default Currency",
-      "iban": "Standard Corporate IBAN",
-      "legalName": "Extended Legal Name",
-      "pecEmail": "Certified Email (PEC)",
+      "iban": "Primary IBAN",
+      "legalName": "Legal Business Name",
+      "pecEmail": "PEC Email (Italy)",
       "qrIban": "Swiss QR-IBAN",
-      "save": "Save Company Changes",
-      "sdiCode": "SDI Recipient Code (7 characters)",
-      "taxId": "Tax ID / Fiscal Code",
-      "uidNumber": "Swiss UID / Enterprise ID",
-      "vatNumber": "VAT Number (IT / CH)"
+      "save": "Save Settings",
+      "sdiCode": "SDI Recipient Code",
+      "taxId": "Tax Code / Codice Fiscale",
+      "uidNumber": "Swiss UID Number",
+      "vatNumber": "VAT Number"
     },
     "messages": {
-      "ratesSynced": "Exchange rates synchronized",
-      "saved": "Company settings saved successfully"
+      "ratesSynced": "Exchange rates synced successfully",
+      "saved": "Settings updated successfully"
     },
-    "subtitle": "Tenant configuration, branch registry, user management, and audit logs",
+    "subtitle": "System configuration, tax parameters and users",
     "tabs": {
-      "audit": "System Audit Log",
+      "audit": "Audit Log",
       "branch": "BRANCH",
-      "branches": "Branches & Locations",
+      "branches": "Branches",
       "hq": "HEADQUARTERS",
-      "orgData": "Organization & Tax Data",
+      "orgData": "Company Profile",
       "roles": "Roles & Permissions",
-      "users": "Users & Access"
+      "users": "Users"
     },
-    "title": "Company & System Settings"
+    "title": "System Settings"
   },
   "SETTINGS.CARD_TITLE": "Company & Tenant Configuration",
   "SETTINGS.COL_ADDRESS": "Headquarters Address",
@@ -713,28 +718,28 @@
     "backups": {
       "actions": {
         "delete": "Delete Backup",
-        "download": "Download ZIP Archive",
-        "restore": "Restore this backup",
-        "restoreData": "Restore Data"
+        "download": "Download ZIP",
+        "restore": "Restore",
+        "restoreData": "Restore Data from Backup"
       },
-      "cardTitle": "Tenant Security Archives",
-      "confirmDelete": "Do you want to permanently delete this backup archive?",
-      "confirmRestore": "Warning: restoring will overwrite current data with this version. Do you want to proceed?",
+      "cardTitle": "System Backup Archive",
+      "confirmDelete": "Are you sure you want to delete this backup archive? This cannot be undone.",
+      "confirmRestore": "Are you sure you want to restore this archive? Current data may be overwritten.",
       "messages": {
-        "completed": "Backup generation completed",
-        "downloadStarted": "Download started for {filename}",
-        "removed": "Backup archive removed",
-        "restoreCompleted": "Restore from backup {filename} completed.",
-        "restoreSuccess": "Restore completed successfully.",
-        "selectZip": "Please select a ZIP file",
-        "started": "Backup generation started successfully"
+        "completed": "Backup completed successfully",
+        "downloadStarted": "Backup download {filename} initiated...",
+        "removed": "Backup file removed",
+        "restoreCompleted": "Restore from backup {filename} completed successfully",
+        "restoreSuccess": "Database successfully restored",
+        "selectZip": "Please select a valid backup ZIP archive",
+        "started": "Backup job started in background..."
       },
       "modal": {
-        "description": "Select the backup ZIP archive (.zip) previously exported from FatturaFacile:",
-        "title": "Upload and Restore ZIP Backup"
+        "description": "Upload a ZIP archive to restore the database to an earlier state.",
+        "title": "Restore Backup"
       },
-      "subtitle": "Full tenant instance backups, encrypted archive downloads, and point-in-time recovery",
-      "title": "Backup & Disaster Recovery Management"
+      "subtitle": "Data backups, archives and disaster recovery",
+      "title": "Backup Management"
     }
   },
   "TIRE_HOTEL.COL_CUSTOMER": "Customer",
@@ -753,30 +758,30 @@
   "TIRE_HOTEL.WINTER_TIRES": "Winter Tires in Custody",
   "treasury": {
     "messages": {
-      "camtSuccess": "CAMT file imported successfully.",
-      "cbiSuccess": "CBI file imported successfully.",
-      "reconciliationSuccess": "Automatic reconciliation completed.",
-      "selectFile": "Please select a file before proceeding.",
-      "statementReconciled": "Bank statement {iban} reconciled.",
-      "statementReconciledSuccess": "Bank statement reconciled successfully."
+      "camtSuccess": "camt.053 statement processed successfully",
+      "cbiSuccess": "CBI banking file imported successfully",
+      "reconciliationSuccess": "Bank movement reconciled successfully",
+      "selectFile": "Please select a valid bank file (XML or CBI)",
+      "statementReconciled": "Bank statement {iban} reconciled",
+      "statementReconciledSuccess": "All matched movements were reconciled"
     },
     "modal": {
-      "description": "Select the bank statement file format to import into the system:",
-      "title": "Import CAMT.053 / CBI Bank File"
+      "description": "Upload the ISO 20022 camt or CBI file provided by your bank.",
+      "title": "Import Bank Statement"
     },
-    "searchPlaceholder": "Search description or counterparty...",
+    "searchPlaceholder": "Search bank movements...",
     "stats": {
-      "chfLiquidity": "Total CHF Liquidity",
-      "eurLiquidity": "Total EUR Liquidity",
-      "toReconcile": "Transactions to Reconcile"
+      "chfLiquidity": "Total Liquidity CHF",
+      "eurLiquidity": "Total Liquidity EUR",
+      "toReconcile": "Movements to Reconcile"
     },
-    "subtitle": "Multi-currency accounts (EUR/CHF), CAMT.053/CBI statement import, and automatic reconciliation",
+    "subtitle": "Bank balances, statements and camt/CBI workflows",
     "tabs": {
       "bankAccounts": "Bank Accounts",
       "bankMovements": "Bank Movements",
-      "statements": "Imported Statements"
+      "statements": "Statements"
     },
-    "title": "Treasury & Bank Reconciliation",
+    "title": "Treasury",
     "actions": {
       "autoReconcile": "Automatic Reconciliation",
       "reconcile": "Reconcile"
@@ -823,7 +828,7 @@
   "TREASURY.SUBTITLE": "ISO 20022 bank statement import (camt.053 / camt.054), CBI format and automated reconciliation",
   "TREASURY.TITLE": "Treasury & Bank Management",
   "validation": {
-    "amountRequired": "Enter a valid amount",
+    "amountRequired": "Amount is required",
     "dateRequired": "Date is required",
     "descriptionRequired": "Description is required",
     "entryNumberRequired": "Entry number is required",
@@ -831,7 +836,7 @@
     "priceRequired": "Price is required",
     "quantityRequired": "Quantity is required",
     "required": "Field is required",
-    "skuRequired": "SKU is required",
+    "skuRequired": "SKU code is required",
     "supplierRequired": "Supplier is required",
     "titleRequired": "Title is required",
     "warehouseRequired": "Warehouse is required"
