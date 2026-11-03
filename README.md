@@ -123,9 +123,10 @@ See [`certs/README.md`](certs/README.md) for the full macOS and Windows steps.
 npm run start:local
 ```
 
-Starts the dev server with demo mode off. `/api` and `/sanctum` are proxied to `http://localhost:8000`
-(`proxy.conf.json`), so requests stay same-origin and Sanctum cookie authentication works with the backend's
-default `SANCTUM_STATEFUL_DOMAINS` (`localhost:4200`).
+Starts the dev server at `http://localhost:4200/` with demo mode off. `/api` and `/sanctum` are proxied to
+the backend set in `proxy.conf.json` (`https://api.fatturafacile.eu`; point it at `http://localhost:8000` for a
+local one), so requests stay same-origin: no CORS, no HTTPS certificates, and Sanctum cookie authentication
+works with the backend's default `SANCTUM_STATEFUL_DOMAINS` (`localhost:4200`).
 
 ### Run Unit Tests (Vitest)
 

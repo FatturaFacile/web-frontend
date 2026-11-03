@@ -1,0 +1,59 @@
+{
+  "name": "fatturafacile",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "A new app created with @inglorious/create-app",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "bench:size": "node benchmarks/bundle-size.mjs",
+    "bench:lighthouse": "node benchmarks/lighthouse.mjs",
+    "bench:loc": "node benchmarks/lines-of-code.mjs",
+    "bench:api": "node benchmarks/api-surface.mjs",
+    "bench:dev": "node benchmarks/dev-start.mjs"
+  },
+  "dependencies": {
+    "@iconify-icons/fa7-brands": "^2.0.0",
+    "@iconify-icons/fa7-regular": "^2.0.0",
+    "@iconify-icons/fa7-solid": "^2.0.0",
+    "@iconify-icons/material-symbols": "^2.0.6",
+    "@inglorious/i18n": "^2.0.0",
+    "@inglorious/store": "^12.2.0",
+    "@inglorious/ui": "^9.13.0",
+    "@inglorious/web": "^6.16.0"
+  },
+  "devDependencies": {
+    "@inglorious/eslint-config": "^1.2.0",
+    "@inglorious/vite-plugin-hmr": "^1.1.0",
+    "@types/node": "^22.20.5",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
+    "@typescript-eslint/parser": "^8.72.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "eslint": "^10.13.0",
+    "jiti": "^2.7.0",
+    "jsdom": "^30.1.3",
+    "prettier": "^3.9.10",
+    "rollup-plugin-minify-template-literals": "^2.2.0",
+    "sharp": "^0.35.5",
+    "svgo": "^4.1.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "vite": "^8.3.4",
+    "vite-plugin-image-optimizer": "^2.0.3",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5",
+    "workbox-window": "^7.4.1"
+  },
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">= 26"
+  }
+}

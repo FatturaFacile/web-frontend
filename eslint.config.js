@@ -6,6 +6,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      'inglorious/**',
       'coverage/**',
       '.angular/**',
       'node_modules/**',
