@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentSandboxingConfig",
+  "description": "Boundary constraints and security policies for autonomous agent execution",
+  "version": "1.0.0",
+  "workspace": {
+    "rootConfinement": true,
+    "ephemeralDirectories": [
+      ".sandbox/scratch",
+      ".sandbox/output",
+      ".sandbox/cache"
+    ],
+    "protectedPaths": [
+      ".git/**",
+      "certs/**",
+      ".env",
+      ".env.*",
+      "**/*.key",
+      "**/*.pem",
+      "**/*.pfx",
+      "node_modules/**"
+    ],
+    "allowedWritePaths": [
+      "src/**",
+      "public/**",
+      "dist/**",
+      ".angular/cache/**",
+      ".sandbox/scratch/**",
+      ".sandbox/output/**",
+      ".sandbox/cache/**"
+    ]
+  },
+  "environment": {
+    "sanitize": true,
+    "allowedVariables": [
+      "NODE_ENV",
+      "PATH",
+      "PNPM_HOME",
+      "LANG",
+      "LC_ALL",
+      "TERM",
+      "CI",
+      "TEMP",
+      "TMP",
+      "HOME",
+      "USERPROFILE",
+      "APPDATA",
+      "LOCALAPPDATA",
+      "SYSTEMROOT",
+      "COMSPEC",
+      "PATHEXT"
+    ],
+    "deniedVariablePatterns": [
+      ".*_KEY.*",
+      ".*_SECRET.*",
+      ".*_TOKEN.*",
+      ".*_PASSWORD.*",
+      ".*_AUTH.*",
+      "SSH_.*",
+      "GITHUB_.*",
+      "QODANA_.*",
+      "TELEGRAM_.*",
+      "API_PROXY_TARGET",
+      "DEV_.*"
+    ],
+    "defaultVariables": {
+      "NODE_ENV": "development",
+      "CI": "true",
+      "SANDBOX_CONTAINED": "true"
+    }
+  },
+  "execution": {
+    "defaultTimeoutSeconds": 300,
+    "maxBufferBytes": 52428800,
+    "defaultNetworkPolicy": "none",
+    "enforcePnpm": true
+  }
+}

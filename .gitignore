@@ -6,10 +6,18 @@
 /out-tsc
 /bazel-out
 
-# Node
+# Node & Package Managers
 /node_modules
-npm-debug.log
-yarn-error.log
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Agent Sandboxing & Ephemeral Scratch
+/.sandbox/scratch/
+/.sandbox/output/
+/.sandbox/cache/
 
 # IDEs and editors
 .idea/

@@ -28,6 +28,11 @@ composer.lock
 yarn.lock
 pnpm-lock.yaml
 
+# --- Agent Sandboxing & Ephemeral Scratch ---
+.sandbox/scratch/
+.sandbox/output/
+.sandbox/cache/
+
 # --- Web & Frontend Build Artifacts ---
 dist/
 build/

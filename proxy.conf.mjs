@@ -5,7 +5,7 @@ const target = process.env.API_PROXY_TARGET;
 
 if (!target) {
   throw new Error(
-    'API_PROXY_TARGET is not set: start the dev server with `npm run start` or `npm run start:local`.',
+    'API_PROXY_TARGET is not set: start the dev server with `pnpm start` or `pnpm run start:local`.',
   );
 }
 

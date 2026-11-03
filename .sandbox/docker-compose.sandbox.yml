@@ -1,0 +1,57 @@
+services:
+  agent-sandbox:
+    build:
+      context: ..
+      dockerfile: .sandbox/Dockerfile
+    image: fatturafacile-agent-sandbox:latest
+    container_name: fatturafacile-agent-sandbox
+    user: "10001:10001"
+    working_dir: /workspace
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Complete network isolation by default; use bridge only when explicit network access is required
+    network_mode: "none"
+    environment:
+      - NODE_ENV=development
+      - CI=true
+      - SANDBOX_CONTAINED=true
+      - TMPDIR=/tmp
+    volumes:
+      # Mount codebase as READ-ONLY to guarantee host source and secrets protection
+      - type: bind
+        source: ..
+        target: /workspace
+        read_only: true
+      # Ephemeral in-memory writable layers for build, output, and cache
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1073741824 # 1GB
+      - type: tmpfs
+        target: /home/agentuser/.cache
+        tmpfs:
+          size: 536870912  # 512MB
+      - type: tmpfs
+        target: /workspace/dist
+        tmpfs:
+          size: 536870912  # 512MB
+      - type: tmpfs
+        target: /workspace/.angular
+        tmpfs:
+          size: 536870912  # 512MB
+      - type: tmpfs
+        target: /workspace/.sandbox/scratch
+        tmpfs:
+          size: 536870912  # 512MB
+      - type: tmpfs
+        target: /workspace/.sandbox/output
+        tmpfs:
+          size: 536870912  # 512MB
+      - type: tmpfs
+        target: /workspace/.sandbox/cache
+        tmpfs:
+          size: 536870912  # 512MB
+    command: ["pnpm", "test"]

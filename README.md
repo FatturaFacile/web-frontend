@@ -9,7 +9,7 @@ Enterprise ERP web application built with **Angular 22**, **NG-ZORRO (Ant Design
 [![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
 [![Deploy to Pages](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml)
 [![GitHub Release](https://img.shields.io/github/v/release/<OWNER>/<REPO>?sort=semver&logo=github&color=blue)](https://github.com/<OWNER>/<REPO>/releases/latest)
-[![Demo](https://img.shields.io/badge/demo-online-brightgreen)](https://demo.fatturafacile.eu)
+[![Demo](https://demo.fatturafacile.eu)](https://demo.fatturafacile.eu)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -95,10 +95,18 @@ When running in **Demo Mode**, the application operates 100% autonomously withou
 
 ## 5. Development & Testing Commands
 
+This repository enforces **pnpm** exclusively (`packageManager: pnpm@12.16.1` and `preinstall` guard). Any unintentional `npm install` execution will fail immediately.
+
+### Dependency Installation
+
+```bash
+pnpm install --frozen-lockfile
+```
+
 ### Start Development Server
 
 ```bash
-npm start
+pnpm start
 ```
 
 Starts the local dev server at `https://localhost:4200/`. `/api` and `/sanctum` are proxied to the shared dev
@@ -107,30 +115,30 @@ API (`https://dev-api.fatturafacile.eu`, set in `env/development.env`).
 ### Environment Configuration
 
 The API endpoint is never hardcoded in the source: it is read from environment variables and injected at build
-time. `npm start`, `npm run start:local`, `npm run build` and `npm run watch` go through
+time. `pnpm start`, `pnpm run start:local`, `pnpm run build` and `pnpm run watch` go through
 [`scripts/ng-env.mjs`](scripts/ng-env.mjs), which resolves the variables and passes them to the Angular CLI
 (`--define`) and to the dev-server proxy ([`proxy.conf.mjs`](proxy.conf.mjs)).
 
-| Variable           | Required                         | Description                                                                                          |
-|--------------------|----------------------------------|------------------------------------------------------------------------------------------------------|
-| `API_BASE_URL`     | yes                              | API base URL used by the app: a same-origin path (`/api/v1`) or an absolute URL.                      |
-| `API_PROXY_TARGET` | with `npm start` and a path URL  | Backend that the dev server proxies `/api` and `/sanctum` to.                                         |
-| `DEMO_MODE`        | no (default `false`)             | `true` pre-fills the login form with the demo account credentials.                                   |
+| Variable           | Required                          | Description                                                                                          |
+|--------------------|-----------------------------------|------------------------------------------------------------------------------------------------------|
+| `API_BASE_URL`     | yes                               | API base URL used by the app: a same-origin path (`/api/v1`) or an absolute URL.                      |
+| `API_PROXY_TARGET` | with `pnpm start` and a path URL  | Backend that the dev server proxies `/api` and `/sanctum` to.                                         |
+| `DEMO_MODE`        | no (default `false`)              | `true` pre-fills the login form with the demo account credentials.                                   |
 
 Values are resolved in this order, the first one found wins:
 
-1. **Shell / CI environment variables**, e.g. `API_BASE_URL=https://api.example.com/api/v1 npm run build`.
+1. **Shell / CI environment variables**, e.g. `API_BASE_URL=https://api.example.com/api/v1 pnpm run build`.
 2. **`.env`** in the project root: personal overrides, git-ignored. Start from [`.env.example`](.env.example).
 3. **`env/<configuration>.env`**: committed defaults for each Angular configuration. With several configurations
    (`--configuration production,demo`) the files are applied in order, later ones overriding earlier ones.
 
-| Environment | Command                                         | Env file(s)                              | API                                               |
-|-------------|-------------------------------------------------|------------------------------------------|---------------------------------------------------|
-| development | `npm start`                                     | `env/development.env`                    | `/api/v1`, proxied to `https://dev-api.fatturafacile.eu` |
-| local       | `npm run start:local`                           | `env/local.env`                          | `/api/v1`, proxied to `http://localhost:8000`     |
-| dev         | `npm run build -- --configuration dev`          | `env/dev.env`                            | `/api/v1`, served on the same origin by nginx on dev.fatturafacile.eu |
-| demo        | `npm run build -- --configuration production,demo` | `env/production.env`, `env/demo.env` | `https://api.fatturafacile.eu/api/v1`             |
-| production  | `npm run build`                                 | `env/production.env`                     | `https://api.fatturafacile.eu/api/v1`             |
+| Environment | Command                                            | Env file(s)                           | API                                               |
+|-------------|----------------------------------------------------|---------------------------------------|---------------------------------------------------|
+| development | `pnpm start`                                       | `env/development.env`                 | `/api/v1`, proxied to `https://dev-api.fatturafacile.eu` |
+| local       | `pnpm run start:local`                             | `env/local.env`                       | `/api/v1`, proxied to `http://localhost:8000`     |
+| dev         | `pnpm run build -- --configuration dev`            | `env/dev.env`                         | `/api/v1`, served on the same origin by nginx on dev.fatturafacile.eu |
+| demo        | `pnpm run build -- --configuration production,demo`   | `env/production.env`, `env/demo.env` | `https://api.fatturafacile.eu/api/v1`             |
+| production  | `pnpm run build`                                   | `env/production.env`                  | `https://api.fatturafacile.eu/api/v1`             |
 
 The CI workflows use the same commands: `deploy-dev.yml` builds `dev` on every push to `dev`, `deploy.yml` builds
 `production,demo` for GitHub Pages. To point an environment to another API, change its `env/<configuration>.env`
@@ -161,7 +169,7 @@ See [`certs/README.md`](certs/README.md) for the full macOS and Windows steps.
 
 ```bash
 # In web-api: php artisan serve   (or ./vendor/bin/sail up, with APP_PORT=8000)
-npm run start:local
+pnpm run start:local
 ```
 
 Starts the dev server with demo mode off. `/api` and `/sanctum` are proxied to `http://localhost:8000`
@@ -172,7 +180,7 @@ same-origin and Sanctum cookie authentication works with the backend's default `
 ### Run Unit Tests (Vitest)
 
 ```bash
-npm test --watch=false
+pnpm test --watch=false
 ```
 
 Executes all 24 unit tests across mappers, repositories, SignalStores, and components.
@@ -180,9 +188,23 @@ Executes all 24 unit tests across mappers, repositories, SignalStores, and compo
 ### Build Production Bundle
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 Generates optimized and code-split production bundles in `dist/fatturafacile` with zero warnings, using the
 production API from `env/production.env` (see [Environment Configuration](#environment-configuration) for the other
 environments).
+
+### Agent Sandboxing
+
+This repository includes a secure sandboxing boundary for autonomous agents, CI runners, and automated generation tools:
+
+```bash
+# Execute command inside the isolated sandbox runner
+pnpm run agent:sandbox -- pnpm test
+
+# Run inside the walled Docker container profile (if Docker is available)
+pnpm run agent:docker -- pnpm run build
+```
+
+See [`docs/agent-sandboxing.md`](docs/agent-sandboxing.md) for comprehensive architectural details and security policies.
