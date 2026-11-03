@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -13,6 +13,8 @@ import { TranslatePipe } from '@shared';
   selector: 'app-header',
   imports: [
     FormsModule,
+    RouterLink,
+    RouterLinkActive,
     NzButtonModule,
     NzDropdownModule,
     NzSelectModule,

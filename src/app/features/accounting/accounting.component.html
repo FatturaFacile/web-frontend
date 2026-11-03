@@ -112,11 +112,11 @@
 </ng-template>
 
 <ng-template #accountTypeTpl let-item let-val="value">
-  <nz-tag [nzColor]="getAccountTypeColor(val)">{{ val | uppercase }}</nz-tag>
+  <nz-tag [nzColor]="getAccountTypeColor(val)">{{ 'accounting.accountTypes.' + val | translate }}</nz-tag>
 </ng-template>
 
 <ng-template #vatStatusTpl let-item let-val="value">
   <nz-tag [nzColor]="val === 'paid' ? 'success' : val === 'settled' ? 'processing' : 'default'">
-    {{ val | uppercase }}
+    {{ 'accounting.vatStatuses.' + val | translate }}
   </nz-tag>
 </ng-template>

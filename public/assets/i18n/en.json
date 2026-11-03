@@ -1,6 +1,31 @@
 {
   "accounting": {
+    "accountTypes": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "equity": "Equity",
+      "revenue": "Revenue",
+      "expense": "Expense"
+    },
     "chartOfAccounts": "Chart of Accounts",
+    "columns": {
+      "entryNumber": "Entry Number",
+      "date": "Accounting Date",
+      "description": "Description / Reason",
+      "totalDebit": "Total Debit",
+      "totalCredit": "Total Credit",
+      "accountCode": "Account Code",
+      "accountName": "Account Name",
+      "accountType": "Type",
+      "currentBalance": "Current Balance",
+      "period": "Tax Period",
+      "year": "Year",
+      "jurisdiction": "Jurisdiction",
+      "vatCollected": "Output VAT (Sales)",
+      "vatPaid": "Input VAT (Purchases)",
+      "vatBalance": "VAT Balance",
+      "status": "Status"
+    },
     "entryDetailTitle": "Journal Entry Details {number}",
     "errors": {
       "unbalancedEntry": "Journal entry is not balanced (Debit ≠ Credit)"
@@ -32,7 +57,12 @@
       "description": "Description"
     },
     "title": "Accounting",
-    "vatSettlement": "VAT Settlement"
+    "vatSettlement": "VAT Settlement",
+    "vatStatuses": {
+      "draft": "Draft",
+      "settled": "Settled",
+      "paid": "Paid"
+    }
   },
   "ACCOUNTING.CARD_TITLE": "Chart of Accounts & Tax Alignment",
   "ACCOUNTING.COL_BALANCE": "Current Balance",
@@ -181,6 +211,7 @@
   "COMMON.ACTION": "Action",
   "COMMON.ACTIONS": "Actions",
   "COMMON.ACTIVE": "Active",
+  "COMMON.ADD": "Add",
   "COMMON.ALL": "All",
   "COMMON.AMOUNT": "Amount",
   "COMMON.CANCEL": "Cancel",
@@ -312,8 +343,18 @@
   "ERRORS.VALIDATION_TITLE": "Validation Error (422)",
   "expenses": {
     "actions": {
+      "create": "New Expense",
       "delete": "Delete",
-      "edit": "Edit"
+      "edit": "Edit",
+      "exportCsv": "Export CSV"
+    },
+    "columns": {
+      "date": "Date",
+      "description": "Description / Reason",
+      "merchant": "Merchant / Supplier",
+      "category": "Category",
+      "amount": "Amount",
+      "status": "Status"
     },
     "confirmDelete": "Delete this expense report?",
     "filterStatus": "Filter by status",
@@ -458,6 +499,13 @@
   "NAV.SDI": "SDI Electronic Invoicing",
   "NAV.SDI_INBOX": "SDI Inbound AP",
   "NAV.ALERTS": "Alert Center",
+  "NAV.COMPANY_SETTINGS": "Company & Users",
+  "NAV.PEOPLE": "People",
+  "NAV.SECTION_ADMINISTRATION": "Administration",
+  "NAV.SECTION_COMMERCIAL": "Sales",
+  "NAV.SECTION_INDUSTRY": "Industry modules",
+  "NAV.SECTION_OPERATIONS": "Operations",
+  "NAV.SECTION_SYSTEM": "System",
   "NAV.SYSTEM": "System & Backups",
   "NAV.SETTINGS": "Settings & Tenants",
   "NAV.STOCK": "Stock & Articles",
