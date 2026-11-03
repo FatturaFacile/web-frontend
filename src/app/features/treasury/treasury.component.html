@@ -48,7 +48,7 @@
           (click)="triggerAutoMatch()"
           [nzLoading]="isReconciling()"
         >
-          <nz-icon nzType="sync" /> Riconciliazione Automatica
+          <nz-icon nzType="sync" /> {{ 'treasury.actions.autoReconcile' | translate }}
         </button>
         <button nz-button nzType="primary" type="button" (click)="isImportModalVisible.set(true)">
           <nz-icon nzType="upload" /> {{ 'treasury.modal.title' | translate }}
@@ -96,7 +96,7 @@
           type="button"
           (click)="reconcileStatement(st)"
         >
-          Riconcilia
+          {{ 'treasury.actions.reconcile' | translate }}
         </button>
       </ng-template>
     </nz-tab>
@@ -122,7 +122,7 @@
           [checked]="importFormat === 'camt'"
           (change)="importFormat = 'camt'"
         />
-        CAMT.053 XML (Svizzera / SEPA)
+        {{ 'treasury.modalFormats.camt' | translate }}
       </label>
       <label>
         <input
@@ -132,7 +132,7 @@
           [checked]="importFormat === 'cbi'"
           (change)="importFormat = 'cbi'"
         />
-        CBI Rendicontazione (Italia)
+        {{ 'treasury.modalFormats.cbi' | translate }}
       </label>
     </div>
     <input type="file" (change)="onFileSelected($event)" accept=".xml,.cbi,.txt,.csv" />
@@ -152,7 +152,7 @@
 
 <ng-template #reconciledTpl let-item let-val="value">
   <nz-tag [nzColor]="val ? 'success' : 'warning'">
-    {{ val ? "RICONCILIATO" : "DA RICONCILIARE" }}
+    {{ (val ? 'treasury.reconciled.yes' : 'treasury.reconciled.no') | translate }}
   </nz-tag>
 </ng-template>
 
@@ -162,6 +162,6 @@
       val === 'reconciled' ? 'success' : val === 'partially_reconciled' ? 'processing' : 'default'
     "
   >
-    {{ val | uppercase }}
+    {{ 'treasury.statementStatus.' + val | translate }}
   </nz-tag>
 </ng-template>

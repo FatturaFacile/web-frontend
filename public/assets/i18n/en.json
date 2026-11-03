@@ -452,6 +452,8 @@
   "NAV.SALES": "Sales & Invoicing",
   "NAV.SDI": "SDI Electronic Invoicing",
   "NAV.SDI_INBOX": "SDI Inbound AP",
+  "NAV.ALERTS": "Alerts & Notifications",
+  "NAV.SYSTEM": "System",
   "NAV.SETTINGS": "Settings & Tenants",
   "NAV.STOCK": "Stock & Articles",
   "NAV.SUPPLIERS": "Suppliers & Price Lists",
@@ -774,7 +776,41 @@
       "bankMovements": "Bank Movements",
       "statements": "Imported Statements"
     },
-    "title": "Treasury & Bank Reconciliation"
+    "title": "Treasury & Bank Reconciliation",
+    "actions": {
+      "autoReconcile": "Automatic Reconciliation",
+      "reconcile": "Reconcile"
+    },
+    "columns": {
+      "valueDate": "Value Date",
+      "description": "Transaction Description",
+      "counterparty": "Counterparty / Reference",
+      "amount": "Amount",
+      "category": "Category",
+      "status": "Status",
+      "bankName": "Bank",
+      "bankDetails": "IBAN / Bank Details",
+      "currency": "Currency",
+      "availableBalance": "Available Balance",
+      "statementDate": "Statement Date",
+      "iban": "IBAN",
+      "format": "Format",
+      "closingBalance": "Closing Balance",
+      "reconciliationStatus": "Reconciliation Status"
+    },
+    "modalFormats": {
+      "camt": "CAMT.053 XML (Switzerland / SEPA)",
+      "cbi": "CBI Reporting (Italy)"
+    },
+    "reconciled": {
+      "yes": "RECONCILED",
+      "no": "TO RECONCILE"
+    },
+    "statementStatus": {
+      "imported": "IMPORTED",
+      "reconciled": "RECONCILED",
+      "partially_reconciled": "PARTIALLY RECONCILED"
+    }
   },
   "TREASURY.CARD_TITLE": "Bank Transactions to Reconcile",
   "TREASURY.COL_BANK": "Bank / Account",

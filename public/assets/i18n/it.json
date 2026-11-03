@@ -452,6 +452,8 @@
   "NAV.SALES": "Vendite & Fatturazione",
   "NAV.SDI": "Fattura Elettronica SDI",
   "NAV.SDI_INBOX": "Ciclo Passivo SDI",
+  "NAV.ALERTS": "Avvisi & Notifiche",
+  "NAV.SYSTEM": "Sistema",
   "NAV.SETTINGS": "Impostazioni & Tenant",
   "NAV.STOCK": "Giacenze & Articoli",
   "NAV.SUPPLIERS": "Fornitori & Listini",
@@ -774,7 +776,41 @@
       "bankMovements": "Movimenti Bancari",
       "statements": "Estratti Conto Importati"
     },
-    "title": "Tesoreria & Riconciliazione Bancaria"
+    "title": "Tesoreria & Riconciliazione Bancaria",
+    "actions": {
+      "autoReconcile": "Riconciliazione Automatica",
+      "reconcile": "Riconcilia"
+    },
+    "columns": {
+      "valueDate": "Data Valuta",
+      "description": "Descrizione Movimento",
+      "counterparty": "Controparte / Riferimento",
+      "amount": "Importo",
+      "category": "Categoria",
+      "status": "Stato",
+      "bankName": "Istituto di Credito",
+      "bankDetails": "IBAN / Coordinate",
+      "currency": "Valuta",
+      "availableBalance": "Saldo Disponibile",
+      "statementDate": "Data Estratto",
+      "iban": "IBAN",
+      "format": "Formato",
+      "closingBalance": "Saldo Finale",
+      "reconciliationStatus": "Stato Riconciliazione"
+    },
+    "modalFormats": {
+      "camt": "CAMT.053 XML (Svizzera / SEPA)",
+      "cbi": "CBI Rendicontazione (Italia)"
+    },
+    "reconciled": {
+      "yes": "RICONCILIATO",
+      "no": "DA RICONCILIARE"
+    },
+    "statementStatus": {
+      "imported": "IMPORTATO",
+      "reconciled": "RICONCILIATO",
+      "partially_reconciled": "PARZIALMENTE RICONCILIATO"
+    }
   },
   "TREASURY.CARD_TITLE": "Movimenti Bancari da Riconciliare",
   "TREASURY.COL_BANK": "Banca / Conto",
