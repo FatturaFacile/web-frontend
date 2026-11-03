@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { tenantAuthInterceptor } from './tenant-auth.interceptor';
 import { environment } from '@env';
+import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 
 describe('tenantAuthInterceptor', () => {
   let http: HttpClient;
@@ -14,7 +15,7 @@ describe('tenantAuthInterceptor', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    environment.apiBaseUrl = 'https://dev-api.fatturafacile.eu/api/v1';
+    environment.apiBaseUrl = TEST_API_BASE_URL;
 
     notificationService = {
       error: vi.fn(),
@@ -44,9 +45,9 @@ describe('tenantAuthInterceptor', () => {
   it('should NOT attach Authorization header even if legacy token is in storage (Cookie-first SPA)', () => {
     localStorage.setItem('auth_token', 'jwt-test-token-123');
 
-    http.get('https://dev-api.fatturafacile.eu/api/v1/sales/invoices').subscribe();
+    http.get(`${TEST_API_ORIGIN}/api/v1/sales/invoices`).subscribe();
 
-    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/sales/invoices`);
     expect(req.request.headers.has('Authorization')).toBe(false);
     expect(req.request.withCredentials).toBe(true);
     req.flush([]);
@@ -55,9 +56,9 @@ describe('tenantAuthInterceptor', () => {
   it('should attach X-Tenant-Id header dynamically from storage', () => {
     localStorage.setItem('ff_active_tenant_id', 'tenant-uuid-456');
 
-    http.get('https://dev-api.fatturafacile.eu/api/v1/crm/contacts').subscribe();
+    http.get(`${TEST_API_ORIGIN}/api/v1/crm/contacts`).subscribe();
 
-    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/crm/contacts');
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/crm/contacts`);
     expect(req.request.headers.get('X-Tenant-Id')).toBe('tenant-uuid-456');
     req.flush([]);
   });
@@ -65,11 +66,9 @@ describe('tenantAuthInterceptor', () => {
   it('should attach X-Language-Code header dynamically from storage', () => {
     localStorage.setItem('lang', 'fr');
 
-    http.get('https://dev-api.fatturafacile.eu/api/v1/dashboard/kpi-summary').subscribe();
+    http.get(`${TEST_API_ORIGIN}/api/v1/dashboard/kpi-summary`).subscribe();
 
-    const req = httpTesting.expectOne(
-      'https://dev-api.fatturafacile.eu/api/v1/dashboard/kpi-summary',
-    );
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/dashboard/kpi-summary`);
     expect(req.request.headers.get('X-Language-Code')).toBe('fr');
     req.flush({});
   });
@@ -77,13 +76,13 @@ describe('tenantAuthInterceptor', () => {
   it('should handle 422 Unprocessable Entity by surfacing validation errors', () => {
     let errorCaught = false;
 
-    http.post('https://dev-api.fatturafacile.eu/api/v1/sales/invoices', {}).subscribe({
+    http.post(`${TEST_API_ORIGIN}/api/v1/sales/invoices`, {}).subscribe({
       error: () => {
         errorCaught = true;
       },
     });
 
-    const req = httpTesting.expectOne('https://dev-api.fatturafacile.eu/api/v1/sales/invoices');
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/sales/invoices`);
     req.flush(
       {
         message: 'The given data was invalid.',

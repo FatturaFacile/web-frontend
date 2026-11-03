@@ -1,36 +1,21 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
-import { environment } from '@env';
-import { getXsrfCookie } from '../auth/csrf.utils';
+import { getSanctumBaseUrl, getXsrfCookie } from '../auth/csrf.utils';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
-function resolveBaseUrl(requestUrl?: string): string {
-  if (requestUrl?.startsWith('http://') || requestUrl?.startsWith('https://')) {
+// Absolute requests refresh the token on their own origin; relative ones use the configured backend
+// origin, which is empty (same-origin) when the API base URL is relative
+function resolveBaseUrl(requestUrl: string): string {
+  if (requestUrl.startsWith('http://') || requestUrl.startsWith('https://')) {
     try {
       return new URL(requestUrl).origin;
     } catch {
       // Fallback
     }
   }
-  const env = environment as Record<string, unknown>;
-  const custom =
-    (env['baseUrl'] as string | undefined) ?? (env['backendUrl'] as string | undefined);
-  // An empty baseUrl means same-origin (dev proxy): keep the csrf-cookie URL relative
-  if (custom !== undefined) {
-    return custom.replace(/\/$/, '');
-  }
-  const apiBase =
-    (env['apiBaseUrl'] as string | undefined) ?? (env['apiUrl'] as string | undefined);
-  if (apiBase?.startsWith('http://') || apiBase?.startsWith('https://')) {
-    try {
-      return new URL(apiBase).origin;
-    } catch {
-      // Fallback
-    }
-  }
-  return 'https://dev-api.fatturafacile.eu';
+  return getSanctumBaseUrl();
 }
 
 export const csrfRefreshInterceptor: HttpInterceptorFn = (req, next) => {
