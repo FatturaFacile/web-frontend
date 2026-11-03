@@ -1,6 +1,31 @@
 {
   "accounting": {
+    "accountTypes": {
+      "asset": "Actif",
+      "liability": "Passif",
+      "equity": "Capitaux propres",
+      "revenue": "Produit",
+      "expense": "Charge"
+    },
     "chartOfAccounts": "Plan Comptable",
+    "columns": {
+      "entryNumber": "Numéro d'écriture",
+      "date": "Date comptable",
+      "description": "Description / Libellé",
+      "totalDebit": "Total Débit",
+      "totalCredit": "Total Crédit",
+      "accountCode": "Code du compte",
+      "accountName": "Intitulé du compte",
+      "accountType": "Type",
+      "currentBalance": "Solde actuel",
+      "period": "Période fiscale",
+      "year": "Année",
+      "jurisdiction": "Juridiction",
+      "vatCollected": "TVA collectée (Ventes)",
+      "vatPaid": "TVA déductible (Achats)",
+      "vatBalance": "Solde TVA",
+      "status": "Statut"
+    },
     "entryDetailTitle": "Détail de l'Écriture Comptable {number}",
     "errors": {
       "unbalancedEntry": "L'écriture comptable n'est pas équilibrée (Débit ≠ Crédit)"
@@ -32,7 +57,12 @@
       "description": "Description"
     },
     "title": "Comptabilité",
-    "vatSettlement": "Décompte TVA"
+    "vatSettlement": "Décompte TVA",
+    "vatStatuses": {
+      "draft": "Brouillon",
+      "settled": "Liquidée",
+      "paid": "Payée"
+    }
   },
   "ACCOUNTING.CARD_TITLE": "Plan comptable & Concordance fiscale",
   "ACCOUNTING.COL_BALANCE": "Solde actuel",
@@ -181,6 +211,7 @@
   "COMMON.ACTION": "Action",
   "COMMON.ACTIONS": "Actions",
   "COMMON.ACTIVE": "Actif",
+  "COMMON.ADD": "Ajouter",
   "COMMON.ALL": "Tous",
   "COMMON.AMOUNT": "Montant",
   "COMMON.CANCEL": "Annuler",
@@ -312,8 +343,18 @@
   "ERRORS.VALIDATION_TITLE": "Erreur de validation (422)",
   "expenses": {
     "actions": {
+      "create": "Nouvelle dépense",
       "delete": "Supprimer",
-      "edit": "Modifier"
+      "edit": "Modifier",
+      "exportCsv": "Exporter CSV"
+    },
+    "columns": {
+      "date": "Date",
+      "description": "Description / Motif",
+      "merchant": "Commerçant / Fournisseur",
+      "category": "Catégorie",
+      "amount": "Montant",
+      "status": "Statut"
     },
     "confirmDelete": "Supprimer cette note de frais ?",
     "filterStatus": "Filtrer par statut",
@@ -458,6 +499,13 @@
   "NAV.SDI": "Facture électronique SDI",
   "NAV.SDI_INBOX": "Réception factures SDI",
   "NAV.ALERTS": "Centre d'alertes",
+  "NAV.COMPANY_SETTINGS": "Entreprise & Utilisateurs",
+  "NAV.PEOPLE": "Personnel",
+  "NAV.SECTION_ADMINISTRATION": "Administration",
+  "NAV.SECTION_COMMERCIAL": "Commercial",
+  "NAV.SECTION_INDUSTRY": "Modules sectoriels",
+  "NAV.SECTION_OPERATIONS": "Opérations",
+  "NAV.SECTION_SYSTEM": "Système",
   "NAV.SYSTEM": "Système & Sauvegardes",
   "NAV.SETTINGS": "Paramètres & Mandants",
   "NAV.STOCK": "Stocks & Articles",

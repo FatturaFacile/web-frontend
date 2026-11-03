@@ -22,13 +22,14 @@ import {
 } from '@shared';
 import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 
-const STATUS_CONFIG: Record<ExpenseStatus, { label: string; color: string }> = {
-  draft: { label: 'Bozza', color: 'default' },
-  pending_approval: { label: 'In Approvazione', color: 'processing' },
-  approved: { label: 'Approvata', color: 'success' },
-  rejected: { label: 'Rifiutata', color: 'error' },
-  reimbursed: { label: 'Rimborsata', color: 'cyan' },
-  paid: { label: 'Pagata', color: 'green' },
+// Labels come from the expenses.statuses.* translations
+const STATUS_COLOR: Record<ExpenseStatus, string> = {
+  draft: 'default',
+  pending_approval: 'processing',
+  approved: 'success',
+  rejected: 'error',
+  reimbursed: 'cyan',
+  paid: 'green',
 };
 
 @Component({
@@ -66,6 +67,14 @@ export class ExpensesComponent implements OnInit {
   protected readonly selectedExpense = signal<ExpenseResource | null>(null);
   protected readonly isExporting = signal(false);
 
+  protected readonly filterStatuses: readonly ExpenseStatus[] = [
+    'draft',
+    'pending_approval',
+    'approved',
+    'reimbursed',
+    'paid',
+  ];
+
   protected readonly totalAmount = computed(() => {
     return this.items().reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   });
@@ -87,31 +96,31 @@ export class ExpensesComponent implements OnInit {
   readonly columns = computed<TableColumnDef<ExpenseResource>[]>(() => [
     {
       key: 'date',
-      header: 'Data',
+      header: 'expenses.columns.date',
       width: '120px',
       sortable: true,
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'description',
-      header: 'Descrizione / Causale',
+      header: 'expenses.columns.description',
       width: '280px',
       sortable: true,
     },
     {
       key: 'merchant',
-      header: 'Esercente / Fornitore',
+      header: 'expenses.columns.merchant',
       width: '180px',
       customCellTemplate: this.merchantTpl(),
     },
     {
       key: 'category_name',
-      header: 'Categoria',
+      header: 'expenses.columns.category',
       width: '150px',
     },
     {
       key: 'amount',
-      header: 'Importo',
+      header: 'expenses.columns.amount',
       width: '140px',
       align: 'right',
       sortable: true,
@@ -119,7 +128,7 @@ export class ExpensesComponent implements OnInit {
     },
     {
       key: 'status',
-      header: 'Stato',
+      header: 'expenses.columns.status',
       width: '140px',
       customCellTemplate: this.statusTpl(),
     },
@@ -246,11 +255,7 @@ export class ExpensesComponent implements OnInit {
     });
   }
 
-  getStatusConfig(status: ExpenseStatus) {
-    const config = STATUS_CONFIG[status];
-    return {
-      label: this.translate.instant('expenses.statuses.' + status) || (config ? config.label : status),
-      color: config ? config.color : 'default',
-    };
+  statusColor(status: ExpenseStatus): string {
+    return STATUS_COLOR[status] ?? 'default';
   }
 }

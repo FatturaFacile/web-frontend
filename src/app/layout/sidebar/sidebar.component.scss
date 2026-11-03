@@ -67,6 +67,25 @@
   text-decoration: none;
 }
 
+.menu-section-title {
+  padding: 16px 24px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  list-style: none;
+}
+
+.menu-section-divider {
+  margin: 8px 16px;
+  border-top: 1px solid var(--sidebar-border, #1e293b);
+  list-style: none;
+}
+
 .submenu-title-wrapper {
   display: flex;
   align-items: center;
