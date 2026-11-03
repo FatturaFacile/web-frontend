@@ -128,9 +128,13 @@ export class I18nService {
       );
 
       // Supporta sia l'oggetto { translations: { ... } } sia la mappa chiave-valore piatta
-      const dict = (res as ApiResponseTranslations).translations ?? (res as TranslationDictionary) ?? {};
+      let dict = (res as ApiResponseTranslations).translations ?? {};
+      // se arrivano vuote prendiamo dal fallback
+      if (Object.keys(dict).length === 0) {
+        dict = await this.loadFallbackDictionary(lang);
+      }
       this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
-      return dict;
+      return dict
     } catch (error) {
       console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
       return this.loadFallbackDictionary(lang);

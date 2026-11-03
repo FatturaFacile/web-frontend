@@ -32,6 +32,8 @@
   "NAV.TIME_ATTENDANCE": "Zeiterfassung & Stempelkarte",
   "NAV.HR": "Lohnabrechnung & HR IT-CH",
   "NAV.ACCOUNTING": "Buchhaltung & Steuern",
+  "NAV.ALERTS": "Warnungen & Benachrichtigungen",
+  "NAV.SYSTEM": "System",
   "NAV.SETTINGS": "Einstellungen & Mandanten",
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Menü erweitern",
   "HEADER.TOGGLE_SIDEBAR_COLLAPSE": "Menü einklappen",
@@ -442,5 +444,66 @@
   "AUTH.PASSWORD_MIN": "Das Passwort muss mindestens 6 Zeichen lang sein",
   "AUTH.SHOW_PASSWORD": "Passwort anzeigen",
   "AUTH.HIDE_PASSWORD": "Passwort verbergen",
-  "AUTH.INVALID_CREDENTIALS": "Ungültige Anmeldedaten"
+  "AUTH.INVALID_CREDENTIALS": "Ungültige Anmeldedaten",
+  "treasury": {
+    "actions": {
+      "autoReconcile": "Automatischer Abgleich",
+      "reconcile": "Abgleichen"
+    },
+    "columns": {
+      "valueDate": "Valutadatum",
+      "description": "Buchungstext",
+      "counterparty": "Gegenpartei / Referenz",
+      "amount": "Betrag",
+      "category": "Kategorie",
+      "status": "Status",
+      "bankName": "Bank",
+      "bankDetails": "IBAN / Bankverbindung",
+      "currency": "Währung",
+      "availableBalance": "Verfügbarer Saldo",
+      "statementDate": "Auszugsdatum",
+      "iban": "IBAN",
+      "format": "Format",
+      "closingBalance": "Schlusssaldo",
+      "reconciliationStatus": "Abgleichstatus"
+    },
+    "modalFormats": {
+      "camt": "CAMT.053 XML (Schweiz / SEPA)",
+      "cbi": "CBI-Kontoauszug (Italien)"
+    },
+    "reconciled": {
+      "yes": "ABGEGLICHEN",
+      "no": "ABZUGLEICHEN"
+    },
+    "statementStatus": {
+      "imported": "IMPORTIERT",
+      "reconciled": "ABGEGLICHEN",
+      "partially_reconciled": "TEILWEISE ABGEGLICHEN"
+    },
+    "messages": {
+      "camtSuccess": "CAMT-Datei erfolgreich importiert.",
+      "cbiSuccess": "CBI-Datei erfolgreich importiert.",
+      "reconciliationSuccess": "Automatischer Abgleich abgeschlossen.",
+      "selectFile": "Bitte wählen Sie zuerst eine Datei aus.",
+      "statementReconciled": "Kontoauszug {iban} abgeglichen.",
+      "statementReconciledSuccess": "Kontoauszug erfolgreich abgeglichen."
+    },
+    "modal": {
+      "description": "Wählen Sie das Format der zu importierenden Kontoauszugsdatei:",
+      "title": "Bankdatei CAMT.053 / CBI importieren"
+    },
+    "searchPlaceholder": "Beschreibung oder Gegenpartei suchen...",
+    "stats": {
+      "chfLiquidity": "Gesamtliquidität CHF",
+      "eurLiquidity": "Gesamtliquidität EUR",
+      "toReconcile": "Abzugleichende Transaktionen"
+    },
+    "subtitle": "Mehrwährungskonten (EUR/CHF), Import von CAMT.053/CBI-Auszügen und automatischer Abgleich",
+    "tabs": {
+      "bankAccounts": "Bankkonten",
+      "bankMovements": "Kontobewegungen",
+      "statements": "Importierte Kontoauszüge"
+    },
+    "title": "Finanzen & Bankabgleich"
+  }
 }

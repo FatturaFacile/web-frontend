@@ -42,6 +42,16 @@ describe('I18nService', () => {
     await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('Dashboard locale'));
   });
 
+  it('falls back to the bundled dictionary when the translations call returns no translations', async () => {
+    httpTesting
+      .expectOne((req) => req.url.endsWith('/translations/it'))
+      .flush({ locale: 'it', translations: {} });
+
+    await vi.waitFor(() => httpTesting.expectOne('/assets/i18n/it.json').flush({ 'NAV.DASHBOARD': 'Dashboard locale' }));
+
+    await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('Dashboard locale'));
+  });
+
   it('resolves hierarchical dot-notation keys and supports instant() with params', async () => {
     httpTesting.expectOne((req) => req.url.endsWith('/translations/it')).flush({
       locale: 'it',
