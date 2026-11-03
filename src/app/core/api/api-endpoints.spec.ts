@@ -27,11 +27,14 @@ describe('API endpoints', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  /** I18nService loads the initial dictionaries as soon as it is created. */
+  /**
+   * I18nService loads the initial dictionaries as soon as it is created. They are answered with a non-empty
+   * dictionary, otherwise the service would also request the bundled /assets/i18n fallback.
+   */
   const flushInitialTranslations = () =>
     httpTesting
       .match((r) => r.url.startsWith(`${base}/translations/`))
-      .forEach((r) => r.flush({ translations: {} }));
+      .forEach((r) => r.flush({ translations: { 'NAV.DASHBOARD': 'Dashboard' } }));
 
   afterEach(() => {
     httpTesting.verify();

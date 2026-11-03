@@ -32,6 +32,8 @@
   "NAV.TIME_ATTENDANCE": "Présence & Pointage",
   "NAV.HR": "Paie & RH IT-CH",
   "NAV.ACCOUNTING": "Comptabilité & Fiscalité",
+  "NAV.ALERTS": "Alertes & Notifications",
+  "NAV.SYSTEM": "Système",
   "NAV.SETTINGS": "Paramètres & Mandants",
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Développer le menu",
   "HEADER.TOGGLE_SIDEBAR_COLLAPSE": "Réduire le menu",
@@ -442,5 +444,66 @@
   "AUTH.PASSWORD_MIN": "Le mot de passe doit contenir au moins 6 caractères",
   "AUTH.SHOW_PASSWORD": "Afficher le mot de passe",
   "AUTH.HIDE_PASSWORD": "Masquer le mot de passe",
-  "AUTH.INVALID_CREDENTIALS": "Identifiants invalides"
+  "AUTH.INVALID_CREDENTIALS": "Identifiants invalides",
+  "treasury": {
+    "actions": {
+      "autoReconcile": "Rapprochement automatique",
+      "reconcile": "Rapprocher"
+    },
+    "columns": {
+      "valueDate": "Date de valeur",
+      "description": "Libellé du mouvement",
+      "counterparty": "Contrepartie / Référence",
+      "amount": "Montant",
+      "category": "Catégorie",
+      "status": "Statut",
+      "bankName": "Banque",
+      "bankDetails": "IBAN / Coordonnées bancaires",
+      "currency": "Devise",
+      "availableBalance": "Solde disponible",
+      "statementDate": "Date du relevé",
+      "iban": "IBAN",
+      "format": "Format",
+      "closingBalance": "Solde final",
+      "reconciliationStatus": "Statut du rapprochement"
+    },
+    "modalFormats": {
+      "camt": "CAMT.053 XML (Suisse / SEPA)",
+      "cbi": "Relevé CBI (Italie)"
+    },
+    "reconciled": {
+      "yes": "RAPPROCHÉ",
+      "no": "À RAPPROCHER"
+    },
+    "statementStatus": {
+      "imported": "IMPORTÉ",
+      "reconciled": "RAPPROCHÉ",
+      "partially_reconciled": "PARTIELLEMENT RAPPROCHÉ"
+    },
+    "messages": {
+      "camtSuccess": "Fichier CAMT importé avec succès.",
+      "cbiSuccess": "Fichier CBI importé avec succès.",
+      "reconciliationSuccess": "Rapprochement automatique terminé.",
+      "selectFile": "Veuillez d'abord sélectionner un fichier.",
+      "statementReconciled": "Relevé {iban} rapproché.",
+      "statementReconciledSuccess": "Relevé rapproché avec succès."
+    },
+    "modal": {
+      "description": "Sélectionnez le format du relevé bancaire à importer :",
+      "title": "Importer un fichier bancaire CAMT.053 / CBI"
+    },
+    "searchPlaceholder": "Rechercher un libellé ou une contrepartie...",
+    "stats": {
+      "chfLiquidity": "Liquidités totales CHF",
+      "eurLiquidity": "Liquidités totales EUR",
+      "toReconcile": "Transactions à rapprocher"
+    },
+    "subtitle": "Comptes multi-devises (EUR/CHF), import de relevés CAMT.053/CBI et rapprochement automatique",
+    "tabs": {
+      "bankAccounts": "Comptes bancaires",
+      "bankMovements": "Mouvements bancaires",
+      "statements": "Relevés importés"
+    },
+    "title": "Trésorerie & Rapprochement bancaire"
+  }
 }
