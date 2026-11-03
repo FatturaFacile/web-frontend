@@ -55,12 +55,6 @@
                   "maximumError": "8kB"
                 }
               ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.production.ts"
-                }
-              ],
               "outputHashing": "all",
               "serviceWorker": "ngsw-config.json",
               "sourceMap": {
@@ -84,12 +78,6 @@
                   "maximumError": "8kB"
                 }
               ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.ts"
-                }
-              ],
               "outputHashing": "all",
               "sourceMap": {
                 "scripts": true,
@@ -102,13 +90,7 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ]
+              "sourceMap": true
             },
             "github-pages": {
               "outputHashing": "all",
@@ -117,13 +99,7 @@
             "local": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.local.ts"
-                }
-              ]
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -141,11 +117,11 @@
             },
             "development": {
               "buildTarget": "fatturafacile:build:development",
-              "proxyConfig": "proxy.conf.json"
+              "proxyConfig": "proxy.conf.mjs"
             },
             "local": {
               "buildTarget": "fatturafacile:build:local",
-              "proxyConfig": "proxy.conf.json"
+              "proxyConfig": "proxy.conf.mjs"
             }
           },
           "defaultConfiguration": "development"

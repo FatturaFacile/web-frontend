@@ -14,9 +14,9 @@
 
 ## Build, test, and lint
 
-- `pnpm start` runs the HTTPS development server with the development environment.
-- `pnpm run start:local` runs the `local` Angular configuration and proxy; check `proxy.conf.json` and `src/environments/environment.local.ts` for the current targets.
-- `pnpm run build` builds the production configuration by default. CI uses `pnpm run build --configuration production`.
+- `pnpm start` runs the HTTPS development server with the `development` configuration; `pnpm run start:local` uses the `local` configuration. Both proxy `/api` and `/sanctum` through `proxy.conf.mjs` to `API_PROXY_TARGET`.
+- `pnpm run build` builds the production configuration by default. CI uses `pnpm run build --configuration production`; `deploy-dev.yml` builds `dev` and `deploy.yml` builds `production,demo`.
+- `start`, `start:local`, `build` and `watch` run through `scripts/ng-env.mjs`, which reads `API_BASE_URL`, `API_PROXY_TARGET` and `DEMO_MODE` from the environment, `.env` or `env/<configuration>.env` and injects them with `--define`.
 - `pnpm run lint` runs ESLint across the repository.
 - `pnpm test` runs the Vitest suite once. To run one spec, use `pnpm exec vitest run src/app/features/sales/state/qr-bill.store.spec.ts`; add `-t "test name"` to select a test by name.
 - `pnpm test:ci` runs tests with coverage. `pnpm run format:check` checks Prettier formatting.
@@ -28,7 +28,7 @@
 - `src/app/layout/` contains the shared authenticated application shell. `src/app/core/` holds app-wide concerns such as auth, API services, interceptors, configuration, i18n, and global state. `src/app/shared/` contains reusable UI and presentation helpers.
 - The order, QR-Bill, and time-attendance slices demonstrate the layered data flow: domain models and repository tokens/contracts in `domain/`, wire DTOs, mappers, and HTTP repository implementations in `data-access/`, and feature SignalStores consuming repository contracts. Other features may use the existing `core/api` services or feature facades; follow the pattern already used in the area being changed rather than imposing a repository refactor across the app.
 - Feature stores use NgRx SignalStore (`withState`, `withComputed`, `withMethods`); async repository work commonly uses `rxMethod`. Keep DTO/API shapes at the data boundary and use domain models in stores and UI where that slice already follows this pattern.
-- API base URLs and the `demoMode` flag come from the selected environment file; all checked-in environments currently set `demoMode` to `false`. Check the file replacement in `angular.json` before changing environment-specific behavior.
+- `src/environments/environment.ts` is the only environment file: `apiBaseUrl` and `demoMode` are injected at build time from `env/<configuration>.env` (see README "Environment Configuration"). Never hardcode an API host in source or specs; specs use `TEST_API_ORIGIN` / `TEST_API_BASE_URL` from `src/testing/api.ts`.
 
 ## Repository conventions
 

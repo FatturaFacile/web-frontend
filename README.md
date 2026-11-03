@@ -101,7 +101,48 @@ When running in **Demo Mode**, the application operates 100% autonomously withou
 npm start
 ```
 
-Starts the local dev server at `https://localhost:4200/` with demo mode enabled.
+Starts the local dev server at `https://localhost:4200/`. `/api` and `/sanctum` are proxied to the shared dev
+API (`https://dev-api.fatturafacile.eu`, set in `env/development.env`).
+
+### Environment Configuration
+
+The API endpoint is never hardcoded in the source: it is read from environment variables and injected at build
+time. `npm start`, `npm run start:local`, `npm run build` and `npm run watch` go through
+[`scripts/ng-env.mjs`](scripts/ng-env.mjs), which resolves the variables and passes them to the Angular CLI
+(`--define`) and to the dev-server proxy ([`proxy.conf.mjs`](proxy.conf.mjs)).
+
+| Variable           | Required                         | Description                                                                                          |
+|--------------------|----------------------------------|------------------------------------------------------------------------------------------------------|
+| `API_BASE_URL`     | yes                              | API base URL used by the app: a same-origin path (`/api/v1`) or an absolute URL.                      |
+| `API_PROXY_TARGET` | with `npm start` and a path URL  | Backend that the dev server proxies `/api` and `/sanctum` to.                                         |
+| `DEMO_MODE`        | no (default `false`)             | `true` pre-fills the login form with the demo account credentials.                                   |
+
+Values are resolved in this order, the first one found wins:
+
+1. **Shell / CI environment variables**, e.g. `API_BASE_URL=https://api.example.com/api/v1 npm run build`.
+2. **`.env`** in the project root: personal overrides, git-ignored. Start from [`.env.example`](.env.example).
+3. **`env/<configuration>.env`**: committed defaults for each Angular configuration. With several configurations
+   (`--configuration production,demo`) the files are applied in order, later ones overriding earlier ones.
+
+| Environment | Command                                         | Env file(s)                              | API                                               |
+|-------------|-------------------------------------------------|------------------------------------------|---------------------------------------------------|
+| development | `npm start`                                     | `env/development.env`                    | `/api/v1`, proxied to `https://dev-api.fatturafacile.eu` |
+| local       | `npm run start:local`                           | `env/local.env`                          | `/api/v1`, proxied to `http://localhost:8000`     |
+| dev         | `npm run build -- --configuration dev`          | `env/dev.env`                            | `/api/v1`, served on the same origin by nginx on dev.fatturafacile.eu |
+| demo        | `npm run build -- --configuration production,demo` | `env/production.env`, `env/demo.env` | `https://api.fatturafacile.eu/api/v1`             |
+| production  | `npm run build`                                 | `env/production.env`                     | `https://api.fatturafacile.eu/api/v1`             |
+
+The CI workflows use the same commands: `deploy-dev.yml` builds `dev` on every push to `dev`, `deploy.yml` builds
+`production,demo` for GitHub Pages. To point an environment to another API, change its `env/<configuration>.env`
+(or set the variable in the workflow); no source change is needed.
+
+Sanctum cookie authentication needs the browser to read the `XSRF-TOKEN` cookie, so a relative `/api/v1` served on
+the frontend origin (proxy or nginx) is preferred. With an absolute URL, the API must share the frontend's site and
+set `SESSION_DOMAIN` so the cookie is visible to the frontend host.
+
+Running `ng serve` / `ng build` directly skips the wrapper: the app falls back to `/api/v1` and the dev-server proxy
+refuses to start without `API_PROXY_TARGET`. Vitest uses the same fallback; specs set `environment.apiBaseUrl` to the
+fictitious host in `src/testing/api.ts`.
 
 ### Local HTTPS Certificates
 
@@ -124,8 +165,9 @@ npm run start:local
 ```
 
 Starts the dev server with demo mode off. `/api` and `/sanctum` are proxied to `http://localhost:8000`
-(`proxy.conf.json`), so requests stay same-origin and Sanctum cookie authentication works with the backend's
-default `SANCTUM_STATEFUL_DOMAINS` (`localhost:4200`).
+(`API_PROXY_TARGET` in `env/local.env`, override it in `.env` if your backend runs elsewhere), so requests stay
+same-origin and Sanctum cookie authentication works with the backend's default `SANCTUM_STATEFUL_DOMAINS`
+(`localhost:4200`).
 
 ### Run Unit Tests (Vitest)
 
@@ -141,4 +183,6 @@ Executes all 24 unit tests across mappers, repositories, SignalStores, and compo
 npm run build
 ```
 
-Generates optimized and code-split production bundles in `dist/fatturafacile` with zero warnings.
+Generates optimized and code-split production bundles in `dist/fatturafacile` with zero warnings, using the
+production API from `env/production.env` (see [Environment Configuration](#environment-configuration) for the other
+environments).
