@@ -87,6 +87,7 @@
               "optimization": true,
               "extractLicenses": true
             },
+            "demo": {},
             "development": {
               "optimization": false,
               "extractLicenses": false,
