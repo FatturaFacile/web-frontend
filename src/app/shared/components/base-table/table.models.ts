@@ -4,6 +4,7 @@ export type SortOrder = 'ascend' | 'descend' | null;
 
 export interface TableColumnDef<TItem = unknown> {
   key: keyof TItem | string;
+  /** Translation key (rendered through the translate pipe) or plain text */
   header: string;
   width?: string;
   sortable?: boolean;
