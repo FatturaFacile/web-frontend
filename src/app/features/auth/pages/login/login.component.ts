@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -12,13 +12,17 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import {
   applyServerErrors,
+  AUTH_PROBLEM,
   AuthApiService,
+  authProblemOf,
   AuthStore,
   I18nService,
   isValidationError,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
+import { LanguageSelectorComponent } from '../../components/language-selector.component';
+import { ResendVerificationComponent } from '../../components/resend-verification.component';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
 
@@ -29,6 +33,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
   selector: 'app-login',
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     NzCardModule,
     NzFormModule,
     NzInputModule,
@@ -36,6 +41,8 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzCheckboxModule,
     NzAlertModule,
     NzIconModule,
+    LanguageSelectorComponent,
+    ResendVerificationComponent,
     TranslatePipe,
   ],
   templateUrl: './login.component.html',
@@ -53,6 +60,7 @@ export class LoginComponent {
   protected readonly isSubmitting = signal(false);
   protected readonly passwordVisible = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly needsVerification = signal(false);
 
   protected readonly loginForm = this.fb.group({
     email: this.fb.control(environment.demoMode ? DEMO_CREDENTIALS.email : '', [
@@ -73,6 +81,7 @@ export class LoginComponent {
     }
     const { email, password, remember } = this.loginForm.getRawValue();
     this.errorMessage.set(null);
+    this.needsVerification.set(false);
     this.isSubmitting.set(true);
 
     this.authApi.login({ email, password, remember: remember ?? false, tenant_id: '' }).subscribe({
@@ -122,12 +131,34 @@ export class LoginComponent {
       this.errorMessage.set(apiMessage ?? this.i18n.translate('AUTH.INVALID_CREDENTIALS'));
       return;
     }
+    if (err instanceof HttpErrorResponse && err.status === 403) {
+      this.errorMessage.set(this.forbiddenMessage(err));
+      return;
+    }
     // Other failures (network, 5xx) are already toasted by the error interceptor.
     this.message.error(
       this.i18n.translate('ERRORS.GENERIC', {
         status: err instanceof HttpErrorResponse ? err.status : 0,
       }),
     );
+  }
+
+  private forbiddenMessage(err: HttpErrorResponse): string {
+    switch (authProblemOf(err)) {
+      case AUTH_PROBLEM.EmailNotVerified:
+        this.needsVerification.set(true);
+        return this.i18n.translate('AUTH.EMAIL_NOT_VERIFIED');
+      case AUTH_PROBLEM.TenantApprovalPending:
+        return this.i18n.translate('AUTH.APPROVAL_PENDING');
+      case AUTH_PROBLEM.TenantAccessRejected:
+        return this.i18n.translate('AUTH.ACCESS_REJECTED');
+      default: {
+        const body = err.error as { detail?: unknown } | null;
+        return typeof body?.detail === 'string'
+          ? body.detail
+          : this.i18n.translate('ERRORS.GENERIC', { status: err.status });
+      }
+    }
   }
 
   /** `returnUrl` is honoured only for same-app relative paths (open-redirect guard). */

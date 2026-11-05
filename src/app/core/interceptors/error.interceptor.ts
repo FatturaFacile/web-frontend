@@ -10,7 +10,8 @@ import { I18nService } from '../i18n';
  * Surfaces system errors as toasts. HTTP 422 (Laravel validation) is passed
  * downstream untouched so forms can bind field errors. A 401 on any protected
  * API request ends the session and navigates to login.
- * Auth verification endpoints (/auth/login, /auth/profile, /sanctum/...) manage their own errors.
+ * Auth endpoints (/auth/login, /auth/profile, registration and email verification, /sanctum/...) manage
+ * their own errors.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   // I18nService issues HTTP requests from its constructor, so it (and AuthStore, which
@@ -26,6 +27,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         const isAuthCheck =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
+          req.url.endsWith('/auth/register') ||
+          req.url.endsWith('/auth/verify-email') ||
+          req.url.endsWith('/auth/resend-verification-email') ||
           req.url.includes('/sanctum/');
 
         const body: unknown = err.error;

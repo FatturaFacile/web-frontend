@@ -117,4 +117,44 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.body).toEqual({ tenant_id: 't-ch-02' });
     req.flush({ success: true, message: 'Switched', data: null });
   });
+
+  it('should request the CSRF cookie before POST /auth/register', () => {
+    service.register({
+      first_name: 'Giulia',
+      last_name: 'Bianchi',
+      email: 'giulia@example.com',
+      password: 'Str0ng!Passw0rd',
+      password_confirmation: 'Str0ng!Passw0rd',
+      company_name: 'Bianchi Srl',
+      country: 'IT',
+      tax_id: '12345678901',
+      terms_accepted: true,
+      privacy_accepted: true,
+    }).subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/register`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.tax_id).toBe('12345678901');
+    req.flush({ success: true });
+  });
+
+  it('should send the token of the link to GET /auth/verify-email', () => {
+    service.verifyEmail('abc.def').subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/verify-email?token=abc.def`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true });
+  });
+
+  it('should request the CSRF cookie before POST /auth/resend-verification-email', () => {
+    service.resendVerificationEmail('giulia@example.com').subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/resend-verification-email`);
+    expect(req.request.body).toEqual({ email: 'giulia@example.com' });
+    req.flush({ success: true });
+  });
 });

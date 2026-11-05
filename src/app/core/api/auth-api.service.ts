@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable, switchMap } from 'rxjs';
@@ -20,6 +20,36 @@ export interface LoginResult {
   access_token?: string;
   token_type?: string;
   tenant_id?: string;
+}
+
+export interface RegisterPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  company_name: string;
+  country: 'IT' | 'CH';
+  tax_id: string;
+  terms_accepted: boolean;
+  privacy_accepted: boolean;
+}
+
+/** RFC 7807 `type` of the authentication problems that need their own message. */
+export const AUTH_PROBLEM = {
+  EmailNotVerified: 'urn:fatturafacile:problem:email-not-verified',
+  TenantApprovalPending: 'urn:fatturafacile:problem:tenant-approval-pending',
+  TenantAccessRejected: 'urn:fatturafacile:problem:tenant-access-rejected',
+  VerificationTokenInvalid: 'urn:fatturafacile:problem:verification-token-invalid',
+  VerificationTokenExpired: 'urn:fatturafacile:problem:verification-token-expired',
+} as const;
+
+export function authProblemOf(err: unknown): string | null {
+  if (err instanceof HttpErrorResponse && typeof err.error === 'object' && err.error !== null) {
+    const type = (err.error as { type?: unknown }).type;
+    return typeof type === 'string' ? type : null;
+  }
+  return null;
 }
 
 export interface SwitchTenantPayload {
@@ -64,6 +94,37 @@ export class AuthApiService {
           { withCredentials: true }
         )
       )
+    );
+  }
+
+  /** Creates an account. The answer is the same whether or not the address is already known. */
+  register(payload: RegisterPayload): Observable<ApiResponse<unknown>> {
+    return this.getCsrfCookie().pipe(
+      switchMap(() =>
+        this.http.post<ApiResponse<unknown>>(`${this.base}/auth/register`, payload, {
+          withCredentials: true,
+        }),
+      ),
+    );
+  }
+
+  /** Consumes the single-use token of a verification link. */
+  verifyEmail(token: string): Observable<ApiResponse<unknown>> {
+    return this.http.get<ApiResponse<unknown>>(`${this.base}/auth/verify-email`, {
+      params: { token },
+    });
+  }
+
+  /** Requests a new verification link, invalidating the previous one. */
+  resendVerificationEmail(email: string): Observable<ApiResponse<unknown>> {
+    return this.getCsrfCookie().pipe(
+      switchMap(() =>
+        this.http.post<ApiResponse<unknown>>(
+          `${this.base}/auth/resend-verification-email`,
+          { email },
+          { withCredentials: true },
+        ),
+      ),
     );
   }
 

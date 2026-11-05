@@ -1,6 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { I18nService, SupportedLanguage } from '../i18n';
+import { I18nService, resolveInitialLanguage, SupportedLanguage } from '../i18n';
 
 export interface Tenant {
   readonly id: string;
@@ -76,16 +76,6 @@ function getInitialTheme(): 'light' | 'dark' {
   return 'light';
 }
 
-function getInitialLocale(): SupportedLanguage {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const saved = localStorage.getItem('lang') || localStorage.getItem('ff_lang');
-    if (saved === 'en' || saved === 'it' || saved === 'de' || saved === 'fr') {
-      return saved;
-    }
-  }
-  return 'en';
-}
-
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
@@ -93,7 +83,7 @@ const initialState: AuthState = {
   activeTenantId: 't-it-01',
   activeJurisdiction: 'IT',
   activeCurrency: 'EUR',
-  activeLocale: getInitialLocale(),
+  activeLocale: resolveInitialLanguage(),
   theme: getInitialTheme(),
 };
 
