@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthApiService, LoginPayload } from './auth-api.service';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
+import { TEST_PASSWORD } from '../../../testing/credentials';
 
 describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   let service: AuthApiService;
@@ -38,8 +39,8 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
 
   it('should execute getCsrfCookie before POST /auth/login during login()', () => {
     const payload: LoginPayload = {
-      email: 'm.rossi@rossiimpianti.it',
-      password: 'password123',
+      email: 'm.rossi@example.com',
+      password: TEST_PASSWORD,
       remember: true,
     };
 
@@ -67,7 +68,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
         user: {
           id: 'usr-001',
           name: 'Marco Rossi',
-          email: 'm.rossi@rossiimpianti.it',
+          email: 'm.rossi@example.com',
           avatar: '',
           role: 'Admin',
           roles: ['ADMIN'],
@@ -100,7 +101,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
       data: {
         id: 'usr-001',
         name: 'Marco Rossi',
-        email: 'm.rossi@rossiimpianti.it',
+        email: 'm.rossi@example.com',
         avatar: '',
         role: 'Admin',
         roles: ['ADMIN'],
@@ -116,5 +117,45 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.body).toEqual({ tenant_id: 't-ch-02' });
     req.flush({ success: true, message: 'Switched', data: null });
+  });
+
+  it('should request the CSRF cookie before POST /auth/register', () => {
+    service.register({
+      first_name: 'Giulia',
+      last_name: 'Bianchi',
+      email: 'giuliabianchitest@example.com',
+      password: TEST_PASSWORD,
+      password_confirmation: TEST_PASSWORD,
+      company_name: 'Bianchi Srl',
+      country: 'IT',
+      tax_id: '12345678901',
+      terms_accepted: true,
+      privacy_accepted: true,
+    }).subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/register`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.tax_id).toBe('12345678901');
+    req.flush({ success: true });
+  });
+
+  it('should send the token of the link to GET /auth/verify-email', () => {
+    service.verifyEmail('abc.def').subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/verify-email?token=abc.def`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true });
+  });
+
+  it('should request the CSRF cookie before POST /auth/resend-verification-email', () => {
+    service.resendVerificationEmail('giuliabianchitest@example.com').subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/resend-verification-email`);
+    expect(req.request.body).toEqual({ email: 'giuliabianchitest@example.com' });
+    req.flush({ success: true });
   });
 });
