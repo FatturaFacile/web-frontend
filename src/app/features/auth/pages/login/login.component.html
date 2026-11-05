@@ -1,5 +1,7 @@
 <main class="login-wrapper">
   <div class="login-box">
+    <app-language-selector />
+
     <header class="login-header text-center">
       <h1>Fattura <span class="facile-color">Facile</span></h1>
       <p class="subtitle">{{ "AUTH.SUBTITLE" | translate }}</p>
@@ -8,6 +10,9 @@
     <nz-card [nzBordered]="false" class="login-card">
       @if (errorMessage(); as message) {
         <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" />
+      }
+      @if (needsVerification()) {
+        <app-resend-verification [email]="loginForm.controls.email.value" />
       }
 
       <form nz-form nzLayout="vertical" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
@@ -104,6 +109,11 @@
           {{ "AUTH.SUBMIT_BTN" | translate }}
         </button>
       </form>
+
+      <p class="register-link">
+        {{ "AUTH.NO_ACCOUNT" | translate }}
+        <a routerLink="/register">{{ "AUTH.REGISTER_LINK" | translate }}</a>
+      </p>
     </nz-card>
   </div>
 </main>

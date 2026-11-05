@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideHttpClient } from '@angular/common/http';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthService } from './auth.service';
+import { TEST_PASSWORD } from '../../../testing/credentials';
 
 describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', () => {
   let service: AuthService;
@@ -27,7 +28,7 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
   });
 
   it('login() should first GET /sanctum/csrf-cookie and then POST /login with credentials', () => {
-    const credentials = { email: 'user@example.com', password: 'secretpassword' };
+    const credentials = { email: 'user@example.com', password: TEST_PASSWORD };
     let responseData: unknown = null;
 
     service.login(credentials).subscribe((data) => {

@@ -3,17 +3,12 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { en_US, it_IT, de_DE, fr_FR, NzI18nService } from 'ng-zorro-antd/i18n';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
-import { SupportedLanguage, SUPPORTED_LANGUAGES, TranslationDictionary } from './i18n.types';
-
-function getInitialLanguage(): SupportedLanguage {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const saved = localStorage.getItem('lang') || localStorage.getItem('ff_lang');
-    if (saved === 'en' || saved === 'it' || saved === 'de' || saved === 'fr') {
-      return saved;
-    }
-  }
-  return 'en';
-}
+import {
+  resolveInitialLanguage,
+  SupportedLanguage,
+  SUPPORTED_LANGUAGES,
+  TranslationDictionary,
+} from './i18n.types';
 
 function getInitialTenantId(): string {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -57,7 +52,7 @@ export class I18nService {
   private readonly apiUrl = environment.apiBaseUrl; // URL base del backend Laravel (versionata)
 
   readonly languages = SUPPORTED_LANGUAGES;
-  readonly currentLanguage = signal<SupportedLanguage>(getInitialLanguage());
+  readonly currentLanguage = signal<SupportedLanguage>(resolveInitialLanguage());
   readonly currentTenantId = signal<string>(getInitialTenantId());
 
   // Cache in memoria dei dizionari per lingua

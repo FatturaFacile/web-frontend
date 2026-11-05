@@ -52,6 +52,8 @@ function loadEnv(names) {
     'API_BASE_URL',
     'API_PROXY_TARGET',
     'DEMO_MODE',
+    'TERMS_URL',
+    'PRIVACY_URL',
   ])) {
     if (process.env[key]) {
       merged[key] = process.env[key];
@@ -108,6 +110,10 @@ const ngArgs = [
   `NG_APP_API_BASE_URL=${JSON.stringify(apiBaseUrl)}`,
   '--define',
   `NG_APP_DEMO_MODE=${demoMode}`,
+  '--define',
+  `NG_APP_TERMS_URL=${JSON.stringify(env.TERMS_URL ?? '')}`,
+  '--define',
+  `NG_APP_PRIVACY_URL=${JSON.stringify(env.PRIVACY_URL ?? '')}`,
 ];
 const result = spawnSync(process.execPath, ngArgs, {
   cwd: root,
