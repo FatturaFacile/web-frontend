@@ -38,8 +38,8 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
 
   it('should execute getCsrfCookie before POST /auth/login during login()', () => {
     const payload: LoginPayload = {
-      email: 'm.rossi@rossiimpianti.it',
-      password: 'password123',
+      email: 'm.rossi@example.com',
+      password: 'Str0ng!Passw0rd',
       remember: true,
     };
 
@@ -67,7 +67,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
         user: {
           id: 'usr-001',
           name: 'Marco Rossi',
-          email: 'm.rossi@rossiimpianti.it',
+          email: 'm.rossi@example.com',
           avatar: '',
           role: 'Admin',
           roles: ['ADMIN'],
@@ -100,7 +100,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
       data: {
         id: 'usr-001',
         name: 'Marco Rossi',
-        email: 'm.rossi@rossiimpianti.it',
+        email: 'm.rossi@example.com',
         avatar: '',
         role: 'Admin',
         roles: ['ADMIN'],
@@ -122,7 +122,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     service.register({
       first_name: 'Giulia',
       last_name: 'Bianchi',
-      email: 'giulia@example.com',
+      email: 'giuliabianchitest@example.com',
       password: 'Str0ng!Passw0rd',
       password_confirmation: 'Str0ng!Passw0rd',
       company_name: 'Bianchi Srl',
@@ -149,12 +149,12 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   });
 
   it('should request the CSRF cookie before POST /auth/resend-verification-email', () => {
-    service.resendVerificationEmail('giulia@example.com').subscribe();
+    service.resendVerificationEmail('giuliabianchitest@example.com').subscribe();
 
     httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
 
     const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/resend-verification-email`);
-    expect(req.request.body).toEqual({ email: 'giulia@example.com' });
+    expect(req.request.body).toEqual({ email: 'giuliabianchitest@example.com' });
     req.flush({ success: true });
   });
 });

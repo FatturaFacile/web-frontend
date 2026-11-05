@@ -10,7 +10,7 @@ import { passwordStrength, RegisterComponent } from './register.component';
 const VALID = {
   first_name: 'Giulia',
   last_name: 'Bianchi',
-  email: 'giulia@example.com',
+  email: 'giuliabianchitest@example.com',
   company_name: 'Bianchi Srl',
   country: 'IT' as const,
   tax_id: '12345678901',
@@ -58,7 +58,7 @@ describe('RegisterComponent', () => {
 
   it('rejects different passwords', () => {
     const component = create();
-    component['form'].setValue({ ...VALID, password_confirmation: 'Different!Passw0rd' });
+    component['form'].setValue({ ...VALID, password_confirmation: `${VALID.password}x` });
     expect(component['form'].controls.password_confirmation.hasError('mismatch')).toBe(true);
     component['onSubmit']();
     expect(register).not.toHaveBeenCalled();
@@ -66,7 +66,7 @@ describe('RegisterComponent', () => {
 
   it('accepts matching passwords after a mismatch', () => {
     const component = create();
-    component['form'].setValue({ ...VALID, password_confirmation: 'Different!Passw0rd' });
+    component['form'].setValue({ ...VALID, password_confirmation: `${VALID.password}x` });
     component['form'].controls.password_confirmation.setValue(VALID.password);
     expect(component['form'].valid).toBe(true);
   });

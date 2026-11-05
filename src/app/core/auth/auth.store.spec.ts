@@ -70,7 +70,7 @@ describe('AuthStore (Cookie-based session)', () => {
     const customUser = {
       id: 'usr-999',
       name: 'Custom Admin',
-      email: 'custom@admin.com',
+      email: 'custom@example.com',
       avatar: '',
       role: 'Superadmin',
       roles: ['SUPERADMIN'],
