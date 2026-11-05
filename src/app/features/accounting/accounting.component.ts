@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -27,7 +27,6 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     FormsModule,
     CurrencyPipe,
     DatePipe,
-    UpperCasePipe,
     NzTagModule,
     NzCardModule,
     NzButtonModule,
@@ -68,32 +67,32 @@ export class AccountingComponent implements OnInit {
   readonly ledgerColumns = computed<TableColumnDef<LedgerEntry>[]>(() => [
     {
       key: 'entry_number',
-      header: 'Numero Registrazione',
+      header: 'accounting.columns.entryNumber',
       width: '180px',
       sortable: true,
     },
     {
       key: 'date',
-      header: 'Data Contabile',
+      header: 'accounting.columns.date',
       width: '130px',
       sortable: true,
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'description',
-      header: 'Descrizione / Causale',
+      header: 'accounting.columns.description',
       width: '320px',
     },
     {
       key: 'total_debit',
-      header: 'Totale Dare',
+      header: 'accounting.columns.totalDebit',
       width: '140px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'total_credit',
-      header: 'Totale Avere',
+      header: 'accounting.columns.totalCredit',
       width: '140px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
@@ -103,25 +102,25 @@ export class AccountingComponent implements OnInit {
   readonly coaColumns = computed<TableColumnDef<ChartOfAccount>[]>(() => [
     {
       key: 'code',
-      header: 'Codice Conto',
+      header: 'accounting.columns.accountCode',
       width: '140px',
       sortable: true,
     },
     {
       key: 'name',
-      header: 'Denominazione Conto',
+      header: 'accounting.columns.accountName',
       width: '300px',
       sortable: true,
     },
     {
       key: 'type',
-      header: 'Tipologia',
+      header: 'accounting.columns.accountType',
       width: '140px',
       customCellTemplate: this.accountTypeTpl(),
     },
     {
       key: 'balance',
-      header: 'Saldo Attuale',
+      header: 'accounting.columns.currentBalance',
       width: '160px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
@@ -131,43 +130,43 @@ export class AccountingComponent implements OnInit {
   readonly vatColumns = computed<TableColumnDef<VatSettlement>[]>(() => [
     {
       key: 'period',
-      header: 'Periodo Fiscale',
+      header: 'accounting.columns.period',
       width: '140px',
     },
     {
       key: 'year',
-      header: 'Anno',
+      header: 'accounting.columns.year',
       width: '100px',
     },
     {
       key: 'jurisdiction',
-      header: 'Giurisdizione',
+      header: 'accounting.columns.jurisdiction',
       width: '120px',
     },
     {
       key: 'total_vat_collected',
-      header: 'IVA a Debito (Vendite)',
+      header: 'accounting.columns.vatCollected',
       width: '180px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'total_vat_paid',
-      header: 'IVA a Credito (Acquisti)',
+      header: 'accounting.columns.vatPaid',
       width: '180px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'balance',
-      header: 'Saldo IVA',
+      header: 'accounting.columns.vatBalance',
       width: '150px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'status',
-      header: 'Stato',
+      header: 'accounting.columns.status',
       width: '120px',
       customCellTemplate: this.vatStatusTpl(),
     },

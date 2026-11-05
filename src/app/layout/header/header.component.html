@@ -88,6 +88,18 @@
       <nz-option nzValue="fr" nzLabel="🇫🇷 FR" />
     </nz-select>
 
+    <!-- Alerts -->
+    <a
+      routerLink="/alerts"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      class="action-btn"
+      [title]="'NAV.ALERTS' | translate"
+      [attr.aria-label]="'NAV.ALERTS' | translate"
+    >
+      <i class="fa-solid fa-bell" aria-hidden="true"></i>
+    </a>
+
     <!-- Dark/Light Theme Toggle -->
     <button
       type="button"
