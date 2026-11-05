@@ -20,6 +20,32 @@ export const routes: Routes = [
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'register',
+    pathMatch: 'full',
+    canActivate: [guestGuard],
+    data: { title: 'Registrati a Fattura Facile' },
+    loadComponent: () =>
+      import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'register/check-email',
+    canActivate: [guestGuard],
+    data: { title: 'Controlla la tua email' },
+    loadComponent: () =>
+      import('./features/auth/pages/check-email/check-email.component').then(
+        (m) => m.CheckEmailComponent,
+      ),
+  },
+  {
+    path: 'verify-email',
+    canActivate: [guestGuard],
+    data: { title: 'Conferma email' },
+    loadComponent: () =>
+      import('./features/auth/pages/verify-email/verify-email.component').then(
+        (m) => m.VerifyEmailComponent,
+      ),
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     data: { breadcrumb: 'Dashboard', title: 'Dashboard Esecutiva' },

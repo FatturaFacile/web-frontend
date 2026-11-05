@@ -1,0 +1,161 @@
+<main class="login-wrapper">
+  <div class="login-box">
+    <app-language-selector />
+
+    <header class="login-header text-center">
+      <h1>Fattura <span class="facile-color">Facile</span></h1>
+      <p class="subtitle">{{ "AUTH.REGISTER_TITLE" | translate }}</p>
+    </header>
+
+    <nz-card [nzBordered]="false" class="login-card">
+      @if (errorMessage(); as message) {
+        <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" role="alert" />
+      }
+
+      <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="grid">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="first_name">{{ "AUTH.FIRST_NAME" | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="requiredError">
+              <input nz-input id="first_name" formControlName="first_name" autocomplete="given-name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="last_name">{{ "AUTH.LAST_NAME" | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="requiredError">
+              <input nz-input id="last_name" formControlName="last_name" autocomplete="family-name" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="email">{{ "AUTH.EMAIL" | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="emailError">
+            <input nz-input id="email" type="email" formControlName="email" autocomplete="email" />
+          </nz-form-control>
+          <ng-template #emailError let-control>
+            @if (control.hasError("serverError")) {
+              {{ control.getError("serverError") }}
+            } @else {
+              {{ "AUTH.EMAIL_ERROR" | translate }}
+            }
+          </ng-template>
+        </nz-form-item>
+
+        <p class="section-hint">{{ "AUTH.COMPANY_HINT" | translate }}</p>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="company_name">{{ "AUTH.COMPANY_NAME" | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="requiredError">
+            <input nz-input id="company_name" formControlName="company_name" autocomplete="organization" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="grid">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="country">{{ "AUTH.COUNTRY" | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="requiredError">
+              <nz-select nzId="country" formControlName="country">
+                <nz-option nzValue="IT" [nzLabel]="'AUTH.COUNTRY_IT' | translate" />
+                <nz-option nzValue="CH" [nzLabel]="'AUTH.COUNTRY_CH' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="tax_id">{{ "AUTH.TAX_ID" | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="requiredError">
+              <input
+                nz-input
+                id="tax_id"
+                formControlName="tax_id"
+                [placeholder]="form.controls.country.value === 'CH' ? 'CHE-123.456.789' : '12345678901'"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="password">{{ "AUTH.PASSWORD" | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="requiredError">
+            <input nz-input id="password" type="password" formControlName="password" autocomplete="new-password" />
+            <div class="strength" aria-hidden="true">
+              @for (level of strengthLevels; track level) {
+                <span [class.on]="strength() >= level"></span>
+              }
+            </div>
+            @if (strength() > 0) {
+              <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
+            }
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="password_confirmation">{{
+            "AUTH.PASSWORD_CONFIRMATION" | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="confirmationError">
+            <input
+              nz-input
+              id="password_confirmation"
+              type="password"
+              formControlName="password_confirmation"
+              autocomplete="new-password"
+            />
+          </nz-form-control>
+          <ng-template #confirmationError let-control>
+            @if (control.hasError("mismatch")) {
+              {{ "AUTH.PASSWORD_MISMATCH" | translate }}
+            } @else {
+              {{ "COMMON.VALIDATION.REQUIRED" | translate }}
+            }
+          </ng-template>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control [nzErrorTip]="requiredError">
+            <!-- nz-checkbox renders its own input inside the label -->
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+            <label nz-checkbox formControlName="terms_accepted">
+              {{ "AUTH.ACCEPT_TERMS" | translate }}
+              @if (termsUrl) {
+                <a [href]="termsUrl" target="_blank" rel="noopener">{{ "AUTH.READ_DOCUMENT" | translate }}</a>
+              }
+            </label>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control [nzErrorTip]="requiredError">
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+            <label nz-checkbox formControlName="privacy_accepted">
+              {{ "AUTH.ACCEPT_PRIVACY" | translate }}
+              @if (privacyUrl) {
+                <a [href]="privacyUrl" target="_blank" rel="noopener">{{ "AUTH.READ_DOCUMENT" | translate }}</a>
+              }
+            </label>
+          </nz-form-control>
+        </nz-form-item>
+
+        <ng-template #requiredError let-control>
+          @if (control.hasError("serverError")) {
+            {{ control.getError("serverError") }}
+          } @else {
+            {{ "COMMON.VALIDATION.REQUIRED" | translate }}
+          }
+        </ng-template>
+
+        <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+          {{ "AUTH.REGISTER_BTN" | translate }}
+        </button>
+      </form>
+
+      <p class="alternate">
+        <a routerLink="/login">{{ "AUTH.HAVE_ACCOUNT" | translate }}</a>
+        ·
+        <a href="mailto:info@fatturafacile.eu">{{ "AUTH.FORGOT" | translate }}</a>
+      </p>
+    </nz-card>
+  </div>
+</main>
