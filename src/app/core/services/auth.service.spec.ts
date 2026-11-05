@@ -27,7 +27,7 @@ describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', 
   });
 
   it('login() should first GET /sanctum/csrf-cookie and then POST /login with credentials', () => {
-    const credentials = { email: 'user@example.com', password: 'secretpassword' };
+    const credentials = { email: 'user@example.com', password: 'Str0ng!Passw0rd' };
     let responseData: unknown = null;
 
     service.login(credentials).subscribe((data) => {

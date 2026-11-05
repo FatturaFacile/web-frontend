@@ -49,7 +49,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
           data: {
             id: 'usr-001',
             name: 'Marco Rossi',
-            email: 'm.rossi@rossiimpianti.it',
+            email: 'm.rossi@example.com',
             avatar: '',
             role: 'Admin',
             roles: ['ADMIN'],
@@ -66,7 +66,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
       expect(authApiMock.me).toHaveBeenCalledTimes(1);
       expect(outcome).toBe(true);
       expect(authStore.isAuthenticated()).toBe(true);
-      expect(authStore.user()?.email).toBe('m.rossi@rossiimpianti.it');
+      expect(authStore.user()?.email).toBe('m.rossi@example.com');
     });
 
     it('should redirect to /login with returnUrl when session cookie check fails', () => {

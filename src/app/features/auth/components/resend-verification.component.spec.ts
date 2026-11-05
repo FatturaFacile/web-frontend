@@ -30,11 +30,11 @@ describe('ResendVerificationComponent', () => {
 
   it('starts from the known address and sends it', () => {
     resendVerificationEmail.mockReturnValue(of({ success: true }));
-    const component = create('giulia@example.com');
+    const component = create('giuliabianchitest@example.com');
 
     component['resend']();
 
-    expect(resendVerificationEmail).toHaveBeenCalledWith('giulia@example.com');
+    expect(resendVerificationEmail).toHaveBeenCalledWith('giuliabianchitest@example.com');
     expect(component['state']()).toBe('sent');
   });
 
@@ -45,7 +45,7 @@ describe('ResendVerificationComponent', () => {
   });
 
   it('distinguishes throttling from other failures', () => {
-    const component = create('giulia@example.com');
+    const component = create('giuliabianchitest@example.com');
 
     resendVerificationEmail.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 429 })));
     component['resend']();
