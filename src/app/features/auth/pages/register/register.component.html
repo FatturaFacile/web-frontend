@@ -79,7 +79,17 @@
         <nz-form-item>
           <nz-form-label nzRequired nzFor="password">{{ "AUTH.PASSWORD" | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="requiredError">
-            <input nz-input id="password" type="password" formControlName="password" autocomplete="new-password" />
+            <input
+              nz-input
+              id="password"
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+              aria-describedby="password-requirements"
+            />
+            <small id="password-requirements" class="password-requirements">{{
+              "AUTH.PASSWORD_REQUIREMENTS" | translate
+            }}</small>
             <div class="strength" aria-hidden="true">
               @for (level of strengthLevels; track level) {
                 <span [class.on]="strength() >= level"></span>

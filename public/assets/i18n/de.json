@@ -193,6 +193,7 @@
   "AUTH.APPROVAL_PENDING": "Ihr Konto wartet auf die Freigabe durch einen Administrator.",
   "AUTH.ACCESS_REJECTED": "Ihre Zugriffsanfrage wurde nicht freigegeben. Bitte wenden Sie sich an den Support.",
   "AUTH.LANGUAGE": "Sprache",
+  "AUTH.PASSWORD_REQUIREMENTS": "Mindestens 10 Zeichen, mit Gross- und Kleinbuchstaben, Zahlen und Symbolen.",
   "AUTH.TITLE": "Fattura Facile ERP",
   "automotive": {
     "errors": {

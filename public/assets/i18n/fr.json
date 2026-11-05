@@ -193,6 +193,7 @@
   "AUTH.APPROVAL_PENDING": "Votre compte est en attente d'approbation par un administrateur.",
   "AUTH.ACCESS_REJECTED": "Votre demande d'accès n'a pas été approuvée. Veuillez contacter l'assistance.",
   "AUTH.LANGUAGE": "Langue",
+  "AUTH.PASSWORD_REQUIREMENTS": "Au moins 10 caractères, avec majuscules et minuscules, chiffres et symboles.",
   "AUTH.TITLE": "Fattura Facile ERP",
   "automotive": {
     "errors": {
