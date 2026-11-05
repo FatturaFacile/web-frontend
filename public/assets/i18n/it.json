@@ -1,38 +1,68 @@
 {
   "accounting": {
+    "accountTypes": {
+      "asset": "Attività",
+      "liability": "Passività",
+      "equity": "Patrimonio Netto",
+      "revenue": "Ricavo",
+      "expense": "Costo"
+    },
     "chartOfAccounts": "Piano dei Conti",
-    "entryDetailTitle": "Dettaglio Righe Registrazione {number}",
+    "columns": {
+      "entryNumber": "Numero Registrazione",
+      "date": "Data Contabile",
+      "description": "Descrizione / Causale",
+      "totalDebit": "Totale Dare",
+      "totalCredit": "Totale Avere",
+      "accountCode": "Codice Conto",
+      "accountName": "Denominazione Conto",
+      "accountType": "Tipologia",
+      "currentBalance": "Saldo Attuale",
+      "period": "Periodo Fiscale",
+      "year": "Anno",
+      "jurisdiction": "Giurisdizione",
+      "vatCollected": "IVA a Debito (Vendite)",
+      "vatPaid": "IVA a Credito (Acquisti)",
+      "vatBalance": "Saldo IVA",
+      "status": "Stato"
+    },
+    "entryDetailTitle": "Dettaglio Scrittura Contabile {number}",
     "errors": {
-      "unbalancedEntry": "La scrittura deve essere in pareggio: Dare = Avere"
+      "unbalancedEntry": "La scrittura contabile non quadra (Dare ≠ Avere)"
     },
     "form": {
-      "accountIdPlaceholder": "ID / Codice Conto",
-      "creditPlaceholder": "Avere",
-      "date": "Data Contabile",
-      "debitPlaceholder": "Dare",
-      "description": "Descrizione / Causale",
-      "descriptionPlaceholder": "Es. Rilevazione giroconto bancario...",
-      "entryNumber": "Numero Registrazione",
-      "entryNumberPlaceholder": "Es. GL-2026-0042",
-      "linesTitle": "Righe Contabili (Dare / Avere)",
-      "title": "Nuova Registrazione Prima Nota",
+      "accountIdPlaceholder": "Codice o conto",
+      "creditPlaceholder": "0.00",
+      "date": "Data registrazione",
+      "debitPlaceholder": "0.00",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Causale della scrittura",
+      "entryNumber": "Numero scrittura",
+      "entryNumberPlaceholder": "Es. PN-2026-001",
+      "linesTitle": "Righe Contabili",
+      "title": "Nuova Registrazione Contabile",
       "totalCredit": "Totale Avere",
       "totalDebit": "Totale Dare"
     },
-    "generalLedger": "Libro Giornale",
+    "generalLedger": "Mastro Generale",
     "messages": {
-      "entrySaved": "Registrazione a libro giornale completata"
+      "entrySaved": "Scrittura contabile salvata con successo"
     },
-    "searchPlaceholder": "Cerca numero o causale...",
-    "subtitle": "Sistema a doppia partita cross-border per normative fiscali IT (SDI) e CH (CO/PCO)",
+    "searchPlaceholder": "Cerca scrittura o conto...",
+    "subtitle": "Libro giornale, mastri e quadrature",
     "table": {
       "account": "Conto",
-      "credit": "Avere (€/CHF)",
-      "debit": "Dare (€/CHF)",
+      "credit": "Avere",
+      "debit": "Dare",
       "description": "Descrizione"
     },
-    "title": "Contabilità Generale & Dual-Ledger",
-    "vatSettlement": "Liquidazioni IVA & Fiscale"
+    "title": "Contabilità",
+    "vatSettlement": "Liquidazione IVA",
+    "vatStatuses": {
+      "draft": "Bozza",
+      "settled": "Liquidata",
+      "paid": "Versata"
+    }
   },
   "ACCOUNTING.CARD_TITLE": "Piano dei Conti & Raccordi Fisc",
   "ACCOUNTING.COL_BALANCE": "Saldo Corrente",
@@ -52,22 +82,22 @@
     "form": {
       "createTitle": "Crea Nuovo Avviso",
       "editTitle": "Modifica Avviso",
-      "isActive": "Stato Attivo",
-      "message": "Messaggio Dettagliato",
-      "messagePlaceholder": "Inserisci ulteriori dettagli sull'avviso...",
-      "severity": "Livello di Gravità",
+      "isActive": "Avviso Attivo",
+      "message": "Messaggio",
+      "messagePlaceholder": "Testo della notifica o avviso",
+      "severity": "Livello di gravità",
       "submit": "Salva Avviso",
-      "title": "Titolo Avviso",
-      "titlePlaceholder": "Es. Scadenza IVA Trimestrale..."
+      "title": "Titolo",
+      "titlePlaceholder": "Es. Scadenza Documento"
     },
     "messages": {
-      "created": "Avviso creato",
-      "deleted": "Avviso eliminato",
-      "updated": "Avviso aggiornato"
+      "created": "Avviso creato con successo",
+      "deleted": "Avviso eliminato con successo",
+      "updated": "Avviso aggiornato con successo"
     },
-    "searchPlaceholder": "Cerca per titolo avviso...",
-    "subtitle": "Monitoraggio scadenze fiscali, anomalie SDI, avvisi bancari e comunicazioni aziendali",
-    "title": "Centro Avvisi & Notifiche Operative"
+    "searchPlaceholder": "Cerca avvisi...",
+    "subtitle": "Notifiche di conformità e scadenze di sistema",
+    "title": "Centro Avvisi"
   },
   "ATTENDANCE.ACCRUALS_TITLE": "Saldo Ferie & Permessi (Accruals)",
   "ATTENDANCE.ANNUAL_ENTITLEMENT": "Spettanza annuale: {days} giorni",
@@ -120,13 +150,13 @@
   "AUTH.TITLE": "Fattura Facile ERP",
   "automotive": {
     "errors": {
-      "loadFailed": "Errore nel recupero deposito gomme"
+      "loadFailed": "Impossibile caricare i dati dell'officina"
     },
     "tireHotel": {
-      "notifySuccess": "Notifica inviata con successo per il veicolo {plate}",
+      "notifySuccess": "Promemoria cambio pneumatici inviato con successo per il veicolo {plate}",
       "season": {
-        "summer": "Estate",
-        "winter": "Inverno"
+        "summer": "Estivo",
+        "winter": "Invernale"
       },
       "status": {
         "sent": "Inviato"
@@ -143,8 +173,8 @@
       "title": "Conferma eliminazione"
     },
     "errors": {
-      "loadFailed": "Errore nel caricamento pratiche",
-      "loadFailedDetail": "Errore nel caricamento delle pratiche legali e fascicoli"
+      "loadFailed": "Impossibile caricare i fascicoli",
+      "loadFailedDetail": "Si è verificato un errore durante il recupero dei mandati dello studio."
     },
     "searchPlaceholder": "Cerca pratiche..."
   },
@@ -158,38 +188,43 @@
       "edit": "Modifica",
       "save": "Salva"
     },
-    "selectPaymentType": "Seleziona tipo di pagamento",
+    "selectPaymentType": "Seleziona modalità di pagamento",
     "status": {
       "active": "Attivo",
-      "inactive": "Disattivato",
+      "inactive": "Inattivo",
       "label": "Stato"
     },
     "table": {
       "actions": "Azioni",
-      "density": "Densità tabella",
-      "densityDefault": "Ampia",
+      "density": "Densità",
+      "densityDefault": "Normale",
       "densityMiddle": "Media",
       "densitySmall": "Compatta",
       "deselectAll": "Deseleziona tutti",
-      "noData": "Nessun dato trovato",
-      "reset": "Reset",
-      "search": "Cerca",
-      "selectedCount": "{count} elementi selezionati",
+      "noData": "Nessun dato disponibile",
+      "reset": "Reimposta",
+      "search": "Cerca nella tabella...",
+      "selectedCount": "{count} selezionati",
       "visibleColumns": "Colonne visibili"
     }
   },
   "COMMON.ACTION": "Azione",
+  "COMMON.ACTIONS": "Azioni",
   "COMMON.ACTIVE": "Attivo",
+  "COMMON.ADD": "Aggiungi",
   "COMMON.ALL": "Tutti",
   "COMMON.AMOUNT": "Importo",
   "COMMON.CANCEL": "Annulla",
   "COMMON.CLOSE": "Chiudi",
+  "COMMON.CONFIRM_DELETE": "Sei sicuro di voler eliminare questo elemento?",
   "COMMON.DATE": "Data",
+  "COMMON.DELETE": "Elimina",
   "COMMON.DETAILS": "Dettaglio",
   "COMMON.ITALY": "Italia",
   "COMMON.PREVIEW": "Anteprima",
   "COMMON.RECONCILE": "Riconcilia",
   "COMMON.SAVE": "Salva",
+  "COMMON.SEARCH": "Cerca",
   "COMMON.SELECT": "Seleziona",
   "COMMON.SELECTED": "Selezionato",
   "COMMON.STATUS": "Stato",
@@ -200,8 +235,8 @@
   "COMMON.VALIDATION.REQUIRED": "Campo obbligatorio",
   "construction": {
     "errors": {
-      "loadFailed": "Errore nel caricamento cantieri",
-      "loadFailedDetail": "Errore nel caricamento dei cantieri edili"
+      "loadFailed": "Impossibile caricare i dati dei cantieri",
+      "loadFailedDetail": "Si è verificato un errore durante il recupero dei dati di cantiere. Riprova più tardi."
     }
   },
   "CONSTRUCTION.CARD_TITLE": "Cantieri e Commesse in Esecuzione",
@@ -220,7 +255,7 @@
       },
       "statsModal": {
         "content": "Anagrafica {country} - Tipo: {type} - Partita IVA/Codice Fiscale: {fiscal}",
-        "title": "Statistiche {name}"
+        "title": "Statistiche Cliente {name}"
       }
     }
   },
@@ -261,9 +296,9 @@
   "CRM.CLIENTS.FORM.TYPE": "Tipo",
   "CRM.CLIENTS.FORM.UID": "UID (CHE-…)",
   "CRM.CLIENTS.FORM.VAT_NUMBER": "P.IVA / IVA",
-  "CRM.CLIENTS.MESSAGES.CREATED": "Cliente creato",
-  "CRM.CLIENTS.MESSAGES.DELETED": "Cliente eliminato",
-  "CRM.CLIENTS.MESSAGES.UPDATED": "Cliente aggiornato",
+  "CRM.CLIENTS.MESSAGES.CREATED": "Cliente creato con successo",
+  "CRM.CLIENTS.MESSAGES.DELETED": "Cliente eliminato con successo",
+  "CRM.CLIENTS.MESSAGES.UPDATED": "Cliente aggiornato con successo",
   "CRM.CLIENTS.NEW": "Nuovo cliente",
   "CRM.CLIENTS.SEARCH_PLACEHOLDER": "Cerca per ragione sociale o P.IVA",
   "CRM.CLIENTS.SUBTITLE": "Anagrafica clienti e fornitori",
@@ -300,7 +335,7 @@
   "DASHBOARD.SUBTITLE": "Panoramica finanziaria e operativa",
   "DASHBOARD.TITLE": "Dashboard Esecutiva ERP",
   "ERRORS.FORBIDDEN_TITLE": "Accesso Negato (403)",
-  "ERRORS.GENERIC": "Errore {status}",
+  "ERRORS.GENERIC": "Si è verificato un errore ({status})",
   "ERRORS.NETWORK": "Server non raggiungibile. Controlla la connessione.",
   "ERRORS.SESSION_EXPIRED": "Sessione scaduta. Effettua di nuovo l'accesso.",
   "ERRORS.TOO_MANY_REQUESTS_DESC": "Troppe richieste inviate al server. Si prega di attendere qualche istante prima di riprovare.",
@@ -308,34 +343,44 @@
   "ERRORS.VALIDATION_TITLE": "Errore di Validazione (422)",
   "expenses": {
     "actions": {
-      "delete": "Elimina Spesa",
-      "edit": "Modifica Spesa"
+      "create": "Nuova Spesa",
+      "delete": "Elimina",
+      "edit": "Modifica",
+      "exportCsv": "Esporta CSV"
     },
-    "confirmDelete": "Sei sicuro di voler eliminare questa spesa?",
+    "columns": {
+      "date": "Data",
+      "description": "Descrizione / Causale",
+      "merchant": "Esercente / Fornitore",
+      "category": "Categoria",
+      "amount": "Importo",
+      "status": "Stato"
+    },
+    "confirmDelete": "Eliminare questa nota spese?",
     "filterStatus": "Filtra per stato",
     "form": {
       "amount": "Importo",
-      "createTitle": "Nuova Nota Spesa",
+      "createTitle": "Nuova Nota Spese",
       "currency": "Valuta",
       "date": "Data Spesa",
-      "description": "Descrizione / Causale",
-      "descriptionPlaceholder": "Es. Pranzo di lavoro con cliente...",
-      "editTitle": "Modifica Nota Spesa",
-      "merchant": "Fornitore / Esercente",
-      "merchantPlaceholder": "Es. Ristorante Da Mario",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Es. Pranzo con cliente o benzina",
+      "editTitle": "Modifica Nota Spese",
+      "merchant": "Esercente / Fornitore",
+      "merchantPlaceholder": "Es. Ristorante da Mario o Eni Station",
       "submit": "Salva Spesa"
     },
     "messages": {
-      "created": "Spesa creata con successo",
-      "deleted": "Spesa eliminata",
-      "exported": "Esportazione completata",
-      "updated": "Spesa aggiornata con successo"
+      "created": "Nota spese registrata",
+      "deleted": "Nota spese eliminata",
+      "exported": "Note spese esportate con successo",
+      "updated": "Nota spese aggiornata"
     },
-    "searchPlaceholder": "Cerca per descrizione o esercente...",
+    "searchPlaceholder": "Cerca per esercente o causale...",
     "stats": {
-      "count": "Numero Voci di Spesa",
-      "pending": "Spese in Approvazione",
-      "total": "Totale Spese Registrate"
+      "count": "Note Spese",
+      "pending": "In Approvazione",
+      "total": "Totale Rimborsi"
     },
     "statuses": {
       "approved": "Approvata",
@@ -345,8 +390,8 @@
       "reimbursed": "Rimborsata",
       "rejected": "Rifiutata"
     },
-    "subtitle": "Monitora le spese aziendali, rimborsi dipendenti e uscite di cassa",
-    "title": "Gestione Spese & Note Spese"
+    "subtitle": "Gestione rimborsi e note spesa dipendenti",
+    "title": "Note Spese"
   },
   "FIELD_SERVICE.CARD_TITLE": "Ticket di Assistenza in Corso",
   "FIELD_SERVICE.COL_CLIENT": "Cliente",
@@ -358,8 +403,8 @@
   "FIELD_SERVICE.TITLE": "Assistenza Tecnica & Field Service",
   "fieldService": {
     "errors": {
-      "loadFailed": "Errore nel caricamento ticket",
-      "loadFailedDetail": "Errore nel caricamento dei ticket di assistenza"
+      "loadFailed": "Impossibile caricare i ticket di assistenza",
+      "loadFailedDetail": "Errore nel recupero dei dati del servizio sul campo. Riprova più tardi."
     }
   },
   "HEADER.JURISDICTION_CH": "Giurisdizione Svizzera (QR-Bill, ArG, KMU)",
@@ -372,8 +417,8 @@
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Espandi menu",
   "hr": {
     "errors": {
-      "loadFailed": "Errore nel caricamento dipendenti",
-      "loadFailedDetail": "Errore nel caricamento del registro presenze e dipendenti"
+      "loadFailed": "Impossibile caricare i dati delle risorse umane",
+      "loadFailedDetail": "Errore durante la lettura del personale e del payroll. Riprova più tardi."
     }
   },
   "HR.CARD_TITLE": "Personale & Regime Fiscale / Previdenziale",
@@ -387,14 +432,14 @@
   "HR.TITLE": "Risorse Umane & Payroll Cross-Border (IT / CH)",
   "inventory": {
     "form": {
-      "customsCodePlaceholder": "9031.90.00",
-      "namePlaceholder": "Descrizione prodotto",
-      "skuPlaceholder": "EL-SENS-01",
-      "unit": "Unità di Misura"
+      "customsCodePlaceholder": "Es. 8471.30.00",
+      "namePlaceholder": "Nome articolo o prodotto",
+      "skuPlaceholder": "Es. ART-00123",
+      "unit": "Unità di misura"
     },
     "messages": {
-      "created": "Prodotto creato con successo",
-      "deleted": "Prodotto eliminato"
+      "created": "Articolo aggiunto al magazzino",
+      "deleted": "Articolo rimosso dal magazzino"
     },
     "modal": {
       "createTitle": "Nuovo Prodotto a Magazzino",
@@ -408,12 +453,13 @@
   "INVENTORY.COL_QTY": "Giacenza",
   "INVENTORY.COL_SKU": "Codice SKU",
   "INVENTORY.COL_WAREHOUSE": "Magazzino",
+  "INVENTORY.NEW_PRODUCT": "Nuovo Prodotto",
   "INVENTORY.SUBTITLE": "Cataloghi articoli, DDT, codici doganali HS/TARIC e gestione export IT-CH",
   "INVENTORY.TITLE": "Magazzino & Logistica Cross-Border",
   "manufacturing": {
     "errors": {
-      "loadFailed": "Errore nel caricamento ordini di produzione",
-      "loadFailedDetail": "Errore nel caricamento degli ordini di produzione"
+      "loadFailed": "Impossibile caricare i dati di produzione",
+      "loadFailedDetail": "Errore durante il recupero degli ordini di produzione o delle linee."
     }
   },
   "MANUFACTURING.CARD_TITLE": "Ordini di Produzione Attivi (OdP)",
@@ -452,6 +498,15 @@
   "NAV.SALES": "Vendite & Fatturazione",
   "NAV.SDI": "Fattura Elettronica SDI",
   "NAV.SDI_INBOX": "Ciclo Passivo SDI",
+  "NAV.ALERTS": "Centro Avvisi",
+  "NAV.COMPANY_SETTINGS": "Azienda & Utenti",
+  "NAV.PEOPLE": "Persone",
+  "NAV.SECTION_ADMINISTRATION": "Amministrazione",
+  "NAV.SECTION_COMMERCIAL": "Commerciale",
+  "NAV.SECTION_INDUSTRY": "Moduli di settore",
+  "NAV.SECTION_OPERATIONS": "Operatività",
+  "NAV.SECTION_SYSTEM": "Sistema",
+  "NAV.SYSTEM": "Sistema & Backup",
   "NAV.SETTINGS": "Impostazioni & Tenant",
   "NAV.STOCK": "Giacenze & Articoli",
   "NAV.SUPPLIERS": "Fornitori & Listini",
@@ -486,31 +541,31 @@
     "actions": {
       "approve": "Approva",
       "reject": "Rifiuta",
-      "submitApproval": "Invia per Approvazione"
+      "submitApproval": "Invia per approvazione"
     },
     "form": {
-      "channel": "Canale",
+      "channel": "Canale di ricezione",
       "currency": "Valuta",
-      "description": "Descrizione Voce",
-      "descriptionPlaceholder": "Es. Canone connettività fibra",
+      "description": "Descrizione acquisto",
+      "descriptionPlaceholder": "Descrivi la spesa o la fornitura",
       "quantity": "Quantità",
       "supplier": "Fornitore",
-      "supplierPlaceholder": "Es. Swisscom AG o TIM S.p.A.",
-      "unitPrice": "Prezzo Unitario"
+      "supplierPlaceholder": "Seleziona fornitore",
+      "unitPrice": "Prezzo unitario"
     },
     "messages": {
-      "approved": "Ordine {number} approvato",
-      "created": "Ordine di acquisto creato con successo",
-      "rejected": "Ordine {number} rifiutato",
-      "submitted": "Ordine {number} sottomesso per approvazione"
+      "approved": "Fattura/acquisto {number} approvato",
+      "created": "Acquisto registrato con successo",
+      "rejected": "Acquisto {number} rifiutato",
+      "submitted": "{number} inviato per approvazione con successo"
     },
-    "rejectReason": "Rifiutato da operatore",
+    "rejectReason": "Motivo del rifiuto",
     "statuses": {
       "approved": "Approvato",
       "cancelled": "Annullato",
       "draft": "Bozza",
       "ordered": "Ordinato",
-      "pending_approval": "In Approvazione",
+      "pending_approval": "In attesa di approvazione",
       "received": "Ricevuto",
       "rejected": "Rifiutato"
     }
@@ -528,8 +583,8 @@
   "PURCHASES.TITLE": "Acquisti & Ciclo Passivo AP",
   "rent": {
     "errors": {
-      "loadFailed": "Errore nel caricamento parco veicoli",
-      "loadFailedDetail": "Errore nel caricamento dei veicoli a noleggio"
+      "loadFailed": "Impossibile caricare i veicoli a noleggio",
+      "loadFailedDetail": "Errore nel recupero della flotta o delle prenotazioni."
     }
   },
   "RENT.CARD_TITLE": "Stato Parco Mezzi & Contratti Attivi",
@@ -544,8 +599,8 @@
   "RENT.VIGNETTE_NONE": "Non richiesta",
   "retail": {
     "errors": {
-      "loadFailed": "Errore nel caricamento sessioni cassa",
-      "loadFailedDetail": "Errore nel caricamento delle sessioni cassa e POS"
+      "loadFailed": "Impossibile caricare le sessioni di cassa",
+      "loadFailedDetail": "Errore nel recupero dei registratori di cassa o delle chiusure POS."
     }
   },
   "RETAIL.CARD_TITLE": "Chiusure Fiscali e Sessioni Cassa",
@@ -633,33 +688,33 @@
   "SALES.INVOICES.TYPES.STANDARD": "Standard",
   "settings": {
     "form": {
-      "companyName": "Ragione Sociale / Nome",
+      "companyName": "Nome Azienda",
       "currency": "Valuta Predefinita",
-      "iban": "IBAN Aziendale Ordinario",
-      "legalName": "Denominazione Legale Estesa",
+      "iban": "IBAN Principale",
+      "legalName": "Ragione Sociale Legale",
       "pecEmail": "Indirizzo PEC",
       "qrIban": "QR-IBAN Svizzero",
-      "save": "Salva Modifiche Azienda",
-      "sdiCode": "Codice Destinatario SDI (7 caratteri)",
-      "taxId": "Codice Fiscale (IT)",
-      "uidNumber": "Numero IDI / UID (CH)",
-      "vatNumber": "Partita IVA (IT / CH)"
+      "save": "Salva Impostazioni",
+      "sdiCode": "Codice Univoco SDI",
+      "taxId": "Codice Fiscale",
+      "uidNumber": "Numero UID Svizzero",
+      "vatNumber": "Partita IVA"
     },
     "messages": {
-      "ratesSynced": "Tassi di cambio sincronizzati",
-      "saved": "Impostazioni azienda salvate con successo"
+      "ratesSynced": "Tassi di cambio sincronizzati con successo",
+      "saved": "Impostazioni aggiornate con successo"
     },
-    "subtitle": "Configurazione tenant, anagrafica filiali, gestione utenti e audit log",
+    "subtitle": "Configurazione parametri fiscali, utenti e filiali",
     "tabs": {
-      "audit": "Audit Log di Sistema",
+      "audit": "Registro Audit",
       "branch": "FILIALE",
-      "branches": "Filiali & Sedi",
+      "branches": "Filiali",
       "hq": "SEDE CENTRALE",
-      "orgData": "Dati Organizzazione & Fisco",
+      "orgData": "Dati Aziendali",
       "roles": "Ruoli & Permessi",
-      "users": "Utenti & Accessi"
+      "users": "Utenti"
     },
-    "title": "Impostazioni Aziendali & Sistema"
+    "title": "Impostazioni di Sistema"
   },
   "SETTINGS.CARD_TITLE": "Configurazione Aziende / Tenant",
   "SETTINGS.COL_ADDRESS": "Indirizzo Sede",
@@ -710,29 +765,29 @@
   "system": {
     "backups": {
       "actions": {
-        "delete": "Elimina Archivio",
-        "download": "Scarica Archivio ZIP",
-        "restore": "Ripristina questo backup",
-        "restoreData": "Ripristina Dati"
+        "delete": "Elimina Backup",
+        "download": "Scarica ZIP",
+        "restore": "Ripristina",
+        "restoreData": "Ripristina Dati da Backup"
       },
-      "cardTitle": "Archivi di Sicurezza del Tenant",
-      "confirmDelete": "Vuoi eliminare definitivamente questo archivio di backup?",
-      "confirmRestore": "Attenzione: il ripristino sovrascriverà i dati correnti con questa versione. Vuoi procedere?",
+      "cardTitle": "Archivio Backup di Sistema",
+      "confirmDelete": "Sei sicuro di voler eliminare questo backup? L'azione è irreversibile.",
+      "confirmRestore": "Sei sicuro di voler ripristinare questo archivio? I dati attuali potrebbero essere sovrascritti.",
       "messages": {
-        "completed": "Generazione backup completata",
-        "downloadStarted": "Download avviato per {filename}",
-        "removed": "Archivio eliminato",
-        "restoreCompleted": "Ripristino dal backup {filename} completato.",
-        "restoreSuccess": "Ripristino completato con successo.",
-        "selectZip": "Seleziona un file ZIP",
-        "started": "Generazione backup avviata con successo"
+        "completed": "Backup completato con successo",
+        "downloadStarted": "Download del backup {filename} avviato...",
+        "removed": "File di backup rimosso",
+        "restoreCompleted": "Ripristino dal backup {filename} completato con successo",
+        "restoreSuccess": "Database ripristinato correttamente",
+        "selectZip": "Seleziona un file ZIP valido di backup",
+        "started": "Procedura di backup avviata in background..."
       },
       "modal": {
-        "description": "Seleziona l'archivio ZIP di backup (.zip) esportato precedentemente da FatturaFacile:",
-        "title": "Caricamento e Ripristino Backup ZIP"
+        "description": "Carica un file di archivio per ripristinare il database allo stato precedente.",
+        "title": "Ripristino Backup"
       },
-      "subtitle": "Backup completi dell'istanza tenant, download archivi crittografati e ripristino point-in-time",
-      "title": "Gestione Backup & Disaster Recovery"
+      "subtitle": "Salvataggio dati, esportazione e disaster recovery",
+      "title": "Gestione Backup"
     }
   },
   "TIRE_HOTEL.COL_CUSTOMER": "Cliente",
@@ -751,30 +806,64 @@
   "TIRE_HOTEL.WINTER_TIRES": "Pneumatici Invernali in Custodia",
   "treasury": {
     "messages": {
-      "camtSuccess": "File CAMT importato con successo.",
-      "cbiSuccess": "File CBI importato con successo.",
-      "reconciliationSuccess": "Riconciliazione automatica completata.",
-      "selectFile": "Seleziona un file prima di procedere.",
-      "statementReconciled": "Estratto conto {iban} riconciliato.",
-      "statementReconciledSuccess": "Estratto conto riconciliato con successo."
+      "camtSuccess": "Estratto conto camt.053 elaborato con successo",
+      "cbiSuccess": "File bancario CBI importato con successo",
+      "reconciliationSuccess": "Movimento riconciliato correttamente",
+      "selectFile": "Seleziona un file bancario valido (XML o CBI)",
+      "statementReconciled": "Estratto conto {iban} riconciliato",
+      "statementReconciledSuccess": "Tutti i movimenti compatibili sono stati abbinati"
     },
     "modal": {
-      "description": "Seleziona il formato del file di estratto conto bancario da importare nel sistema:",
-      "title": "Importazione File Bancario CAMT.053 / CBI"
+      "description": "Carica il file camt o CBI fornito dal tuo istituto bancario.",
+      "title": "Importazione Estratto Conto"
     },
-    "searchPlaceholder": "Cerca descrizione o controparte...",
+    "searchPlaceholder": "Cerca tra i movimenti bancari...",
     "stats": {
       "chfLiquidity": "Liquidità Totale CHF",
       "eurLiquidity": "Liquidità Totale EUR",
-      "toReconcile": "Transazioni da Riconciliare"
+      "toReconcile": "Movimenti da Riconciliare"
     },
-    "subtitle": "Gestione conti multi-valuta (EUR/CHF), import estratti conto CAMT.053/CBI e riconciliazione automatica",
+    "subtitle": "Saldi bancari, estratti conto e flussi camt/CBI",
     "tabs": {
       "bankAccounts": "Conti Correnti",
       "bankMovements": "Movimenti Bancari",
-      "statements": "Estratti Conto Importati"
+      "statements": "Estratti Conto"
     },
-    "title": "Tesoreria & Riconciliazione Bancaria"
+    "title": "Tesoreria",
+    "actions": {
+      "autoReconcile": "Riconciliazione Automatica",
+      "reconcile": "Riconcilia"
+    },
+    "columns": {
+      "valueDate": "Data Valuta",
+      "description": "Descrizione Movimento",
+      "counterparty": "Controparte / Riferimento",
+      "amount": "Importo",
+      "category": "Categoria",
+      "status": "Stato",
+      "bankName": "Istituto di Credito",
+      "bankDetails": "IBAN / Coordinate",
+      "currency": "Valuta",
+      "availableBalance": "Saldo Disponibile",
+      "statementDate": "Data Estratto",
+      "iban": "IBAN",
+      "format": "Formato",
+      "closingBalance": "Saldo Finale",
+      "reconciliationStatus": "Stato Riconciliazione"
+    },
+    "modalFormats": {
+      "camt": "CAMT.053 XML (Svizzera / SEPA)",
+      "cbi": "CBI Rendicontazione (Italia)"
+    },
+    "reconciled": {
+      "yes": "RICONCILIATO",
+      "no": "DA RICONCILIARE"
+    },
+    "statementStatus": {
+      "imported": "IMPORTATO",
+      "reconciled": "RICONCILIATO",
+      "partially_reconciled": "PARZIALMENTE RICONCILIATO"
+    }
   },
   "TREASURY.CARD_TITLE": "Movimenti Bancari da Riconciliare",
   "TREASURY.COL_BANK": "Banca / Conto",
@@ -787,18 +876,18 @@
   "TREASURY.SUBTITLE": "Import estratti conto ISO 20022 (camt.053 / camt.054), formato CBI e riconciliazione automatica",
   "TREASURY.TITLE": "Tesoreria & Gestione Bancaria",
   "validation": {
-    "amountRequired": "Inserisci un importo valido",
+    "amountRequired": "L'importo è obbligatorio",
     "dateRequired": "La data è obbligatoria",
     "descriptionRequired": "La descrizione è obbligatoria",
-    "entryNumberRequired": "Il numero è obbligatorio",
+    "entryNumberRequired": "Il numero scrittura è obbligatorio",
     "nameRequired": "Il nome è obbligatorio",
-    "priceRequired": "Prezzo obbligatorio",
-    "quantityRequired": "Quantità obbligatoria",
+    "priceRequired": "Il prezzo è obbligatorio",
+    "quantityRequired": "La quantità è obbligatoria",
     "required": "Campo obbligatorio",
-    "skuRequired": "SKU obbligatorio",
-    "supplierRequired": "Fornitore obbligatorio",
+    "skuRequired": "Il codice SKU è obbligatorio",
+    "supplierRequired": "Il fornitore è obbligatorio",
     "titleRequired": "Il titolo è obbligatorio",
-    "warehouseRequired": "Magazzino obbligatorio"
+    "warehouseRequired": "Il magazzino è obbligatorio"
   },
   "WELCOME.DESC": "Gestisci i tuoi ordini e monitora il fatturato in tempo reale.",
   "WELCOME.GO_ORDERS": "Vai a Storico Ordini",

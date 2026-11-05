@@ -87,7 +87,8 @@
   transition: all 0.2s;
 }
 
-.action-btn:hover {
+.action-btn:hover,
+.action-btn.active {
   border-color: var(--primary-color, #0d9488);
   color: var(--primary-color, #0d9488);
   background: rgba(13, 148, 136, 0.08);

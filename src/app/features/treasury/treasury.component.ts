@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -35,7 +35,6 @@ import {
     FormsModule,
     CurrencyPipe,
     DatePipe,
-    UpperCasePipe,
     NzTagModule,
     NzCardModule,
     NzButtonModule,
@@ -99,25 +98,25 @@ export class TreasuryComponent implements OnInit {
   readonly txColumns = computed<TableColumnDef<BankTransactionResource>[]>(() => [
     {
       key: 'transaction_date',
-      header: 'Data Valuta',
+      header: 'treasury.columns.valueDate',
       width: '120px',
       sortable: true,
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'description',
-      header: 'Descrizione Movimento',
+      header: 'treasury.columns.description',
       width: '320px',
       sortable: true,
     },
     {
       key: 'counterparty',
-      header: 'Controparte / Riferimento',
+      header: 'treasury.columns.counterparty',
       width: '220px',
     },
     {
       key: 'amount',
-      header: 'Importo',
+      header: 'treasury.columns.amount',
       width: '140px',
       align: 'right',
       sortable: true,
@@ -125,12 +124,12 @@ export class TreasuryComponent implements OnInit {
     },
     {
       key: 'category',
-      header: 'Categoria',
+      header: 'treasury.columns.category',
       width: '160px',
     },
     {
       key: 'reconciled',
-      header: 'Stato',
+      header: 'treasury.columns.status',
       width: '160px',
       customCellTemplate: this.reconciledTpl(),
     },
@@ -139,23 +138,23 @@ export class TreasuryComponent implements OnInit {
   readonly accountColumns = computed<TableColumnDef<BankAccountResource>[]>(() => [
     {
       key: 'bank_name',
-      header: 'Istituto di Credito',
+      header: 'treasury.columns.bankName',
       width: '220px',
       sortable: true,
     },
     {
       key: 'iban',
-      header: 'IBAN / Coordinate',
+      header: 'treasury.columns.bankDetails',
       width: '260px',
     },
     {
       key: 'currency',
-      header: 'Valuta',
+      header: 'treasury.columns.currency',
       width: '100px',
     },
     {
       key: 'balance',
-      header: 'Saldo Disponibile',
+      header: 'treasury.columns.availableBalance',
       width: '180px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
@@ -165,30 +164,30 @@ export class TreasuryComponent implements OnInit {
   readonly statementColumns = computed<TableColumnDef<BankStatement>[]>(() => [
     {
       key: 'statement_date',
-      header: 'Data Estratto',
+      header: 'treasury.columns.statementDate',
       width: '130px',
       customCellTemplate: this.dateTpl(),
     },
     {
       key: 'iban',
-      header: 'IBAN',
+      header: 'treasury.columns.iban',
       width: '240px',
     },
     {
       key: 'source_format',
-      header: 'Formato',
+      header: 'treasury.columns.format',
       width: '120px',
     },
     {
       key: 'closing_balance',
-      header: 'Saldo Finale',
+      header: 'treasury.columns.closingBalance',
       width: '150px',
       align: 'right',
       customCellTemplate: this.currencyTpl(),
     },
     {
       key: 'status',
-      header: 'Stato Riconciliazione',
+      header: 'treasury.columns.reconciliationStatus',
       width: '170px',
       customCellTemplate: this.statusTpl(),
     },

@@ -39,19 +39,17 @@
       [ngModel]="tableState.filters()['status']"
       (ngModelChange)="onStatusFilterChange($event)"
     >
-      <nz-option nzValue="draft" nzLabel="Bozza" />
-      <nz-option nzValue="pending_approval" nzLabel="In Approvazione" />
-      <nz-option nzValue="approved" nzLabel="Approvata" />
-      <nz-option nzValue="reimbursed" nzLabel="Rimborsata" />
-      <nz-option nzValue="paid" nzLabel="Pagata" />
+      @for (status of filterStatuses; track status) {
+        <nz-option [nzValue]="status" [nzLabel]="'expenses.statuses.' + status | translate" />
+      }
     </nz-select>
 
     <span class="spacer"></span>
     <button nz-button type="button" (click)="exportCsv()" [nzLoading]="isExporting()">
-      <nz-icon nzType="download" /> Esporta CSV
+      <nz-icon nzType="download" /> {{ 'expenses.actions.exportCsv' | translate }}
     </button>
     <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> Nuova Spesa
+      <nz-icon nzType="plus" /> {{ 'expenses.actions.create' | translate }}
     </button>
   </div>
 
@@ -76,8 +74,8 @@
   </ng-template>
 
   <ng-template #statusTpl let-exp>
-    <nz-tag [nzColor]="getStatusConfig(exp.status).color">
-      {{ getStatusConfig(exp.status).label }}
+    <nz-tag [nzColor]="statusColor(exp.status)">
+      {{ 'expenses.statuses.' + exp.status | translate }}
     </nz-tag>
   </ng-template>
 
