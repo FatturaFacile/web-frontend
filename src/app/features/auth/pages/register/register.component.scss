@@ -14,6 +14,13 @@
   margin: 0 0 12px;
 }
 
+.password-requirements {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 .strength {
   display: flex;
   gap: 4px;

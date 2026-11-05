@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthApiService, LoginPayload } from './auth-api.service';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
+import { TEST_PASSWORD } from '../../../testing/credentials';
 
 describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   let service: AuthApiService;
@@ -39,7 +40,7 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
   it('should execute getCsrfCookie before POST /auth/login during login()', () => {
     const payload: LoginPayload = {
       email: 'm.rossi@example.com',
-      password: 'Str0ng!Passw0rd',
+      password: TEST_PASSWORD,
       remember: true,
     };
 
@@ -123,8 +124,8 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
       first_name: 'Giulia',
       last_name: 'Bianchi',
       email: 'giuliabianchitest@example.com',
-      password: 'Str0ng!Passw0rd',
-      password_confirmation: 'Str0ng!Passw0rd',
+      password: TEST_PASSWORD,
+      password_confirmation: TEST_PASSWORD,
       company_name: 'Bianchi Srl',
       country: 'IT',
       tax_id: '12345678901',

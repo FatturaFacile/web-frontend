@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { AuthApiService } from '@core';
 import { passwordStrength, RegisterComponent } from './register.component';
+import { TEST_PASSWORD } from '../../../../../testing/credentials';
 
 const VALID = {
   first_name: 'Giulia',
@@ -14,8 +15,8 @@ const VALID = {
   company_name: 'Bianchi Srl',
   country: 'IT' as const,
   tax_id: '12345678901',
-  password: 'Str0ng!Passw0rd',
-  password_confirmation: 'Str0ng!Passw0rd',
+  password: TEST_PASSWORD,
+  password_confirmation: TEST_PASSWORD,
   terms_accepted: true,
   privacy_accepted: true,
 };
@@ -116,11 +117,23 @@ describe('RegisterComponent', () => {
     expect(component['errorMessage']()).toBeTruthy();
   });
 
+  it('shows the password requirements and links them to the field', () => {
+    const fixture = TestBed.createComponent(RegisterComponent);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    const requirements = root.querySelector('#password-requirements');
+    expect(requirements?.textContent).toContain('AUTH.PASSWORD_REQUIREMENTS');
+    expect(root.querySelector('#password')?.getAttribute('aria-describedby')).toBe(
+      'password-requirements',
+    );
+  });
+
   it('rates the password', () => {
     expect(passwordStrength('')).toBe(0);
     expect(passwordStrength('abc')).toBe(1);
     expect(passwordStrength('Abcdefghij')).toBe(2);
     expect(passwordStrength('Abcdefghi1')).toBe(3);
-    expect(passwordStrength('Str0ng!Passw0rd')).toBe(4);
+    expect(passwordStrength(TEST_PASSWORD)).toBe(4);
   });
 });
