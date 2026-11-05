@@ -1,0 +1,710 @@
+{
+  "NAV": {
+    "ACCOUNTING": "Buchhaltung & Steuern",
+    "ALERTS": "Warnungszentrale",
+    "APPRAISAL": "Schadengutachten",
+    "AUTOMOTIVE": "Automotive & Reifen",
+    "CLIENTS": "Grenzüberschreitende Kunden",
+    "CONSTRUCTION": "Baustellen & Anlagen",
+    "CRM": "CRM & Stammdaten",
+    "CUSTOMS": "Zoll IT-CH & CMR",
+    "DASHBOARD": "Dashboard & Übersicht",
+    "DDT": "Lieferscheine & Transport",
+    "EXPENSES": "Spesenabrechnungen",
+    "FIELD_SERVICE": "Kundendienst & Einsätze",
+    "FLEET": "Flottenplanung",
+    "HR": "Lohnabrechnung & HR IT-CH",
+    "INVENTORY": "Lager & Logistik",
+    "INVOICES": "Rechnungen",
+    "MANUFACTURING": "Produktion & MRP",
+    "ORDERS": "Angebote & Aufträge",
+    "PROFESSIONALS": "Kanzleien & Praxen",
+    "PURCHASES": "Einkauf & Verbindlichkeiten",
+    "QR_BILL": "Schweizer QR-Rechnung",
+    "QR_SCANNER": "QR-Scanner & pain.001",
+    "RENT": "Flottenvermietung",
+    "REPORTS": "Einsatzberichte",
+    "RETAIL": "Kasse & POS",
+    "SALES": "Verkauf & Rechnungsstellung",
+    "SDI": "Elektronische Rechnung SDI",
+    "SDI_INBOX": "SDI-Rechnungseingang",
+    "SETTINGS": "Einstellungen & Mandanten",
+    "STOCK": "Bestände & Artikel",
+    "SUPPLIERS": "Lieferanten & Preislisten",
+    "SYSTEM": "System & Backups",
+    "TICKETS": "SLA Helpdesk-Tickets",
+    "TIME_ATTENDANCE": "Zeiterfassung & Stempelkarte",
+    "TIRE_HOTEL": "Reifenhotel",
+    "TREASURY": "Finanzen & Banken",
+    "WORKSHOP": "Werkstatt & Aufträge"
+  },
+  "HEADER": {
+    "TOGGLE_SIDEBAR_EXPAND": "Menü erweitern",
+    "TOGGLE_SIDEBAR_COLLAPSE": "Menü einklappen",
+    "JURISDICTION_IT": "Rechtsraum Italien (SDI, F24, D.Lgs. 66)",
+    "JURISDICTION_CH": "Rechtsraum Schweiz (QR-Rechnung, ArG, KMU)",
+    "THEME_LIGHT": "Helles Design aktivieren",
+    "THEME_DARK": "Dunkles Design aktivieren",
+    "PREFERENCES": "ERP-Einstellungen",
+    "LOGOUT": "Abmelden"
+  },
+  "BREADCRUMB": {
+    "HOME": "Startseite",
+    "ORDERS": "Bestellverlauf",
+    "WELCOME": "Willkommen"
+  },
+  "COMMON": {
+    "SELECT": "Auswählen",
+    "SELECTED": "Ausgewählt",
+    "ACTIVE": "Aktiv",
+    "STATUS": "Status",
+    "AMOUNT": "Betrag",
+    "DATE": "Datum",
+    "TOTAL": "Gesamt",
+    "ACTION": "Aktion",
+    "PREVIEW": "Vorschau",
+    "RECONCILE": "Abstimmen",
+    "CLOSE": "Schließen",
+    "DETAILS": "Details",
+    "ALL": "Alle",
+    "ITALY": "Italien",
+    "SWITZERLAND": "Schweiz",
+    "CANCEL": "Abbrechen",
+    "SAVE": "Speichern",
+    "VALIDATION": {
+      "REQUIRED": "Pflichtfeld",
+      "INVALID_EMAIL": "Ungültige E-Mail-Adresse",
+      "INVALID_VALUE": "Ungültiger Wert"
+    },
+    "ADD": "Hinzufügen",
+    "SEARCH": "Suchen",
+    "CONFIRM_DELETE": "Dieses Element löschen?"
+  },
+  "WELCOME": {
+    "TITLE": "Willkommen bei Fattura Facile",
+    "SUBTITLE": "Ihre Plattform für einfache Rechnungs- und Auftragsverwaltung",
+    "QUICK_ACCESS": "Schnellzugriff",
+    "DESC": "Verwalten Sie Ihre Aufträge und überwachen Sie den Umsatz in Echtzeit.",
+    "GO_ORDERS": "Zum Auftragsverlauf"
+  },
+  "DASHBOARD": {
+    "TITLE": "ERP Executive Dashboard",
+    "SUBTITLE": "Finanzielle und operative Übersicht",
+    "ACTIVE_REGIME": "Aktives Regime:",
+    "REGIME_IT_LABEL": "Italien (SDI, F24, D.Lgs. 66/2003)",
+    "REGIME_CH_LABEL": "Schweiz (QR-Rechnung, ArG ArGV 1, KMU/PME)",
+    "REGIME_DESC": "Alle Steuerberechnungen, MWST-Sätze und Rundungen folgen den gesetzlichen Vorgaben des aktuellen Mandanten.",
+    "KPI_REVENUE": "Umsatz laufender Monat",
+    "KPI_PENDING": "Offene Rechnungen",
+    "KPI_ORDERS": "Aktive Aufträge",
+    "KPI_COMPLIANCE": "Rechtskonformitäts-Index",
+    "RECENT_DOCS": "Aktuelle Aktivitäten & Dokumente",
+    "COL_REF": "Referenz",
+    "COL_TYPE": "Typ",
+    "COL_PARTY": "Kunde / Geschäftspartner",
+    "COL_AMOUNT": "Betrag",
+    "COL_STATUS": "Status",
+    "SHOWCASE_TITLE": "Schnellzugriff Showcase",
+    "BTN_QR": "Schweizer QR-Rechnungsgenerator (0.05 CHF & SCOR)",
+    "BTN_ATTENDANCE": "Zeiterfassung & Stempelkarte (ArG / D.Lgs. 66)",
+    "BTN_CLIENTS": "Grenzüberschreitende Kundenkartei IT-CH",
+    "BTN_TIRES": "Reifenhotel (Autowerkstatt)"
+  },
+  "AUTH": {
+    "TITLE": "Fattura Facile ERP",
+    "SUBTITLE": "Grenzüberschreitende Enterprise-Plattform Italien / Schweiz",
+    "TENANT_PRESET": "Unternehmen / Mandanten-Preset",
+    "EMAIL": "E-Mail",
+    "EMAIL_ERROR": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "PASSWORD": "Passwort",
+    "PASSWORD_ERROR": "Passwort erforderlich",
+    "SUBMIT_BTN": "Bei Fattura Facile anmelden",
+    "DEMO_MODE": "Demo-Modus aktiv",
+    "DEMO_INFO1": "Mock Data Engine aktiv (kein externer Server erforderlich)",
+    "DEMO_INFO2": "Wählen Sie einen Mandanten, um Italien (SDI) oder die Schweiz (QR-Rechnung / ArG) zu simulieren.",
+    "REMEMBER": "Angemeldet bleiben",
+    "FORGOT": "Passwort vergessen?",
+    "PASSWORD_MIN": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "SHOW_PASSWORD": "Passwort anzeigen",
+    "HIDE_PASSWORD": "Passwort verbergen",
+    "INVALID_CREDENTIALS": "Ungültige Anmeldedaten"
+  },
+  "ORDERS": {
+    "TITLE": "Bestell- und Rechnungsverlauf",
+    "SUBTITLE": "Übersicht und Verwaltung der letzten Bestellungen",
+    "COUNT": "Anzahl Bestellungen",
+    "REVENUE": "Gesamtumsatz",
+    "COL_ID": "Bestell-ID",
+    "COL_REF": "Referenzcode",
+    "COL_DATE": "Erstelldatum",
+    "COL_ITEMS_COUNT": "Artikelanzahl",
+    "COL_TOTAL": "Gesamtbetrag",
+    "COL_DETAIL": "Detail",
+    "SELECTED_TITLE": "Details der ausgewählten Bestellung",
+    "ITEMS_LABEL": "Artikel:"
+  },
+  "SWISS_QR": {
+    "ACCOUNT_PAYABLE_TO": "Konto / Zahlbar an",
+    "ADDITIONAL_INFO": "Zusätzliche Informationen",
+    "ADDRESS_LABEL": "Straße & Hausnummer",
+    "ADDRESS_PLACEHOLDER": "z.B. Corso Elvezia 18",
+    "AMOUNT_LBL": "Betrag",
+    "CITY_LABEL": "Ort (Città)",
+    "COL_BILL_NUM": "Rechnungs-Nr.",
+    "COL_DEBTOR": "Schuldner",
+    "COL_DUE_DATE": "Fälligkeit",
+    "CREATE_CARD_TITLE": "Neue QR-Rechnung erstellen",
+    "CURRENCY_LBL": "Währung",
+    "DEBTOR_LABEL": "Zahlungspflichtiger / Kunde",
+    "DEBTOR_PLACEHOLDER": "z.B. Bernasconi AG",
+    "DIFF_LABEL": "Differenz:",
+    "FROM_INVOICES": "QR-Rechnungen werden aus Schweizer Rechnungen erzeugt: Öffnen Sie die Aktionen einer Rechnung und wählen Sie QR-Rechnung erstellen.",
+    "LIST_TITLE": "Verzeichnis ausgestellter QR-Rechnungen",
+    "MESSAGE_LABEL": "Unstrukturierte Mitteilung (Zahlungszweck)",
+    "MESSAGE_PLACEHOLDER": "Rechnung für Beratungsdienstleistungen und Lizenzen",
+    "OPEN_INVOICES": "Zu den Rechnungen",
+    "PAYABLE_BY": "Zahlbar durch",
+    "PAYMENT_PART_SUB": "Section paiement / Sezione di pagamento",
+    "PAYMENT_PART_TITLE": "Zahlteil",
+    "PENDING_COLLECTION": "Ausstehende Zahlungen",
+    "POSTAL_LABEL": "PLZ (NPA)",
+    "RAW_AMOUNT_LABEL": "Ursprünglicher Betrag",
+    "RECEIPT_ACCOUNT": "Konto:",
+    "RECEIPT_BENEFICIARY": "Zugunsten von:",
+    "RECEIPT_TITLE": "Empfangsschein (Ricevuta)",
+    "REFERENCE_SCOR": "Strukturierte Referenz (SCOR)",
+    "ROUNDING_LABEL": "Kaufmännische Rundung 0.05 CHF:",
+    "ROUNDING_TITLE": "Rundungsrechner 0,05 CHF",
+    "STANDARDS_TAG": "Swiss Standards v2.2",
+    "STATUS_DRAFT": "Entwurf",
+    "STATUS_PAID": "Bezahlt",
+    "STATUS_PENDING": "Ausstehend",
+    "SUBMIT_BTN": "Schweizer QR-Rechnung erstellen & SCOR validieren",
+    "SUBTITLE": "Erstellung und Verwaltung von QR-Rechnungen mit QR-IBAN, SCOR-Referenz und 0.05 CHF Rundung",
+    "TITLE": "Schweizer QR-Rechnung (QR-Bill)",
+    "TOTAL_BILLS": "QR-Rechnungen gesamt",
+    "TOTAL_REVENUE": "Gesamtumsatz (CHF)",
+    "VOUCHER_TITLE": "Vorschau Zahlteil (Swiss QR Voucher)"
+  },
+  "ATTENDANCE": {
+    "TITLE": "Zeiterfassung & Arbeitszeit-Compliance (IT / CH)",
+    "SUBTITLE": "Stempelkarte, wöchentliche ArG-Höchstarbeitszeitgrenzen (45h/50h) und Ruhezeiten D.Lgs. 66/2003",
+    "TERMINAL_TITLE": "Virtuelles Stempelterminal",
+    "CLOCKED_IN": "Im Dienst (Eingestempelt)",
+    "CLOCKED_OUT": "Nicht im Dienst",
+    "SHIFT_START": "Schichtbeginn heute:",
+    "LOGGED_BREAK": "Erfasste Pause:",
+    "HOURS_TODAY": "Heute gearbeitete Stunden:",
+    "BTN_CLOCK_IN": "Einstempeln (Clock-In)",
+    "BTN_CLOCK_OUT": "Ausstempeln (Clock-Out)",
+    "LIMITS_TITLE": "Wöchentliche Höchstarbeitszeit (ArG / D.Lgs. 66)",
+    "REGIME_LABEL": "Regime:",
+    "REST_COMPLIANT": "11h Ruhezeit konform",
+    "ACCRUALS_TITLE": "Urlaubs- & Freizeitsaldo (Accruals)",
+    "VACATION_REMAINING": "Resturlaub",
+    "TIME_BANK": "Gleitzeit- / Stundenkonto",
+    "ANNUAL_ENTITLEMENT": "Jahresanspruch: {{days}} Tage",
+    "DAYS_TAKEN": "Genommen: {{days}} Tage",
+    "DAYS_SUFFIX": "Tage",
+    "HOURS_SUFFIX": "Std.",
+    "LOG_TITLE": "Stempelprotokoll & Wochenübersicht",
+    "COL_IN": "Kommen",
+    "COL_OUT": "Gehen",
+    "COL_BREAK": "Pause (Min.)",
+    "COL_TOTAL_HOURS": "Gesamtstunden",
+    "COL_SHIFT_STATUS": "Schichtstatus",
+    "COL_COMPLIANCE_NOTES": "Rechtliche Compliance-Hinweise",
+    "SHIFT_CLOSED": "Abgeschlossen",
+    "SHIFT_ACTIVE": "Aktiv",
+    "SHIFT_IN_PROGRESS": "In Bearbeitung..."
+  },
+  "CRM": {
+    "TITLE": "Grenzüberschreitende Kundenkartei (IT / CH)",
+    "SUBTITLE": "Vollständige Verwaltung italienischer (SDI, PEC, MwSt) und Schweizer (UID, QR-IBAN) Steuerprofile",
+    "COMPANY_NAME": "Firmenname",
+    "JURISDICTION": "Rechtsraum",
+    "FISCAL_ID": "Steuernummer / UID",
+    "BILLING_CHANNEL": "Fakturierungskanal",
+    "LOCATION": "Ort",
+    "CLIENTS": {
+      "TITLE": "Kunden",
+      "SUBTITLE": "Kunden- und Lieferantenstamm",
+      "SEARCH_PLACEHOLDER": "Suche nach Firmenname oder MwSt-Nr.",
+      "FILTER_TYPE": "Typ",
+      "NEW": "Neuer Kunde",
+      "EDIT_TITLE": "Kunde bearbeiten",
+      "EMPTY": "Keine Kunden gefunden",
+      "EMPTY_CTA": "Neuen Kunden anlegen",
+      "COLUMNS": {
+        "NAME": "Name",
+        "TYPE": "Typ",
+        "TAX_ID": "MwSt / UID",
+        "EMAIL": "E-Mail",
+        "PHONE": "Telefon",
+        "COUNTRY": "Land",
+        "ACTIONS": "Aktionen"
+      },
+      "TYPES": {
+        "CLIENT": "Kunde",
+        "SUPPLIER": "Lieferant",
+        "BOTH": "Kunde und Lieferant",
+        "LEAD": "Lead"
+      },
+      "ACTIONS": {
+        "EDIT": "{{name}} bearbeiten",
+        "DELETE": "{{name}} löschen",
+        "CONFIRM_DELETE": "Diesen Kunden löschen?",
+        "DELETE_OK": "Löschen"
+      },
+      "MESSAGES": {
+        "CREATED": "Kunde angelegt",
+        "UPDATED": "Kunde aktualisiert",
+        "DELETED": "Kunde gelöscht"
+      },
+      "FORM": {
+        "TYPE": "Typ",
+        "COMPANY_NAME": "Firmenname",
+        "FIRST_NAME": "Vorname",
+        "LAST_NAME": "Nachname",
+        "EMAIL": "E-Mail",
+        "PHONE": "Telefon",
+        "VAT_NUMBER": "MwSt-Nummer",
+        "FISCAL_CODE": "Steuernummer",
+        "UID": "UID (CHE-…)",
+        "SDI_CODE": "SDI-Code",
+        "PEC": "PEC (zertifizierte E-Mail)",
+        "IBAN": "IBAN",
+        "QR_IBAN": "QR-IBAN",
+        "PAYMENT_TERMS": "Zahlungsfrist (Tage)",
+        "ADDRESS": "Adresse",
+        "STREET": "Strasse",
+        "HOUSE_NUMBER": "Hausnummer",
+        "POSTAL_CODE": "PLZ",
+        "CITY": "Ort",
+        "STATE": "Provinz / Kanton",
+        "COUNTRY": "Land (ISO-2)"
+      }
+    }
+  },
+  "TIRE_HOTEL": {
+    "TITLE": "Reifenhotel & Kfz-Werkstatt",
+    "SUBTITLE": "Saisonale Reifeneinlagerung, Profiltiefenmessung in mm, Lagerplatzverwaltung und Reifenwechsel-Erinnerungen",
+    "SETS_STORED": "Eingelagerte Radsätze",
+    "WINTER_TIRES": "Winterreifen im Lager",
+    "SUMMER_TIRES": "Sommerreifen im Lager",
+    "LOG_TITLE": "Reifeneinlagerungs-Register",
+    "COL_PLATE_MODEL": "Kennzeichen & Fahrzeugmodell",
+    "COL_CUSTOMER": "Kunde",
+    "COL_SEASON": "Saison",
+    "COL_SIZE_BRAND": "Größe & Marke",
+    "COL_TREAD": "Profiltiefe (mm) [Vorn / Hinten]",
+    "COL_RACK": "Regal / Lagerort",
+    "COL_DATE": "Einlagerungsdatum",
+    "COL_REMINDER": "Saisonerinnerung"
+  },
+  "SETTINGS": {
+    "TITLE": "Mandantenverwaltung & ERP-Einstellungen",
+    "SUBTITLE": "Zweigstellen, EZB/SNB-Wechselkurse, RBAC-Rollen und Audit-Log nach DSGVO/Schweizer DSG",
+    "CARD_TITLE": "Unternehmens- & Mandantenkonfiguration",
+    "COL_NAME": "Mandantenname",
+    "COL_JURISDICTION": "Rechtsraum",
+    "COL_CURRENCY": "Hauptwährung",
+    "COL_FISCAL_ID": "Steueridentifikation",
+    "COL_ADDRESS": "Unternehmenssitz"
+  },
+  "ACCOUNTING": {
+    "TITLE": "Finanzbuchhaltung & Dual-Ledger Besteuerung",
+    "SUBTITLE": "Italienischer EWG-Kontenrahmen und Schweizer KMU-Kontenplan, periodische MWST-Abrechnung und ESTV/AFC-Meldung",
+    "CARD_TITLE": "Kontenplan & Steuerabgleich",
+    "COL_CODE": "Kontonummer",
+    "COL_DESC": "Kontobezeichnung",
+    "COL_STD": "Rechnungslegungsstandard",
+    "COL_BALANCE": "Aktueller Saldo",
+    "COL_TAX": "MWST-/Steuerzuordnung"
+  },
+  "PURCHASES": {
+    "TITLE": "Einkauf & Kreditorenbuchhaltung (AP)",
+    "SUBTITLE": "SDI-Rechnungsempfang, Schweizer QR-Scanner und ISO 20022 pain.001 Zahlungsdateien",
+    "KPI_RECONCILE": "Zu prüfende Eingangsrechnungen",
+    "KPI_PAIN001": "Ausstehende pain.001 Zahlungen",
+    "KPI_SEPA": "Geplante SEPA-Überweisungen",
+    "CARD_TITLE": "Eingehende Lieferantenrechnungen (SDI / QR-Rechnung)",
+    "COL_PROTOCOL": "Protokoll / Ref.",
+    "COL_VENDOR": "Lieferant",
+    "COL_CHANNEL": "Empfangskanal",
+    "COL_DUE": "Fälligkeitsdatum",
+    "COL_APPROVAL": "Genehmigungsstatus"
+  },
+  "TREASURY": {
+    "TITLE": "Liquiditäts- & Bankmanagement",
+    "SUBTITLE": "Kontoauszugsimport nach ISO 20022 (camt.053 / camt.054), CBI-Format und automatischer Abgleich",
+    "KPI_UBS": "Saldo UBS Schweiz (CHF)",
+    "KPI_INTESA": "Saldo Intesa Sanpaolo (EUR)",
+    "KPI_ACCURACY": "Auto-Match Trefferquote",
+    "CARD_TITLE": "Abzugleichende Bankbewegungen",
+    "COL_VALUE_DATE": "Valutadatum",
+    "COL_BANK": "Bank / Konto",
+    "COL_DESC": "Beschreibung / Referenz",
+    "COL_STATUS": "Abgleichstatus"
+  },
+  "INVENTORY": {
+    "TITLE": "Grenzüberschreitende Lagerwirtschaft & Logistik",
+    "SUBTITLE": "Artikelkataloge, Lieferscheine, HS/TARIC-Zollcodes und Exportabwicklung IT-CH",
+    "CARD_TITLE": "Mehrlager-Bestände (Mailand / Chiasso)",
+    "COL_SKU": "Artikelnummer (SKU)",
+    "COL_DESC": "Beschreibung",
+    "COL_WAREHOUSE": "Lagerstandort",
+    "COL_QTY": "Lagerbestand",
+    "COL_HS": "Zolltarifnummer HS",
+    "COL_PRICE": "Einzelpreis"
+  },
+  "FIELD_SERVICE": {
+    "TITLE": "Technischer Kundendienst & Serviceeinsätze",
+    "SUBTITLE": "Helpdesk-Tickets mit SLA, Technikerplanung und digital signierte Serviceberichte",
+    "CARD_TITLE": "Aktive Service-Tickets",
+    "COL_TICKET_ID": "Ticket-ID",
+    "COL_CLIENT": "Kunde",
+    "COL_SUBJECT": "Einsatzgegenstand",
+    "COL_TECH": "Zugewiesener Techniker",
+    "COL_SLA": "Verbleibende SLA"
+  },
+  "RENT": {
+    "TITLE": "Fuhrpark & Fahrzeugvermietung",
+    "SUBTITLE": "Kurz- und Langzeitmietplanung, digitale Schadensprotokolle, Schweizer E-Vignetten und Mautsysteme",
+    "CARD_TITLE": "Flottenstatus & Laufende Verträge",
+    "COL_PLATE_MODEL": "Kennzeichen & Modell",
+    "COL_TYPE": "Vertragsart",
+    "COL_CLIENT": "Mieter / Kunde",
+    "COL_VIGNETTE": "Schweizer Autobahnvignette",
+    "COL_RETURN": "Voraussichtliche Rückgabe",
+    "VIGNETTE_ACTIVE": "E-Vignette aktiv",
+    "VIGNETTE_NONE": "Nicht erforderlich"
+  },
+  "CONSTRUCTION": {
+    "TITLE": "Baustellen, Anlagen & SIA/DiCo-Normen",
+    "SUBTITLE": "Baufortschrittsmeldungen (SAL/WPS), SIA 118 / NIV (CH), DiCo-Konformität (IT) und Reverse Charge",
+    "CARD_TITLE": "Laufende Baustellen und Projekte",
+    "COL_SITE_CODE": "Baustellencode",
+    "COL_CLIENT": "Bauherr / Auftraggeber",
+    "COL_LOCATION_REGIME": "Standort & Regime",
+    "COL_SAL": "Baufortschritt (SAL)",
+    "COL_TECH_COMPLIANCE": "Technische Konformität",
+    "COL_VAT_REGIME": "MWST-Regime"
+  },
+  "PROFESSIONALS": {
+    "TITLE": "Kanzleien, Praxen & Beratung",
+    "SUBTITLE": "Mandatsakten, Stundenerfassung, Honorarnoten mit Vorsorgebeiträgen und Quellensteuer",
+    "CARD_TITLE": "Laufende Mandate & Akten",
+    "COL_CASE_NUM": "Aktenzeichen",
+    "COL_CLIENT": "Mandant",
+    "COL_MANDATE": "Mandatsgegenstand",
+    "COL_HOURS": "Erfasste Stunden",
+    "COL_KYC_AML": "KYC / GwG Prüfung",
+    "COL_FEE": "Honorar / Honorarnote",
+    "AML_COMPLIANT": "GwG-konform"
+  },
+  "MANUFACTURING": {
+    "TITLE": "Produktion & MRP-Planung",
+    "SUBTITLE": "Mehrstufige Stücklisten (BOM), Arbeitsplätze, Fertigungsaufträge und CE/CH-Konformität",
+    "CARD_TITLE": "Aktive Fertigungsaufträge",
+    "COL_ORDER_NUM": "Auftrags-Nr.",
+    "COL_PRODUCT": "Fertigprodukt",
+    "COL_QTY": "Menge",
+    "COL_LINE": "Linie / Arbeitsplatz",
+    "COL_PROGRESS": "Fortschritt",
+    "COL_QA": "Qualitätsstatus"
+  },
+  "RETAIL": {
+    "TITLE": "Kassenverkauf & Touch-POS",
+    "SUBTITLE": "Anbindung von Fiskal-Kassen RT (IT) und Schweizer Bezahlterminals (Twint, SumUp, Worldline)",
+    "CARD_TITLE": "Tagesabschlüsse & Kassensitzungen",
+    "COL_POS": "Kassenarbeitsplatz",
+    "COL_CASHIER": "Kassierer",
+    "COL_REGIME": "Steuerregime",
+    "COL_TOTAL": "Tageseinnahmen",
+    "COL_DEVICE": "Angeschlossenes Gerät",
+    "COL_STATUS": "Abschlussstatus"
+  },
+  "HR": {
+    "TITLE": "Personalwesen & Grenzgänger-Lohnabrechnung (IT / CH)",
+    "SUBTITLE": "Verwaltung von IT-CH Grenzgängern, AHV/ALV/BVG-Abzüge, Quellensteuer und Swissdec ELM / LUL-Datenübermittlung",
+    "CARD_TITLE": "Mitarbeiter & Steuer-/Sozialversicherungssystem",
+    "COL_EMPLOYEE": "Mitarbeiter",
+    "COL_ROLE": "Funktion",
+    "COL_CONTRACT": "Vertragsart",
+    "COL_REGIME": "Steuerregime",
+    "COL_PENSION": "Pflichtvorsorge",
+    "COL_TRANSMISSION": "Übermittlungsstatus"
+  },
+  "ERRORS": {
+    "SESSION_EXPIRED": "Sitzung abgelaufen. Bitte erneut anmelden.",
+    "NETWORK": "Server nicht erreichbar. Bitte Verbindung prüfen.",
+    "GENERIC": "Fehler {{status}}"
+  },
+  "SALES": {
+    "INVOICES": {
+      "TITLE": "Rechnungen",
+      "SUBTITLE": "Verkaufsrechnungen IT / CH",
+      "SEARCH_PLACEHOLDER": "Suche nach Nummer oder Kunde",
+      "FILTER_PAYMENT": "Zahlungsstatus",
+      "FILTER_JURISDICTION": "Rechtsraum",
+      "NEW": "Neue Rechnung",
+      "DUPLICATE_TITLE": "Dokument duplizieren (neuer Entwurf)",
+      "EMPTY": "Keine Rechnungen gefunden",
+      "EMPTY_CTA": "Neue Rechnung erstellen",
+      "COLUMNS": {
+        "NUMBER": "Dokument-Nr.",
+        "DATE": "Ausstellungsdatum",
+        "DUE_DATE": "Fälligkeit",
+        "NET": "Netto",
+        "VAT": "MwSt",
+        "TOTAL": "Total",
+        "PAYMENT_STATUS": "Status",
+        "JURISDICTION": "Rechtsraum",
+        "ACTIONS": "Aktionen"
+      },
+      "STATUS": {
+        "DRAFT": "Entwurf",
+        "ISSUED": "Ausgestellt",
+        "PAID": "Bezahlt",
+        "CANCELLED": "Storniert",
+        "OVERDUE": "Überfällig",
+        "PROFORMA": "Proforma"
+      },
+      "PAYMENT": {
+        "UNPAID": "Unbezahlt",
+        "PARTIALLY_PAID": "Teilweise bezahlt",
+        "PAID": "Bezahlt",
+        "OVERDUE": "Überfällig"
+      },
+      "JURISDICTIONS": {
+        "IT": "Italien",
+        "CH": "Schweiz"
+      },
+      "TYPES": {
+        "STANDARD": "Standard",
+        "SDI_ELECTRONIC": "SDI-E-Rechnung",
+        "CH_QR_BILL": "Swiss QR-Rechnung",
+        "CREDIT_NOTE": "Gutschrift",
+        "PROFORMA": "Proforma"
+      },
+      "ACTIONS": {
+        "MORE": "Aktionen für {{number}}",
+        "DOWNLOAD_PDF": "PDF herunterladen",
+        "SEND_EMAIL": "Per E-Mail senden",
+        "SEND_SDI": "An SDI senden",
+        "GENERATE_QR_BILL": "QR-Rechnung erzeugen",
+        "CONVERT_PROFORMA": "Proforma umwandeln",
+        "DUPLICATE": "Dokument duplizieren",
+        "CONFIRM_EMAIL": "Rechnung per E-Mail an den Kunden senden?",
+        "CONFIRM_SDI": "Möchten Sie dieses Dokument wirklich an SDI senden? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+        "CONFIRM_PROFORMA": "Proforma in offizielle nummerierte Rechnung umwandeln?",
+        "OK": "Bestätigen"
+      },
+      "MESSAGES": {
+        "EMAIL_SENT": "E-Mail gesendet",
+        "SDI_SENT": "Dokument zur SDI-Übermittlung akzeptiert",
+        "QR_GENERATED": "QR-Rechnung erzeugt",
+        "PROFORMA_CONVERTED": "Proforma in Rechnung umgewandelt",
+        "CREATED": "Rechnung erstellt"
+      },
+      "FORM": {
+        "CONTACT": "Kunde",
+        "CONTACT_PLACEHOLDER": "Kunde suchen",
+        "NUMBER": "Dokumentnummer",
+        "TYPE": "Typ",
+        "DATE": "Ausstellungsdatum",
+        "DUE_DATE": "Fälligkeit",
+        "JURISDICTION": "Rechtsraum",
+        "CURRENCY": "Währung",
+        "ITEMS": "Positionen",
+        "ADD_ITEM": "Position hinzufügen",
+        "REMOVE_ITEM": "Position {{n}} entfernen",
+        "NOTES": "Notizen",
+        "SUBMIT": "Rechnung erstellen"
+      },
+      "ITEM": {
+        "DESCRIPTION": "Beschreibung",
+        "QTY": "Menge",
+        "PRICE": "Preis",
+        "TAX_RATE": "MwSt-Satz %",
+        "DISCOUNT": "Rabatt %",
+        "TAX_AMOUNT": "MwSt-Betrag",
+        "SUBTOTAL": "Zwischensumme"
+      },
+      "TOTALS": {
+        "NET": "Netto",
+        "VAT": "MwSt",
+        "GROSS": "Total"
+      }
+    }
+  },
+  "APP": {
+    "LOADING": "Wird geladen…",
+    "LANGUAGE": "Sprache",
+    "MAIN_NAV": "Hauptnavigation",
+    "USER_MENU": "Kontomenü",
+    "NOT_PORTED_TITLE": "Demnächst",
+    "NOT_PORTED_BODY": "Dieser Bereich wurde noch nicht in die neue App übernommen.",
+    "RETRY": "Erneut versuchen",
+    "EMPTY": "Keine Daten",
+    "THEME": "Design",
+    "THEME_LIGHT": "Helles Design",
+    "THEME_DARK": "Dunkles Design",
+    "THEME_SYSTEM": "Systemdesign",
+    "BREADCRUMB": "Pfadnavigation",
+    "PAGE_LOAD_FAILED": "Diese Seite konnte nicht geladen werden. Prüfen Sie die Verbindung und versuchen Sie es erneut."
+  },
+  "system": {
+    "backups": {
+      "columns": {
+        "filename": "ZIP-Archiv",
+        "size": "Größe",
+        "status": "Status",
+        "createdAt": "Erstellt"
+      },
+      "status": {
+        "completed": "Abgeschlossen",
+        "in_progress": "Läuft",
+        "failed": "Fehlgeschlagen"
+      },
+      "actions": {
+        "create": "Backup erstellen",
+        "chooseZip": "ZIP-Archiv wählen"
+      }
+    }
+  },
+  "alerts": {
+    "columns": {
+      "title": "Titel",
+      "severity": "Schweregrad",
+      "status": "Status",
+      "createdAt": "Erstellt"
+    },
+    "severity": {
+      "info": "Information",
+      "warning": "Warnung",
+      "critical": "Kritisch"
+    }
+  },
+  "settings": {
+    "columns": {
+      "branchName": "Filiale",
+      "code": "Code",
+      "city": "Stadt",
+      "country": "Land",
+      "branchType": "Typ",
+      "userName": "Benutzer",
+      "email": "E-Mail",
+      "role": "Hauptrolle",
+      "status": "Status",
+      "lastLogin": "Letzte Anmeldung",
+      "roleName": "Rolle",
+      "description": "Beschreibung",
+      "dateTime": "Datum und Uhrzeit",
+      "user": "Benutzer",
+      "event": "Aktion / Ereignis",
+      "module": "Modul",
+      "ipAddress": "IP-Adresse"
+    },
+    "actions": {
+      "syncRates": "Wechselkurse synchronisieren"
+    }
+  },
+  "treasury": {
+    "columns": {
+      "valueDate": "Valutadatum",
+      "description": "Beschreibung",
+      "counterparty": "Gegenpartei / Referenz",
+      "amount": "Betrag",
+      "category": "Kategorie",
+      "status": "Status",
+      "bank": "Bank",
+      "iban": "IBAN",
+      "currency": "Währung",
+      "balance": "Verfügbarer Saldo",
+      "statementDate": "Auszugsdatum",
+      "format": "Format",
+      "closingBalance": "Schlusssaldo",
+      "reconciliation": "Abgleich"
+    },
+    "status": {
+      "reconciled": "Abgeglichen",
+      "toReconcile": "Abzugleichen"
+    },
+    "statementStatus": {
+      "imported": "Importiert",
+      "reconciled": "Abgeglichen",
+      "partially_reconciled": "Teilweise abgeglichen"
+    },
+    "actions": {
+      "autoMatch": "Automatischer Abgleich",
+      "reconcile": "Abgleichen"
+    },
+    "import": {
+      "format": "Dateiformat",
+      "camt": "CAMT.053 XML (Schweiz / SEPA)",
+      "cbi": "CBI-Auszug (Italien)",
+      "chooseFile": "Datei wählen"
+    }
+  },
+  "accounting": {
+    "columns": {
+      "entryNumber": "Buchungsnummer",
+      "date": "Buchungsdatum",
+      "description": "Beschreibung / Grund",
+      "totalDebit": "Summe Soll",
+      "totalCredit": "Summe Haben",
+      "accountCode": "Kontonummer",
+      "accountName": "Kontobezeichnung",
+      "accountType": "Typ",
+      "balance": "Aktueller Saldo",
+      "period": "Steuerperiode",
+      "year": "Jahr",
+      "jurisdiction": "Rechtsraum",
+      "vatCollected": "Umsatzsteuer (Verkäufe)",
+      "vatPaid": "Vorsteuer (Einkäufe)",
+      "vatBalance": "MWST-Saldo",
+      "status": "Status"
+    },
+    "accountType": {
+      "asset": "Aktiva",
+      "liability": "Passiva",
+      "equity": "Eigenkapital",
+      "revenue": "Ertrag",
+      "expense": "Aufwand"
+    },
+    "vatStatus": {
+      "draft": "Entwurf",
+      "settled": "Abgerechnet",
+      "paid": "Bezahlt"
+    },
+    "actions": {
+      "lines": "Zeilen"
+    }
+  },
+  "purchases": {
+    "form": {
+      "createTitle": "Neue Bestellung",
+      "orderDate": "Bestelldatum",
+      "deliveryDate": "Erwartete Lieferung",
+      "unit": "Mengeneinheit"
+    },
+    "messages": {
+      "deleted": "Bestellung gelöscht"
+    }
+  },
+  "expenses": {
+    "columns": {
+      "date": "Datum",
+      "description": "Beschreibung / Grund",
+      "merchant": "Händler / Lieferant",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "status": "Status"
+    },
+    "actions": {
+      "export": "CSV exportieren"
+    }
+  }
+}

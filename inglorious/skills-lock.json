@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "skills": {
+    "forge": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/forge/SKILL.md",
+      "computedHash": "b2b5306a8b843f04d588bfe8614bb1a1b83783dfec6f6fe5920f6cf4d33d9fb9"
+    },
+    "forge-best-practices": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/forge-best-practices/SKILL.md",
+      "computedHash": "790fb1698abaa7347105241aad924935fb31088814a09e180b22a7b35cf41b39"
+    },
+    "i18n": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/i18n/SKILL.md",
+      "computedHash": "713984e2e24331297ab4c785b1c5d4ad6fd25aaaf93402ed8c73c7ee1230b760"
+    },
+    "store": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/store/SKILL.md",
+      "computedHash": "d7ec3f43ba1a90faf8689a69518ea10122e71e429774c2db4e0fcde75ddbdb6a"
+    },
+    "ui": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui/SKILL.md",
+      "computedHash": "bdc55479fd21802ebbefc1b6957441152c10acd07f544e67c1fc061d878d05ed"
+    },
+    "ui-best-practices": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-best-practices/SKILL.md",
+      "computedHash": "b86b4c614b461e9ef0f5defd910ad724c2337a25579ecf9b1419beb70d78d893"
+    },
+    "utils": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/utils/SKILL.md",
+      "computedHash": "725cd057ce893f5dae18976fd1c06d356fd780685a2f543f0fa69b30d980530b"
+    },
+    "web": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web/SKILL.md",
+      "computedHash": "e8b41c2b8cbbf84ebfa674d32db8d997dd9b38ec0f8a97b5273932bef2bd29e2"
+    },
+    "web-best-practices": {
+      "source": "IngloriousCoderz/forge-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-best-practices/SKILL.md",
+      "computedHash": "36732e0fe7fccb30f2e4e7d6e071ac233dcb00267b493059a544bb1b7526edce"
+    }
+  }
+}

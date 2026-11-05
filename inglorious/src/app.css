@@ -1,0 +1,674 @@
+.ff-app {
+  min-height: 100dvh;
+  background: var(--iw-color-bg);
+  color: var(--iw-color-text);
+}
+
+.ff-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ff-brand-accent {
+  color: var(--iw-color-link);
+}
+
+.ff-shell {
+  /* The Drawer's own width. */
+  --ff-sidebar-width: 16rem;
+
+  &.ff-shell-collapsed {
+    --ff-sidebar-width: 4rem;
+  }
+
+  .ff-main {
+    margin-inline-start: var(--ff-sidebar-width);
+    min-width: 0;
+    transition: margin var(--iw-transition-fast);
+  }
+
+  .ff-content {
+    padding: var(--iw-space-4) var(--iw-space-5) var(--iw-space-6);
+  }
+
+  .ff-app-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--iw-space-2);
+  }
+}
+
+/* Dark in both modes: the sidebar takes its own text and surface tokens, so
+   the drawer's controls (the collapse button) follow along. */
+.ff-sidebar.iw-drawer {
+  --iw-drawer-bg: var(--ff-sidebar-bg);
+  --iw-color-text: var(--ff-sidebar-text);
+  --iw-color-text-secondary: var(--ff-sidebar-heading);
+  --iw-color-border: var(--ff-sidebar-border);
+  --iw-color-surface-hover: var(--ff-sidebar-hover);
+  --iw-color-surface-active: var(--ff-sidebar-hover);
+  --iw-color-accent: var(--ff-sidebar-text);
+  --iw-button-ghost-bg-hover: var(--ff-sidebar-hover);
+  color-scheme: dark;
+  border-inline-end: 1px solid var(--ff-sidebar-border);
+  box-shadow: 2px 0 8px rgb(0 0 0 / 0.3);
+
+  .iw-drawer-header {
+    background: rgb(0 0 0 / 0.25);
+  }
+
+  .ff-brand-accent {
+    color: var(--ff-brand-accent);
+  }
+}
+
+.ff-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--iw-space-3);
+  color: var(--ff-sidebar-text-strong);
+  font-size: 1.125rem;
+  font-weight: var(--iw-font-weight-bold);
+  letter-spacing: -0.02em;
+  text-decoration: none;
+
+  img {
+    flex-shrink: 0;
+    border-radius: var(--iw-radius-md);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ff-brand-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* The Angular menu: one size for groups and links, roomy rows, full-width highlight. */
+.ff-nav {
+  padding-block: var(--iw-space-2);
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ff-nav-group-label,
+  .ff-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--iw-space-3);
+    min-height: 2.5rem;
+    margin-block: var(--iw-space-1);
+    padding: var(--iw-space-2) var(--iw-space-3) var(--iw-space-2)
+      var(--iw-space-4);
+    white-space: nowrap;
+  }
+
+  .ff-nav-group-label {
+    width: 100%;
+    border: 0;
+    background: none;
+    color: var(--ff-sidebar-text);
+    /* After the shorthand: `font: inherit` would reset the size too. */
+    font: inherit;
+    font-size: var(--iw-font-size-sm);
+    text-align: start;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--ff-sidebar-hover);
+      color: var(--ff-sidebar-text-strong);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ff-brand-accent);
+      outline-offset: -2px;
+    }
+
+    /* A long name wraps rather than losing its end. */
+    .ff-nav-group-name {
+      flex: 1;
+      min-width: 0;
+      white-space: normal;
+    }
+
+    .ff-nav-chevron {
+      font-size: 0.625rem;
+      min-width: auto;
+      transition: transform var(--iw-transition-fast);
+    }
+
+    &[aria-expanded="true"] .ff-nav-chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  .ff-nav-group ul .ff-nav-link {
+    padding-inline-start: var(--iw-space-10);
+  }
+
+  .ff-nav-link {
+    overflow: hidden;
+    color: var(--ff-sidebar-text);
+    font-size: var(--iw-font-size-sm);
+    text-overflow: ellipsis;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--ff-sidebar-hover);
+      color: var(--ff-sidebar-text-strong);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ff-brand-accent);
+      outline-offset: -2px;
+    }
+
+    &.ff-nav-link-current {
+      background: var(--ff-sidebar-current);
+      color: var(--ff-sidebar-text-strong);
+    }
+  }
+}
+
+/* Menu icons at ng-zorro's 16px. */
+.ff-nav :is(.ff-nav-link, .ff-nav-group-label) > .iw-icon:not(.ff-nav-chevron) {
+  font-size: 1rem;
+}
+
+/* Collapsed: one column of icons, the group headings out of the way. */
+.ff-shell-collapsed .ff-nav {
+  .ff-nav-group-label {
+    display: none;
+  }
+
+  .ff-nav-group ul .ff-nav-link,
+  .ff-nav-link {
+    justify-content: center;
+    padding-inline: 0;
+    font-size: 1rem;
+  }
+}
+
+.ff-shell-collapsed .ff-brand {
+  justify-content: center;
+}
+
+.ff-page-header {
+  margin-block-end: var(--iw-space-5);
+
+  h1 {
+    margin: 0;
+    font-size: var(--iw-font-size-2xl);
+    font-weight: var(--iw-font-weight-semibold);
+  }
+
+  p {
+    margin: var(--iw-space-2) 0 0;
+    color: var(--iw-color-text-secondary);
+  }
+}
+
+.ff-grid-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--iw-space-2);
+
+  .ff-spacer {
+    flex: 1;
+  }
+}
+
+.ff-sub-text {
+  font-size: var(--iw-font-size-sm);
+  color: var(--iw-color-text-secondary);
+}
+
+.ff-row-actions {
+  display: flex;
+  gap: var(--iw-space-1);
+}
+
+.ff-empty {
+  padding: var(--iw-space-6);
+  text-align: center;
+  color: var(--iw-color-text-secondary);
+}
+
+.ff-form-drawer.iw-drawer {
+  width: min(35rem, 100vw);
+}
+
+.ff-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--iw-space-4);
+  padding: var(--iw-space-4);
+
+  .ff-fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: var(--iw-space-4);
+    margin: 0;
+    padding: var(--iw-space-4);
+    border: 1px solid var(--iw-color-border);
+    border-radius: var(--iw-radius-md);
+  }
+
+  .ff-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--iw-space-2);
+  }
+}
+
+.ff-login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(26rem, 100% - 2rem);
+  min-height: 100dvh;
+  margin-inline: auto;
+
+  .ff-login-header {
+    text-align: center;
+    margin-block-end: var(--iw-space-6);
+
+    h1 {
+      margin: 0;
+    }
+
+    p {
+      color: var(--iw-color-text-secondary);
+    }
+  }
+
+  /* The eye sits inside the input box, whatever shows below it. Without anchor
+     positioning it keeps to the bottom, which an error message pushes down. */
+  .ff-password {
+    position: relative;
+
+    .iw-input-frame {
+      anchor-name: --ff-password-frame;
+    }
+
+    .ff-password-toggle {
+      position: absolute;
+      inset-inline-end: var(--iw-space-1);
+      inset-block-end: var(--iw-space-1);
+
+      @supports (anchor-name: --ff-password-frame) {
+        position-anchor: --ff-password-frame;
+        inset-block: anchor(top) anchor(bottom);
+        inset-inline-end: calc(anchor(end) + var(--iw-space-1));
+        margin-block: auto;
+      }
+    }
+  }
+
+  /* The theme's link teal: alone on its line, it needs no underline until hovered. */
+  .ff-login-options a {
+    color: var(--iw-color-link);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .ff-login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--iw-space-2);
+  }
+}
+
+.ff-workspace {
+  display: flex;
+  align-items: center;
+  gap: var(--iw-space-2);
+}
+
+.ff-card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--iw-space-2);
+
+  .iw-card-title {
+    margin: 0;
+  }
+}
+
+.ff-dashboard-banner {
+  margin-block-end: var(--iw-space-5);
+}
+
+.ff-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--iw-space-4);
+  margin-block-end: var(--iw-space-5);
+}
+
+/* The Angular statistic colors, one shade darker for contrast on white. */
+.ff-kpi {
+  --ff-kpi-color: var(--iw-color-primary);
+
+  &.ff-kpi-warning {
+    --ff-kpi-color: #b45309;
+  }
+
+  &.ff-kpi-success {
+    --ff-kpi-color: var(--iw-color-success);
+  }
+
+  &.ff-kpi-accent {
+    --ff-kpi-color: #6d28d9;
+  }
+
+  padding: var(--iw-space-2) 0;
+
+  .ff-kpi-title {
+    color: var(--iw-color-text-secondary);
+  }
+
+  .ff-kpi-value {
+    margin-block-start: var(--iw-space-2);
+    color: var(--ff-kpi-color);
+    font-size: 1.5rem;
+    font-weight: var(--iw-font-weight-normal);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.iw-theme-dark .ff-kpi {
+  &.ff-kpi-warning {
+    --ff-kpi-color: #fbbf24;
+  }
+
+  &.ff-kpi-success {
+    --ff-kpi-color: #34d399;
+  }
+
+  &.ff-kpi-accent {
+    --ff-kpi-color: #a78bfa;
+  }
+}
+
+.ff-dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--iw-space-4);
+  align-items: start;
+
+  @media (width < 64rem) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ff-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--iw-space-3);
+}
+
+.ff-shortcut.iw-button {
+  justify-content: flex-start;
+  gap: var(--iw-space-3);
+  min-height: 2.5rem;
+  font-size: var(--iw-font-size-sm);
+}
+
+/* The Angular banner: the regime in body text, the explanation muted. */
+.ff-dashboard-banner {
+  .iw-alert-icon .iw-icon {
+    font-size: 1.5rem;
+  }
+
+  .iw-alert-title {
+    color: var(--iw-color-text);
+    font-size: var(--iw-font-size-lg);
+    font-weight: var(--iw-font-weight-normal);
+  }
+
+  .iw-alert-description {
+    color: var(--iw-color-text-secondary);
+  }
+}
+
+/* An empty table's message under its header, as ng-zorro's empty state. */
+.ff-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--iw-space-2);
+  margin: 0;
+  padding-block: var(--iw-space-8);
+  color: var(--iw-color-text-secondary);
+}
+
+.ff-detail-card {
+  margin-block-start: var(--iw-space-4);
+}
+
+.ff-detail-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--iw-space-1) var(--iw-space-4);
+  margin: 0;
+
+  dt {
+    font-weight: var(--iw-font-weight-semibold);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.ff-detail-heading {
+  margin-block: var(--iw-space-4) var(--iw-space-2);
+  font-size: 1rem;
+}
+
+.ff-tread {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--iw-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ff-attendance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--iw-space-4);
+  margin-block-end: var(--iw-space-4);
+}
+
+.ff-terminal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--iw-space-4);
+
+  .ff-terminal-status {
+    display: flex;
+    align-items: center;
+    gap: var(--iw-space-2);
+    margin: 0;
+    font-weight: var(--iw-font-weight-semibold);
+  }
+}
+
+.ff-status-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--iw-radius-full);
+  background: var(--iw-color-text-secondary);
+
+  &.ff-status-dot-on {
+    background: var(--iw-color-success);
+    box-shadow: 0 0 0 0.25rem
+      color-mix(in srgb, var(--iw-color-success) 25%, transparent);
+  }
+}
+
+.ff-gauge {
+  display: flex;
+  align-items: center;
+  gap: var(--iw-space-5);
+
+  .ff-gauge-value {
+    margin: 0 0 var(--iw-space-1);
+    font-size: 1.25rem;
+  }
+}
+
+.ff-compliance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--iw-space-2);
+
+  .iw-icon {
+    color: var(--iw-color-success);
+  }
+}
+
+/* A form in two columns, as the Angular dialogs laid out their fields. */
+.ff-form.ff-form-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+
+  .iw-alert,
+  .ff-form-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.ff-amount-positive {
+  color: var(--iw-color-success);
+}
+
+.ff-amount-negative {
+  color: var(--iw-color-error);
+}
+
+.iw-theme-dark {
+  .ff-amount-positive {
+    color: #34d399;
+  }
+
+  .ff-amount-negative {
+    color: #f87171;
+  }
+}
+
+/* Muted, as the Angular breadcrumb: the page title is what stands out. */
+.ff-breadcrumbs {
+  margin-block-end: var(--iw-space-4);
+  font-size: var(--iw-font-size-sm);
+
+  .iw-breadcrumbs-link {
+    color: var(--iw-color-text-secondary);
+
+    &:hover {
+      color: var(--iw-color-text);
+    }
+  }
+}
+
+.ff-user-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--iw-space-1);
+  color: var(--iw-color-text);
+
+  span {
+    color: var(--iw-color-text-secondary);
+    font-size: var(--iw-font-size-sm);
+  }
+}
+
+/* The profile trigger: an avatar and the name, without the ghost button's underline. */
+.ff-user-trigger.iw-button {
+  gap: var(--iw-space-2);
+  font-size: var(--iw-font-size-base);
+  font-weight: var(--iw-font-weight-medium);
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    text-decoration: none;
+  }
+}
+
+.ff-user-menu .iw-menu-item:has(.ff-menu-danger) {
+  color: var(--iw-color-error);
+}
+
+.ff-form-drawer.ff-form-drawer-wide.iw-drawer {
+  width: min(42rem, 100vw);
+}
+
+/* A journal line: account, debit, credit, remove. */
+.ff-ledger-line {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--iw-space-2);
+  align-items: start;
+}
+
+/* An invoice line: the description over its amounts, net, remove. */
+.ff-invoice-line {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(6rem, auto) auto;
+  gap: var(--iw-space-2);
+  align-items: center;
+  padding-block: var(--iw-space-2);
+  border-bottom: 1px solid var(--iw-color-border, currentColor);
+}
+
+.ff-invoice-line-description {
+  grid-column: 1 / -1;
+}
+
+/* Swiss QR-bill: the registry and calculator beside the voucher preview. */
+.ff-qr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 13fr) minmax(0, 11fr);
+  gap: var(--iw-space-4);
+  align-items: start;
+}
+
+.ff-qr-column {
+  display: grid;
+  gap: var(--iw-space-4);
+}
+
+.ff-qr-rounding {
+  margin-block-start: var(--iw-space-3);
+}
+
+.ff-qr-address {
+  display: flex;
+  flex-direction: column;
+}
+
+.ff-qr-receipt {
+  margin-block-start: var(--iw-space-4);
+  padding-block-start: var(--iw-space-4);
+  border-top: 1px dashed currentColor;
+}
+
+@media (width < 64rem) {
+  .ff-qr-layout {
+    grid-template-columns: 1fr;
+  }
+}

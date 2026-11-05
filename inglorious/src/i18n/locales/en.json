@@ -1,0 +1,1048 @@
+{
+  "accounting": {
+    "chartOfAccounts": "Chart of Accounts",
+    "entryDetailTitle": "Journal Entry Detail {{number}}",
+    "errors": {
+      "unbalancedEntry": "Journal entry must be balanced: Debit = Credit"
+    },
+    "form": {
+      "accountIdPlaceholder": "Account ID / Code",
+      "creditPlaceholder": "Credit",
+      "date": "Accounting Date",
+      "debitPlaceholder": "Debit",
+      "description": "Description / Reason",
+      "descriptionPlaceholder": "E.g. Bank transfer booking...",
+      "entryNumber": "Entry Number",
+      "entryNumberPlaceholder": "E.g. GL-2026-0042",
+      "linesTitle": "Accounting Lines (Debit / Credit)",
+      "title": "New Journal Entry",
+      "totalCredit": "Total Credit",
+      "totalDebit": "Total Debit"
+    },
+    "generalLedger": "General Ledger",
+    "messages": {
+      "entrySaved": "Journal entry recorded successfully"
+    },
+    "searchPlaceholder": "Search number or reason...",
+    "subtitle": "Cross-border dual-ledger double-entry system for IT (SDI) and CH (CO/PCO) tax rules",
+    "table": {
+      "account": "Account",
+      "credit": "Credit (€/CHF)",
+      "debit": "Debit (€/CHF)",
+      "description": "Description"
+    },
+    "title": "General Accounting & Dual-Ledger",
+    "vatSettlement": "VAT & Tax Settlements",
+    "columns": {
+      "entryNumber": "Entry number",
+      "date": "Accounting date",
+      "description": "Description / reason",
+      "totalDebit": "Total debit",
+      "totalCredit": "Total credit",
+      "accountCode": "Account code",
+      "accountName": "Account name",
+      "accountType": "Type",
+      "balance": "Current balance",
+      "period": "Tax period",
+      "year": "Year",
+      "jurisdiction": "Jurisdiction",
+      "vatCollected": "Output VAT (sales)",
+      "vatPaid": "Input VAT (purchases)",
+      "vatBalance": "VAT balance",
+      "status": "Status"
+    },
+    "accountType": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "equity": "Equity",
+      "revenue": "Revenue",
+      "expense": "Expense"
+    },
+    "vatStatus": {
+      "draft": "Draft",
+      "settled": "Settled",
+      "paid": "Paid"
+    },
+    "actions": {
+      "lines": "Lines"
+    }
+  },
+  "alerts": {
+    "actions": {
+      "create": "New Alert",
+      "delete": "Delete Alert",
+      "edit": "Edit Alert"
+    },
+    "confirmDelete": "Are you sure you want to delete this alert?",
+    "form": {
+      "createTitle": "Create New Alert",
+      "editTitle": "Edit Alert",
+      "isActive": "Active Status",
+      "message": "Detailed Message",
+      "messagePlaceholder": "Enter additional alert details...",
+      "severity": "Severity Level",
+      "submit": "Save Alert",
+      "title": "Alert Title",
+      "titlePlaceholder": "E.g. Quarterly VAT Deadline..."
+    },
+    "messages": {
+      "created": "Alert created",
+      "deleted": "Alert deleted",
+      "updated": "Alert updated"
+    },
+    "searchPlaceholder": "Search by alert title...",
+    "subtitle": "Monitor tax deadlines, SDI anomalies, bank alerts, and company notices",
+    "title": "Alerts & Operational Notifications Center",
+    "columns": {
+      "title": "Alert title",
+      "severity": "Severity",
+      "status": "Status",
+      "createdAt": "Created"
+    },
+    "severity": {
+      "info": "Informational",
+      "warning": "Warning",
+      "critical": "Critical"
+    }
+  },
+  "automotive": {
+    "errors": {
+      "loadFailed": "Error retrieving tire storage"
+    },
+    "tireHotel": {
+      "notifySuccess": "Notification sent successfully for vehicle {{plate}}",
+      "season": {
+        "summer": "Summer",
+        "winter": "Winter"
+      },
+      "status": {
+        "sent": "Sent"
+      }
+    }
+  },
+  "cases": {
+    "confirmDelete": "Are you sure you want to delete this case?",
+    "deleteModal": {
+      "content": "Are you sure you want to delete record {{id}}?",
+      "title": "Confirm Deletion"
+    },
+    "errors": {
+      "loadFailed": "Failed to load records",
+      "loadFailedDetail": "Failed to load legal cases and records"
+    },
+    "searchPlaceholder": "Search cases..."
+  },
+  "common": {
+    "actions": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Confirm",
+      "create": "Create",
+      "delete": "Delete",
+      "edit": "Edit",
+      "save": "Save"
+    },
+    "selectPaymentType": "Select payment type",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "label": "Status"
+    },
+    "table": {
+      "actions": "Actions",
+      "density": "Table density",
+      "densityDefault": "Default",
+      "densityMiddle": "Middle",
+      "densitySmall": "Compact",
+      "deselectAll": "Deselect all",
+      "noData": "No data found",
+      "reset": "Reset",
+      "search": "Search",
+      "selectedCount": "{{count}} items selected",
+      "visibleColumns": "Visible columns"
+    }
+  },
+  "construction": {
+    "errors": {
+      "loadFailed": "Failed to load construction sites",
+      "loadFailedDetail": "Error loading construction sites"
+    }
+  },
+  "crm": {
+    "clients": {
+      "actions": {
+        "stats": "Statistics"
+      },
+      "statsModal": {
+        "content": "Record {{country}} - Type: {{type}} - VAT / Tax ID: {{fiscal}}",
+        "title": "Statistics {{name}}"
+      }
+    }
+  },
+  "expenses": {
+    "actions": {
+      "delete": "Delete Expense",
+      "edit": "Edit Expense",
+      "export": "Export CSV"
+    },
+    "confirmDelete": "Are you sure you want to delete this expense?",
+    "filterStatus": "Filter by status",
+    "form": {
+      "amount": "Amount",
+      "createTitle": "New Expense Report",
+      "currency": "Currency",
+      "date": "Expense Date",
+      "description": "Description / Reason",
+      "descriptionPlaceholder": "E.g. Business lunch with client...",
+      "editTitle": "Edit Expense Report",
+      "merchant": "Supplier / Merchant",
+      "merchantPlaceholder": "E.g. Restaurant Mario",
+      "submit": "Save Expense"
+    },
+    "messages": {
+      "created": "Expense created successfully",
+      "deleted": "Expense deleted",
+      "exported": "Export completed",
+      "updated": "Expense updated successfully"
+    },
+    "searchPlaceholder": "Search by description or merchant...",
+    "stats": {
+      "count": "Number of Expense Items",
+      "pending": "Expenses Pending Approval",
+      "total": "Total Recorded Expenses"
+    },
+    "statuses": {
+      "approved": "Approved",
+      "draft": "Draft",
+      "paid": "Paid",
+      "pending_approval": "Pending Approval",
+      "reimbursed": "Reimbursed",
+      "rejected": "Rejected"
+    },
+    "subtitle": "Track corporate expenses, employee reimbursements, and cash outflows",
+    "title": "Expenses & Expense Reports Management",
+    "columns": {
+      "date": "Date",
+      "description": "Description / reason",
+      "merchant": "Merchant / supplier",
+      "category": "Category",
+      "amount": "Amount",
+      "status": "Status"
+    }
+  },
+  "fieldService": {
+    "errors": {
+      "loadFailed": "Failed to load tickets",
+      "loadFailedDetail": "Error loading service tickets"
+    }
+  },
+  "hr": {
+    "errors": {
+      "loadFailed": "Failed to load employees",
+      "loadFailedDetail": "Error loading attendance register and employees"
+    }
+  },
+  "inventory": {
+    "form": {
+      "customsCodePlaceholder": "9031.90.00",
+      "namePlaceholder": "Product description",
+      "skuPlaceholder": "EL-SENS-01",
+      "unit": "Unit of Measure"
+    },
+    "messages": {
+      "created": "Product created successfully",
+      "deleted": "Product deleted"
+    },
+    "modal": {
+      "createTitle": "New Warehouse Product",
+      "save": "Save Product"
+    }
+  },
+  "manufacturing": {
+    "errors": {
+      "loadFailed": "Failed to load production orders",
+      "loadFailedDetail": "Error loading production orders"
+    }
+  },
+  "purchases": {
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "submitApproval": "Submit for Approval"
+    },
+    "form": {
+      "channel": "Channel",
+      "currency": "Currency",
+      "description": "Item Description",
+      "descriptionPlaceholder": "E.g. Fiber connectivity fee",
+      "quantity": "Quantity",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "E.g. Swisscom AG or Telecom Inc.",
+      "unitPrice": "Unit Price",
+      "createTitle": "New Purchase Order",
+      "orderDate": "Order date",
+      "deliveryDate": "Expected delivery",
+      "unit": "Unit of measure"
+    },
+    "messages": {
+      "approved": "Order {{number}} approved",
+      "created": "Purchase order created successfully",
+      "rejected": "Order {{number}} rejected",
+      "submitted": "Order {{number}} submitted for approval",
+      "deleted": "Purchase order deleted"
+    },
+    "rejectReason": "Rejected by operator",
+    "statuses": {
+      "approved": "Approved",
+      "cancelled": "Cancelled",
+      "draft": "Draft",
+      "ordered": "Ordered",
+      "pending_approval": "Pending Approval",
+      "received": "Received",
+      "rejected": "Rejected"
+    }
+  },
+  "rent": {
+    "errors": {
+      "loadFailed": "Failed to load vehicle fleet",
+      "loadFailedDetail": "Error loading rental vehicles"
+    }
+  },
+  "retail": {
+    "errors": {
+      "loadFailed": "Failed to load cash register sessions",
+      "loadFailedDetail": "Error loading POS cash register sessions"
+    }
+  },
+  "settings": {
+    "form": {
+      "companyName": "Company Name",
+      "currency": "Default Currency",
+      "iban": "Standard Corporate IBAN",
+      "legalName": "Extended Legal Name",
+      "pecEmail": "Certified Email (PEC)",
+      "qrIban": "Swiss QR-IBAN",
+      "save": "Save Company Changes",
+      "sdiCode": "SDI Recipient Code (7 characters)",
+      "taxId": "Tax ID / Fiscal Code",
+      "uidNumber": "Swiss UID / Enterprise ID",
+      "vatNumber": "VAT Number (IT / CH)"
+    },
+    "messages": {
+      "ratesSynced": "Exchange rates synchronized",
+      "saved": "Company settings saved successfully"
+    },
+    "subtitle": "Tenant configuration, branch registry, user management, and audit logs",
+    "tabs": {
+      "audit": "System Audit Log",
+      "branch": "BRANCH",
+      "branches": "Branches & Locations",
+      "hq": "HEADQUARTERS",
+      "orgData": "Organization & Tax Data",
+      "roles": "Roles & Permissions",
+      "users": "Users & Access"
+    },
+    "title": "Company & System Settings",
+    "columns": {
+      "branchName": "Branch",
+      "code": "Code",
+      "city": "City",
+      "country": "Country",
+      "branchType": "Type",
+      "userName": "User",
+      "email": "Email",
+      "role": "Main role",
+      "status": "Status",
+      "lastLogin": "Last sign-in",
+      "roleName": "Role",
+      "description": "Description",
+      "dateTime": "Date & time",
+      "user": "User",
+      "event": "Action / event",
+      "module": "Module",
+      "ipAddress": "IP address"
+    },
+    "actions": {
+      "syncRates": "Sync exchange rates"
+    }
+  },
+  "system": {
+    "backups": {
+      "actions": {
+        "delete": "Delete Backup",
+        "download": "Download ZIP Archive",
+        "restore": "Restore this backup",
+        "restoreData": "Restore Data",
+        "create": "Create backup",
+        "chooseZip": "Choose ZIP archive"
+      },
+      "cardTitle": "Tenant Security Archives",
+      "confirmDelete": "Do you want to permanently delete this backup archive?",
+      "confirmRestore": "Warning: restoring will overwrite current data with this version. Do you want to proceed?",
+      "messages": {
+        "completed": "Backup generation completed",
+        "downloadStarted": "Download started for {{filename}}",
+        "removed": "Backup archive removed",
+        "restoreCompleted": "Restore from backup {{filename}} completed.",
+        "restoreSuccess": "Restore completed successfully.",
+        "selectZip": "Please select a ZIP file",
+        "started": "Backup generation started successfully"
+      },
+      "modal": {
+        "description": "Select the backup ZIP archive (.zip) previously exported from FatturaFacile:",
+        "title": "Upload and Restore ZIP Backup"
+      },
+      "subtitle": "Full tenant instance backups, encrypted archive downloads, and point-in-time recovery",
+      "title": "Backup & Disaster Recovery Management",
+      "columns": {
+        "filename": "ZIP archive",
+        "size": "Size",
+        "status": "Status",
+        "createdAt": "Created"
+      },
+      "status": {
+        "completed": "Completed",
+        "in_progress": "In progress",
+        "failed": "Failed"
+      }
+    }
+  },
+  "treasury": {
+    "messages": {
+      "camtSuccess": "CAMT file imported successfully.",
+      "cbiSuccess": "CBI file imported successfully.",
+      "reconciliationSuccess": "Automatic reconciliation completed.",
+      "selectFile": "Please select a file before proceeding.",
+      "statementReconciled": "Bank statement {{iban}} reconciled.",
+      "statementReconciledSuccess": "Bank statement reconciled successfully."
+    },
+    "modal": {
+      "description": "Select the bank statement file format to import into the system:",
+      "title": "Import CAMT.053 / CBI Bank File"
+    },
+    "searchPlaceholder": "Search description or counterparty...",
+    "stats": {
+      "chfLiquidity": "Total CHF Liquidity",
+      "eurLiquidity": "Total EUR Liquidity",
+      "toReconcile": "Transactions to Reconcile"
+    },
+    "subtitle": "Multi-currency accounts (EUR/CHF), CAMT.053/CBI statement import, and automatic reconciliation",
+    "tabs": {
+      "bankAccounts": "Bank Accounts",
+      "bankMovements": "Bank Movements",
+      "statements": "Imported Statements"
+    },
+    "title": "Treasury & Bank Reconciliation",
+    "columns": {
+      "valueDate": "Value date",
+      "description": "Description",
+      "counterparty": "Counterparty / reference",
+      "amount": "Amount",
+      "category": "Category",
+      "status": "Status",
+      "bank": "Bank",
+      "iban": "IBAN",
+      "currency": "Currency",
+      "balance": "Available balance",
+      "statementDate": "Statement date",
+      "format": "Format",
+      "closingBalance": "Closing balance",
+      "reconciliation": "Reconciliation"
+    },
+    "status": {
+      "reconciled": "Reconciled",
+      "toReconcile": "To reconcile"
+    },
+    "statementStatus": {
+      "imported": "Imported",
+      "reconciled": "Reconciled",
+      "partially_reconciled": "Partially reconciled"
+    },
+    "actions": {
+      "autoMatch": "Automatic reconciliation",
+      "reconcile": "Reconcile"
+    },
+    "import": {
+      "format": "File format",
+      "camt": "CAMT.053 XML (Switzerland / SEPA)",
+      "cbi": "CBI statement (Italy)",
+      "chooseFile": "Choose file"
+    }
+  },
+  "validation": {
+    "amountRequired": "Enter a valid amount",
+    "dateRequired": "Date is required",
+    "descriptionRequired": "Description is required",
+    "entryNumberRequired": "Entry number is required",
+    "nameRequired": "Name is required",
+    "priceRequired": "Price is required",
+    "quantityRequired": "Quantity is required",
+    "required": "Field is required",
+    "skuRequired": "SKU is required",
+    "supplierRequired": "Supplier is required",
+    "titleRequired": "Title is required",
+    "warehouseRequired": "Warehouse is required"
+  },
+  "ACCOUNTING": {
+    "CARD_TITLE": "Chart of Accounts & Tax Alignment",
+    "COL_BALANCE": "Current Balance",
+    "COL_CODE": "Account Code",
+    "COL_DESC": "Account Description",
+    "COL_STD": "Accounting Standard",
+    "COL_TAX": "Tax / VAT Mapping",
+    "SUBTITLE": "Italian EEC and Swiss KMU/SME chart of accounts, periodic VAT returns, and FTA/ESTV reporting",
+    "TITLE": "General & Dual-Ledger Tax Accounting"
+  },
+  "ATTENDANCE": {
+    "ACCRUALS_TITLE": "Vacation & Leave Accruals",
+    "ANNUAL_ENTITLEMENT": "Annual entitlement: {{days}} days",
+    "BTN_CLOCK_IN": "Clock In",
+    "BTN_CLOCK_OUT": "Clock Out",
+    "CLOCKED_IN": "Clocked-In (Active)",
+    "CLOCKED_OUT": "Off Duty",
+    "COL_BREAK": "Break (min)",
+    "COL_COMPLIANCE_NOTES": "Legal Compliance Notes",
+    "COL_IN": "Clock-In",
+    "COL_OUT": "Clock-Out",
+    "COL_SHIFT_STATUS": "Shift Status",
+    "COL_TOTAL_HOURS": "Total Hours",
+    "DAYS_SUFFIX": "days",
+    "DAYS_TAKEN": "Taken: {{days}} days",
+    "HOURS_SUFFIX": "hrs",
+    "HOURS_TODAY": "Hours Worked Today:",
+    "LIMITS_TITLE": "Weekly Limits Compliance (ArG / Leg. Decree 66)",
+    "LOG_TITLE": "Timesheet Log & Weekly Breakdown",
+    "LOGGED_BREAK": "Logged Break:",
+    "REGIME_LABEL": "Regime:",
+    "REST_COMPLIANT": "11h Rest Compliant",
+    "SHIFT_ACTIVE": "Active",
+    "SHIFT_CLOSED": "Closed",
+    "SHIFT_IN_PROGRESS": "In progress...",
+    "SHIFT_START": "Shift Start Today:",
+    "SUBTITLE": "Timesheet, ArG weekly limit tracking (45h/50h) and Leg. Decree 66/2003 daily rest compliance",
+    "TERMINAL_TITLE": "Virtual Clock-In Terminal",
+    "TIME_BANK": "Time Bank / Paid Leave",
+    "TITLE": "Time & Attendance & Hourly Compliance (IT / CH)",
+    "VACATION_REMAINING": "Remaining Vacation"
+  },
+  "AUTH": {
+    "DEMO_INFO1": "Mock Data Engine active (no server required)",
+    "DEMO_INFO2": "Select a tenant to simulate Italy (SDI) or Switzerland (QR-Bill / ArG) tax regime.",
+    "DEMO_MODE": "Demo Mode Active",
+    "EMAIL": "Email",
+    "EMAIL_ERROR": "Please enter a valid email address",
+    "FORGOT": "Forgot password?",
+    "HIDE_PASSWORD": "Hide password",
+    "INVALID_CREDENTIALS": "Invalid credentials",
+    "PASSWORD": "Password",
+    "PASSWORD_ERROR": "Password is required",
+    "PASSWORD_MIN": "Password must be at least 6 characters",
+    "REMEMBER": "Remember me",
+    "SESSION_EXPIRED_DESC": "Authentication session has expired. Please sign in again.",
+    "SESSION_EXPIRED_TITLE": "Session Expired",
+    "SHOW_PASSWORD": "Show password",
+    "SUBMIT_BTN": "Sign in to Fattura Facile",
+    "SUBTITLE": "Enterprise Cross-Border Platform Italy / Switzerland",
+    "TENANT_PRESET": "Company / Tenant Preset",
+    "TITLE": "Fattura Facile ERP"
+  },
+  "BREADCRUMB": {
+    "HOME": "Home",
+    "ORDERS": "Order History",
+    "WELCOME": "Welcome"
+  },
+  "COMMON": {
+    "ACTION": "Action",
+    "ACTIVE": "Active",
+    "ALL": "All",
+    "AMOUNT": "Amount",
+    "CANCEL": "Cancel",
+    "CLOSE": "Close",
+    "DATE": "Date",
+    "DETAILS": "Details",
+    "ITALY": "Italy",
+    "PREVIEW": "Preview",
+    "RECONCILE": "Reconcile",
+    "SAVE": "Save",
+    "SELECT": "Select",
+    "SELECTED": "Selected",
+    "STATUS": "Status",
+    "SWITZERLAND": "Switzerland",
+    "TOTAL": "Total",
+    "VALIDATION": {
+      "INVALID_EMAIL": "Invalid email address",
+      "INVALID_VALUE": "Invalid value",
+      "REQUIRED": "Required field"
+    },
+    "ADD": "Add",
+    "SEARCH": "Search",
+    "CONFIRM_DELETE": "Delete this item?"
+  },
+  "CONSTRUCTION": {
+    "CARD_TITLE": "Active Construction Sites & Projects",
+    "COL_CLIENT": "Client / Principal",
+    "COL_LOCATION_REGIME": "Location & Regime",
+    "COL_SAL": "Progress (SAL)",
+    "COL_SITE_CODE": "Site Code",
+    "COL_TECH_COMPLIANCE": "Technical Compliance",
+    "COL_VAT_REGIME": "VAT Regime",
+    "SUBTITLE": "Work progress status (WPS/SAL), SIA 118 / OIBT compliance (CH), DiCo declarations of conformity (IT) and reverse charge",
+    "TITLE": "Construction Sites, Installations & SIA/DiCo Standards"
+  },
+  "CRM": {
+    "BILLING_CHANNEL": "Billing Channel",
+    "CLIENTS": {
+      "ACTIONS": {
+        "CONFIRM_DELETE": "Delete this client?",
+        "DELETE": "Delete {{name}}",
+        "DELETE_OK": "Delete",
+        "EDIT": "Edit {{name}}"
+      },
+      "COLUMNS": {
+        "ACTIONS": "Actions",
+        "COUNTRY": "Country",
+        "EMAIL": "Email",
+        "NAME": "Name",
+        "PHONE": "Phone",
+        "TAX_ID": "VAT / UID",
+        "TYPE": "Type"
+      },
+      "EDIT_TITLE": "Edit client",
+      "EMPTY": "No clients found",
+      "EMPTY_CTA": "Create new client",
+      "FILTER_TYPE": "Type",
+      "FORM": {
+        "ADDRESS": "Address",
+        "CITY": "City",
+        "COMPANY_NAME": "Company name",
+        "COUNTRY": "Country (ISO-2)",
+        "EMAIL": "Email",
+        "FIRST_NAME": "First name",
+        "FISCAL_CODE": "Fiscal code",
+        "HOUSE_NUMBER": "House number",
+        "IBAN": "IBAN",
+        "LAST_NAME": "Last name",
+        "PAYMENT_TERMS": "Payment terms (days)",
+        "PEC": "PEC (certified email)",
+        "PHONE": "Phone",
+        "POSTAL_CODE": "Postal code",
+        "QR_IBAN": "QR-IBAN",
+        "SDI_CODE": "SDI code",
+        "STATE": "Province / Canton",
+        "STREET": "Street",
+        "TYPE": "Type",
+        "UID": "UID (CHE-…)",
+        "VAT_NUMBER": "VAT number"
+      },
+      "MESSAGES": {
+        "CREATED": "Client created",
+        "DELETED": "Client deleted",
+        "UPDATED": "Client updated"
+      },
+      "NEW": "New client",
+      "SEARCH_PLACEHOLDER": "Search by company name or VAT number",
+      "SUBTITLE": "Customer and supplier directory",
+      "TITLE": "Clients",
+      "TYPES": {
+        "BOTH": "Client and supplier",
+        "CLIENT": "Client",
+        "LEAD": "Lead",
+        "SUPPLIER": "Supplier"
+      }
+    },
+    "COMPANY_NAME": "Company Name",
+    "FISCAL_ID": "Tax Identification",
+    "JURISDICTION": "Jurisdiction",
+    "LOCATION": "Location",
+    "SUBTITLE": "Comprehensive Italian (SDI, PEC, VAT) and Swiss (UID, QR-IBAN) tax profile management",
+    "TITLE": "Cross-Border Clients Directory (IT / CH)"
+  },
+  "DASHBOARD": {
+    "ACTIVE_REGIME": "Active Regime:",
+    "BTN_ATTENDANCE": "Time & Attendance (ArG / Leg. Decree 66)",
+    "BTN_CLIENTS": "Cross-Border Clients Directory IT-CH",
+    "BTN_QR": "Swiss QR-Bill Generator (0.05 CHF & SCOR)",
+    "BTN_TIRES": "Tire Hotel (Auto Shop)",
+    "COL_AMOUNT": "Amount",
+    "COL_PARTY": "Client / Counterparty",
+    "COL_REF": "Reference",
+    "COL_STATUS": "Status",
+    "COL_TYPE": "Type",
+    "KPI_COMPLIANCE": "Legal Compliance Index",
+    "KPI_ORDERS": "Active Orders",
+    "KPI_PENDING": "Pending Invoices",
+    "KPI_REVENUE": "Current Month Revenue",
+    "RECENT_DOCS": "Recent Activities & Documents",
+    "REGIME_CH_LABEL": "Switzerland (QR-Bill, ArG OLL 1, SME/KMU)",
+    "REGIME_DESC": "All tax issuances, VAT calculations, and roundings follow the jurisdiction requirements of the current tenant.",
+    "REGIME_IT_LABEL": "Italy (SDI, F24, Leg. Decree 66/2003)",
+    "SHOWCASE_TITLE": "Quick Access Showcase",
+    "SUBTITLE": "Financial and operational overview",
+    "TITLE": "ERP Executive Dashboard"
+  },
+  "ERRORS": {
+    "FORBIDDEN_TITLE": "Access Denied (403)",
+    "GENERIC": "Error {{status}}",
+    "NETWORK": "Server unreachable. Check your connection.",
+    "SESSION_EXPIRED": "Session expired. Please log in again.",
+    "TOO_MANY_REQUESTS_DESC": "Too many requests sent to the server. Please wait a few moments before trying again.",
+    "TOO_MANY_REQUESTS_TITLE": "Rate Limit Exceeded (429)",
+    "VALIDATION_TITLE": "Validation Error (422)"
+  },
+  "FIELD_SERVICE": {
+    "CARD_TITLE": "Active Support Tickets",
+    "COL_CLIENT": "Customer",
+    "COL_SLA": "Remaining SLA",
+    "COL_SUBJECT": "Work Order Subject",
+    "COL_TECH": "Assigned Technician",
+    "COL_TICKET_ID": "Ticket ID",
+    "SUBTITLE": "Helpdesk SLA tickets, technician scheduling and digital signed service reports",
+    "TITLE": "Technical Support & Field Service"
+  },
+  "HEADER": {
+    "JURISDICTION_CH": "Switzerland Jurisdiction (QR-Bill, ArG, SME)",
+    "JURISDICTION_IT": "Italy Jurisdiction (SDI, F24, Leg. Decree 66)",
+    "LOGOUT": "Sign Out",
+    "PREFERENCES": "ERP Preferences",
+    "THEME_DARK": "Switch to dark theme",
+    "THEME_LIGHT": "Switch to light theme",
+    "TOGGLE_SIDEBAR_COLLAPSE": "Collapse menu",
+    "TOGGLE_SIDEBAR_EXPAND": "Expand menu"
+  },
+  "HR": {
+    "CARD_TITLE": "Staff & Tax / Social Security Scheme",
+    "COL_CONTRACT": "Contract Type",
+    "COL_EMPLOYEE": "Employee",
+    "COL_PENSION": "Mandatory Pension",
+    "COL_REGIME": "Fiscal Regime",
+    "COL_ROLE": "Job Title",
+    "COL_TRANSMISSION": "Transmission Status",
+    "SUBTITLE": "IT-CH cross-border commuter management, AHV/ALV/BVG deductions, withholding tax and Swissdec ELM / LUL data flows",
+    "TITLE": "Human Resources & Cross-Border Payroll (IT / CH)"
+  },
+  "INVENTORY": {
+    "CARD_TITLE": "Multi-Warehouse Stock (Milan / Chiasso)",
+    "COL_DESC": "Description",
+    "COL_HS": "HS Customs Code",
+    "COL_PRICE": "Unit Value",
+    "COL_QTY": "Stock Qty",
+    "COL_SKU": "SKU Code",
+    "COL_WAREHOUSE": "Warehouse",
+    "SUBTITLE": "Item catalogs, DDT delivery notes, HS/TARIC customs codes and IT-CH export management",
+    "TITLE": "Cross-Border Inventory & Logistics"
+  },
+  "MANUFACTURING": {
+    "CARD_TITLE": "Active Production Orders",
+    "COL_LINE": "Line / Work Center",
+    "COL_ORDER_NUM": "Order No.",
+    "COL_PRODUCT": "Finished Product",
+    "COL_PROGRESS": "Progress",
+    "COL_QA": "Quality Status",
+    "COL_QTY": "Quantity",
+    "SUBTITLE": "Multi-level bills of materials (BOM), work centers, production orders (OdP) and CE/CH certifications",
+    "TITLE": "Manufacturing & MRP Planning"
+  },
+  "NAV": {
+    "ACCOUNTING": "Accounting & Tax",
+    "ALERTS": "Alert Center",
+    "APPRAISAL": "Damage Appraisal",
+    "AUTOMOTIVE": "Automotive & Tires",
+    "CLIENTS": "Cross-Border Clients",
+    "CONSTRUCTION": "Construction & Installations",
+    "CRM": "CRM & Master Data",
+    "CUSTOMS": "IT-CH Customs & CMR",
+    "DASHBOARD": "Dashboard & Overview",
+    "DDT": "Delivery Notes & Transport",
+    "EXPENSES": "Expense Reports",
+    "FIELD_SERVICE": "Field Service & Maintenance",
+    "FLEET": "Fleet Planning",
+    "HR": "Payroll & HR IT-CH",
+    "INVENTORY": "Inventory & Logistics",
+    "INVOICES": "Invoices",
+    "MANUFACTURING": "Manufacturing & MRP",
+    "ORDERS": "Quotes & Orders",
+    "PROFESSIONALS": "Professional Firms",
+    "PURCHASES": "Purchases & AP",
+    "QR_BILL": "Swiss QR-Bill",
+    "QR_SCANNER": "QR Scanner & pain.001",
+    "RENT": "Fleet Rental",
+    "REPORTS": "Work Intervention Reports",
+    "RETAIL": "Retail & POS",
+    "SALES": "Sales & Invoicing",
+    "SDI": "SDI Electronic Invoicing",
+    "SDI_INBOX": "SDI Inbound AP",
+    "SETTINGS": "Settings & Tenants",
+    "STOCK": "Stock & Articles",
+    "SUPPLIERS": "Suppliers & Price Lists",
+    "SYSTEM": "System & Backups",
+    "TICKETS": "SLA Helpdesk Tickets",
+    "TIME_ATTENDANCE": "Time & Attendance",
+    "TIRE_HOTEL": "Tire Hotel",
+    "TREASURY": "Treasury & Banking",
+    "WORKSHOP": "Workshop & Job Cards"
+  },
+  "ORDERS": {
+    "COL_DATE": "Created Date",
+    "COL_DETAIL": "Detail",
+    "COL_ID": "Order ID",
+    "COL_ITEMS_COUNT": "Item Count",
+    "COL_REF": "Reference Code",
+    "COL_TOTAL": "Total",
+    "COUNT": "Number of Orders",
+    "ITEMS_LABEL": "Items:",
+    "REVENUE": "Total Revenue",
+    "SELECTED_TITLE": "Selected Order Details",
+    "SUBTITLE": "View and manage recent orders list",
+    "TITLE": "Order & Invoice History"
+  },
+  "PROFESSIONALS": {
+    "AML_COMPLIANT": "AML Compliant",
+    "CARD_TITLE": "Active Case Files & Practices",
+    "COL_CASE_NUM": "Case No.",
+    "COL_CLIENT": "Client",
+    "COL_FEE": "Proforma / Fee Note",
+    "COL_HOURS": "Reported Hours",
+    "COL_KYC_AML": "KYC / AML Audit",
+    "COL_MANDATE": "Mandate Subject",
+    "SUBTITLE": "Legal/tax case files, hourly time-tracking, fee notes with pension fund and withholding tax",
+    "TITLE": "Professional Firms & Consulting"
+  },
+  "PURCHASES": {
+    "CARD_TITLE": "Incoming Supplier Invoices (SDI / QR-Bill)",
+    "COL_APPROVAL": "Approval Status",
+    "COL_CHANNEL": "Receiving Channel",
+    "COL_DUE": "Due Date",
+    "COL_PROTOCOL": "Protocol / Ref.",
+    "COL_VENDOR": "Supplier",
+    "KPI_PAIN001": "Queued pain.001 Payments",
+    "KPI_RECONCILE": "Inbound Invoices to Reconcile",
+    "KPI_SEPA": "Scheduled SEPA Transfers",
+    "SUBTITLE": "SDI invoice intake, Swiss QR-Bill scanner and ISO 20022 pain.001 payment batch generation",
+    "TITLE": "Purchases & Accounts Payable"
+  },
+  "RENT": {
+    "CARD_TITLE": "Fleet Status & Active Contracts",
+    "COL_CLIENT": "Assigned Client",
+    "COL_PLATE_MODEL": "Plate & Model",
+    "COL_RETURN": "Scheduled Return",
+    "COL_TYPE": "Contract Type",
+    "COL_VIGNETTE": "Swiss Highway Vignette",
+    "SUBTITLE": "Short/long-term rental planning, digital damage inspection, Swiss vignettes and electronic toll",
+    "TITLE": "Fleet & Vehicle Rental",
+    "VIGNETTE_ACTIVE": "E-Vignette Active",
+    "VIGNETTE_NONE": "Not Required"
+  },
+  "RETAIL": {
+    "CARD_TITLE": "Fiscal Daily Closings & Cash Sessions",
+    "COL_CASHIER": "Cashier Operator",
+    "COL_DEVICE": "Connected Device",
+    "COL_POS": "Checkout Point",
+    "COL_REGIME": "Fiscal Regime",
+    "COL_STATUS": "Closing Status",
+    "COL_TOTAL": "Total Collected",
+    "SUBTITLE": "Fiscal Cash Register RT (IT) and Swiss payment terminals integration (Twint, SumUp, Worldline)",
+    "TITLE": "Over-the-Counter Sales & POS Touch"
+  },
+  "SALES": {
+    "INVOICES": {
+      "ACTIONS": {
+        "CONFIRM_EMAIL": "Send the invoice to the client by email?",
+        "CONFIRM_PROFORMA": "Convert the proforma into an official numbered invoice?",
+        "CONFIRM_SDI": "Are you sure you want to send this document to SDI? This action cannot be undone.",
+        "CONVERT_PROFORMA": "Convert proforma",
+        "DOWNLOAD_PDF": "Download PDF",
+        "DUPLICATE": "Duplicate document",
+        "GENERATE_QR_BILL": "Generate QR-Bill",
+        "MORE": "Actions for {{number}}",
+        "OK": "Confirm",
+        "SEND_EMAIL": "Send by email",
+        "SEND_SDI": "Send to SDI"
+      },
+      "COLUMNS": {
+        "ACTIONS": "Actions",
+        "DATE": "Issue date",
+        "DUE_DATE": "Due date",
+        "JURISDICTION": "Jurisdiction",
+        "NET": "Net",
+        "NUMBER": "Document #",
+        "PAYMENT_STATUS": "Status",
+        "TOTAL": "Total",
+        "VAT": "VAT"
+      },
+      "DUPLICATE_TITLE": "Duplicate document (new draft)",
+      "EMPTY": "No invoices found",
+      "EMPTY_CTA": "Create new invoice",
+      "FILTER_JURISDICTION": "Jurisdiction",
+      "FILTER_PAYMENT": "Payment status",
+      "FORM": {
+        "ADD_ITEM": "Add line",
+        "CONTACT": "Client",
+        "CONTACT_PLACEHOLDER": "Search client",
+        "CURRENCY": "Currency",
+        "DATE": "Issue date",
+        "DUE_DATE": "Due date",
+        "ITEMS": "Line items",
+        "JURISDICTION": "Jurisdiction",
+        "NOTES": "Notes",
+        "NUMBER": "Document number",
+        "REMOVE_ITEM": "Remove line {{n}}",
+        "SUBMIT": "Create invoice",
+        "TYPE": "Type"
+      },
+      "ITEM": {
+        "DESCRIPTION": "Description",
+        "DISCOUNT": "Discount %",
+        "PRICE": "Price",
+        "QTY": "Qty",
+        "SUBTOTAL": "Subtotal",
+        "TAX_AMOUNT": "Tax amount",
+        "TAX_RATE": "Tax rate %"
+      },
+      "JURISDICTIONS": {
+        "CH": "Switzerland",
+        "IT": "Italy"
+      },
+      "MESSAGES": {
+        "CREATED": "Invoice created",
+        "EMAIL_SENT": "Email sent",
+        "PROFORMA_CONVERTED": "Proforma converted to invoice",
+        "QR_GENERATED": "QR-Bill generated",
+        "SDI_SENT": "Document accepted for SDI transmission"
+      },
+      "NEW": "New invoice",
+      "PAYMENT": {
+        "OVERDUE": "Overdue",
+        "PAID": "Paid",
+        "PARTIALLY_PAID": "Partially paid",
+        "UNPAID": "Unpaid"
+      },
+      "SEARCH_PLACEHOLDER": "Search by number or client",
+      "STATUS": {
+        "CANCELLED": "Cancelled",
+        "DRAFT": "Draft",
+        "ISSUED": "Issued",
+        "OVERDUE": "Overdue",
+        "PAID": "Paid",
+        "PROFORMA": "Proforma"
+      },
+      "SUBTITLE": "Sales invoices IT / CH",
+      "TITLE": "Invoices",
+      "TOTALS": {
+        "GROSS": "Total",
+        "NET": "Net",
+        "VAT": "VAT"
+      },
+      "TYPES": {
+        "CH_QR_BILL": "Swiss QR-Bill",
+        "CREDIT_NOTE": "Credit note",
+        "PROFORMA": "Proforma",
+        "SDI_ELECTRONIC": "SDI e-invoice",
+        "STANDARD": "Standard"
+      }
+    }
+  },
+  "SETTINGS": {
+    "CARD_TITLE": "Company & Tenant Configuration",
+    "COL_ADDRESS": "Headquarters Address",
+    "COL_CURRENCY": "Primary Currency",
+    "COL_FISCAL_ID": "Tax Identification",
+    "COL_JURISDICTION": "Jurisdiction",
+    "COL_NAME": "Tenant Name",
+    "SUBTITLE": "Branch management, ECB / SNB exchange rates, RBAC roles and GDPR / Swiss FADP audit log",
+    "TITLE": "Multi-Tenant Administration & ERP Settings"
+  },
+  "SWISS_QR": {
+    "ACCOUNT_PAYABLE_TO": "Account / Payable to",
+    "ADDITIONAL_INFO": "Additional Information",
+    "ADDRESS_LABEL": "Street & House No.",
+    "ADDRESS_PLACEHOLDER": "e.g. Corso Elvezia 18",
+    "AMOUNT_LBL": "Amount",
+    "CITY_LABEL": "City (Ort)",
+    "COL_BILL_NUM": "Invoice No.",
+    "COL_DEBTOR": "Debtor",
+    "COL_DUE_DATE": "Due Date",
+    "CREATE_CARD_TITLE": "Create New QR-Rechnung",
+    "CURRENCY_LBL": "Currency",
+    "DEBTOR_LABEL": "Debtor / Client",
+    "DEBTOR_PLACEHOLDER": "e.g. Bernasconi SA",
+    "DIFF_LABEL": "Difference:",
+    "FROM_INVOICES": "QR-bills are generated from Swiss invoices: open an invoice's actions and choose Generate QR-Bill.",
+    "LIST_TITLE": "Issued QR-Bills Registry",
+    "MESSAGE_LABEL": "Unstructured Message (Payment Subject)",
+    "MESSAGE_PLACEHOLDER": "Consulting services and software licensing invoice",
+    "OPEN_INVOICES": "Go to invoices",
+    "PAYABLE_BY": "Payable by",
+    "PAYMENT_PART_SUB": "Zahlteil / Section paiement",
+    "PAYMENT_PART_TITLE": "Payment Section",
+    "PENDING_COLLECTION": "Pending Collection",
+    "POSTAL_LABEL": "Postal Code (ZIP)",
+    "RAW_AMOUNT_LABEL": "Original Amount",
+    "RECEIPT_ACCOUNT": "Account:",
+    "RECEIPT_BENEFICIARY": "In favor of:",
+    "RECEIPT_TITLE": "Receipt (Empfangsschein)",
+    "REFERENCE_SCOR": "Structured Reference (SCOR)",
+    "ROUNDING_LABEL": "Commercial Rounding 0.05 CHF:",
+    "ROUNDING_TITLE": "0.05 CHF rounding calculator",
+    "STANDARDS_TAG": "Swiss Standards v2.2",
+    "STATUS_DRAFT": "Draft",
+    "STATUS_PAID": "Paid",
+    "STATUS_PENDING": "Pending",
+    "SUBMIT_BTN": "Generate Swiss QR-Bill & Validate SCOR",
+    "SUBTITLE": "Generation and management of Swiss invoices with QR-IBAN, SCOR Reference and 0.05 CHF rounding",
+    "TITLE": "Swiss QR-Bill (QR-Rechnung)",
+    "TOTAL_BILLS": "Total QR Invoices",
+    "TOTAL_REVENUE": "Total Revenue (CHF)",
+    "VOUCHER_TITLE": "Payment Section Preview (Swiss QR Voucher)"
+  },
+  "TIRE_HOTEL": {
+    "COL_CUSTOMER": "Customer",
+    "COL_DATE": "Deposit Date",
+    "COL_PLATE_MODEL": "Plate & Vehicle Model",
+    "COL_RACK": "Rack / Location",
+    "COL_REMINDER": "Seasonal Reminder",
+    "COL_SEASON": "Season",
+    "COL_SIZE_BRAND": "Size & Brand",
+    "COL_TREAD": "Tread Depth (mm) [Front / Rear]",
+    "LOG_TITLE": "Tire Deposit Registry",
+    "SETS_STORED": "Tire Sets Stored",
+    "SUBTITLE": "Seasonal tire storage, tread depth tracking in mm, rack allocation and tire change reminders",
+    "SUMMER_TIRES": "Summer Tires in Custody",
+    "TITLE": "Tire Hotel & Auto Shop",
+    "WINTER_TIRES": "Winter Tires in Custody"
+  },
+  "TREASURY": {
+    "CARD_TITLE": "Bank Transactions to Reconcile",
+    "COL_BANK": "Bank / Account",
+    "COL_DESC": "Description / Reference",
+    "COL_STATUS": "Reconciliation Status",
+    "COL_VALUE_DATE": "Value Date",
+    "KPI_ACCURACY": "Auto-Match Accuracy",
+    "KPI_INTESA": "Intesa Sanpaolo Balance (EUR)",
+    "KPI_UBS": "UBS Switzerland Balance (CHF)",
+    "SUBTITLE": "ISO 20022 bank statement import (camt.053 / camt.054), CBI format and automated reconciliation",
+    "TITLE": "Treasury & Bank Management"
+  },
+  "WELCOME": {
+    "DESC": "Manage your orders and track revenue in real time.",
+    "GO_ORDERS": "Go to Order History",
+    "QUICK_ACCESS": "Quick Access",
+    "SUBTITLE": "Your platform for simple invoicing and order management",
+    "TITLE": "Welcome to Fattura Facile"
+  },
+  "APP": {
+    "LOADING": "Loading…",
+    "LANGUAGE": "Language",
+    "MAIN_NAV": "Main navigation",
+    "USER_MENU": "Account menu",
+    "NOT_PORTED_TITLE": "Coming soon",
+    "NOT_PORTED_BODY": "This section has not been moved to the new app yet.",
+    "RETRY": "Retry",
+    "EMPTY": "No data",
+    "THEME": "Theme",
+    "THEME_LIGHT": "Light theme",
+    "THEME_DARK": "Dark theme",
+    "THEME_SYSTEM": "System theme",
+    "BREADCRUMB": "Breadcrumb",
+    "PAGE_LOAD_FAILED": "This page could not be loaded. Check the connection and try again."
+  }
+}

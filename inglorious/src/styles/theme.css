@@ -1,0 +1,212 @@
+/*
+ * The Fattura Facile theme: Bootstrap's components with the brand of the
+ * Angular app (src/styles.scss, src/theme.less) — slate surfaces, a teal accent,
+ * a dark sidebar. It sits on `.iw-theme-bootstrap`, which it extends: set both
+ * classes, and this file after the Bootstrap theme.
+ *
+ * Text on teal, emerald and red is one shade darker than the Angular app's
+ * (teal-700 rather than teal-600, ...): white on the original shades is under
+ * the 4.5:1 contrast WCAG AA asks of normal text.
+ */
+
+.iw-theme-fatturafacile {
+  --ff-teal-300: #5eead4;
+  --ff-teal-400: #2dd4bf;
+  --ff-teal-500: #14b8a6;
+  --ff-teal-600: #0d9488;
+  --ff-teal-700: #0f766e;
+  --ff-teal-800: #115e59;
+  --ff-teal-900: #134e4a;
+  --ff-slate-50: #f8fafc;
+  --ff-slate-100: #f1f5f9;
+  --ff-slate-200: #e2e8f0;
+  --ff-slate-300: #cbd5e1;
+  --ff-slate-400: #94a3b8;
+  --ff-slate-500: #64748b;
+  --ff-slate-600: #475569;
+  --ff-slate-700: #334155;
+  --ff-slate-800: #1e293b;
+  --ff-slate-900: #0f172a;
+  --ff-slate-950: #020617;
+
+  --iw-font-family-sans:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ng-zorro's type scale: 14px body text rather than Bootstrap's 16px. */
+  --iw-font-size-xs: 0.75rem;
+  --iw-font-size-sm: 0.8125rem;
+  --iw-font-size-base: 0.875rem;
+  --iw-font-size-lg: 1rem;
+  --iw-font-size-xl: 1.125rem;
+  --iw-font-size-2xl: 1.25rem;
+  font-size: var(--iw-font-size-base);
+
+  --iw-color-bg: var(--ff-slate-50);
+  --iw-color-bg-secondary: var(--ff-slate-100);
+  --iw-color-bg-tertiary: var(--ff-slate-200);
+  --iw-color-surface: var(--iw-color-white);
+  --iw-color-surface-hover: var(--ff-slate-50);
+  --iw-color-surface-active: var(--ff-slate-100);
+
+  --iw-color-text: var(--ff-slate-900);
+  --iw-color-text-secondary: var(--ff-slate-500);
+  /* The Angular app's slate-400 is 2.6:1 on white: muted text stays slate-500. */
+  --iw-color-text-muted: var(--ff-slate-500);
+  --iw-color-link: var(--ff-teal-700);
+
+  --iw-color-border: var(--ff-slate-200);
+  --iw-color-border-focus: var(--ff-teal-500);
+
+  --iw-color-primary: var(--ff-teal-700);
+  --iw-color-primary-hover: var(--ff-teal-800);
+  --iw-color-primary-active: var(--ff-teal-900);
+  --iw-color-primary-text: var(--iw-color-white);
+
+  --iw-color-accent: var(--ff-slate-600);
+  --iw-color-accent-hover: var(--ff-slate-700);
+  --iw-color-accent-active: var(--ff-slate-800);
+
+  --iw-color-success: #047857;
+  --iw-color-success-dark: #065f46;
+  --iw-color-warning: #f59e0b;
+  --iw-color-warning-dark: #d97706;
+  --iw-color-error: #dc2626;
+  --iw-color-error-dark: #b91c1c;
+  --iw-color-info: #0891b2;
+  --iw-color-info-dark: #0e7490;
+
+  --iw-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --iw-shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --iw-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  --iw-input-bg: var(--iw-color-white);
+  --iw-input-bg-hover: var(--iw-color-white);
+  --iw-input-bg-focus: var(--iw-color-white);
+  --iw-input-border: var(--ff-slate-300);
+  --iw-input-border-hover: var(--ff-slate-400);
+  --iw-input-shadow-focus: 0 0 0 0.25rem
+    color-mix(in srgb, var(--ff-teal-600) 25%, transparent);
+
+  --iw-app-bar-bg: var(--iw-color-surface);
+
+  --iw-card-border: var(--iw-color-border);
+  --iw-card-shadow: var(--iw-shadow-md);
+  --iw-card-shadow-hover: var(--iw-shadow-lg);
+
+  --iw-chip-bg: var(--iw-color-bg-secondary);
+
+  /* The sidebar is dark in both modes, as in the Angular app. */
+  --ff-sidebar-bg: var(--ff-slate-900);
+  --ff-sidebar-border: var(--ff-slate-800);
+  --ff-sidebar-text: var(--ff-slate-300);
+  --ff-sidebar-text-strong: var(--iw-color-white);
+  --ff-sidebar-heading: var(--ff-slate-400);
+  --ff-sidebar-hover: rgb(255 255 255 / 0.08);
+  --ff-sidebar-current: var(--ff-teal-700);
+  --ff-brand-accent: var(--ff-teal-400);
+
+  ::selection {
+    background: var(--ff-teal-500);
+    color: var(--iw-color-white);
+  }
+}
+
+.iw-theme-fatturafacile.iw-theme-dark {
+  color-scheme: dark;
+
+  --iw-color-bg: var(--ff-slate-950);
+  --iw-color-bg-secondary: var(--ff-slate-900);
+  --iw-color-bg-tertiary: var(--ff-slate-800);
+  --iw-color-surface: var(--ff-slate-900);
+  --iw-color-surface-hover: var(--ff-slate-800);
+  --iw-color-surface-active: var(--ff-slate-700);
+
+  --iw-color-text: var(--ff-slate-50);
+  --iw-color-text-secondary: var(--ff-slate-400);
+  --iw-color-text-muted: var(--ff-slate-400);
+  --iw-color-link: var(--ff-teal-400);
+
+  --iw-color-border: var(--ff-slate-800);
+  --iw-color-border-focus: var(--ff-teal-400);
+
+  /* A light teal needs dark text: white on teal-500 is 2.5:1. */
+  --iw-color-primary: var(--ff-teal-500);
+  --iw-color-primary-hover: var(--ff-teal-400);
+  --iw-color-primary-active: var(--ff-teal-300);
+  --iw-color-primary-text: var(--ff-slate-950);
+
+  --iw-color-accent: var(--ff-slate-500);
+  --iw-color-accent-hover: var(--ff-slate-400);
+  --iw-color-accent-active: var(--ff-slate-300);
+
+  --iw-shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --iw-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+
+  --iw-input-bg: var(--ff-slate-800);
+  --iw-input-bg-hover: var(--ff-slate-800);
+  --iw-input-bg-focus: var(--ff-slate-800);
+  --iw-input-border: var(--ff-slate-700);
+  --iw-input-border-hover: var(--ff-slate-600);
+
+  --iw-card-border: var(--iw-color-border);
+
+  --ff-sidebar-bg: #090d16;
+}
+
+.iw-theme-fatturafacile {
+  /* The Angular header: white with a hairline below. */
+  .iw-app-bar {
+    border-bottom: 1px solid var(--iw-color-border);
+    box-shadow: var(--iw-shadow-sm);
+  }
+
+  /* Bootstrap draws ghost buttons as links; the Angular app never underlines a button. */
+  .iw-button.iw-button-ghost {
+    text-decoration: none;
+  }
+
+  /* A chevron, as ng-zorro's selects have, for the triangle glyph. */
+  .iw-select-frame .iw-select-arrow {
+    font-size: 0;
+
+    &::before {
+      content: "";
+      width: 0.75rem;
+      height: 0.75rem;
+      background: currentColor;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+    }
+  }
+
+  .iw-card-title {
+    font-size: 1rem;
+    font-weight: var(--iw-font-weight-semibold);
+  }
+
+  /* Bootstrap paints chips white on the primary: dark on the dark mode's light teal. */
+  &.iw-theme-dark .iw-chip.iw-chip-primary {
+    color: var(--iw-color-primary-text);
+  }
+
+  /* Grid and table headers as the Angular tables had them: tinted, semibold, muted. */
+  .iw-data-grid-header-row {
+    background: var(--iw-color-bg-secondary);
+    color: var(--iw-color-text-secondary);
+    font-weight: var(--iw-font-weight-semibold);
+  }
+
+  .iw-table-header-cell {
+    background: var(--iw-color-bg-secondary);
+    color: var(--iw-color-text-secondary);
+  }
+
+  .iw-data-grid-row:hover {
+    background: var(--iw-color-surface-hover);
+  }
+}
