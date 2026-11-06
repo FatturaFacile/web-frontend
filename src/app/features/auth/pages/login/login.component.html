@@ -95,7 +95,7 @@
           <!-- nz-checkbox renders its own input inside the label -->
           <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label nz-checkbox formControlName="remember">{{ "AUTH.REMEMBER" | translate }}</label>
-          <a href="mailto:info@fatturafacile.eu">{{ "AUTH.FORGOT" | translate }}</a>
+          <a routerLink="/forgot-password">{{ "AUTH.FORGOT" | translate }}</a>
         </div>
 
         <button
