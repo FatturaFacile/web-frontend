@@ -35,6 +35,12 @@ export interface RegisterPayload {
   privacy_accepted: boolean;
 }
 
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
 /** RFC 7807 `type` of the authentication problems that need their own message. */
 export const AUTH_PROBLEM = {
   EmailNotVerified: 'urn:fatturafacile:problem:email-not-verified',
@@ -42,6 +48,9 @@ export const AUTH_PROBLEM = {
   TenantAccessRejected: 'urn:fatturafacile:problem:tenant-access-rejected',
   VerificationTokenInvalid: 'urn:fatturafacile:problem:verification-token-invalid',
   VerificationTokenExpired: 'urn:fatturafacile:problem:verification-token-expired',
+  PasswordResetTokenInvalid: 'urn:fatturafacile:problem:password-reset-token-invalid',
+  PasswordResetTokenExpired: 'urn:fatturafacile:problem:password-reset-token-expired',
+  PasswordResetLocked: 'urn:fatturafacile:problem:password-reset-locked',
 } as const;
 
 export function authProblemOf(err: unknown): string | null {
@@ -124,6 +133,38 @@ export class AuthApiService {
           { email },
           { withCredentials: true },
         ),
+      ),
+    );
+  }
+
+  /** Requests a reset link. The answer is the same whether or not the address is known. */
+  forgotPassword(email: string): Observable<ApiResponse<unknown>> {
+    return this.postPublic('forgot-password', { email });
+  }
+
+  /** Requests a new reset link, invalidating the previous one. */
+  resendResetPasswordEmail(email: string): Observable<ApiResponse<unknown>> {
+    return this.postPublic('resend-reset-password-email', { email });
+  }
+
+  /** Checks the token of a reset link without consuming it. */
+  validateResetToken(token: string): Observable<ApiResponse<unknown>> {
+    return this.http.get<ApiResponse<unknown>>(`${this.base}/auth/validate-reset-token`, {
+      params: { token },
+    });
+  }
+
+  /** Consumes the token and sets the new password, signing the user out everywhere. */
+  resetPassword(payload: ResetPasswordPayload): Observable<ApiResponse<unknown>> {
+    return this.postPublic('reset-password', payload);
+  }
+
+  private postPublic(path: string, body: unknown): Observable<ApiResponse<unknown>> {
+    return this.getCsrfCookie().pipe(
+      switchMap(() =>
+        this.http.post<ApiResponse<unknown>>(`${this.base}/auth/${path}`, body, {
+          withCredentials: true,
+        }),
       ),
     );
   }

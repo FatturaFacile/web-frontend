@@ -46,6 +46,33 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    data: { title: 'Password dimenticata' },
+    loadComponent: () =>
+      import('./features/auth/pages/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    canActivate: [guestGuard],
+    data: { title: 'Reimposta password' },
+    loadComponent: () =>
+      import('./features/auth/pages/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
+    path: 'password-updated',
+    canActivate: [guestGuard],
+    data: { title: 'Password aggiornata' },
+    loadComponent: () =>
+      import('./features/auth/pages/password-updated/password-updated.component').then(
+        (m) => m.PasswordUpdatedComponent,
+      ),
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     data: { breadcrumb: 'Dashboard', title: 'Dashboard Esecutiva' },
