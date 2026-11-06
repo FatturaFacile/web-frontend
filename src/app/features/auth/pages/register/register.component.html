@@ -79,14 +79,28 @@
         <nz-form-item>
           <nz-form-label nzRequired nzFor="password">{{ "AUTH.PASSWORD" | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="requiredError">
-            <input
-              nz-input
-              id="password"
-              type="password"
-              formControlName="password"
-              autocomplete="new-password"
-              aria-describedby="password-requirements"
-            />
+            <nz-input-wrapper>
+              <input
+                nz-input
+                id="password"
+                formControlName="password"
+                autocomplete="new-password"
+                aria-describedby="password-requirements"
+                [type]="passwordVisible() ? 'text' : 'password'"
+              />
+              <button
+                nzInputSuffix
+                type="button"
+                class="toggle"
+                [attr.aria-label]="
+                  (passwordVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                "
+                [attr.aria-pressed]="passwordVisible()"
+                (click)="passwordVisible.set(!passwordVisible())"
+              >
+                <nz-icon [nzType]="passwordVisible() ? 'eye-invisible' : 'eye'" />
+              </button>
+            </nz-input-wrapper>
             <small id="password-requirements" class="password-requirements">{{
               "AUTH.PASSWORD_REQUIREMENTS" | translate
             }}</small>
@@ -106,13 +120,27 @@
             "AUTH.PASSWORD_CONFIRMATION" | translate
           }}</nz-form-label>
           <nz-form-control [nzErrorTip]="confirmationError">
-            <input
-              nz-input
-              id="password_confirmation"
-              type="password"
-              formControlName="password_confirmation"
-              autocomplete="new-password"
-            />
+            <nz-input-wrapper>
+              <input
+                nz-input
+                id="password_confirmation"
+                formControlName="password_confirmation"
+                autocomplete="new-password"
+                [type]="confirmationVisible() ? 'text' : 'password'"
+              />
+              <button
+                nzInputSuffix
+                type="button"
+                class="toggle"
+                [attr.aria-label]="
+                  (confirmationVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                "
+                [attr.aria-pressed]="confirmationVisible()"
+                (click)="confirmationVisible.set(!confirmationVisible())"
+              >
+                <nz-icon [nzType]="confirmationVisible() ? 'eye-invisible' : 'eye'" />
+              </button>
+            </nz-input-wrapper>
           </nz-form-control>
           <ng-template #confirmationError let-control>
             @if (control.hasError("mismatch")) {
@@ -164,7 +192,7 @@
       <p class="alternate">
         <a routerLink="/login">{{ "AUTH.HAVE_ACCOUNT" | translate }}</a>
         ·
-        <a href="mailto:info@fatturafacile.eu">{{ "AUTH.FORGOT" | translate }}</a>
+        <a routerLink="/forgot-password">{{ "AUTH.FORGOT" | translate }}</a>
       </p>
     </nz-card>
   </div>

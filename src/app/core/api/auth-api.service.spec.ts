@@ -158,4 +158,37 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.body).toEqual({ email: 'giuliabianchitest@example.com' });
     req.flush({ success: true });
   });
+
+  it.each([
+    ['forgotPassword', 'forgot-password'],
+    ['resendResetPasswordEmail', 'resend-reset-password-email'],
+  ] as const)('should request the CSRF cookie before %s', (method, path) => {
+    service[method]('giuliabianchitest@example.com').subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/${path}`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ email: 'giuliabianchitest@example.com' });
+    req.flush({ success: true });
+  });
+
+  it('should validate a reset token with GET /auth/validate-reset-token', () => {
+    service.validateResetToken('abc.def').subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/validate-reset-token?token=abc.def`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true });
+  });
+
+  it('should request the CSRF cookie before POST /auth/reset-password', () => {
+    const payload = { token: 'abc.def', password: TEST_PASSWORD, password_confirmation: TEST_PASSWORD };
+    service.resetPassword(payload).subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/reset-password`);
+    expect(req.request.body).toEqual(payload);
+    req.flush({ success: true });
+  });
 });
