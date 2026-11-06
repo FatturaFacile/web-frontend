@@ -5,7 +5,8 @@ import { provideRouter, Router } from '@angular/router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { AuthApiService } from '@core';
-import { passwordStrength, RegisterComponent } from './register.component';
+import { RegisterComponent } from './register.component';
+import { passwordStrength } from '../../password-rules';
 import { TEST_PASSWORD } from '../../../../../testing/credentials';
 
 const VALID = {
@@ -41,6 +42,40 @@ describe('RegisterComponent', () => {
         { provide: AuthApiService, useValue: { register } },
       ],
     });
+  });
+
+  it('shows and hides each password field on its own', () => {
+    const fixture = TestBed.createComponent(RegisterComponent);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    const typeOf = (id: string) => root.querySelector<HTMLInputElement>(`#${id}`)?.type;
+    const toggles = root.querySelectorAll<HTMLButtonElement>('button.toggle');
+
+    expect(toggles).toHaveLength(2);
+    expect(typeOf('password')).toBe('password');
+    expect(typeOf('password_confirmation')).toBe('password');
+
+    toggles[0].click();
+    fixture.detectChanges();
+    expect(typeOf('password')).toBe('text');
+    expect(typeOf('password_confirmation')).toBe('password');
+    expect(toggles[0].getAttribute('aria-pressed')).toBe('true');
+
+    toggles[1].click();
+    toggles[0].click();
+    fixture.detectChanges();
+    expect(typeOf('password')).toBe('password');
+    expect(typeOf('password_confirmation')).toBe('text');
+  });
+
+  it('keeps reporting passwords that do not match after a submit', () => {
+    const component = create();
+    component['form'].setValue({ ...VALID, password_confirmation: `${TEST_PASSWORD}x` });
+
+    component['onSubmit']();
+
+    expect(register).not.toHaveBeenCalled();
+    expect(component['form'].controls.password_confirmation.hasError('mismatch')).toBe(true);
   });
 
   it('does not call the API while the form is invalid', () => {

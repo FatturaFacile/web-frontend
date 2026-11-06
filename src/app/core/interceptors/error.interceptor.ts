@@ -30,6 +30,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.endsWith('/auth/register') ||
           req.url.endsWith('/auth/verify-email') ||
           req.url.endsWith('/auth/resend-verification-email') ||
+          req.url.endsWith('/auth/forgot-password') ||
+          req.url.endsWith('/auth/resend-reset-password-email') ||
+          req.url.endsWith('/auth/validate-reset-token') ||
+          req.url.endsWith('/auth/reset-password') ||
           req.url.includes('/sanctum/');
 
         const body: unknown = err.error;

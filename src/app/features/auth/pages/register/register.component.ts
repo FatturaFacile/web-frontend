@@ -1,61 +1,21 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  AbstractControl,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { applyServerErrors, AuthApiService, I18nService, isValidationError } from '@core';
 import { environment } from '@env';
 import { TranslatePipe } from '@shared';
 import { LanguageSelectorComponent } from '../../components/language-selector.component';
-
-const STRENGTH_KEYS = [
-  'AUTH.PASSWORD_STRENGTH_WEAK',
-  'AUTH.PASSWORD_STRENGTH_WEAK',
-  'AUTH.PASSWORD_STRENGTH_FAIR',
-  'AUTH.PASSWORD_STRENGTH_GOOD',
-  'AUTH.PASSWORD_STRENGTH_STRONG',
-] as const;
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const confirmation = group.get('password_confirmation');
-  const mismatch = group.get('password')?.value !== confirmation?.value;
-  const errors = { ...confirmation?.errors };
-
-  if (mismatch && confirmation?.value) {
-    errors['mismatch'] = true;
-  } else {
-    delete errors['mismatch'];
-  }
-  confirmation?.setErrors(Object.keys(errors).length ? errors : null);
-  return null;
-}
-
-/** Indicative only: the backend applies the configured policy. 0 (empty) to 4 (strong). */
-export function passwordStrength(password: string): number {
-  if (!password) {
-    return 0;
-  }
-  const checks = [
-    password.length >= 10,
-    /[a-z]/.test(password) && /[A-Z]/.test(password),
-    /\d/.test(password),
-    /[^A-Za-z0-9]/.test(password),
-  ];
-  return Math.max(1, checks.filter(Boolean).length);
-}
+import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
 
 @Component({
   selector: 'app-register',
@@ -67,6 +27,7 @@ export function passwordStrength(password: string): number {
     NzCardModule,
     NzCheckboxModule,
     NzFormModule,
+    NzIconModule,
     NzInputModule,
     NzSelectModule,
     LanguageSelectorComponent,
@@ -84,6 +45,8 @@ export class RegisterComponent {
   protected readonly termsUrl = environment.termsUrl;
   protected readonly privacyUrl = environment.privacyUrl;
   protected readonly isSubmitting = signal(false);
+  protected readonly passwordVisible = signal(false);
+  protected readonly confirmationVisible = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly form = this.fb.group(
@@ -116,6 +79,8 @@ export class RegisterComponent {
       Object.values(this.form.controls).forEach((control) =>
         control.updateValueAndValidity({ onlySelf: true }),
       );
+      // The controls have just dropped the mismatch error, which only the group validator can set.
+      this.form.updateValueAndValidity();
       return;
     }
 
