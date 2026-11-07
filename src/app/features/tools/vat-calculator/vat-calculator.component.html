@@ -1,0 +1,59 @@
+﻿<app-page-header [title]="'NAV.TOOL_VAT' | translate" [subtitle]="'TOOLS.VAT_SUBTITLE' | translate" />
+
+<div nz-row [nzGutter]="[16, 16]">
+  <div nz-col nzXs="24" nzLg="12">
+    <nz-card [nzTitle]="'TOOLS.INPUT_DATA' | translate">
+      <form nz-form nzLayout="vertical" [formGroup]="form">
+        <nz-form-item>
+          <nz-form-label nzFor="vat-mode">{{ 'TOOLS.VAT_MODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select nzId="vat-mode" data-testid="vat-mode" formControlName="mode">
+              @for (mode of modes; track mode.value) {
+                <nz-option [nzValue]="mode.value" [nzLabel]="mode.labelKey | translate" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="vat-amount">{{ 'TOOLS.AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number
+              nzId="vat-amount" data-testid="vat-amount"
+              formControlName="amount"
+              [nzMin]="0"
+              [nzStep]="1"
+              [nzPrecision]="2"
+              style="width: 100%"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="vat-rate">{{ 'TOOLS.VAT_RATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select nzId="vat-rate" data-testid="vat-rate" formControlName="rate">
+              @for (rate of rates; track rate) {
+                <nz-option [nzValue]="rate" [nzLabel]="rate + '%'" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </nz-card>
+  </div>
+
+  <div nz-col nzXs="24" nzLg="12">
+    <nz-card [nzTitle]="'TOOLS.RESULT' | translate" aria-live="polite">
+      <div nz-row [nzGutter]="[16, 16]">
+        <div nz-col nzXs="24" nzSm="8">
+          <nz-statistic data-testid="vat-net" [nzTitle]="'TOOLS.NET' | translate" [nzValue]="result().net | appCurrency" />
+        </div>
+        <div nz-col nzXs="24" nzSm="8">
+          <nz-statistic data-testid="vat-vat" [nzTitle]="'TOOLS.VAT' | translate" [nzValue]="result().vat | appCurrency" />
+        </div>
+        <div nz-col nzXs="24" nzSm="8">
+          <nz-statistic data-testid="vat-gross" [nzTitle]="'TOOLS.GROSS' | translate" [nzValue]="result().gross | appCurrency" />
+        </div>
+      </div>
+    </nz-card>
+  </div>
+</div>

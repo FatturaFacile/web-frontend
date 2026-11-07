@@ -51,6 +51,9 @@ export const AUTH_PROBLEM = {
   PasswordResetTokenInvalid: 'urn:fatturafacile:problem:password-reset-token-invalid',
   PasswordResetTokenExpired: 'urn:fatturafacile:problem:password-reset-token-expired',
   PasswordResetLocked: 'urn:fatturafacile:problem:password-reset-locked',
+  TwoFactorChallengeInvalid: 'urn:fatturafacile:problem:two-factor-challenge-invalid',
+  TwoFactorCodeInvalid: 'urn:fatturafacile:problem:two-factor-code-invalid',
+  TwoFactorSetupRequired: 'urn:fatturafacile:problem:two-factor-setup-required',
 } as const;
 
 export function authProblemOf(err: unknown): string | null {

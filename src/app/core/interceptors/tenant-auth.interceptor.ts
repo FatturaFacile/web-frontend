@@ -3,7 +3,7 @@ import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { AuthStore } from '../auth/auth.store';
+import { AuthStore, USER_ID_STORAGE_KEY } from '../auth/auth.store';
 import { getXsrfCookie, isBackendApiRequest } from '../auth/csrf.utils';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -49,13 +49,25 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
     headersToSet['X-Tenant-Id'] = tenantId;
   }
 
-  // 2. Dynamic X-Language-Code
+  // 2. Dynamic X-Language-Code (+ Accept-Language, as the API accepts either)
   let languageCode: string | null = null;
   if (typeof window !== 'undefined' && window.localStorage) {
     languageCode = window.localStorage.getItem('lang') || window.localStorage.getItem('ff_lang');
   }
   if (languageCode && !req.headers.has('X-Language-Code')) {
     headersToSet['X-Language-Code'] = languageCode;
+  }
+  if (languageCode && !req.headers.has('Accept-Language')) {
+    headersToSet['Accept-Language'] = languageCode;
+  }
+
+  // 2b. Dynamic X-User-Id: required together with X-Tenant-Id when the API enforces the request context.
+  const userId =
+    typeof window !== 'undefined' && window.localStorage
+      ? window.localStorage.getItem(USER_ID_STORAGE_KEY)
+      : null;
+  if (userId && !req.headers.has('X-User-Id')) {
+    headersToSet['X-User-Id'] = userId;
   }
 
   // 3. Attach CSRF token on mutating requests (POST, PUT, PATCH, DELETE)

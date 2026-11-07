@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import { resolve } from 'node:path';
 import angular from '@analogjs/vite-plugin-angular';
 
@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [angular()],
   test: {
     globals: true,
+    // Playwright E2E specs live in tests/ and must not be run by Vitest
+    exclude: [...configDefaults.exclude, 'tests/**'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     reporters: ['default'],

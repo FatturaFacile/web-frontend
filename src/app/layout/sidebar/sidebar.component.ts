@@ -206,6 +206,70 @@ export class SidebarComponent {
       ],
     },
     {
+      key: 'NAV.SECTION_EXTENSIONS',
+      items: [
+        {
+          key: 'NAV.TOOLS',
+          icon: 'fa-solid fa-toolbox',
+          children: [
+            { key: 'NAV.TOOL_VAT', route: '/tools/vat-calculator', icon: 'fa-solid fa-percent' },
+            { key: 'NAV.TOOL_MARGIN', route: '/tools/margin-calculator', icon: 'fa-solid fa-chart-line' },
+            { key: 'NAV.TOOL_LETTER', route: '/tools/commercial-letter', icon: 'fa-solid fa-envelope-open-text' },
+            { key: 'NAV.TOOL_VCARD', route: '/tools/vcard-qr', icon: 'fa-solid fa-address-card' },
+            { key: 'NAV.TOOL_QR', route: '/tools/qr-generator', icon: 'fa-solid fa-qrcode' },
+            { key: 'NAV.TOOL_HOURS', route: '/tools/working-hours', icon: 'fa-solid fa-hourglass-half' },
+            { key: 'NAV.TOOL_CAMT', route: '/tools/camt-statement', icon: 'fa-solid fa-file-code' },
+            { key: 'NAV.TOOL_QR_INVOICE', route: '/tools/qr-invoice', icon: 'fa-solid fa-file-invoice' },
+            { key: 'NAV.TOOL_PDF', route: '/tools/pdf-editor', icon: 'fa-solid fa-file-pdf' },
+          ],
+        },
+        {
+          key: 'NAV.MODULES',
+          icon: 'fa-solid fa-cubes',
+          children: [
+            { key: 'NAV.CRM', route: '/modules/crm', icon: 'fa-solid fa-address-book' },
+            { key: 'NAV.ACCOUNTING', route: '/modules/accounting', icon: 'fa-solid fa-landmark' },
+            { key: 'NAV.MOD_BANK_RECONCILIATION', route: '/modules/bank-reconciliation', icon: 'fa-solid fa-building-columns' },
+            { key: 'NAV.MOD_INVOICING', route: '/modules/invoicing', icon: 'fa-solid fa-file-invoice-dollar' },
+            { key: 'NAV.MOD_PRODUCTS', route: '/modules/products', icon: 'fa-solid fa-tags' },
+            { key: 'NAV.MOD_AGENDA', route: '/modules/agenda', icon: 'fa-solid fa-calendar-days' },
+            { key: 'NAV.HR', route: '/modules/hr', icon: 'fa-solid fa-user-tie' },
+            { key: 'NAV.MOD_PRODUCTION', route: '/modules/production', icon: 'fa-solid fa-industry' },
+            { key: 'NAV.MOD_MARKETING', route: '/modules/marketing', icon: 'fa-solid fa-bullhorn' },
+            { key: 'NAV.MOD_FORMS', route: '/modules/forms', icon: 'fa-solid fa-clipboard-list' },
+          ],
+        },
+        {
+          key: 'NAV.SECTORS',
+          icon: 'fa-solid fa-shop',
+          children: [
+            { key: 'NAV.SECTOR_SME', route: '/sectors/sme', icon: 'fa-solid fa-store' },
+            { key: 'NAV.SECTOR_MECHANIC', route: '/sectors/mechanic', icon: 'fa-solid fa-wrench' },
+            { key: 'NAV.SECTOR_CRAFT', route: '/sectors/craft-lab', icon: 'fa-solid fa-hammer' },
+          ],
+        },
+        {
+          key: 'NAV.ADVANCED',
+          icon: 'fa-solid fa-star',
+          children: [
+            { key: 'NAV.ADV_AI', route: '/advanced/ai-assistant', icon: 'fa-solid fa-robot' },
+            { key: 'NAV.ADV_SECURITY', route: '/advanced/security', icon: 'fa-solid fa-shield-halved' },
+            { key: 'NAV.ADV_EVENTS', route: '/advanced/events-polls', icon: 'fa-solid fa-square-poll-vertical' },
+            { key: 'NAV.ADV_WEB_APP', route: '/advanced/web-app', icon: 'fa-solid fa-globe' },
+          ],
+        },
+        {
+          key: 'NAV.DOCS',
+          icon: 'fa-solid fa-book',
+          children: [
+            { key: 'NAV.DOC_INTRO', route: '/docs/intro', icon: 'fa-solid fa-circle-info' },
+            { key: 'NAV.DOC_LABELS', route: '/docs/labels', icon: 'fa-solid fa-tag' },
+            { key: 'NAV.DOC_USE_CASES', route: '/docs/use-cases', icon: 'fa-solid fa-lightbulb' },
+          ],
+        },
+      ],
+    },
+    {
       key: 'NAV.SECTION_SYSTEM',
       items: [
         {
