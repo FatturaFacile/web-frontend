@@ -220,6 +220,36 @@ export const routes: Routes = [
       import('./features/welcome').then((m) => m.WELCOME_ROUTES),
   },
   {
+    path: 'tools',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.TOOLS', title: 'Strumenti' },
+    loadChildren: () => import('./features/tools/tools.routes').then((m) => m.TOOLS_ROUTES),
+  },
+  {
+    path: 'modules',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.MODULES', title: 'Moduli Principali' },
+    loadChildren: () => import('./features/modules/modules.routes').then((m) => m.MODULES_ROUTES),
+  },
+  {
+    path: 'sectors',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.SECTORS', title: 'Settori' },
+    loadChildren: () => import('./features/sectors/sectors.routes').then((m) => m.SECTORS_ROUTES),
+  },
+  {
+    path: 'advanced',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.ADVANCED', title: 'Funzionalit� Avanzate' },
+    loadChildren: () => import('./features/advanced/advanced.routes').then((m) => m.ADVANCED_ROUTES),
+  },
+  {
+    path: 'docs',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.DOCS', title: 'Documentazione' },
+    loadChildren: () => import('./features/docs/docs.routes').then((m) => m.DOCS_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

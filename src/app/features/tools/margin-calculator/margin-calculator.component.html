@@ -1,0 +1,90 @@
+﻿<app-page-header [title]="'NAV.TOOL_MARGIN' | translate" [subtitle]="'TOOLS.MARGIN_SUBTITLE' | translate" />
+
+<div nz-row [nzGutter]="[16, 16]">
+  <div nz-col nzXs="24" nzLg="12">
+    <nz-card [nzTitle]="'TOOLS.INPUT_DATA' | translate">
+      <form nz-form nzLayout="vertical" [formGroup]="form">
+        <nz-form-item>
+          <nz-form-label nzFor="margin-mode">{{ 'TOOLS.MARGIN_MODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select nzId="margin-mode" formControlName="mode">
+              @for (mode of modes; track mode.value) {
+                <nz-option [nzValue]="mode.value" [nzLabel]="mode.labelKey | translate" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="margin-cost">{{ 'TOOLS.COST' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number
+              nzId="margin-cost"
+              formControlName="cost"
+              [nzMin]="0"
+              [nzStep]="1"
+              [nzPrecision]="2"
+              style="width: 100%"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        @if (isFromPrice()) {
+          <nz-form-item>
+            <nz-form-label nzFor="margin-price">{{ 'TOOLS.SELLING_PRICE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                nzId="margin-price" data-testid="margin-price"
+                formControlName="price"
+                [nzMin]="0"
+                [nzStep]="1"
+                [nzPrecision]="2"
+                style="width: 100%"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        } @else {
+          <nz-form-item>
+            <nz-form-label nzFor="margin-percent">{{ 'TOOLS.TARGET_MARGIN' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                nzId="margin-percent" data-testid="margin-percent"
+                formControlName="marginPercent"
+                [nzMin]="0"
+                [nzMax]="99.99"
+                [nzStep]="1"
+                [nzPrecision]="2"
+                style="width: 100%"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        }
+      </form>
+    </nz-card>
+  </div>
+
+  <div nz-col nzXs="24" nzLg="12">
+    <nz-card [nzTitle]="'TOOLS.RESULT' | translate" aria-live="polite">
+      <div nz-row [nzGutter]="[16, 16]">
+        <div nz-col nzXs="24" nzSm="12">
+          <nz-statistic [nzTitle]="'TOOLS.SELLING_PRICE' | translate" [nzValue]="result().price | appCurrency" />
+        </div>
+        <div nz-col nzXs="24" nzSm="12">
+          <nz-statistic [nzTitle]="'TOOLS.MARGIN_AMOUNT' | translate" [nzValue]="result().margin | appCurrency" />
+        </div>
+        <div nz-col nzXs="24" nzSm="12">
+          <nz-statistic
+            [nzTitle]="'TOOLS.MARGIN_PERCENT' | translate"
+            [nzValue]="result().marginPercent.toFixed(2)"
+            nzSuffix="%"
+          />
+        </div>
+        <div nz-col nzXs="24" nzSm="12">
+          <nz-statistic
+            [nzTitle]="'TOOLS.MARKUP_PERCENT' | translate"
+            [nzValue]="result().markupPercent.toFixed(2)"
+            nzSuffix="%"
+          />
+        </div>
+      </div>
+    </nz-card>
+  </div>
+</div>

@@ -76,6 +76,20 @@ function getInitialTheme(): 'light' | 'dark' {
   return 'light';
 }
 
+/** Storage key read by the HTTP interceptor to send `X-User-Id` (no injection, to avoid a DI cycle). */
+export const USER_ID_STORAGE_KEY = 'ff_active_user_id';
+
+function persistUserId(user: UserProfile | null): void {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+  if (user?.id) {
+    window.localStorage.setItem(USER_ID_STORAGE_KEY, String(user.id));
+  } else {
+    window.localStorage.removeItem(USER_ID_STORAGE_KEY);
+  }
+}
+
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
@@ -100,6 +114,7 @@ export const AuthStore = signalStore(
   })),
   withMethods((store, i18n = inject(I18nService)) => ({
     login(tenantId = 't-it-01', user?: UserProfile | null): void {
+      persistUserId(user ?? DEFAULT_USER);
       const tenant = store.tenants().find((t) => t.id === tenantId) ?? store.tenants()[0];
       patchState(store, {
         isAuthenticated: true,
@@ -110,12 +125,14 @@ export const AuthStore = signalStore(
       });
     },
     logout(): void {
+      persistUserId(null);
       patchState(store, {
         isAuthenticated: false,
         user: null,
       });
     },
     setUser(user: UserProfile | null): void {
+      persistUserId(user);
       patchState(store, {
         user,
         isAuthenticated: !!user,

@@ -1,4 +1,5 @@
 export * from './auth/auth.guard';
+export * from './auth/permissions';
 export * from './auth/auth.interceptor';
 export * from './auth/token-storage.service';
 export * from './auth/csrf.utils';

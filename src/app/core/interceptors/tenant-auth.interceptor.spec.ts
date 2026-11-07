@@ -73,6 +73,19 @@ describe('tenantAuthInterceptor', () => {
     req.flush({});
   });
 
+  it('should attach X-User-Id and Accept-Language alongside the tenant context', () => {
+    localStorage.setItem('ff_active_user_id', 'user-uuid-789');
+    localStorage.setItem('ff_lang', 'de');
+
+    http.get(`${TEST_API_ORIGIN}/api/v1/esm/tickets`).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/esm/tickets`);
+    expect(req.request.headers.get('X-User-Id')).toBe('user-uuid-789');
+    expect(req.request.headers.get('Accept-Language')).toBe('de');
+    expect(req.request.headers.get('X-Language-Code')).toBe('de');
+    req.flush({});
+  });
+
   it('should handle 422 Unprocessable Entity by surfacing validation errors', () => {
     let errorCaught = false;
 
