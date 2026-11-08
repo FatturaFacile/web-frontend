@@ -122,6 +122,13 @@ export const routes: Routes = [
       import('./features/field-service/field-service.routes').then((m) => m.FIELD_SERVICE_ROUTES),
   },
   {
+    path: 'projects',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Progetti & Commesse', title: 'Progetti' },
+    loadChildren: () =>
+      import('./features/projects/projects.routes').then((m) => m.PROJECTS_ROUTES),
+  },
+  {
     path: 'automotive',
     canActivate: [authGuard],
     data: { breadcrumb: 'Automotive & Gomme', title: 'Automotive' },

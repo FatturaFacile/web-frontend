@@ -1,0 +1,222 @@
+<app-page-header
+  title="Projects & Work Orders"
+  subtitle="Manage enterprise projects, task schedules, EVM indicators, and billing milestones"
+>
+  <div header-actions>
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <nz-icon nzType="plus" />
+      New Project
+    </button>
+  </div>
+</app-page-header>
+
+<nz-card>
+  <div class="filter-bar">
+    <div class="search-box">
+      <nz-input-group nzPrefixIcon="search">
+        <input
+          type="text"
+          nz-input
+          placeholder="Search by code, project name..."
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </nz-input-group>
+    </div>
+
+    <div class="select-filters">
+      <nz-select
+        class="filter-select"
+        [nzPlaceHolder]="'Status: All'"
+        nzAllowClear
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusChange($event)"
+      >
+        <nz-option nzValue="draft" nzLabel="Draft"></nz-option>
+        <nz-option nzValue="active" nzLabel="Active"></nz-option>
+        <nz-option nzValue="paused" nzLabel="Paused"></nz-option>
+        <nz-option nzValue="completed" nzLabel="Completed"></nz-option>
+        <nz-option nzValue="closed" nzLabel="Closed"></nz-option>
+      </nz-select>
+
+      <button nz-button nzType="default" (click)="loadProjects()">
+        <nz-icon nzType="reload" />
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <nz-table
+    #projTable
+    [nzData]="projects()"
+    [nzLoading]="loading()"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzFrontPagination]="false"
+    (nzQueryParams)="onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Health</th>
+        <th>Progress</th>
+        <th>Contract Value</th>
+        <th nzWidth="220px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of projTable.data; track p.id) {
+        <tr>
+          <td>
+            <div class="proj-info">
+              <a class="proj-title" (click)="openDetail(p)">{{ p.name }}</a>
+              <span class="proj-num">{{ p.project_number }}</span>
+            </div>
+          </td>
+          <td>
+            <nz-tag>{{ p.project_type }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(p.status)">{{ p.status }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag>
+          </td>
+          <td style="width: 130px">
+            <nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress>
+          </td>
+          <td>{{ p.contract_value | money: p.currency }}</td>
+          <td>
+            <nz-space>
+              <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
+                Manage
+              </button>
+              @if (p.status === 'draft' || p.status === 'paused') {
+                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
+                  Start
+                </button>
+              }
+              @if (p.status === 'active') {
+                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
+                  Pause
+                </button>
+                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
+                  Complete
+                </button>
+              }
+            </nz-space>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create Project Modal -->
+<nz-modal
+  [nzVisible]="createModalVisible()"
+  nzTitle="Create New Project"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateProject()"
+  [nzOkLoading]="saving()"
+  [nzWidth]="620"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="projectForm" nzLayout="vertical">
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Project Number</nz-form-label>
+          <nz-form-control nzErrorTip="Project number is required">
+            <input nz-input formControlName="project_number" placeholder="PRJ-2026-001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Project Name</nz-form-label>
+          <nz-form-control nzErrorTip="Name is required">
+            <input nz-input formControlName="name" placeholder="E.g. ERP Implementation" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Client Contact ID (UUID)</nz-form-label>
+          <nz-form-control nzErrorTip="Client ID is required">
+            <input nz-input formControlName="contact_id" placeholder="Client contact UUID" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Project Manager ID (UUID)</nz-form-label>
+          <nz-form-control nzErrorTip="Manager is required">
+            <input nz-input formControlName="project_manager_user_id" placeholder="User UUID" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Project Type</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="project_type">
+              <nz-option nzValue="fixed_price" nzLabel="Fixed Price"></nz-option>
+              <nz-option nzValue="time_and_materials" nzLabel="Time & Materials"></nz-option>
+              <nz-option nzValue="milestone" nzLabel="Milestone Based"></nz-option>
+              <nz-option nzValue="consulting" nzLabel="Consulting"></nz-option>
+              <nz-option nzValue="construction" nzLabel="Construction"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Billing Method</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="billing_method">
+              <nz-option nzValue="fixed_price" nzLabel="Fixed Price"></nz-option>
+              <nz-option nzValue="time_and_materials" nzLabel="Time & Materials"></nz-option>
+              <nz-option nzValue="milestone" nzLabel="Milestone"></nz-option>
+              <nz-option nzValue="percentage_of_completion" nzLabel="% of Completion"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Planned Start</nz-form-label>
+          <nz-form-control nzErrorTip="Start date is required">
+            <input nz-input formControlName="planned_start_date" type="date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Planned End</nz-form-label>
+          <nz-form-control nzErrorTip="End date is required">
+            <input nz-input formControlName="planned_end_date" type="date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Contract Value ({{ authStore.activeCurrency() }})</nz-form-label>
+        <nz-form-control nzErrorTip="Contract value is required">
+          <nz-input-number
+            formControlName="contract_value"
+            [nzMin]="0"
+            [nzStep]="1000"
+            style="width: 100%"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Detail Drawer -->
+@if (selectedProject()) {
+  <app-project-detail-drawer
+    [project]="selectedProject()!"
+    [visible]="drawerVisible()"
+    (closed)="closeDetail()"
+  ></app-project-detail-drawer>
+}
