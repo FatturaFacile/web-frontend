@@ -18,5 +18,6 @@ export * from './manufacturing.model';
 export * from './rent.model';
 export * from './automotive.model';
 export * from './field-service.model';
+export * from './ticket.model';
 export * from './hr.model';
 export * from './retail.model';

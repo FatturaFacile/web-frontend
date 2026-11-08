@@ -80,6 +80,143 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(loginResult).toEqual(mockResponse);
   });
 
+  it('should call POST /auth/two-factor-challenge with credentials on twoFactorChallenge()', () => {
+    const payload = {
+      challenge_token: 'a'.repeat(64),
+      code: '123456',
+    };
+
+    service.twoFactorChallenge(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor-challenge`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({ success: true, message: 'Authenticated successfully', data: {} });
+  });
+
+  it('should call GET /auth/two-factor with credentials on getTwoFactorStatus()', () => {
+    service.getTwoFactorStatus().subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({
+      success: true,
+      message: 'Operation successful',
+      data: {
+        enabled: true,
+        pending_setup: false,
+        confirmed_at: '2026-01-01T00:00:00Z',
+        remaining_recovery_codes: 8,
+        required_by_tenant: false,
+      },
+    });
+  });
+
+  it('should call POST /auth/two-factor/enable with credentials on enableTwoFactor()', () => {
+    const payload = { current_password: TEST_PASSWORD };
+    service.enableTwoFactor(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor/enable`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      success: true,
+      message: 'Scan the QR code',
+      data: { secret: 'SECRET123', otpauth_uri: 'otpauth://totp/...' },
+    });
+  });
+
+  it('should call POST /auth/two-factor/confirm with credentials on confirmTwoFactor()', () => {
+    const payload = { code: '654321' };
+    service.confirmTwoFactor(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor/confirm`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      success: true,
+      message: 'Enabled',
+      data: { recovery_codes: ['code-1', 'code-2'] },
+    });
+  });
+
+  it('should call POST /auth/two-factor/recovery-codes with credentials on getTwoFactorRecoveryCodes()', () => {
+    const payload = { current_password: TEST_PASSWORD };
+    service.getTwoFactorRecoveryCodes(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor/recovery-codes`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      success: true,
+      message: 'New recovery codes generated',
+      data: { recovery_codes: ['code-a', 'code-b'] },
+    });
+  });
+
+  it('should call POST /auth/two-factor/disable with credentials on disableTwoFactor()', () => {
+    const payload = { current_password: TEST_PASSWORD, code: '123456' };
+    service.disableTwoFactor(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/two-factor/disable`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      success: true,
+      message: 'Two-factor authentication disabled.',
+      data: {
+        enabled: false,
+        pending_setup: false,
+        confirmed_at: null,
+        remaining_recovery_codes: 0,
+        required_by_tenant: false,
+      },
+    });
+  });
+
+  it('should call GET /auth/sessions with credentials on getSessions()', () => {
+    service.getSessions().subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/sessions`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({
+      success: true,
+      message: 'Operation successful',
+      data: [[], []],
+    });
+  });
+
+  it('should call DELETE /auth/sessions/{kind}/{id} with credentials on revokeSession()', () => {
+    service.revokeSession('session', 'sess-123').subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/sessions/session/sess-123`);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({ success: true, message: 'Session revoked.', data: null });
+  });
+
+  it('should call POST /auth/sessions/revoke-others with credentials on revokeOtherSessions()', () => {
+    const payload = { current_password: TEST_PASSWORD };
+    service.revokeOtherSessions(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/auth/sessions/revoke-others`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({
+      success: true,
+      message: 'All other sessions have been signed out.',
+      data: { tokens: 1, sessions: 2 },
+    });
+  });
+
   it('should call POST /auth/logout with credentials on logout()', () => {
     service.logout().subscribe();
 

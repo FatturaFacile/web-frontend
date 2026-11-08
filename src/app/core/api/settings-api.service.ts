@@ -6,10 +6,13 @@ import {
   ApiResponse,
   AuditLogResource,
   BranchResource,
+  ResetUserTwoFactorResponse,
   RoleResource,
   TenantPreferences,
   TenantSettings,
+  TwoFactorPolicyResponse,
   UpdateTenantSettingsPayload,
+  UpdateTwoFactorPolicyPayload,
   UserResource,
 } from '../models';
 
@@ -52,5 +55,17 @@ export class SettingsApiService {
 
   updateTenantPreferences(group: string, payload: Record<string, unknown>): Observable<ApiResponse<TenantPreferences>> {
     return this.http.put<ApiResponse<TenantPreferences>>(`${this.base}/preferences/${group}`, payload);
+  }
+
+  getTwoFactorPolicy(): Observable<ApiResponse<TwoFactorPolicyResponse>> {
+    return this.http.get<ApiResponse<TwoFactorPolicyResponse>>(`${this.base}/security/two-factor`);
+  }
+
+  updateTwoFactorPolicy(payload: UpdateTwoFactorPolicyPayload): Observable<ApiResponse<TwoFactorPolicyResponse>> {
+    return this.http.put<ApiResponse<TwoFactorPolicyResponse>>(`${this.base}/security/two-factor`, payload);
+  }
+
+  resetUserTwoFactor(userId: string): Observable<ApiResponse<ResetUserTwoFactorResponse>> {
+    return this.http.post<ApiResponse<ResetUserTwoFactorResponse>>(`${this.base}/users/${userId}/two-factor/reset`, {});
   }
 }

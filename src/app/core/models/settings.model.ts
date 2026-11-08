@@ -64,3 +64,25 @@ export interface TenantPreferences {
   invoice_prefix: string;
   default_vat_rate: number;
 }
+
+export interface TenantMemberTwoFactorStatus {
+  id: string;
+  name: string;
+  email: string;
+  role: string | null;
+  two_factor_enabled: boolean;
+}
+
+export interface TwoFactorPolicyResponse {
+  require_two_factor: boolean;
+  members: TenantMemberTwoFactorStatus[];
+}
+
+export interface UpdateTwoFactorPolicyPayload {
+  require_two_factor: boolean;
+}
+
+export interface ResetUserTwoFactorResponse {
+  user_id: string;
+  two_factor_enabled: boolean;
+}

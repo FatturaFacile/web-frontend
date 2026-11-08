@@ -1,0 +1,40 @@
+.tenant-security-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.policy-card,
+.members-card {
+  border-radius: 8px;
+}
+
+.policy-toggle-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+
+  .policy-info {
+    h3 {
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .policy-desc {
+      color: #595959;
+      margin: 0;
+      max-width: 720px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  }
+
+  .policy-control {
+    flex-shrink: 0;
+  }
+}
+
+.text-muted {
+  color: #bfbfbf;
+}

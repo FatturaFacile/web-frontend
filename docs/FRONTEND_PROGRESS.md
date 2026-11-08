@@ -1,0 +1,63 @@
+# FatturaFacile ERP - Frontend Implementation Progress
+
+## Architectural Conventions & Stack Overview
+
+- **Angular Version:** 22.2.4 (Standalone components exclusively; no `standalone: true` decorator flag per Angular v20+ default; `OnPush` default in v22+).
+- **UI Framework:** `ng-zorro-antd` v22.1.2 with custom styling in `src/styles.scss` and `src/theme.less`.
+- **State Management:** Angular Signals (`signal`, `computed`, `effect`, `linkedSignal`) and `@ngrx/signals` Signal Stores (`AuthStore`, `AppStore`).
+- **HTTP & API Integration:**
+  - Base URL: `/api/v1` with relative routing via local development proxy (`proxy.conf.json`).
+  - Single central interceptor pipeline: credentials (`withCredentials: true`), CSRF refresh (`X-XSRF-TOKEN`), tenant/user headers (`X-Tenant-Id`, `X-User-Id`, `X-Language-Code`, `Accept: application/json`), and RFC 7807 Problem Details error handler.
+  - OpenAPI Code Generation: `openapi-typescript` targeting `src/app/core/api/generated/schema.d.ts` from `../web-api/docs/api/openapi.json`.
+  - Modules exposed via dedicated API services (`<module>-api.service.ts`) providing strictly typed responses.
+- **Forms & Validation:** Typed Reactive Forms (`NonNullableFormBuilder`) using `applyServerErrors(form, err)` to display backend 422 validation errors via `nzErrorTip`.
+- **Monetary & Quantities Conventions:** Monetary values handled as decimal strings (never calculated using `parseFloat`/`Number` on the client), formatted using `MoneyPipe` (`Intl.NumberFormat`). Warehouse movements distinguish `quantity` (positive) and `signed_quantity` (signed).
+- **Testing:** Vitest 5.0.5 unit test runner (`pnpm run test`, `pnpm test --run`).
+
+---
+
+## Module Coverage Matrix
+
+| # | Module / Tag | Total Endpoints | Covered Endpoints | Pages (List, Detail, Form, Actions) | Tests | Status | Notes |
+|---|---|---|---|---|---|---|---|
+| **01** | **Foundations & Auth** | 18 | 18 | Login, Register, Verify Email, Reset Password, 2FA Wizard, Sessions Security | 45+ | **Done** | Cookie auth, 2FA challenge/confirm, sessions table, RFC 7807 interceptors |
+| **02** | **Tenant Settings & Admin** | 12 | 5 | Tenant 2FA Policy (`/settings/security/two-factor`), Security Settings | 10 | **In Progress** | 2FA policy done; company profile, numberings, webhooks pending |
+| **03** | **Anagrafiche (Master Data)** | 35 | 12 | Clients table, Suppliers table, Contact drawer, Products | 15 | **Todo** | `/crm/clients`, `/crm/suppliers`, articles, warehouses |
+| **04** | **CRM & Cross-Border** | 45 | 8 | CRM Dashboard, Accounts, Contacts, Leads scoring, Pipeline Kanban, Duplicates | 12 | **Todo** | Pipeline, duplicate merge (`/crm/duplicates`), GDPR consents |
+| **05** | **Helpdesk & Ticketing** | 15 | 12 | Ticket List (server filters), Ticket Detail Drawer (3 tabs), Create Drawer, Action Modals | 18 | **Done** | Covered `/v1/esm/tickets` CRUD, status, assign, resolve, close, reopen, messages, activities |
+| **06** | **Projects & Field Service** | 32 | 0 | Tasks, Gantt, Resources, Timesheets, Budgets, Variations, Milestones, EVM | 0 | **Todo** | `/projects`, `/timesheets` |
+| **07** | **Asset Management (`/eam`)** | 28 | 0 | Assets list, Parallel registers, Depreciation schedules, Asset book, Maintenance | 0 | **Todo** | `/eam/assets`, `/eam/depreciations` |
+| **08** | **Subscriptions (`/sub`)** | 22 | 0 | Plans (`/subscriptions/plans`), Contracts (`/sub/contracts`), Dunning, Recurring Invoices | 0 | **Todo** | Use `/sub/contracts` instead of deprecated routes |
+| **09** | **Inventory & Logistics** | 38 | 0 | Stock balances, Signed movements, Physical inventories, Stock locations | 0 | **Todo** | Use `signed_quantity` for receipts/issues |
+| **10** | **Sales & Orders** | 42 | 4 | Quotes with approvals, Sales orders, Delivery notes (DDT) | 8 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **11** | **Invoicing & SDI** | 52 | 8 | Electronic Invoices (IT/CH), Credit Notes, SDI send bulk, Swiss QR-Bill | 12 | **Todo** | Server assigns invoice numbering strictly |
+| **12** | **Procurement & AP** | 36 | 4 | Purchase Requests, RfQ, Purchase Orders, Goods Receipt, AP Invoices matching | 6 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **13** | **Treasury & Banking** | 40 | 8 | Bank Accounts, Statements, Reconciliation, Categorization, Cash flow schedule | 10 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **14** | **General Ledger & Accounting**| 48 | 6 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT, Intrastat | 10 | **Todo** | Use `/general-ledger/journals` |
+| **15** | **Manufacturing & MRP** | 26 | 0 | Bill of Materials (BOM), Production Orders, Routing cycles, MRP runs | 0 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **16** | **HR & Payroll (IT/CH)** | 30 | 2 | Employees, Employment Contracts, Attendance records, Leave requests, Payslips | 4 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **17** | **Verticals & Minor Modules** | 65 | 0 | Retail/POS, Automotive/Workshop, Construction, Fleet Rent, Legal Practice, Documents | 0 | **Todo** | Covers remaining industry specific tags |
+| **18** | **Final Polish & Dashboards** | 15 | 4 | Executive Dashboard KPIs, Global Search, Accessibility & WCAG AA audits | 8 | **Todo** | Performance & accessibility verification |
+
+---
+
+## Autonomous Execution Queue
+
+1. `[DONE]` **Module 01: Foundations & Auth**
+2. `[DONE]` **Module 05: Helpdesk & Ticketing (`/v1/esm/tickets`)**
+3. `[NEXT]` **Module 02: Tenant Settings & Administration**
+4. `[TODO]` **Module 03: Anagrafiche (Master Data)**
+5. `[TODO]` **Module 04: CRM (Pipeline, Duplicates, Leads)**
+6. `[TODO]` **Module 06: Projects (Tasks, Gantt, Timesheets)**
+7. `[TODO]` **Module 07: Asset Management (`/eam`)**
+8. `[TODO]` **Module 08: Subscriptions (`/sub/contracts`)**
+9. `[TODO]` **Module 09: Inventory & Logistics**
+10. `[TODO]` **Module 10: Sales & Orders**
+11. `[TODO]` **Module 11: Invoicing & SDI**
+12. `[TODO]` **Module 12: Procurement & AP**
+13. `[TODO]` **Module 13: Treasury & Banking**
+14. `[TODO]` **Module 14: General Ledger & Accounting**
+15. `[TODO]` **Module 15: Manufacturing & MRP**
+16. `[TODO]` **Module 16: HR & Payroll**
+17. `[TODO]` **Module 17: Verticals & Minor Modules**
+18. `[TODO]` **Module 18: Final Polish & KPI Dashboards**

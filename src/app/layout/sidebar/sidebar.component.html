@@ -17,7 +17,7 @@
   class="sidebar-menu"
   [class.sidebar-collapsed]="appStore.isCollapsed()"
 >
-  @for (section of menuSections; track $index) {
+  @for (section of filteredSections(); track $index) {
     @if (section.key) {
       @if (appStore.isCollapsed()) {
         <li class="menu-section-divider" role="separator"></li>

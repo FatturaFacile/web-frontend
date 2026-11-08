@@ -40,6 +40,11 @@ import {
   TeamOutline,
   ApartmentOutline,
   ColumnHeightOutline,
+  ClearOutline,
+  CheckCircleOutline,
+  CloseCircleOutline,
+  RedoOutline,
+  UserAddOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -84,4 +89,9 @@ export const icons = [
   TeamOutline,
   ApartmentOutline,
   ColumnHeightOutline,
+  ClearOutline,
+  CheckCircleOutline,
+  CloseCircleOutline,
+  RedoOutline,
+  UserAddOutline,
 ];

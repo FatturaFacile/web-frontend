@@ -1,5 +1,6 @@
 export * from './auth/auth.guard';
 export * from './auth/permissions';
+export * from './auth/permissions.service';
 export * from './auth/auth.interceptor';
 export * from './auth/token-storage.service';
 export * from './auth/csrf.utils';
@@ -33,6 +34,7 @@ export * from './api/manufacturing-api.service';
 export * from './api/rent-api.service';
 export * from './api/automotive-api.service';
 export * from './api/field-service-api.service';
+export * from './api/ticket-api.service';
 export * from './api/hr-api.service';
 export * from './api/retail-api.service';
 export * from './lookups/lookup.service';

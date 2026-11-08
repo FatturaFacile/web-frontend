@@ -3,6 +3,8 @@ import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore } from './auth.store';
 import { AuthApiService } from '../api/auth-api.service';
+import { PermissionsService } from './permissions.service';
+import { AccessMode } from './permissions';
 
 /**
  * Requires an authenticated session; otherwise redirects to `/login?returnUrl=<current url>`.
@@ -58,8 +60,20 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
       return router.createUrlTree(['/login']);
     }
 
-    const userRoles = user.roles || (user.role ? [user.role] : []);
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : authStore.activeRoles());
     const hasRole = userRoles.some((r) => allowedRoles.includes(r));
     return hasRole ? true : router.createUrlTree(['/dashboard']);
+  };
+};
+
+/**
+ * Restricts route access based on whether the active tenant role grants module access.
+ */
+export const moduleGuard = (module: string, mode: AccessMode = 'read'): CanActivateFn => {
+  return () => {
+    const permissions = inject(PermissionsService);
+    const router = inject(Router);
+
+    return permissions.hasAccess(module, mode) ? true : router.createUrlTree(['/dashboard']);
   };
 };

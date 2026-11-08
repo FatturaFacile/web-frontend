@@ -1,17 +1,18 @@
-import { Component, inject, linkedSignal } from '@angular/core';
+import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { filter, map } from 'rxjs';
-import { AppStore } from '@core';
+import { AppStore, AuthStore, PermissionsService } from '@core';
 import { TranslatePipe } from '@shared';
 
 interface MenuItem {
   key: string;
   icon: string;
   route?: string;
-  children?: { key: string; route: string; icon: string }[];
+  module?: string;
+  children?: { key: string; route: string; icon: string; module?: string }[];
 }
 
 interface MenuSection {
@@ -28,6 +29,8 @@ interface MenuSection {
 })
 export class SidebarComponent {
   readonly appStore = inject(AppStore);
+  readonly authStore = inject(AuthStore);
+  readonly permissions = inject(PermissionsService);
   private readonly router = inject(Router);
 
   private readonly currentUrl = toSignal(
@@ -51,7 +54,7 @@ export class SidebarComponent {
 
   private groupOf(url: string): string | null {
     const path = url.split(/[?#]/)[0];
-    for (const section of this.menuSections) {
+    for (const section of this.filteredSections()) {
       for (const item of section.items) {
         if (item.children?.some((child) => path === child.route || path.startsWith(`${child.route}/`))) {
           return item.key;
@@ -61,7 +64,7 @@ export class SidebarComponent {
     return null;
   }
 
-  readonly menuSections: readonly MenuSection[] = [
+  readonly allMenuSections: readonly MenuSection[] = [
     {
       items: [
         {
@@ -77,30 +80,34 @@ export class SidebarComponent {
         {
           key: 'NAV.CRM',
           icon: 'fa-solid fa-users',
+          module: 'crm',
           children: [
-            { key: 'NAV.CLIENTS', route: '/crm/clients', icon: 'fa-solid fa-address-book' },
-            { key: 'NAV.SUPPLIERS', route: '/crm/suppliers', icon: 'fa-solid fa-truck-field' },
+            { key: 'NAV.CLIENTS', route: '/crm/clients', icon: 'fa-solid fa-address-book', module: 'crm' },
+            { key: 'NAV.SUPPLIERS', route: '/crm/suppliers', icon: 'fa-solid fa-truck-field', module: 'crm' },
           ],
         },
         {
           key: 'NAV.SALES',
           icon: 'fa-solid fa-file-invoice-dollar',
+          module: 'invoicing',
           children: [
-            { key: 'NAV.INVOICES', route: '/sales/invoices', icon: 'fa-solid fa-file-invoice' },
-            { key: 'NAV.ORDERS', route: '/sales/orders', icon: 'fa-solid fa-cart-shopping' },
-            { key: 'NAV.SDI', route: '/sales/sdi', icon: 'fa-solid fa-receipt' },
-            { key: 'NAV.QR_BILL', route: '/sales/qr-bill', icon: 'fa-solid fa-qrcode' },
+            { key: 'NAV.INVOICES', route: '/sales/invoices', icon: 'fa-solid fa-file-invoice', module: 'invoicing' },
+            { key: 'NAV.ORDERS', route: '/sales/orders', icon: 'fa-solid fa-cart-shopping', module: 'invoicing' },
+            { key: 'NAV.SDI', route: '/sales/sdi', icon: 'fa-solid fa-receipt', module: 'invoicing' },
+            { key: 'NAV.QR_BILL', route: '/sales/qr-bill', icon: 'fa-solid fa-qrcode', module: 'invoicing' },
           ],
         },
         {
           key: 'NAV.PURCHASES',
           icon: 'fa-solid fa-cart-flatbed',
+          module: 'procurement',
           children: [
-            { key: 'NAV.SDI_INBOX', route: '/purchases/sdi-inbox', icon: 'fa-solid fa-inbox' },
+            { key: 'NAV.SDI_INBOX', route: '/purchases/sdi-inbox', icon: 'fa-solid fa-inbox', module: 'procurement' },
             {
               key: 'NAV.QR_SCANNER',
               route: '/purchases/qr-scanner',
               icon: 'fa-solid fa-file-import',
+              module: 'procurement',
             },
           ],
         },
@@ -113,19 +120,21 @@ export class SidebarComponent {
           key: 'NAV.TREASURY',
           icon: 'fa-solid fa-building-columns',
           route: '/treasury',
+          module: 'treasury',
         },
         {
           key: 'NAV.ACCOUNTING',
           icon: 'fa-solid fa-landmark',
           route: '/accounting',
+          module: 'ledger',
         },
         {
           key: 'NAV.PEOPLE',
           icon: 'fa-solid fa-people-group',
           children: [
             { key: 'NAV.TIME_ATTENDANCE', route: '/time-attendance', icon: 'fa-solid fa-clock' },
-            { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie' },
-            { key: 'NAV.EXPENSES', route: '/purchases/expenses', icon: 'fa-solid fa-wallet' },
+            { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
+            { key: 'NAV.EXPENSES', route: '/purchases/expenses', icon: 'fa-solid fa-wallet', module: 'procurement' },
           ],
         },
       ],
@@ -136,25 +145,29 @@ export class SidebarComponent {
         {
           key: 'NAV.INVENTORY',
           icon: 'fa-solid fa-boxes-stacked',
+          module: 'inventory',
           children: [
-            { key: 'NAV.STOCK', route: '/inventory/stock', icon: 'fa-solid fa-warehouse' },
-            { key: 'NAV.DDT', route: '/inventory/ddt', icon: 'fa-solid fa-truck-ramp-box' },
-            { key: 'NAV.CUSTOMS', route: '/inventory/customs', icon: 'fa-solid fa-passport' },
+            { key: 'NAV.STOCK', route: '/inventory/stock', icon: 'fa-solid fa-warehouse', module: 'inventory' },
+            { key: 'NAV.DDT', route: '/inventory/ddt', icon: 'fa-solid fa-truck-ramp-box', module: 'inventory' },
+            { key: 'NAV.CUSTOMS', route: '/inventory/customs', icon: 'fa-solid fa-passport', module: 'customs' },
           ],
         },
         {
           key: 'NAV.FIELD_SERVICE',
           icon: 'fa-solid fa-screwdriver-wrench',
+          module: 'service',
           children: [
             {
               key: 'NAV.TICKETS',
               route: '/field-service/tickets',
               icon: 'fa-solid fa-ticket',
+              module: 'service',
             },
             {
               key: 'NAV.REPORTS',
               route: '/field-service/reports',
               icon: 'fa-solid fa-screwdriver-wrench',
+              module: 'service',
             },
           ],
         },
@@ -166,42 +179,49 @@ export class SidebarComponent {
         {
           key: 'NAV.AUTOMOTIVE',
           icon: 'fa-solid fa-car',
+          module: 'automotive',
           children: [
-            { key: 'NAV.WORKSHOP', route: '/automotive/workshop', icon: 'fa-solid fa-wrench' },
+            { key: 'NAV.WORKSHOP', route: '/automotive/workshop', icon: 'fa-solid fa-wrench', module: 'workshop' },
             {
               key: 'NAV.TIRE_HOTEL',
               route: '/automotive/tire-hotel',
               icon: 'fa-solid fa-circle-dot',
+              module: 'automotive',
             },
           ],
         },
         {
           key: 'NAV.RENT',
           icon: 'fa-solid fa-car-side',
+          module: 'contracts',
           children: [
-            { key: 'NAV.FLEET', route: '/rent/fleet', icon: 'fa-solid fa-calendar-week' },
-            { key: 'NAV.APPRAISAL', route: '/rent/appraisal', icon: 'fa-solid fa-car-burst' },
+            { key: 'NAV.FLEET', route: '/rent/fleet', icon: 'fa-solid fa-calendar-week', module: 'contracts' },
+            { key: 'NAV.APPRAISAL', route: '/rent/appraisal', icon: 'fa-solid fa-car-burst', module: 'contracts' },
           ],
         },
         {
           key: 'NAV.CONSTRUCTION',
           icon: 'fa-solid fa-person-digging',
           route: '/construction',
+          module: 'construction',
         },
         {
           key: 'NAV.PROFESSIONALS',
           icon: 'fa-solid fa-scale-balanced',
           route: '/professionals',
+          module: 'professionals',
         },
         {
           key: 'NAV.MANUFACTURING',
           icon: 'fa-solid fa-industry',
           route: '/manufacturing',
+          module: 'manufacturing',
         },
         {
           key: 'NAV.RETAIL',
           icon: 'fa-solid fa-cash-register',
           route: '/retail',
+          module: 'fiscal_retail',
         },
       ],
     },
@@ -227,15 +247,15 @@ export class SidebarComponent {
           key: 'NAV.MODULES',
           icon: 'fa-solid fa-cubes',
           children: [
-            { key: 'NAV.CRM', route: '/modules/crm', icon: 'fa-solid fa-address-book' },
-            { key: 'NAV.ACCOUNTING', route: '/modules/accounting', icon: 'fa-solid fa-landmark' },
-            { key: 'NAV.MOD_BANK_RECONCILIATION', route: '/modules/bank-reconciliation', icon: 'fa-solid fa-building-columns' },
-            { key: 'NAV.MOD_INVOICING', route: '/modules/invoicing', icon: 'fa-solid fa-file-invoice-dollar' },
-            { key: 'NAV.MOD_PRODUCTS', route: '/modules/products', icon: 'fa-solid fa-tags' },
+            { key: 'NAV.CRM', route: '/modules/crm', icon: 'fa-solid fa-address-book', module: 'crm' },
+            { key: 'NAV.ACCOUNTING', route: '/modules/accounting', icon: 'fa-solid fa-landmark', module: 'ledger' },
+            { key: 'NAV.MOD_BANK_RECONCILIATION', route: '/modules/bank-reconciliation', icon: 'fa-solid fa-building-columns', module: 'treasury' },
+            { key: 'NAV.MOD_INVOICING', route: '/modules/invoicing', icon: 'fa-solid fa-file-invoice-dollar', module: 'invoicing' },
+            { key: 'NAV.MOD_PRODUCTS', route: '/modules/products', icon: 'fa-solid fa-tags', module: 'inventory' },
             { key: 'NAV.MOD_AGENDA', route: '/modules/agenda', icon: 'fa-solid fa-calendar-days' },
-            { key: 'NAV.HR', route: '/modules/hr', icon: 'fa-solid fa-user-tie' },
-            { key: 'NAV.MOD_PRODUCTION', route: '/modules/production', icon: 'fa-solid fa-industry' },
-            { key: 'NAV.MOD_MARKETING', route: '/modules/marketing', icon: 'fa-solid fa-bullhorn' },
+            { key: 'NAV.HR', route: '/modules/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
+            { key: 'NAV.MOD_PRODUCTION', route: '/modules/production', icon: 'fa-solid fa-industry', module: 'manufacturing' },
+            { key: 'NAV.MOD_MARKETING', route: '/modules/marketing', icon: 'fa-solid fa-bullhorn', module: 'crm' },
             { key: 'NAV.MOD_FORMS', route: '/modules/forms', icon: 'fa-solid fa-clipboard-list' },
           ],
         },
@@ -244,7 +264,7 @@ export class SidebarComponent {
           icon: 'fa-solid fa-shop',
           children: [
             { key: 'NAV.SECTOR_SME', route: '/sectors/sme', icon: 'fa-solid fa-store' },
-            { key: 'NAV.SECTOR_MECHANIC', route: '/sectors/mechanic', icon: 'fa-solid fa-wrench' },
+            { key: 'NAV.SECTOR_MECHANIC', route: '/sectors/mechanic', icon: 'fa-solid fa-wrench', module: 'automotive' },
             { key: 'NAV.SECTOR_CRAFT', route: '/sectors/craft-lab', icon: 'fa-solid fa-hammer' },
           ],
         },
@@ -252,8 +272,8 @@ export class SidebarComponent {
           key: 'NAV.ADVANCED',
           icon: 'fa-solid fa-star',
           children: [
-            { key: 'NAV.ADV_AI', route: '/advanced/ai-assistant', icon: 'fa-solid fa-robot' },
-            { key: 'NAV.ADV_SECURITY', route: '/advanced/security', icon: 'fa-solid fa-shield-halved' },
+            { key: 'NAV.ADV_AI', route: '/advanced/ai-assistant', icon: 'fa-solid fa-robot', module: 'assistant' },
+            { key: 'NAV.ADV_SECURITY', route: '/advanced/security', icon: 'fa-solid fa-shield-halved', module: 'system' },
             { key: 'NAV.ADV_EVENTS', route: '/advanced/events-polls', icon: 'fa-solid fa-square-poll-vertical' },
             { key: 'NAV.ADV_WEB_APP', route: '/advanced/web-app', icon: 'fa-solid fa-globe' },
           ],
@@ -276,11 +296,46 @@ export class SidebarComponent {
           key: 'NAV.SETTINGS',
           icon: 'fa-solid fa-gears',
           children: [
-            { key: 'NAV.COMPANY_SETTINGS', route: '/settings', icon: 'fa-solid fa-building' },
-            { key: 'NAV.SYSTEM', route: '/system', icon: 'fa-solid fa-server' },
+            { key: 'NAV.COMPANY_SETTINGS', route: '/settings/tenant', icon: 'fa-solid fa-building' },
+            { key: 'NAV.SYSTEM', route: '/system', icon: 'fa-solid fa-server', module: 'system' },
           ],
         },
       ],
     },
   ];
+
+  /** Menu sections filtered reactively based on the active tenant role and module permissions */
+  readonly filteredSections = computed<MenuSection[]>(() => {
+    // Read the active role signal to trigger reactivity on tenant/role change
+    this.authStore.activeRole();
+
+    return this.allMenuSections
+      .map((section) => {
+        const filteredItems = section.items
+          .map((item) => {
+            if (item.module && !this.permissions.canRead(item.module)) {
+              return null;
+            }
+
+            if (item.children) {
+              const filteredChildren = item.children.filter((child) => {
+                const childModule = child.module ?? item.module;
+                return !childModule || this.permissions.canRead(childModule);
+              });
+
+              if (filteredChildren.length === 0 && !item.route) {
+                return null;
+              }
+
+              return { ...item, children: filteredChildren };
+            }
+
+            return item;
+          })
+          .filter((item): item is MenuItem => item !== null);
+
+        return { ...section, items: filteredItems };
+      })
+      .filter((section) => section.items.length > 0);
+  });
 }
