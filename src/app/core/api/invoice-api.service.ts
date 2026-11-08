@@ -4,12 +4,18 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  BulkSdiResult,
+  CreateCreditNotePayload,
   CreateInvoicePayload,
+  CreditNoteResource,
   InvoiceDetailResource,
   InvoiceFilterParams,
+  InvoiceInstallment,
   InvoiceResource,
   PaginatedResponse,
+  SdiLogsData,
   SendDocumentEmailPayload,
+  SwissQrBillData,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
@@ -53,28 +59,36 @@ export class InvoiceApiService {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/documents/invoice/${id}/email`, payload);
   }
 
+  // SDI Electronic Invoicing
   sendToSdi(id: string): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/send-sdi`, {});
+  }
+
+  sendSdiBulk(invoiceIds: string[]): Observable<ApiResponse<BulkSdiResult>> {
+    return this.http.post<ApiResponse<BulkSdiResult>>(`${this.url}/send-sdi-bulk`, {
+      invoice_ids: invoiceIds,
+    });
   }
 
   generateSdiXml(id: string): Observable<ApiResponse<{ xml_url?: string; status: string }>> {
     return this.http.post<ApiResponse<{ xml_url?: string; status: string }>>(
       `${this.url}/${id}/generate-sdi-xml`,
-      {}
+      {},
     );
   }
 
-  getSdiLogs(id: string): Observable<ApiResponse<unknown[]>> {
-    return this.http.get<ApiResponse<unknown[]>>(`${this.url}/${id}/sdi-logs`);
+  getSdiLogs(id: string): Observable<ApiResponse<SdiLogsData>> {
+    return this.http.get<ApiResponse<SdiLogsData>>(`${this.url}/${id}/sdi-logs`);
+  }
+
+  // Swiss QR-Bill
+  /** Swiss QR-bill payload fetch with SPC data and reference. */
+  getQrBill(id: string): Observable<ApiResponse<SwissQrBillData>> {
+    return this.http.get<ApiResponse<SwissQrBillData>>(`${this.url}/${id}/qr-bill`);
   }
 
   generateQrBill(id: string): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/generate-qr-bill`, {});
-  }
-
-  /** Swiss QR-bill payload fetch. */
-  getQrBill(id: string): Observable<ApiResponse<{ qr_bill: unknown }>> {
-    return this.http.get<ApiResponse<{ qr_bill: unknown }>>(`${this.url}/${id}/qr-bill`);
   }
 
   /** SVG payment slip stream. */
@@ -88,5 +102,31 @@ export class InvoiceApiService {
 
   recordPayment(id: string, payload: RecordPaymentPayload): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/payments`, payload);
+  }
+
+  // Credit Notes
+  createCreditNote(payload: CreateCreditNotePayload): Observable<ApiResponse<CreditNoteResource>> {
+    return this.http.post<ApiResponse<CreditNoteResource>>(`${this.base}/invoicing/credit-notes`, payload);
+  }
+
+  applyCreditNote(creditNoteId: string, targetInvoiceId: string, amount: number): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/invoicing/credit-notes/${creditNoteId}/apply`, {
+      target_invoice_id: targetInvoiceId,
+      amount,
+    });
+  }
+
+  // Installments / Scadenze
+  getInstallments(id: string): Observable<ApiResponse<InvoiceInstallment[]>> {
+    return this.http.get<ApiResponse<InvoiceInstallment[]>>(`${this.base}/invoicing/invoices/${id}/installments`);
+  }
+
+  // Approvals & Posting
+  approveInvoice(id: string): Observable<ApiResponse<InvoiceResource>> {
+    return this.http.post<ApiResponse<InvoiceResource>>(`${this.base}/invoicing/invoices/${id}/approve`, {});
+  }
+
+  postInvoice(id: string): Observable<ApiResponse<InvoiceResource>> {
+    return this.http.post<ApiResponse<InvoiceResource>>(`${this.base}/invoicing/invoices/${id}/post`, {});
   }
 }

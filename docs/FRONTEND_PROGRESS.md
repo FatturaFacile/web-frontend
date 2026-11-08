@@ -1,22 +1,18 @@
-# FatturaFacile ERP - Frontend Implementation Progress
+# Frontend Implementation Progress & Coverage Matrix
 
-## Architectural Conventions & Stack Overview
+Last updated: 2026-11-08
 
-- **Angular Version:** 22.2.4 (Standalone components exclusively; no `standalone: true` decorator flag per Angular v20+ default; `OnPush` default in v22+).
-- **UI Framework:** `ng-zorro-antd` v22.1.2 with custom styling in `src/styles.scss` and `src/theme.less`.
-- **State Management:** Angular Signals (`signal`, `computed`, `effect`, `linkedSignal`) and `@ngrx/signals` Signal Stores (`AuthStore`, `AppStore`).
-- **HTTP & API Integration:**
-  - Base URL: `/api/v1` with relative routing via local development proxy (`proxy.conf.json`).
-  - Single central interceptor pipeline: credentials (`withCredentials: true`), CSRF refresh (`X-XSRF-TOKEN`), tenant/user headers (`X-Tenant-Id`, `X-User-Id`, `X-Language-Code`, `Accept: application/json`), and RFC 7807 Problem Details error handler.
-  - OpenAPI Code Generation: `openapi-typescript` targeting `src/app/core/api/generated/schema.d.ts` from `../web-api/docs/api/openapi.json`.
-  - Modules exposed via dedicated API services (`<module>-api.service.ts`) providing strictly typed responses.
-- **Forms & Validation:** Typed Reactive Forms (`NonNullableFormBuilder`) using `applyServerErrors(form, err)` to display backend 422 validation errors via `nzErrorTip`.
-- **Monetary & Quantities Conventions:** Monetary values handled as decimal strings (never calculated using `parseFloat`/`Number` on the client), formatted using `MoneyPipe` (`Intl.NumberFormat`). Warehouse movements distinguish `quantity` (positive) and `signed_quantity` (signed).
-- **Testing:** Vitest 5.0.5 unit test runner (`pnpm run test`, `pnpm test --run`).
+## Architectural Conventions
+- **Angular:** v22 Standalone Components (strictly no `standalone: true`, default `ChangeDetectionStrategy.OnPush`, inject() dependency injection, signals & computed for local/shared reactive state).
+- **Styling & UI:** `ng-zorro-antd` v22, responsive layouts with `nz-layout`, `nz-table` (server-side pagination `nzFrontPagination=false`), `nz-form`, `nz-modal`, `nz-drawer`, `nz-dropdown`.
+- **Icons:** Only icons registered in `src/app/icons-provider.ts` are used across templates and tests.
+- **Amounts & Currency:** Kept as string/number representations without floating point arithmetic; formatted strictly using `MoneyPipe` and Angular currency/decimal formatters.
+- **QR Codes:** Implemented using `NzQRCodeComponent` (`nz-qrcode`) from `ng-zorro-antd/qr-code`.
+- **API Communication:** Relative URLs via proxy `/api/v1`, Sanctum cookie authentication, `withCredentials: true`, multi-tenant headers (`X-Tenant-Id`, `X-User-Id`, `X-Language-Code`), RFC 7807 problem+json error handling.
 
 ---
 
-## Module Coverage Matrix
+## Coverage Matrix
 
 | # | Module / Tag | Total Endpoints | Covered Endpoints | Pages (List, Detail, Form, Actions) | Tests | Status | Notes |
 |---|---|---|---|---|---|---|---|
@@ -30,8 +26,8 @@
 | **08** | **Subscriptions (`/sub`)** | 22 | 18 | Plans catalog, Contract table & lifecycle (renew/pause/resume/cancel), MRR/ARR/churn metrics, Dunning trigger | 8 | **Done** | Covered `/sub/contracts`, `/subscriptions/plans`, `/subscriptions/metrics`, `/subscriptions/dunning` |
 | **09** | **Inventory & Logistics** | 38 | 28 | Stock balances, Signed movements, Transfer modal, Adjustments approve/reject, Physical counts reconcile, Valuation summary | 23 | **Done** | Covered `/inventory/stock-levels`, `/inventory/movements`, `/inventory/movements/transfer`, `/inventory/adjustments`, `/inventory/counts`, `/inventory/valuation` |
 | **10** | **Sales & Orders** | 42 | 26 | Quotes list & approval workflow, Orders list & lifecycle (reserve, DDT, invoice), Delivery notes list (dispatch, confirm) | 12 | **Done** | Covered `/invoicing/quotes`, `/invoicing/orders`, `/invoicing/delivery-notes`, convert/reserve/invoice actions |
-| **11** | **Invoicing & SDI** | 52 | 8 | Electronic Invoices (IT/CH), Credit Notes, SDI send bulk, Swiss QR-Bill | 12 | **Todo** | Server assigns invoice numbering strictly |
-| **12** | **Procurement & AP** | 36 | 4 | Purchase Requests, RfQ, Purchase Orders, Goods Receipt, AP Invoices matching | 6 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **11** | **Invoicing & SDI** | 52 | 24 | Invoices table, Electronic Invoices (IT/CH), SDI FatturaPA XML generate, Bulk SDI send, SDI logs, Credit Notes, Installments, Swiss QR-Bill (nz-qrcode) | 16 | **Done** | Covered `/sales/invoices` lifecycle, SDI transmission & logs, `/invoicing/credit-notes`, `/invoicing/invoices/{id}/installments`, `/sales/invoices/{id}/qr-bill` |
+| **12** | **Procurement & AP** | 36 | 4 | Purchase Requests, RfQ, Purchase Orders, Goods Receipt, AP Invoices matching | 6 | **Next** | Backend evolving; sync OpenAPI before starting |
 | **13** | **Treasury & Banking** | 40 | 8 | Bank Accounts, Statements, Reconciliation, Categorization, Cash flow schedule | 10 | **Todo** | Backend evolving; sync OpenAPI before starting |
 | **14** | **General Ledger & Accounting**| 48 | 6 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT, Intrastat | 10 | **Todo** | Use `/general-ledger/journals` |
 | **15** | **Manufacturing & MRP** | 26 | 0 | Bill of Materials (BOM), Production Orders, Routing cycles, MRP runs | 0 | **Todo** | Backend evolving; sync OpenAPI before starting |
@@ -53,8 +49,8 @@
 8. `[DONE]` **Module 08: Subscriptions (`/sub/contracts`)**
 9. `[DONE]` **Module 09: Inventory & Logistics**
 10. `[DONE]` **Module 10: Sales & Orders**
-11. `[NEXT]` **Module 11: Invoicing & SDI**
-12. `[TODO]` **Module 12: Procurement & AP**
+11. `[DONE]` **Module 11: Invoicing & SDI**
+12. `[NEXT]` **Module 12: Procurement & AP**
 13. `[TODO]` **Module 13: Treasury & Banking**
 14. `[TODO]` **Module 14: General Ledger & Accounting**
 15. `[TODO]` **Module 15: Manufacturing & MRP**
