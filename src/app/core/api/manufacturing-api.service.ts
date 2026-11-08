@@ -4,23 +4,151 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
-  BillOfMaterial,
-  ProductionOrder,
+  CreateBomPayload,
+  CreateProductionOrderPayload,
+  CreateWorkCenterPayload,
+  MfgBomResource,
+  MfgMrpRunResource,
+  MfgPlannedOrderResource,
+  MfgProductionOrderResource,
+  MfgRoutingResource,
+  MfgShortageResource,
+  MfgWorkCenterResource,
+  PaginatedResponse,
+  QueryFilterParams,
+  RunMrpPayload,
   TrackProductionStagePayload,
 } from '../models';
+import { toHttpParams } from '../http/laravel-http.utils';
 
 @Service()
 export class ManufacturingApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/manufacturing`;
 
-  getProductionOrders(): Observable<ApiResponse<ProductionOrder[]>> {
-    return this.http.get<ApiResponse<ProductionOrder[]>>(`${this.base}/production-orders`);
+  // --- Production Orders ---
+
+  getProductionOrders(params?: QueryFilterParams): Observable<PaginatedResponse<MfgProductionOrderResource>> {
+    return this.http.get<PaginatedResponse<MfgProductionOrderResource>>(`${this.base}/production-orders`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
-  getBillsOfMaterials(): Observable<ApiResponse<BillOfMaterial[]>> {
-    return this.http.get<ApiResponse<BillOfMaterial[]>>(`${this.base}/bom`);
+  getProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.get<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}`);
   }
+
+  createProductionOrder(payload: CreateProductionOrderPayload): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders`, payload);
+  }
+
+  releaseProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/release`, {});
+  }
+
+  startProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/start`, {});
+  }
+
+  completeProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/complete`, {});
+  }
+
+  closeProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/close`, {});
+  }
+
+  cancelProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/cancel`, {});
+  }
+
+  // --- Bills of Materials (BOMs) ---
+
+  getBoms(params?: QueryFilterParams): Observable<PaginatedResponse<MfgBomResource>> {
+    return this.http.get<PaginatedResponse<MfgBomResource>>(`${this.base}/boms`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getBom(id: string): Observable<ApiResponse<MfgBomResource>> {
+    return this.http.get<ApiResponse<MfgBomResource>>(`${this.base}/boms/${id}`);
+  }
+
+  createBom(payload: CreateBomPayload): Observable<ApiResponse<MfgBomResource>> {
+    return this.http.post<ApiResponse<MfgBomResource>>(`${this.base}/boms`, payload);
+  }
+
+  activateBom(id: string): Observable<ApiResponse<MfgBomResource>> {
+    return this.http.post<ApiResponse<MfgBomResource>>(`${this.base}/boms/${id}/activate`, {});
+  }
+
+  reviseBom(id: string): Observable<ApiResponse<MfgBomResource>> {
+    return this.http.post<ApiResponse<MfgBomResource>>(`${this.base}/boms/${id}/revise`, {});
+  }
+
+  explodeBom(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.get<ApiResponse<unknown>>(`${this.base}/boms/${id}/explode`);
+  }
+
+  getBillsOfMaterials(params?: QueryFilterParams): Observable<PaginatedResponse<MfgBomResource>> {
+    return this.getBoms(params);
+  }
+
+  // --- MRP (Material Requirements Planning) ---
+
+  getMrpRuns(params?: QueryFilterParams): Observable<PaginatedResponse<MfgMrpRunResource>> {
+    return this.http.get<PaginatedResponse<MfgMrpRunResource>>(`${this.base}/mrp/runs`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getMrpRun(id: string): Observable<ApiResponse<MfgMrpRunResource>> {
+    return this.http.get<ApiResponse<MfgMrpRunResource>>(`${this.base}/mrp/runs/${id}`);
+  }
+
+  runMrp(payload: RunMrpPayload): Observable<ApiResponse<MfgMrpRunResource>> {
+    return this.http.post<ApiResponse<MfgMrpRunResource>>(`${this.base}/mrp/runs`, payload);
+  }
+
+  getPlannedOrders(params?: QueryFilterParams): Observable<PaginatedResponse<MfgPlannedOrderResource>> {
+    return this.http.get<PaginatedResponse<MfgPlannedOrderResource>>(`${this.base}/mrp/planned-orders`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  convertPlannedOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/mrp/planned-orders/${id}/convert`, {});
+  }
+
+  getShortages(params?: QueryFilterParams): Observable<PaginatedResponse<MfgShortageResource>> {
+    return this.http.get<PaginatedResponse<MfgShortageResource>>(`${this.base}/mrp/shortages`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  // --- Work Centers & Routings ---
+
+  getWorkCenters(params?: QueryFilterParams): Observable<PaginatedResponse<MfgWorkCenterResource>> {
+    return this.http.get<PaginatedResponse<MfgWorkCenterResource>>(`${this.base}/work-centers`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createWorkCenter(payload: CreateWorkCenterPayload): Observable<ApiResponse<MfgWorkCenterResource>> {
+    return this.http.post<ApiResponse<MfgWorkCenterResource>>(`${this.base}/work-centers`, payload);
+  }
+
+  getRoutings(params?: QueryFilterParams): Observable<PaginatedResponse<MfgRoutingResource>> {
+    return this.http.get<PaginatedResponse<MfgRoutingResource>>(`${this.base}/routings`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createRouting(payload: unknown): Observable<ApiResponse<MfgRoutingResource>> {
+    return this.http.post<ApiResponse<MfgRoutingResource>>(`${this.base}/routings`, payload);
+  }
+
+  // --- Legacy Compatibility ---
 
   trackStage(stageId: string, payload: TrackProductionStagePayload): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.base}/stages/${stageId}/track`, payload);
