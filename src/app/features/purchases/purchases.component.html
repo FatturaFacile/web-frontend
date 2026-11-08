@@ -21,193 +21,526 @@
   </div>
 </div>
 
-<nz-card [nzTitle]="'PURCHASES.CARD_TITLE' | translate" [nzExtra]="extraTpl">
-  <ng-template #extraTpl>
-    <button nz-button nzType="primary" (click)="openCreateModal()">
-      <nz-icon nzType="plus" /> {{ "COMMON.ADD" | translate }}
-    </button>
-  </ng-template>
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="activeTabIndex.set($event)">
+    <!-- TAB 1: ORDINI DI ACQUISTO (PURCHASE ORDERS) -->
+    <nz-tab nzTitle="Ordini di Acquisto (PO)">
+      <div class="toolbar" style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
+        <input
+          nz-input
+          type="search"
+          class="search-input"
+          style="max-width: 260px;"
+          [placeholder]="'COMMON.SEARCH' | translate"
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+        <nz-select
+          class="status-filter"
+          style="width: 180px;"
+          nzAllowClear
+          [nzPlaceHolder]="'COMMON.STATUS' | translate"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="onStatusChange($event)"
+        >
+          <nz-option nzValue="draft" nzLabel="Bozza" />
+          <nz-option nzValue="pending_approval" nzLabel="In Approvazione" />
+          <nz-option nzValue="approved" nzLabel="Approvato" />
+          <nz-option nzValue="sent" nzLabel="Inviato" />
+          <nz-option nzValue="ordered" nzLabel="Ordinato" />
+          <nz-option nzValue="received" nzLabel="Ricevuto" />
+          <nz-option nzValue="rejected" nzLabel="Rifiutato" />
+          <nz-option nzValue="cancelled" nzLabel="Annullato" />
+        </nz-select>
 
-  <div class="toolbar">
-    <input
-      nz-input
-      type="search"
-      class="search-input"
-      [placeholder]="'COMMON.SEARCH' | translate"
-      [value]="searchTerm()"
-      (input)="onSearch($event)"
-    />
-    <nz-select
-      class="status-filter"
-      nzAllowClear
-      [nzPlaceHolder]="'COMMON.STATUS' | translate"
-      [ngModel]="selectedStatus()"
-      (ngModelChange)="onStatusChange($event)"
-    >
-      <nz-option nzValue="draft" [nzLabel]="'purchases.statuses.draft' | translate" />
-      <nz-option nzValue="pending_approval" [nzLabel]="'purchases.statuses.pending_approval' | translate" />
-      <nz-option nzValue="approved" [nzLabel]="'purchases.statuses.approved' | translate" />
-      <nz-option nzValue="rejected" [nzLabel]="'purchases.statuses.rejected' | translate" />
-      <nz-option nzValue="ordered" [nzLabel]="'purchases.statuses.ordered' | translate" />
-      <nz-option nzValue="received" [nzLabel]="'purchases.statuses.received' | translate" />
-    </nz-select>
-  </div>
+        <span style="flex: 1;"></span>
+        <button nz-button nzType="primary" (click)="openCreateModal()">
+          <nz-icon nzType="plus" /> Nuovo Ordine
+        </button>
+      </div>
 
-  <nz-table
-    #pTable
-    [nzData]="orders()"
-    [nzFrontPagination]="false"
-    [nzLoading]="loading()"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    (nzQueryParams)="onQueryParamsChange($event)"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
-        <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
-        <th>{{ "PURCHASES.COL_CHANNEL" | translate }}</th>
-        <th>{{ "COMMON.AMOUNT" | translate }}</th>
-        <th>{{ "PURCHASES.COL_DUE" | translate }}</th>
-        <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
-        <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of pTable.data; track item.id || item.order_number) {
-        <tr>
-          <td>
-            <strong>{{ item.order_number }}</strong>
-          </td>
-          <td>{{ item.supplier_name }}</td>
-          <td>
-            <nz-tag
-              [nzColor]="
-                item.channel === 'SDI' ? 'blue' : item.channel === 'QR-Bill' ? 'red' : 'default'
-              "
-            >
-              {{ item.channel }}
-            </nz-tag>
-          </td>
-          <td>
-            <strong>{{ item.total | currency: item.currency : "symbol" : "1.2-2" }}</strong>
-          </td>
-          <td>{{ item.due_date ? (item.due_date | date: "dd.MM.yyyy") : "-" }}</td>
-          <td>
-            <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
-          </td>
-          <td nzAlign="right">
-            <div class="actions">
-              @if (item.status === "draft") {
-                <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
-                  {{ 'purchases.actions.submitApproval' | translate }}
-                </button>
-              }
-              @if (item.status === "pending_approval") {
-                <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
-                  Approva
-                </button>
-                <button nz-button nzSize="small" nzDanger (click)="reject(item)">{{ 'purchases.actions.reject' | translate }}</button>
-              }
-            </div>
-          </td>
-        </tr>
-      } @empty {
-        @if (!loading()) {
+      <nz-table
+        #pTable
+        [nzData]="orders()"
+        [nzFrontPagination]="false"
+        [nzLoading]="loading()"
+        [nzTotal]="total()"
+        [nzPageIndex]="pageIndex()"
+        [nzPageSize]="pageSize()"
+        (nzQueryParams)="onQueryParamsChange($event)"
+        nzSize="middle"
+      >
+        <thead>
           <tr>
-            <td colspan="7">
-              <nz-empty nzNotFoundImage="simple" />
-            </td>
+            <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
+            <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
+            <th>{{ "PURCHASES.COL_CHANNEL" | translate }}</th>
+            <th>{{ "COMMON.AMOUNT" | translate }}</th>
+            <th>{{ "PURCHASES.COL_DUE" | translate }}</th>
+            <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
+            <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
           </tr>
-        }
-      }
-    </tbody>
-  </nz-table>
+        </thead>
+        <tbody>
+          @for (item of pTable.data; track item.id || item.order_number) {
+            <tr>
+              <td>
+                <strong>{{ item.order_number || item.po_number }}</strong>
+              </td>
+              <td>{{ item.supplier_name }}</td>
+              <td>
+                <nz-tag
+                  [nzColor]="
+                    item.channel === 'SDI' ? 'blue' : item.channel === 'QR-Bill' ? 'red' : 'default'
+                  "
+                >
+                  {{ item.channel }}
+                </nz-tag>
+              </td>
+              <td>
+                <strong>{{ item.total | money: item.currency }}</strong>
+              </td>
+              <td>{{ item.due_date ? (item.due_date | date: "dd.MM.yyyy") : "-" }}</td>
+              <td>
+                <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
+              </td>
+              <td nzAlign="right">
+                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                  @if (item.status === 'draft') {
+                    <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
+                      Invia Appr.
+                    </button>
+                  }
+                  @if (item.status === 'pending_approval') {
+                    <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
+                      Approva
+                    </button>
+                    <button nz-button nzSize="small" nzDanger (click)="reject(item)">
+                      Rifiuta
+                    </button>
+                  }
+                  @if (item.status === 'approved') {
+                    <button nz-button nzSize="small" nzType="default" (click)="sendToSupplier(item)">
+                      <nz-icon nzType="send" /> Invia Fornitore
+                    </button>
+                    <button nz-button nzSize="small" nzType="primary" (click)="openGoodsReceiptModal(item)">
+                      <nz-icon nzType="check" /> Ricevi Merce
+                    </button>
+                  }
+                  @if (item.status !== 'cancelled' && item.status !== 'closed') {
+                    <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelOrder(item)">
+                      Annulla
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: RICEZIONE MERCI (GOODS RECEIPTS) -->
+    <nz-tab nzTitle="Ricezione Merci (DDT Fornitore)">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Bollati di ricezione materiali, DDT d'entrata e controlli qualità.</span>
+        <button nz-button nzType="default" (click)="loadGoodsReceipts()">
+          <nz-icon nzType="sync" /> Aggiorna
+        </button>
+      </div>
+
+      <nz-table
+        #grTable
+        [nzData]="goodsReceipts()"
+        [nzLoading]="loadingReceipts()"
+        nzSize="middle"
+        [nzFrontPagination]="true"
+        [nzPageSize]="10"
+      >
+        <thead>
+          <tr>
+            <th>N. Bolla Ricezione</th>
+            <th>Rif. DDT Fornitore</th>
+            <th>Data Arrivo</th>
+            <th>Stato Ispezione</th>
+            <th>Righe</th>
+            <th nzAlign="right">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (gr of grTable.data; track gr.id || gr.receipt_number) {
+            <tr>
+              <td><strong>{{ gr.receipt_number }}</strong></td>
+              <td><code>{{ gr.supplier_delivery_note_ref }}</code></td>
+              <td>{{ gr.received_date | date: 'dd.MM.yyyy' }}</td>
+              <td>
+                <nz-tag [nzColor]="inspectionColor(gr.inspection_status)">
+                  {{ gr.inspection_status }}
+                </nz-tag>
+              </td>
+              <td>{{ gr.lines?.length || 0 }} articoli</td>
+              <td nzAlign="right">
+                <button nz-button nzSize="small" nzType="default" (click)="openInspectModal(gr)">
+                  <nz-icon nzType="audit" /> Ispezione
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: 3-WAY MATCH & RICONCILIAZIONE -->
+    <nz-tab nzTitle="3-Way Match & Riconciliazione">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Controllo a tre vie: Ordine di Acquisto (PO) vs Ricezione (GRN) vs Fattura Fornitore (AP).</span>
+        <button nz-button nzType="primary" (click)="openExecuteMatchModal()">
+          <nz-icon nzType="audit" /> Esegui 3-Way Match
+        </button>
+      </div>
+
+      <nz-table
+        #twmTable
+        [nzData]="threeWayMatches()"
+        [nzLoading]="loadingMatches()"
+        nzSize="middle"
+        [nzFrontPagination]="true"
+        [nzPageSize]="10"
+      >
+        <thead>
+          <tr>
+            <th>ID Match</th>
+            <th>PO / Ordine</th>
+            <th>Stato Conciliazione</th>
+            <th>Scostamento Prezzo</th>
+            <th>Scostamento Quantità</th>
+            <th nzAlign="right">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of twmTable.data; track m.id) {
+            <tr>
+              <td><code>{{ m.id }}</code></td>
+              <td>{{ m.purchase_order_id }}</td>
+              <td>
+                <nz-tag [nzColor]="matchStatusColor(m.status)">
+                  {{ m.status }}
+                </nz-tag>
+              </td>
+              <td>
+                <span [style.color]="m.price_variance !== 0 ? 'red' : 'inherit'">
+                  {{ m.price_variance | money: 'EUR' }}
+                </span>
+              </td>
+              <td>
+                <span [style.color]="m.quantity_variance !== 0 ? 'red' : 'inherit'">
+                  {{ m.quantity_variance }}
+                </span>
+              </td>
+              <td nzAlign="right">
+                @if (m.status === 'discrepancy' || m.status === 'escalated_to_workflow') {
+                  <button nz-button nzSize="small" nzType="default" (click)="approveVariance(m)">
+                    Approva Tolleranza
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 4: FATTURE FORNITORE - AP INVOICES -->
+    <nz-tab nzTitle="Fatture Fornitore (Ciclo Passivo AP)">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Fatture passive registrate, importazione SDI FatturaPA XML e scadenze fornitori.</span>
+        <button nz-button nzType="default" (click)="openImportSdiModal()">
+          <nz-icon nzType="upload" /> Importa XML SDI Passivo
+        </button>
+      </div>
+
+      <nz-table
+        #siTable
+        [nzData]="supplierInvoices()"
+        [nzLoading]="loadingInvoices()"
+        nzSize="middle"
+        [nzFrontPagination]="true"
+        [nzPageSize]="10"
+      >
+        <thead>
+          <tr>
+            <th>N. Fattura Fornitore</th>
+            <th>Fornitore</th>
+            <th>Data Emissione</th>
+            <th>Scadenza</th>
+            <th>Totale Lordo</th>
+            <th>Stato</th>
+            <th nzAlign="right">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of siTable.data; track inv.id || inv.invoice_number) {
+            <tr>
+              <td><strong>{{ inv.invoice_number }}</strong></td>
+              <td>{{ inv.supplier_name }}</td>
+              <td>{{ inv.issue_date | date: 'dd.MM.yyyy' }}</td>
+              <td>{{ inv.due_date ? (inv.due_date | date: 'dd.MM.yyyy') : '-' }}</td>
+              <td><strong>{{ inv.total | money: inv.currency }}</strong></td>
+              <td>
+                <nz-tag [nzColor]="inv.status === 'paid' ? 'success' : inv.status === 'approved' ? 'processing' : 'default'">
+                  {{ inv.status }}
+                </nz-tag>
+              </td>
+              <td nzAlign="right">
+                @if (inv.status !== 'paid') {
+                  <button nz-button nzSize="small" nzType="primary" (click)="markInvoicePaid(inv)">
+                    Segna Pagata
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
 </nz-card>
 
-<!-- Create Purchase Order Modal -->
+<!-- Modal: Crea Ordine di Acquisto -->
 <nz-modal
-  [(nzVisible)]="createModalVisible"
-  [nzTitle]="'Nuovo Ordine di Acquisto'"
+  [nzVisible]="createModalVisible()"
+  [nzTitle]="'purchases.modal.createTitle' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateOrder()"
-  [nzOkLoading]="saving()"
 >
   <ng-container *nzModalContent>
-    <form nz-form nzLayout="vertical" [formGroup]="orderForm">
+    <form nz-form [formGroup]="orderForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'purchases.form.supplier' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.supplierRequired' | translate">
-          <input
-            nz-input
-            formControlName="supplier_name"
-            [placeholder]="'purchases.form.supplierPlaceholder' | translate"
-          />
+        <nz-form-label nzRequired>{{ "PURCHASES.COL_VENDOR" | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="supplier_name" placeholder="Es. Bosch Packaging CH" />
         </nz-form-control>
       </nz-form-item>
 
-      <div nz-row [nzGutter]="16">
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label nzRequired>{{ 'purchases.form.channel' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-select formControlName="channel">
-                <nz-option nzValue="QR-Bill" nzLabel="QR-Bill (CH)" />
-                <nz-option nzValue="SDI" nzLabel="SDI (IT)" />
-                <nz-option nzValue="Standard" nzLabel="Standard" />
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label nzRequired>{{ 'purchases.form.currency' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-select formControlName="currency">
-                <nz-option nzValue="CHF" nzLabel="CHF" />
-                <nz-option nzValue="EUR" nzLabel="EUR" />
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>{{ "PURCHASES.COL_CHANNEL" | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="channel">
+              <nz-option nzValue="QR-Bill" nzLabel="Swiss QR-Bill" />
+              <nz-option nzValue="SDI" nzLabel="SDI FatturaPA" />
+              <nz-option nzValue="Standard" nzLabel="Standard" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Valuta</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="currency">
+              <nz-option nzValue="CHF" nzLabel="CHF (Svizzera)" />
+              <nz-option nzValue="EUR" nzLabel="EUR (Italia/UE)" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
       </div>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'purchases.form.description' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.descriptionRequired' | translate">
-          <input
-            nz-input
-            formControlName="item_description"
-            [placeholder]="'purchases.form.descriptionPlaceholder' | translate"
-          />
+        <nz-form-label nzRequired>Articolo / Descrizione Voce</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="item_description" placeholder="Descrizione materiale o servizio" />
         </nz-form-control>
       </nz-form-item>
 
-      <div nz-row [nzGutter]="16">
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label nzRequired>{{ 'purchases.form.quantity' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="quantity" [nzMin]="1" style="width: 100%" />
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label nzRequired>{{ 'purchases.form.unitPrice' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="'validation.priceRequired' | translate">
-              <nz-input-number
-                formControlName="unit_price"
-                [nzMin]="0"
-                [nzStep]="0.01"
-                style="width: 100%"
-              />
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Quantità</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="quantity" [nzMin]="1" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="unit_price" [nzMin]="0" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Aliquota IVA %</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="tax_rate" [nzMin]="0" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
       </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Registra Ricezione Merci -->
+<nz-modal
+  [nzVisible]="goodsReceiptModalVisible()"
+  nzTitle="Registra Ricezione Merce (Bolla DDT d'Entrata)"
+  nzOkText="Registra Ricezione"
+  nzCancelText="Annulla"
+  (nzOnCancel)="goodsReceiptModalVisible.set(false)"
+  (nzOnOk)="submitGoodsReceipt()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="receiptForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Riferimento DDT Fornitore</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="supplier_delivery_note_ref" placeholder="Es. DDT-2026/8841" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Data Ricezione</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="received_date" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Quantità Ricevuta</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="quantity_received" [nzMin]="1" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>N. Lotto / Matricola</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="lot_number" placeholder="Es. LOT-2026-X" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>Stato Ispezione</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="inspection_status">
+              <nz-option nzValue="passed" nzLabel="Superata (Passed)" />
+              <nz-option nzValue="conditional" nzLabel="Condizionata" />
+              <nz-option nzValue="failed" nzLabel="Respinta (Failed)" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>Note</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input rows="2" formControlName="notes" placeholder="Note su imballo o verifica"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Ispezione Qualità Ricezione -->
+<nz-modal
+  [nzVisible]="inspectModalVisible()"
+  nzTitle="Esito Ispezione Qualità"
+  nzOkText="Aggiorna Esito"
+  nzCancelText="Annulla"
+  (nzOnCancel)="inspectModalVisible.set(false)"
+  (nzOnOk)="submitInspection()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="inspectForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Stato Ispezione</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="inspection_status">
+            <nz-option nzValue="passed" nzLabel="Conforme (Passed)" />
+            <nz-option nzValue="conditional" nzLabel="Accettato con riserva (Conditional)" />
+            <nz-option nzValue="failed" nzLabel="Non conforme / Respinto (Failed)" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Note Ispezione</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input rows="3" formControlName="notes" placeholder="Motivo o verbale di controllo"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Esegui 3-Way Match -->
+<nz-modal
+  [nzVisible]="executeMatchModalVisible()"
+  nzTitle="Esegui Conciliazione 3-Way Match"
+  nzOkText="Esegui Conciliazione"
+  nzCancelText="Annulla"
+  (nzOnCancel)="executeMatchModalVisible.set(false)"
+  (nzOnOk)="submitExecuteMatch()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="matchForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Ordine di Acquisto (PO)</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="purchase_order_id" placeholder="ID o UUID ordine" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Ricezione Merce (GRN)</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="purchase_receipt_id" placeholder="ID ricezione merce" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Fattura Fornitore (AP)</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="passive_invoice_id" placeholder="ID fattura fornitore" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Totale Fattura Fornitore</nz-form-label>
+        <nz-form-control>
+          <nz-input-number formControlName="invoice_total_amount" [nzMin]="0.01" style="width: 100%;" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Importa SDI FatturaPA Passivo -->
+<nz-modal
+  [nzVisible]="importSdiModalVisible()"
+  nzTitle="Importa Fattura Elettronica XML (SDI Passivo)"
+  nzOkText="Importa XML"
+  nzCancelText="Annulla"
+  (nzOnCancel)="importSdiModalVisible.set(false)"
+  (nzOnOk)="submitImportSdi()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="sdiImportForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Contenuto XML FatturaPA</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            rows="8"
+            formControlName="xml_content"
+            placeholder="Incolla qui il tracciato XML della fattura passiva ricevuta dal SdI..."
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>

@@ -4,7 +4,7 @@ Last updated: 2026-11-08
 
 ## Architectural Conventions
 - **Angular:** v22 Standalone Components (strictly no `standalone: true`, default `ChangeDetectionStrategy.OnPush`, inject() dependency injection, signals & computed for local/shared reactive state).
-- **Styling & UI:** `ng-zorro-antd` v22, responsive layouts with `nz-layout`, `nz-table` (server-side pagination `nzFrontPagination=false`), `nz-form`, `nz-modal`, `nz-drawer`, `nz-dropdown`.
+- **Styling & UI:** `ng-zorro-antd` v22, responsive layouts with `nz-layout`, `nz-table` (server-side pagination `nzFrontPagination=false`), `nz-form`, `nz-modal`, `nz-drawer`, `nz-dropdown`, `nz-tabs`.
 - **Icons:** Only icons registered in `src/app/icons-provider.ts` are used across templates and tests.
 - **Amounts & Currency:** Kept as string/number representations without floating point arithmetic; formatted strictly using `MoneyPipe` and Angular currency/decimal formatters.
 - **QR Codes:** Implemented using `NzQRCodeComponent` (`nz-qrcode`) from `ng-zorro-antd/qr-code`.
@@ -27,8 +27,8 @@ Last updated: 2026-11-08
 | **09** | **Inventory & Logistics** | 38 | 28 | Stock balances, Signed movements, Transfer modal, Adjustments approve/reject, Physical counts reconcile, Valuation summary | 23 | **Done** | Covered `/inventory/stock-levels`, `/inventory/movements`, `/inventory/movements/transfer`, `/inventory/adjustments`, `/inventory/counts`, `/inventory/valuation` |
 | **10** | **Sales & Orders** | 42 | 26 | Quotes list & approval workflow, Orders list & lifecycle (reserve, DDT, invoice), Delivery notes list (dispatch, confirm) | 12 | **Done** | Covered `/invoicing/quotes`, `/invoicing/orders`, `/invoicing/delivery-notes`, convert/reserve/invoice actions |
 | **11** | **Invoicing & SDI** | 52 | 24 | Invoices table, Electronic Invoices (IT/CH), SDI FatturaPA XML generate, Bulk SDI send, SDI logs, Credit Notes, Installments, Swiss QR-Bill (nz-qrcode) | 16 | **Done** | Covered `/sales/invoices` lifecycle, SDI transmission & logs, `/invoicing/credit-notes`, `/invoicing/invoices/{id}/installments`, `/sales/invoices/{id}/qr-bill` |
-| **12** | **Procurement & AP** | 36 | 4 | Purchase Requests, RfQ, Purchase Orders, Goods Receipt, AP Invoices matching | 6 | **Next** | Backend evolving; sync OpenAPI before starting |
-| **13** | **Treasury & Banking** | 40 | 8 | Bank Accounts, Statements, Reconciliation, Categorization, Cash flow schedule | 10 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **12** | **Procurement & AP** | 36 | 28 | Purchase Orders lifecycle, Goods Receipts & inspection, 3-Way Matching & variance approval, Supplier Invoices & SDI/QR-Bill import | 15 | **Done** | Covered `/procurement/purchase-orders`, `/procurement/goods-receipts`, `/procurement/three-way-match`, `/purchases/supplier-invoices`, `/purchases/passive-invoices/import-sdi` |
+| **13** | **Treasury & Banking** | 40 | 8 | Bank Accounts, Statements, Reconciliation, Categorization, Cash flow schedule | 10 | **Next** | Backend evolving; sync OpenAPI before starting |
 | **14** | **General Ledger & Accounting**| 48 | 6 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT, Intrastat | 10 | **Todo** | Use `/general-ledger/journals` |
 | **15** | **Manufacturing & MRP** | 26 | 0 | Bill of Materials (BOM), Production Orders, Routing cycles, MRP runs | 0 | **Todo** | Backend evolving; sync OpenAPI before starting |
 | **16** | **HR & Payroll (IT/CH)** | 30 | 2 | Employees, Employment Contracts, Attendance records, Leave requests, Payslips | 4 | **Todo** | Backend evolving; sync OpenAPI before starting |
@@ -50,8 +50,8 @@ Last updated: 2026-11-08
 9. `[DONE]` **Module 09: Inventory & Logistics**
 10. `[DONE]` **Module 10: Sales & Orders**
 11. `[DONE]` **Module 11: Invoicing & SDI**
-12. `[NEXT]` **Module 12: Procurement & AP**
-13. `[TODO]` **Module 13: Treasury & Banking**
+12. `[DONE]` **Module 12: Procurement & AP**
+13. `[NEXT]` **Module 13: Treasury & Banking**
 14. `[TODO]` **Module 14: General Ledger & Accounting**
 15. `[TODO]` **Module 15: Manufacturing & MRP**
 16. `[TODO]` **Module 16: HR & Payroll**
