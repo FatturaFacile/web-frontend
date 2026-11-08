@@ -28,7 +28,7 @@
 | **06** | **Projects & Field Service** | 32 | 26 | Projects list & lifecycle (start, pause, complete, close), Detail Drawer, Tasks & WBS, Timesheets & approval workflow, EVM indicators | 14 | **Done** | Covered `/projects` CRUD + lifecycle, `/projects/{id}/tasks`, `/projects/{id}/timesheets`, `/projects/{id}/financial-summary`, `/projects/{id}/recalculate-evm` |
 | **07** | **Asset Management (`/eam`)** | 28 | 24 | Fixed Assets table, Parallel Books (statutory/tax/managerial), Depreciation Schedules, QR tag generator (nz-qrcode), Maintenance work orders | 16 | **Done** | Covered `/eam/assets` CRUD & lifecycle, `/eam/assets/{id}/books`, `/eam/assets/{id}/depreciation-schedules`, `/eam/assets/{id}/tag`, `/eam/depreciation/runs`, `/eam/maintenance/work-orders` |
 | **08** | **Subscriptions (`/sub`)** | 22 | 18 | Plans catalog, Contract table & lifecycle (renew/pause/resume/cancel), MRR/ARR/churn metrics, Dunning trigger | 8 | **Done** | Covered `/sub/contracts`, `/subscriptions/plans`, `/subscriptions/metrics`, `/subscriptions/dunning` |
-| **09** | **Inventory & Logistics** | 38 | 0 | Stock balances, Signed movements, Physical inventories, Stock locations | 0 | **Todo** | Use `signed_quantity` for receipts/issues |
+| **09** | **Inventory & Logistics** | 38 | 28 | Stock balances, Signed movements, Transfer modal, Adjustments approve/reject, Physical counts reconcile, Valuation summary | 23 | **Done** | Covered `/inventory/stock-levels`, `/inventory/movements`, `/inventory/movements/transfer`, `/inventory/adjustments`, `/inventory/counts`, `/inventory/valuation` |
 | **10** | **Sales & Orders** | 42 | 4 | Quotes with approvals, Sales orders, Delivery notes (DDT) | 8 | **Todo** | Backend evolving; sync OpenAPI before starting |
 | **11** | **Invoicing & SDI** | 52 | 8 | Electronic Invoices (IT/CH), Credit Notes, SDI send bulk, Swiss QR-Bill | 12 | **Todo** | Server assigns invoice numbering strictly |
 | **12** | **Procurement & AP** | 36 | 4 | Purchase Requests, RfQ, Purchase Orders, Goods Receipt, AP Invoices matching | 6 | **Todo** | Backend evolving; sync OpenAPI before starting |
@@ -51,8 +51,8 @@
 6. `[DONE]` **Module 06: Projects (Tasks, Gantt, Timesheets)**
 7. `[DONE]` **Module 07: Asset Management (`/eam`)**
 8. `[DONE]` **Module 08: Subscriptions (`/sub/contracts`)**
-9. `[NEXT]` **Module 09: Inventory & Logistics**
-10. `[TODO]` **Module 10: Sales & Orders**
+9. `[DONE]` **Module 09: Inventory & Logistics**
+10. `[NEXT]` **Module 10: Sales & Orders**
 11. `[TODO]` **Module 11: Invoicing & SDI**
 12. `[TODO]` **Module 12: Procurement & AP**
 13. `[TODO]` **Module 13: Treasury & Banking**
