@@ -29,15 +29,15 @@
     [actionsTemplate]="actionsTpl"
   />
 
-  <ng-template #dateTpl let-b let-val="value">
+  <ng-template #dateTpl let-val="value">
     {{ val | date: "dd.MM.yyyy HH:mm:ss" }}
   </ng-template>
 
-  <ng-template #sizeTpl let-b let-val="value">
+  <ng-template #sizeTpl let-val="value">
     {{ formatBytes(val) }}
   </ng-template>
 
-  <ng-template #statusTpl let-b let-val="value">
+  <ng-template #statusTpl let-val="value">
     <nz-tag
       [nzColor]="val === 'completed' ? 'success' : val === 'in_progress' ? 'processing' : 'error'"
     >

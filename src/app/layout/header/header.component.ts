@@ -40,6 +40,6 @@ export class HeaderComponent {
 
   logout(): void {
     this.authStore.logout();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
   }
 }

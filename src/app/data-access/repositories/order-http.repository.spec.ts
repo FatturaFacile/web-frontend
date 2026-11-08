@@ -3,8 +3,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, beforeEach, afterEach, it, expect } from 'vitest';
 import { environment } from '@env';
-import { OrderDto } from '../dtos/order.dto';
-import { OrderHttpRepository } from './order-http.repository';
+import { OrderDto } from '@data-access/dtos/order.dto';
+import { OrderHttpRepository } from '@data-access/repositories/order-http.repository';
 
 describe('OrderHttpRepository', () => {
   let repository: OrderHttpRepository;

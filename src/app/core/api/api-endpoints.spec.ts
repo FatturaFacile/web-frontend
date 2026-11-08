@@ -3,9 +3,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { environment } from '@env';
-import { InvoiceApiService } from './invoice-api.service';
-import { I18nService } from '../i18n/i18n.service';
-import { LookupService } from '../lookups/lookup.service';
+import { InvoiceApiService } from '@core/api/invoice-api.service';
+import { I18nService } from '@core/i18n/i18n.service';
+import { LookupService } from '@core/lookups/lookup.service';
 import { TEST_API_BASE_URL } from '../../../testing/api';
 
 /**

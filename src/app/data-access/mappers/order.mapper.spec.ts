@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { OrderDto } from '../dtos/order.dto';
+import { OrderDto } from '@data-access/dtos/order.dto';
 import { Order } from '@domain/models/order.model';
-import { OrderMapper } from './order.mapper';
+import { OrderMapper } from '@data-access/mappers/order.mapper';
 
 describe('OrderMapper', () => {
   const sampleDto: OrderDto = {

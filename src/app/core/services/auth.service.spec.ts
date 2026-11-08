@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AuthService } from './auth.service';
+import { AuthService } from '@core/services/auth.service';
 import { TEST_PASSWORD } from '../../../testing/credentials';
 
 describe('AuthService (Pure Cookie-Based Authentication with CSRF Protection)', () => {

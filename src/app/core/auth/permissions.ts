@@ -113,9 +113,6 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
 /** Members with these roles can never write, on any route. */
 export const READ_ONLY_ROLES: readonly string[] = ['accountant_readonly'];
 
-/** Detail of the 403 problem raised when the role of the member has no access to the module. */
-export const FORBIDDEN_MODULE_ACCESS_TITLE = 'Forbidden Module Access';
-
 const normalize = (value: string): string => value.trim().toLowerCase();
 
 /**
