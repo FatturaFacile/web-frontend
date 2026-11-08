@@ -140,13 +140,22 @@
           <li nz-menu-item nzDisabled>
             <div class="user-info-panel">
               <strong>{{ authStore.user()?.name }}</strong>
-              <span class="user-role">{{ authStore.user()?.role }}</span>
+              <span class="user-role">{{ authStore.activeRole() }}</span>
               <span class="tenant-active">{{ authStore.activeTenant().name }}</span>
             </div>
           </li>
           <li nz-menu-divider></li>
-          <!-- eslint-disable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-          <li nz-menu-item (click)="router.navigate(['/settings'])">
+          <li nz-menu-item (click)="router.navigate(['/settings/security'])">
+            <i class="fa-solid fa-shield-halved fa-icon-spaced"></i>
+            Sicurezza & Sessioni
+          </li>
+          @if (permissions.canWrite('system')) {
+            <li nz-menu-item (click)="router.navigate(['/settings/security/two-factor'])">
+              <i class="fa-solid fa-key fa-icon-spaced"></i>
+              Policy 2FA Aziendale
+            </li>
+          }
+          <li nz-menu-item (click)="router.navigate(['/settings/tenant'])">
             <i class="fa-solid fa-sliders fa-icon-spaced"></i>
             {{ "HEADER.PREFERENCES" | translate }}
           </li>
@@ -155,7 +164,6 @@
             <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
             {{ "HEADER.LOGOUT" | translate }}
           </li>
-          <!-- eslint-enable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         </ul>
       </nz-dropdown-menu>
     </div>

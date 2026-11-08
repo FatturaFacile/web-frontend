@@ -18,11 +18,13 @@ import {
   AuthStore,
   I18nService,
   isValidationError,
+  LoginResult,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
 import { LanguageSelectorComponent } from '../../components/language-selector.component';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
+import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
 
@@ -43,6 +45,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzIconModule,
     LanguageSelectorComponent,
     ResendVerificationComponent,
+    TwoFactorSetupModalComponent,
     TranslatePipe,
   ],
   templateUrl: './login.component.html',
@@ -62,6 +65,12 @@ export class LoginComponent {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly needsVerification = signal(false);
 
+  // 2FA Challenge & Setup State
+  protected readonly isChallengeStep = signal(false);
+  protected readonly challengeToken = signal('');
+  protected readonly useRecoveryCode = signal(false);
+  protected readonly showTwoFactorSetup = signal(false);
+
   protected readonly loginForm = this.fb.group({
     email: this.fb.control(environment.demoMode ? DEMO_CREDENTIALS.email : '', [
       Validators.required,
@@ -72,6 +81,11 @@ export class LoginComponent {
       Validators.minLength(6),
     ]),
     remember: this.fb.control(false),
+  });
+
+  protected readonly challengeForm = this.fb.group({
+    code: this.fb.control(''),
+    recoveryCode: this.fb.control(''),
   });
 
   protected onSubmit(): void {
@@ -87,26 +101,16 @@ export class LoginComponent {
     this.authApi.login({ email, password, remember: remember ?? false, tenant_id: '' }).subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
-        // Cookie-First SPA Authentication:
-        // Laravel Sanctum relies strictly on HttpOnly session cookies (e.g. faturafaciledev-session).
-        // Any returned bearer token (`res?.data?.token`) is intentionally ignored and never stored
-        // in localStorage, sessionStorage, or IndexedDB to prevent XSS exfiltration.
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.removeItem('ff_access_token');
-          window.localStorage.removeItem('token');
-          window.localStorage.removeItem('auth_token');
+        const data = res?.data;
+
+        // Two-factor authentication required
+        if (data?.two_factor_required && data.challenge_token) {
+          this.challengeToken.set(data.challenge_token);
+          this.isChallengeStep.set(true);
+          return;
         }
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          window.sessionStorage.removeItem('ff_access_token');
-          window.sessionStorage.removeItem('token');
-          window.sessionStorage.removeItem('auth_token');
-        }
-        if (res?.data?.tenant_id && typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem('ff_active_tenant_id', res.data.tenant_id);
-          window.localStorage.setItem('tenant_id', res.data.tenant_id);
-        }
-        this.authStore.login(res?.data?.tenant_id ?? undefined, res?.data?.user ?? null);
-        void this.router.navigateByUrl(this.resolveReturnUrl());
+
+        this.processSuccessfulLogin(data);
       },
       error: (err: unknown) => {
         this.isSubmitting.set(false);
@@ -115,10 +119,96 @@ export class LoginComponent {
     });
   }
 
+  protected onChallengeSubmit(): void {
+    const isRecovery = this.useRecoveryCode();
+    const { code, recoveryCode } = this.challengeForm.getRawValue();
+
+    if (isRecovery && !recoveryCode.trim()) {
+      this.errorMessage.set('Inserisci un codice di recupero valido.');
+      return;
+    }
+    if (!isRecovery && !code.trim()) {
+      this.errorMessage.set('Inserisci il codice temporaneo generato dall\'app.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    this.authApi
+      .twoFactorChallenge({
+        challenge_token: this.challengeToken(),
+        code: isRecovery ? undefined : code.trim(),
+        recovery_code: isRecovery ? recoveryCode.trim() : undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting.set(false);
+          this.processSuccessfulLogin(res.data);
+        },
+        error: (err: unknown) => {
+          this.isSubmitting.set(false);
+          if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorCodeInvalid) {
+            this.errorMessage.set('Il codice di verifica inserito non è corretto o è scaduto.');
+            return;
+          }
+          if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorChallengeInvalid) {
+            this.errorMessage.set('La sessione di verifica 2FA è scaduta. Effettua nuovamente il login.');
+            this.cancelChallenge();
+            return;
+          }
+          this.handleError(err);
+        },
+      });
+  }
+
+  protected cancelChallenge(): void {
+    this.isChallengeStep.set(false);
+    this.challengeToken.set('');
+    this.challengeForm.reset();
+    this.useRecoveryCode.set(false);
+    this.errorMessage.set(null);
+  }
+
+  protected onTwoFactorSetupCompleted(): void {
+    this.showTwoFactorSetup.set(false);
+    void this.router.navigateByUrl(this.resolveReturnUrl());
+  }
+
+  private processSuccessfulLogin(data?: LoginResult): void {
+    // Cookie-First SPA Authentication:
+    // Purge legacy storage keys to ensure purely cookie-based security
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem('ff_access_token');
+      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('auth_token');
+    }
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      window.sessionStorage.removeItem('ff_access_token');
+      window.sessionStorage.removeItem('token');
+      window.sessionStorage.removeItem('auth_token');
+    }
+
+    const activeTenantId = data?.active_tenant?.id ?? data?.tenant_id;
+    if (activeTenantId && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('ff_active_tenant_id', activeTenantId);
+      window.localStorage.setItem('tenant_id', activeTenantId);
+    }
+
+    this.authStore.login(activeTenantId ?? undefined, data?.user ?? null);
+
+    // If 2FA setup is required by tenant policy or user status
+    if (data?.two_factor_setup_required) {
+      this.showTwoFactorSetup.set(true);
+      return;
+    }
+
+    void this.router.navigateByUrl(this.resolveReturnUrl());
+  }
+
   private handleError(err: unknown): void {
     if (isValidationError(err)) {
       const unmapped = applyServerErrors(this.loginForm, err);
-      // Fall back to the inline alert when no field could be matched.
       this.errorMessage.set(unmapped[0] ?? null);
       return;
     }
@@ -132,10 +222,13 @@ export class LoginComponent {
       return;
     }
     if (err instanceof HttpErrorResponse && err.status === 403) {
+      if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorSetupRequired) {
+        this.showTwoFactorSetup.set(true);
+        return;
+      }
       this.errorMessage.set(this.forbiddenMessage(err));
       return;
     }
-    // Other failures (network, 5xx) are already toasted by the error interceptor.
     this.message.error(
       this.i18n.translate('ERRORS.GENERIC', {
         status: err instanceof HttpErrorResponse ? err.status : 0,

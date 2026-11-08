@@ -1,0 +1,95 @@
+<app-page-header
+  title="Policy di Sicurezza 2FA del Tenant"
+  subtitle="Configura i requisiti di autenticazione a due fattori per tutti i collaboratori dell'azienda"
+></app-page-header>
+
+<div class="tenant-security-container">
+  <!-- POLICY TOGGLE CARD -->
+  <nz-card nzTitle="Requisito Obbligatorio 2FA" [nzLoading]="isLoading()" class="policy-card">
+    <div class="policy-toggle-wrapper">
+      <div class="policy-info">
+        <h3>Richiedi 2FA per tutti i membri</h3>
+        <p class="policy-desc">
+          Quando questa opzione è attiva, qualsiasi collaboratore o amministratore del tenant che non ha ancora configurato l'autenticazione a due fattori sarà bloccato al login o alle API con richiesta obbligatoria di configurazione prima di poter operare.
+        </p>
+      </div>
+      <div class="policy-control">
+        <nz-switch
+          [ngModel]="requireTwoFactor()"
+          (ngModelChange)="onPolicyToggle($event)"
+          [nzLoading]="isUpdatingPolicy()"
+          [disabled]="!permissions.canWrite('system')"
+          nzCheckedChildren="ATTIVO"
+          nzUnCheckedChildren="FACOLTATIVO"
+        ></nz-switch>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- MEMBERS 2FA STATUS TABLE -->
+  <nz-card
+    nzTitle="Stato 2FA dei Membri del Tenant"
+    [nzLoading]="isLoading()"
+    [nzExtra]="extraRefreshTpl"
+    class="members-card"
+  >
+    <ng-template #extraRefreshTpl>
+      <button nz-button nzType="default" (click)="loadPolicy()">
+        <i nz-icon nzType="reload"></i> Aggiorna
+      </button>
+    </ng-template>
+
+    <nz-table
+      #membersTable
+      [nzData]="members()"
+      [nzFrontPagination]="true"
+      [nzPageSize]="10"
+      nzSize="middle"
+    >
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Ruolo</th>
+          <th>Stato 2FA</th>
+          <th nzAlign="right">Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (member of membersTable.data; track member.id) {
+          <tr>
+            <td>
+              <strong>{{ member.name }}</strong>
+            </td>
+            <td>{{ member.email }}</td>
+            <td>
+              <nz-tag nzColor="blue">{{ member.role || 'Membro' }}</nz-tag>
+            </td>
+            <td>
+              @if (member.two_factor_enabled) {
+                <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> Configurato</nz-tag>
+              } @else {
+                <nz-tag nzColor="warning"><i nz-icon nzType="exclamation-circle"></i> Non attivo</nz-tag>
+              }
+            </td>
+            <td nzAlign="right">
+              @if (member.two_factor_enabled && permissions.canWrite('system')) {
+                <button
+                  nz-button
+                  nzDanger
+                  nzType="link"
+                  nzSize="small"
+                  (click)="resetUser2FA(member)"
+                >
+                  <i nz-icon nzType="undo"></i> Reimposta 2FA
+                </button>
+              } @else {
+                <span class="text-muted">-</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

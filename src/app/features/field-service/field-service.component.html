@@ -3,41 +3,164 @@
   [subtitle]="'FIELD_SERVICE.SUBTITLE' | translate"
 />
 
-<nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate">
+<nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
+  <!-- Filter bar -->
+  <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center;">
+    <div style="min-width: 240px; flex: 1;">
+      <nz-input-group nzPrefixIcon="search">
+        <input
+          type="text"
+          nz-input
+          placeholder="Cerca per titolo, numero o cliente..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (keyup.enter)="onSearch()"
+        />
+      </nz-input-group>
+    </div>
+
+    <div style="width: 170px;">
+      <nz-select
+        [ngModel]="filterStatus()"
+        (ngModelChange)="filterStatus.set($event); onSearch()"
+        style="width: 100%;"
+        nzPlaceHolder="Stato (Tutti)"
+      >
+        <nz-option nzValue="" nzLabel="Tutti gli stati"></nz-option>
+        <nz-option nzValue="new" nzLabel="Nuovo (new)"></nz-option>
+        <nz-option nzValue="open" nzLabel="Aperto (open)"></nz-option>
+        <nz-option nzValue="pending_customer" nzLabel="In attesa cliente"></nz-option>
+        <nz-option nzValue="on_hold" nzLabel="In sospeso (on hold)"></nz-option>
+        <nz-option nzValue="resolved" nzLabel="Risolto (resolved)"></nz-option>
+        <nz-option nzValue="closed" nzLabel="Chiuso (closed)"></nz-option>
+      </nz-select>
+    </div>
+
+    <div style="width: 150px;">
+      <nz-select
+        [ngModel]="filterPriority()"
+        (ngModelChange)="filterPriority.set($event); onSearch()"
+        style="width: 100%;"
+        nzPlaceHolder="Priorità (Tutte)"
+      >
+        <nz-option nzValue="" nzLabel="Tutte le priorità"></nz-option>
+        <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
+        <nz-option nzValue="medium" nzLabel="Media"></nz-option>
+        <nz-option nzValue="high" nzLabel="Alta"></nz-option>
+        <nz-option nzValue="critical" nzLabel="Critica"></nz-option>
+      </nz-select>
+    </div>
+
+    <div style="width: 150px;">
+      <nz-select
+        [ngModel]="filterSlaState()"
+        (ngModelChange)="filterSlaState.set($event); onSearch()"
+        style="width: 100%;"
+        nzPlaceHolder="SLA (Tutti)"
+      >
+        <nz-option nzValue="" nzLabel="Tutti gli SLA"></nz-option>
+        <nz-option nzValue="ok" nzLabel="OK (Nei tempi)"></nz-option>
+        <nz-option nzValue="warning" nzLabel="In scadenza"></nz-option>
+        <nz-option nzValue="breached" nzLabel="Violato"></nz-option>
+        <nz-option nzValue="paused" nzLabel="In pausa"></nz-option>
+      </nz-select>
+    </div>
+
+    <button nz-button (click)="resetFilters()" title="Reimposta filtri">
+      <i nz-icon nzType="clear"></i> Reset
+    </button>
+  </div>
+
+  <!-- Table -->
   <nz-table
     #tkTable
     [nzData]="tickets()"
     [nzLoading]="loading()"
     [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[10, 20, 50]"
+    (nzQueryParams)="onQueryParamsChange($event)"
     nzSize="middle"
   >
     <thead>
       <tr>
-        <th>{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
-        <th>{{ "FIELD_SERVICE.COL_CLIENT" | translate }}</th>
+        <th nzWidth="120px">{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
         <th>{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
-        <th>{{ "FIELD_SERVICE.COL_TECH" | translate }}</th>
-        <th>{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
-        <th>{{ "COMMON.STATUS" | translate }}</th>
+        <th nzWidth="100px">Canale</th>
+        <th nzWidth="110px">Priorità</th>
+        <th nzWidth="130px">{{ "COMMON.STATUS" | translate }}</th>
+        <th nzWidth="140px">{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
+        <th nzWidth="150px">Data Creazione</th>
+        <th nzWidth="100px" nzAlign="center">Azioni</th>
       </tr>
     </thead>
     <tbody>
       @for (tk of tkTable.data; track tk.id) {
         <tr>
           <td>
-            <strong>{{ tk.id }}</strong>
-          </td>
-          <td>{{ tk.client }}</td>
-          <td>{{ tk.subject }}</td>
-          <td>{{ tk.technician }}</td>
-          <td>
-            <code>{{ tk.sla }}</code>
+            <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
           </td>
           <td>
-            <nz-tag [nzColor]="tk.color">{{ tk.status }}</nz-tag>
+            <div style="font-weight: 500;">{{ tk.title || tk.subject }}</div>
+            @if (tk.contact_email) {
+              <div style="font-size: 12px; color: #888;">{{ tk.contact_email }}</div>
+            }
+          </td>
+          <td>{{ tk.channel || '-' }}</td>
+          <td>
+            <nz-tag [nzColor]="getPriorityColor(tk.priority)">{{ tk.priority }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(tk.status)">{{ tk.status }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
+            @if (tk.resolution_due_at) {
+              <div style="font-size: 11px; color: #888;">
+                Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}
+              </div>
+            }
+          </td>
+          <td>{{ tk.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td nzAlign="center">
+            <button
+              nz-button
+              nzType="link"
+              nzSize="small"
+              (click)="openDetail(tk.id)"
+              title="Visualizza e modifica"
+            >
+              <i nz-icon nzType="eye"></i> Dettagli
+            </button>
           </td>
         </tr>
       }
     </tbody>
   </nz-table>
 </nz-card>
+
+<ng-template #extraTemplate>
+  <nz-space>
+    <button *nzSpaceItem nz-button (click)="loadTickets()" [nzLoading]="loading()">
+      <i nz-icon nzType="reload"></i> Aggiorna
+    </button>
+    <button *nzSpaceItem nz-button nzType="primary" (click)="openCreate()">
+      <i nz-icon nzType="plus"></i> Nuovo Ticket
+    </button>
+  </nz-space>
+</ng-template>
+
+<!-- Drawers -->
+<app-ticket-create-drawer
+  [(open)]="createDrawerOpen"
+  (saved)="loadTickets()"
+/>
+
+<app-ticket-detail-drawer
+  [ticketId]="selectedTicketId()"
+  [(open)]="detailDrawerOpen"
+  (updated)="loadTickets()"
+/>

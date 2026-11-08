@@ -25,3 +25,8 @@
     </nz-layout>
   </nz-layout>
 }
+
+<app-two-factor-setup-modal
+  [isVisible]="authStore.twoFactorSetupRequired()"
+  (completed)="onGlobal2FASetupCompleted()"
+/>

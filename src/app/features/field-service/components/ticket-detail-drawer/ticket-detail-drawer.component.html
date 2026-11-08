@@ -1,0 +1,370 @@
+<nz-drawer
+  [nzVisible]="open()"
+  [nzTitle]="drawerTitle"
+  [nzWidth]="820"
+  (nzOnClose)="close()"
+>
+  <ng-template #drawerTitle>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-weight: 600;">
+          {{ ticket()?.ticket_number ? '#' + ticket()?.ticket_number : 'Dettaglio Ticket' }}
+        </span>
+        @if (ticket()) {
+          <nz-tag [nzColor]="statusColor()">{{ ticket()?.status }}</nz-tag>
+          <nz-tag [nzColor]="priorityColor()">{{ ticket()?.priority }}</nz-tag>
+          <nz-tag [nzColor]="slaColor()">SLA: {{ ticket()?.sla_state }}</nz-tag>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-container *nzDrawerContent>
+    <nz-spin [nzSpinning]="loading()">
+      @if (ticket()) {
+        <!-- Action Toolbar -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 12px; background: #fafafa; border-radius: 6px;">
+          <button nz-button nzSize="small" (click)="openStatusModal()">
+            <i nz-icon nzType="swap"></i> Cambia Stato
+          </button>
+          <button nz-button nzSize="small" (click)="openAssignModal()">
+            <i nz-icon nzType="user-add"></i> Assegna
+          </button>
+          @if (ticket()?.status !== 'resolved' && ticket()?.status !== 'closed') {
+            <button nz-button nzSize="small" nzType="primary" (click)="openResolveModal()">
+              <i nz-icon nzType="check-circle"></i> Risolvi
+            </button>
+          }
+          @if (ticket()?.status !== 'closed') {
+            <button nz-button nzSize="small" nzDanger (click)="confirmClose()">
+              <i nz-icon nzType="close-circle"></i> Chiudi
+            </button>
+          }
+          @if (ticket()?.status === 'closed' || ticket()?.status === 'resolved') {
+            <button nz-button nzSize="small" (click)="confirmReopen()">
+              <i nz-icon nzType="redo"></i> Riapri
+            </button>
+          }
+        </div>
+
+        <!-- Tabs: Dettagli, Conversazione, Cronologia -->
+        <nz-tabs>
+          <!-- TAB 1: DETTAGLI & MODIFICA -->
+          <nz-tab nzTitle="Dettagli & Modifica">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" style="margin-bottom: 24px;">
+              <nz-descriptions-item nzTitle="Canale">{{ ticket()?.channel || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Tipo">{{ ticket()?.type || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Assegnato a">{{ ticket()?.assigned_to_id || 'Non assegnato' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Team">{{ ticket()?.service_team_id || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Creazione">{{ ticket()?.created_at | date:'dd/MM/yyyy HH:mm' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Scadenza Risposta (SLA)">
+                {{ (ticket()?.response_due_at | date:'dd/MM/yyyy HH:mm') || '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Scadenza Risoluzione (SLA)">
+                {{ (ticket()?.resolution_due_at | date:'dd/MM/yyyy HH:mm') || '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="SLA Breached?">
+                @if (ticket()?.is_sla_breached) {
+                  <nz-tag nzColor="error">Breached</nz-tag>
+                } @else {
+                  <nz-tag nzColor="success">Nel limite</nz-tag>
+                }
+              </nz-descriptions-item>
+              @if (ticket()?.resolved_at) {
+                <nz-descriptions-item nzTitle="Risolto il" [nzSpan]="2">
+                  {{ ticket()?.resolved_at | date:'dd/MM/yyyy HH:mm' }}
+                </nz-descriptions-item>
+              }
+              @if (ticket()?.closed_at) {
+                <nz-descriptions-item nzTitle="Chiuso il" [nzSpan]="2">
+                  {{ ticket()?.closed_at | date:'dd/MM/yyyy HH:mm' }}
+                </nz-descriptions-item>
+              }
+            </nz-descriptions>
+
+            <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="saveDetails()">
+              <nz-form-item>
+                <nz-form-label nzRequired nzFor="subject">Oggetto / Titolo</nz-form-label>
+                <nz-form-control [nzErrorTip]="subjectErr">
+                  <input nz-input id="subject" formControlName="subject" />
+                  <ng-template #subjectErr let-control>
+                    @if (getErrorMessage('subject')) {
+                      {{ getErrorMessage('subject') }}
+                    } @else if (control.hasError('required')) {
+                      L'oggetto è obbligatorio
+                    }
+                  </ng-template>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div style="display: flex; gap: 16px;">
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="priority">Priorità</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="priority" formControlName="priority">
+                      <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
+                      <nz-option nzValue="medium" nzLabel="Media"></nz-option>
+                      <nz-option nzValue="high" nzLabel="Alta"></nz-option>
+                      <nz-option nzValue="critical" nzLabel="Critica"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="type">Tipo</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="type" formControlName="type">
+                      <nz-option nzValue="incident" nzLabel="Incidente"></nz-option>
+                      <nz-option nzValue="request" nzLabel="Richiesta"></nz-option>
+                      <nz-option nzValue="problem" nzLabel="Problema"></nz-option>
+                      <nz-option nzValue="change" nzLabel="Modifica"></nz-option>
+                      <nz-option nzValue="inquiry" nzLabel="Info / Domanda"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <div style="display: flex; gap: 16px;">
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="impact">Impatto</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="impact" formControlName="impact">
+                      <nz-option nzValue="low" nzLabel="Basso"></nz-option>
+                      <nz-option nzValue="medium" nzLabel="Medio"></nz-option>
+                      <nz-option nzValue="high" nzLabel="Alto"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="urgency">Urgenza</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="urgency" formControlName="urgency">
+                      <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
+                      <nz-option nzValue="medium" nzLabel="Normale"></nz-option>
+                      <nz-option nzValue="high" nzLabel="Immediata"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <div style="display: flex; gap: 16px;">
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="contact_email">Email Contatto</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input id="contact_email" formControlName="contact_email" />
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item style="flex: 1;">
+                  <nz-form-label nzFor="contact_phone">Telefono Contatto</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input id="contact_phone" formControlName="contact_phone" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <nz-form-item>
+                <nz-form-label nzFor="description">Descrizione</nz-form-label>
+                <nz-form-control>
+                  <textarea nz-input id="description" rows="4" formControlName="description"></textarea>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div style="display: flex; justify-content: flex-end;">
+                <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
+                  Salva Modifiche
+                </button>
+              </div>
+            </form>
+          </nz-tab>
+
+          <!-- TAB 2: CONVERSAZIONE & NOTE -->
+          <nz-tab [nzTitle]="'Conversazione (' + messages().length + ')'">
+            <!-- Messages timeline / list -->
+            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 8px;">
+              @if (messages().length === 0) {
+                <div style="text-align: center; color: #888; padding: 24px;">Nessun messaggio presente</div>
+              } @else {
+                @for (msg of messages(); track msg.id) {
+                  <div
+                    style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1px solid #f0f0f0;"
+                    [style.background]="msg.visibility === 'internal' ? '#fffbe6' : '#f6faff'"
+                  >
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <strong>{{ msg.author_name || msg.author_type }}</strong>
+                        @if (msg.visibility === 'internal') {
+                          <nz-tag nzColor="gold">Nota Interna</nz-tag>
+                        } @else {
+                          <nz-tag nzColor="blue">Pubblica</nz-tag>
+                        }
+                      </div>
+                      <span style="font-size: 12px; color: #999;">
+                        {{ msg.created_at | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    </div>
+                    <div style="white-space: pre-wrap; font-size: 13px;">{{ msg.body }}</div>
+                  </div>
+                }
+              }
+            </div>
+
+            <nz-divider nzText="Aggiungi Risposta o Nota"></nz-divider>
+
+            <!-- Reply Form -->
+            <form nz-form nzLayout="vertical" [formGroup]="replyForm" (ngSubmit)="postReply()">
+              <nz-form-item>
+                <nz-form-control>
+                  <textarea
+                    nz-input
+                    rows="3"
+                    formControlName="body"
+                    placeholder="Scrivi una risposta per il cliente o una nota interna..."
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <nz-radio-group formControlName="visibility">
+                  <label nz-radio nzValue="public">Risposta Pubblica</label>
+                  <label nz-radio nzValue="internal">Nota Interna</label>
+                </nz-radio-group>
+
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="submit"
+                  [nzLoading]="isPostingMessage()"
+                  [disabled]="replyForm.invalid"
+                >
+                  Invia
+                </button>
+              </div>
+            </form>
+          </nz-tab>
+
+          <!-- TAB 3: CRONOLOGIA ATTIVITÀ -->
+          <nz-tab [nzTitle]="'Attività (' + activities().length + ')'">
+            <div style="padding: 16px 8px;">
+              @if (activities().length === 0) {
+                <div style="text-align: center; color: #888;">Nessuna attività registrata</div>
+              } @else {
+                <nz-timeline>
+                  @for (act of activities(); track act.id) {
+                    <nz-timeline-item>
+                      <div style="font-size: 13px;">
+                        <strong>{{ act.type }}</strong>
+                        @if (act.from_value || act.to_value) {
+                          <span>: {{ act.from_value || '-' }} &rarr; {{ act.to_value }}</span>
+                        }
+                      </div>
+                      <div style="font-size: 11px; color: #999;">
+                        {{ act.created_at | date:'dd/MM/yyyy HH:mm' }}
+                        @if (act.actor_user_id) {
+                          - Utente: {{ act.actor_user_id }}
+                        }
+                      </div>
+                    </nz-timeline-item>
+                  }
+                </nz-timeline>
+              }
+            </div>
+          </nz-tab>
+        </nz-tabs>
+      }
+    </nz-spin>
+  </ng-container>
+</nz-drawer>
+
+<!-- MODAL CAMBIA STATO -->
+<nz-modal
+  [nzVisible]="statusModalVisible()"
+  nzTitle="Cambia Stato del Ticket"
+  (nzOnCancel)="statusModalVisible.set(false)"
+  (nzOnOk)="confirmStatusChange()"
+>
+  <ng-container *nzModalContent>
+    <div style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Nuovo Stato:</label>
+      <nz-select [ngModel]="targetStatus()" (ngModelChange)="targetStatus.set($event)" style="width: 100%;">
+        <nz-option nzValue="new" nzLabel="Nuovo (new)"></nz-option>
+        <nz-option nzValue="open" nzLabel="Aperto (open)"></nz-option>
+        <nz-option nzValue="pending_customer" nzLabel="In attesa cliente (pending_customer)"></nz-option>
+        <nz-option nzValue="on_hold" nzLabel="In attesa / Sospeso (on_hold)"></nz-option>
+        <nz-option nzValue="resolved" nzLabel="Risolto (resolved)"></nz-option>
+        <nz-option nzValue="closed" nzLabel="Chiuso (closed)"></nz-option>
+      </nz-select>
+    </div>
+    <div>
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Nota di transizione (opzionale):</label>
+      <textarea
+        nz-input
+        rows="3"
+        [ngModel]="statusNote()"
+        (ngModelChange)="statusNote.set($event)"
+        placeholder="Motivo del cambio di stato..."
+      ></textarea>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL ASSEGNA TICKET -->
+<nz-modal
+  [nzVisible]="assignModalVisible()"
+  nzTitle="Assegna Ticket"
+  (nzOnCancel)="assignModalVisible.set(false)"
+  (nzOnOk)="confirmAssign()"
+>
+  <ng-container *nzModalContent>
+    <div style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">ID Utente / Agente (UUID):</label>
+      <input
+        nz-input
+        [ngModel]="assignedUserId()"
+        (ngModelChange)="assignedUserId.set($event)"
+        placeholder="UUID dell'utente assegnatario"
+      />
+    </div>
+    <div>
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">ID Team di Assistenza (opzionale):</label>
+      <input
+        nz-input
+        [ngModel]="assignedTeamId()"
+        (ngModelChange)="assignedTeamId.set($event)"
+        placeholder="UUID del team di servizio"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL RISOLVI TICKET -->
+<nz-modal
+  [nzVisible]="resolveModalVisible()"
+  nzTitle="Risolvi Ticket"
+  (nzOnCancel)="resolveModalVisible.set(false)"
+  (nzOnOk)="confirmResolve()"
+>
+  <ng-container *nzModalContent>
+    <div style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Note di risoluzione:</label>
+      <textarea
+        nz-input
+        rows="3"
+        [ngModel]="resolutionNotes()"
+        (ngModelChange)="resolutionNotes.set($event)"
+        placeholder="Descrivi come è stato risolto il problema..."
+      ></textarea>
+    </div>
+    <div>
+      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Causa principale (Root Cause):</label>
+      <textarea
+        nz-input
+        rows="2"
+        [ngModel]="rootCause()"
+        (ngModelChange)="rootCause.set($event)"
+        placeholder="Es: guasto hardware, errore di configurazione, bug..."
+      ></textarea>
+    </div>
+  </ng-container>
+</nz-modal>

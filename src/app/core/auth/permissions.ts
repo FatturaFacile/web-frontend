@@ -28,7 +28,7 @@ interface ModuleAccess {
 
 export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   crm: { read: ANY_MEMBER, write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'] },
-  invoicing: { read: ANY_MEMBER, write: ['owner', 'admin', 'accountant', 'sales'] },
+  invoicing: { read: ANY_MEMBER, write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'] },
   subscriptions: { read: ANY_MEMBER, write: ['owner', 'admin', 'accountant', 'sales'] },
   projects: { read: ANY_MEMBER, write: ['owner', 'admin', 'project_manager', 'technician', 'member'] },
   assets: { read: ANY_MEMBER, write: FINANCE },
@@ -44,6 +44,7 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   },
   manufacturing: { read: ANY_MEMBER, write: ['owner', 'admin', 'production', 'technician', 'member'] },
   treasury: { read: FINANCE_READERS, write: FINANCE },
+  workflow_design: { read: ANY_MEMBER, write: MANAGERS },
   // Backups hold every record of the company, and a restore replaces them.
   system: { read: MANAGERS, write: MANAGERS },
   ledger: {
@@ -72,6 +73,12 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   edocument_networks: { read: FINANCE, write: FINANCE },
   workspace: { read: ANY_MEMBER, write: ANY_MEMBER },
   hr: { read: ['owner', 'admin', 'hr', 'payroll'], write: ['owner', 'admin', 'hr', 'payroll'] },
+  payroll: {
+    read: MANAGERS,
+    write: MANAGERS,
+    grants: { read: ['payroll.read', 'payroll.write', 'payroll.*'], write: ['payroll.write', 'payroll.*'] },
+  },
+  workflow: { read: ANY_MEMBER, write: ANY_MEMBER },
   fiscal_retail: { read: FINANCE_READERS, write: ['owner', 'admin', 'accountant', 'sales'] },
   // Health data with fiscal codes: the read-only accountant role stays out.
   health_expenses: { read: FINANCE, write: FINANCE },

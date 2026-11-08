@@ -2,7 +2,20 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable, switchMap } from 'rxjs';
-import { ApiResponse } from '../models';
+import {
+  ApiResponse,
+  ConfirmedPasswordPayload,
+  ConfirmTwoFactorPayload,
+  ConfirmTwoFactorResponse,
+  DisableTwoFactorPayload,
+  RecoveryCodesResponse,
+  RevokeOtherSessionsResponse,
+  TokenSessionItem,
+  TwoFactorChallengePayload,
+  TwoFactorEnableResponse,
+  TwoFactorStatus,
+  WebSessionItem,
+} from '../models';
 import { getCsrfCookieUrl } from '../auth/csrf.utils';
 import type { UserProfile } from '../auth/auth.store';
 
@@ -16,10 +29,29 @@ export interface LoginPayload {
 export interface LoginResult {
   user?: UserProfile;
   message?: string;
-  token?: string;
-  access_token?: string;
-  token_type?: string;
+  token?: string | null;
+  access_token?: string | null;
+  token_type?: string | null;
   tenant_id?: string;
+  auth_mode?: 'cookie' | 'token';
+  two_factor_setup_required?: boolean;
+  active_tenant?: {
+    id: string;
+    name: string;
+    legal_name?: string;
+    country: string;
+    default_currency?: string;
+    role: string | null;
+  } | null;
+  available_tenants?: Array<{
+    id: string;
+    name: string;
+    country: string;
+    role: string | null;
+  }>;
+  two_factor_required?: boolean;
+  challenge_token?: string;
+  expires_in?: number;
 }
 
 export interface RegisterPayload {
@@ -106,6 +138,102 @@ export class AuthApiService {
           { withCredentials: true }
         )
       )
+    );
+  }
+
+  /**
+   * Exchanges the challenge of a login with two factors for a Sanctum session.
+   */
+  twoFactorChallenge(payload: TwoFactorChallengePayload): Observable<ApiResponse<LoginResult>> {
+    return this.http.post<ApiResponse<LoginResult>>(
+      `${this.base}/auth/two-factor-challenge`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Retrieves the current user's two-factor authentication configuration.
+   */
+  getTwoFactorStatus(): Observable<ApiResponse<TwoFactorStatus>> {
+    return this.http.get<ApiResponse<TwoFactorStatus>>(
+      `${this.base}/auth/two-factor`,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Begins enabling two-factor authentication by verifying the password and obtaining the OTP URI.
+   */
+  enableTwoFactor(payload: ConfirmedPasswordPayload): Observable<ApiResponse<TwoFactorEnableResponse>> {
+    return this.http.post<ApiResponse<TwoFactorEnableResponse>>(
+      `${this.base}/auth/two-factor/enable`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Confirms two-factor authentication with the first authenticator code and returns single-use recovery codes.
+   */
+  confirmTwoFactor(payload: ConfirmTwoFactorPayload): Observable<ApiResponse<ConfirmTwoFactorResponse>> {
+    return this.http.post<ApiResponse<ConfirmTwoFactorResponse>>(
+      `${this.base}/auth/two-factor/confirm`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Regenerates a new set of two-factor recovery codes.
+   */
+  getTwoFactorRecoveryCodes(payload: ConfirmedPasswordPayload): Observable<ApiResponse<RecoveryCodesResponse>> {
+    return this.http.post<ApiResponse<RecoveryCodesResponse>>(
+      `${this.base}/auth/two-factor/recovery-codes`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Disables two-factor authentication with password confirmation and a code or recovery code.
+   */
+  disableTwoFactor(payload: DisableTwoFactorPayload): Observable<ApiResponse<TwoFactorStatus>> {
+    return this.http.post<ApiResponse<TwoFactorStatus>>(
+      `${this.base}/auth/two-factor/disable`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Retrieves active tokens and web sessions for the authenticated user.
+   */
+  getSessions(): Observable<ApiResponse<[TokenSessionItem[], WebSessionItem[]]>> {
+    return this.http.get<ApiResponse<[TokenSessionItem[], WebSessionItem[]]>>(
+      `${this.base}/auth/sessions`,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Revokes a specific token or web session.
+   */
+  revokeSession(kind: 'token' | 'session', id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${this.base}/auth/sessions/${kind}/${id}`,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Revokes all other sessions except the active one, requiring password confirmation.
+   */
+  revokeOtherSessions(payload: ConfirmedPasswordPayload): Observable<ApiResponse<RevokeOtherSessionsResponse>> {
+    return this.http.post<ApiResponse<RevokeOtherSessionsResponse>>(
+      `${this.base}/auth/sessions/revoke-others`,
+      payload,
+      { withCredentials: true }
     );
   }
 
