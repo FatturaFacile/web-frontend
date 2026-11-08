@@ -1,0 +1,53 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+
+  .metric-card {
+    background: #fafafa;
+    border-radius: 6px;
+  }
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .select-filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .filter-select {
+      width: 150px;
+    }
+  }
+}
+
+.contract-info {
+  display: flex;
+  flex-direction: column;
+
+  .sub-text {
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+
+  .form-col {
+    flex: 1;
+  }
+}

@@ -136,6 +136,13 @@ export const routes: Routes = [
       import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
   },
   {
+    path: 'subscriptions',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Abbonamenti & Contratti Recurrenti', title: 'Abbonamenti' },
+    loadChildren: () =>
+      import('./features/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
+  },
+  {
     path: 'automotive',
     canActivate: [authGuard],
     data: { breadcrumb: 'Automotive & Gomme', title: 'Automotive' },
