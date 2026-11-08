@@ -4,13 +4,22 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  CreateInventoryCountPayload,
   CreateProductPayload,
+  InventoryAdjustmentItem,
+  InventoryCountSessionItem,
   PaginatedResponse,
   PriceListItem,
   ProductFilterParams,
   ProductItem,
+  StockLevelItem,
+  StockMovementItem,
+  StockQuantItem,
+  StockValuationSummary,
+  StoreInventoryAdjustmentPayload,
   StorePriceListPayload,
   StoreWarehousePayload,
+  TransferStockPayload,
   WarehouseItem,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -94,5 +103,111 @@ export class InventoryApiService {
         params: toHttpParams({ product_id: productId, contact_id: contactId }),
       },
     );
+  }
+
+  // Stock Levels & Balances
+  getStockLevels(warehouseId?: string): Observable<ApiResponse<StockLevelItem[]>> {
+    return this.http.get<ApiResponse<StockLevelItem[]>>(`${this.base}/inventory/stock-levels`, {
+      params: warehouseId ? toHttpParams({ warehouse_id: warehouseId }) : undefined,
+    });
+  }
+
+  // Movements (Single/Double ledger with signed_quantity)
+  getMovements(params?: {
+    stock_item_id?: string;
+    warehouse_id?: string;
+    movement_type?: string;
+    page?: number;
+    per_page?: number;
+  }): Observable<PaginatedResponse<StockMovementItem>> {
+    return this.http.get<PaginatedResponse<StockMovementItem>>(`${this.base}/inventory/movements`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  transferStock(payload: TransferStockPayload): Observable<ApiResponse<StockMovementItem>> {
+    return this.http.post<ApiResponse<StockMovementItem>>(`${this.base}/inventory/movements/transfer`, payload);
+  }
+
+  // Stock Adjustments
+  getAdjustments(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<InventoryAdjustmentItem>> {
+    return this.http.get<PaginatedResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getAdjustment(id: string): Observable<ApiResponse<InventoryAdjustmentItem>> {
+    return this.http.get<ApiResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments/${id}`);
+  }
+
+  createAdjustment(payload: StoreInventoryAdjustmentPayload): Observable<ApiResponse<InventoryAdjustmentItem>> {
+    return this.http.post<ApiResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments`, payload);
+  }
+
+  approveAdjustment(id: string, notes?: string): Observable<ApiResponse<InventoryAdjustmentItem>> {
+    return this.http.post<ApiResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments/${id}/approve`, {
+      notes,
+    });
+  }
+
+  rejectAdjustment(id: string, rejectionReason: string): Observable<ApiResponse<InventoryAdjustmentItem>> {
+    return this.http.post<ApiResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments/${id}/reject`, {
+      rejection_reason: rejectionReason,
+    });
+  }
+
+  // Physical Inventory & ABC Cycle Counts
+  getCounts(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<InventoryCountSessionItem>> {
+    return this.http.get<PaginatedResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getCount(id: string): Observable<ApiResponse<InventoryCountSessionItem>> {
+    return this.http.get<ApiResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts/${id}`);
+  }
+
+  createCount(payload: CreateInventoryCountPayload): Observable<ApiResponse<InventoryCountSessionItem>> {
+    return this.http.post<ApiResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts`, payload);
+  }
+
+  recordCount(
+    id: string,
+    counts: Array<{ line_id: string; counted_quantity: number }>,
+  ): Observable<ApiResponse<InventoryCountSessionItem>> {
+    return this.http.post<ApiResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts/${id}/record-count`, {
+      counts,
+    });
+  }
+
+  reconcileCount(id: string): Observable<ApiResponse<InventoryCountSessionItem>> {
+    return this.http.post<ApiResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts/${id}/reconcile`, {});
+  }
+
+  // Stock Quants
+  getQuants(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<StockQuantItem>> {
+    return this.http.get<PaginatedResponse<StockQuantItem>>(`${this.base}/inventory/quants`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  // Valuation
+  getValuationSummary(warehouseId?: string, valuationMethod = 'FIFO'): Observable<ApiResponse<StockValuationSummary>> {
+    return this.http.get<ApiResponse<StockValuationSummary>>(`${this.base}/inventory/valuation/summary`, {
+      params: toHttpParams({
+        warehouse_id: warehouseId,
+        valuation_method: valuationMethod,
+      }),
+    });
+  }
+
+  captureValuationSnapshot(
+    warehouseId?: string,
+    valuationMethod = 'FIFO',
+  ): Observable<ApiResponse<{ snapshot_id: string }>> {
+    return this.http.post<ApiResponse<{ snapshot_id: string }>>(`${this.base}/inventory/valuation/snapshot`, {
+      warehouse_id: warehouseId,
+      valuation_method: valuationMethod,
+    });
   }
 }
