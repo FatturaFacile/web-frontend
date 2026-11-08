@@ -1,42 +1,215 @@
-<app-page-header [title]="'RETAIL.TITLE' | translate" [subtitle]="'RETAIL.SUBTITLE' | translate" />
+<app-page-header
+  [title]="'Vendita al Dettaglio & POS'"
+  [subtitle]="'Emissione scontrini elettronici / documenti commerciali online e chiusure cassa giornaliere'"
+/>
 
-<nz-card [nzTitle]="'RETAIL.CARD_TITLE' | translate">
-  <nz-table
-    #rTable
-    [nzData]="sessions()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ "RETAIL.COL_POS" | translate }}</th>
-        <th>{{ "RETAIL.COL_CASHIER" | translate }}</th>
-        <th>{{ "RETAIL.COL_REGIME" | translate }}</th>
-        <th>{{ "RETAIL.COL_TOTAL" | translate }}</th>
-        <th>{{ "RETAIL.COL_DEVICE" | translate }}</th>
-        <th>{{ "RETAIL.COL_STATUS" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (s of rTable.data; track s.pos) {
-        <tr>
-          <td>
-            <strong>{{ s.pos }}</strong>
-          </td>
-          <td>{{ s.cashier }}</td>
-          <td>
-            <nz-tag [nzColor]="s.regime === 'IT' ? 'blue' : 'red'">{{ s.regime }}</nz-tag>
-          </td>
-          <td>
-            <strong>{{ s.total }}</strong>
-          </td>
-          <td>{{ s.device }}</td>
-          <td>
-            <nz-tag nzColor="success">{{ s.status }}</nz-tag>
-          </td>
-        </tr>
+<div nz-row [nzGutter]="16" class="mb-4">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalDocs()"
+        [nzTitle]="'Scontrini Emessi'"
+        [nzPrefix]="iconReceipt"
+      ></nz-statistic>
+      <ng-template #iconReceipt><span nz-icon nzType="shopping-cart"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiIssuedDocs()"
+        [nzTitle]="'Validi / Trasmessi'"
+        [nzValueStyle]="{ color: '#52c41a' }"
+        [nzPrefix]="iconCheck"
+      ></nz-statistic>
+      <ng-template #iconCheck><span nz-icon nzType="check-circle"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiVoidedDocs()"
+        [nzTitle]="'Annullati'"
+        [nzValueStyle]="{ color: '#f5222d' }"
+        [nzPrefix]="iconVoid"
+      ></nz-statistic>
+      <ng-template #iconVoid><span nz-icon nzType="close-circle"></span></ng-template>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
+    <!-- TAB 1: DOCUMENTI COMMERCIALI -->
+    <nz-tab nzTitle="Documenti Commerciali (Scontrini)">
+      <div class="flex justify-between items-center mb-4">
+        <button nz-button nzType="default" (click)="loadDocuments(page())">
+          <span nz-icon nzType="reload"></span> Aggiorna
+        </button>
+
+        <button nz-button nzType="primary" (click)="openCreateModal()">
+          <span nz-icon nzType="plus"></span> Nuovo Documento Commerciale
+        </button>
+      </div>
+
+      <nz-table
+        #docTable
+        [nzData]="documents()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="total()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadDocuments($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Scontrino</th>
+            <th>Data e Ora</th>
+            <th>Cassiere</th>
+            <th>Metodo Pagamento</th>
+            <th class="text-right">Totale Euro</th>
+            <th>Stato</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of docTable.data; track d.id) {
+            <tr>
+              <td><strong>{{ d.document_number }}</strong></td>
+              <td>{{ d.issued_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ d.cashier_name || 'Cassa 1' }}</td>
+              <td><nz-tag nzColor="blue">{{ d.payment_method | uppercase }}</nz-tag></td>
+              <td class="text-right font-bold">{{ d.total_amount | money: 'EUR' }}</td>
+              <td>
+                <nz-tag [nzColor]="d.status === 'issued' ? 'success' : 'error'">
+                  {{ d.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td class="text-center">
+                @if (d.status === 'issued') {
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="voidDocument(d)">
+                    Annulla
+                  </button>
+                } @else {
+                  <span class="text-muted text-xs">Annullato</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: CORRISPETTIVI GIORNALIERI -->
+    <nz-tab nzTitle="Corrispettivi Giornalieri RT">
+      <div class="flex items-center gap-4 mb-4">
+        <label class="font-medium">Data Chiusura:</label>
+        <nz-date-picker
+          [ngModel]="selectedDate()"
+          (ngModelChange)="selectedDate.set($event); loadDailyCorrispettivi()"
+        ></nz-date-picker>
+      </div>
+
+      @if (dailyCorrispettivo()) {
+        <div nz-row [nzGutter]="16" class="mb-4">
+          <div nz-col [nzSpan]="8">
+            <nz-card nzType="inner" nzTitle="Totale Incassi del Giorno">
+              <span class="text-2xl font-bold text-green-600">
+                {{ dailyCorrispettivo()!.total_sales | money: 'EUR' }}
+              </span>
+            </nz-card>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-card nzType="inner" nzTitle="Totale IVA Incorporata">
+              <span class="text-2xl font-bold text-blue-600">
+                {{ dailyCorrispettivo()!.total_vat | money: 'EUR' }}
+              </span>
+            </nz-card>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-card nzType="inner" nzTitle="Numero Transazioni">
+              <span class="text-2xl font-bold">
+                {{ dailyCorrispettivo()!.transactions_count }}
+              </span>
+            </nz-card>
+          </div>
+        </div>
+      } @else {
+        <div class="p-8 text-center text-muted">
+          Nessuna chiusura o corrispettivo registrato per la data selezionata.
+        </div>
       }
-    </tbody>
-  </nz-table>
+    </nz-tab>
+  </nz-tabs>
 </nz-card>
+
+<!-- MODAL: CREA DOCUMENTO COMMERCIALE -->
+<nz-modal
+  [nzVisible]="isCreateModalVisible()"
+  nzTitle="Emissione Documento Commerciale (Scontrino)"
+  [nzOkLoading]="isSubmitting()"
+  (nzOnCancel)="isCreateModalVisible.set(false)"
+  (nzOnOk)="submitDocument()"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="docForm" nzLayout="vertical">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Metodo di Pagamento</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="payment_method" style="width: 100%;">
+                <nz-option nzValue="electronic" nzLabel="Carta / POS Elettronico"></nz-option>
+                <nz-option nzValue="cash" nzLabel="Contanti"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Cassiere / Punto Vendita</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="cashier_name" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-divider nzText="Righe Documento"></nz-divider>
+
+      <div formArrayName="lines">
+        @for (line of linesArray.controls; track $index) {
+          <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
+            <div style="flex: 2;">
+              <input nz-input formControlName="description" placeholder="Descrizione Prodotto/Servizio" />
+            </div>
+            <div style="flex: 1;">
+              <nz-input-number formControlName="quantity" [nzMin]="1" nzPlaceHolder="Q.tà" style="width: 100%;"></nz-input-number>
+            </div>
+            <div style="flex: 1;">
+              <nz-input-number formControlName="unit_price" [nzMin]="0.01" nzPlaceHolder="Prezzo" style="width: 100%;"></nz-input-number>
+            </div>
+            <div style="flex: 1;">
+              <nz-select formControlName="vat_rate" style="width: 100%;">
+                <nz-option [nzValue]="22" nzLabel="22%"></nz-option>
+                <nz-option [nzValue]="10" nzLabel="10%"></nz-option>
+                <nz-option [nzValue]="4" nzLabel="4%"></nz-option>
+                <nz-option [nzValue]="0" nzLabel="0%"></nz-option>
+              </nz-select>
+            </div>
+            <button nz-button nzType="text" nzDanger (click)="removeLine($index)">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <button nz-button nzType="dashed" nzBlock (click)="addLine()" class="mt-2">
+        <span nz-icon nzType="plus"></span> Aggiungi Riga
+      </button>
+    </form>
+  </ng-container>
+</nz-modal>
