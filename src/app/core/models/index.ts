@@ -24,3 +24,4 @@ export * from './asset.model';
 export * from './subscription.model';
 export * from './hr.model';
 export * from './retail.model';
+export * from './sales.model';

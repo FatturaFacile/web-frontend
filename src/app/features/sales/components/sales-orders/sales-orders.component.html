@@ -1,0 +1,627 @@
+<app-page-header
+  [title]="'SALES.TITLE' | translate"
+  [subtitle]="'SALES.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 0: SALES QUOTES -->
+    <nz-tab [nzTitle]="'SALES.TABS.QUOTES' | translate">
+      <div class="toolbar">
+        <nz-select
+          style="width: 200px;"
+          [ngModel]="quoteStatusFilter()"
+          (ngModelChange)="quoteStatusFilter.set($event); loadQuotes()"
+          [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
+          nzAllowClear
+        >
+          <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
+          <nz-option nzValue="pending_approval" nzLabel="In Approvazione"></nz-option>
+          <nz-option nzValue="approved" nzLabel="Approvato"></nz-option>
+          <nz-option nzValue="rejected" nzLabel="Rifiutato"></nz-option>
+          <nz-option nzValue="accepted" nzLabel="Accettato dal Cliente"></nz-option>
+          <nz-option nzValue="converted" nzLabel="Convertito in Ordine"></nz-option>
+        </nz-select>
+
+        <button nz-button nzType="default" (click)="loadQuotes()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+
+        <div style="flex: 1;"></div>
+
+        <button nz-button nzType="primary" (click)="openQuoteModal()">
+          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_QUOTE' | translate }}
+        </button>
+      </div>
+
+      <nz-table
+        #quoteTable
+        [nzData]="quotes()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="quotesTotal()"
+        [nzPageIndex]="quotesPage()"
+        [nzPageSize]="quotesPageSize()"
+        (nzQueryParams)="onQuotesQueryParamsChange($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
+            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th>{{ 'SALES.COL_DATE' | translate }}</th>
+            <th>{{ 'SALES.COL_VALID_UNTIL' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (q of quoteTable.data; track q.id) {
+            <tr>
+              <td><code>{{ q.quote_number }}</code></td>
+              <td><strong>{{ q.contact?.name || q.contact?.display_name || q.contact_id }}</strong></td>
+              <td>{{ q.date | date:'mediumDate' }}</td>
+              <td>{{ q.valid_until ? (q.valid_until | date:'mediumDate') : '-' }}</td>
+              <td nzAlign="right">{{ q.total_net | money: q.currency }}</td>
+              <td nzAlign="right">{{ q.total_tax | money: q.currency }}</td>
+              <td nzAlign="right"><strong>{{ q.total_gross | money: q.currency }}</strong></td>
+              <td nzAlign="center">
+                @switch (q.status) {
+                  @case ('approved') {
+                    <nz-tag nzColor="success">Approvato</nz-tag>
+                  }
+                  @case ('pending_approval') {
+                    <nz-tag nzColor="processing">In Approvazione</nz-tag>
+                  }
+                  @case ('rejected') {
+                    <nz-tag nzColor="error">Rifiutato</nz-tag>
+                  }
+                  @case ('accepted') {
+                    <nz-tag nzColor="cyan">Accettato</nz-tag>
+                  }
+                  @case ('converted') {
+                    <nz-tag nzColor="purple">Convertito</nz-tag>
+                  }
+                  @default {
+                    <nz-tag nzColor="default">{{ q.status }}</nz-tag>
+                  }
+                }
+              </td>
+              <td nzAlign="right">
+                @if (q.status === 'draft') {
+                  <button nz-button nzType="link" nzSize="small" (click)="submitQuoteForApproval(q.id)">
+                    <nz-icon nzType="send" /> Invia Appr.
+                  </button>
+                }
+                @if (q.status === 'pending_approval') {
+                  <button nz-button nzType="link" nzSize="small" (click)="approveQuote(q.id)">
+                    <nz-icon nzType="check" /> Approva
+                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectQuote(q.id)">
+                    <nz-icon nzType="close" /> Rifiuta
+                  </button>
+                }
+                @if (q.status === 'approved') {
+                  <button nz-button nzType="link" nzSize="small" (click)="acceptQuote(q.id)">
+                    <nz-icon nzType="check-circle" /> Accetta
+                  </button>
+                }
+                @if (q.status === 'accepted') {
+                  <button nz-button nzType="link" nzSize="small" (click)="convertQuote(q.id)">
+                    <nz-icon nzType="swap" /> Converti in Ordine
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            @if (!loading()) {
+              <tr>
+                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 1: SALES ORDERS -->
+    <nz-tab [nzTitle]="'SALES.TABS.ORDERS' | translate">
+      <div class="toolbar">
+        <nz-select
+          style="width: 200px;"
+          [ngModel]="orderStatusFilter()"
+          (ngModelChange)="orderStatusFilter.set($event); loadOrders()"
+          [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
+          nzAllowClear
+        >
+          <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
+          <nz-option nzValue="confirmed" nzLabel="Confermato"></nz-option>
+          <nz-option nzValue="approved" nzLabel="Approvato"></nz-option>
+          <nz-option nzValue="shipped" nzLabel="Spedito"></nz-option>
+          <nz-option nzValue="completed" nzLabel="Completato"></nz-option>
+          <nz-option nzValue="cancelled" nzLabel="Annullato"></nz-option>
+        </nz-select>
+
+        <button nz-button nzType="default" (click)="loadOrders()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+
+        <div style="flex: 1;"></div>
+
+        <button nz-button nzType="primary" (click)="openOrderModal()">
+          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_ORDER' | translate }}
+        </button>
+      </div>
+
+      <nz-table
+        #orderTable
+        [nzData]="orders()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="ordersTotal()"
+        [nzPageIndex]="ordersPage()"
+        [nzPageSize]="ordersPageSize()"
+        (nzQueryParams)="onOrdersQueryParamsChange($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
+            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th>{{ 'SALES.COL_DATE' | translate }}</th>
+            <th>{{ 'SALES.COL_DUE_DATE' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="center">Stock</th>
+            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of orderTable.data; track o.id) {
+            <tr>
+              <td><code>{{ o.order_number }}</code></td>
+              <td><strong>{{ o.contact?.name || o.contact?.display_name || o.contact_id }}</strong></td>
+              <td>{{ o.date | date:'mediumDate' }}</td>
+              <td>{{ o.due_date ? (o.due_date | date:'mediumDate') : '-' }}</td>
+              <td nzAlign="right">{{ o.total_net | money: o.currency }}</td>
+              <td nzAlign="right"><strong>{{ o.total_gross | money: o.currency }}</strong></td>
+              <td nzAlign="center">
+                @if (o.is_stock_reserved) {
+                  <nz-tag nzColor="success"><nz-icon nzType="lock" /> Riservato</nz-tag>
+                } @else {
+                  <nz-tag nzColor="default">Libero</nz-tag>
+                }
+              </td>
+              <td nzAlign="center">
+                @switch (o.status) {
+                  @case ('confirmed') {
+                    <nz-tag nzColor="blue">Confermato</nz-tag>
+                  }
+                  @case ('approved') {
+                    <nz-tag nzColor="success">Approvato</nz-tag>
+                  }
+                  @case ('shipped') {
+                    <nz-tag nzColor="cyan">Spedito</nz-tag>
+                  }
+                  @case ('completed') {
+                    <nz-tag nzColor="purple">Completato</nz-tag>
+                  }
+                  @case ('cancelled') {
+                    <nz-tag nzColor="error">Annullato</nz-tag>
+                  }
+                  @default {
+                    <nz-tag nzColor="default">{{ o.status }}</nz-tag>
+                  }
+                }
+              </td>
+              <td nzAlign="right">
+                @if (o.status === 'confirmed') {
+                  <button nz-button nzType="link" nzSize="small" (click)="approveOrder(o.id)">
+                    <nz-icon nzType="check" /> Approva
+                  </button>
+                }
+                @if (!o.is_stock_reserved && o.status !== 'cancelled') {
+                  <button nz-button nzType="link" nzSize="small" (click)="reserveStock(o.id)">
+                    <nz-icon nzType="lock" /> Riserva
+                  </button>
+                }
+                @if (o.status !== 'cancelled') {
+                  <button nz-button nzType="link" nzSize="small" (click)="openDdtModal(o.id)">
+                    <nz-icon nzType="swap" /> DDT
+                  </button>
+                  <button nz-button nzType="link" nzSize="small" (click)="invoiceOrder(o.id)">
+                    <nz-icon nzType="file-text" /> Fattura
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            @if (!loading()) {
+              <tr>
+                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: DELIVERY NOTES (DDT) -->
+    <nz-tab [nzTitle]="'SALES.TABS.DDT' | translate">
+      <div class="toolbar">
+        <button nz-button nzType="default" (click)="loadDeliveryNotes()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+
+        <div style="flex: 1;"></div>
+
+        <button nz-button nzType="primary" (click)="openDdtModal()">
+          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_DDT' | translate }}
+        </button>
+      </div>
+
+      <nz-table
+        #ddtTable
+        [nzData]="deliveryNotes()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="ddtTotal()"
+        [nzPageIndex]="ddtPage()"
+        [nzPageSize]="ddtPageSize()"
+        (nzQueryParams)="onDdtQueryParamsChange($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'SALES.COL_DDT_NUM' | translate }}</th>
+            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th>{{ 'SALES.COL_DATE' | translate }}</th>
+            <th>{{ 'SALES.COL_REASON' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_PACKAGES' | translate }}</th>
+            <th nzAlign="right">{{ 'SALES.COL_WEIGHT' | translate }}</th>
+            <th>{{ 'SALES.COL_CARRIER' | translate }}</th>
+            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of ddtTable.data; track d.id) {
+            <tr>
+              <td><code>{{ d.ddt_number }}</code></td>
+              <td><strong>{{ d.contact?.name || d.contact_id }}</strong></td>
+              <td>{{ d.date | date:'mediumDate' }}</td>
+              <td><nz-tag>{{ d.transport_reason }}</nz-tag></td>
+              <td nzAlign="right">{{ d.packages_count }}</td>
+              <td nzAlign="right">{{ d.gross_weight_kg ? (d.gross_weight_kg + ' kg') : '-' }}</td>
+              <td>{{ d.carrier_name || '-' }}</td>
+              <td nzAlign="center">
+                @switch (d.status) {
+                  @case ('dispatched') {
+                    <nz-tag nzColor="blue">Spedito</nz-tag>
+                  }
+                  @case ('confirmed') {
+                    <nz-tag nzColor="success">Consegnato</nz-tag>
+                  }
+                  @case ('invoiced') {
+                    <nz-tag nzColor="purple">Fatturato</nz-tag>
+                  }
+                  @default {
+                    <nz-tag nzColor="default">{{ d.status || 'Bozza' }}</nz-tag>
+                  }
+                }
+              </td>
+              <td nzAlign="right">
+                @if (d.status !== 'dispatched' && d.status !== 'confirmed' && d.status !== 'invoiced') {
+                  <button nz-button nzType="link" nzSize="small" (click)="dispatchDdt(d.id)">
+                    <nz-icon nzType="send" /> Spedisci
+                  </button>
+                }
+                @if (d.status === 'dispatched') {
+                  <button nz-button nzType="link" nzSize="small" (click)="confirmDdt(d.id)">
+                    <nz-icon nzType="check-circle" /> Conferma
+                  </button>
+                }
+                @if (d.status === 'confirmed') {
+                  <button nz-button nzType="link" nzSize="small" (click)="invoiceDdt(d.id)">
+                    <nz-icon nzType="file-text" /> Fattura
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            @if (!loading()) {
+              <tr>
+                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: CREATE QUOTE -->
+<nz-modal
+  [(nzVisible)]="quoteModalVisible"
+  [nzTitle]="'SALES.MODALS.CREATE_QUOTE_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="quoteModalVisible.set(false)"
+  (nzOnOk)="submitQuote()"
+  nzWidth="780px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="quoteForm" nzLayout="vertical">
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_CLIENT' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="contact_id" nzShowSearch>
+                @for (c of clients(); track c.id) {
+                  <nz-option [nzValue]="c.id" [nzLabel]="contactLabel(c)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="date" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_VALID_UNTIL' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="valid_until" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-divider nzText="Righe Preventivo" nzOrientation="left"></nz-divider>
+
+      <div formArrayName="items">
+        @for (item of quoteItems.controls; track $index) {
+          <div [formGroupName]="$index" class="item-row">
+            <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
+              <nz-col [nzSpan]="8">
+                <input nz-input formControlName="description" placeholder="Descrizione articolo / servizio" />
+              </nz-col>
+              <nz-col [nzSpan]="4">
+                <nz-input-number formControlName="quantity" [nzMin]="0.001" placeholder="Q.tà" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="4">
+                <nz-input-number formControlName="unit_price" [nzMin]="0" placeholder="Prezzo unitario" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="3">
+                <nz-input-number formControlName="tax_rate" [nzMin]="0" placeholder="IVA %" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="3">
+                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" placeholder="Sconto %" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="2" style="display: flex; align-items: center;">
+                <button nz-button nzType="text" nzDanger (click)="removeQuoteItem($index)">
+                  <nz-icon nzType="delete" />
+                </button>
+              </nz-col>
+            </nz-row>
+          </div>
+        }
+      </div>
+
+      <button nz-button nzType="dashed" (click)="addQuoteItem()" style="width: 100%; margin-top: 8px;">
+        <nz-icon nzType="plus" /> Aggiungi Riga
+      </button>
+
+      <nz-form-item style="margin-top: 16px;">
+        <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="notes" rows="2" placeholder="Note commerciali o condizioni di pagamento..."></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREATE ORDER -->
+<nz-modal
+  [(nzVisible)]="orderModalVisible"
+  [nzTitle]="'SALES.MODALS.CREATE_ORDER_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="orderModalVisible.set(false)"
+  (nzOnOk)="submitOrder()"
+  nzWidth="780px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="orderForm" nzLayout="vertical">
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_CLIENT' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="contact_id" nzShowSearch>
+                @for (c of clients(); track c.id) {
+                  <nz-option [nzValue]="c.id" [nzLabel]="contactLabel(c)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="date" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ 'SALES.COL_DUE_DATE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="due_date" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-divider nzText="Righe Ordine" nzOrientation="left"></nz-divider>
+
+      <div formArrayName="items">
+        @for (item of orderItems.controls; track $index) {
+          <div [formGroupName]="$index" class="item-row">
+            <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
+              <nz-col [nzSpan]="8">
+                <input nz-input formControlName="description" placeholder="Descrizione articolo" />
+              </nz-col>
+              <nz-col [nzSpan]="4">
+                <nz-input-number formControlName="quantity" [nzMin]="0.001" placeholder="Q.tà" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="4">
+                <nz-input-number formControlName="unit_price" [nzMin]="0" placeholder="Prezzo unitario" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="3">
+                <nz-input-number formControlName="tax_rate" [nzMin]="0" placeholder="IVA %" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="3">
+                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" placeholder="Sconto %" style="width: 100%;"></nz-input-number>
+              </nz-col>
+              <nz-col [nzSpan]="2" style="display: flex; align-items: center;">
+                <button nz-button nzType="text" nzDanger (click)="removeOrderItem($index)">
+                  <nz-icon nzType="delete" />
+                </button>
+              </nz-col>
+            </nz-row>
+          </div>
+        }
+      </div>
+
+      <button nz-button nzType="dashed" (click)="addOrderItem()" style="width: 100%; margin-top: 8px;">
+        <nz-icon nzType="plus" /> Aggiungi Riga
+      </button>
+
+      <nz-form-item style="margin-top: 16px;">
+        <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="notes" rows="2" placeholder="Note per la consegna o rif. ordine cliente..."></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREATE DELIVERY NOTE (DDT) -->
+<nz-modal
+  [(nzVisible)]="ddtModalVisible"
+  [nzTitle]="'SALES.MODALS.CREATE_DDT_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="ddtModalVisible.set(false)"
+  (nzOnOk)="submitDdt()"
+  nzWidth="680px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="ddtForm" nzLayout="vertical">
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_ORDER_REF' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="sales_order_id" nzShowSearch>
+                @for (o of orders(); track o.id) {
+                  <nz-option [nzValue]="o.id" [nzLabel]="o.order_number + ' - ' + (o.contact?.name || '')"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="warehouse_id" nzAllowClear>
+                @for (w of warehouses(); track w.id) {
+                  <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="date" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_REASON' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="transport_reason">
+                <nz-option nzValue="Vendita" nzLabel="Vendita"></nz-option>
+                <nz-option nzValue="Conto Visione" nzLabel="Conto Visione"></nz-option>
+                <nz-option nzValue="Riparazione" nzLabel="Riparazione"></nz-option>
+                <nz-option nzValue="Reso" nzLabel="Reso"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.COL_PACKAGES' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="packages_count" [nzMin]="1" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ 'SALES.COL_WEIGHT' | translate }} (Kg)</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="gross_weight_kg" [nzMin]="0" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ 'SALES.COL_CARRIER' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="carrier_name" placeholder="es. DHL / Bartolini" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>Targa Vettore</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="carrier_license_plate" placeholder="es. TI 12345" />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
