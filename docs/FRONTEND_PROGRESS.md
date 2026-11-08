@@ -29,8 +29,8 @@ Last updated: 2026-11-09
 | **11** | **Invoicing & SDI** | 52 | 24 | Invoices table, Electronic Invoices (IT/CH), SDI FatturaPA XML generate, Bulk SDI send, SDI logs, Credit Notes, Installments, Swiss QR-Bill (nz-qrcode) | 16 | **Done** | Covered `/sales/invoices` lifecycle, SDI transmission & logs, `/invoicing/credit-notes`, `/invoicing/invoices/{id}/installments`, `/sales/invoices/{id}/qr-bill` |
 | **12** | **Procurement & AP** | 36 | 28 | Purchase Orders lifecycle, Goods Receipts & inspection, 3-Way Matching & variance approval, Supplier Invoices & SDI/QR-Bill import | 15 | **Done** | Covered `/procurement/purchase-orders`, `/procurement/goods-receipts`, `/procurement/three-way-match`, `/purchases/supplier-invoices`, `/purchases/passive-invoices/import-sdi` |
 | **13** | **Treasury & Banking** | 40 | 32 | Bank accounts CRUD, CAMT/CBI import & auto-reconcile, Statement reconciliation, Payment batches (pain.001 / RiBa) export/XML, Cash flow forecasts | 13 | **Done** | Covered `/treasury/bank-accounts`, `/treasury/transactions`, `/treasury/import-camt`, `/treasury/payment-batches`, `/treasury/cash-forecasts` |
-| **14** | **General Ledger & Accounting**| 48 | 6 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT, Intrastat | 10 | **Next** | Use `/general-ledger/journals` |
-| **15** | **Manufacturing & MRP** | 26 | 0 | Bill of Materials (BOM), Production Orders, Routing cycles, MRP runs | 0 | **Todo** | Backend evolving; sync OpenAPI before starting |
+| **14** | **General Ledger & Accounting**| 48 | 34 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT Settlements, Intrastat Declarations, Trial Balance | 13 | **Done** | Covered `/general-ledger/journals` (post/reverse), `/general-ledger/accounts`, `/fiscal-periods`, `/tax-settlements`, `/intrastat/declarations`, `/financial-statements/trial-balance` |
+| **15** | **Manufacturing & MRP** | 26 | 0 | Bill of Materials (BOM), Production Orders, Routing cycles, MRP runs | 0 | **Next** | Backend evolving; sync OpenAPI before starting |
 | **16** | **HR & Payroll (IT/CH)** | 30 | 2 | Employees, Employment Contracts, Attendance records, Leave requests, Payslips | 4 | **Todo** | Backend evolving; sync OpenAPI before starting |
 | **17** | **Verticals & Minor Modules** | 65 | 0 | Retail/POS, Automotive/Workshop, Construction, Fleet Rent, Legal Practice, Documents | 0 | **Todo** | Covers remaining industry specific tags |
 | **18** | **Final Polish & Dashboards** | 15 | 4 | Executive Dashboard KPIs, Global Search, Accessibility & WCAG AA audits | 8 | **Todo** | Performance & accessibility verification |
@@ -52,8 +52,8 @@ Last updated: 2026-11-09
 11. `[DONE]` **Module 11: Invoicing & SDI**
 12. `[DONE]` **Module 12: Procurement & AP**
 13. `[DONE]` **Module 13: Treasury & Banking**
-14. `[NEXT]` **Module 14: General Ledger & Accounting**
-15. `[TODO]` **Module 15: Manufacturing & MRP**
+14. `[DONE]` **Module 14: General Ledger & Accounting**
+15. `[NEXT]` **Module 15: Manufacturing & MRP**
 16. `[TODO]` **Module 16: HR & Payroll**
 17. `[TODO]` **Module 17: Verticals & Minor Modules**
 18. `[TODO]` **Module 18: Final Polish & KPI Dashboards**
