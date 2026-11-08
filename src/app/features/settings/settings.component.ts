@@ -168,9 +168,9 @@ export class SettingsComponent implements OnInit {
         this.isSavingTenant.set(false);
         this.message.success(this.translate.instant('settings.messages.saved'));
       },
-      error: () => {
+      error: (err) => {
         this.isSavingTenant.set(false);
-        this.message.success(this.translate.instant('settings.messages.saved'));
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('settings.messages.error'));
       },
     });
   }
@@ -337,9 +337,9 @@ export class SettingsComponent implements OnInit {
         this.isSyncingRates.set(false);
         this.message.success(this.translate.instant('settings.messages.ratesSynced'));
       },
-      error: () => {
+      error: (err) => {
         this.isSyncingRates.set(false);
-        this.message.success(this.translate.instant('settings.messages.ratesSynced'));
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('settings.messages.error'));
       },
     });
   }
