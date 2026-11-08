@@ -31,8 +31,8 @@ Last updated: 2026-11-09
 | **13** | **Treasury & Banking** | 40 | 32 | Bank accounts CRUD, CAMT/CBI import & auto-reconcile, Statement reconciliation, Payment batches (pain.001 / RiBa) export/XML, Cash flow forecasts | 13 | **Done** | Covered `/treasury/bank-accounts`, `/treasury/transactions`, `/treasury/import-camt`, `/treasury/payment-batches`, `/treasury/cash-forecasts` |
 | **14** | **General Ledger & Accounting**| 48 | 34 | Chart of Accounts, Journal Entries (`/general-ledger/journals`), Fiscal periods, VAT Settlements, Intrastat Declarations, Trial Balance | 13 | **Done** | Covered `/general-ledger/journals` (post/reverse), `/general-ledger/accounts`, `/fiscal-periods`, `/tax-settlements`, `/intrastat/declarations`, `/financial-statements/trial-balance` |
 | **15** | **Manufacturing & MRP** | 26 | 22 | Production Orders lifecycle, BOMs (revisions, explode, activate), MRP runs & planned orders convert, Work Centers & Routings | 11 | **Done** | Covered `/v1/manufacturing/production-orders` (release/start/complete/close/cancel), `/v1/manufacturing/boms` (activate/revise/explode), `/v1/manufacturing/mrp` (runs, planned-orders convert, shortages), `/v1/manufacturing/work-centers`, `/v1/manufacturing/routings` |
-| **16** | **HR & Payroll (IT/CH)** | 30 | 2 | Employees, Employment Contracts, Attendance records, Leave requests, Payslips | 4 | **Next** | Backend evolving; sync OpenAPI before starting |
-| **17** | **Verticals & Minor Modules** | 65 | 0 | Retail/POS, Automotive/Workshop, Construction, Fleet Rent, Legal Practice, Documents | 0 | **Todo** | Covers remaining industry specific tags |
+| **16** | **HR & Payroll (IT/CH)** | 30 | 22 | Employees lifecycle (hire, confirm probation, promote, terminate), Leave requests (approve/reject), Timesheets approval, Monthly Payroll runs, IT/CH Frontier workers | 9 | **Done** | Covered `/v1/hr/employees` (probation/promote/terminate), `/v1/hr/leave-requests` (approve/reject), `/v1/hr/timesheets` (approve), `/v1/payroll/runs`, `/v1/payroll/frontier-workers` |
+| **17** | **Verticals & Minor Modules** | 65 | 0 | Retail/POS, Automotive/Workshop, Construction, Fleet Rent, Legal Practice, Documents | 0 | **Next** | Covers remaining industry specific tags |
 | **18** | **Final Polish & Dashboards** | 15 | 4 | Executive Dashboard KPIs, Global Search, Accessibility & WCAG AA audits | 8 | **Todo** | Performance & accessibility verification |
 
 ---
@@ -54,6 +54,6 @@ Last updated: 2026-11-09
 13. `[DONE]` **Module 13: Treasury & Banking**
 14. `[DONE]` **Module 14: General Ledger & Accounting**
 15. `[DONE]` **Module 15: Manufacturing & MRP**
-16. `[NEXT]` **Module 16: HR & Payroll**
-17. `[TODO]` **Module 17: Verticals & Minor Modules**
+16. `[DONE]` **Module 16: HR & Payroll**
+17. `[NEXT]` **Module 17: Verticals & Minor Modules**
 18. `[TODO]` **Module 18: Final Polish & KPI Dashboards**

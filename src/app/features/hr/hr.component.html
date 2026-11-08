@@ -1,42 +1,588 @@
-<app-page-header [title]="'HR.TITLE' | translate" [subtitle]="'HR.SUBTITLE' | translate" />
+<app-page-header
+  [title]="'Risorse Umane & Payroll'"
+  [subtitle]="'Gestione anagrafiche dipendenti, contratti, ferie e permessi, presenze e retribuzioni (IT/CH)'"
+/>
 
-<nz-card [nzTitle]="'HR.CARD_TITLE' | translate">
-  <nz-table
-    #hTable
-    [nzData]="employees()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ "HR.COL_EMPLOYEE" | translate }}</th>
-        <th>{{ "HR.COL_ROLE" | translate }}</th>
-        <th>{{ "HR.COL_CONTRACT" | translate }}</th>
-        <th>{{ "HR.COL_REGIME" | translate }}</th>
-        <th>{{ "HR.COL_PENSION" | translate }}</th>
-        <th>{{ "HR.COL_TRANSMISSION" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (emp of hTable.data; track emp.name) {
-        <tr>
-          <td>
-            <strong>{{ emp.name }}</strong>
-          </td>
-          <td>{{ emp.role }}</td>
-          <td>{{ emp.type }}</td>
-          <td>
-            <nz-tag [nzColor]="emp.regime.includes('Frontaliere') ? 'purple' : 'blue'">
-              {{ emp.regime }}
-            </nz-tag>
-          </td>
-          <td>{{ emp.pension }}</td>
-          <td>
-            <nz-tag nzColor="success">{{ emp.status }}</nz-tag>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+<!-- KPI Statistics Cards -->
+<div nz-row [nzGutter]="16" class="mb-4">
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalEmployees()"
+        [nzTitle]="'Totale Dipendenti'"
+        [nzPrefix]="iconStaff"
+      ></nz-statistic>
+      <ng-template #iconStaff><span nz-icon nzType="team"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiActiveEmployees()"
+        [nzTitle]="'Dipendenti Attivi'"
+        [nzValueStyle]="{ color: '#52c41a' }"
+        [nzPrefix]="iconActive"
+      ></nz-statistic>
+      <ng-template #iconActive><span nz-icon nzType="user-add"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiProbationEmployees()"
+        [nzTitle]="'In Prova'"
+        [nzValueStyle]="{ color: '#1890ff' }"
+        [nzPrefix]="iconProbation"
+      ></nz-statistic>
+      <ng-template #iconProbation><span nz-icon nzType="clock-circle"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiPendingLeaves()"
+        [nzTitle]="'Ferie da Approvare'"
+        [nzValueStyle]="{ color: '#faad14' }"
+        [nzPrefix]="iconLeaves"
+      ></nz-statistic>
+      <ng-template #iconLeaves><span nz-icon nzType="calendar"></span></ng-template>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
+    <!-- TAB 1: DIPENDENTI -->
+    <nz-tab nzTitle="Dipendenti">
+      <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+            <input
+              type="text"
+              nz-input
+              placeholder="Cerca nome, email o matricola..."
+              [ngModel]="employeesSearch()"
+              (ngModelChange)="employeesSearch.set($event); loadEmployees(1)"
+            />
+          </nz-input-group>
+
+          <nz-select
+            [ngModel]="employeesStatusFilter()"
+            (ngModelChange)="employeesStatusFilter.set($event); loadEmployees(1)"
+            nzPlaceHolder="Tutti gli stati"
+            nzAllowClear
+            style="width: 170px;"
+          >
+            <nz-option nzValue="active" nzLabel="Attivo"></nz-option>
+            <nz-option nzValue="probation" nzLabel="Periodo di Prova"></nz-option>
+            <nz-option nzValue="on_leave" nzLabel="In Aspettativa"></nz-option>
+            <nz-option nzValue="terminated" nzLabel="Cessato"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadEmployees(employeesPage())">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openHireModal()">
+          <span nz-icon nzType="user-add"></span> Assumi Dipendente
+        </button>
+      </div>
+
+      <nz-table
+        #empTable
+        [nzData]="employees()"
+        [nzLoading]="loadingEmployees()"
+        [nzFrontPagination]="false"
+        [nzTotal]="employeesTotal()"
+        [nzPageIndex]="employeesPage()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadEmployees($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>Matricola</th>
+            <th>Dipendente</th>
+            <th>Email Aziendale</th>
+            <th>Tipo Contratto</th>
+            <th>Stato</th>
+            <th class="text-right">RAL / Retribuzione</th>
+            <th>Data Assunzione</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of empTable.data; track e.id) {
+            <tr>
+              <td><strong>{{ e.employee_number }}</strong></td>
+              <td>
+                <div class="font-semibold">{{ e.full_name }}</div>
+                <div class="text-xs text-muted">{{ e.position_name || e.department_name || 'Generale' }}</div>
+              </td>
+              <td>{{ e.work_email }}</td>
+              <td><nz-tag>{{ e.employment_type }}</nz-tag></td>
+              <td>
+                <nz-tag [nzColor]="getEmploymentStatusColor(e.employment_status)">
+                  {{ e.employment_status | uppercase }}
+                </nz-tag>
+              </td>
+              <td class="text-right font-medium">
+                {{ e.base_annual_salary | money: (e.currency || 'EUR') }}
+              </td>
+              <td>{{ e.hire_date | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                @if (e.employment_status === 'probation') {
+                  <button nz-button nzType="link" nzSize="small" (click)="completeProbation(e)">
+                    Conferma Prova
+                  </button>
+                }
+                @if (e.employment_status === 'active') {
+                  <button nz-button nzType="link" nzSize="small" (click)="promoteEmployee(e)">
+                    Promuovi
+                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="terminateEmployee(e)">
+                    Termina
+                  </button>
+                }
+                @if (e.employment_status === 'terminated') {
+                  <span class="text-muted text-xs">Cessato</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: FERIE E PERMESSI -->
+    <nz-tab nzTitle="Ferie & Permessi">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-semibold">Richieste di Assenza, Ferie e Permessi</h4>
+        <button nz-button nzType="primary" (click)="openLeaveModal()">
+          <span nz-icon nzType="plus"></span> Nuova Richiesta
+        </button>
+      </div>
+
+      <nz-table
+        #leavesTable
+        [nzData]="leaveRequests()"
+        [nzLoading]="loadingLeaves()"
+        [nzFrontPagination]="false"
+        [nzTotal]="leavesTotal()"
+        [nzPageIndex]="leavesPage()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadLeaveRequests($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Richiesta</th>
+            <th>ID / Dipendente</th>
+            <th>Tipologia</th>
+            <th>Data Inizio</th>
+            <th>Data Fine</th>
+            <th class="text-right">Ore / Giorni</th>
+            <th>Motivazione</th>
+            <th>Stato</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of leavesTable.data; track l.id) {
+            <tr>
+              <td><strong>{{ l.request_number }}</strong></td>
+              <td>{{ l.employee_name || l.employee_id }}</td>
+              <td><nz-tag nzColor="blue">{{ l.leave_type_name || l.leave_type_id }}</nz-tag></td>
+              <td>{{ l.start_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ l.end_date | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-right font-medium">{{ l.total_hours }}h ({{ l.total_days }} gg)</td>
+              <td>{{ l.reason || '-' }}</td>
+              <td>
+                <nz-tag [nzColor]="getLeaveStatusColor(l.status)">
+                  {{ l.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td class="text-center">
+                @if (l.status === 'pending') {
+                  <button nz-button nzType="link" nzSize="small" (click)="approveLeave(l)">
+                    Approva
+                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectLeave(l)">
+                    Rifiuta
+                  </button>
+                } @else {
+                  <span class="text-muted text-xs">Definito</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: PRESENZE & TIMESHEET -->
+    <nz-tab nzTitle="Presenze & Timesheet">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-semibold">Registrazioni Presenze e Rendicontazione Ore</h4>
+        <button nz-button nzType="primary" (click)="openTimesheetModal()">
+          <span nz-icon nzType="plus"></span> Registra Ore
+        </button>
+      </div>
+
+      <nz-table
+        #tsTable
+        [nzData]="timesheets()"
+        [nzLoading]="loadingTimesheets()"
+        [nzFrontPagination]="false"
+        [nzTotal]="timesheetsTotal()"
+        [nzPageIndex]="timesheetsPage()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadTimesheets($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Rapporto</th>
+            <th>Dipendente</th>
+            <th>Data Lavorativa</th>
+            <th class="text-right">Ore Ordinarie</th>
+            <th class="text-right">Straordinari</th>
+            <th class="text-right">Totale Ore</th>
+            <th class="text-right">Fatturabili</th>
+            <th>Stato</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of tsTable.data; track t.id) {
+            <tr>
+              <td><strong>{{ t.timesheet_number }}</strong></td>
+              <td>{{ t.employee_name || t.employee_id }}</td>
+              <td>{{ t.work_date | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-right font-medium">{{ t.regular_hours }} h</td>
+              <td class="text-right text-orange-600">{{ t.overtime_hours }} h</td>
+              <td class="text-right font-bold">{{ t.total_hours }} h</td>
+              <td class="text-right text-green-600">{{ t.billable_hours }} h</td>
+              <td>
+                <nz-tag [nzColor]="t.status === 'approved' ? 'success' : 'processing'">
+                  {{ t.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td class="text-center">
+                @if (t.status === 'submitted' || t.status === 'draft') {
+                  <button nz-button nzType="link" nzSize="small" (click)="approveTimesheet(t)">
+                    Approva
+                  </button>
+                } @else {
+                  <span class="text-muted text-xs">Convalidato</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 4: PAYROLL & FRONTALIERI IT/CH -->
+    <nz-tab nzTitle="Payroll & Frontalieri (IT/CH)">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-semibold">Elaborazioni Cedolini & Regimi Cross-Border</h4>
+      </div>
+
+      <nz-table
+        #payTable
+        [nzData]="payrollRuns()"
+        [nzLoading]="loadingPayroll()"
+        nzSize="middle"
+        class="mb-6"
+      >
+        <thead>
+          <tr>
+            <th>Periodo Elaborazione</th>
+            <th>Nazione</th>
+            <th>Dipendenti Elaborati</th>
+            <th class="text-right">Monte Retributivo Lordo</th>
+            <th class="text-right">Totale Netto Erogato</th>
+            <th>Stato</th>
+            <th>Data Calcolo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pr of payTable.data; track pr.id) {
+            <tr>
+              <td><strong>Mese {{ pr.month }}/{{ pr.year }}</strong></td>
+              <td><nz-tag nzColor="blue">{{ pr.country || 'IT/CH' }}</nz-tag></td>
+              <td>{{ pr.employees_count || '-' }}</td>
+              <td class="text-right font-semibold">
+                {{ pr.total_gross != null ? (pr.total_gross | money: 'EUR') : '-' }}
+              </td>
+              <td class="text-right font-bold text-green-600">
+                {{ pr.total_net != null ? (pr.total_net | money: 'EUR') : '-' }}
+              </td>
+              <td>
+                <nz-tag [nzColor]="pr.status === 'paid' ? 'success' : 'processing'">
+                  {{ pr.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ pr.created_at ? (pr.created_at | date: 'dd/MM/yyyy') : '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <nz-divider nzText="Lavoratori Frontalieri (Accordo Fiscale IT/CH)"></nz-divider>
+
+      <nz-table
+        #frTable
+        [nzData]="frontierWorkers()"
+        [nzLoading]="loadingFrontier()"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>Dipendente</th>
+            <th>Comune Italiano di Residenza</th>
+            <th>Cantone Svizzero di Impiego</th>
+            <th>Regime Fiscale Applicato</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fw of frTable.data; track fw.id) {
+            <tr>
+              <td><strong>{{ fw.employee_name || fw.employee_id }}</strong></td>
+              <td>{{ fw.italian_municipality || 'Fascia di frontiera' }}</td>
+              <td><nz-tag nzColor="red">{{ fw.canton || 'TI' }}</nz-tag></td>
+              <td><nz-tag nzColor="purple">{{ fw.tax_regime || 'Nuovo Accordo 2024' }}</nz-tag></td>
+              <td><nz-tag nzColor="success">{{ fw.status | uppercase }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
 </nz-card>
+
+<!-- MODAL: ASSUMI DIPENDENTE -->
+<nz-modal
+  [nzVisible]="isHireModalVisible()"
+  nzTitle="Assunzione Nuovo Dipendente"
+  [nzOkLoading]="isSubmittingHire()"
+  (nzOnCancel)="isHireModalVisible.set(false)"
+  (nzOnOk)="submitHire()"
+  nzWidth="650px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="hireForm" nzLayout="vertical">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Nome</nz-form-label>
+            <nz-form-control nzErrorTip="Inserire il nome">
+              <input nz-input formControlName="first_name" placeholder="Es. Marco" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Cognome</nz-form-label>
+            <nz-form-control nzErrorTip="Inserire il cognome">
+              <input nz-input formControlName="last_name" placeholder="Es. Verdi" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Email Aziendale</nz-form-label>
+            <nz-form-control nzErrorTip="Inserire un'email valida">
+              <input nz-input formControlName="work_email" placeholder="m.verdi@azienda.it" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>RAL Base Annua (€/CHF)</nz-form-label>
+            <nz-form-control nzErrorTip="Inserire la retribuzione annua">
+              <nz-input-number formControlName="base_annual_salary" [nzMin]="0" [nzStep]="1000" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Data di Assunzione</nz-form-label>
+            <nz-form-control nzErrorTip="Selezionare data">
+              <nz-date-picker formControlName="hire_date" style="width: 100%;"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Tipo di Contratto</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="employment_type" style="width: 100%;">
+                <nz-option nzValue="full_time" nzLabel="Tempo Pieno (Full-time)"></nz-option>
+                <nz-option nzValue="part_time" nzLabel="Part-time"></nz-option>
+                <nz-option nzValue="contract" nzLabel="Tempo Determinato"></nz-option>
+                <nz-option nzValue="intern" nzLabel="Stage / Tirocinio"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Ore Settimanali</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="weekly_hours" [nzMin]="1" [nzMax]="60" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Mesi di Prova</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="probation_months" [nzMin]="0" [nzMax]="12" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: RICHIESTA FERIE / PERMESSO -->
+<nz-modal
+  [nzVisible]="isLeaveModalVisible()"
+  nzTitle="Richiesta Ferie e Permessi"
+  [nzOkLoading]="isSubmittingLeave()"
+  (nzOnCancel)="isLeaveModalVisible.set(false)"
+  (nzOnOk)="submitLeaveRequest()"
+  nzWidth="500px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="leaveForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Dipendente</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire l'ID o matricola">
+          <input nz-input formControlName="employee_id" placeholder="UUID Dipendente" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Tipo di Assenza</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="leave_type_id" style="width: 100%;">
+            <nz-option nzValue="vacation" nzLabel="Ferie Ordinarie"></nz-option>
+            <nz-option nzValue="rol" nzLabel="Permesso ROL / Ex-Festività"></nz-option>
+            <nz-option nzValue="sick_leave" nzLabel="Malattia"></nz-option>
+            <nz-option nzValue="parental" nzLabel="Congedo Parentale"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Data Inizio</nz-form-label>
+            <nz-form-control nzErrorTip="Campo obbligatorio">
+              <nz-date-picker formControlName="start_date" style="width: 100%;"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Data Fine</nz-form-label>
+            <nz-form-control nzErrorTip="Campo obbligatorio">
+              <nz-date-picker formControlName="end_date" style="width: 100%;"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Totale Ore Richieste</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire le ore">
+          <nz-input-number formControlName="total_hours" [nzMin]="1" [nzStep]="1" style="width: 100%;"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Motivazione / Note</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="reason" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REGISTRA PRESENZE / ORE -->
+<nz-modal
+  [nzVisible]="isTimesheetModalVisible()"
+  nzTitle="Registra Presenze / Timesheet"
+  [nzOkLoading]="isSubmittingTimesheet()"
+  (nzOnCancel)="isTimesheetModalVisible.set(false)"
+  (nzOnOk)="submitTimesheet()"
+  nzWidth="500px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="timesheetForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Dipendente</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire l'ID dipendente">
+          <input nz-input formControlName="employee_id" placeholder="UUID Dipendente" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Data Lavorativa</nz-form-label>
+        <nz-form-control nzErrorTip="Selezionare la data">
+          <nz-date-picker formControlName="work_date" style="width: 100%;"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>Ore Ordinarie</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="regular_hours" [nzMin]="0" [nzMax]="24" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>Straordinari</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="overtime_hours" [nzMin]="0" [nzMax]="24" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>Fatturabili</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="billable_hours" [nzMin]="0" [nzMax]="24" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>Descrizione Attività</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
