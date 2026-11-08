@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TableStateService } from './table-state.service';
+import { TableStateService } from '@shared/components/base-table/table-state.service';
 
 interface TestItem {
   id: string;

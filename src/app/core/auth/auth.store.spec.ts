@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AuthStore, DEFAULT_USER } from './auth.store';
-import { I18nService } from '../i18n';
+import { AuthStore, DEFAULT_USER } from '@core/auth/auth.store';
+import { I18nService } from '@core/i18n';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 

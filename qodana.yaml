@@ -17,6 +17,36 @@ include:
   - name: AngularUndefinedPipe
   - name: CheckTagEmptyBody
   
+# Explicit, motivated exclusions (full scan on dev and on PRs). Anything not listed here must be fixed in code.
+exclude:
+  # Duplicated code: token-level matches between tests and sources (storage clean-up, expect chains) flagged as
+  # moderate notes; tests repeat setup by design, and merging them would make them less readable.
+  - name: DuplicatedCode
+
+  # Unused global symbols
+  # - API clients: one method per endpoint of the OpenAPI contract, consumed as the matching feature lands.
+  # - generated schema: written by openapi-typescript, must not be edited by hand.
+  # - tool config: default exports read by Playwright and by the Angular dev server, never imported.
+  # - shared services/stores/facades/mapper: public methods of the infrastructure used by the upcoming modules
+  #   (open question: remove or keep, see the PR).
+  - name: JSUnusedGlobalSymbols
+    paths:
+      - src/app/core/api
+      - playwright.config.ts
+      - proxy.conf.mjs
+      - src/app/core/auth/token-storage.service.ts
+      - src/app/core/i18n/i18n.service.ts
+      - src/app/core/lookups/lookup.service.ts
+      - src/app/core/state/app.store.ts
+      - src/app/core/state/list-facade.ts
+      - src/app/data-access/mappers/time-attendance.mapper.ts
+      - src/app/shared/components/base-table/table-state.service.ts
+
+  # The brand logo is an SVG: NgOptimizedImage does not optimise vector images (no srcset, no resize).
+  - name: AngularNgOptimizedImage
+    paths:
+      - src/app/layout/sidebar/sidebar.component.html
+
 failureConditions:
   severityThresholds:
     critical: 0

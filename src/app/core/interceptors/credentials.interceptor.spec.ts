@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { credentialsInterceptor } from './credentials.interceptor';
+import { credentialsInterceptor } from '@core/interceptors/credentials.interceptor';
 
 describe('credentialsInterceptor', () => {
   let http: HttpClient;

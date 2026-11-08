@@ -177,4 +177,5 @@ export class ClientsComponent {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols -- loaded by name through the dynamic imports in crm.routes.ts
 export { ClientsComponent as CrmClientsComponent };

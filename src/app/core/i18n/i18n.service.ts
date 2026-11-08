@@ -68,10 +68,10 @@ export class I18nService {
     this.syncNzLocale(initialLang);
 
     // Carica la lingua iniziale dall'API
-    this.loadDictionary(initialLang);
+    void this.loadDictionary(initialLang);
     if (initialLang !== 'en') {
       // Precarica l'inglese come lingua di riserva per le chiavi mancanti
-      this.loadDictionary('en');
+      void this.loadDictionary('en');
     }
   }
 
@@ -84,9 +84,9 @@ export class I18nService {
 
     // Invalida la cache in memoria e riscarica per il nuovo tenant
     this.dictionaries.set({});
-    this.loadDictionary(this.currentLanguage());
+    void this.loadDictionary(this.currentLanguage());
     if (this.currentLanguage() !== 'en') {
-      this.loadDictionary('en');
+      void this.loadDictionary('en');
     }
   }
 
@@ -191,7 +191,7 @@ export class I18nService {
 
     if (params) {
       for (const [paramKey, paramVal] of Object.entries(params)) {
-        text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramVal));
+        text = text.replace(new RegExp(`\\{${paramKey}}`, 'g'), String(paramVal));
       }
     }
 

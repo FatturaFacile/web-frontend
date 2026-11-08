@@ -5,7 +5,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -46,7 +45,6 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
 })
 export class AccountingComponent implements OnInit {
   private readonly api = inject(AccountingApiService);
-  private readonly message = inject(NzMessageService);
   protected readonly tableState = inject(TableStateService<LedgerEntry>);
 
   protected selectedTab = 0;

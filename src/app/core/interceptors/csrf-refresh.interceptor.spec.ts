@@ -8,7 +8,7 @@ import {
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { environment } from '@env';
-import { csrfRefreshInterceptor } from './csrf-refresh.interceptor';
+import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { TEST_API_BASE_URL, TEST_API_ORIGIN } from '../../../testing/api';
 
 describe('csrfRefreshInterceptor', () => {

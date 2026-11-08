@@ -145,17 +145,17 @@
 </nz-card>
 
 <!-- Templates -->
-<ng-template #dateTpl let-item let-val="value">
+<ng-template #dateTpl let-val="value">
   {{ val | date: "dd.MM.yyyy HH:mm" }}
 </ng-template>
 
-<ng-template #activeTpl let-item let-val="value">
+<ng-template #activeTpl let-val="value">
   <nz-tag [nzColor]="val ? 'success' : 'default'">
     {{ (val ? 'common.status.active' : 'common.status.inactive') | translate }}
   </nz-tag>
 </ng-template>
 
-<ng-template #hqTpl let-item let-val="value">
+<ng-template #hqTpl let-val="value">
   <nz-tag [nzColor]="val ? 'blue' : 'default'">
     {{ val ? "SEDE CENTRALE" : "FILIALE" }}
   </nz-tag>

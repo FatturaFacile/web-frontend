@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { authInterceptor } from './auth.interceptor';
+import { authInterceptor } from '@core/auth/auth.interceptor';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 
