@@ -1,0 +1,245 @@
+<app-page-header
+  title="Asset Management (Cespiti & EAM)"
+  subtitle="Fixed assets registers, parallel accounting books (IT/CH), depreciations, and QR identification"
+>
+  <div header-actions>
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <nz-icon nzType="plus" />
+      New Asset
+    </button>
+  </div>
+</app-page-header>
+
+<nz-card>
+  <div class="filter-bar">
+    <div class="search-box">
+      <nz-input-group nzPrefixIcon="search">
+        <input
+          type="text"
+          nz-input
+          placeholder="Search by asset code, serial, name..."
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </nz-input-group>
+    </div>
+
+    <div class="select-filters">
+      <nz-select
+        class="filter-select"
+        [nzPlaceHolder]="'Status: All'"
+        nzAllowClear
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusChange($event)"
+      >
+        <nz-option nzValue="acquired" nzLabel="Acquired"></nz-option>
+        <nz-option nzValue="capitalized" nzLabel="Capitalized"></nz-option>
+        <nz-option nzValue="in_service" nzLabel="In Service"></nz-option>
+        <nz-option nzValue="disposed" nzLabel="Disposed"></nz-option>
+      </nz-select>
+
+      <button nz-button nzType="default" (click)="loadAssets()">
+        <nz-icon nzType="reload" />
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <nz-table
+    #assetsTable
+    [nzData]="assets()"
+    [nzLoading]="loading()"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzFrontPagination]="false"
+    (nzQueryParams)="onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>Asset / Serial</th>
+        <th>Status</th>
+        <th>Condition</th>
+        <th>Acquisition Cost</th>
+        <th>Carrying Amount</th>
+        <th>Depr. Rate</th>
+        <th nzWidth="240px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of assetsTable.data; track a.id) {
+        <tr>
+          <td>
+            <div class="asset-info">
+              <a class="asset-title" (click)="openDetail(a)">{{ a.name }}</a>
+              <span class="asset-sub">{{ a.asset_number || 'N/A' }} @if (a.serial_number) { &bull; SN: {{ a.serial_number }} }</span>
+            </div>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(a.status)">{{ a.status || 'draft' }}</nz-tag>
+          </td>
+          <td>
+            <nz-tag>{{ a.condition || 'good' }}</nz-tag>
+          </td>
+          <td>{{ a.acquisition_cost | money: a.currency }}</td>
+          <td>
+            <strong>{{ a.carrying_amount ? (a.carrying_amount | money: a.currency) : (a.acquisition_cost | money: a.currency) }}</strong>
+          </td>
+          <td>{{ a.depreciation_rate_percent ? a.depreciation_rate_percent + '%' : '—' }}</td>
+          <td>
+            <nz-space>
+              <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(a)">
+                Manage
+              </button>
+              <button
+                *nzSpaceItem
+                nz-button
+                nzType="text"
+                nzSize="small"
+                (click)="viewQrCode(a)"
+              >
+                <nz-icon nzType="qrcode" />
+                QR Tag
+              </button>
+              @if (a.status === 'acquired') {
+                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="capitalize(a)">
+                  Capitalize
+                </button>
+              }
+              @if (a.status === 'capitalized') {
+                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="commission(a)">
+                  In Service
+                </button>
+              }
+            </nz-space>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create Asset Modal -->
+<nz-modal
+  [nzVisible]="createModalVisible()"
+  nzTitle="Record New Fixed Asset"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateAsset()"
+  [nzOkLoading]="saving()"
+  [nzWidth]="600"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="assetForm" nzLayout="vertical">
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Asset Name</nz-form-label>
+          <nz-form-control nzErrorTip="Name is required">
+            <input nz-input formControlName="name" placeholder="E.g. Precision CNC Machine" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Category</nz-form-label>
+          <nz-form-control nzErrorTip="Category is required">
+            <nz-select formControlName="category_id">
+              @for (cat of categories(); track cat.id) {
+                <nz-option [nzValue]="cat.id" [nzLabel]="cat.name"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Acquisition Cost ({{ authStore.activeCurrency() }})</nz-form-label>
+          <nz-form-control nzErrorTip="Valid cost required">
+            <nz-input-number formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Useful Life (Years)</nz-form-label>
+          <nz-form-control nzErrorTip="Useful life required">
+            <nz-input-number formControlName="useful_life_years" [nzMin]="1" [nzMax]="50" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Depreciation Method</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="depreciation_method">
+              <nz-option nzValue="straight_line" nzLabel="Straight Line"></nz-option>
+              <nz-option nzValue="declining_balance" nzLabel="Declining Balance"></nz-option>
+              <nz-option nzValue="double_declining_balance" nzLabel="Double Declining"></nz-option>
+              <nz-option nzValue="units_of_production" nzLabel="Units of Production"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Condition</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="condition">
+              <nz-option nzValue="new" nzLabel="New"></nz-option>
+              <nz-option nzValue="excellent" nzLabel="Excellent"></nz-option>
+              <nz-option nzValue="good" nzLabel="Good"></nz-option>
+              <nz-option nzValue="fair" nzLabel="Fair"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Asset Tag / Number</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="asset_number" placeholder="AST-1001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Serial Number</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="serial_number" placeholder="SN-987654" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>Description</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" rows="2" placeholder="Specifications and technical details"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Asset QR Code Modal using ng-zorro nz-qrcode -->
+<nz-modal
+  [nzVisible]="qrModalVisible()"
+  nzTitle="Asset QR Tag & Barcode"
+  [nzFooter]="null"
+  (nzOnCancel)="qrModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (currentTag(); as tag) {
+      <div class="qr-container">
+        <nz-qrcode [nzValue]="getQrString()" [nzSize]="200"></nz-qrcode>
+        <div class="qr-meta">
+          <h4>{{ tag.asset_number }}</h4>
+          <p class="barcode-line">Barcode ({{ tag.barcode_symbology }}): <code>{{ tag.barcode_value }}</code></p>
+          <p class="payload-line">{{ getQrString() }}</p>
+        </div>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- Detail Drawer -->
+@if (selectedAsset()) {
+  <app-asset-detail-drawer
+    [asset]="selectedAsset()!"
+    [visible]="drawerVisible()"
+    (closed)="closeDetail()"
+  ></app-asset-detail-drawer>
+}

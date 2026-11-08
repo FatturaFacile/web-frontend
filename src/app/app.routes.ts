@@ -129,6 +129,13 @@ export const routes: Routes = [
       import('./features/projects/projects.routes').then((m) => m.PROJECTS_ROUTES),
   },
   {
+    path: 'assets',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Cespiti & Asset EAM', title: 'Cespiti' },
+    loadChildren: () =>
+      import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
+  },
+  {
     path: 'automotive',
     canActivate: [authGuard],
     data: { breadcrumb: 'Automotive & Gomme', title: 'Automotive' },
