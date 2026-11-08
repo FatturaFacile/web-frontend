@@ -1,45 +1,719 @@
 <app-page-header
-  [title]="'MANUFACTURING.TITLE' | translate"
-  [subtitle]="'MANUFACTURING.SUBTITLE' | translate"
+  [title]="'Produzione & MRP'"
+  [subtitle]="'Pianificazione ordini di produzione, distinte base, cicli di lavoro e fabbisogni materiali'"
 />
 
-<nz-card [nzTitle]="'MANUFACTURING.CARD_TITLE' | translate">
-  <nz-table
-    #mTable
-    [nzData]="orders()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ "MANUFACTURING.COL_ORDER_NUM" | translate }}</th>
-        <th>{{ "MANUFACTURING.COL_PRODUCT" | translate }}</th>
-        <th>{{ "MANUFACTURING.COL_QTY" | translate }}</th>
-        <th>{{ "MANUFACTURING.COL_LINE" | translate }}</th>
-        <th>{{ "MANUFACTURING.COL_PROGRESS" | translate }}</th>
-        <th>{{ "MANUFACTURING.COL_QA" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (o of mTable.data; track o.num) {
-        <tr>
-          <td>
-            <strong>{{ o.num }}</strong>
-          </td>
-          <td>{{ o.product }}</td>
-          <td>
-            <strong>{{ o.qty }}</strong>
-          </td>
-          <td>{{ o.line }}</td>
-          <td>
-            <nz-tag nzColor="processing">{{ o.progress }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag nzColor="success">{{ o.qa }}</nz-tag>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+<!-- KPI Statistics Cards -->
+<div nz-row [nzGutter]="16" class="mb-4">
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalOrders()"
+        [nzTitle]="'Totale Ordini'"
+        [nzPrefix]="iconOrders"
+      ></nz-statistic>
+      <ng-template #iconOrders><span nz-icon nzType="tool"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiInProgressOrders()"
+        [nzTitle]="'In Lavorazione'"
+        [nzValueStyle]="{ color: '#faad14' }"
+        [nzPrefix]="iconProgress"
+      ></nz-statistic>
+      <ng-template #iconProgress><span nz-icon nzType="sync" nzSpin></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiCompletedOrders()"
+        [nzTitle]="'Completati / Chiusi'"
+        [nzValueStyle]="{ color: '#52c41a' }"
+        [nzPrefix]="iconDone"
+      ></nz-statistic>
+      <ng-template #iconDone><span nz-icon nzType="check-circle"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalBoms()"
+        [nzTitle]="'Distinte Base Attive'"
+        [nzPrefix]="iconBom"
+      ></nz-statistic>
+      <ng-template #iconBom><span nz-icon nzType="apartment"></span></ng-template>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
+    <!-- TAB 1: ORDINI DI PRODUZIONE -->
+    <nz-tab nzTitle="Ordini di Produzione">
+      <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+            <input
+              type="text"
+              nz-input
+              placeholder="Cerca ordine / articolo..."
+              [ngModel]="ordersSearch()"
+              (ngModelChange)="ordersSearch.set($event); loadOrders(1)"
+            />
+          </nz-input-group>
+
+          <nz-select
+            [ngModel]="ordersStatusFilter()"
+            (ngModelChange)="ordersStatusFilter.set($event); loadOrders(1)"
+            nzPlaceHolder="Tutti gli stati"
+            nzAllowClear
+            style="width: 170px;"
+          >
+            <nz-option nzValue="planned" nzLabel="Pianificato"></nz-option>
+            <nz-option nzValue="released" nzLabel="Rilasciato"></nz-option>
+            <nz-option nzValue="in_progress" nzLabel="In Lavorazione"></nz-option>
+            <nz-option nzValue="completed" nzLabel="Completato"></nz-option>
+            <nz-option nzValue="closed" nzLabel="Chiuso"></nz-option>
+            <nz-option nzValue="cancelled" nzLabel="Annullato"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadOrders(ordersPage())">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openCreateOrderModal()">
+          <span nz-icon nzType="plus"></span> Nuovo Ordine
+        </button>
+      </div>
+
+      <nz-table
+        #ordersTable
+        [nzData]="orders()"
+        [nzLoading]="loadingOrders()"
+        [nzFrontPagination]="false"
+        [nzTotal]="ordersTotal()"
+        [nzPageIndex]="ordersPage()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadOrders($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Ordine</th>
+            <th>Articolo / Descrizione</th>
+            <th class="text-right">Q.tà Prevista</th>
+            <th class="text-right">Q.tà Prodotta</th>
+            <th>Inizio Previsto</th>
+            <th>Fine Prevista</th>
+            <th>Stato</th>
+            <th class="text-right">Costi Totali</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of ordersTable.data; track o.id) {
+            <tr>
+              <td><strong>{{ o.order_number }}</strong></td>
+              <td>{{ o.item_code || o.mfg_item_id }}</td>
+              <td class="text-right font-medium">{{ o.target_quantity }} {{ o.uom }}</td>
+              <td class="text-right font-medium">{{ o.completed_quantity }} {{ o.uom }}</td>
+              <td>{{ o.planned_start_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ o.planned_end_date | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <nz-tag [nzColor]="getOrderStatusColor(o.status)">
+                  {{ o.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td class="text-right">
+                @if (o.actual_cost_total != null) {
+                  <span>{{ o.actual_cost_total | money: 'EUR' }}</span>
+                } @else {
+                  <span class="text-muted">-</span>
+                }
+              </td>
+              <td class="text-center">
+                @if (o.status === 'planned') {
+                  <button nz-button nzType="link" nzSize="small" (click)="releaseOrder(o)">
+                    Rilascia
+                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o)">
+                    Annulla
+                  </button>
+                }
+                @if (o.status === 'released') {
+                  <button nz-button nzType="link" nzSize="small" (click)="startOrder(o)">
+                    Avvia
+                  </button>
+                }
+                @if (o.status === 'in_progress') {
+                  <button nz-button nzType="link" nzSize="small" (click)="completeOrder(o)">
+                    Completa
+                  </button>
+                }
+                @if (o.status === 'completed') {
+                  <button nz-button nzType="link" nzSize="small" (click)="closeOrder(o)">
+                    Chiudi e Salda
+                  </button>
+                }
+                @if (o.status === 'closed' || o.status === 'cancelled') {
+                  <span class="text-muted text-xs">Archiviato</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: DISTINTE BASE (BOMs) -->
+    <nz-tab nzTitle="Distinte Base (BOM)">
+      <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+            <input
+              type="text"
+              nz-input
+              placeholder="Cerca distinta..."
+              [ngModel]="bomsSearch()"
+              (ngModelChange)="bomsSearch.set($event); loadBoms(1)"
+            />
+          </nz-input-group>
+
+          <button nz-button nzType="default" (click)="loadBoms(bomsPage())">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openCreateBomModal()">
+          <span nz-icon nzType="plus"></span> Nuova Distinta Base
+        </button>
+      </div>
+
+      <nz-table
+        #bomsTable
+        [nzData]="boms()"
+        [nzLoading]="loadingBoms()"
+        [nzFrontPagination]="false"
+        [nzTotal]="bomsTotal()"
+        [nzPageIndex]="bomsPage()"
+        [nzPageSize]="15"
+        (nzPageIndexChange)="loadBoms($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Distinta</th>
+            <th>Nome Distinta</th>
+            <th>Articolo</th>
+            <th>Revisione</th>
+            <th>Tipo</th>
+            <th class="text-right">Q.tà Base</th>
+            <th>Stato</th>
+            <th>Componenti</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of bomsTable.data; track b.id) {
+            <tr>
+              <td><strong>{{ b.bom_number }}</strong></td>
+              <td>{{ b.name }}</td>
+              <td>{{ b.item_code || b.mfg_item_id }}</td>
+              <td><nz-tag nzColor="blue">Rev. {{ b.revision }}</nz-tag></td>
+              <td>{{ b.bom_type || 'standard' }}</td>
+              <td class="text-right">{{ b.base_quantity }} {{ b.uom }}</td>
+              <td>
+                <nz-tag [nzColor]="getBomStatusColor(b.status)">
+                  {{ b.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ b.components?.length || 0 }} elementi</td>
+              <td class="text-center">
+                <button nz-button nzType="link" nzSize="small" (click)="explodeBom(b)">
+                  Esplodi
+                </button>
+                @if (b.status === 'draft') {
+                  <button nz-button nzType="link" nzSize="small" (click)="activateBom(b)">
+                    Attiva
+                  </button>
+                }
+                @if (b.status === 'active') {
+                  <button nz-button nzType="link" nzSize="small" (click)="reviseBom(b)">
+                    Nuova Rev.
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: PIANIFICAZIONE FABBISOGNI (MRP) -->
+    <nz-tab nzTitle="MRP & Fabbisogni">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-semibold">Elaborazioni MRP (Material Requirements Planning)</h4>
+        <button nz-button nzType="primary" (click)="openRunMrpModal()">
+          <span nz-icon nzType="calculator"></span> Esegui Calcolo MRP
+        </button>
+      </div>
+
+      <nz-table
+        #mrpTable
+        [nzData]="mrpRuns()"
+        [nzLoading]="loadingMrp()"
+        [nzFrontPagination]="false"
+        [nzTotal]="mrpTotal()"
+        [nzPageIndex]="mrpPage()"
+        [nzPageSize]="10"
+        (nzPageIndexChange)="loadMrpRuns($event)"
+        nzSize="middle"
+        class="mb-6"
+      >
+        <thead>
+          <tr>
+            <th>N. Calcolo MRP</th>
+            <th>Tipo</th>
+            <th>Orizzonte Inizio</th>
+            <th>Orizzonte Fine</th>
+            <th class="text-right">Articoli Elaborati</th>
+            <th class="text-right">Ordini Pianificati</th>
+            <th class="text-right">Fabbisogni Mancanti</th>
+            <th>Stato</th>
+            <th>Data Esecuzione</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of mrpTable.data; track r.id) {
+            <tr>
+              <td><strong>{{ r.run_number }}</strong></td>
+              <td><nz-tag>{{ r.run_type }}</nz-tag></td>
+              <td>{{ r.horizon_start_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ r.horizon_end_date | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-right">{{ r.total_items_processed }}</td>
+              <td class="text-right font-semibold text-blue-600">{{ r.total_planned_orders }}</td>
+              <td class="text-right font-semibold text-red-600">{{ r.total_shortages }}</td>
+              <td>
+                <nz-tag [nzColor]="r.status === 'completed' ? 'success' : 'processing'">
+                  {{ r.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ r.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <nz-divider nzText="Ordini Pianificati Generati da MRP"></nz-divider>
+
+      <nz-table
+        #plannedTable
+        [nzData]="plannedOrders()"
+        [nzLoading]="loadingPlanned()"
+        [nzFrontPagination]="false"
+        [nzTotal]="plannedTotal()"
+        [nzPageIndex]="plannedPage()"
+        [nzPageSize]="10"
+        (nzPageIndexChange)="loadPlannedOrders($event)"
+        nzSize="small"
+        class="mb-6"
+      >
+        <thead>
+          <tr>
+            <th>Codice Pianificato</th>
+            <th>Articolo</th>
+            <th>Tipo</th>
+            <th class="text-right">Quantità Netta</th>
+            <th>Livello Distinta</th>
+            <th>Data Inizio</th>
+            <th>Data Scadenza</th>
+            <th>Stato</th>
+            <th class="text-center">Azione</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of plannedTable.data; track p.id) {
+            <tr>
+              <td><strong>{{ p.planned_order_number }}</strong></td>
+              <td>{{ p.item_code || p.mfg_item_id }}</td>
+              <td><nz-tag [nzColor]="p.order_type === 'make' ? 'blue' : 'green'">{{ p.order_type }}</nz-tag></td>
+              <td class="text-right font-semibold">{{ p.quantity }} {{ p.uom }}</td>
+              <td>Lvl {{ p.bom_level }}</td>
+              <td>{{ p.start_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ p.due_date | date: 'dd/MM/yyyy' }}</td>
+              <td><nz-tag>{{ p.status }}</nz-tag></td>
+              <td class="text-center">
+                @if (p.status === 'planned' && p.order_type === 'make') {
+                  <button nz-button nzType="link" nzSize="small" (click)="convertPlannedOrder(p)">
+                    Converti in OdP
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <nz-divider nzText="Mancanze & Fabbisogni Rilevati"></nz-divider>
+
+      <nz-table
+        #shortageTable
+        [nzData]="shortages()"
+        [nzLoading]="loadingShortages()"
+        [nzFrontPagination]="false"
+        [nzTotal]="shortagesTotal()"
+        [nzPageIndex]="shortagesPage()"
+        [nzPageSize]="10"
+        (nzPageIndexChange)="loadShortages($event)"
+        nzSize="small"
+      >
+        <thead>
+          <tr>
+            <th>Articolo</th>
+            <th>Data Necessaria</th>
+            <th class="text-right">Fabbisogno Lordo</th>
+            <th class="text-right">Disponibilità Attuale</th>
+            <th class="text-right">Scorta Sicurezza</th>
+            <th class="text-right text-red-600">Mancanza Netta</th>
+            <th>Azione Consigliata</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of shortageTable.data; track s.id) {
+            <tr>
+              <td><strong>{{ s.item_code || s.mfg_item_id }}</strong></td>
+              <td>{{ s.required_date | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-right">{{ s.gross_requirement }}</td>
+              <td class="text-right">{{ s.available_inventory }}</td>
+              <td class="text-right">{{ s.safety_stock }}</td>
+              <td class="text-right font-bold text-red-600">{{ s.net_shortage }}</td>
+              <td><nz-tag nzColor="warning">{{ s.recommended_action }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 4: CENTRI DI LAVORO & CICLI -->
+    <nz-tab nzTitle="Centri di Lavoro & Cicli">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-semibold">Centri di Lavoro</h4>
+        <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()">
+          <span nz-icon nzType="plus"></span> Nuovo Centro di Lavoro
+        </button>
+      </div>
+
+      <nz-table
+        #wcTable
+        [nzData]="workCenters()"
+        [nzLoading]="loadingWorkCenters()"
+        nzSize="middle"
+        class="mb-6"
+      >
+        <thead>
+          <tr>
+            <th>Codice Centro</th>
+            <th>Nome</th>
+            <th>Reparto</th>
+            <th class="text-right">Capacità Giornaliera (ore)</th>
+            <th class="text-right">Costo Orario (€/h)</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (w of wcTable.data; track w.id) {
+            <tr>
+              <td><strong>{{ w.work_center_code }}</strong></td>
+              <td>{{ w.name }}</td>
+              <td>{{ w.department_code || '-' }}</td>
+              <td class="text-right font-semibold">{{ w.capacity_hours_per_day }} h</td>
+              <td class="text-right">{{ w.hourly_cost_rate != null ? (w.hourly_cost_rate | money: 'EUR') : '-' }}</td>
+              <td><nz-tag [nzColor]="w.status === 'active' ? 'success' : 'default'">{{ w.status | uppercase }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <nz-divider nzText="Cicli di Lavorazione (Routings)"></nz-divider>
+
+      <nz-table
+        #routingsTable
+        [nzData]="routings()"
+        [nzLoading]="loadingRoutings()"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>N. Ciclo</th>
+            <th>Nome Ciclo</th>
+            <th>Articolo</th>
+            <th>Revisione</th>
+            <th>Predefinito</th>
+            <th>Operazioni</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rt of routingsTable.data; track rt.id) {
+            <tr>
+              <td><strong>{{ rt.routing_number }}</strong></td>
+              <td>{{ rt.name }}</td>
+              <td>{{ rt.item_code || rt.mfg_item_id }}</td>
+              <td><nz-tag nzColor="blue">Rev. {{ rt.revision }}</nz-tag></td>
+              <td>
+                @if (rt.is_default) {
+                  <nz-tag nzColor="green">Sì</nz-tag>
+                } @else {
+                  <span class="text-muted">No</span>
+                }
+              </td>
+              <td>{{ rt.operations?.length || 0 }} fasi</td>
+              <td><nz-tag nzColor="success">{{ rt.status | uppercase }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
 </nz-card>
+
+<!-- MODAL: CREA ORDINE DI PRODUZIONE -->
+<nz-modal
+  [nzVisible]="isCreateOrderModalVisible()"
+  nzTitle="Crea Ordine di Produzione"
+  [nzOkLoading]="isSubmittingOrder()"
+  (nzOnCancel)="isCreateOrderModalVisible.set(false)"
+  (nzOnOk)="submitCreateOrder()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="orderForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>ID Articolo da Produrre (UUID)</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire l'ID dell'articolo">
+          <input nz-input formControlName="mfg_item_id" placeholder="Es. 9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Quantità da Produrre</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire una quantità valida">
+          <nz-input-number formControlName="target_quantity" [nzMin]="1" [nzStep]="1" style="width: 100%;"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Data Inizio Prevista</nz-form-label>
+            <nz-form-control nzErrorTip="Selezionare data inizio">
+              <nz-date-picker formControlName="planned_start_date" style="width: 100%;"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Data Fine Prevista</nz-form-label>
+            <nz-form-control nzErrorTip="Selezionare data fine">
+              <nz-date-picker formControlName="planned_end_date" style="width: 100%;"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>Note di Produzione</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="notes" rows="3" placeholder="Istruzioni o dettagli per il reparto"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA DISTINTA BASE (BOM) -->
+<nz-modal
+  [nzVisible]="isCreateBomModalVisible()"
+  nzTitle="Crea Distinta Base (BOM)"
+  [nzOkLoading]="isSubmittingBom()"
+  (nzOnCancel)="isCreateBomModalVisible.set(false)"
+  (nzOnOk)="submitCreateBom()"
+  nzWidth="750px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="bomForm" nzLayout="vertical">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Numero Distinta</nz-form-label>
+            <nz-form-control nzErrorTip="Campo obbligatorio">
+              <input nz-input formControlName="bom_number" placeholder="Es. BOM-ASY-001" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Nome Distinta</nz-form-label>
+            <nz-form-control nzErrorTip="Campo obbligatorio">
+              <input nz-input formControlName="name" placeholder="Es. Assemblato Principale" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>ID Articolo Finito (UUID)</nz-form-label>
+            <nz-form-control nzErrorTip="Campo obbligatorio">
+              <input nz-input formControlName="mfg_item_id" placeholder="UUID articolo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label nzRequired>Revisione</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="revision" placeholder="A" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label nzRequired>Unità di Misura</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="uom" placeholder="PZ" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-divider nzText="Componenti della Distinta"></nz-divider>
+
+      <div formArrayName="components">
+        @for (comp of bomComponentsFormArray.controls; track $index) {
+          <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
+            <div style="flex: 2;">
+              <input nz-input formControlName="component_item_id" placeholder="UUID Componente / Materia Prima" />
+            </div>
+            <div style="flex: 1;">
+              <nz-input-number formControlName="quantity_per" [nzMin]="0.001" [nzStep]="1" nzPlaceHolder="Q.tà per unita" style="width: 100%;"></nz-input-number>
+            </div>
+            <div style="flex: 1.5;">
+              <input nz-input formControlName="notes" placeholder="Note / Posizione" />
+            </div>
+            <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <button nz-button nzType="dashed" nzBlock (click)="addComponentRow()" class="mt-2">
+        <span nz-icon nzType="plus"></span> Aggiungi Componente
+      </button>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ESEGUI MRP -->
+<nz-modal
+  [nzVisible]="isRunMrpModalVisible()"
+  nzTitle="Esegui Calcolo MRP"
+  [nzOkLoading]="isSubmittingMrp()"
+  (nzOnCancel)="isRunMrpModalVisible.set(false)"
+  (nzOnOk)="submitRunMrp()"
+  nzWidth="500px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mrpForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Tipo di Elaborazione</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="run_type" style="width: 100%;">
+            <nz-option nzValue="regenerative" nzLabel="Rigenerativo Completo (Tutti gli ordini)"></nz-option>
+            <nz-option nzValue="net_change" nzLabel="Variazione Netta (Net Change)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Inizio Orizzonte di Pianificazione</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker formControlName="horizon_start_date" style="width: 100%;"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Fine Orizzonte di Pianificazione</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker formControlName="horizon_end_date" style="width: 100%;"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA CENTRO DI LAVORO -->
+<nz-modal
+  [nzVisible]="isCreateWorkCenterModalVisible()"
+  nzTitle="Nuovo Centro di Lavoro"
+  [nzOkLoading]="isSubmittingWorkCenter()"
+  (nzOnCancel)="isCreateWorkCenterModalVisible.set(false)"
+  (nzOnOk)="submitCreateWorkCenter()"
+  nzWidth="500px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="workCenterForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Codice Centro</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire il codice">
+          <input nz-input formControlName="work_center_code" placeholder="Es. WC-TAGLIO-01" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Nome Centro</nz-form-label>
+        <nz-form-control nzErrorTip="Inserire il nome">
+          <input nz-input formControlName="name" placeholder="Es. Stazione Taglio Laser" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Capacità (ore/giorno)</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="capacity_hours_per_day" [nzMin]="1" [nzMax]="24" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Costo Orario (€/h)</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="hourly_cost_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ESPLOSIONE DISTINTA BASE -->
+<nz-modal
+  [nzVisible]="isExplodeModalVisible()"
+  [nzTitle]="'Albero Esploso: ' + selectedBomName()"
+  (nzOnCancel)="isExplodeModalVisible.set(false)"
+  [nzFooter]="null"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <pre class="bg-gray-50 p-4 rounded text-xs font-mono max-h-96 overflow-auto">{{ explodedBomData() | json }}</pre>
+  </ng-container>
+</nz-modal>
