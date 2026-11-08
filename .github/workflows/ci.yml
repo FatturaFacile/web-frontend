@@ -82,6 +82,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # ng serve runs over HTTPS and reads certs/localhost.*, which are git-ignored (each developer uses mkcert):
+      # in CI a throwaway self-signed pair is enough, the Playwright config ignores certificate errors.
+      - name: Generate local HTTPS certificate
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
@@ -89,7 +97,7 @@ jobs:
         run: pnpm exec playwright test
 
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -111,7 +119,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+
+      # Qodana resolves Angular pipes, imports and types through node_modules: without it every
+      # pipe/import is reported as unresolved (hundreds of false critical problems)
+      - name: Setup PNPM
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Qodana Scan
         uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
