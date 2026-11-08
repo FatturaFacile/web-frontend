@@ -1,0 +1,171 @@
+<nz-drawer
+  [nzVisible]="visible()"
+  [nzWidth]="850"
+  [nzTitle]="(asset().name || 'Asset') + ' (' + (asset().asset_number || 'N/A') + ')'"
+  (nzOnClose)="onClose()"
+>
+  <ng-container *nzDrawerContent>
+    <nz-tabs>
+      <!-- TAB 1: OVERVIEW -->
+      <nz-tab nzTitle="Overview & Metrics">
+        <div class="tab-content">
+          <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+            <nz-descriptions-item nzTitle="Asset Name">{{ asset().name || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Asset Number">{{ asset().asset_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Serial Number">{{ asset().serial_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Barcode Tag">{{ asset().barcode_tag || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Status">
+              <nz-badge nzStatus="processing" [nzText]="asset().status || 'draft'"></nz-badge>
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Condition">
+              <nz-tag>{{ asset().condition || 'good' }}</nz-tag>
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Acquisition Date">{{ asset().acquisition_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="In-Service Date">{{ asset().in_service_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Depreciation Method">{{ asset().depreciation_method || 'straight_line' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Useful Life">{{ asset().useful_life_years ? asset().useful_life_years + ' years' : '—' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Acquisition Cost">
+              <strong>{{ asset().acquisition_cost | money: asset().currency }}</strong>
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Carrying Amount">
+              <strong style="color: #1890ff">
+                {{ asset().carrying_amount ? (asset().carrying_amount | money: asset().currency) : (asset().acquisition_cost | money: asset().currency) }}
+              </strong>
+            </nz-descriptions-item>
+          </nz-descriptions>
+
+          @if (asset().description) {
+            <div class="desc-box">
+              <h4>Description & Notes</h4>
+              <p>{{ asset().description }}</p>
+            </div>
+          }
+        </div>
+      </nz-tab>
+
+      <!-- TAB 2: PARALLEL BOOKS (STATUTORY, TAX, MANAGERIAL) -->
+      <nz-tab nzTitle="Parallel Books">
+        <div class="tab-content">
+          <p class="tab-info">Multi-standard asset depreciation: Statutory (IT/CH Code of Obligations), Fiscal Tax deductions, and Internal Managerial accounting.</p>
+
+          <nz-table
+            #booksTable
+            [nzData]="books()"
+            [nzLoading]="loadingBooks()"
+            [nzFrontPagination]="false"
+            nzSize="small"
+          >
+            <thead>
+              <tr>
+                <th>Ledger Standard</th>
+                <th>Depr. Method</th>
+                <th>Useful Life</th>
+                <th>Rate</th>
+                <th>Cost</th>
+                <th>Accum. Depr.</th>
+                <th>Net Book Value</th>
+                <th>Posts to GL</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of booksTable.data; track b.id) {
+                <tr>
+                  <td>
+                    <nz-tag [nzColor]="getLedgerTypeColor(b.ledger_type)">{{ b.ledger_type }}</nz-tag>
+                  </td>
+                  <td>{{ b.depreciation_method }}</td>
+                  <td>{{ b.useful_life_months ? b.useful_life_months + 'm' : '—' }}</td>
+                  <td>{{ b.rate_percent ? b.rate_percent + '%' : '—' }}</td>
+                  <td>{{ b.cost | money: asset().currency }}</td>
+                  <td>{{ b.accumulated_depreciation | money: asset().currency }}</td>
+                  <td><strong>{{ b.net_book_value | money: asset().currency }}</strong></td>
+                  <td>
+                    <nz-tag [nzColor]="b.posts_to_gl ? 'green' : 'default'">
+                      {{ b.posts_to_gl ? 'Yes' : 'No' }}
+                    </nz-tag>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </nz-tab>
+
+      <!-- TAB 3: DEPRECIATION SCHEDULE -->
+      <nz-tab nzTitle="Depreciation Schedule">
+        <div class="tab-content">
+          <nz-table
+            #schTable
+            [nzData]="schedules()"
+            [nzLoading]="loadingSchedules()"
+            [nzFrontPagination]="true"
+            nzSize="small"
+          >
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Ledger</th>
+                <th>Opening Value</th>
+                <th>Depr. Amount</th>
+                <th>Closing Value</th>
+                <th>Accumulated</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of schTable.data; track s.id) {
+                <tr>
+                  <td><strong>{{ s.period_code }}</strong></td>
+                  <td><nz-tag [nzColor]="getLedgerTypeColor(s.ledger_type)">{{ s.ledger_type }}</nz-tag></td>
+                  <td>{{ s.opening_book_value | money: asset().currency }}</td>
+                  <td><strong style="color: #cf1322">{{ s.depreciation_amount | money: asset().currency }}</strong></td>
+                  <td>{{ s.closing_book_value | money: asset().currency }}</td>
+                  <td>{{ s.accumulated_depreciation | money: asset().currency }}</td>
+                  <td>
+                    <nz-tag [nzColor]="s.status === 'posted' ? 'green' : 'blue'">{{ s.status }}</nz-tag>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </nz-tab>
+
+      <!-- TAB 4: MAINTENANCE WORK ORDERS -->
+      <nz-tab nzTitle="Maintenance">
+        <div class="tab-content">
+          <nz-table
+            #woTable
+            [nzData]="workOrders()"
+            [nzLoading]="loadingWorkOrders()"
+            [nzFrontPagination]="true"
+            nzSize="small"
+          >
+            <thead>
+              <tr>
+                <th>WO Number</th>
+                <th>Type</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Scheduled Date</th>
+                <th>Total Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (wo of woTable.data; track wo.id) {
+                <tr>
+                  <td><strong>{{ wo.work_order_number || 'WO-N/A' }}</strong></td>
+                  <td><nz-tag>{{ wo.maintenance_type }}</nz-tag></td>
+                  <td><nz-tag nzColor="blue">{{ wo.priority }}</nz-tag></td>
+                  <td><nz-tag>{{ wo.status }}</nz-tag></td>
+                  <td>{{ wo.scheduled_date || '—' }}</td>
+                  <td>{{ wo.total_cost ? (wo.total_cost | money: asset().currency) : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </nz-tab>
+    </nz-tabs>
+  </ng-container>
+</nz-drawer>

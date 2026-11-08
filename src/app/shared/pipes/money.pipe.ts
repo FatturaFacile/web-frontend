@@ -11,8 +11,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class MoneyPipe implements PipeTransform {
   transform(
     value: string | number | null | undefined,
-    currencyCode = 'EUR',
-    locale = 'it-IT',
+    currencyCode: string | null | undefined = 'EUR',
+    locale: string | null | undefined = 'it-IT',
   ): string {
     if (value === null || value === undefined || value === '') {
       return '';
@@ -23,9 +23,12 @@ export class MoneyPipe implements PipeTransform {
       return '';
     }
 
-    return new Intl.NumberFormat(locale, {
+    const code = currencyCode || 'EUR';
+    const loc = locale || 'it-IT';
+
+    return new Intl.NumberFormat(loc, {
       style: 'currency',
-      currency: currencyCode,
+      currency: code,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(numericValue);
