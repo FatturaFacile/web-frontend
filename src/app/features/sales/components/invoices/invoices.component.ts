@@ -1,28 +1,38 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { finalize, Observable, switchMap } from 'rxjs';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzQRCodeComponent } from 'ng-zorro-antd/qr-code';
 import {
+  CreateCreditNotePayload,
   I18nService,
   InvoiceApiService,
   InvoiceDetailResource,
+  InvoiceInstallment,
   InvoiceResource,
   InvoiceStatus,
   Jurisdiction,
   PaymentStatus,
+  SdiLogsData,
+  SwissQrBillData,
 } from '@core';
 import {
   BaseTableComponent,
+  MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
@@ -53,18 +63,25 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
 @Component({
   selector: 'app-invoices',
   imports: [
-    NzModalModule,
+    ReactiveFormsModule,
     FormsModule,
     CurrencyPipe,
     DatePipe,
+    MoneyPipe,
     NzTagModule,
     NzCardModule,
     NzButtonModule,
     NzInputModule,
+    NzInputNumberModule,
     NzSelectModule,
+    NzTableModule,
     NzIconModule,
     NzDropdownModule,
     NzMenuModule,
+    NzModalModule,
+    NzDividerModule,
+    NzFormModule,
+    NzQRCodeComponent,
     BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
@@ -79,10 +96,36 @@ export class InvoicesComponent {
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
   private readonly i18n = inject(I18nService);
+  private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly drawerOpen = signal(false);
   protected readonly template = signal<InvoiceDetailResource | null>(null);
   protected readonly busyId = signal<string | null>(null);
+
+  // Swiss QR-Bill Modal
+  readonly qrModalVisible = signal(false);
+  readonly currentQrBill = signal<SwissQrBillData | null>(null);
+
+  // SDI Logs Modal
+  readonly sdiLogsModalVisible = signal(false);
+  readonly currentSdiLogs = signal<SdiLogsData | null>(null);
+
+  // Installments Modal
+  readonly installmentsModalVisible = signal(false);
+  readonly currentInstallments = signal<InvoiceInstallment[]>([]);
+
+  // Credit Note Modal
+  readonly creditNoteModalVisible = signal(false);
+  readonly savingCreditNote = signal(false);
+  readonly creditNoteForm = this.fb.group({
+    original_invoice_id: this.fb.control('', [Validators.required]),
+    date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
+    notes: this.fb.control(''),
+    description: this.fb.control('Storno parziale / Nota di credito', [Validators.required]),
+    quantity: this.fb.control(1, [Validators.required, Validators.min(0.001)]),
+    unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
+    tax_rate: this.fb.control(22, [Validators.required]),
+  });
 
   // Template views
   private readonly numberTpl =
@@ -204,6 +247,14 @@ export class InvoicesComponent {
     this.run(inv, this.api.downloadPdf(inv.id), null, (blob) => this.openBlob(blob));
   }
 
+  // Swiss QR-Bill
+  protected viewQrBill(inv: InvoiceResource): void {
+    this.run(inv, this.api.getQrBill(inv.id), null, (res) => {
+      this.currentQrBill.set(res.data);
+      this.qrModalVisible.set(true);
+    });
+  }
+
   protected generateQrBill(inv: InvoiceResource): void {
     this.run(
       inv,
@@ -222,12 +273,107 @@ export class InvoicesComponent {
     );
   }
 
+  // SDI Electronic Invoice (FatturaPA)
   protected confirmSdi(inv: InvoiceResource): void {
     this.confirm('SALES.INVOICES.ACTIONS.CONFIRM_SDI', () =>
       this.run(inv, this.api.sendToSdi(inv.id), 'SALES.INVOICES.MESSAGES.SDI_SENT', () =>
         this.facade.reload(),
       ),
     );
+  }
+
+  protected generateSdiXml(inv: InvoiceResource): void {
+    this.run(inv, this.api.generateSdiXml(inv.id), null, (res) => {
+      this.message.success(`FatturaPA XML generato con successo (${res.data.status})`);
+      this.facade.reload();
+    });
+  }
+
+  protected viewSdiLogs(inv: InvoiceResource): void {
+    this.run(inv, this.api.getSdiLogs(inv.id), null, (res) => {
+      this.currentSdiLogs.set(res.data);
+      this.sdiLogsModalVisible.set(true);
+    });
+  }
+
+  protected sendBulkSdi(): void {
+    const items = this.facade.items();
+    const itInvoiceIds = items
+      .filter((i) => (i.jurisdiction ?? (i.currency === 'CHF' ? 'CH' : 'IT')) === 'IT' && i.status !== 'cancelled')
+      .map((i) => i.id);
+
+    if (itInvoiceIds.length === 0) {
+      this.message.info('Nessuna fattura italiana selezionabile per l\'invio SDI');
+      return;
+    }
+
+    this.confirm('Confermi l\'invio massivo delle fatture a SDI?', () => {
+      this.api.sendSdiBulk(itInvoiceIds).subscribe({
+        next: (res) => {
+          this.message.success(`Invio massivo SDI completato: ${res.data.sent} inviate, ${res.data.failed} fallite`);
+          this.facade.reload();
+        },
+        error: () => this.message.error('Errore durante l\'invio massivo SDI'),
+      });
+    });
+  }
+
+  // Credit Notes
+  protected openCreditNoteModal(inv: InvoiceResource): void {
+    this.creditNoteForm.reset({
+      original_invoice_id: inv.id,
+      date: new Date().toISOString().substring(0, 10),
+      notes: `Nota di credito per fattura ${inv.invoice_number}`,
+      description: `Storno riferimento fattura ${inv.invoice_number}`,
+      quantity: 1,
+      unit_price: inv.total || 0,
+      tax_rate: inv.currency === 'CHF' ? 8.1 : 22,
+    });
+    this.creditNoteModalVisible.set(true);
+  }
+
+  protected submitCreditNote(): void {
+    if (this.creditNoteForm.invalid) {
+      this.creditNoteForm.markAllAsTouched();
+      return;
+    }
+
+    this.savingCreditNote.set(true);
+    const formVal = this.creditNoteForm.getRawValue();
+    const payload: CreateCreditNotePayload = {
+      original_invoice_id: formVal.original_invoice_id,
+      date: formVal.date,
+      notes: formVal.notes || undefined,
+      items: [
+        {
+          description: formVal.description,
+          quantity: Number(formVal.quantity),
+          unit_price: Number(formVal.unit_price),
+          tax_rate: Number(formVal.tax_rate),
+        },
+      ],
+    };
+
+    this.api.createCreditNote(payload).subscribe({
+      next: (res) => {
+        this.savingCreditNote.set(false);
+        this.creditNoteModalVisible.set(false);
+        this.message.success(`Nota di credito ${res.data.credit_note_number} creata con successo`);
+        this.facade.reload();
+      },
+      error: () => {
+        this.savingCreditNote.set(false);
+        this.message.error('Errore durante la creazione della nota di credito');
+      },
+    });
+  }
+
+  // Installments / Scadenze
+  protected viewInstallments(inv: InvoiceResource): void {
+    this.run(inv, this.api.getInstallments(inv.id), null, (res) => {
+      this.currentInstallments.set(res.data || []);
+      this.installmentsModalVisible.set(true);
+    });
   }
 
   protected confirmProforma(inv: InvoiceResource): void {

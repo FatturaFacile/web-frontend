@@ -1,4 +1,4 @@
-﻿import { QueryFilterParams } from './api.models';
+import { QueryFilterParams } from './api.models';
 import { ContactResource } from './client.model';
 
 export type InvoiceStatus = 'draft' | 'issued' | 'paid' | 'cancelled';
@@ -18,7 +18,6 @@ export interface InvoiceResource {
   total: number;
   currency: string;
   has_swiss_qr: boolean;
-  /** Not in the documented schema; present on some payloads, handled defensively. */
   jurisdiction?: Jurisdiction;
   invoice_type?: InvoiceType;
   payment_status?: PaymentStatus;
@@ -75,4 +74,76 @@ export interface InvoiceFilterParams extends QueryFilterParams {
 export interface SendDocumentEmailPayload {
   to?: string | null;
   message?: string | null;
+}
+
+export interface SwissQrBillData {
+  payload: string;
+  svg?: string;
+  png?: string;
+  reference_type: 'NON' | 'QRR' | 'SCOR' | string;
+  reference: string | null;
+  iban: string;
+  currency: string;
+  amount: number;
+}
+
+export interface BulkSdiResult {
+  sent: number;
+  failed: number;
+  results: Array<{
+    id?: string;
+    invoice_id?: string;
+    success?: boolean;
+    status?: string;
+    error?: string;
+  }>;
+}
+
+export interface SdiLogEntry {
+  id?: string;
+  action?: string;
+  status?: string;
+  transmitted_at?: string;
+  receipt_code?: string;
+  details?: string | null;
+  created_at?: string;
+}
+
+export interface SdiLogsData {
+  outbound: SdiLogEntry[];
+  inbound: SdiLogEntry[];
+}
+
+export interface CreateCreditNotePayload {
+  original_invoice_id: string;
+  date?: string | null;
+  notes?: string | null;
+  items: Array<{
+    product_id?: string | null;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    tax_rate: number;
+  }>;
+}
+
+export interface CreditNoteResource {
+  id: string;
+  credit_note_number: string;
+  original_invoice_id: string;
+  contact_id: string;
+  date: string;
+  currency: string;
+  total_net: number;
+  total_tax: number;
+  total_gross: number;
+  status: string;
+}
+
+export interface InvoiceInstallment {
+  id?: string;
+  installment_number: number;
+  due_date: string;
+  amount: number;
+  status: 'unpaid' | 'paid' | 'overdue' | string;
 }

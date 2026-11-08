@@ -35,6 +35,9 @@
     />
 
     <span class="spacer"></span>
+    <button nz-button nzType="default" type="button" (click)="sendBulkSdi()" style="margin-right: 8px">
+      <nz-icon nzType="send" /> Invia SDI (Massivo)
+    </button>
     <button nz-button nzType="primary" type="button" (click)="create()">
       <nz-icon nzType="plus" /> {{ "SALES.INVOICES.NEW" | translate }}
     </button>
@@ -108,11 +111,19 @@
         >
           <nz-icon nzType="mail" /> {{ "SALES.INVOICES.ACTIONS.SEND_EMAIL" | translate }}
         </li>
+
         @if (jurisdictionOf(inv) === "IT") {
           <li nz-menu-item tabindex="0" (click)="confirmSdi(inv)" (keydown.enter)="confirmSdi(inv)">
             <nz-icon nzType="send" /> {{ "SALES.INVOICES.ACTIONS.SEND_SDI" | translate }}
           </li>
+          <li nz-menu-item tabindex="0" (click)="generateSdiXml(inv)" (keydown.enter)="generateSdiXml(inv)">
+            <nz-icon nzType="file-text" /> Genera FatturaPA XML
+          </li>
+          <li nz-menu-item tabindex="0" (click)="viewSdiLogs(inv)" (keydown.enter)="viewSdiLogs(inv)">
+            <nz-icon nzType="audit" /> Log Trasmissioni SDI
+          </li>
         }
+
         @if (jurisdictionOf(inv) === "CH") {
           <li
             nz-menu-item
@@ -122,7 +133,24 @@
           >
             <nz-icon nzType="qrcode" /> {{ "SALES.INVOICES.ACTIONS.GENERATE_QR_BILL" | translate }}
           </li>
+          <li
+            nz-menu-item
+            tabindex="0"
+            (click)="viewQrBill(inv)"
+            (keydown.enter)="viewQrBill(inv)"
+          >
+            <nz-icon nzType="eye" /> Visualizza Swiss QR-Bill
+          </li>
         }
+
+        <li nz-menu-item tabindex="0" (click)="viewInstallments(inv)" (keydown.enter)="viewInstallments(inv)">
+          <nz-icon nzType="dollar" /> Scadenze / Rate
+        </li>
+
+        <li nz-menu-item tabindex="0" (click)="openCreditNoteModal(inv)" (keydown.enter)="openCreditNoteModal(inv)">
+          <nz-icon nzType="redo" /> Crea Nota di Credito
+        </li>
+
         @if (inv.invoice_type === "proforma") {
           <li
             nz-menu-item
@@ -148,3 +176,183 @@
   (openChange)="drawerOpen.set($event)"
   (saved)="facade.reload()"
 />
+
+<!-- Swiss QR-Bill Modal -->
+<nz-modal
+  [nzVisible]="qrModalVisible()"
+  nzTitle="Swiss QR-Bill (Polizza di versamento)"
+  [nzFooter]="qrModalFooter"
+  (nzOnCancel)="qrModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (currentQrBill(); as qr) {
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+        <nz-qrcode [nzValue]="qr.payload || ''" [nzSize]="220"></nz-qrcode>
+        <div style="width: 100%; font-size: 13px;">
+          <div><strong>IBAN:</strong> {{ qr.iban }}</div>
+          <div><strong>Importo:</strong> {{ qr.amount | money: qr.currency }}</div>
+          <div><strong>Tipo Riferimento:</strong> {{ qr.reference_type }}</div>
+          <div><strong>Riferimento:</strong> {{ qr.reference || 'N/A' }}</div>
+        </div>
+      </div>
+    }
+  </ng-container>
+  <ng-template #qrModalFooter>
+    <button nz-button nzType="primary" (click)="qrModalVisible.set(false)">Chiudi</button>
+  </ng-template>
+</nz-modal>
+
+<!-- SDI Logs Modal -->
+<nz-modal
+  [nzVisible]="sdiLogsModalVisible()"
+  nzTitle="Log Trasmissioni SDI FatturaPA"
+  nzWidth="720px"
+  [nzFooter]="sdiFooter"
+  (nzOnCancel)="sdiLogsModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (currentSdiLogs(); as sdi) {
+      <div>
+        <h4>Invii verso SDI (Outbound)</h4>
+        <nz-table #outTable [nzData]="sdi.outbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
+          <thead>
+            <tr>
+              <th>Azione</th>
+              <th>Data Trasmissione</th>
+              <th>Stato</th>
+              <th>Dettagli</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of outTable.data; track log.id || log.transmitted_at) {
+              <tr>
+                <td>{{ log.action || 'Invio SdI' }}</td>
+                <td>{{ log.transmitted_at | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td><nz-tag [nzColor]="log.status === 'delivered' ? 'success' : 'processing'">{{ log.status }}</nz-tag></td>
+                <td>{{ log.details || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <nz-divider></nz-divider>
+
+        <h4>Notifiche e Ricevute SDI (Inbound)</h4>
+        <nz-table #inTable [nzData]="sdi.inbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
+          <thead>
+            <tr>
+              <th>Azione / Ricevuta</th>
+              <th>Data Ricezione</th>
+              <th>Stato</th>
+              <th>Dettagli / Codice</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rcpt of inTable.data; track rcpt.id || rcpt.transmitted_at) {
+              <tr>
+                <td><strong>{{ rcpt.action || rcpt.receipt_code || 'Ricevuta' }}</strong></td>
+                <td>{{ rcpt.transmitted_at || rcpt.created_at | date: 'dd.MM.yyyy HH:mm' }}</td>
+                <td><nz-tag [nzColor]="rcpt.status === 'accepted' ? 'success' : 'error'">{{ rcpt.status }}</nz-tag></td>
+                <td>{{ rcpt.details || rcpt.receipt_code || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+  <ng-template #sdiFooter>
+    <button nz-button nzType="primary" (click)="sdiLogsModalVisible.set(false)">Chiudi</button>
+  </ng-template>
+</nz-modal>
+
+<!-- Credit Note Modal -->
+<nz-modal
+  [nzVisible]="creditNoteModalVisible()"
+  nzTitle="Emetti Nota di Credito"
+  [nzOkLoading]="savingCreditNote()"
+  (nzOnCancel)="creditNoteModalVisible.set(false)"
+  (nzOnOk)="submitCreditNote()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="creditNoteForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Data Emissione</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>Descrizione Voce</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="description" placeholder="Descrizione riga nota di credito" />
+        </nz-form-control>
+      </nz-form-item>
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Quantità</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="quantity" [nzMin]="0.01" style="width: 100%;"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="unit_price" [nzMin]="0" style="width: 100%;"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Aliquota IVA %</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="tax_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label>Note</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input rows="2" formControlName="notes" placeholder="Note interne o per il cliente"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Installments / Scadenze Modal -->
+<nz-modal
+  [nzVisible]="installmentsModalVisible()"
+  nzTitle="Piano Rateale / Scadenze Pagamento"
+  nzWidth="600px"
+  [nzFooter]="instFooter"
+  (nzOnCancel)="installmentsModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <nz-table #instTable [nzData]="currentInstallments()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th>Rata</th>
+          <th>Scadenza</th>
+          <th>Importo</th>
+          <th>Stato</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of instTable.data; track item.id) {
+          <tr>
+            <td>#{{ item.installment_number }}</td>
+            <td>{{ item.due_date | date: 'dd.MM.yyyy' }}</td>
+            <td><strong>{{ item.amount | money: 'EUR' }}</strong></td>
+            <td>
+              <nz-tag [nzColor]="item.status === 'paid' ? 'success' : item.status === 'overdue' ? 'error' : 'default'">
+                {{ item.status }}
+              </nz-tag>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <ng-template #instFooter>
+    <button nz-button nzType="primary" (click)="installmentsModalVisible.set(false)">Chiudi</button>
+  </ng-template>
+</nz-modal>
