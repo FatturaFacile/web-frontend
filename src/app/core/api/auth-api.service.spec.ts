@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { AuthApiService, LoginPayload } from './auth-api.service';
+import { AuthApiService, LoginPayload } from '@core/api/auth-api.service';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 import { TEST_PASSWORD } from '../../../testing/credentials';

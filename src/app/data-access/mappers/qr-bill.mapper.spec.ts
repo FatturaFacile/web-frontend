@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { QrBillDto } from '../dtos/qr-bill.dto';
-import { QrBillMapper } from './qr-bill.mapper';
+import { QrBillDto } from '@data-access/dtos/qr-bill.dto';
+import { QrBillMapper } from '@data-access/mappers/qr-bill.mapper';
 
 describe('QrBillMapper', () => {
   const sampleDto: QrBillDto = {

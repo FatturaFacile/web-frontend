@@ -45,7 +45,7 @@ export class LookupSelectComponent implements ControlValueAccessor {
     effect(() => {
       const cat = this.category();
       if (cat) {
-        this.loadItems(cat);
+        void this.loadItems(cat);
       }
     });
   }

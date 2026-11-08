@@ -4,7 +4,7 @@ import {
   getSanctumBaseUrl,
   getCsrfCookieUrl,
   isBackendApiRequest,
-} from './csrf.utils';
+} from '@core/auth/csrf.utils';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 

@@ -6,7 +6,6 @@ export * from './auth/csrf.utils';
 export * from './api/auth-api.service';
 export { AuthService } from './services/auth.service';
 export * from './auth/auth.store';
-export * from './config/app-config.token';
 export * from './interceptors/credentials.interceptor';
 export * from './interceptors/csrf-refresh.interceptor';
 export * from './interceptors/tenant-auth.interceptor';

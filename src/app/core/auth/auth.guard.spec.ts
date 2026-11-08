@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
-import { authGuard, guestGuard, roleGuard } from './auth.guard';
-import { AuthStore } from './auth.store';
-import { AuthApiService } from '../api/auth-api.service';
-import { I18nService } from '../i18n';
+import { authGuard, guestGuard, roleGuard } from '@core/auth/auth.guard';
+import { AuthStore } from '@core/auth/auth.store';
+import { AuthApiService } from '@core/api/auth-api.service';
+import { I18nService } from '@core/i18n';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 

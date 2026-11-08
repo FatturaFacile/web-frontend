@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { I18nService } from '@core';
-import { TranslatePipe } from './translate.pipe';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 describe('TranslatePipe', () => {
   let pipe: TranslatePipe;

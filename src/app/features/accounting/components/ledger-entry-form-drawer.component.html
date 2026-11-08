@@ -52,7 +52,7 @@
       </div>
 
       <div formArrayName="lines" class="lines-container">
-        @for (line of linesArray.controls; track $index) {
+        @for (line of linesArray.controls; track line) {
           <div [formGroupName]="$index" class="line-row">
             <div class="field-account">
               <input

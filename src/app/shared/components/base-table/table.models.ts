@@ -19,25 +19,12 @@ export interface TableColumnDef<TItem = unknown> {
   customFilterTemplate?: TemplateRef<{ column: TableColumnDef<TItem> }>;
 }
 
-export interface TablePaginationState {
-  pageIndex: number;
-  pageSize: number;
-  total: number;
-}
-
 export interface TableSortState {
   key: string;
   order: SortOrder;
 }
 
 export type TableFilterState = Record<string, unknown>;
-
-export interface TableSelectionState<TItem> {
-  selectedKeys: Set<string | number>;
-  selectedItems: TItem[];
-  allSelected: boolean;
-  indeterminate: boolean;
-}
 
 export interface TableQueryParams {
   pageIndex: number;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessModule, MODULE_ACCESS } from './permissions';
+import { canAccessModule, MODULE_ACCESS } from '@core/auth/permissions';
 
 describe('canAccessModule', () => {
   it('lets every member read modules open to any member', () => {

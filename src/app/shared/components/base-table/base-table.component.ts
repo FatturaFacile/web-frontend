@@ -224,7 +224,7 @@ export class BaseTableComponent<TItem extends object = object> {
   }
 
   isFilterVisible(key: string | keyof TItem): boolean {
-    return !!this.filterVisible[String(key)];
+    return this.filterVisible[String(key)] ?? false;
   }
 
   setFilterVisible(key: string | keyof TItem, visible: boolean): void {

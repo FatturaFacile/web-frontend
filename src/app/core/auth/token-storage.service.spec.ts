@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { TokenStorageService } from './token-storage.service';
+import { TokenStorageService } from '@core/auth/token-storage.service';
 
 describe('TokenStorageService', () => {
   let service: TokenStorageService;
