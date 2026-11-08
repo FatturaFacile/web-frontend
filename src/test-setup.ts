@@ -1,13 +1,10 @@
 import '@angular/localize/init';
 import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
+getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
 // Mock fetch for Vitest / JSDOM environment to serve local static i18n JSON files
 const originalFetch = globalThis.fetch;

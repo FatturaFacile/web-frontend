@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { resolveInitialLanguage } from './i18n.types';
+import { resolveInitialLanguage } from '@core/i18n/i18n.types';
 
 describe('resolveInitialLanguage', () => {
   function browserLanguages(...languages: string[]) {

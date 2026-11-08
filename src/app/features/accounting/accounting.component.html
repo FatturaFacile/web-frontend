@@ -103,7 +103,7 @@
 />
 
 <!-- Shared Templates -->
-<ng-template #dateTpl let-item let-val="value">
+<ng-template #dateTpl let-val="value">
   {{ val | date: "dd.MM.yyyy" }}
 </ng-template>
 
@@ -111,11 +111,11 @@
   {{ val | currency: item.currency || "EUR" : "symbol" : "1.2-2" }}
 </ng-template>
 
-<ng-template #accountTypeTpl let-item let-val="value">
+<ng-template #accountTypeTpl let-val="value">
   <nz-tag [nzColor]="getAccountTypeColor(val)">{{ 'accounting.accountTypes.' + val | translate }}</nz-tag>
 </ng-template>
 
-<ng-template #vatStatusTpl let-item let-val="value">
+<ng-template #vatStatusTpl let-val="value">
   <nz-tag [nzColor]="val === 'paid' ? 'success' : val === 'settled' ? 'processing' : 'default'">
     {{ 'accounting.vatStatuses.' + val | translate }}
   </nz-tag>

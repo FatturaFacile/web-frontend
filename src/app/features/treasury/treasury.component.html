@@ -140,7 +140,7 @@
 </nz-modal>
 
 <!-- Shared Templates -->
-<ng-template #dateTpl let-item let-val="value">
+<ng-template #dateTpl let-val="value">
   {{ val | date: "dd.MM.yyyy" }}
 </ng-template>
 
@@ -150,13 +150,13 @@
   </strong>
 </ng-template>
 
-<ng-template #reconciledTpl let-item let-val="value">
+<ng-template #reconciledTpl let-val="value">
   <nz-tag [nzColor]="val ? 'success' : 'warning'">
     {{ (val ? 'treasury.reconciled.yes' : 'treasury.reconciled.no') | translate }}
   </nz-tag>
 </ng-template>
 
-<ng-template #statusTpl let-item let-val="value">
+<ng-template #statusTpl let-val="value">
   <nz-tag
     [nzColor]="
       val === 'reconciled' ? 'success' : val === 'partially_reconciled' ? 'processing' : 'default'

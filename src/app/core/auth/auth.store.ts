@@ -160,7 +160,7 @@ export const AuthStore = signalStore(
     },
     setLocale(activeLocale: SupportedLanguage): void {
       patchState(store, { activeLocale });
-      i18n.setLanguage(activeLocale);
+      void i18n.setLanguage(activeLocale);
     },
     toggleTheme(): void {
       const newTheme: 'light' | 'dark' = store.theme() === 'dark' ? 'light' : 'dark';

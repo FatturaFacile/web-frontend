@@ -140,6 +140,10 @@ jobs:
 
       - name: Qodana Scan
         uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
+        with:
+          # Full scan also on pull requests (as on dev) and keep the SARIF report as an artifact
+          pr-mode: false
+          upload-result: true
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
 

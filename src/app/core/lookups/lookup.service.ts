@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
-import { I18nService } from '../i18n/i18n.service';
+import { I18nService } from '@core/i18n/i18n.service';
 import { LookupApiResponse, LookupItemDto, SaveLookupTranslationPayload } from './lookup.types';
 
 @Injectable({

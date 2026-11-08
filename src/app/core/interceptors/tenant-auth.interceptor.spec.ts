@@ -3,7 +3,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { tenantAuthInterceptor } from './tenant-auth.interceptor';
+import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 
