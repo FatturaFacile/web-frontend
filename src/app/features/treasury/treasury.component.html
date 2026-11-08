@@ -30,17 +30,18 @@
   <nz-tabs [(nzSelectedIndex)]="selectedTab">
     <!-- TAB 1: MOVIMENTI BANCARI -->
     <nz-tab [nzTitle]="'treasury.tabs.bankMovements' | translate">
-      <div class="tab-toolbar">
+      <div class="tab-toolbar" style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
         <input
           class="search-input"
           nz-input
           type="search"
+          style="max-width: 260px;"
           [placeholder]="'treasury.searchPlaceholder' | translate"
           [ngModel]="tableState.search()"
           (ngModelChange)="onSearchChange($event)"
         />
 
-        <span class="spacer"></span>
+        <span class="spacer" style="flex: 1;"></span>
         <button
           nz-button
           nzType="default"
@@ -68,13 +69,27 @@
 
     <!-- TAB 2: CONTI BANCARI -->
     <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Rapporti bancari attivi, IBAN verificati e linee di credito.</span>
+        <button nz-button nzType="primary" (click)="openAccountModal()">
+          <nz-icon nzType="plus" /> Nuovo Conto Bancario
+        </button>
+      </div>
+
       <app-base-table
         [data]="bankAccounts()"
         [columns]="accountColumns()"
         [loading]="loadingAccounts()"
         [total]="bankAccounts().length"
         [scroll]="{ x: '900px' }"
+        [actionsTemplate]="accountActionsTpl"
       />
+
+      <ng-template #accountActionsTpl let-acc>
+        <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteAccount(acc)">
+          Elimina
+        </button>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: ESTRATTI CONTO IMPORTATI -->
@@ -100,8 +115,260 @@
         </button>
       </ng-template>
     </nz-tab>
+
+    <!-- TAB 4: DISTINTE DI PAGAMENTO (SEPA / PAIN.001 / RIBA) -->
+    <nz-tab nzTitle="Distinte di Pagamento (Bonifici & RiBa)">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Distinte dispositive SEPA Credit Transfer (pain.001), RiBa elettroniche e bonifici esteri.</span>
+        <button nz-button nzType="primary" (click)="openBatchModal()">
+          <nz-icon nzType="plus" /> Nuova Distinta Pagamento
+        </button>
+      </div>
+
+      <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+        <thead>
+          <tr>
+            <th>Riferimento Distinta</th>
+            <th>Metodo Pagamento</th>
+            <th>Data Esecuzione</th>
+            <th>Importo Totale</th>
+            <th>Stato</th>
+            <th nzAlign="right">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of pbTable.data; track b.id || b.batch_reference) {
+            <tr>
+              <td><strong>{{ b.batch_reference }}</strong></td>
+              <td><code>{{ b.payment_method }}</code></td>
+              <td>{{ b.execution_date | date: 'dd.MM.yyyy' }}</td>
+              <td><strong>{{ b.total_amount | money: b.currency }}</strong></td>
+              <td>
+                <nz-tag [nzColor]="batchStatusColor(b.status)">{{ b.status }}</nz-tag>
+              </td>
+              <td nzAlign="right">
+                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                  @if (b.status === 'draft') {
+                    <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
+                      Invia Appr.
+                    </button>
+                  }
+                  @if (b.status === 'pending_approval') {
+                    <button nz-button nzSize="small" nzType="primary" (click)="approveBatch(b)">
+                      Approva
+                    </button>
+                  }
+                  @if (b.status === 'approved') {
+                    <button nz-button nzSize="small" nzType="default" (click)="exportBatchXml(b)">
+                      <nz-icon nzType="upload" /> Genera XML
+                    </button>
+                  }
+                  @if (b.status === 'exported' || b.status === 'approved') {
+                    <button nz-button nzSize="small" nzType="primary" (click)="downloadBatchXml(b)">
+                      <nz-icon nzType="download" /> Scarica XML
+                    </button>
+                  }
+                  @if (b.status !== 'cancelled' && b.status !== 'executed') {
+                    <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelBatch(b)">
+                      Annulla
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 5: PREVISIONI FLUSSI DI CASSA (CASH FORECASTS) -->
+    <nz-tab nzTitle="Previsione Flussi di Cassa">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">Analisi della liquidità prospettica e simulazione deficit di cassa.</span>
+        <div style="display: flex; gap: 8px;">
+          <button nz-button nzType="default" (click)="generateForecast(30)">
+            <nz-icon nzType="sync" /> Previsione 30gg
+          </button>
+          <button nz-button nzType="primary" (click)="generateForecast(90)">
+            <nz-icon nzType="sync" /> Previsione 90gg
+          </button>
+        </div>
+      </div>
+
+      <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+        <thead>
+          <tr>
+            <th>Data Analisi</th>
+            <th>Orizzonte (Giorni)</th>
+            <th>Cassa Iniziale</th>
+            <th>Entrate Previste</th>
+            <th>Uscite Previste</th>
+            <th>Saldo Finale Previsto</th>
+            <th>Rischio Deficit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cf of cfTable.data; track cf.id || cf.forecast_date) {
+            <tr>
+              <td>{{ cf.forecast_date | date: 'dd.MM.yyyy' }}</td>
+              <td>{{ cf.horizon_days }} giorni</td>
+              <td>{{ cf.opening_cash | money: cf.currency }}</td>
+              <td style="color: #389e0d;">+{{ cf.expected_inflows | money: cf.currency }}</td>
+              <td style="color: #cf1322;">-{{ cf.expected_outflows | money: cf.currency }}</td>
+              <td><strong>{{ cf.projected_cash | money: cf.currency }}</strong></td>
+              <td>
+                <nz-tag [nzColor]="cf.deficit_identified ? 'error' : 'success'">
+                  {{ cf.deficit_identified ? 'Rischio Deficit' : 'Copertura OK' }}
+                </nz-tag>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
   </nz-tabs>
 </nz-card>
+
+<!-- Modal: Nuovo Conto Bancario -->
+<nz-modal
+  [nzVisible]="accountModalVisible()"
+  nzTitle="Registra Nuovo Conto Bancario"
+  nzOkText="Salva Conto"
+  nzCancelText="Annulla"
+  (nzOnCancel)="accountModalVisible.set(false)"
+  (nzOnOk)="submitAccount()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="accountForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Nome Istituto / Banca</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="bank_name" placeholder="Es. Intesa Sanpaolo / UBS Switzerland" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Codice IBAN</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="iban" placeholder="IT... o CH..." />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Valuta</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="currency">
+              <nz-option nzValue="EUR" nzLabel="EUR (€)" />
+              <nz-option nzValue="CHF" nzLabel="CHF (Fr.)" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>BIC / SWIFT</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="bic_swift" placeholder="Es. BCITITMM" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>Filiale / Sede</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="branch_name" placeholder="Filiale di Lugano o Milano" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>Saldo Iniziale</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="opening_balance" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Nuova Distinta di Pagamento -->
+<nz-modal
+  [nzVisible]="batchModalVisible()"
+  nzTitle="Crea Distinta di Pagamento Dispositiva"
+  nzOkText="Crea Distinta"
+  nzCancelText="Annulla"
+  (nzOnCancel)="batchModalVisible.set(false)"
+  (nzOnOk)="submitBatch()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="batchForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Conto Ordinante</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="bank_account_id">
+            @for (acc of bankAccounts(); track acc.id) {
+              <nz-option [nzValue]="acc.id" [nzLabel]="acc.bank_name + ' (' + acc.iban + ')'" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Metodo Dispositivo</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="payment_method">
+              <nz-option nzValue="sepa_credit_transfer" nzLabel="SEPA Credit Transfer (pain.001)" />
+              <nz-option nzValue="sepa_instant" nzLabel="SEPA Instant" />
+              <nz-option nzValue="swiss_qr_pain001" nzLabel="Swiss QR pain.001" />
+              <nz-option nzValue="riba" nzLabel="Ricevuta Bancaria (RiBa)" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Riferimento Distinta</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="batch_reference" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-divider nzText="Destinatario Beneficiario"></nz-divider>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Nome Beneficiario</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="recipient_name" placeholder="Fornitore o creditore" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>IBAN Beneficiario</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="recipient_iban" placeholder="IBAN beneficiario" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div style="display: flex; gap: 12px;">
+        <nz-form-item style="flex: 1;">
+          <nz-form-label nzRequired>Importo Bonifico</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="amount" [nzMin]="0.01" style="width: 100%;" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex: 1;">
+          <nz-form-label>Causale / Riferimento</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="remittance_reference" placeholder="Es. Sald. Fatt. 44" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
 
 <!-- Modal for importing CAMT / CBI file -->
 <nz-modal
