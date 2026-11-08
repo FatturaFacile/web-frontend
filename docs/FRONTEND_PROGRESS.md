@@ -22,7 +22,7 @@
 |---|---|---|---|---|---|---|---|
 | **01** | **Foundations & Auth** | 18 | 18 | Login, Register, Verify Email, Reset Password, 2FA Wizard, Sessions Security | 45+ | **Done** | Cookie auth, 2FA challenge/confirm, sessions table, RFC 7807 interceptors |
 | **02** | **Tenant Settings & Admin** | 12 | 12 | Tenant Profile Form, Branches, Members, Roles, Audit Logs, 2FA Policy | 18 | **Done** | Covered tenant settings, branches, exchange rates sync, roles, audit logs, 2FA policy & reset |
-| **03** | **Anagrafiche (Master Data)** | 35 | 12 | Clients table, Suppliers table, Contact drawer, Products | 15 | **Todo** | `/crm/clients`, `/crm/suppliers`, articles, warehouses |
+| **03** | **Anagrafiche (Master Data)** | 35 | 30 | Clients table, Suppliers table, Contact drawer, Products, Warehouses, Price Lists | 24 | **Done** | Covered `/crm/contacts`, `/crm/clients`, `/crm/suppliers`, `/inventory/products`, `/inventory/warehouses`, `/catalog/price-lists`, `resolvePrice` |
 | **04** | **CRM & Cross-Border** | 45 | 8 | CRM Dashboard, Accounts, Contacts, Leads scoring, Pipeline Kanban, Duplicates | 12 | **Todo** | Pipeline, duplicate merge (`/crm/duplicates`), GDPR consents |
 | **05** | **Helpdesk & Ticketing** | 15 | 12 | Ticket List (server filters), Ticket Detail Drawer (3 tabs), Create Drawer, Action Modals | 18 | **Done** | Covered `/v1/esm/tickets` CRUD, status, assign, resolve, close, reopen, messages, activities |
 | **06** | **Projects & Field Service** | 32 | 0 | Tasks, Gantt, Resources, Timesheets, Budgets, Variations, Milestones, EVM | 0 | **Todo** | `/projects`, `/timesheets` |
@@ -46,8 +46,8 @@
 1. `[DONE]` **Module 01: Foundations & Auth**
 2. `[DONE]` **Module 05: Helpdesk & Ticketing (`/v1/esm/tickets`)**
 3. `[DONE]` **Module 02: Tenant Settings & Administration**
-4. `[NEXT]` **Module 03: Anagrafiche (Master Data)**
-5. `[TODO]` **Module 04: CRM (Pipeline, Duplicates, Leads)**
+4. `[DONE]` **Module 03: Anagrafiche (Master Data)**
+5. `[NEXT]` **Module 04: CRM (Pipeline, Duplicates, Leads)**
 6. `[TODO]` **Module 06: Projects (Tasks, Gantt, Timesheets)**
 7. `[TODO]` **Module 07: Asset Management (`/eam`)**
 8. `[TODO]` **Module 08: Subscriptions (`/sub/contracts`)**
