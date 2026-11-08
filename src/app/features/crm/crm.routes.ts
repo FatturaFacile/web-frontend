@@ -18,4 +18,16 @@ export const CRM_ROUTES: Routes = [
     loadComponent: () =>
       import('./clients/clients.component').then((m) => m.CrmClientsComponent),
   },
+  {
+    path: 'leads',
+    data: { breadcrumb: 'Leads & Scoring', title: 'Leads' },
+    loadComponent: () =>
+      import('./leads/leads.component').then((m) => m.LeadsComponent),
+  },
+  {
+    path: 'pipeline',
+    data: { breadcrumb: 'Pipeline & Opportunità', title: 'Pipeline' },
+    loadComponent: () =>
+      import('./pipeline/pipeline.component').then((m) => m.PipelineComponent),
+  },
 ];

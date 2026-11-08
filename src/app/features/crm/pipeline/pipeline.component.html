@@ -1,0 +1,193 @@
+<app-page-header
+  title="CRM Pipeline"
+  subtitle="Track sales opportunities, deal stages, and duplicate contact detection"
+>
+  <div header-actions>
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="default" [nzLoading]="checkingDuplicates()" (click)="checkDuplicates()">
+        <nz-icon nzType="swap" />
+        Detect Duplicates
+      </button>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="openCreateModal()">
+        <nz-icon nzType="plus" />
+        New Opportunity
+      </button>
+    </nz-space>
+  </div>
+</app-page-header>
+
+<nz-card>
+  <div class="filter-bar">
+    <div class="search-box">
+      <nz-input-group nzPrefixIcon="search">
+        <input
+          type="text"
+          nz-input
+          placeholder="Search opportunities..."
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </nz-input-group>
+    </div>
+
+    <div class="select-filters">
+      <nz-select
+        class="filter-select"
+        [nzPlaceHolder]="'Stage: All'"
+        nzAllowClear
+        [ngModel]="stageFilter()"
+        (ngModelChange)="onStageFilterChange($event)"
+      >
+        @for (st of stages(); track st.id) {
+          <nz-option [nzValue]="st.code" [nzLabel]="st.name"></nz-option>
+        }
+      </nz-select>
+
+      <button nz-button nzType="default" (click)="loadOpportunities()">
+        <nz-icon nzType="reload" />
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <nz-table
+    #oppTable
+    [nzData]="opportunities()"
+    [nzLoading]="loading()"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzFrontPagination]="false"
+    (nzQueryParams)="onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>Opportunity</th>
+        <th>Account</th>
+        <th>Amount</th>
+        <th>Stage</th>
+        <th>Forecast Category</th>
+        <th>Expected Close</th>
+        <th nzWidth="180px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (opp of oppTable.data; track opp.id) {
+        <tr>
+          <td>
+            <strong>{{ opp.name }}</strong>
+            <div class="opp-sub">{{ opp.opportunity_number }}</div>
+          </td>
+          <td>{{ opp.account?.name || '—' }}</td>
+          <td>{{ opp.amount | money: opp.currency }}</td>
+          <td>
+            <nz-select
+              [ngModel]="opp.stage?.code"
+              (ngModelChange)="changeStage(opp, $event)"
+              nzSize="small"
+              style="width: 130px"
+            >
+              @for (st of stages(); track st.id) {
+                <nz-option [nzValue]="st.code" [nzLabel]="st.name"></nz-option>
+              }
+            </nz-select>
+          </td>
+          <td>
+            <nz-tag>{{ opp.forecast_category }}</nz-tag>
+          </td>
+          <td>{{ opp.expected_close_date || '—' }}</td>
+          <td>
+            <button
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              nz-popconfirm
+              nzPopconfirmTitle="Are you sure you want to delete this opportunity?"
+              (nzOnConfirm)="deleteOpportunity(opp)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create Opportunity Modal -->
+<nz-modal
+  [nzVisible]="createModalVisible()"
+  nzTitle="New Opportunity"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateOpportunity()"
+  [nzOkLoading]="saving()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="oppForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Opportunity Name</nz-form-label>
+        <nz-form-control nzErrorTip="Name is required">
+          <input nz-input formControlName="name" placeholder="E.g. Q4 Cloud Migration" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Account ID (UUID)</nz-form-label>
+        <nz-form-control nzErrorTip="Account is required">
+          <input nz-input formControlName="account_id" placeholder="Account UUID" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Amount</nz-form-label>
+        <nz-form-control nzErrorTip="Amount is required">
+          <nz-input-number formControlName="amount" [nzMin]="0" [nzStep]="500" style="width: 100%"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Stage</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="stage_code">
+            @for (st of stages(); track st.id) {
+              <nz-option [nzValue]="st.code" [nzLabel]="st.name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Forecast Category</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="forecast_category">
+            <nz-option nzValue="pipeline" nzLabel="Pipeline"></nz-option>
+            <nz-option nzValue="best_case" nzLabel="Best Case"></nz-option>
+            <nz-option nzValue="commit" nzLabel="Commit"></nz-option>
+            <nz-option nzValue="closed" nzLabel="Closed"></nz-option>
+            <nz-option nzValue="omitted" nzLabel="Omitted"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Duplicates Modal -->
+<nz-modal
+  [nzVisible]="duplicateModalVisible()"
+  nzTitle="Potential Duplicates"
+  [nzFooter]="null"
+  (nzOnCancel)="duplicateModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (duplicateResult(); as dup) {
+      <p>Duplicate Scan Mode: <strong>{{ dup.mode }}</strong> (Entity: {{ dup.entity }})</p>
+      @if (dup.data.length === 0) {
+        <nz-empty nzNotFoundContent="No duplicate entities found."></nz-empty>
+      } @else {
+        <p>Found {{ dup.data.length }} candidate match(es).</p>
+      }
+    }
+  </ng-container>
+</nz-modal>
