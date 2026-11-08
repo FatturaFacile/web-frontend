@@ -25,7 +25,7 @@
 | **03** | **Anagrafiche (Master Data)** | 35 | 30 | Clients table, Suppliers table, Contact drawer, Products, Warehouses, Price Lists | 24 | **Done** | Covered `/crm/contacts`, `/crm/clients`, `/crm/suppliers`, `/inventory/products`, `/inventory/warehouses`, `/catalog/price-lists`, `resolvePrice` |
 | **04** | **CRM & Cross-Border** | 45 | 38 | CRM Contacts, Clients, Suppliers, Leads scoring, Pipeline Kanban & Stages, Duplicates scan & merges, Consents | 20 | **Done** | Covered `/crm/contacts`, `/crm/leads`, `/crm/opportunities`, `/crm/pipeline-stages`, `/crm/duplicates`, `/crm/contact-merges`, `/crm/consents` |
 | **05** | **Helpdesk & Ticketing** | 15 | 12 | Ticket List (server filters), Ticket Detail Drawer (3 tabs), Create Drawer, Action Modals | 18 | **Done** | Covered `/v1/esm/tickets` CRUD, status, assign, resolve, close, reopen, messages, activities |
-| **06** | **Projects & Field Service** | 32 | 0 | Tasks, Gantt, Resources, Timesheets, Budgets, Variations, Milestones, EVM | 0 | **Todo** | `/projects`, `/timesheets` |
+| **06** | **Projects & Field Service** | 32 | 26 | Projects list & lifecycle (start, pause, complete, close), Detail Drawer, Tasks & WBS, Timesheets & approval workflow, EVM indicators | 14 | **Done** | Covered `/projects` CRUD + lifecycle, `/projects/{id}/tasks`, `/projects/{id}/timesheets`, `/projects/{id}/financial-summary`, `/projects/{id}/recalculate-evm` |
 | **07** | **Asset Management (`/eam`)** | 28 | 0 | Assets list, Parallel registers, Depreciation schedules, Asset book, Maintenance | 0 | **Todo** | `/eam/assets`, `/eam/depreciations` |
 | **08** | **Subscriptions (`/sub`)** | 22 | 0 | Plans (`/subscriptions/plans`), Contracts (`/sub/contracts`), Dunning, Recurring Invoices | 0 | **Todo** | Use `/sub/contracts` instead of deprecated routes |
 | **09** | **Inventory & Logistics** | 38 | 0 | Stock balances, Signed movements, Physical inventories, Stock locations | 0 | **Todo** | Use `signed_quantity` for receipts/issues |
@@ -48,8 +48,8 @@
 3. `[DONE]` **Module 02: Tenant Settings & Administration**
 4. `[DONE]` **Module 03: Anagrafiche (Master Data)**
 5. `[DONE]` **Module 04: CRM (Pipeline, Duplicates, Leads)**
-6. `[NEXT]` **Module 06: Projects (Tasks, Gantt, Timesheets)**
-7. `[TODO]` **Module 07: Asset Management (`/eam`)**
+6. `[DONE]` **Module 06: Projects (Tasks, Gantt, Timesheets)**
+7. `[NEXT]` **Module 07: Asset Management (`/eam`)**
 8. `[TODO]` **Module 08: Subscriptions (`/sub/contracts`)**
 9. `[TODO]` **Module 09: Inventory & Logistics**
 10. `[TODO]` **Module 10: Sales & Orders**
