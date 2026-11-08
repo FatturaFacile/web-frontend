@@ -33,7 +33,7 @@ Last updated: 2026-11-09
 | **15** | **Manufacturing & MRP** | 26 | 22 | Production Orders lifecycle, BOMs (revisions, explode, activate), MRP runs & planned orders convert, Work Centers & Routings | 11 | **Done** | Covered `/v1/manufacturing/production-orders` (release/start/complete/close/cancel), `/v1/manufacturing/boms` (activate/revise/explode), `/v1/manufacturing/mrp` (runs, planned-orders convert, shortages), `/v1/manufacturing/work-centers`, `/v1/manufacturing/routings` |
 | **16** | **HR & Payroll (IT/CH)** | 30 | 22 | Employees lifecycle (hire, confirm probation, promote, terminate), Leave requests (approve/reject), Timesheets approval, Monthly Payroll runs, IT/CH Frontier workers | 9 | **Done** | Covered `/v1/hr/employees` (probation/promote/terminate), `/v1/hr/leave-requests` (approve/reject), `/v1/hr/timesheets` (approve), `/v1/payroll/runs`, `/v1/payroll/frontier-workers` |
 | **17** | **Verticals & Minor Modules** | 65 | 40 | Retail/POS telematic documents & daily corrispettivi, Automotive tire hotel check-in/out, Construction SAL progress billings, Fleet Rent bookings & check-in, Legal cases & time logs | 13 | **Done** | Covered `/v1/fiscal-retail/commercial-documents`, `/v1/fiscal-retail/corrispettivi`, `/v1/automotive/tire-hotel`, `/v1/construction/sal`, `/v1/rent/bookings`, `/v1/professionals/time-logs` |
-| **18** | **Final Polish & Dashboards** | 15 | 4 | Executive Dashboard KPIs, Global Search, Accessibility & WCAG AA audits | 8 | **Next** | Performance & accessibility verification |
+| **18** | **Final Polish & Dashboards** | 15 | 15 | Executive Dashboard KPIs, Cash Flow & Tax Deadlines, Global Search, Accessibility & WCAG AA audits, Full test suite | 3 | **Done** | Covered `/v1/dashboard/kpi-summary`, `/v1/dashboard/cash-flow-forecast`, `/v1/dashboard/tax-deadlines`, 77/77 test suites passing (444 unit tests) |
 
 ---
 
@@ -56,4 +56,8 @@ Last updated: 2026-11-09
 15. `[DONE]` **Module 15: Manufacturing & MRP**
 16. `[DONE]` **Module 16: HR & Payroll**
 17. `[DONE]` **Module 17: Verticals & Minor Modules**
-18. `[NEXT]` **Module 18: Final Polish & KPI Dashboards**
+18. `[DONE]` **Module 18: Final Polish & KPI Dashboards**
+
+---
+
+### Overall Status: ALL 18 ERP MODULES FULLY IMPLEMENTED & TESTED (444/444 tests passing, ng build passing)
