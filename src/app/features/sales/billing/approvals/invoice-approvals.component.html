@@ -1,0 +1,103 @@
+<app-page-header [title]="'SC.APPROVALS.TITLE' | translate" [subtitle]="'SC.APPROVALS.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">
+        <nz-icon nzType="plus" /> {{ 'SC.APPROVALS.NEW' | translate }}
+      </button>
+    }
+  </div>
+  <nz-table [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+    <thead>
+      <tr>
+        <th>{{ 'SC.PRICING.NAME' | translate }}</th>
+        <th>{{ 'SC.APPROVALS.TIERS' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (m of matrices(); track m.id) {
+        <tr>
+          <td>{{ m.name }}</td>
+          <td>
+            @for (t of m.tiers ?? []; track t.tier_level) {
+              <nz-tag>
+                {{ t.tier_level }}: {{ t.approver_value }} ({{ t.threshold_min ?? '0' }} - {{ t.threshold_max ?? '...' }})
+              </nz-tag>
+            }
+          </td>
+          <td>
+            @if (canWrite()) {
+              <button
+                nz-button
+                nzType="text"
+                nzDanger
+                nzSize="small"
+                type="button"
+                nz-popconfirm
+                [attr.aria-label]="'COMMON.DELETE' | translate"
+                [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
+                (nzOnConfirm)="remove(m)"
+              >
+                <nz-icon nzType="delete" />
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+  @if (!canWrite()) {
+    <p class="note">{{ 'SC.APPROVALS.READ_ONLY' | translate }}</p>
+  }
+</nz-card>
+
+<nz-modal
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'SC.APPROVALS.NEW' | translate"
+  nzWidth="820px"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid || tiers.invalid"
+  (nzOnCancel)="modalOpen.set(false)"
+  (nzOnOk)="submit()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="matrix-name">{{ 'SC.PRICING.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'SC.COMMON.REQUIRED' | translate">
+          <input nz-input id="matrix-name" maxlength="255" formControlName="name" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+    <h4 class="section">{{ 'SC.APPROVALS.TIERS' | translate }}</h4>
+    @for (tier of tiers.controls; track tier; let i = $index) {
+      <div class="tier-row" [formGroup]="$any(tier)">
+        <input nz-input type="number" min="1" formControlName="tier_level" [attr.aria-label]="'SC.APPROVALS.LEVEL' | translate" />
+        <nz-select formControlName="approver_type" [attr.aria-label]="'SC.APPROVALS.APPROVER_TYPE' | translate">
+          <nz-option nzValue="role" [nzLabel]="'SC.APPROVALS.TYPE_role' | translate"></nz-option>
+          <nz-option nzValue="user" [nzLabel]="'SC.APPROVALS.TYPE_user' | translate"></nz-option>
+        </nz-select>
+        @if (tier.get('approver_type')?.value === 'role') {
+          <nz-select formControlName="approver_value" [attr.aria-label]="'SC.APPROVALS.APPROVER' | translate">
+            @for (r of roles; track r) {
+              <nz-option [nzValue]="r" [nzLabel]="r"></nz-option>
+            }
+          </nz-select>
+        } @else {
+          <input nz-input formControlName="approver_value" [placeholder]="'SC.APPROVALS.USER_ID' | translate" [attr.aria-label]="'SC.APPROVALS.APPROVER' | translate" />
+        }
+        <input nz-input inputmode="decimal" formControlName="threshold_min" [placeholder]="'SC.APPROVALS.THRESHOLD_MIN' | translate" [attr.aria-label]="'SC.APPROVALS.THRESHOLD_MIN' | translate" />
+        <input nz-input inputmode="decimal" formControlName="threshold_max" [placeholder]="'SC.APPROVALS.THRESHOLD_MAX' | translate" [attr.aria-label]="'SC.APPROVALS.THRESHOLD_MAX' | translate" />
+        <button nz-button nzType="text" nzDanger type="button" [disabled]="tiers.length <= 1" [attr.aria-label]="'SC.LINES.REMOVE' | translate" (click)="removeTier(i)">
+          <nz-icon nzType="delete" />
+        </button>
+      </div>
+    }
+    <button nz-button nzType="dashed" type="button" (click)="addTier()">
+      <nz-icon nzType="plus" /> {{ 'SC.APPROVALS.ADD_TIER' | translate }}
+    </button>
+  </ng-container>
+</nz-modal>

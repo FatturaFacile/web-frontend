@@ -1,0 +1,259 @@
+<nz-card>
+  @if (canWrite) {
+    <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal('register')">{{ 'TR.REGISTER_NEW' | translate }}</button>
+  }
+  <nz-table #table nzSize="middle" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ 'TR.CODE' | translate }}</th>
+        <th>{{ 'TR.NAME' | translate }}</th>
+        <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+        <th>{{ 'TR.LAST_CLOSED' | translate }}</th>
+        <th>{{ 'TR.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (register of table.data; track register.id) {
+        <tr>
+          <td>{{ register.code }}</td>
+          <td>{{ register.name }}</td>
+          <td nzAlign="right">{{ register.current_balance | money: register.currency }}</td>
+          <td>{{ register.last_closed_date ?? '' }}</td>
+          <td>
+            <button nz-button nzSize="small" type="button" (click)="open(register)">{{ 'TR.OPEN' | translate }}</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+@if (selected(); as register) {
+  <nz-card [nzTitle]="register.code + ' ' + register.name" style="margin-top: 16px">
+    @if (lastClosing(); as closing) {
+      <nz-alert
+        style="margin-bottom: 16px"
+        nzShowIcon
+        nzCloseable
+        [nzType]="closing.difference === '0.00' ? 'success' : 'warning'"
+        [nzMessage]="('TR.CLOSING_DIFFERENCE' | translate) + ': ' + (closing.difference | money: register.currency)"
+        (nzOnClose)="lastClosing.set(null)"
+      />
+    }
+    <nz-tabs>
+      <nz-tab [nzTitle]="'TR.CASH_BOOK' | translate">
+        @if (canWrite) {
+          <button nz-button type="button" style="margin-bottom: 12px" (click)="openModal('movement')">{{ 'TR.MOVEMENT_NEW' | translate }}</button>
+        }
+        <nz-table #movementTable nzSize="small" [nzData]="movements()" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th>{{ 'TR.DATE' | translate }}</th>
+              <th>{{ 'TR.DIRECTION' | translate }}</th>
+              <th>{{ 'TR.PAYMENT_METHOD' | translate }}</th>
+              <th>{{ 'TR.DESCRIPTION' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movement of movementTable.data; track movement.id) {
+              <tr>
+                <td>{{ movement.movement_date }}</td>
+                <td>
+                  <nz-tag [nzColor]="movement.direction === 'in' ? 'green' : 'red'">{{ 'TR.DIRECTION_' + movement.direction.toUpperCase() | translate }}</nz-tag>
+                </td>
+                <td>{{ movement.payment_method }}</td>
+                <td>{{ movement.description }}</td>
+                <td nzAlign="right">{{ movement.amount | money: register.currency }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+      <nz-tab [nzTitle]="'TR.CLOSINGS' | translate">
+        @if (canWrite) {
+          <button nz-button type="button" style="margin-bottom: 12px" (click)="openModal('close')">{{ 'TR.DAILY_CLOSE' | translate }}</button>
+        }
+        <nz-table #closingTable nzSize="small" [nzData]="closings()" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th>{{ 'TR.DATE' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.OPENING' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.TOTAL_IN' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.TOTAL_OUT' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.EXPECTED' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.COUNTED' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.CLOSING_DIFFERENCE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (closing of closingTable.data; track closing.id) {
+              <tr>
+                <td>{{ closing.closing_date }}</td>
+                <td nzAlign="right">{{ closing.opening_balance | money: register.currency }}</td>
+                <td nzAlign="right">{{ closing.total_in | money: register.currency }}</td>
+                <td nzAlign="right">{{ closing.total_out | money: register.currency }}</td>
+                <td nzAlign="right">{{ closing.expected_balance | money: register.currency }}</td>
+                <td nzAlign="right">{{ closing.counted_balance | money: register.currency }}</td>
+                <td nzAlign="right">{{ closing.difference | money: register.currency }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+}
+
+<nz-modal
+  [nzVisible]="modal() === 'register'"
+  [nzTitle]="'TR.REGISTER_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRegister()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="registerForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cr-code">{{ 'TR.CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="registerForm.controls.code.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cr-code" nz-input formControlName="code" maxlength="50" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cr-name">{{ 'TR.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="registerForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cr-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cr-currency">{{ 'TR.CURRENCY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="registerForm.controls.currency.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cr-currency" nz-input formControlName="currency" maxlength="3" style="width: 90px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cr-gl">{{ 'TR.GL_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="registerForm.controls.gl_account_id.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-select id="cr-gl" formControlName="gl_account_id" nzShowSearch>
+            @for (account of gl.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cr-opening">{{ 'TR.OPENING' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number id="cr-opening" formControlName="opening_balance" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modal() === 'movement'"
+  [nzTitle]="'TR.MOVEMENT_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveMovement()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="movementForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cm-date">{{ 'TR.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="movementForm.controls.movement_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cm-date" nz-input type="date" formControlName="movement_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cm-direction">{{ 'TR.DIRECTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="cm-direction" formControlName="direction">
+            <nz-option nzValue="in" [nzLabel]="'TR.DIRECTION_IN' | translate" />
+            <nz-option nzValue="out" [nzLabel]="'TR.DIRECTION_OUT' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cm-method">{{ 'TR.PAYMENT_METHOD' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="cm-method" formControlName="payment_method">
+            <nz-option nzValue="cash" [nzLabel]="'TR.METHOD_CASH' | translate" />
+            <nz-option nzValue="cheque" [nzLabel]="'TR.METHOD_CHEQUE' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cm-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="movementForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-input-number id="cm-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cm-counter">{{ 'TR.COUNTER_ACCOUNT_GL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="movementForm.controls.counter_account_id.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-select id="cm-counter" formControlName="counter_account_id" nzShowSearch>
+            @for (account of gl.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cm-description">{{ 'TR.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="movementForm.controls.description.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cm-description" nz-input formControlName="description" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cm-reference">{{ 'TR.REFERENCE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="cm-reference" nz-input formControlName="reference" maxlength="100" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modal() === 'close'"
+  [nzTitle]="'TR.DAILY_CLOSE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveClose()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <p>{{ 'TR.DAILY_CLOSE_HINT' | translate }}</p>
+    <form nz-form nzLayout="vertical" [formGroup]="closeForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cc-date">{{ 'TR.CLOSING_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="closeForm.controls.closing_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="cc-date" nz-input type="date" formControlName="closing_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cc-counted">{{ 'TR.COUNTED' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="closeForm.controls.counted_balance.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-input-number id="cc-counted" formControlName="counted_balance" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cc-notes">{{ 'TR.NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea id="cc-notes" nz-input rows="2" formControlName="notes"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

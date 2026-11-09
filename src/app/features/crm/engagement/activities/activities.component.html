@@ -1,0 +1,163 @@
+<app-page-header [title]="'CRMX.ACTIVITIES.TITLE' | translate" [subtitle]="'CRMX.ACTIVITIES.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'CRMX.ACTIVITIES.TYPE' | translate"
+      [attr.aria-label]="'CRMX.ACTIVITIES.TYPE' | translate"
+      [(ngModel)]="typeFilter"
+      (ngModelChange)="load(1)"
+    >
+      @for (t of types; track t) {
+        <nz-option [nzValue]="t" [nzLabel]="'CRMX.TYPE_' + t | translate"></nz-option>
+      }
+    </nz-select>
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'CRMX.COMMON.STATUS' | translate"
+      [attr.aria-label]="'CRMX.COMMON.STATUS' | translate"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="load(1)"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="'CRMX.STATUS_' + s | translate"></nz-option>
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">
+        <nz-icon nzType="plus" /> {{ 'CRMX.ACTIVITIES.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <nz-table
+    [nzData]="items()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="15"
+    (nzPageIndexChange)="load($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</th>
+        <th>{{ 'CRMX.ACTIVITIES.TYPE' | translate }}</th>
+        <th>{{ 'CRMX.ACTIVITIES.PRIORITY' | translate }}</th>
+        <th>{{ 'CRMX.ACTIVITIES.DUE_DATE' | translate }}</th>
+        <th>{{ 'CRMX.ACTIVITIES.REMINDER' | translate }}</th>
+        <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of items(); track a.id) {
+        <tr>
+          <td>
+            {{ a.subject }}
+            @if (a.outcome) {
+              <div class="sub">{{ a.outcome }}</div>
+            }
+          </td>
+          <td>{{ 'CRMX.TYPE_' + a.type | translate }}</td>
+          <td>{{ a.priority ? ('CRMX.PRIORITY_' + a.priority | translate) : '-' }}</td>
+          <td>{{ a.due_date ?? '-' }}</td>
+          <td>{{ a.reminder_at ?? '-' }}</td>
+          <td><nz-tag>{{ 'CRMX.STATUS_' + a.status | translate }}</nz-tag></td>
+          <td>
+            @if (canWrite() && isOpen(a)) {
+              <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CRMX.ACTIVITIES.COMPLETE' | translate" (click)="openComplete(a)">
+                <nz-icon nzType="check-circle" />
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzDanger
+                nzSize="small"
+                type="button"
+                nz-popconfirm
+                [attr.aria-label]="'CRMX.ACTIVITIES.CANCEL' | translate"
+                [nzPopconfirmTitle]="'CRMX.ACTIVITIES.CANCEL_CONFIRM' | translate"
+                (nzOnConfirm)="cancel(a)"
+              >
+                <nz-icon nzType="close-circle" />
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="createOpen()"
+  [nzTitle]="'CRMX.ACTIVITIES.NEW' | translate"
+  nzWidth="640px"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!valid()"
+  (nzOnCancel)="createOpen.set(false)"
+  (nzOnOk)="save()"
+>
+  <ng-container *nzModalContent>
+    <label for="act-subject">{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</label>
+    <input nz-input id="act-subject" class="field" maxlength="255" [(ngModel)]="draft.subject" />
+    <div class="two-cols">
+      <div>
+        <label for="act-type">{{ 'CRMX.ACTIVITIES.TYPE' | translate }}</label>
+        <nz-select nzId="act-type" class="field" [(ngModel)]="draft.type">
+          @for (t of types; track t) {
+            <nz-option [nzValue]="t" [nzLabel]="'CRMX.TYPE_' + t | translate"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div>
+        <label for="act-priority">{{ 'CRMX.ACTIVITIES.PRIORITY' | translate }}</label>
+        <nz-select nzId="act-priority" class="field" [(ngModel)]="draft.priority">
+          @for (p of priorities; track p) {
+            <nz-option [nzValue]="p" [nzLabel]="'CRMX.PRIORITY_' + p | translate"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div>
+        <label for="act-due">{{ 'CRMX.ACTIVITIES.DUE_DATE' | translate }}</label>
+        <input nz-input id="act-due" type="date" class="field" [(ngModel)]="draft.due_date" />
+      </div>
+      <div>
+        <label for="act-reminder">{{ 'CRMX.ACTIVITIES.REMINDER' | translate }}</label>
+        <input nz-input id="act-reminder" type="datetime-local" class="field" [(ngModel)]="draft.reminder_at" />
+      </div>
+      <div>
+        <label for="act-related-type">{{ 'CRMX.ACTIVITIES.RELATED_TYPE' | translate }}</label>
+        <nz-select nzId="act-related-type" class="field" nzAllowClear [(ngModel)]="draft.related_type">
+          @for (r of relatedTypes; track r) {
+            <nz-option [nzValue]="r" [nzLabel]="'CRMX.RELATED_' + r | translate"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div>
+        <label for="act-related-id">{{ 'CRMX.ACTIVITIES.RELATED_ID' | translate }}</label>
+        <input nz-input id="act-related-id" class="field" [disabled]="!draft.related_type" [(ngModel)]="draft.related_id" />
+      </div>
+    </div>
+    <label for="act-notes">{{ 'CRMX.COMMON.NOTES' | translate }}</label>
+    <textarea nz-input id="act-notes" rows="3" class="field" [(ngModel)]="draft.notes"></textarea>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="!!completeTarget()"
+  [nzTitle]="'CRMX.ACTIVITIES.COMPLETE' | translate"
+  (nzOnCancel)="completeTarget.set(null)"
+  (nzOnOk)="complete()"
+>
+  <ng-container *nzModalContent>
+    <label for="act-outcome">{{ 'CRMX.ACTIVITIES.OUTCOME' | translate }}</label>
+    <textarea nz-input id="act-outcome" rows="3" class="field" [(ngModel)]="outcome"></textarea>
+  </ng-container>
+</nz-modal>

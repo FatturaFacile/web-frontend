@@ -1,0 +1,74 @@
+<app-page-header [title]="'SC.DEFERRED.TITLE' | translate" [subtitle]="'SC.DEFERRED.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'SC.DEFERRED.SINGLE' | translate">
+      <p class="hint">{{ 'SC.DEFERRED.SINGLE_HINT' | translate }}</p>
+      <nz-table [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
+            <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+            <th>{{ 'SC.COMMON.DATE' | translate }}</th>
+            <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (n of billable(); track n.id) {
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(n.id)"
+                  [attr.aria-label]="'SC.DEFERRED.SELECT' | translate: { number: n.ddt_number }"
+                  (change)="toggle(n.id, $any($event.target).checked)"
+                />
+              </td>
+              <td><code>{{ n.ddt_number }}</code></td>
+              <td>{{ lookups.contactName(n.contact_id, n.contact) }}</td>
+              <td>{{ n.date }}</td>
+              <td><nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      @if (canWrite()) {
+        <div class="toolbar">
+          <label for="def-due">{{ 'SC.BILLING.DUE_DATE' | translate }}</label>
+          <input nz-input id="def-due" type="date" class="search" [(ngModel)]="dueDate" />
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!selectedIds().size" (click)="createDeferred()">
+            <nz-icon nzType="file-done" /> {{ 'SC.DEFERRED.CREATE' | translate }} ({{ selectedIds().size }})
+          </button>
+        </div>
+      }
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SC.DEFERRED.RUN' | translate">
+      <p class="hint">{{ 'SC.DEFERRED.RUN_HINT' | translate }}</p>
+      <div class="toolbar">
+        <label for="run-up-to">{{ 'SC.PLANS.RUN_UP_TO' | translate }}</label>
+        <input nz-input id="run-up-to" type="date" class="search" [(ngModel)]="runUpTo" />
+        <nz-select
+          class="filter-select"
+          nzShowSearch
+          nzAllowClear
+          [nzPlaceHolder]="'SC.COMMON.CUSTOMER' | translate"
+          [attr.aria-label]="'SC.COMMON.CUSTOMER' | translate"
+          [(ngModel)]="runContactId"
+        >
+          @for (c of lookups.contacts(); track c.id) {
+            <nz-option [nzValue]="c.id" [nzLabel]="lookups.contactLabel(c)"></nz-option>
+          }
+        </nz-select>
+        <label for="run-due">{{ 'SC.BILLING.DUE_DATE' | translate }}</label>
+        <input nz-input id="run-due" type="date" class="search" [(ngModel)]="runDueDate" />
+        @if (canWrite()) {
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="runDeferred()">
+            <nz-icon nzType="sync" /> {{ 'SC.DEFERRED.RUN_NOW' | translate }}
+          </button>
+        }
+      </div>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>

@@ -1,0 +1,164 @@
+<section class="rp" [attr.aria-label]="labels.text(config().titleKey)">
+  <div class="rp-toolbar">
+    @if (scopeField(); as scope) {
+      @if (scope.options || scope.lookup) {
+      <nz-select
+        class="rp-filter"
+        nzShowSearch
+        nzAllowClear
+        [nzOptions]="scopeOptions()"
+        [ngModel]="scopeValue()"
+        (ngModelChange)="setScope($event)"
+        [nzPlaceHolder]="labels.field(scope.key, scope.labelKey)"
+        [attr.aria-label]="labels.field(scope.key, scope.labelKey)"
+      />
+      } @else {
+        <input nz-input class="rp-filter" [ngModel]="scopeValue()" (ngModelChange)="setScope($event)" [ngModelOptions]="{ updateOn: 'blur' }" [placeholder]="labels.field(scope.key, scope.labelKey)" [attr.aria-label]="labels.field(scope.key, scope.labelKey)" />
+      }
+    }
+    @for (filter of config().list.filters ?? []; track filter.key) {
+      @if (filter.options || filter.lookup) {
+        <nz-select
+          class="rp-filter"
+          nzAllowClear
+          [nzOptions]="filterOptions(filter)"
+          [ngModel]="filters()[filter.key]"
+          (ngModelChange)="setFilter(filter.key, $event)"
+          [nzPlaceHolder]="labels.field(filter.key, filter.labelKey)"
+          [attr.aria-label]="labels.field(filter.key, filter.labelKey)"
+        />
+      } @else {
+        <input
+          nz-input
+          class="rp-filter"
+          [type]="filter.type === 'date' ? 'date' : filter.type === 'datetime' ? 'datetime-local' : 'text'"
+          [ngModel]="filters()[filter.key]"
+          (ngModelChange)="setFilter(filter.key, $event)"
+          [placeholder]="labels.field(filter.key, filter.labelKey)"
+          [attr.aria-label]="labels.field(filter.key, filter.labelKey)"
+        />
+      }
+    }
+    @if (config().list.manual) {
+      <button nz-button nzType="primary" type="button" (click)="load()" [nzLoading]="loading()">
+        {{ 'RES.ACTION.RUN' | translate }}
+      </button>
+    } @else {
+      <button nz-button type="button" (click)="load()" [attr.aria-label]="'RES.ACTION.REFRESH' | translate">
+        <span nz-icon nzType="reload"></span>
+      </button>
+    }
+    <span class="rp-spacer"></span>
+    @for (action of visibleToolbar(); track action.key) {
+      <button nz-button type="button" [nzDanger]="action.danger === true" (click)="run(action)">
+        {{ action.labelKey | translate }}
+      </button>
+    }
+    @if (config().create && canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="run(config().create!)">
+        <span nz-icon nzType="plus"></span>{{ config().create!.labelKey | translate }}
+      </button>
+    }
+  </div>
+
+  @if (isReport()) {
+    <nz-spin [nzSpinning]="loading()">
+      @if (report() !== null) {
+        <app-resource-detail [value]="report()" />
+      } @else {
+        <nz-empty [nzNotFoundContent]="'RES.EMPTY_REPORT' | translate" />
+      }
+    </nz-spin>
+  } @else if (!ready()) {
+    <nz-empty [nzNotFoundContent]="'RES.SELECT_SCOPE' | translate" />
+  } @else {
+    <nz-table
+      #table
+      nzSize="small"
+      nzShowSizeChanger
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="total() !== null"
+      [nzTotal]="total() ?? rows().length"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzScroll]="{ x: 'max-content' }"
+      (nzQueryParams)="onQueryParams($event)"
+    >
+      <thead>
+        <tr>
+          @for (column of config().list.columns; track column.key) {
+            <th>{{ labels.field(column.key, column.labelKey) }}</th>
+          }
+          <th class="rp-actions-col">{{ 'RES.F.actions' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of table.data; track rowKey($index, row)) {
+          <tr>
+            @for (column of config().list.columns; track column.key) {
+              <td>
+                @switch (column.type) {
+                  @case ('tag') {
+                    @if (cellValue(row, column)) {
+                      <nz-tag>{{ labels.value(cellValue(row, column)) }}</nz-tag>
+                    }
+                  }
+                  @case ('bool') {
+                    <nz-tag [nzColor]="cellValue(row, column) ? 'success' : 'default'">{{ (cellValue(row, column) ? 'RES.YES' : 'RES.NO') | translate }}</nz-tag>
+                  }
+                  @default {
+                    {{ cellText(row, column) }}
+                  }
+                }
+              </td>
+            }
+            <td class="rp-actions-col">
+              @if (config().detailPath) {
+                <button nz-button nzSize="small" nzType="link" type="button" (click)="view(row)">{{ 'RES.ACTION.VIEW' | translate }}</button>
+              }
+              @for (action of rowActions(row); track action.key) {
+                <button nz-button nzSize="small" nzType="link" type="button" [nzDanger]="action.danger === true" (click)="run(action, row)">
+                  {{ action.labelKey | translate }}
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+</section>
+
+<nz-modal
+  [nzVisible]="form() !== null"
+  [nzTitle]="form() ? (form()!.action.labelKey | translate) : ''"
+  [nzFooter]="null"
+  [nzWidth]="720"
+  (nzOnCancel)="form.set(null)"
+>
+  <ng-container *nzModalContent>
+    @if (form(); as active) {
+      <app-resource-form
+        [fields]="active.action.fields ?? []"
+        [initial]="active.action.prefill ? (active.row ?? undefined) : undefined"
+        [submitLabelKey]="active.action.method === 'GET' ? 'RES.ACTION.RUN' : 'RES.ACTION.SAVE'"
+        [saveFn]="saveFn()"
+        (saved)="onSaved($event)"
+        (cancelled)="form.set(null)"
+      />
+    }
+  </ng-container>
+</nz-modal>
+
+<nz-drawer
+  [nzVisible]="resultOpen()"
+  [nzWidth]="640"
+  [nzTitle]="'RES.RESULT' | translate"
+  (nzOnClose)="resultOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    <app-resource-detail [value]="result()" />
+  </ng-container>
+</nz-drawer>

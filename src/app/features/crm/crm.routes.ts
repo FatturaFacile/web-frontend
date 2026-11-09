@@ -25,6 +25,11 @@ export const CRM_ROUTES: Routes = [
       import('./leads/leads.component').then((m) => m.LeadsComponent),
   },
   {
+    path: 'engagement',
+    data: { breadcrumb: 'Attività e campagne', title: 'Attività e campagne' },
+    loadChildren: () => import('./engagement/engagement.routes').then((m) => m.ENGAGEMENT_ROUTES),
+  },
+  {
     path: 'pipeline',
     data: { breadcrumb: 'Pipeline & Opportunità', title: 'Pipeline' },
     loadComponent: () =>

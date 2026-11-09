@@ -1,0 +1,255 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'TR.FORECAST' | translate">
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+        <label for="lq-horizon">{{ 'TR.HORIZON_DAYS' | translate }}</label>
+        <nz-input-number id="lq-horizon" [(ngModel)]="horizonDays" [nzMin]="1" [nzMax]="365" />
+        <label for="lq-currency">{{ 'TR.CURRENCY' | translate }}</label>
+        <input id="lq-currency" nz-input style="width: 90px" maxlength="3" [(ngModel)]="currency" />
+        <label for="lq-min">{{ 'TR.MINIMUM_BALANCE' | translate }}</label>
+        <nz-input-number id="lq-min" [(ngModel)]="minimumBalance" [nzPrecision]="2" />
+        <nz-select
+          style="min-width: 240px"
+          nzMode="multiple"
+          nzAllowClear
+          [attr.aria-label]="'TR.SCENARIOS' | translate"
+          [nzPlaceHolder]="'TR.SCENARIOS' | translate"
+          [(ngModel)]="selectedScenarios"
+        >
+          @for (scenario of scenarios(); track scenario.id) {
+            <nz-option [nzValue]="scenario.code" [nzLabel]="scenario.name" />
+          }
+        </nz-select>
+        <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="loadForecast()">{{ 'TR.RUN_FORECAST' | translate }}</button>
+      </div>
+
+      @if (forecast(); as result) {
+        <p>
+          <nz-tag>{{ result.as_of }} - {{ result.until }}</nz-tag>
+          <nz-tag>{{ 'TR.OPENING_CASH' | translate }}: {{ result.opening_cash | money: result.currency }}</nz-tag>
+          @if (result.minimum_balance) {
+            <nz-tag>{{ 'TR.MINIMUM_BALANCE' | translate }}: {{ result.minimum_balance | money: result.currency }}</nz-tag>
+          }
+        </p>
+        @for (scenario of result.scenarios; track scenario.scenario) {
+          <nz-card nzType="inner" [nzTitle]="scenario.name" style="margin-bottom: 16px">
+            <p>
+              {{ 'TR.TOTAL_INFLOWS' | translate }}: <strong>{{ scenario.total_inflows | money: result.currency }}</strong> -
+              {{ 'TR.TOTAL_OUTFLOWS' | translate }}: <strong>{{ scenario.total_outflows | money: result.currency }}</strong> -
+              {{ 'TR.CLOSING_BALANCE' | translate }}: <strong>{{ scenario.closing_balance | money: result.currency }}</strong> -
+              {{ 'TR.LOWEST_BALANCE' | translate }}: <strong>{{ scenario.lowest_balance.balance | money: result.currency }}</strong>
+              ({{ scenario.lowest_balance.date }})
+            </p>
+            @if (scenario.first_day_below_minimum) {
+              <nz-alert nzType="warning" nzShowIcon style="margin-bottom: 12px" [nzMessage]="('TR.FIRST_DAY_BELOW' | translate) + ': ' + scenario.first_day_below_minimum" />
+            }
+            <nz-table #dayTable nzSize="small" [nzData]="scenario.days" [nzPageSize]="15">
+              <thead>
+                <tr>
+                  <th>{{ 'TR.DATE' | translate }}</th>
+                  <th nzAlign="right">{{ 'TR.TOTAL_INFLOWS' | translate }}</th>
+                  <th nzAlign="right">{{ 'TR.TOTAL_OUTFLOWS' | translate }}</th>
+                  <th nzAlign="right">{{ 'TR.BALANCE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (day of dayTable.data; track day.date) {
+                  <tr>
+                    <td>{{ day.date }}</td>
+                    <td nzAlign="right">{{ day.inflows | money: result.currency }}</td>
+                    <td nzAlign="right">{{ day.outflows | money: result.currency }}</td>
+                    <td nzAlign="right">{{ day.balance | money: result.currency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-card>
+        }
+      }
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.SCENARIOS' | translate">
+      @if (canWrite) {
+        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal('scenario')">{{ 'TR.SCENARIO_NEW' | translate }}</button>
+      }
+      <nz-table #scenarioTable nzSize="middle" [nzData]="scenarios()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.CODE' | translate }}</th>
+            <th>{{ 'TR.NAME' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.COLLECTION_DELAY' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.SALES_GROWTH' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (scenario of scenarioTable.data; track scenario.id) {
+            <tr>
+              <td>{{ scenario.code }}</td>
+              <td>{{ scenario.name }}</td>
+              <td nzAlign="right">{{ scenario.collection_delay_days }}</td>
+              <td nzAlign="right">{{ scenario.disbursement_acceleration_days }}</td>
+              <td nzAlign="right">{{ scenario.sales_growth_factor }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.RECURRING_ITEMS' | translate">
+      @if (canWrite) {
+        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal('recurring')">{{ 'TR.RECURRING_NEW' | translate }}</button>
+      }
+      <nz-table #recurringTable nzSize="middle" [nzData]="recurring()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.NAME' | translate }}</th>
+            <th>{{ 'TR.DIRECTION' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+            <th>{{ 'TR.FREQUENCY' | translate }}</th>
+            <th>{{ 'TR.NEXT_DATE' | translate }}</th>
+            <th>{{ 'TR.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of recurringTable.data; track item.id) {
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ 'TR.DIRECTION_' + item.direction.toUpperCase() | translate }}</td>
+              <td nzAlign="right">{{ item.amount | money: item.currency }}</td>
+              <td>{{ 'TR.FREQUENCY_' + item.frequency.toUpperCase() | translate }}</td>
+              <td>{{ item.next_date }}</td>
+              <td>
+                @if (canWrite) {
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzDanger
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'TR.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="removeRecurring(item)"
+                  >
+                    {{ 'TR.DELETE' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="modal() === 'scenario'"
+  [nzTitle]="'TR.SCENARIO_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveScenario()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="scenarioForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="sc-code">{{ 'TR.CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="scenarioForm.controls.code.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="sc-code" nz-input formControlName="code" maxlength="50" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="sc-name">{{ 'TR.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="scenarioForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="sc-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="sc-delay">{{ 'TR.COLLECTION_DELAY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number id="sc-delay" formControlName="collection_delay_days" [nzMin]="0" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="sc-accel">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number id="sc-accel" formControlName="disbursement_acceleration_days" [nzMin]="0" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="sc-growth">{{ 'TR.SALES_GROWTH' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number id="sc-growth" formControlName="sales_growth_factor" [nzMin]="0" [nzStep]="0.05" [nzPrecision]="2" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modal() === 'recurring'"
+  [nzTitle]="'TR.RECURRING_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecurring()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="recurringForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-name">{{ 'TR.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="recurringForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="rc-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-direction">{{ 'TR.DIRECTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="rc-direction" formControlName="direction">
+            @for (direction of directions; track direction) {
+              <nz-option [nzValue]="direction" [nzLabel]="'TR.DIRECTION_' + direction.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="recurringForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-input-number id="rc-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-currency">{{ 'TR.CURRENCY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="rc-currency" nz-input formControlName="currency" maxlength="3" style="width: 90px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-frequency">{{ 'TR.FREQUENCY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="rc-frequency" formControlName="frequency">
+            @for (frequency of frequencies; track frequency) {
+              <nz-option [nzValue]="frequency" [nzLabel]="'TR.FREQUENCY_' + frequency.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="rc-next">{{ 'TR.NEXT_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="recurringForm.controls.next_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="rc-next" nz-input type="date" formControlName="next_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rc-end">{{ 'TR.END_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="rc-end" nz-input type="date" formControlName="end_date" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

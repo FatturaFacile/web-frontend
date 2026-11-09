@@ -1,0 +1,46 @@
+.rd-empty {
+  color: var(--ant-color-text-secondary, #595959);
+}
+
+.rd-list {
+  margin: 0;
+}
+
+.rd-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(120px, 200px) 1fr;
+  padding: 4px 0;
+
+  dt {
+    color: var(--ant-color-text-secondary, #595959);
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.rd-scroll {
+  overflow-x: auto;
+}
+
+.rd-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+
+  th,
+  td {
+    border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+    padding: 4px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--ant-color-fill-quaternary, #fafafa);
+  }
+}

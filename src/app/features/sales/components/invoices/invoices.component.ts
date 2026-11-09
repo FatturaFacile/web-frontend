@@ -43,6 +43,8 @@ import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
 
 const STATUS: Record<InvoiceStatus, { key: string; color: string }> = {
   draft: { key: 'SALES.INVOICES.STATUS.DRAFT', color: 'default' },
+  approved: { key: 'SC.STATUS.approved', color: 'cyan' },
+  posted: { key: 'SC.STATUS.posted', color: 'blue' },
   issued: { key: 'SALES.INVOICES.STATUS.ISSUED', color: 'processing' },
   paid: { key: 'SALES.INVOICES.STATUS.PAID', color: 'success' },
   cancelled: { key: 'SALES.INVOICES.STATUS.CANCELLED', color: 'error' },
@@ -384,6 +386,18 @@ export class InvoicesComponent {
         'SALES.INVOICES.MESSAGES.PROFORMA_CONVERTED',
         () => this.facade.reload(),
       ),
+    );
+  }
+
+  protected confirmApprove(inv: InvoiceResource): void {
+    this.confirm('SC.INVOICE.APPROVE_CONFIRM', () =>
+      this.run(inv, this.api.approveInvoice(inv.id), 'SC.INVOICE.APPROVED', () => this.facade.reload()),
+    );
+  }
+
+  protected confirmPost(inv: InvoiceResource): void {
+    this.confirm('SC.INVOICE.POST_CONFIRM', () =>
+      this.run(inv, this.api.postInvoice(inv.id), 'SC.INVOICE.POSTED', () => this.facade.reload()),
     );
   }
 
