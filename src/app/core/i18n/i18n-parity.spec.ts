@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-type Tree = { [key: string]: string | Tree };
+interface Tree { [key: string]: string | Tree }
 
 const LANGUAGES = ['it', 'en', 'de', 'fr'] as const;
 type Language = (typeof LANGUAGES)[number];
