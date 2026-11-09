@@ -1,0 +1,104 @@
+<app-page-header [title]="'SC.CREDIT.TITLE' | translate" [subtitle]="'SC.CREDIT.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="filter-select"
+      nzShowSearch
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.CUSTOMER' | translate"
+      [attr.aria-label]="'SC.COMMON.CUSTOMER' | translate"
+      [ngModel]="customerId"
+      (ngModelChange)="load($event)"
+    >
+      @for (c of lookups.contacts(); track c.id) {
+        <nz-option [nzValue]="c.id" [nzLabel]="lookups.contactLabel(c)"></nz-option>
+      }
+    </nz-select>
+  </div>
+
+  @if (forbidden()) {
+    <nz-alert nzType="warning" nzShowIcon [nzMessage]="'SC.CREDIT.FORBIDDEN' | translate" />
+  }
+
+  @if (profile(); as p) {
+    @if (p.is_credit_hold) {
+      <nz-alert
+        class="banner"
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'SC.CREDIT.ON_HOLD' | translate"
+        [nzDescription]="p.hold_reason ?? ''"
+      />
+    }
+    <div class="stat-grid">
+      <nz-statistic [nzTitle]="'SC.CREDIT.LIMIT' | translate" [nzValue]="p.credit_limit | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.CREDIT.USED' | translate" [nzValue]="p.used_credit | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.CREDIT.PENDING_ORDERS' | translate" [nzValue]="p.pending_orders_amount | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.CREDIT.EXPOSURE' | translate" [nzValue]="p.total_exposure | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.CREDIT.OVERDUE' | translate" [nzValue]="p.overdue_amount | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.CREDIT.MAX_OVERDUE_DAYS' | translate" [nzValue]="p.max_overdue_days" />
+    </div>
+    <p>
+      {{ 'SC.CREDIT.STATUS' | translate }}: <nz-tag>{{ p.credit_status }}</nz-tag>
+      @if (p.risk_rating) {
+        {{ 'SC.CREDIT.RISK' | translate }}: <nz-tag>{{ p.risk_rating }}</nz-tag>
+      }
+    </p>
+
+    @if (canManage()) {
+      <div class="toolbar">
+        <label for="credit-limit">{{ 'SC.CREDIT.NEW_LIMIT' | translate }}</label>
+        <input nz-input id="credit-limit" class="search" inputmode="decimal" [(ngModel)]="newLimit" />
+        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!limitValid()" (click)="saveLimit()">
+          <nz-icon nzType="save" /> {{ 'SC.CREDIT.SAVE_LIMIT' | translate }}
+        </button>
+      </div>
+      <p class="note">{{ 'SC.CREDIT.RELEASE_HINT' | translate }}</p>
+    } @else {
+      <p class="note">{{ 'SC.CREDIT.FORBIDDEN' | translate }}</p>
+    }
+  } @else if (customerId && loading()) {
+    <p>{{ 'SC.COMMON.LOADING' | translate }}</p>
+  }
+</nz-card>
+
+@if (aging().length) {
+  <nz-card class="section" [nzTitle]="'SC.CREDIT.AGING' | translate">
+    <dl class="price-result">
+      @for (entry of aging(); track entry[0]) {
+        <dt>{{ entry[0] }}</dt>
+        <dd>{{ display(entry[1]) }}</dd>
+      }
+    </dl>
+  </nz-card>
+}
+
+@if (statement().length) {
+  <nz-card class="section" [nzTitle]="'SC.CREDIT.STATEMENT' | translate">
+    <nz-table [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th>{{ 'SC.CREDIT.TYPE' | translate }}</th>
+          <th>{{ 'SC.CREDIT.REFERENCE' | translate }}</th>
+          <th class="num">{{ 'SC.CREDIT.DEBIT' | translate }}</th>
+          <th class="num">{{ 'SC.CREDIT.CREDIT' | translate }}</th>
+          <th class="num">{{ 'SC.CREDIT.BALANCE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of statement(); track $index) {
+          <tr>
+            <td>{{ e.date }}</td>
+            <td>{{ e.type }}</td>
+            <td>{{ e.reference }}</td>
+            <td class="num">{{ e.debit | money: currency() }}</td>
+            <td class="num">{{ e.credit | money: currency() }}</td>
+            <td class="num">{{ e.balance | money: currency() }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+}

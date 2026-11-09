@@ -1,0 +1,183 @@
+<app-page-header [title]="'SC.RETURNS.TITLE' | translate" [subtitle]="'SC.RETURNS.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.ALL_STATUSES' | translate"
+      [attr.aria-label]="'SC.COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status"
+      (ngModelChange)="facade.setFilter({ status: $event ?? undefined })"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusKey(s) | translate"></nz-option>
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="createOpen.set(true)">
+        <nz-icon nzType="plus" /> {{ 'SC.RETURNS.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <ng-template #numberTpl let-r><code>{{ r.return_number }}</code></ng-template>
+  <ng-template #customerTpl let-r>{{ lookups.contactName(r.contact_id, r.contact) }}</ng-template>
+  <ng-template #statusTpl let-r>
+    <nz-tag [nzColor]="statusColor(r.status)">{{ statusKey(r.status) | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-r>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(r)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  [nzWidth]="820"
+  [nzTitle]="selected()?.return_number ?? ''"
+  (nzOnClose)="drawerOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as r) {
+      <nz-tag [nzColor]="statusColor(r.status)">{{ statusKey(r.status) | translate }}</nz-tag>
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.CUSTOMER' | translate">{{ lookups.contactName(r.contact_id, r.contact) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.DATE' | translate">{{ r.date | date: 'mediumDate' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.RETURNS.REASON' | translate" [nzSpan]="2">{{ r.reason }}</nz-descriptions-item>
+        @if (r.rejection_reason) {
+          <nz-descriptions-item [nzTitle]="'SC.RETURNS.REJECTION_REASON' | translate" [nzSpan]="2">{{ r.rejection_reason }}</nz-descriptions-item>
+        }
+        @if (r.credit_note_id) {
+          <nz-descriptions-item [nzTitle]="'SC.RETURNS.CREDIT_NOTE' | translate" [nzSpan]="2">{{ r.credit_note_id }}</nz-descriptions-item>
+        }
+        @if (r.notes) {
+          <nz-descriptions-item [nzTitle]="'SC.COMMON.NOTES' | translate" [nzSpan]="2">{{ r.notes }}</nz-descriptions-item>
+        }
+      </nz-descriptions>
+
+      <nz-table [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+            <th>{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
+            <th>{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
+            <th>{{ 'SC.RETURNS.CONDITION' | translate }}</th>
+            <th>{{ 'SC.RETURNS.RESTOCK' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of r.items ?? []; track item.id) {
+            <tr>
+              <td>{{ item.description }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.quantity_received }}</td>
+              <td>{{ item.condition ? ('SC.RETURNS.CONDITION_' + item.condition | translate) : '-' }}</td>
+              <td>{{ (item.restock ? 'SC.COMMON.YES' : 'SC.COMMON.NO') | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      @if (canWrite()) {
+        <div class="actions">
+          @if (r.status === 'requested') {
+            <button nz-button nzType="primary" type="button" [nzLoading]="working()" (click)="approve(r)">
+              <nz-icon nzType="check" /> {{ 'SC.RETURNS.APPROVE' | translate }}
+            </button>
+            <button nz-button nzDanger type="button" (click)="openReject()"><nz-icon nzType="close" /> {{ 'SC.RETURNS.REJECT' | translate }}</button>
+          }
+          @if (r.status === 'approved') {
+            <button nz-button nzType="primary" type="button" (click)="openReceive(r)">
+              <nz-icon nzType="inbox" /> {{ 'SC.RETURNS.RECEIVE' | translate }}
+            </button>
+          }
+          @if (r.status === 'received') {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.RETURNS.CREDIT_CONFIRM' | translate"
+              (nzOnConfirm)="credit(r)"
+            >
+              <nz-icon nzType="file-done" /> {{ 'SC.RETURNS.CREDIT' | translate }}
+            </button>
+          }
+          @if (r.status === 'requested' || r.status === 'approved') {
+            <button
+              nz-button
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.RETURNS.CANCEL_CONFIRM' | translate"
+              (nzOnConfirm)="cancel(r)"
+            >
+              <nz-icon nzType="stop" /> {{ 'SC.RETURNS.CANCEL' | translate }}
+            </button>
+          }
+        </div>
+      }
+
+      <nz-modal
+        [nzVisible]="rejectOpen()"
+        [nzTitle]="'SC.RETURNS.REJECT' | translate"
+        [nzOkDanger]="true"
+        [nzOkDisabled]="!rejectReason.trim()"
+        [nzOkLoading]="working()"
+        (nzOnCancel)="rejectOpen.set(false)"
+        (nzOnOk)="submitReject(r)"
+      >
+        <ng-container *nzModalContent>
+          <label for="reject-reason">{{ 'SC.RETURNS.REJECTION_REASON' | translate }}</label>
+          <textarea nz-input id="reject-reason" rows="3" [(ngModel)]="rejectReason"></textarea>
+        </ng-container>
+      </nz-modal>
+
+      <nz-modal
+        [nzVisible]="receiveOpen()"
+        [nzTitle]="'SC.RETURNS.RECEIVE' | translate"
+        nzWidth="760px"
+        [nzOkLoading]="working()"
+        (nzOnCancel)="receiveOpen.set(false)"
+        (nzOnOk)="submitReceive(r)"
+      >
+        <ng-container *nzModalContent>
+          <p>{{ 'SC.RETURNS.RECEIVE_HINT' | translate }}</p>
+          @for (draft of receiveDrafts(); track draft.item.id) {
+            <div class="receive-row">
+              <span>{{ draft.item.description }} ({{ draft.item.quantity }})</span>
+              <input
+                nz-input
+                inputmode="decimal"
+                [attr.aria-label]="'SC.RETURNS.QUANTITY_RECEIVED' | translate"
+                [placeholder]="'SC.RETURNS.QUANTITY_RECEIVED' | translate"
+                [(ngModel)]="draft.quantity_received"
+              />
+              <nz-select [(ngModel)]="draft.condition" [attr.aria-label]="'SC.RETURNS.CONDITION' | translate">
+                <nz-option nzValue="resellable" [nzLabel]="'SC.RETURNS.CONDITION_resellable' | translate"></nz-option>
+                <nz-option nzValue="damaged" [nzLabel]="'SC.RETURNS.CONDITION_damaged' | translate"></nz-option>
+              </nz-select>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+              <label nz-checkbox [(ngModel)]="draft.restock">{{ 'SC.RETURNS.RESTOCK' | translate }}</label>
+            </div>
+          }
+        </ng-container>
+      </nz-modal>
+    }
+  </ng-container>
+</nz-drawer>
+
+<app-return-form-modal [(visible)]="createOpen" (saved)="onCreated($event)" />

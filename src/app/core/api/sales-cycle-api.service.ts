@@ -14,7 +14,7 @@ import {
   DeliveryNoteFromDocumentPayload,
   DiscountPolicy,
   DiscountPolicyPayload,
-  OrderAvailabilityLine,
+  OrderAvailability,
   PaginatedResponse,
   PriceLookupParams,
   PriceLookupResult,
@@ -115,8 +115,8 @@ export class SalesCycleApiService {
     return this.http.post<ApiResponse<CoreOrder>>(`${this.base}/orders/${id}/cancel`, { reason });
   }
 
-  getOrderAvailability(id: string, warehouseId?: string): Observable<ApiResponse<OrderAvailabilityLine[]>> {
-    return this.http.get<ApiResponse<OrderAvailabilityLine[]>>(`${this.base}/orders/${id}/availability`, {
+  getOrderAvailability(id: string, warehouseId?: string): Observable<ApiResponse<OrderAvailability>> {
+    return this.http.get<ApiResponse<OrderAvailability>>(`${this.base}/orders/${id}/availability`, {
       params: warehouseId ? toHttpParams({ warehouse_id: warehouseId }) : undefined,
     });
   }

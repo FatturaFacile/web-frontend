@@ -1,0 +1,103 @@
+<app-page-header [title]="'SC.DDT.TITLE' | translate" [subtitle]="'SC.DDT.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.ALL_STATUSES' | translate"
+      [attr.aria-label]="'SC.COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status"
+      (ngModelChange)="facade.setFilter({ status: $event ?? undefined })"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusKey(s) | translate"></nz-option>
+      }
+    </nz-select>
+  </div>
+
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <ng-template #numberTpl let-n><code>{{ n.ddt_number }}</code></ng-template>
+  <ng-template #customerTpl let-n>{{ lookups.contactName(n.contact_id, n.contact) }}</ng-template>
+  <ng-template #statusTpl let-n>
+    <nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-n>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(n)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  [nzWidth]="860"
+  [nzTitle]="selected()?.ddt_number ?? ''"
+  (nzOnClose)="drawerOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as n) {
+      <nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag>
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.CUSTOMER' | translate">{{ lookups.contactName(n.contact_id, n.contact) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.DATE' | translate">{{ n.date | date: 'mediumDate' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.TRANSPORT_REASON' | translate">{{ n.transport_reason || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.GOODS_APPEARANCE' | translate">{{ n.goods_appearance || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.PACKAGES' | translate">{{ n.packages_count ?? '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.GROSS_WEIGHT' | translate">{{ n.gross_weight_kg ?? '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.NET_WEIGHT' | translate">{{ n.net_weight_kg ?? '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.TRANSPORT_BY' | translate">
+          {{ n.transport_by ? ('SC.DDT.TRANSPORT_BY_' + n.transport_by | translate) : '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.CARRIER' | translate">{{ n.carrier_name || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.PLATE' | translate">{{ n.carrier_license_plate || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.SHIPPING_TERMS' | translate">{{ n.shipping_terms || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.COURIER' | translate">{{ n.courier || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.TRACKING' | translate">{{ n.tracking_number || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.DDT.SHIPPING_ADDRESS' | translate">{{ n.shipping_address || '-' }}</nz-descriptions-item>
+      </nz-descriptions>
+      <app-document-lines-view [lines]="n.items ?? []" />
+
+      @if (canWrite()) {
+        <div class="actions">
+          @if (canInvoice(n)) {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.DDT.INVOICE_CONFIRM' | translate"
+              (nzOnConfirm)="invoice(n)"
+            >
+              <nz-icon nzType="file-done" /> {{ 'SC.DDT.INVOICE' | translate }}
+            </button>
+          }
+          @if (n.status === 'draft') {
+            <button
+              nz-button
+              nzDanger
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="remove(n)"
+            >
+              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
+            </button>
+          } @else {
+            <span class="note">{{ 'SC.DDT.DELETE_ONLY_DRAFT' | translate }}</span>
+          }
+        </div>
+      }
+    }
+  </ng-container>
+</nz-drawer>

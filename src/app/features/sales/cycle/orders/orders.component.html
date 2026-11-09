@@ -1,0 +1,217 @@
+<app-page-header [title]="'SC.ORDERS.TITLE' | translate" [subtitle]="'SC.ORDERS.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.ALL_STATUSES' | translate"
+      [attr.aria-label]="'SC.COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status"
+      (ngModelChange)="facade.setFilter({ status: $event ?? undefined })"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusKey(s) | translate"></nz-option>
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="create()">
+        <nz-icon nzType="plus" /> {{ 'SC.ORDERS.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <ng-template #numberTpl let-o><code>{{ o.order_number }}</code></ng-template>
+  <ng-template #customerTpl let-o>{{ lookups.contactName(o.contact_id, o.contact) }}</ng-template>
+  <ng-template #statusTpl let-o>
+    <nz-tag [nzColor]="statusColor(o.status)">{{ statusKey(o.status) | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #inventoryTpl let-o>
+    @if (o.inventory_status) {
+      <nz-tag [nzColor]="statusColor(o.inventory_status)">{{ statusKey(o.inventory_status) | translate }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #totalTpl let-o><strong>{{ o.total_gross | money: o.currency }}</strong></ng-template>
+  <ng-template #actionsTpl let-o>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(o)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  [nzWidth]="900"
+  [nzTitle]="selected()?.order_number ?? ''"
+  (nzOnClose)="drawerOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as o) {
+      <nz-tag [nzColor]="statusColor(o.status)">{{ statusKey(o.status) | translate }}</nz-tag>
+      @if (o.inventory_status) {
+        <nz-tag [nzColor]="statusColor(o.inventory_status)">{{ statusKey(o.inventory_status) | translate }}</nz-tag>
+      }
+
+      @if (o.status === 'on_hold') {
+        <nz-alert
+          class="banner"
+          nzType="warning"
+          nzShowIcon
+          [nzMessage]="'SC.ORDERS.ON_HOLD_TITLE' | translate"
+          [nzDescription]="o.credit_hold_reason || ('SC.ORDERS.ON_HOLD_TEXT' | translate)"
+        />
+        @if (canWrite() && canReleaseHold()) {
+          @if (activeHoldId(o)) {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.ORDERS.RELEASE_CONFIRM' | translate"
+              (nzOnConfirm)="releaseHold(o)"
+            >
+              <nz-icon nzType="unlock" /> {{ 'SC.ORDERS.RELEASE_HOLD' | translate }}
+            </button>
+          } @else {
+            <p class="note">{{ 'SC.ORDERS.RELEASE_FROM_CREDIT' | translate }}</p>
+          }
+        } @else {
+          <p class="note">{{ 'SC.ORDERS.RELEASE_FORBIDDEN' | translate }}</p>
+        }
+      }
+      @if (o.credit_status === 'warning') {
+        <nz-alert class="banner" nzType="info" nzShowIcon [nzMessage]="'SC.ORDERS.CREDIT_WARNING' | translate" />
+      }
+
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.CUSTOMER' | translate">{{ lookups.contactName(o.contact_id, o.contact) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.DATE' | translate">{{ o.date | date: 'mediumDate' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.ORDERS.DUE_DATE' | translate">{{ o.due_date ? (o.due_date | date: 'mediumDate') : '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.ORDERS.BILLING' | translate">{{ o.billing_status || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.NET' | translate">{{ o.total_net | money: o.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.TOTAL' | translate">{{ o.total_gross | money: o.currency }}</nz-descriptions-item>
+        @if (o.notes) {
+          <nz-descriptions-item [nzTitle]="'SC.COMMON.NOTES' | translate" [nzSpan]="2">{{ o.notes }}</nz-descriptions-item>
+        }
+      </nz-descriptions>
+      <app-document-lines-view [lines]="o.items ?? []" [currency]="o.currency" [showProgress]="true" />
+
+      @if (canWrite()) {
+        <div class="actions">
+          @if (o.status === 'draft') {
+            <button nz-button type="button" (click)="edit(o)"><nz-icon nzType="edit" /> {{ 'SC.COMMON.EDIT' | translate }}</button>
+            <button nz-button nzType="primary" type="button" [nzLoading]="working()" (click)="confirm(o)">
+              <nz-icon nzType="check-circle" /> {{ 'SC.ORDERS.CONFIRM' | translate }}
+            </button>
+            <button
+              nz-button
+              nzDanger
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="remove(o)"
+            >
+              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
+            </button>
+          }
+          @if (canFulfil(o)) {
+            <button nz-button type="button" [nzLoading]="working()" (click)="reserve(o)">
+              <nz-icon nzType="lock" /> {{ 'SC.ORDERS.RESERVE' | translate }}
+            </button>
+            <button nz-button type="button" (click)="loadAvailability(o)">
+              <nz-icon nzType="search" /> {{ 'SC.ORDERS.AVAILABILITY' | translate }}
+            </button>
+            <button nz-button type="button" (click)="ddtOpen.set(true)"><nz-icon nzType="car" /> {{ 'SC.DDT.NEW' | translate }}</button>
+            <button nz-button type="button" (click)="openBilling('partial')">
+              <nz-icon nzType="file-text" /> {{ 'SC.BILLING.MODE_partial' | translate }}
+            </button>
+            <button nz-button type="button" (click)="openBilling('down-payment')">
+              <nz-icon nzType="wallet" /> {{ 'SC.BILLING.MODE_down-payment' | translate }}
+            </button>
+            <button nz-button type="button" (click)="openBilling('deposit')">
+              <nz-icon nzType="wallet" /> {{ 'SC.BILLING.MODE_deposit' | translate }}
+            </button>
+            <button
+              nz-button
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.BILLING.INVOICE_ALL_CONFIRM' | translate"
+              (nzOnConfirm)="invoiceWhole(o)"
+            >
+              <nz-icon nzType="file-done" /> {{ 'SC.BILLING.INVOICE_ALL' | translate }}
+            </button>
+          }
+          @if (o.status !== 'cancelled' && o.status !== 'completed' && o.status !== 'draft') {
+            <button nz-button nzDanger type="button" (click)="openCancel()"><nz-icon nzType="close-circle" /> {{ 'SC.ORDERS.CANCEL' | translate }}</button>
+          }
+        </div>
+        @if (canFulfil(o)) {
+          <div class="warehouse">
+            <label for="order-warehouse">{{ 'SC.DDT.WAREHOUSE' | translate }}</label>
+            <nz-select id="order-warehouse" nzAllowClear class="filter-select" [(ngModel)]="warehouseId">
+              @for (w of lookups.warehouses(); track w.id) {
+                <nz-option [nzValue]="w.id" [nzLabel]="w.code + ' - ' + w.name"></nz-option>
+              }
+            </nz-select>
+          </div>
+        }
+      }
+
+      @if (availability(); as av) {
+        <h4 class="section">{{ 'SC.ORDERS.AVAILABILITY' | translate }}</h4>
+        <nz-table [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+              <th>{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
+              <th>{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
+              <th>{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of av.lines; track line.sales_order_item_id) {
+              <tr>
+                <td>{{ line.description }}</td>
+                <td>{{ line.quantity_open }}</td>
+                <td>{{ line.quantity_promisable }}</td>
+                <td>{{ line.shortage }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+
+      <app-delivery-note-form-modal [source]="ddtSource(o)" [(visible)]="ddtOpen" (saved)="afterAction(o)" />
+      <app-order-billing-modal [order]="o" [mode]="billingMode()" [(visible)]="billingOpen" (done)="afterAction(o)" />
+
+      <nz-modal
+        [nzVisible]="cancelOpen()"
+        [nzTitle]="'SC.ORDERS.CANCEL' | translate"
+        [nzOkDanger]="true"
+        [nzOkDisabled]="!cancelReason.trim()"
+        [nzOkLoading]="working()"
+        (nzOnCancel)="cancelOpen.set(false)"
+        (nzOnOk)="submitCancel(o)"
+      >
+        <ng-container *nzModalContent>
+          <label for="cancel-reason">{{ 'SC.ORDERS.CANCEL_REASON' | translate }}</label>
+          <textarea nz-input id="cancel-reason" rows="3" [(ngModel)]="cancelReason"></textarea>
+        </ng-container>
+      </nz-modal>
+    }
+  </ng-container>
+</nz-drawer>
+
+<app-document-form-modal kind="order" [document]="editing()" [(visible)]="formOpen" (saved)="onSaved($event)" />
