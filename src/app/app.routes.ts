@@ -101,6 +101,13 @@ export const routes: Routes = [
       import('./features/purchases/purchases.routes').then((m) => m.PURCHASES_ROUTES),
   },
   {
+    path: 'procurement',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Approvvigionamento', title: 'Approvvigionamento' },
+    loadChildren: () =>
+      import('./features/procurement/procurement.routes').then((m) => m.PROCUREMENT_ROUTES),
+  },
+  {
     path: 'treasury',
     canActivate: [authGuard],
     data: { breadcrumb: 'Tesoreria & Banche', title: 'Tesoreria' },
@@ -233,6 +240,13 @@ export const routes: Routes = [
       import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
   },
   {
+    path: 'catalog',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Anagrafiche catalogo', title: 'Anagrafiche catalogo' },
+    loadComponent: () =>
+      import('./features/catalog/catalog-master-data.component').then((m) => m.CatalogMasterDataComponent),
+  },
+  {
     path: 'subscriptions',
     canActivate: [authGuard],
     data: { breadcrumb: 'Abbonamenti & Contratti Recurrenti', title: 'Abbonamenti' },
@@ -308,6 +322,13 @@ export const routes: Routes = [
     data: { breadcrumb: 'Contabilità & Fiscale', title: 'Contabilità' },
     loadChildren: () =>
       import('./features/accounting/accounting.routes').then((m) => m.ACCOUNTING_ROUTES),
+  },
+  {
+    path: 'general-ledger',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.GENERAL_LEDGER', title: 'NAV.GENERAL_LEDGER' },
+    loadChildren: () =>
+      import('./features/general-ledger/general-ledger.routes').then((m) => m.GENERAL_LEDGER_ROUTES),
   },
   {
     path: 'alerts',

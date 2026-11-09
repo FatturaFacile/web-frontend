@@ -77,8 +77,8 @@ export class HrApiService {
     return this.http.post<ApiResponse<LeaveRequestResource>>(`${this.hrBase}/leave-requests/${id}/reject`, {});
   }
 
-  cancelLeaveRequest(id: string): Observable<ApiResponse<LeaveRequestResource>> {
-    return this.http.post<ApiResponse<LeaveRequestResource>>(`${this.hrBase}/leave-requests/${id}/cancel`, {});
+  cancelLeaveRequest(id: string, reason: string): Observable<ApiResponse<LeaveRequestResource>> {
+    return this.http.post<ApiResponse<LeaveRequestResource>>(`${this.hrBase}/leave-requests/${id}/cancel`, { reason });
   }
 
   // --- Timesheets ---

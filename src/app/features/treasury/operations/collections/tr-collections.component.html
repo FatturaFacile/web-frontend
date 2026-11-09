@@ -1,0 +1,116 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'TR.COLLECTIONS' | translate">
+      <div style="display: flex; gap: 12px; margin-bottom: 16px">
+        <nz-select
+          style="min-width: 200px"
+          nzAllowClear
+          [attr.aria-label]="'TR.STATUS' | translate"
+          [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="load()"
+        >
+          @for (status of statuses; track status) {
+            <nz-option [nzValue]="status" [nzLabel]="status" />
+          }
+        </nz-select>
+      </div>
+      <nz-table
+        #table
+        nzSize="middle"
+        [nzData]="items()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="total()"
+        [nzPageIndex]="pageIndex()"
+        [nzPageSize]="25"
+        (nzPageIndexChange)="load($event)"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'TR.DUE_DATE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.COLLECTED_AMOUNT' | translate }}</th>
+            <th>{{ 'TR.AGING_BUCKET' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
+            <th>{{ 'TR.STATUS' | translate }}</th>
+            <th>{{ 'TR.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of table.data; track item.id) {
+            <tr>
+              <td>{{ item.due_date }}</td>
+              <td nzAlign="right">{{ item.expected_amount | money: currency() }}</td>
+              <td nzAlign="right">{{ item.collected_amount | money: currency() }}</td>
+              <td>{{ item.aging_bucket }}</td>
+              <td nzAlign="right">{{ item.dunning_level }}</td>
+              <td>
+                <nz-tag>{{ item.status }}</nz-tag>
+              </td>
+              <td>
+                @if (canWrite && item.status !== 'collected') {
+                  <button nz-button nzSize="small" type="button" (click)="openRecord(item)">{{ 'TR.RECORD_COLLECTION' | translate }}</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.AGING' | translate">
+      <nz-table #agingTable nzSize="small" [nzData]="aging()" [nzShowPagination]="false">
+        <tbody>
+          @for (row of agingTable.data; track row.key) {
+            <tr>
+              <td>{{ row.key }}</td>
+              <td>{{ row.value }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.DUNNING_READINESS' | translate">
+      @if (dunning(); as readiness) {
+        <p>{{ 'TR.EVALUATED_COUNT' | translate }}: {{ readiness.evaluated_count }}</p>
+        <nz-table #dunningTable nzSize="middle" [nzData]="readiness.overdue_items" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th>{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
+              <th>{{ 'TR.AGING_BUCKET' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of dunningTable.data; track item.id) {
+              <tr>
+                <td>{{ item.due_date }}</td>
+                <td nzAlign="right">{{ item.expected_amount | money: currency() }}</td>
+                <td>{{ item.aging_bucket }}</td>
+                <td nzAlign="right">{{ item.dunning_level }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="recordTarget() !== null"
+  [nzTitle]="'TR.RECORD_COLLECTION' | translate"
+  [nzOkDisabled]="!recordAmount"
+  (nzOnOk)="confirmRecord()"
+  (nzOnCancel)="recordTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="co-amount">{{ 'TR.AMOUNT' | translate }}</label>
+    <nz-input-number id="co-amount" [(ngModel)]="recordAmount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+    <label for="co-date" style="margin-top: 12px; display: block">{{ 'TR.DATE' | translate }}</label>
+    <input id="co-date" nz-input type="date" [(ngModel)]="recordDate" />
+  </ng-container>
+</nz-modal>

@@ -151,6 +151,16 @@
           <nz-icon nzType="redo" /> Crea Nota di Credito
         </li>
 
+        @if (inv.status === 'draft') {
+          <li nz-menu-item tabindex="0" (click)="confirmApprove(inv)" (keydown.enter)="confirmApprove(inv)">
+            <nz-icon nzType="check" /> {{ "SC.INVOICE.APPROVE" | translate }}
+          </li>
+        }
+        @if (inv.status === 'approved') {
+          <li nz-menu-item tabindex="0" (click)="confirmPost(inv)" (keydown.enter)="confirmPost(inv)">
+            <nz-icon nzType="send" /> {{ "SC.INVOICE.POST" | translate }}
+          </li>
+        }
         @if (inv.invoice_type === "proforma") {
           <li
             nz-menu-item

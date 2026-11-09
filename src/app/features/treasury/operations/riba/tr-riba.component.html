@@ -1,0 +1,114 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'TR.RIBA_BATCHES' | translate">
+      <nz-table #batchTable nzSize="middle" [nzData]="batches()" [nzLoading]="loading()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.REFERENCE' | translate }}</th>
+            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+            <th>{{ 'TR.EXECUTION_DATE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.ITEMS' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.TOTAL' | translate }}</th>
+            <th>{{ 'TR.STATUS' | translate }}</th>
+            <th>{{ 'TR.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (batch of batchTable.data; track batch.id) {
+            <tr>
+              <td>{{ batch.batch_reference ?? batch.id }}</td>
+              <td>{{ banks.label(batch.bank_account_id) }}</td>
+              <td>{{ batch.execution_date }}</td>
+              <td nzAlign="right">{{ batch.item_count }}</td>
+              <td nzAlign="right">{{ batch.total_amount | money: batch.currency }}</td>
+              <td>
+                <nz-tag>{{ batch.status }}</nz-tag>
+              </td>
+              <td>
+                @if (canWrite) {
+                  <button nz-button nzSize="small" type="button" (click)="exportBatch(batch)">{{ 'TR.RIBA_EXPORT' | translate }}</button>
+                }
+                <button nz-button nzSize="small" type="button" (click)="downloadFile(batch)">{{ 'TR.RIBA_DOWNLOAD' | translate }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.RIBA_PORTFOLIO' | translate">
+      @if (portfolio(); as p) {
+        <p>
+          @for (entry of statusEntries(p); track entry.key) {
+            <nz-tag>{{ entry.key }}: {{ entry.value }}</nz-tag>
+          }
+        </p>
+        <nz-table #receiptTable nzSize="middle" [nzData]="p.open_receipts" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th nzAlign="right">#</th>
+              <th>{{ 'TR.DEBTOR' | translate }}</th>
+              <th>{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+              <th>{{ 'TR.STATUS' | translate }}</th>
+              <th>{{ 'TR.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (receipt of receiptTable.data; track receipt.id) {
+              <tr>
+                <td nzAlign="right">{{ receipt.receipt_number }}</td>
+                <td>{{ receipt.debtor_name }}</td>
+                <td>
+                  {{ receipt.due_date }}
+                  @if (receipt.overdue) {
+                    <nz-tag nzColor="red">{{ 'TR.OVERDUE' | translate }}</nz-tag>
+                  }
+                </td>
+                <td nzAlign="right">{{ receipt.amount | money: 'EUR' }}</td>
+                <td>{{ receipt.status }}</td>
+                <td>
+                  @if (canWrite) {
+                    <button nz-button nzSize="small" nzType="primary" type="button" (click)="openPaid(receipt)">{{ 'TR.RIBA_PAID' | translate }}</button>
+                    <button nz-button nzSize="small" nzDanger type="button" (click)="openUnpaid(receipt)">{{ 'TR.RIBA_UNPAID' | translate }}</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="paidTarget() !== null"
+  [nzTitle]="'TR.RIBA_PAID' | translate"
+  [nzOkDisabled]="!paidAt"
+  (nzOnOk)="confirmPaid()"
+  (nzOnCancel)="paidTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="rb-paid-at">{{ 'TR.PAID_AT' | translate }}</label>
+    <input id="rb-paid-at" nz-input type="date" [(ngModel)]="paidAt" />
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="unpaidTarget() !== null"
+  [nzTitle]="'TR.RIBA_UNPAID' | translate"
+  [nzOkDisabled]="!unpaidAt || !unpaidReason.trim()"
+  [nzOkDanger]="true"
+  (nzOnOk)="confirmUnpaid()"
+  (nzOnCancel)="unpaidTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="rb-unpaid-at">{{ 'TR.UNPAID_AT' | translate }}</label>
+    <input id="rb-unpaid-at" nz-input type="date" [(ngModel)]="unpaidAt" />
+    <label for="rb-unpaid-reason" style="margin-top: 12px; display: block">{{ 'TR.REASON' | translate }}</label>
+    <input id="rb-unpaid-reason" nz-input maxlength="255" [(ngModel)]="unpaidReason" />
+    <label for="rb-unpaid-fee" style="margin-top: 12px; display: block">{{ 'TR.FEE' | translate }}</label>
+    <nz-input-number id="rb-unpaid-fee" [(ngModel)]="unpaidFee" [nzMin]="0" [nzPrecision]="2" />
+  </ng-container>
+</nz-modal>

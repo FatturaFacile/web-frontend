@@ -83,6 +83,8 @@ describe('PipelineComponent', () => {
     createOpportunity: vi.fn().mockReturnValue(of({ success: true, data: mockOpportunities[0] })),
     updateOpportunityStage: vi.fn().mockReturnValue(of({ success: true, data: mockOpportunities[0] })),
     deleteOpportunity: vi.fn().mockReturnValue(of({ success: true, data: null })),
+    createQuoteFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'q-1' } })),
+    createProjectFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'p-1' } })),
     getDuplicates: vi.fn().mockReturnValue(
       of({
         success: true,
@@ -167,6 +169,15 @@ describe('PipelineComponent', () => {
 
     expect(mockCrmApi.updateOpportunityStage).toHaveBeenCalledWith('opp-1', 'proposal');
     expect(mockMessage.success).toHaveBeenCalledWith('Stage updated');
+  });
+
+  it('creates a quote and a project from an opportunity', () => {
+    fixture.detectChanges();
+    const opp = mockOpportunities[0];
+    component.createQuote(opp);
+    component.createProject(opp);
+    expect(mockCrmApi.createQuoteFromOpportunity).toHaveBeenCalledWith(opp.id);
+    expect(mockCrmApi.createProjectFromOpportunity).toHaveBeenCalledWith(opp.id);
   });
 
   it('checks for duplicates', () => {

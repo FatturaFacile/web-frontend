@@ -1,0 +1,129 @@
+<app-page-header [title]="'SC.REPORTS.TITLE' | translate" [subtitle]="'SC.REPORTS.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'SC.REPORTS.SALES_REGISTER' | translate">
+      <div class="toolbar">
+        <label for="reg-from">{{ 'SC.OVERVIEW.FROM' | translate }}</label>
+        <input nz-input id="reg-from" type="date" class="search" [(ngModel)]="from" />
+        <label for="reg-to">{{ 'SC.OVERVIEW.TO' | translate }}</label>
+        <input nz-input id="reg-to" type="date" class="search" [(ngModel)]="to" />
+        <nz-select
+          class="filter-select"
+          nzAllowClear
+          [nzPlaceHolder]="'SC.REPORTS.DOCUMENT_TYPE' | translate"
+          [attr.aria-label]="'SC.REPORTS.DOCUMENT_TYPE' | translate"
+          [(ngModel)]="documentType"
+        >
+          @for (t of documentTypes; track t) {
+            <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+          }
+        </nz-select>
+        <button nz-button nzType="primary" type="button" [nzLoading]="loadingRegister()" (click)="loadRegister()">
+          <nz-icon nzType="search" /> {{ 'SC.REPORTS.RUN' | translate }}
+        </button>
+      </div>
+      @if (register(); as r) {
+        <nz-table [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()">
+          <thead>
+            <tr>
+              <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
+              <th>{{ 'SC.COMMON.DATE' | translate }}</th>
+              <th>{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
+              <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num">{{ 'SC.COMMON.NET' | translate }}</th>
+              <th class="num">{{ 'SC.COMMON.TAX' | translate }}</th>
+              <th class="num">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of r.documents; track d.invoice_id) {
+              <tr>
+                <td>{{ d.invoice_number }}</td>
+                <td>{{ d.date }}</td>
+                <td>{{ d.document_type }}</td>
+                <td>{{ d.customer_name }}</td>
+                <td class="num">{{ d.total_net | money: d.currency }}</td>
+                <td class="num">{{ d.total_tax | money: d.currency }}</td>
+                <td class="num">{{ d.total_gross | money: d.currency }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            @for (t of r.totals; track t.currency) {
+              <tr>
+                <td colspan="4"><strong>{{ 'SC.COMMON.TOTAL' | translate }} {{ t.currency }} ({{ t.documents }})</strong></td>
+                <td class="num"><strong>{{ t.total_net | money: t.currency }}</strong></td>
+                <td class="num"><strong>{{ t.total_tax | money: t.currency }}</strong></td>
+                <td class="num"><strong>{{ t.total_gross | money: t.currency }}</strong></td>
+              </tr>
+            }
+          </tfoot>
+        </nz-table>
+      }
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SC.REPORTS.RECEIVABLES_AGING' | translate">
+      <div class="toolbar">
+        <label for="aging-as-of">{{ 'SC.REPORTS.AS_OF' | translate }}</label>
+        <input nz-input id="aging-as-of" type="date" class="search" [(ngModel)]="asOf" />
+        <nz-select
+          class="filter-select"
+          nzShowSearch
+          nzAllowClear
+          [nzPlaceHolder]="'SC.COMMON.CUSTOMER' | translate"
+          [attr.aria-label]="'SC.COMMON.CUSTOMER' | translate"
+          [(ngModel)]="customerId"
+        >
+          @for (c of lookups.contacts(); track c.id) {
+            <nz-option [nzValue]="c.id" [nzLabel]="lookups.contactLabel(c)"></nz-option>
+          }
+        </nz-select>
+        <button nz-button nzType="primary" type="button" [nzLoading]="loadingAging()" (click)="loadAging()">
+          <nz-icon nzType="search" /> {{ 'SC.REPORTS.RUN' | translate }}
+        </button>
+      </div>
+      @if (aging(); as a) {
+        <nz-table [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()">
+          <thead>
+            <tr>
+              <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
+              <th class="num">1-30</th>
+              <th class="num">31-60</th>
+              <th class="num">61-90</th>
+              <th class="num">&gt;90</th>
+              <th class="num">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of a.customers; track c.customer_id + c.currency) {
+              <tr>
+                <td>{{ c.customer_name }}</td>
+                <td class="num">{{ c.current | money: c.currency }}</td>
+                <td class="num">{{ c.days_1_30 | money: c.currency }}</td>
+                <td class="num">{{ c.days_31_60 | money: c.currency }}</td>
+                <td class="num">{{ c.days_61_90 | money: c.currency }}</td>
+                <td class="num">{{ c.over_90 | money: c.currency }}</td>
+                <td class="num"><strong>{{ c.total_open | money: c.currency }}</strong></td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            @for (t of a.totals; track t.currency) {
+              <tr>
+                <td><strong>{{ 'SC.COMMON.TOTAL' | translate }} {{ t.currency }}</strong></td>
+                <td class="num">{{ t.current | money: t.currency }}</td>
+                <td class="num">{{ t.days_1_30 | money: t.currency }}</td>
+                <td class="num">{{ t.days_31_60 | money: t.currency }}</td>
+                <td class="num">{{ t.days_61_90 | money: t.currency }}</td>
+                <td class="num">{{ t.over_90 | money: t.currency }}</td>
+                <td class="num"><strong>{{ t.total_open | money: t.currency }}</strong></td>
+              </tr>
+            }
+          </tfoot>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>

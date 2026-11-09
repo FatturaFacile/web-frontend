@@ -1,6 +1,7 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -23,6 +24,7 @@ import {
   FrontierWorkerResource,
   HireEmployeePayload,
   HrApiService,
+  I18nService,
   LeaveRequestResource,
   PayrollRunResource,
   SubmitLeaveRequestPayload,
@@ -30,7 +32,9 @@ import {
   TerminateEmployeePayload,
   TimesheetResource,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { reportHttpError } from './shared/hr-http.util';
+import { ReasonButtonComponent } from './shared/reason-button.component';
 
 @Component({
   selector: 'app-hr',
@@ -40,6 +44,8 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
     DatePipe,
     UpperCasePipe,
     MoneyPipe,
+    TranslatePipe,
+    ReasonButtonComponent,
     NzCardModule,
     NzTableModule,
     NzTagModule,
@@ -64,6 +70,8 @@ export class HrComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
+  private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
   readonly selectedTab = signal<number>(0);
 
@@ -246,6 +254,10 @@ export class HrComponent implements OnInit {
     });
   }
 
+  openEmployeeFile(emp: EmployeeResource): void {
+    void this.router.navigate(['/hr/employees', emp.id]);
+  }
+
   promoteEmployee(emp: EmployeeResource): void {
     this.modal.confirm({
       nzTitle: `Promuovere il dipendente ${emp.full_name}?`,
@@ -356,7 +368,18 @@ export class HrComponent implements OnInit {
         this.message.success('Richiesta approvata');
         this.loadLeaveRequests(this.leavesPage());
       },
-      error: () => this.message.error('Errore durante l’approvazione'),
+      // 409: a running approval workflow decides, the request cannot be approved manually.
+      error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
+    });
+  }
+
+  cancelLeave(req: LeaveRequestResource, reason: string): void {
+    this.api.cancelLeaveRequest(req.id, reason).subscribe({
+      next: () => {
+        this.message.success(this.i18n.translate('hrmLeave.requestCancelled'));
+        this.loadLeaveRequests(this.leavesPage());
+      },
+      error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
   }
 
@@ -366,7 +389,7 @@ export class HrComponent implements OnInit {
         this.message.success('Richiesta rifiutata');
         this.loadLeaveRequests(this.leavesPage());
       },
-      error: () => this.message.error('Errore durante il rifiuto'),
+      error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
   }
 

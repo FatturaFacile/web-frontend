@@ -1,0 +1,46 @@
+@switch (kind()) {
+  @case ('empty') {
+    <span class="rd-empty">-</span>
+  }
+  @case ('boolean') {
+    <nz-tag [nzColor]="value() ? 'success' : 'default'">{{ (value() ? 'RES.YES' : 'RES.NO') | translate }}</nz-tag>
+  }
+  @case ('scalar') {
+    <span>{{ scalarText() }}</span>
+  }
+  @case ('scalarList') {
+    <span>{{ scalarText() }}</span>
+  }
+  @case ('records') {
+    <div class="rd-scroll">
+      <table class="rd-table">
+        <thead>
+          <tr>
+            @for (column of columns(); track column) {
+              <th scope="col">{{ labels.field(column) }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (record of records(); track $index) {
+            <tr>
+              @for (column of columns(); track column) {
+                <td><app-resource-detail [value]="record[column]" /></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @case ('object') {
+    <dl class="rd-list">
+      @for (entry of entries(); track entry[0]) {
+        <div class="rd-row">
+          <dt>{{ labels.field(entry[0]) }}</dt>
+          <dd><app-resource-detail [value]="entry[1]" /></dd>
+        </div>
+      }
+    </dl>
+  }
+}
