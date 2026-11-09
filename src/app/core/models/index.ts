@@ -40,3 +40,4 @@ export * from './visitors.model';
 export * from './tessera-sanitaria.model';
 export * from './intrastat.model';
 export * from './portal.model';
+export * from './document-trust.model';

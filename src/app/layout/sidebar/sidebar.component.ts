@@ -163,6 +163,11 @@ export class SidebarComponent {
           route: '/intrastat',
         },
         {
+          key: 'NAV.DOCUMENT_TRUST',
+          icon: 'fa-solid fa-shield-halved',
+          route: '/document-trust',
+        },
+        {
           key: 'NAV.TESSERA_SANITARIA',
           icon: 'fa-solid fa-file-medical',
           route: '/tessera-sanitaria',
