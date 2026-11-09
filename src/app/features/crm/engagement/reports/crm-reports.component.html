@@ -1,0 +1,83 @@
+<app-page-header [title]="'CRMX.REPORTS.TITLE' | translate" [subtitle]="'CRMX.REPORTS.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'CRMX.REPORTS.REPORTS' | translate">
+      <div class="toolbar">
+        <label for="crm-from">{{ 'CRMX.REPORTS.FROM' | translate }}</label>
+        <input nz-input id="crm-from" type="date" class="filter" [(ngModel)]="from" />
+        <label for="crm-to">{{ 'CRMX.REPORTS.TO' | translate }}</label>
+        <input nz-input id="crm-to" type="date" class="filter" [(ngModel)]="to" />
+        <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="runReports()">
+          <nz-icon nzType="reload" /> {{ 'CRMX.REPORTS.RUN' | translate }}
+        </button>
+      </div>
+      @for (block of [
+        { key: 'CRMX.REPORTS.PIPELINE', data: pipeline() },
+        { key: 'CRMX.REPORTS.CONVERSION', data: conversion() },
+        { key: 'CRMX.REPORTS.ACTIVITIES', data: activities() }
+      ]; track block.key) {
+        <h4 class="section">{{ block.key | translate }}</h4>
+        <dl class="kv">
+          @for (entry of entries(block.data); track entry[0]) {
+            <dt>{{ entry[0] }}</dt>
+            <dd><pre>{{ display(entry[1]) }}</pre></dd>
+          }
+        </dl>
+      }
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'CRMX.REPORTS.FORECASTS' | translate">
+      @if (canWrite()) {
+        <div class="toolbar">
+          <label for="fc-period">{{ 'CRMX.REPORTS.PERIOD' | translate }}</label>
+          <input nz-input id="fc-period" class="filter" placeholder="2026-Q4" [(ngModel)]="forecastPeriod" />
+          <label for="fc-quota">{{ 'CRMX.REPORTS.QUOTA' | translate }}</label>
+          <input nz-input id="fc-quota" inputmode="decimal" class="filter" [(ngModel)]="quota" />
+          <button nz-button nzType="primary" type="button" [disabled]="!canGenerate()" (click)="generate()">
+            <nz-icon nzType="calculator" /> {{ 'CRMX.REPORTS.GENERATE' | translate }}
+          </button>
+        </div>
+      }
+      <nz-table [nzData]="forecasts()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
+            <th class="num">{{ 'CRMX.REPORTS.QUOTA' | translate }}</th>
+            <th class="num">{{ 'CRMX.REPORTS.COMMIT' | translate }}</th>
+            <th class="num">{{ 'CRMX.REPORTS.BEST_CASE' | translate }}</th>
+            <th class="num">{{ 'CRMX.REPORTS.WEIGHTED' | translate }}</th>
+            <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of forecasts(); track f.id) {
+            <tr>
+              <td>{{ f.period }}</td>
+              <td class="num">{{ f.quota_amount ?? '-' }}</td>
+              <td class="num">{{ f.commit_amount ?? '-' }}</td>
+              <td class="num">{{ f.best_case_amount ?? '-' }}</td>
+              <td class="num">{{ f.weighted_amount ?? '-' }}</td>
+              <td><nz-tag>{{ (f.is_locked ? 'CRMX.REPORTS.LOCKED' : 'CRMX.REPORTS.OPEN') | translate }}</nz-tag></td>
+              <td>
+                @if (canWrite() && !f.is_locked) {
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'CRMX.REPORTS.LOCK_CONFIRM' | translate"
+                    (nzOnConfirm)="lock(f)"
+                  >
+                    <nz-icon nzType="lock" /> {{ 'CRMX.REPORTS.LOCK' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>

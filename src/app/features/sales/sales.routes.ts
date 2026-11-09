@@ -22,6 +22,16 @@ export const SALES_ROUTES: Routes = [
       import('./components/sales-orders/sales-orders.component').then((m) => m.SalesOrdersComponent),
   },
   {
+    path: 'cycle',
+    data: { breadcrumb: 'Ciclo vendite', title: 'Ciclo vendite' },
+    loadChildren: () => import('./cycle/cycle.routes').then((m) => m.CYCLE_ROUTES),
+  },
+  {
+    path: 'billing',
+    data: { breadcrumb: 'Fatturazione', title: 'Fatturazione' },
+    loadChildren: () => import('./billing/billing.routes').then((m) => m.BILLING_ROUTES),
+  },
+  {
     path: 'invoices',
     data: { breadcrumb: 'Fatture', title: 'Fatture' },
     loadComponent: () =>

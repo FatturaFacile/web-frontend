@@ -1,0 +1,184 @@
+<app-page-header [title]="'SC.PLANS.TITLE' | translate" [subtitle]="'SC.PLANS.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.ALL_STATUSES' | translate"
+      [attr.aria-label]="'SC.COMMON.STATUS' | translate"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="load(1)"
+    >
+      <nz-option nzValue="active" [nzLabel]="'SC.PLANS.STATUS_active' | translate"></nz-option>
+      <nz-option nzValue="completed" [nzLabel]="'SC.PLANS.STATUS_completed' | translate"></nz-option>
+      <nz-option nzValue="cancelled" [nzLabel]="'SC.PLANS.STATUS_cancelled' | translate"></nz-option>
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <label for="plans-run-date">{{ 'SC.PLANS.RUN_UP_TO' | translate }}</label>
+      <input nz-input id="plans-run-date" type="date" class="search" [(ngModel)]="runUpTo" />
+      <button
+        nz-button
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'SC.PLANS.RUN_CONFIRM' | translate"
+        (nzOnConfirm)="runDue()"
+      >
+        <nz-icon nzType="sync" /> {{ 'SC.PLANS.RUN' | translate }}
+      </button>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">
+        <nz-icon nzType="plus" /> {{ 'SC.PLANS.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <nz-table
+    [nzData]="plans()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="15"
+    (nzPageIndexChange)="load($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
+        <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
+        <th class="num">{{ 'SC.PLANS.TOTAL' | translate }}</th>
+        <th class="num">{{ 'SC.PLANS.BILLED' | translate }}</th>
+        <th class="num">{{ 'SC.PLANS.REMAINING' | translate }}</th>
+        <th>{{ 'SC.PLANS.NEXT_BILLING' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of plans(); track p.id) {
+        <tr>
+          <td><code>{{ p.schedule_number }}</code></td>
+          <td><nz-tag [nzColor]="statusColor(p.status === 'active' ? 'confirmed' : p.status === 'completed' ? 'completed' : 'cancelled')">{{ 'SC.PLANS.STATUS_' + p.status | translate }}</nz-tag></td>
+          <td class="num">{{ p.total_amount | money: p.currency }}</td>
+          <td class="num">{{ p.billed_amount | money: p.currency }}</td>
+          <td class="num">{{ p.remaining_amount | money: p.currency }}</td>
+          <td>{{ p.next_billing_date ?? '-' }}</td>
+          <td>
+            <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(p)">
+              <nz-icon nzType="eye" />
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  [nzWidth]="760"
+  [nzTitle]="selected()?.schedule_number ?? ''"
+  (nzOnClose)="drawerOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as p) {
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.STATUS' | translate">{{ 'SC.PLANS.STATUS_' + p.status | translate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.PLANS.TOTAL' | translate">{{ p.total_amount | money: p.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.PLANS.BILLED' | translate">{{ p.billed_amount | money: p.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.PLANS.REMAINING' | translate">{{ p.remaining_amount | money: p.currency }}</nz-descriptions-item>
+      </nz-descriptions>
+      <nz-table [nzData]="p.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'SC.PRICING.NAME' | translate }}</th>
+            <th>{{ 'SC.PLANS.TARGET_DATE' | translate }}</th>
+            <th class="num">%</th>
+            <th class="num">{{ 'SC.BILLING.AMOUNT' | translate }}</th>
+            <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of p.items ?? []; track item.id) {
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.target_date }}</td>
+              <td class="num">{{ item.percentage ?? '-' }}</td>
+              <td class="num">{{ item.amount ? (item.amount | money: p.currency) : '-' }}</td>
+              <td><nz-tag>{{ 'SC.PLANS.ITEM_' + item.status | translate }}</nz-tag></td>
+              <td>
+                @if (canWrite() && item.status === 'pending' && p.status === 'active') {
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'SC.PLANS.INVOICE_ITEM_CONFIRM' | translate"
+                    (nzOnConfirm)="invoiceItem(p, item)"
+                  >
+                    <nz-icon nzType="file-done" /> {{ 'SC.PLANS.INVOICE_ITEM' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      @if (canWrite() && p.status === 'active') {
+        <div class="actions">
+          <button
+            nz-button
+            nzDanger
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'SC.PLANS.CANCEL_CONFIRM' | translate"
+            (nzOnConfirm)="cancel(p)"
+          >
+            <nz-icon nzType="stop" /> {{ 'SC.PLANS.CANCEL' | translate }}
+          </button>
+        </div>
+      }
+    }
+  </ng-container>
+</nz-drawer>
+
+<nz-modal
+  [nzVisible]="createOpen()"
+  [nzTitle]="'SC.PLANS.NEW' | translate"
+  nzWidth="820px"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!canSubmit()"
+  (nzOnCancel)="createOpen.set(false)"
+  (nzOnOk)="submit()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="plan-order">{{ 'SC.PLANS.ORDER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="plan-order" formControlName="sales_order_id" nzShowSearch>
+            @for (o of orders(); track o.id) {
+              <nz-option [nzValue]="o.id" [nzLabel]="o.order_number + ' - ' + o.currency + ' ' + (o.total_gross ?? '')"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+    <p class="hint">{{ 'SC.PLANS.ITEMS_HINT' | translate }}</p>
+    @for (item of items.controls; track item; let i = $index) {
+      <div class="plan-row" [formGroup]="$any(item)">
+        <input nz-input formControlName="name" [placeholder]="'SC.PRICING.NAME' | translate" [attr.aria-label]="'SC.PRICING.NAME' | translate" />
+        <input nz-input inputmode="decimal" formControlName="percentage" placeholder="%" [attr.aria-label]="'SC.BILLING.PERCENTAGE' | translate" />
+        <input nz-input inputmode="decimal" formControlName="amount" [placeholder]="'SC.BILLING.AMOUNT' | translate" [attr.aria-label]="'SC.BILLING.AMOUNT' | translate" />
+        <input nz-input type="date" formControlName="target_date" [attr.aria-label]="'SC.PLANS.TARGET_DATE' | translate" />
+        <button nz-button nzType="text" nzDanger type="button" [disabled]="items.length <= 1" [attr.aria-label]="'SC.LINES.REMOVE' | translate" (click)="removeItem(i)">
+          <nz-icon nzType="delete" />
+        </button>
+      </div>
+    }
+    <button nz-button nzType="dashed" type="button" (click)="addItem()">
+      <nz-icon nzType="plus" /> {{ 'SC.PLANS.ADD_ITEM' | translate }}
+    </button>
+  </ng-container>
+</nz-modal>

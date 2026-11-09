@@ -54,6 +54,11 @@ import {
   WalletOutline,
   CheckSquareOutline,
   CalendarOutline,
+  FileDoneOutline,
+  UnlockOutline,
+  HighlightOutline,
+  InboxOutline,
+  SaveOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -112,4 +117,9 @@ export const icons = [
   WalletOutline,
   CheckSquareOutline,
   CalendarOutline,
+  FileDoneOutline,
+  UnlockOutline,
+  HighlightOutline,
+  InboxOutline,
+  SaveOutline,
 ];

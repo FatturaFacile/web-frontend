@@ -4,14 +4,27 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  CollectionFailurePayload,
   CreatePlanPayload,
   CreateSubscriptionPayload,
   DunningPolicyResource,
   PaginatedResponse,
+  ProrationPreview,
+  ProrationPreviewParams,
   QueryFilterParams,
+  RevenueContract,
+  SubscriptionBillingRun,
+  SubscriptionBillingRunPayload,
   SubscriptionContractResource,
+  SubscriptionDunningCase,
   SubscriptionMetrics,
+  SubscriptionPlanChangePayload,
   SubscriptionPlanResource,
+  SubscriptionQuantityPayload,
+  SubscriptionRevenueForecast,
+  SubscriptionSuspendPayload,
+  UsageEvent,
+  UsageEventPayload,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
@@ -25,6 +38,7 @@ export interface SubscriptionContractFilterParams extends QueryFilterParams {
 @Service()
 export class SubscriptionApiService {
   private readonly http = inject(HttpClient);
+  private readonly subscriptionsUrl = `${environment.apiBaseUrl}/subscriptions`;
   private readonly plansUrl = `${environment.apiBaseUrl}/subscriptions/plans`;
   private readonly contractsUrl = `${environment.apiBaseUrl}/sub/contracts`;
   private readonly metricsUrl = `${environment.apiBaseUrl}/subscriptions/metrics`;
@@ -106,4 +120,83 @@ export class SubscriptionApiService {
   runDunning(): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.dunningUrl}/run`, {});
   }
-}
+
+  // --- Plan changes, suspension and dunning of a contract ---
+  upgradeContract(id: string, payload: SubscriptionPlanChangePayload): Observable<ApiResponse<SubscriptionContractResource>> {
+    return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/upgrade`, payload);
+  }
+
+  downgradeContract(id: string, payload: SubscriptionPlanChangePayload): Observable<ApiResponse<SubscriptionContractResource>> {
+    return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/downgrade`, payload);
+  }
+
+  changeContractQuantity(id: string, payload: SubscriptionQuantityPayload): Observable<ApiResponse<SubscriptionContractResource>> {
+    return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/quantity`, payload);
+  }
+
+  getProrationPreview(id: string, params: ProrationPreviewParams): Observable<ApiResponse<ProrationPreview>> {
+    return this.http.get<ApiResponse<ProrationPreview>>(`${this.contractsUrl}/${id}/proration-preview`, {
+      params: toHttpParams(params),
+    });
+  }
+
+  suspendContract(id: string, payload: SubscriptionSuspendPayload = {}): Observable<ApiResponse<SubscriptionContractResource>> {
+    return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/suspend`, payload);
+  }
+
+  recordCollectionFailure(id: string, payload: CollectionFailurePayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.contractsUrl}/${id}/collection-failures`, payload);
+  }
+
+  getContractDunning(id: string): Observable<ApiResponse<SubscriptionDunningCase[]>> {
+    return this.http.get<ApiResponse<SubscriptionDunningCase[]>>(`${this.contractsUrl}/${id}/dunning`);
+  }
+
+  // --- Usage billing and billing runs ---
+  recordUsage(payload: UsageEventPayload): Observable<ApiResponse<UsageEvent>> {
+    return this.http.post<ApiResponse<UsageEvent>>(`${this.subscriptionsUrl}/usage`, payload);
+  }
+
+  getUsageEvents(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<UsageEvent>> {
+    return this.http.get<PaginatedResponse<UsageEvent>>(`${this.subscriptionsUrl}/usage`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getBillingRuns(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<SubscriptionBillingRun>> {
+    return this.http.get<PaginatedResponse<SubscriptionBillingRun>>(`${this.subscriptionsUrl}/billing-runs`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getBillingRun(id: string): Observable<ApiResponse<SubscriptionBillingRun>> {
+    return this.http.get<ApiResponse<SubscriptionBillingRun>>(`${this.subscriptionsUrl}/billing-runs/${id}`);
+  }
+
+  runBilling(payload: SubscriptionBillingRunPayload = {}): Observable<ApiResponse<SubscriptionBillingRun>> {
+    return this.http.post<ApiResponse<SubscriptionBillingRun>>(`${this.subscriptionsUrl}/billing-runs`, payload);
+  }
+
+  // --- Revenue recognition and forecast ---
+  getRevenueContracts(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<RevenueContract>> {
+    return this.http.get<PaginatedResponse<RevenueContract>>(`${this.subscriptionsUrl}/revenue-contracts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getRevenueContract(id: string): Observable<ApiResponse<RevenueContract>> {
+    return this.http.get<ApiResponse<RevenueContract>>(`${this.subscriptionsUrl}/revenue-contracts/${id}`);
+  }
+
+  recognizeRevenue(periodDate?: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(
+      `${this.subscriptionsUrl}/revenue-recognition/recognize`,
+      periodDate ? { period_date: periodDate } : {},
+    );
+  }
+
+  getSubscriptionForecast(months?: number): Observable<ApiResponse<SubscriptionRevenueForecast>> {
+    return this.http.get<ApiResponse<SubscriptionRevenueForecast>>(`${this.subscriptionsUrl}/forecast`, {
+      params: months ? toHttpParams({ months }) : undefined,
+    });
+  }}

@@ -1,7 +1,7 @@
 import { QueryFilterParams } from './api.models';
 import { ContactResource } from './client.model';
 
-export type InvoiceStatus = 'draft' | 'issued' | 'paid' | 'cancelled';
+export type InvoiceStatus = 'draft' | 'approved' | 'posted' | 'issued' | 'paid' | 'cancelled';
 export type PaymentStatus = 'unpaid' | 'partially_paid' | 'paid' | 'overdue';
 export type Jurisdiction = 'IT' | 'CH';
 export type InvoiceType = 'standard' | 'sdi_electronic' | 'ch_qr_bill' | 'credit_note' | 'proforma';
