@@ -132,4 +132,22 @@ describe('CycleOrdersComponent', () => {
     expect(component['activeHoldId']({ ...heldOrder, holds: [{ id: 'h2', status: 'released' }] })).toBeNull();
     expect(component['activeHoldId']({ ...heldOrder, holds: undefined })).toBeNull();
   });
+
+  it('releases through credit_hold_id when the order resource carries it', async () => {
+    await setup(['owner']);
+    const order: CoreOrder = { ...heldOrder, holds: undefined, credit_hold_id: 'h9' };
+    expect(component['activeHoldId'](order)).toBe('h9');
+
+    component['releaseHold'](order);
+    expect(billingApi.releaseCreditHold).toHaveBeenCalledWith('h9');
+  });
+
+  it('falls back to the credit page when the order exposes no hold id', async () => {
+    await setup(['owner']);
+    const order: CoreOrder = { ...heldOrder, holds: undefined, credit_hold_id: null };
+    expect(component['activeHoldId'](order)).toBeNull();
+
+    component['releaseHold'](order);
+    expect(billingApi.releaseCreditHold).not.toHaveBeenCalled();
+  });
 });

@@ -38,7 +38,7 @@ import { CycleOrdersFacade } from '../cycle.facades';
 import { DeliveryNoteFormModalComponent, DeliveryNoteSource } from '../shared/delivery-note-form-modal.component';
 import { DocumentFormModalComponent } from '../shared/document-form-modal.component';
 import { DocumentLinesViewComponent } from '../shared/document-lines-view.component';
-import { apiErrorText, CREDIT_MANAGER_ROLES, hasAnyRole } from '../shared/sales-api-helpers';
+import { apiErrorText, CREDIT_MANAGER_ROLES, creditHoldIdOf, hasAnyRole } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { statusColor, statusKey } from '../shared/sales-status';
 import { OrderBillingMode, OrderBillingModalComponent } from './order-billing-modal.component';
@@ -138,9 +138,9 @@ export class CycleOrdersComponent {
     }
   }
 
-  /** The active credit hold of the order, when the API exposes it. */
+  /** The credit hold of the order (`credit_hold_id` or the active entry of `holds`), when the API exposes it. */
   protected activeHoldId(order: CoreOrder): string | null {
-    return order.holds?.find((h) => h.status === 'active')?.id ?? null;
+    return creditHoldIdOf(order);
   }
 
   protected canFulfil(order: CoreOrder): boolean {
