@@ -21,8 +21,8 @@
       <div class="tab-content">
         <div class="toolbar-card">
           <div class="d-flex align-items-center gap-3 flex-wrap">
-            <label class="fw-bold">{{ 'ANALYTICS.PERIOD' | translate }}:</label>
-            <nz-select
+            <label class="fw-bold" for="analytics-period">{{ 'ANALYTICS.PERIOD'| translate }}:</label>
+            <nz-select nzId="analytics-period"
               [ngModel]="selectedPeriodPreset()"
               (ngModelChange)="onPeriodChange($event)"
               style="width: 180px"
@@ -34,8 +34,8 @@
               <nz-option nzValue="last_30_days" [nzLabel]="'ANALYTICS.PERIOD_LAST_30' | translate"></nz-option>
             </nz-select>
 
-            <label class="fw-bold ms-3">{{ 'ANALYTICS.COMPARE_WITH' | translate }}:</label>
-            <nz-select
+            <label class="fw-bold ms-3" for="analytics-compare">{{ 'ANALYTICS.COMPARE_WITH'| translate }}:</label>
+            <nz-select nzId="analytics-compare"
               [ngModel]="selectedCompare()"
               (ngModelChange)="onCompareChange($event)"
               style="width: 180px"
@@ -86,8 +86,8 @@
                   </div>
 
                   @if (kpi.change !== null && kpi.change !== undefined) {
-                    <div class="kpi-variance" [class.positive]="(kpi.change ?? 0) >= 0" [class.negative]="(kpi.change ?? 0) < 0">
-                      <i class="fa-solid" [class.fa-arrow-trend-up]="(kpi.change ?? 0) >= 0" [class.fa-arrow-trend-down]="(kpi.change ?? 0) < 0"></i>
+                    <div class="kpi-variance" [class.positive]="!isLoss(kpi.change)" [class.negative]="isLoss(kpi.change)">
+                      <i class="fa-solid" [class.fa-arrow-trend-up]="!isLoss(kpi.change)" [class.fa-arrow-trend-down]="isLoss(kpi.change)"></i>
                       <span class="ms-1">
                         {{ kpi.change_percent ? (kpi.change_percent + '%') : kpi.change }}
                       </span>
@@ -136,8 +136,8 @@
         <!-- Filter bar -->
         <div class="toolbar-card my-3">
           <div class="d-flex align-items-center gap-3 flex-wrap">
-            <label class="fw-bold">{{ 'ANALYTICS.DIRECTION' | translate }}:</label>
-            <nz-select
+            <label class="fw-bold" for="analytics-direction">{{ 'ANALYTICS.DIRECTION'| translate }}:</label>
+            <nz-select nzId="analytics-direction"
               [ngModel]="filterDirection()"
               (ngModelChange)="filterDirection.set($event)"
               style="width: 140px"
@@ -287,8 +287,8 @@
           <div class="col-12 col-xl-5">
             <nz-card [nzTitle]="'ANALYTICS.BREAKDOWN_TITLE' | translate">
               <div class="d-flex align-items-center gap-2 mb-3">
-                <label class="fw-bold">{{ 'ANALYTICS.DIMENSION' | translate }}:</label>
-                <nz-select
+                <label class="fw-bold" for="analytics-dimension">{{ 'ANALYTICS.DIMENSION'| translate }}:</label>
+                <nz-select nzId="analytics-dimension"
                   [ngModel]="selectedDimension()"
                   (ngModelChange)="onDimensionChange($event)"
                   style="width: 200px"
@@ -437,8 +437,8 @@
           </p>
 
           <div class="d-flex align-items-center gap-3 mb-3">
-            <label class="fw-bold">{{ 'ANALYTICS.BI_DATASET' | translate }}:</label>
-            <nz-select
+            <label class="fw-bold" for="analytics-bi-dataset">{{ 'ANALYTICS.BI_DATASET'| translate }}:</label>
+            <nz-select nzId="analytics-bi-dataset"
               [ngModel]="biFeedDataset()"
               (ngModelChange)="onBiDatasetChange($event)"
               style="width: 200px"
