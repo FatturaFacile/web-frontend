@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Assistance & Interventions",
   "NAV.FLEET": "Planning flotte",
   "NAV.HR": "Paie & RH IT-CH",
+  "NAV.HR_SHIFTS": "Planification des horaires",
   "NAV.HR_RECRUITING": "Recrutement",
   "NAV.HR_TALENT": "Talents et formation",
   "NAV.HR_PAYROLL": "Paie",
@@ -3208,5 +3209,51 @@
     "onboarding": "Intégrations en cours",
     "tasks": "Tâches",
     "completeTask": "Terminer"
+  },
+  "hrmShift": {
+    "title": "Planification des horaires",
+    "subtitle": "Tableau, types de service, séquences, exceptions et besoins",
+    "board": "Tableau",
+    "place": "Placer un service",
+    "types": "Types de service",
+    "sequences": "Séquences",
+    "assignments": "Affectation des séquences",
+    "exceptions": "Exceptions",
+    "staffing": "Besoins en personnel",
+    "generate": "Générer les brouillons",
+    "generated": "Brouillons générés",
+    "publish": "Publier",
+    "published": "Services publiés",
+    "myShifts": "Mes services",
+    "absencePlan": "Plan des absences",
+    "shifts": "Services",
+    "shiftType": "Type de service",
+    "sequence": "Séquence",
+    "startTime": "Début (HH:MM)",
+    "endTime": "Fin (HH:MM)",
+    "breakMinutes": "Pause (minutes)",
+    "paidAbsence": "Absence rémunérée",
+    "pattern": "Modèle",
+    "steps": "Étapes (codes de service séparés par des virgules, \"-\" pour repos)",
+    "skipHolidays": "Ignorer les jours fériés",
+    "offsetDays": "Jours de décalage",
+    "dayKind": "Type de jour",
+    "requiredCount": "Nombre requis",
+    "category": {
+      "working": "Travail",
+      "absence": "Absence",
+      "on_call": "Astreinte"
+    },
+    "patternValue": {
+      "rotation": "Rotation",
+      "weekly_without_sunday": "Hebdomadaire sans dimanche",
+      "weekly_without_weekend": "Hebdomadaire sans week-end",
+      "manual": "Manuel"
+    },
+    "dayKindValue": {
+      "weekday": "Jour ouvré",
+      "weekend": "Week-end",
+      "holiday": "Jour férié"
+    }
   }
 }

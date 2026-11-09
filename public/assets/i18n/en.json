@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Field Service & Maintenance",
   "NAV.FLEET": "Fleet Planning",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_SHIFTS": "Shift planning",
   "NAV.HR_RECRUITING": "Recruiting",
   "NAV.HR_TALENT": "Talent and training",
   "NAV.HR_PAYROLL": "Payroll",
@@ -3264,5 +3265,51 @@
     "onboarding": "Onboarding in progress",
     "tasks": "Tasks",
     "completeTask": "Complete"
+  },
+  "hrmShift": {
+    "title": "Shift planning",
+    "subtitle": "Board, shift types, sequences, exceptions and staffing needs",
+    "board": "Board",
+    "place": "Place shift",
+    "types": "Shift types",
+    "sequences": "Sequences",
+    "assignments": "Sequence assignments",
+    "exceptions": "Exceptions",
+    "staffing": "Staffing needs",
+    "generate": "Generate drafts",
+    "generated": "Drafts generated",
+    "publish": "Publish",
+    "published": "Shifts published",
+    "myShifts": "My shifts",
+    "absencePlan": "Absence plan",
+    "shifts": "Shifts",
+    "shiftType": "Shift type",
+    "sequence": "Sequence",
+    "startTime": "Start (HH:MM)",
+    "endTime": "End (HH:MM)",
+    "breakMinutes": "Break (minutes)",
+    "paidAbsence": "Paid absence",
+    "pattern": "Pattern",
+    "steps": "Steps (shift codes separated by commas, \"-\" for rest)",
+    "skipHolidays": "Skip holidays",
+    "offsetDays": "Offset days",
+    "dayKind": "Day kind",
+    "requiredCount": "Required count",
+    "category": {
+      "working": "Working",
+      "absence": "Absence",
+      "on_call": "On call"
+    },
+    "patternValue": {
+      "rotation": "Rotation",
+      "weekly_without_sunday": "Weekly without Sunday",
+      "weekly_without_weekend": "Weekly without weekend",
+      "manual": "Manual"
+    },
+    "dayKindValue": {
+      "weekday": "Weekday",
+      "weekend": "Weekend",
+      "holiday": "Holiday"
+    }
   }
 }

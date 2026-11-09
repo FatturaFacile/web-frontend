@@ -20,11 +20,29 @@ import {
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
+export type PayrollExportName =
+  | 'f24'
+  | 'uniemens'
+  | 'cu'
+  | 'salary-declaration'
+  | 'frontier-exchange'
+  | 'withholding-statement'
+  | 'joint-commission-report';
+
 /** Payroll runs, payslips, wage types, certificates, settings and CSV exports. */
 @Service()
 export class PayrollApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/payroll`;
+  private readonly exportUrls: Record<PayrollExportName, string> = {
+    f24: `${this.base}/exports/f24`,
+    uniemens: `${this.base}/exports/uniemens`,
+    cu: `${this.base}/exports/cu`,
+    'salary-declaration': `${this.base}/exports/salary-declaration`,
+    'frontier-exchange': `${this.base}/exports/frontier-exchange`,
+    'withholding-statement': `${this.base}/exports/withholding-statement`,
+    'joint-commission-report': `${this.base}/exports/joint-commission-report`,
+  };
 
   // --- Runs ---
 
@@ -187,7 +205,7 @@ export class PayrollApiService {
 
   // --- CSV exports ---
 
-  downloadExport(name: string, params: Record<string, string | number | undefined>): Observable<Blob> {
-    return this.http.get(`${this.base}/exports/${name}`, { params: toHttpParams(params), responseType: 'blob' });
+  downloadExport(name: PayrollExportName, params: Record<string, string | number | undefined>): Observable<Blob> {
+    return this.http.get(this.exportUrls[name], { params: toHttpParams(params), responseType: 'blob' });
   }
 }

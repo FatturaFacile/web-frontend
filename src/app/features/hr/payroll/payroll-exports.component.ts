@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { I18nService, PayrollApiService } from '@core';
+import { I18nService, PayrollApiService, PayrollExportName } from '@core';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 
 interface ExportDefinition {
-  name: string;
+  name: PayrollExportName;
   labelKey: string;
   needsMonth: boolean;
 }
