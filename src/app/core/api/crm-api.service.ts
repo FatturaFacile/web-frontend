@@ -8,16 +8,40 @@ import {
   ConsentResponse,
   ContactMergeRecord,
   ContactResource,
-  ContactStatistics,
   ContactStatement,
+  ContactStatistics,
   ContactType,
   CreateContactPayload,
+  CrmAccount,
+  CrmAccountFilterParams,
+  CrmAccountHealth,
+  CrmAccountPayload,
+  CrmActivity,
+  CrmActivityFilterParams,
+  CrmActivityPayload,
+  CrmActivityTimelineParams,
+  CrmActivityUpdatePayload,
+  CrmCampaign,
+  CrmCampaignMember,
+  CrmCampaignMemberPayload,
+  CrmCampaignPayload,
+  CrmCampaignRoi,
   CrmDuplicateMatch,
+  CrmForecast,
+  CrmForecastGeneratePayload,
+  CrmPartyLink,
+  CrmReport,
+  CrmReportParams,
+  CrmSegment,
+  CrmSegmentPayload,
   LeadResource,
+  LeadScoringRule,
+  LeadScoringRulePayload,
   MergeContactsPayload,
   OpportunityResource,
   PaginatedResponse,
   PipelineStageResource,
+  PipelineStageUpdatePayload,
   QueryFilterParams,
   StoreConsentPayload,
   StoreLeadPayload,
@@ -211,4 +235,208 @@ export class CrmApiService {
   storeConsent(payload: StoreConsentPayload): Observable<ApiResponse<ConsentHistoryItem>> {
     return this.http.post<ApiResponse<ConsentHistoryItem>>(`${this.base}/consents`, payload);
   }
-}
+
+  // --- Accounts ---
+  getAccounts(params?: CrmAccountFilterParams): Observable<PaginatedResponse<CrmAccount>> {
+    return this.http.get<PaginatedResponse<CrmAccount>>(`${this.base}/accounts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getAccountPartyLinks(outcome?: string): Observable<PaginatedResponse<CrmPartyLink>> {
+    return this.http.get<PaginatedResponse<CrmPartyLink>>(`${this.base}/accounts/party-links`, {
+      params: outcome ? toHttpParams({ outcome }) : undefined,
+    });
+  }
+
+  getAccountById(id: string): Observable<ApiResponse<CrmAccount>> {
+    return this.http.get<ApiResponse<CrmAccount>>(`${this.base}/accounts/${id}`);
+  }
+
+  getAccountHealth(id: string): Observable<ApiResponse<CrmAccountHealth>> {
+    return this.http.get<ApiResponse<CrmAccountHealth>>(`${this.base}/accounts/${id}/health`);
+  }
+
+  createAccount(payload: CrmAccountPayload): Observable<ApiResponse<CrmAccount>> {
+    return this.http.post<ApiResponse<CrmAccount>>(`${this.base}/accounts`, payload);
+  }
+
+  updateAccount(id: string, payload: CrmAccountPayload): Observable<ApiResponse<CrmAccount>> {
+    return this.http.put<ApiResponse<CrmAccount>>(`${this.base}/accounts/${id}`, payload);
+  }
+
+  deleteAccount(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/accounts/${id}`);
+  }
+
+  // --- Activities ---
+  getActivities(params?: CrmActivityFilterParams): Observable<PaginatedResponse<CrmActivity>> {
+    return this.http.get<PaginatedResponse<CrmActivity>>(`${this.base}/activities`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getActivityTimeline(params: CrmActivityTimelineParams): Observable<ApiResponse<CrmActivity[]>> {
+    return this.http.get<ApiResponse<CrmActivity[]>>(`${this.base}/activities/timeline`, {
+      params: toHttpParams(params),
+    });
+  }
+
+  getActivityById(id: string): Observable<ApiResponse<CrmActivity>> {
+    return this.http.get<ApiResponse<CrmActivity>>(`${this.base}/activities/${id}`);
+  }
+
+  createActivity(payload: CrmActivityPayload): Observable<ApiResponse<CrmActivity>> {
+    return this.http.post<ApiResponse<CrmActivity>>(`${this.base}/activities`, payload);
+  }
+
+  updateActivity(id: string, payload: CrmActivityUpdatePayload): Observable<ApiResponse<CrmActivity>> {
+    return this.http.put<ApiResponse<CrmActivity>>(`${this.base}/activities/${id}`, payload);
+  }
+
+  completeActivity(id: string, outcome?: string): Observable<ApiResponse<CrmActivity>> {
+    return this.http.post<ApiResponse<CrmActivity>>(
+      `${this.base}/activities/${id}/complete`,
+      outcome ? { outcome } : {},
+    );
+  }
+
+  // --- Segments ---
+  getSegments(): Observable<ApiResponse<CrmSegment[]>> {
+    return this.http.get<ApiResponse<CrmSegment[]>>(`${this.base}/segments`);
+  }
+
+  getSegmentById(id: string): Observable<ApiResponse<CrmSegment>> {
+    return this.http.get<ApiResponse<CrmSegment>>(`${this.base}/segments/${id}`);
+  }
+
+  getSegmentMembers(id: string): Observable<ApiResponse<unknown[]>> {
+    return this.http.get<ApiResponse<unknown[]>>(`${this.base}/segments/${id}/members`);
+  }
+
+  createSegment(payload: CrmSegmentPayload): Observable<ApiResponse<CrmSegment>> {
+    return this.http.post<ApiResponse<CrmSegment>>(`${this.base}/segments`, payload);
+  }
+
+  updateSegment(id: string, payload: CrmSegmentPayload): Observable<ApiResponse<CrmSegment>> {
+    return this.http.put<ApiResponse<CrmSegment>>(`${this.base}/segments/${id}`, payload);
+  }
+
+  deleteSegment(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/segments/${id}`);
+  }
+
+  // --- Lead scoring rules ---
+  getLeadScoringRules(): Observable<ApiResponse<LeadScoringRule[]>> {
+    return this.http.get<ApiResponse<LeadScoringRule[]>>(`${this.base}/lead-scoring-rules`);
+  }
+
+  createLeadScoringRule(payload: LeadScoringRulePayload): Observable<ApiResponse<LeadScoringRule>> {
+    return this.http.post<ApiResponse<LeadScoringRule>>(`${this.base}/lead-scoring-rules`, payload);
+  }
+
+  updateLeadScoringRule(id: string, payload: LeadScoringRulePayload): Observable<ApiResponse<LeadScoringRule>> {
+    return this.http.put<ApiResponse<LeadScoringRule>>(`${this.base}/lead-scoring-rules/${id}`, payload);
+  }
+
+  deleteLeadScoringRule(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/lead-scoring-rules/${id}`);
+  }
+
+  recalculateLeadScores(leadId?: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(
+      `${this.base}/lead-scoring-rules/recalculate`,
+      leadId ? { lead_id: leadId } : {},
+    );
+  }
+
+  // --- Campaigns ---
+  getCampaigns(params?: { page?: number; per_page?: number; search?: string }): Observable<PaginatedResponse<CrmCampaign>> {
+    return this.http.get<PaginatedResponse<CrmCampaign>>(`${this.base}/campaigns`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getCampaignById(id: string): Observable<ApiResponse<CrmCampaign>> {
+    return this.http.get<ApiResponse<CrmCampaign>>(`${this.base}/campaigns/${id}`);
+  }
+
+  createCampaign(payload: CrmCampaignPayload): Observable<ApiResponse<CrmCampaign>> {
+    return this.http.post<ApiResponse<CrmCampaign>>(`${this.base}/campaigns`, payload);
+  }
+
+  getCampaignRoi(id: string): Observable<ApiResponse<CrmCampaignRoi>> {
+    return this.http.get<ApiResponse<CrmCampaignRoi>>(`${this.base}/campaigns/${id}/roi`);
+  }
+
+  getCampaignMembers(id: string, status?: string): Observable<ApiResponse<CrmCampaignMember[]>> {
+    return this.http.get<ApiResponse<CrmCampaignMember[]>>(`${this.base}/campaigns/${id}/members`, {
+      params: status ? toHttpParams({ status }) : undefined,
+    });
+  }
+
+  addCampaignMembers(id: string, payload: CrmCampaignMemberPayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/campaigns/${id}/members`, payload);
+  }
+
+  removeCampaignMember(id: string, memberId: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/campaigns/${id}/members/${memberId}`);
+  }
+
+  sendCampaign(id: string, payload: { subject: string; body: string }): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/campaigns/${id}/send`, payload);
+  }
+
+  // --- Reports and forecasts ---
+  getPipelineReport(params?: CrmReportParams): Observable<ApiResponse<CrmReport>> {
+    return this.http.get<ApiResponse<CrmReport>>(`${this.base}/reports/pipeline`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getConversionReport(params?: CrmReportParams): Observable<ApiResponse<CrmReport>> {
+    return this.http.get<ApiResponse<CrmReport>>(`${this.base}/reports/conversion`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getActivitiesReport(params?: CrmReportParams): Observable<ApiResponse<CrmReport>> {
+    return this.http.get<ApiResponse<CrmReport>>(`${this.base}/reports/activities`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getForecasts(params?: { period?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<CrmForecast>> {
+    return this.http.get<PaginatedResponse<CrmForecast>>(`${this.base}/forecasts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  generateForecast(payload: CrmForecastGeneratePayload): Observable<ApiResponse<CrmForecast>> {
+    return this.http.post<ApiResponse<CrmForecast>>(`${this.base}/forecasts/generate`, payload);
+  }
+
+  lockForecast(id: string): Observable<ApiResponse<CrmForecast>> {
+    return this.http.post<ApiResponse<CrmForecast>>(`${this.base}/forecasts/${id}/lock`, {});
+  }
+
+  // --- Pipeline stage maintenance and opportunity conversions ---
+  installDefaultPipelineStages(): Observable<ApiResponse<PipelineStageResource[]>> {
+    return this.http.post<ApiResponse<PipelineStageResource[]>>(`${this.base}/pipeline-stages/defaults`, {});
+  }
+
+  updatePipelineStage(id: string, payload: PipelineStageUpdatePayload): Observable<ApiResponse<PipelineStageResource>> {
+    return this.http.put<ApiResponse<PipelineStageResource>>(`${this.base}/pipeline-stages/${id}`, payload);
+  }
+
+  deletePipelineStage(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/pipeline-stages/${id}`);
+  }
+
+  createQuoteFromOpportunity(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/opportunities/${id}/quote`, {});
+  }
+
+  createProjectFromOpportunity(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/opportunities/${id}/project`, {});
+  }}
