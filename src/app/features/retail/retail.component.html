@@ -1,10 +1,10 @@
 <app-page-header
-  [title]="'Vendita al Dettaglio & POS'"
-  [subtitle]="'Emissione scontrini elettronici / documenti commerciali online e chiusure cassa giornaliere'"
+  [title]="'Vendita al Dettaglio, POS & Fidelity'"
+  [subtitle]="'Emissione scontrini elettronici / documenti commerciali online, chiusure cassa giornaliere e programma fedeltà clienti'"
 />
 
 <div nz-row [nzGutter]="16" class="mb-4">
-  <div nz-col [nzSpan]="8">
+  <div nz-col [nzSpan]="6">
     <nz-card>
       <nz-statistic
         [nzValue]="kpiTotalDocs()"
@@ -14,7 +14,7 @@
       <ng-template #iconReceipt><span nz-icon nzType="shopping-cart"></span></ng-template>
     </nz-card>
   </div>
-  <div nz-col [nzSpan]="8">
+  <div nz-col [nzSpan]="6">
     <nz-card>
       <nz-statistic
         [nzValue]="kpiIssuedDocs()"
@@ -25,7 +25,7 @@
       <ng-template #iconCheck><span nz-icon nzType="check-circle"></span></ng-template>
     </nz-card>
   </div>
-  <div nz-col [nzSpan]="8">
+  <div nz-col [nzSpan]="6">
     <nz-card>
       <nz-statistic
         [nzValue]="kpiVoidedDocs()"
@@ -36,6 +36,17 @@
       <ng-template #iconVoid><span nz-icon nzType="close-circle"></span></ng-template>
     </nz-card>
   </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiActiveCards()"
+        [nzTitle]="'Carte Fedeltà Attive'"
+        [nzValueStyle]="{ color: '#1890ff' }"
+        [nzPrefix]="iconLoyalty"
+      ></nz-statistic>
+      <ng-template #iconLoyalty><span nz-icon nzType="idcard"></span></ng-template>
+    </nz-card>
+  </div>
 </div>
 
 <nz-card>
@@ -43,11 +54,11 @@
     <!-- TAB 1: DOCUMENTI COMMERCIALI -->
     <nz-tab nzTitle="Documenti Commerciali (Scontrini)">
       <div class="flex justify-between items-center mb-4">
-        <button nz-button nzType="default" (click)="loadDocuments(page())">
+        <button nz-button nzType="default" type="button" (click)="loadDocuments(page())">
           <span nz-icon nzType="reload"></span> Aggiorna
         </button>
 
-        <button nz-button nzType="primary" (click)="openCreateModal()">
+        <button nz-button nzType="primary" type="button" (click)="openCreateModal()">
           <span nz-icon nzType="plus"></span> Nuovo Documento Commerciale
         </button>
       </div>
@@ -89,7 +100,7 @@
               </td>
               <td class="text-center">
                 @if (d.status === 'issued') {
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="voidDocument(d)">
+                  <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="voidDocument(d)">
                     Annulla
                   </button>
                 } @else {
@@ -142,6 +153,94 @@
         </div>
       }
     </nz-tab>
+
+    <!-- TAB 3: CARTE FEDELTÀ & PUNTI -->
+    <nz-tab nzTitle="Carte Fedeltà & Raccolta Punti">
+      <div class="flex justify-between items-center mb-4">
+        <button nz-button nzType="default" type="button" (click)="loadLoyaltyCards()">
+          <span nz-icon nzType="reload"></span> Aggiorna
+        </button>
+
+        <button nz-button nzType="primary" type="button" (click)="openIssueCardModal()">
+          <span nz-icon nzType="plus"></span> Nuova Carta Fedeltà
+        </button>
+      </div>
+
+      <nz-table
+        #loyaltyTable
+        [nzData]="loyaltyCards()"
+        [nzLoading]="loadingLoyalty()"
+        nzBordered
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>Codice Carta</th>
+            <th>Cliente (ID / Nome)</th>
+            <th class="text-right">Saldo Punti / Credito</th>
+            <th>Stato</th>
+            <th>Data Emissione</th>
+            <th class="text-center">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (card of loyaltyTable.data; track card.id) {
+            <tr>
+              <td><code>{{ card.card_number }}</code></td>
+              <td>{{ card.customer_name || card.customer_id }}</td>
+              <td class="text-right font-bold text-blue-600">
+                <nz-tag nzColor="processing">{{ card.balance }} punti</nz-tag>
+              </td>
+              <td>
+                <nz-tag [nzColor]="getLoyaltyStatusColor(card.status)">
+                  {{ card.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ card.created_at | date: 'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  type="button"
+                  (click)="openLoyaltyDrawer(card)"
+                >
+                  <span nz-icon nzType="history"></span> Movimenti
+                </button>
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  type="button"
+                  (click)="openRecordTxModal(card)"
+                >
+                  <span nz-icon nzType="transaction"></span> Accredita/Scala
+                </button>
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  type="button"
+                  (click)="toggleCardStatus(card)"
+                >
+                  {{ card.status === 'active' ? 'Sospendi' : 'Riattiva' }}
+                </button>
+                <button
+                  nz-button
+                  nzType="link"
+                  nzDanger
+                  nzSize="small"
+                  type="button"
+                  (click)="deleteLoyaltyCard(card)"
+                >
+                  Elimina
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
   </nz-tabs>
 </nz-card>
 
@@ -159,9 +258,9 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Metodo di Pagamento</nz-form-label>
+            <nz-form-label nzRequired nzFor="retail-payment-method">Metodo di Pagamento</nz-form-label>
             <nz-form-control>
-              <nz-select formControlName="payment_method" style="width: 100%;">
+              <nz-select id="retail-payment-method" formControlName="payment_method" style="width: 100%;">
                 <nz-option nzValue="electronic" nzLabel="Carta / POS Elettronico"></nz-option>
                 <nz-option nzValue="cash" nzLabel="Contanti"></nz-option>
               </nz-select>
@@ -170,9 +269,9 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Cassiere / Punto Vendita</nz-form-label>
+            <nz-form-label nzRequired nzFor="retail-cashier-name">Cassiere / Punto Vendita</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="cashier_name" />
+              <input id="retail-cashier-name" nz-input formControlName="cashier_name" />
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -200,16 +299,174 @@
                 <nz-option [nzValue]="0" nzLabel="0%"></nz-option>
               </nz-select>
             </div>
-            <button nz-button nzType="text" nzDanger (click)="removeLine($index)">
+            <button nz-button nzType="text" nzDanger type="button" (click)="removeLine($index)">
               <span nz-icon nzType="delete"></span>
             </button>
           </div>
         }
       </div>
 
-      <button nz-button nzType="dashed" nzBlock (click)="addLine()" class="mt-2">
+      <button nz-button nzType="dashed" nzBlock type="button" (click)="addLine()" class="mt-2">
         <span nz-icon nzType="plus"></span> Aggiungi Riga
       </button>
     </form>
   </ng-container>
 </nz-modal>
+
+<!-- MODAL: EMETTI CARTA FEDELTÀ -->
+<nz-modal
+  [nzVisible]="isIssueCardModalVisible()"
+  nzTitle="Emetti Nuova Carta Fedeltà"
+  [nzOkLoading]="isSubmittingLoyalty()"
+  (nzOnCancel)="isIssueCardModalVisible.set(false)"
+  (nzOnOk)="submitIssueCard()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="issueCardForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="loyalty-customer-id">ID / Riferimento Cliente</nz-form-label>
+        <nz-form-control>
+          <input
+            id="loyalty-customer-id"
+            nz-input
+            formControlName="customer_id"
+            placeholder="es. UUID cliente o C.F."
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="loyalty-card-number">Codice Carta (Barcode / Tessera)</nz-form-label>
+        <nz-form-control>
+          <input
+            id="loyalty-card-number"
+            nz-input
+            formControlName="card_number"
+            placeholder="Generato automaticamente se vuoto"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="loyalty-initial-balance">Saldo Punti Iniziale</nz-form-label>
+        <nz-form-control>
+          <nz-input-number
+            id="loyalty-initial-balance"
+            formControlName="initial_balance"
+            [nzMin]="0"
+            style="width: 100%;"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REGISTRA MOVIMENTO PUNTI (TOP-UP / SPEND) -->
+<nz-modal
+  [nzVisible]="isRecordTxModalVisible()"
+  nzTitle="Movimento Punti / Saldo Fedeltà"
+  [nzOkLoading]="isSubmittingLoyalty()"
+  (nzOnCancel)="isRecordTxModalVisible.set(false)"
+  (nzOnOk)="submitRecordTx()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedLoyaltyCard(); as card) {
+      <div class="mb-4 p-3 bg-gray-50 rounded">
+        <strong>Carta:</strong> {{ card.card_number }} | <strong>Saldo Attuale:</strong> {{ card.balance }} punti
+      </div>
+    }
+
+    <form nz-form [formGroup]="recordTxForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tx-type-select">Tipo Operazione</nz-form-label>
+        <nz-form-control>
+          <nz-select id="tx-type-select" formControlName="type" style="width: 100%;">
+            <nz-option nzValue="topup" nzLabel="Accredita Punti / Ricarica"></nz-option>
+            <nz-option nzValue="spend" nzLabel="Scala Punti / Riscatto"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tx-amount-input">Quantità Punti</nz-form-label>
+        <nz-form-control>
+          <nz-input-number
+            id="tx-amount-input"
+            formControlName="amount"
+            [nzMin]="1"
+            style="width: 100%;"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="tx-desc-input">Causale / Descrizione</nz-form-label>
+        <nz-form-control>
+          <input
+            id="tx-desc-input"
+            nz-input
+            formControlName="description"
+            placeholder="es. Acquisto scontrino #104 o premio fedeltà"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- DRAWER: STORICO MOVIMENTI CARTA FEDELTÀ -->
+<nz-drawer
+  [nzVisible]="isLoyaltyDrawerVisible()"
+  [nzWidth]="500"
+  nzTitle="Storico Movimenti Carta Fedeltà"
+  (nzOnClose)="closeLoyaltyDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedLoyaltyCard(); as card) {
+      <div class="mb-4">
+        <h3 class="font-bold text-lg mb-1">{{ card.card_number }}</h3>
+        <p class="text-sm text-gray-500 mb-2">Cliente: {{ card.customer_name || card.customer_id }}</p>
+        <div class="flex items-center gap-2">
+          <nz-tag nzColor="blue">Saldo: {{ card.balance }} punti</nz-tag>
+          <nz-tag [nzColor]="getLoyaltyStatusColor(card.status)">{{ card.status | uppercase }}</nz-tag>
+        </div>
+      </div>
+
+      <nz-divider nzText="Transazioni"></nz-divider>
+
+      <nz-table
+        #txTable
+        [nzData]="loyaltyTransactions()"
+        nzSize="small"
+        [nzFrontPagination]="true"
+        [nzPageSize]="10"
+      >
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th class="text-right">Punti</th>
+            <th>Causale</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tx of txTable.data; track tx.id) {
+            <tr>
+              <td>{{ tx.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <nz-tag [nzColor]="tx.type === 'topup' ? 'success' : 'warning'">
+                  {{ tx.type === 'topup' ? '+ ACCREDITO' : '- RISCATTO' }}
+                </nz-tag>
+              </td>
+              <td class="text-right font-bold" [class.text-green-600]="tx.type === 'topup'" [class.text-amber-600]="tx.type === 'spend'">
+                {{ tx.type === 'topup' ? '+' : '-' }}{{ tx.amount }}
+              </td>
+              <td class="text-xs">{{ tx.description || '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </ng-container>
+</nz-drawer>

@@ -64,3 +64,5 @@ export * from './api/intrastat-api.service';
 export * from './api/portal-api.service';
 export * from './api/document-trust-api.service';
 export * from './api/ecommerce-integrations-api.service';
+export * from './api/assistant-api.service';
+export * from './api/loyalty-api.service';
