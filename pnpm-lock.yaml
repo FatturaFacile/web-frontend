@@ -200,8 +200,8 @@ importers:
         specifier: ^22.0.1
         version: 22.0.1(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2)
       ng-zorro-antd:
-        specifier: ^22.1.2
-        version: 22.1.2(0cfef47fb16354c3201072548670a261)
+        specifier: ^22.2.0
+        version: 22.2.0(0cfef47fb16354c3201072548670a261)
       rxjs:
         specifier: ~7.8.2
         version: 7.8.2
@@ -2546,8 +2546,8 @@ packages:
     engines: {node: '>= 4.4.x'}
     hasBin: true
 
-  ng-zorro-antd@22.1.2:
-    resolution: {integrity: sha512-J1DYFLsr8BrMlokBlmwj7AEvzwmV6WSMJNsYn19C1D1DUcMEMjw0E5++YioPDARtZob13PxpQkfYLI4Ib2hJRQ==}
+  ng-zorro-antd@22.2.0:
+    resolution: {integrity: sha512-09KXu0Tcl8fZyx/YCBZUSPbhqiL2hAyRCBWTJvJxCmbpAYT7EaVvPq8anHotdzYbVnw6AWqUlnG8/63mMQuorA==}
     peerDependencies:
       '@angular/common': ^22.0.0
       '@angular/core': ^22.0.0
@@ -5227,7 +5227,7 @@ snapshots:
       sax: 1.6.1
     optional: true
 
-  ng-zorro-antd@22.1.2(0cfef47fb16354c3201072548670a261):
+  ng-zorro-antd@22.2.0(0cfef47fb16354c3201072548670a261):
     dependencies:
       '@angular/cdk': 22.2.5(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(@angular/forms@22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(@angular/platform-browser@22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/platform-browser@22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2)))(rxjs@7.8.2)
       '@angular/common': 22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2)
