@@ -133,6 +133,9 @@
               </td>
               <td>{{ e.hire_date | date: 'dd/MM/yyyy' }}</td>
               <td class="text-center">
+                <button nz-button nzType="link" nzSize="small" (click)="openEmployeeFile(e)">
+                  {{ 'hrmEmp.openFile' | translate }}
+                </button>
                 @if (e.employment_status === 'probation') {
                   <button nz-button nzType="link" nzSize="small" (click)="completeProbation(e)">
                     Conferma Prova

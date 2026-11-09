@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HrLeaveApiService, HrSelfServiceApiService } from '@core';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { icons } from '../../../icons-provider';
 import { SelfServiceComponent } from './self-service.component';
 
 const profile = {
@@ -29,6 +31,7 @@ function setup(profileResult: unknown) {
   };
   TestBed.configureTestingModule({
     providers: [
+      provideNzIcons(icons),
       { provide: HrSelfServiceApiService, useValue: api },
       { provide: HrLeaveApiService, useValue: { getLeaveTypes: () => of({ success: true, message: '', data: [] }) } },
     ],

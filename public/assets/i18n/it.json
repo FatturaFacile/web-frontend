@@ -546,6 +546,8 @@
   "NAV.FIELD_SERVICE": "Assistenza & Interventi",
   "NAV.FLEET": "Planning Flotta",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_CCNL": "Contratti collettivi (CCNL)",
+  "NAV.HR_ORGANIZATION": "Organizzazione",
   "NAV.HR_SELF_SERVICE": "Area dipendente",
   "NAV.INVENTORY": "Magazzino & Logistica",
   "NAV.INVOICES": "Fatture",
@@ -2900,5 +2902,87 @@
     "completedDate": "Completato il",
     "issueDate": "Data di emissione",
     "expiryDate": "Scadenza"
+  },
+  "hrmShared": {
+    "confirmDelete": "Eliminare definitivamente?"
+  },
+  "hrmEmp": {
+    "title": "Scheda dipendente",
+    "openFile": "Scheda",
+    "backToList": "← Elenco dipendenti",
+    "contracts": "Contratti",
+    "documents": "Documenti",
+    "supersedeHint": "Un nuovo contratto sostituisce quello attivo; solo il contratto attivo è modificabile.",
+    "salaryComponents": "Componenti retributive",
+    "contractNumber": "N. contratto",
+    "jobTitle": "Mansione",
+    "probationEnd": "Fine periodo di prova",
+    "weeklyHours": "Ore settimanali",
+    "baseAnnualSalary": "Retribuzione annua base",
+    "currency": "Valuta",
+    "wageTypeCode": "Codice voce",
+    "amount": "Importo",
+    "frequency": "Frequenza",
+    "contractType": {
+      "permanent": "Tempo indeterminato",
+      "fixed_term": "Tempo determinato",
+      "apprenticeship": "Apprendistato",
+      "contractor": "Collaboratore",
+      "internship": "Tirocinio",
+      "seasonal": "Stagionale"
+    },
+    "frequencyValue": {
+      "monthly": "Mensile",
+      "annual": "Annuale"
+    },
+    "uploadDocument": "Carica documento",
+    "file": "File",
+    "issueDate": "Data di emissione",
+    "expiryDate": "Scadenza",
+    "retentionUntil": "Conservazione fino al",
+    "flags": "Indicatori",
+    "healthData": "Dato sanitario",
+    "confidential": "Riservato",
+    "visibleToEmployee": "Visibile al dipendente",
+    "docType": {
+      "contract": "Contratto",
+      "amendment": "Addendum",
+      "id_card": "Documento d'identità",
+      "work_permit": "Permesso di lavoro",
+      "medical_fitness": "Idoneità medica",
+      "certificate": "Certificato",
+      "training": "Formazione",
+      "nda": "Accordo di riservatezza",
+      "warning": "Provvedimento disciplinare",
+      "payslip": "Cedolino",
+      "other": "Altro"
+    },
+    "transfer": "Trasferisci",
+    "transferred": "Trasferimento registrato",
+    "effectiveDate": "Data di efficacia"
+  },
+  "hrmOrg": {
+    "title": "Organizzazione",
+    "subtitle": "Reparti e posizioni (senza cicli nella gerarchia)",
+    "departments": "Reparti",
+    "positions": "Posizioni",
+    "department": "Reparto",
+    "position": "Posizione",
+    "parent": "Reparto superiore",
+    "headcountBudget": "Organico previsto",
+    "criticalRole": "Ruolo critico"
+  },
+  "hrmCcnl": {
+    "title": "Contratti collettivi (CCNL)",
+    "subtitle": "Tabelle caricate dall’utente; i contratti generici sono in sola lettura",
+    "agreements": "Contratti collettivi",
+    "levels": "Livelli",
+    "level": "Livello",
+    "monthlyMinimum": "Minimo mensile",
+    "weeklyHours": "Ore settimanali",
+    "installments": "Mensilità",
+    "fourteenthMonth": "Mese della quattordicesima",
+    "employerInpsRate": "Aliquota INPS datore (%)",
+    "generic": "Generico"
   }
 }

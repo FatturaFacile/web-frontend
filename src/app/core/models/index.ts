@@ -46,3 +46,4 @@ export * from './assistant.model';
 export * from './loyalty.model';
 export * from './workspace.model';
 export * from './hr-self-service.model';
+export * from './hr-employee.model';

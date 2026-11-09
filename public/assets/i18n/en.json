@@ -546,6 +546,8 @@
   "NAV.FIELD_SERVICE": "Field Service & Maintenance",
   "NAV.FLEET": "Fleet Planning",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_CCNL": "Collective agreements (CCNL)",
+  "NAV.HR_ORGANIZATION": "Organization",
   "NAV.HR_SELF_SERVICE": "Employee portal",
   "NAV.INVENTORY": "Inventory & Logistics",
   "NAV.INVOICES": "Invoices",
@@ -2900,5 +2902,87 @@
     "completedDate": "Completed on",
     "issueDate": "Issue date",
     "expiryDate": "Expiry date"
+  },
+  "hrmShared": {
+    "confirmDelete": "Delete permanently?"
+  },
+  "hrmEmp": {
+    "title": "Employee file",
+    "openFile": "File",
+    "backToList": "← Employee list",
+    "contracts": "Contracts",
+    "documents": "Documents",
+    "supersedeHint": "A new contract supersedes the active one; only the active contract can be edited.",
+    "salaryComponents": "Salary components",
+    "contractNumber": "Contract no.",
+    "jobTitle": "Job title",
+    "probationEnd": "Probation end",
+    "weeklyHours": "Weekly hours",
+    "baseAnnualSalary": "Base annual salary",
+    "currency": "Currency",
+    "wageTypeCode": "Wage type code",
+    "amount": "Amount",
+    "frequency": "Frequency",
+    "contractType": {
+      "permanent": "Permanent",
+      "fixed_term": "Fixed term",
+      "apprenticeship": "Apprenticeship",
+      "contractor": "Contractor",
+      "internship": "Internship",
+      "seasonal": "Seasonal"
+    },
+    "frequencyValue": {
+      "monthly": "Monthly",
+      "annual": "Annual"
+    },
+    "uploadDocument": "Upload document",
+    "file": "File",
+    "issueDate": "Issue date",
+    "expiryDate": "Expiry date",
+    "retentionUntil": "Retain until",
+    "flags": "Flags",
+    "healthData": "Health data",
+    "confidential": "Confidential",
+    "visibleToEmployee": "Visible to employee",
+    "docType": {
+      "contract": "Contract",
+      "amendment": "Amendment",
+      "id_card": "ID card",
+      "work_permit": "Work permit",
+      "medical_fitness": "Medical fitness",
+      "certificate": "Certificate",
+      "training": "Training",
+      "nda": "NDA",
+      "warning": "Warning",
+      "payslip": "Payslip",
+      "other": "Other"
+    },
+    "transfer": "Transfer",
+    "transferred": "Transfer recorded",
+    "effectiveDate": "Effective date"
+  },
+  "hrmOrg": {
+    "title": "Organization",
+    "subtitle": "Departments and positions (no cycles in the hierarchy)",
+    "departments": "Departments",
+    "positions": "Positions",
+    "department": "Department",
+    "position": "Position",
+    "parent": "Parent department",
+    "headcountBudget": "Headcount budget",
+    "criticalRole": "Critical role"
+  },
+  "hrmCcnl": {
+    "title": "Collective agreements (CCNL)",
+    "subtitle": "Tables loaded by the user; generic agreements are read-only",
+    "agreements": "Collective agreements",
+    "levels": "Levels",
+    "level": "Level",
+    "monthlyMinimum": "Monthly minimum",
+    "weeklyHours": "Weekly hours",
+    "installments": "Installments",
+    "fourteenthMonth": "Fourteenth-month month",
+    "employerInpsRate": "Employer INPS rate (%)",
+    "generic": "Generic"
   }
 }

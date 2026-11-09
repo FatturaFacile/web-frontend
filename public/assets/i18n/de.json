@@ -546,6 +546,8 @@
   "NAV.FIELD_SERVICE": "Kundendienst & Einsätze",
   "NAV.FLEET": "Flottenplanung",
   "NAV.HR": "Lohnabrechnung & HR IT-CH",
+  "NAV.HR_CCNL": "Gesamtarbeitsverträge (CCNL)",
+  "NAV.HR_ORGANIZATION": "Organisation",
   "NAV.HR_SELF_SERVICE": "Mitarbeiterportal",
   "NAV.INVENTORY": "Lager & Logistik",
   "NAV.INVOICES": "Rechnungen",
@@ -2844,5 +2846,87 @@
     "completedDate": "Abgeschlossen am",
     "issueDate": "Ausstellungsdatum",
     "expiryDate": "Ablaufdatum"
+  },
+  "hrmShared": {
+    "confirmDelete": "Endgültig löschen?"
+  },
+  "hrmEmp": {
+    "title": "Mitarbeiterakte",
+    "openFile": "Akte",
+    "backToList": "← Mitarbeiterliste",
+    "contracts": "Verträge",
+    "documents": "Dokumente",
+    "supersedeHint": "Ein neuer Vertrag ersetzt den aktiven; nur der aktive Vertrag kann bearbeitet werden.",
+    "salaryComponents": "Lohnbestandteile",
+    "contractNumber": "Vertragsnr.",
+    "jobTitle": "Funktion",
+    "probationEnd": "Ende der Probezeit",
+    "weeklyHours": "Wochenstunden",
+    "baseAnnualSalary": "Jahresgrundlohn",
+    "currency": "Währung",
+    "wageTypeCode": "Lohnartcode",
+    "amount": "Betrag",
+    "frequency": "Häufigkeit",
+    "contractType": {
+      "permanent": "Unbefristet",
+      "fixed_term": "Befristet",
+      "apprenticeship": "Lehrvertrag",
+      "contractor": "Freelancer",
+      "internship": "Praktikum",
+      "seasonal": "Saisonal"
+    },
+    "frequencyValue": {
+      "monthly": "Monatlich",
+      "annual": "Jährlich"
+    },
+    "uploadDocument": "Dokument hochladen",
+    "file": "Datei",
+    "issueDate": "Ausstellungsdatum",
+    "expiryDate": "Ablaufdatum",
+    "retentionUntil": "Aufbewahren bis",
+    "flags": "Kennzeichen",
+    "healthData": "Gesundheitsdaten",
+    "confidential": "Vertraulich",
+    "visibleToEmployee": "Für Mitarbeiter sichtbar",
+    "docType": {
+      "contract": "Vertrag",
+      "amendment": "Nachtrag",
+      "id_card": "Ausweis",
+      "work_permit": "Arbeitsbewilligung",
+      "medical_fitness": "Medizinische Eignung",
+      "certificate": "Zertifikat",
+      "training": "Schulung",
+      "nda": "Geheimhaltungsvereinbarung",
+      "warning": "Verwarnung",
+      "payslip": "Lohnabrechnung",
+      "other": "Sonstiges"
+    },
+    "transfer": "Versetzen",
+    "transferred": "Versetzung erfasst",
+    "effectiveDate": "Gültig ab"
+  },
+  "hrmOrg": {
+    "title": "Organisation",
+    "subtitle": "Abteilungen und Stellen (keine Zyklen in der Hierarchie)",
+    "departments": "Abteilungen",
+    "positions": "Stellen",
+    "department": "Abteilung",
+    "position": "Stelle",
+    "parent": "Übergeordnete Abteilung",
+    "headcountBudget": "Soll-Stellenbestand",
+    "criticalRole": "Kritische Rolle"
+  },
+  "hrmCcnl": {
+    "title": "Gesamtarbeitsverträge (CCNL)",
+    "subtitle": "Vom Benutzer geladene Tabellen; generische Verträge sind schreibgeschützt",
+    "agreements": "Gesamtarbeitsverträge",
+    "levels": "Stufen",
+    "level": "Stufe",
+    "monthlyMinimum": "Monatliches Minimum",
+    "weeklyHours": "Wochenstunden",
+    "installments": "Monatslöhne",
+    "fourteenthMonth": "Monat des 14. Gehalts",
+    "employerInpsRate": "INPS-Satz Arbeitgeber (%)",
+    "generic": "Generisch"
   }
 }
