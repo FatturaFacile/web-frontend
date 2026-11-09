@@ -324,6 +324,13 @@ export const routes: Routes = [
       import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
   },
   {
+    path: 'workspace',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.WORKSPACE', title: 'NAV.WORKSPACE' },
+    loadComponent: () =>
+      import('./features/workspace/workspace.component').then((m) => m.WorkspaceComponent),
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     data: { breadcrumb: 'Impostazioni & Tenant', title: 'Impostazioni' },

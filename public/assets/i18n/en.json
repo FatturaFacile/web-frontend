@@ -2754,5 +2754,48 @@
       "forbidden": "Forbidden",
       "failed": "Failed"
     }
+  },
+  "NAV.WORKSPACE": "Cloud Workspace Integration",
+  "WORKSPACE": {
+    "TITLE": "Cloud Workspace Integration & Sync",
+    "SUBTITLE": "Connect Google Workspace and Microsoft 365 accounts to automatically synchronize calendars, events, and correspondence",
+    "TABS": {
+      "CONNECTIONS": "Cloud Connections",
+      "ITEMS": "Synced Items"
+    },
+    "GOOGLE_DESC": "Sync Google Calendar meetings and Gmail email metadata directly in the ERP",
+    "MS_DESC": "Bi-directional integration with Microsoft Outlook Calendar and Exchange mail",
+    "STATUS_CONNECTED": "Connected & Active",
+    "STATUS_DISCONNECTED": "Disconnected",
+    "CONSENT_DATE": "Consent Granted",
+    "LAST_SYNC": "Last Synced",
+    "NEVER": "Never synced",
+    "SCOPES": "Active Scopes",
+    "SYNC_NOW": "Sync Now",
+    "DISCONNECT": "Disconnect",
+    "CONNECT_BUTTON": "Connect Account",
+    "MANUAL_CODE": "Enter manual code",
+    "CONNECT_HELP_GOOGLE": "Authorize access to your Google Workspace account to sync meetings and communication records.",
+    "CONNECT_HELP_MS": "Authorize access to your Microsoft 365 tenant to sync work meetings and correspondence.",
+    "FILTER_KIND": "Filter by kind",
+    "KIND_CALENDAR": "Calendar Event",
+    "KIND_EMAIL": "Email",
+    "ITEM_TYPE": "Type",
+    "ITEM_SUBJECT": "Subject / Meeting",
+    "ITEM_COUNTERPART": "Attendee / Sender",
+    "ITEM_DATE": "Date & Time",
+    "UNTIL": "until",
+    "MODAL_AUTH_TITLE": "Cloud Authorization",
+    "MODAL_AUTH_DESC": "Select synchronization scopes and grant consent to connect your cloud provider.",
+    "SELECT_SCOPES": "Scopes to Synchronize",
+    "SCOPE_CALENDAR": "Calendar & Appointments",
+    "SCOPE_MAIL": "Mail & Message Metadata",
+    "CONSENT_CHECKBOX": "I accept data processing and authorize cloud connection (GDPR compliant)",
+    "MODAL_CALLBACK_TITLE": "Complete Connection",
+    "MODAL_CALLBACK_DESC": "Paste the OAuth authorization code and state nonce received from the identity provider.",
+    "AUTH_CODE": "Authorization Code",
+    "AUTH_CODE_PLACEHOLDER": "Enter provided OAuth code...",
+    "STATE_NONCE": "State Nonce Token",
+    "STATE_PLACEHOLDER": "Enter state token..."
   }
 }

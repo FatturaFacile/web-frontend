@@ -2698,5 +2698,48 @@
       "forbidden": "Nicht autorisiert",
       "failed": "Fehlgeschlagen"
     }
+  },
+  "NAV.WORKSPACE": "Cloud Workspace Integration",
+  "WORKSPACE": {
+    "TITLE": "Cloud-Workspace-Integration & Synchronisation",
+    "SUBTITLE": "Google Workspace und Microsoft 365 Konten verbinden, um Kalender, Termine und Korrespondenz automatisch zu synchronisieren",
+    "TABS": {
+      "CONNECTIONS": "Cloud-Verbindungen",
+      "ITEMS": "Synchronisierte Elemente"
+    },
+    "GOOGLE_DESC": "Google Kalender-Termine und Gmail-Metadaten direkt im ERP synchronisieren",
+    "MS_DESC": "Bidirektionale Integration mit Microsoft Outlook-Kalender und Exchange-E-Mails",
+    "STATUS_CONNECTED": "Verbunden & Aktiv",
+    "STATUS_DISCONNECTED": "Nicht verbunden",
+    "CONSENT_DATE": "Zustimmung erteilt",
+    "LAST_SYNC": "Zuletzt synchronisiert",
+    "NEVER": "Nie synchronisiert",
+    "SCOPES": "Aktive Berechtigungen",
+    "SYNC_NOW": "Jetzt synchronisieren",
+    "DISCONNECT": "Trennen",
+    "CONNECT_BUTTON": "Konto verbinden",
+    "MANUAL_CODE": "Manuellen Code eingeben",
+    "CONNECT_HELP_GOOGLE": "Autorisieren Sie den Zugriff auf Ihr Google Workspace-Konto zur Synchronisierung.",
+    "CONNECT_HELP_MS": "Autorisieren Sie den Zugriff auf Ihren Microsoft 365 Mandanten zur Synchronisierung.",
+    "FILTER_KIND": "Nach Typ filtern",
+    "KIND_CALENDAR": "Kalender-Termin",
+    "KIND_EMAIL": "E-Mail",
+    "ITEM_TYPE": "Typ",
+    "ITEM_SUBJECT": "Betreff / Termin",
+    "ITEM_COUNTERPART": "Teilnehmer / Absender",
+    "ITEM_DATE": "Datum & Uhrzeit",
+    "UNTIL": "bis",
+    "MODAL_AUTH_TITLE": "Cloud-Autorisierung",
+    "MODAL_AUTH_DESC": "Wählen Sie die Synchronisationsbereiche und erteilen Sie die Zustimmung.",
+    "SELECT_SCOPES": "Zu synchronisierende Bereiche",
+    "SCOPE_CALENDAR": "Kalender & Termine",
+    "SCOPE_MAIL": "E-Mail & Metadaten",
+    "CONSENT_CHECKBOX": "Ich akzeptiere die Datenverarbeitung und autorisiere die Verbindung (DSGVO-konform)",
+    "MODAL_CALLBACK_TITLE": "Verbindung abschließen",
+    "MODAL_CALLBACK_DESC": "Geben Sie den erhaltenen OAuth-Code und den State-Token ein.",
+    "AUTH_CODE": "Autorisierungscode",
+    "AUTH_CODE_PLACEHOLDER": "OAuth-Code eingeben...",
+    "STATE_NONCE": "Status-Token (Nonce)",
+    "STATE_PLACEHOLDER": "Status-Token eingeben..."
   }
 }

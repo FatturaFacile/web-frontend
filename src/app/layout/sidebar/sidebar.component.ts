@@ -375,6 +375,7 @@ export class SidebarComponent {
           children: [
             { key: 'NAV.COMPANY_SETTINGS', route: '/settings/tenant', icon: 'fa-solid fa-building' },
             { key: 'NAV.SYSTEM', route: '/system', icon: 'fa-solid fa-server', module: 'system' },
+            { key: 'NAV.WORKSPACE', route: '/workspace', icon: 'fa-solid fa-cloud', module: 'system' },
           ],
         },
       ],
