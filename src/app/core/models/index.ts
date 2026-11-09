@@ -31,3 +31,4 @@ export * from './dms.model';
 export * from './contract-register.model';
 export * from './associations.model';
 export * from './workshop.model';
+export * from './childcare.model';

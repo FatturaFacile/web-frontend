@@ -150,6 +150,13 @@ export const routes: Routes = [
       import('./features/associations/associations.routes').then((m) => m.ASSOCIATIONS_ROUTES),
   },
   {
+    path: 'childcare',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Infanzia & Asilo Nido', title: 'Infanzia & Asilo Nido' },
+    loadChildren: () =>
+      import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },
