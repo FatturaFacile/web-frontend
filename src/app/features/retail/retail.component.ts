@@ -5,6 +5,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -19,9 +20,15 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CommercialDocumentResource,
+  CreateLoyaltyCardPayload,
   DailyCorrispettivoResource,
+  LoyaltyApiService,
+  LoyaltyCard,
+  LoyaltyTransaction,
+  RecordLoyaltyTransactionPayload,
   RetailApiService,
   StoreCommercialDocumentPayload,
+  UpdateLoyaltyCardPayload,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
 
@@ -48,12 +55,14 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
     NzModalModule,
     NzFormModule,
     NzDividerModule,
+    NzDrawerModule,
     PageHeaderComponent,
   ],
   templateUrl: './retail.component.html',
 })
 export class RetailComponent implements OnInit {
   private readonly api = inject(RetailApiService);
+  private readonly loyaltyApi = inject(LoyaltyApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -71,6 +80,16 @@ export class RetailComponent implements OnInit {
   readonly selectedDate = signal<Date>(new Date());
   readonly loadingDaily = signal(false);
 
+  // Loyalty Cards state
+  readonly loyaltyCards = signal<LoyaltyCard[]>([]);
+  readonly loadingLoyalty = signal<boolean>(false);
+  readonly selectedLoyaltyCard = signal<LoyaltyCard | null>(null);
+  readonly loyaltyTransactions = signal<LoyaltyTransaction[]>([]);
+  readonly isLoyaltyDrawerVisible = signal<boolean>(false);
+  readonly isIssueCardModalVisible = signal<boolean>(false);
+  readonly isRecordTxModalVisible = signal<boolean>(false);
+  readonly isSubmittingLoyalty = signal<boolean>(false);
+
   // Computed KPIs
   readonly kpiTotalDocs = computed(() => this.documents().length);
   readonly kpiIssuedDocs = computed(
@@ -78,6 +97,9 @@ export class RetailComponent implements OnInit {
   );
   readonly kpiVoidedDocs = computed(
     () => this.documents().filter((d) => d.status === 'voided').length
+  );
+  readonly kpiActiveCards = computed(
+    () => this.loyaltyCards().filter((c) => c.status === 'active').length
   );
 
   // Modal create document
@@ -96,6 +118,19 @@ export class RetailComponent implements OnInit {
     ]),
   });
 
+  // Loyalty card forms
+  readonly issueCardForm = this.fb.group({
+    customer_id: ['', [Validators.required]],
+    card_number: [''],
+    initial_balance: [0, [Validators.min(0)]],
+  });
+
+  readonly recordTxForm = this.fb.group({
+    type: ['topup' as 'topup' | 'spend', [Validators.required]],
+    amount: [10, [Validators.required, Validators.min(1)]],
+    description: [''],
+  });
+
   get linesArray(): FormArray {
     return this.docForm.get('lines') as FormArray;
   }
@@ -103,6 +138,7 @@ export class RetailComponent implements OnInit {
   ngOnInit(): void {
     this.loadDocuments();
     this.loadDailyCorrispettivi();
+    this.loadLoyaltyCards();
   }
 
   loadDocuments(page = 1): void {
@@ -132,6 +168,20 @@ export class RetailComponent implements OnInit {
       error: () => {
         this.dailyCorrispettivo.set(null);
         this.loadingDaily.set(false);
+      },
+    });
+  }
+
+  loadLoyaltyCards(): void {
+    this.loadingLoyalty.set(true);
+    this.loyaltyApi.getCards({ page: 1, per_page: 50 }).subscribe({
+      next: (res) => {
+        this.loyaltyCards.set(res?.data || []);
+        this.loadingLoyalty.set(false);
+      },
+      error: () => {
+        this.message.error('Impossibile caricare le carte fedeltà');
+        this.loadingLoyalty.set(false);
       },
     });
   }
@@ -223,5 +273,154 @@ export class RetailComponent implements OnInit {
         });
       },
     });
+  }
+
+  // --- Loyalty Cards Methods ---
+
+  openIssueCardModal(): void {
+    this.issueCardForm.reset({
+      customer_id: '',
+      card_number: `LOY-${Math.floor(100000 + Math.random() * 900000)}`,
+      initial_balance: 0,
+    });
+    this.isIssueCardModalVisible.set(true);
+  }
+
+  submitIssueCard(): void {
+    if (this.issueCardForm.invalid) {
+      this.issueCardForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmittingLoyalty.set(true);
+    const val = this.issueCardForm.getRawValue();
+    const payload: CreateLoyaltyCardPayload = {
+      customer_id: val.customer_id,
+      card_number: val.card_number || undefined,
+      initial_balance: Number(val.initial_balance) || 0,
+    };
+
+    this.loyaltyApi.createCard(payload).subscribe({
+      next: () => {
+        this.message.success('Carta fedeltà emessa con successo');
+        this.isSubmittingLoyalty.set(false);
+        this.isIssueCardModalVisible.set(false);
+        this.loadLoyaltyCards();
+      },
+      error: () => {
+        this.message.error('Errore durante l’emissione della carta fedeltà');
+        this.isSubmittingLoyalty.set(false);
+      },
+    });
+  }
+
+  openLoyaltyDrawer(card: LoyaltyCard): void {
+    this.selectedLoyaltyCard.set(card);
+    this.isLoyaltyDrawerVisible.set(true);
+    this.loyaltyApi.getTransactions(card.id).subscribe({
+      next: (res) => {
+        this.loyaltyTransactions.set(res?.data || []);
+      },
+      error: () => {
+        this.message.error('Impossibile caricare i movimenti della carta');
+      },
+    });
+  }
+
+  closeLoyaltyDrawer(): void {
+    this.isLoyaltyDrawerVisible.set(false);
+    this.selectedLoyaltyCard.set(null);
+    this.loyaltyTransactions.set([]);
+  }
+
+  openRecordTxModal(card: LoyaltyCard): void {
+    this.selectedLoyaltyCard.set(card);
+    this.recordTxForm.reset({
+      type: 'topup',
+      amount: 10,
+      description: '',
+    });
+    this.isRecordTxModalVisible.set(true);
+  }
+
+  submitRecordTx(): void {
+    if (this.recordTxForm.invalid || !this.selectedLoyaltyCard()) {
+      this.recordTxForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmittingLoyalty.set(true);
+    const cardId = this.selectedLoyaltyCard()!.id;
+    const val = this.recordTxForm.getRawValue();
+    const payload: RecordLoyaltyTransactionPayload = {
+      type: val.type,
+      amount: Number(val.amount),
+      description: val.description || undefined,
+    };
+
+    this.loyaltyApi.recordTransaction(cardId, payload).subscribe({
+      next: () => {
+        this.message.success(
+          val.type === 'topup' ? 'Punti/credito accreditati' : 'Punti/credito scalati'
+        );
+        this.isSubmittingLoyalty.set(false);
+        this.isRecordTxModalVisible.set(false);
+        this.loadLoyaltyCards();
+        if (this.isLoyaltyDrawerVisible()) {
+          this.openLoyaltyDrawer(this.selectedLoyaltyCard()!);
+        }
+      },
+      error: () => {
+        this.message.error('Errore durante la registrazione della transazione punti');
+        this.isSubmittingLoyalty.set(false);
+      },
+    });
+  }
+
+  toggleCardStatus(card: LoyaltyCard): void {
+    const newStatus = card.status === 'active' ? 'suspended' : 'active';
+    const payload: UpdateLoyaltyCardPayload = { status: newStatus };
+
+    this.loyaltyApi.updateCard(card.id, payload).subscribe({
+      next: () => {
+        this.message.success(`Stato carta aggiornato a ${newStatus}`);
+        this.loadLoyaltyCards();
+      },
+      error: () => {
+        this.message.error('Errore durante l’aggiornamento dello stato');
+      },
+    });
+  }
+
+  deleteLoyaltyCard(card: LoyaltyCard): void {
+    this.modal.confirm({
+      nzTitle: `Eliminare la carta fedeltà ${card.card_number}?`,
+      nzContent: 'L’operazione cancellerà la carta e lo storico dei punti accumulati.',
+      nzOkDanger: true,
+      nzOkText: 'Elimina',
+      nzOnOk: () => {
+        this.loyaltyApi.deleteCard(card.id).subscribe({
+          next: () => {
+            this.message.success('Carta fedeltà eliminata');
+            this.loadLoyaltyCards();
+          },
+          error: () => this.message.error('Errore durante l’eliminazione della carta'),
+        });
+      },
+    });
+  }
+
+  getLoyaltyStatusColor(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'suspended':
+        return 'warning';
+      case 'expired':
+      case 'blocked':
+        return 'error';
+      default:
+        return 'default';
+    }
   }
 }
