@@ -1,47 +1,894 @@
 <app-page-header
-  [title]="'CONSTRUCTION.TITLE' | translate"
-  [subtitle]="'CONSTRUCTION.SUBTITLE' | translate"
-/>
+  [title]="'CONSTRUCTION.PAGE_TITLE' | translate"
+  [subtitle]="'CONSTRUCTION.PAGE_SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    @if (selectedTabIndex() === 0) {
+      <button nz-button nzType="default" (click)="openCreateSalModal()">
+        <span nz-icon nzType="audit"></span>
+        {{ 'CONSTRUCTION.NEW_SAL' | translate }}
+      </button>
+      <button nz-button nzType="primary" (click)="openCreateSiteModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CONSTRUCTION.NEW_SITE' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 1) {
+      <button nz-button nzType="primary" (click)="openCreateBidModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CONSTRUCTION.NEW_BID' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 2) {
+      <button nz-button nzType="primary" (click)="openCreateDiaryModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CONSTRUCTION.NEW_DIARY_ENTRY' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 3) {
+      <button nz-button nzType="primary" (click)="openCreateDocumentModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CONSTRUCTION.NEW_DOCUMENT' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 4) {
+      <button nz-button nzType="default" (click)="openCreateSubcontractorModal()">
+        <span nz-icon nzType="team"></span>
+        {{ 'CONSTRUCTION.NEW_SUBCONTRACTOR' | translate }}
+      </button>
+      <button nz-button nzType="primary" (click)="openCreateSubcontractModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CONSTRUCTION.NEW_SUBCONTRACT' | translate }}
+      </button>
+    }
+  </div>
+</app-page-header>
 
-<nz-card [nzTitle]="'CONSTRUCTION.CARD_TITLE' | translate">
-  <nz-table
-    #cTable
-    [nzData]="sites()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ "CONSTRUCTION.COL_SITE_CODE" | translate }}</th>
-        <th>{{ "CONSTRUCTION.COL_CLIENT" | translate }}</th>
-        <th>{{ "CONSTRUCTION.COL_LOCATION_REGIME" | translate }}</th>
-        <th>{{ "CONSTRUCTION.COL_SAL" | translate }}</th>
-        <th>{{ "CONSTRUCTION.COL_TECH_COMPLIANCE" | translate }}</th>
-        <th>{{ "CONSTRUCTION.COL_VAT_REGIME" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (s of cTable.data; track s.code) {
-        <tr>
-          <td>
-            <strong>{{ s.code }}</strong>
-          </td>
-          <td>{{ s.client }}</td>
-          <td>
-            <nz-tag [nzColor]="s.regime === 'CH' ? 'red' : 'blue'">
-              {{ s.location }} ({{ s.regime }})
-            </nz-tag>
-          </td>
-          <td>
-            <strong>{{ s.sal }}</strong>
-          </td>
-          <td>
-            <nz-tag nzColor="success">{{ s.norm }}</nz-tag>
-          </td>
-          <td>{{ s.vatRegime }}</td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
-</nz-card>
+<div class="construction-container">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 1: CANTIERI & SAL -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_SITES' | translate">
+      <nz-card>
+        <nz-table #sitesTable [nzData]="sites()" [nzLoading]="sitesLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_CODE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_LOCATION' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_REGIME' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_SAL' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_NORM' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (site of sitesTable.data; track site.id) {
+              <tr>
+                <td><strong>{{ site.code }}</strong></td>
+                <td>{{ site.client }}</td>
+                <td>{{ site.location }}</td>
+                <td><nz-tag>{{ site.regime }}</nz-tag></td>
+                <td>{{ site.sal || '-' }}</td>
+                <td><small class="text-muted">{{ site.norm || 'SIA 118 / D.Lgs 36/2023' }}</small></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 style="margin-top: 24px">{{ 'CONSTRUCTION.SAL_TITLE' | translate }}</h4>
+        <nz-table #salTable [nzData]="progressBillings()" [nzFrontPagination]="true" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_PERIOD_START' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_PERIOD_END' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sal of salTable.data; track sal.id) {
+              <tr>
+                <td><strong>{{ sal.sal_number }}</strong></td>
+                <td>{{ sal.period_start | date: 'mediumDate' }}</td>
+                <td>{{ sal.period_end | date: 'mediumDate' }}</td>
+                <td>{{ sal.gross_certified_amount | currency: 'EUR' }}</td>
+                <td>{{ sal.retention_percentage }}%</td>
+                <td><strong>{{ sal.net_amount | currency: 'EUR' }}</strong></td>
+                <td><nz-tag nzColor="success">{{ sal.status | uppercase }}</nz-tag></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 2: APPALTI & OFFERTE -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_BIDS' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-input-group nzPrefixIcon="search" class="search-input">
+              <input
+                type="text"
+                nz-input
+                [placeholder]="'CONSTRUCTION.SEARCH_BIDS' | translate"
+                [ngModel]="filterBidSearch()"
+                (ngModelChange)="filterBidSearch.set($event); loadBids()"
+              />
+            </nz-input-group>
+
+            <nz-select
+              class="status-select"
+              [ngModel]="filterBidStatus()"
+              (ngModelChange)="filterBidStatus.set($event); loadBids()"
+              [nzPlaceHolder]="'CONSTRUCTION.FILTER_STATUS' | translate"
+              nzAllowClear
+            >
+              <nz-option nzValue="" [nzLabel]="'CONSTRUCTION.ALL_STATUSES' | translate"></nz-option>
+              <nz-option nzValue="draft" [nzLabel]="'CONSTRUCTION.STATUS.DRAFT' | translate"></nz-option>
+              <nz-option nzValue="submitted" [nzLabel]="'CONSTRUCTION.STATUS.SUBMITTED' | translate"></nz-option>
+              <nz-option nzValue="awarded" [nzLabel]="'CONSTRUCTION.STATUS.AWARDED' | translate"></nz-option>
+              <nz-option nzValue="rejected" [nzLabel]="'CONSTRUCTION.STATUS.REJECTED' | translate"></nz-option>
+              <nz-option nzValue="closed" [nzLabel]="'CONSTRUCTION.STATUS.CLOSED' | translate"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadBids()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CONSTRUCTION.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <nz-table #bidsTable [nzData]="bids()" [nzLoading]="bidsLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_BID_CODE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_BID_TITLE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_TOTAL' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+              <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bid of bidsTable.data; track bid.id) {
+              <tr>
+                <td><strong>{{ bid.code }}</strong></td>
+                <td>{{ bid.title }}</td>
+                <td>{{ bid.client_name || '-' }}</td>
+                <td><strong>{{ bid.total_amount | money: bid.currency }}</strong></td>
+                <td><nz-tag [nzColor]="getBidStatusColor(bid.status)">{{ bid.status | uppercase }}</nz-tag></td>
+                <td nzRight>
+                  <nz-space>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="default"
+                      nzSize="small"
+                      (click)="openBidDrawer(bid)"
+                    >
+                      <span nz-icon nzType="folder-open"></span>
+                      {{ 'CONSTRUCTION.ACTION_COMPUTE' | translate }}
+                    </button>
+                    @if (bid.status === 'submitted') {
+                      <button
+                        *nzSpaceItem
+                        nz-button
+                        nzType="primary"
+                        nzSize="small"
+                        (click)="changeBidStatus(bid, 'awarded')"
+                      >
+                        <span nz-icon nzType="check"></span>
+                        {{ 'CONSTRUCTION.ACTION_AWARD' | translate }}
+                      </button>
+                    }
+                    @if (bid.status === 'awarded') {
+                      <button
+                        *nzSpaceItem
+                        nz-button
+                        nzType="default"
+                        nzSize="small"
+                        (click)="openIssueBidBillingModal(bid)"
+                      >
+                        <span nz-icon nzType="audit"></span>
+                        {{ 'CONSTRUCTION.ACTION_ISSUE_SAL' | translate }}
+                      </button>
+                    }
+                  </nz-space>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: GIORNALE DEI LAVORI -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DIARY' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-select
+              style="width: 260px"
+              [ngModel]="selectedDiarySiteId()"
+              (ngModelChange)="selectedDiarySiteId.set($event); loadDiary($event)"
+              [nzPlaceHolder]="'CONSTRUCTION.SELECT_SITE' | translate"
+            >
+              @for (site of sites(); track site.id) {
+                <nz-option [nzValue]="site.id" [nzLabel]="site.code + ' - ' + site.client"></nz-option>
+              }
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadDiary(selectedDiarySiteId())">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CONSTRUCTION.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <nz-table #diaryTable [nzData]="diaryEntries()" [nzLoading]="diaryLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_WEATHER' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_WORKERS' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_EQUIPMENT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_WORK_PERFORMED' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of diaryTable.data; track entry.id) {
+              <tr>
+                <td>{{ entry.date | date: 'mediumDate' }}</td>
+                <td><nz-tag>{{ entry.weather_condition }}</nz-tag></td>
+                <td><strong>{{ entry.workers_count }}</strong></td>
+                <td><small class="text-muted">{{ entry.equipment_notes || '-' }}</small></td>
+                <td>{{ entry.work_performed }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 4: SICUREZZA & DOCUMENTI (POS / DURC) -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DOCUMENTS' | translate">
+      <nz-card>
+        <h4>{{ 'CONSTRUCTION.DOCUMENTS_TITLE' | translate }}</h4>
+        <nz-table #docTable [nzData]="siteDocuments()" [nzLoading]="documentsLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of docTable.data; track doc.id) {
+              <tr>
+                <td><strong>{{ doc.title }}</strong></td>
+                <td><nz-tag [nzColor]="getCategoryColor(doc.category)">{{ doc.category | uppercase }}</nz-tag></td>
+                <td>{{ doc.expires_at ? (doc.expires_at | date: 'mediumDate') : '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 style="margin-top: 24px">{{ 'CONSTRUCTION.EXPIRING_TITLE' | translate }}</h4>
+        <nz-table #expTable [nzData]="expiringDocuments()" [nzFrontPagination]="true" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (exp of expTable.data; track exp.id) {
+              <tr>
+                <td><strong>{{ exp.title }}</strong></td>
+                <td><nz-tag nzColor="error">{{ exp.category | uppercase }}</nz-tag></td>
+                <td><span class="text-danger">{{ exp.expires_at | date: 'mediumDate' }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 5: SUBAPPALTI -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_SUBCONTRACTS' | translate">
+      <nz-card>
+        <nz-table #subTable [nzData]="subcontracts()" [nzLoading]="subcontractsLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_SUBCONTRACTOR' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_SCOPE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CONTRACT_AMOUNT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CERTIFIED_AMOUNT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+              <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sub of subTable.data; track sub.id) {
+              <tr>
+                <td><strong>{{ sub.subcontractor_name || sub.subcontractor_id }}</strong></td>
+                <td>{{ sub.scope_of_work }}</td>
+                <td>{{ sub.contract_amount | currency: 'EUR' }}</td>
+                <td><strong>{{ (sub.certified_amount || '0.00') | currency: 'EUR' }}</strong></td>
+                <td><nz-tag [nzColor]="sub.status === 'certified' ? 'success' : 'blue'">{{ sub.status | uppercase }}</nz-tag></td>
+                <td nzRight>
+                  @if (sub.status !== 'closed') {
+                    <button
+                      nz-button
+                      nzType="default"
+                      nzSize="small"
+                      (click)="openCertifySubcontractModal(sub)"
+                    >
+                      <span nz-icon nzType="audit"></span>
+                      {{ 'CONSTRUCTION.ACTION_CERTIFY_SUB' | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</div>
+
+<!-- DRAWER: COMPUTO & DETTAGLI APPALTO -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="850"
+  [nzTitle]="('CONSTRUCTION.DRAWER_TITLE' | translate) + ': ' + (selectedBid()?.code || '')"
+  (nzOnClose)="closeBidDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedBid(); as bid) {
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+        <nz-descriptions-item [nzTitle]="'CONSTRUCTION.COL_BID_CODE' | translate">
+          <strong>{{ bid.code }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONSTRUCTION.COL_STATUS' | translate">
+          <nz-tag [nzColor]="getBidStatusColor(bid.status)">{{ bid.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONSTRUCTION.COL_BID_TITLE' | translate" [nzSpan]="2">
+          {{ bid.title }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONSTRUCTION.COL_TOTAL' | translate">
+          <strong>{{ bid.total_amount | money: bid.currency }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONSTRUCTION.COL_CLIENT' | translate">
+          {{ bid.client_name || '-' }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- SEZIONE 1: VOCI DI COMPUTO -->
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <h4>{{ 'CONSTRUCTION.POSITIONS_TITLE' | translate }}</h4>
+          <button nz-button nzType="primary" nzSize="small" (click)="openAddPositionModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'CONSTRUCTION.ADD_POSITION' | translate }}
+          </button>
+        </div>
+
+        <nz-table #posTable [nzData]="bidPositions()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_POS_CODE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_DESCRIPTION' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_UNIT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_QTY' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_UNIT_PRICE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_SUBTOTAL' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pos of posTable.data; track pos.id) {
+              <tr>
+                <td><strong>{{ pos.code || '-' }}</strong></td>
+                <td>{{ pos.description }}</td>
+                <td>{{ pos.unit }}</td>
+                <td>{{ pos.quantity }}</td>
+                <td>{{ pos.unit_price | money: bid.currency }}</td>
+                <td><strong>{{ pos.subtotal | money: bid.currency }}</strong></td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="default"
+                    nzSize="small"
+                    (click)="openAddMeasurementModal(pos.id)"
+                  >
+                    <span nz-icon nzType="calculator"></span>
+                    {{ 'CONSTRUCTION.ACTION_MEASURE' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- SEZIONE 2: SAL & FATTURAZIONE APPALTO -->
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <h4>{{ 'CONSTRUCTION.BID_BILLINGS_TITLE' | translate }}</h4>
+          <button nz-button nzType="primary" nzSize="small" (click)="openIssueBidBillingModal(bid)">
+            <span nz-icon nzType="audit"></span>
+            {{ 'CONSTRUCTION.ACTION_ISSUE_SAL' | translate }}
+          </button>
+        </div>
+
+        <nz-table #bbTable [nzData]="bidBillings()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of bbTable.data; track b.id) {
+              <tr>
+                <td><strong>{{ b.sal_number }}</strong></td>
+                <td>{{ b.date | date: 'mediumDate' }}</td>
+                <td>{{ b.amount | money: bid.currency }}</td>
+                <td>{{ b.retention_amount | money: bid.currency }}</td>
+                <td><strong>{{ b.net_payable | money: bid.currency }}</strong></td>
+                <td><nz-tag nzColor="success">{{ b.status | uppercase }}</nz-tag></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- MODAL: NUOVO CANTIERE -->
+<nz-modal
+  [nzVisible]="siteModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_SITE' | translate"
+  (nzOnCancel)="siteModalVisible.set(false)"
+  (nzOnOk)="saveSite()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="siteForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CODE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="code" placeholder="CANTIERE-2026-01" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CLIENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="client" placeholder="Committente / Ente Appaltante" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_LOCATION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="location" placeholder="Comune, Via, Cantiere" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_REGIME' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="regime">
+            <nz-option nzValue="CH" nzLabel="Svizzera (SIA 118 / IVA 8.1%)"></nz-option>
+            <nz-option nzValue="IT" nzLabel="Italia (D.Lgs 36/2023 / Reverse Charge / Split Payment)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO SAL (PROGRESS BILLING) -->
+<nz-modal
+  [nzVisible]="salModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_SAL' | translate"
+  (nzOnCancel)="salModalVisible.set(false)"
+  (nzOnOk)="saveSal()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="salForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SITE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="construction_site_id">
+            @for (site of sites(); track site.id) {
+              <nz-option [nzValue]="site.id" [nzLabel]="site.code + ' - ' + site.client"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SAL_NUMBER' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="sal_number" placeholder="SAL 1" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_GROSS_AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="gross_certified_amount" [nzMin]="1" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_PERIOD_START' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="period_start" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_PERIOD_END' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="period_end" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA OFFERTA / APPALTO -->
+<nz-modal
+  [nzVisible]="bidModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_BID' | translate"
+  (nzOnCancel)="bidModalVisible.set(false)"
+  (nzOnOk)="saveBid()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="bidForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_BID_CODE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="code" placeholder="APP-2026-001" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_BID_TITLE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="title" placeholder="Opere Edili, Finiture..." />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'CONSTRUCTION.FIELD_CLIENT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="client_name" placeholder="Committente" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CURRENCY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="currency">
+              <nz-option nzValue="CHF" nzLabel="CHF"></nz-option>
+              <nz-option nzValue="EUR" nzLabel="EUR"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AGGIUNGI VOCE DI COMPUTO -->
+<nz-modal
+  [nzVisible]="positionModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_ADD_POSITION' | translate"
+  (nzOnCancel)="positionModalVisible.set(false)"
+  (nzOnOk)="savePosition()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="positionForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label>{{ 'CONSTRUCTION.FIELD_POS_CODE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="code" placeholder="Art. 01.02.03" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="description" placeholder="Descrizione voce di capitolato" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_UNIT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="unit" placeholder="m², m³, kg, cad..." />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_QTY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="quantity" [nzMin]="0.01" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_UNIT_PRICE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="unit_price" placeholder="45.00" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: EMETTI SAL ACCONTO -->
+<nz-modal
+  [nzVisible]="bidBillingModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_ISSUE_SAL' | translate"
+  (nzOnCancel)="bidBillingModalVisible.set(false)"
+  (nzOnOk)="saveBidBilling()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="bidBillingForm" nz-form nzLayout="vertical">
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SAL_NUMBER' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="sal_number" placeholder="SAL-1" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="amount" placeholder="50000.00" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CONSTRUCTION.FIELD_RETENTION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="retention_amount" placeholder="5000.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO RAPPORTO GIORNALE LAVORI -->
+<nz-modal
+  [nzVisible]="diaryModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_DIARY' | translate"
+  (nzOnCancel)="diaryModalVisible.set(false)"
+  (nzOnOk)="saveDiary()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="diaryForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SITE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="site_id">
+            @for (site of sites(); track site.id) {
+              <nz-option [nzValue]="site.id" [nzLabel]="site.code + ' - ' + site.client"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="date" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_WORKERS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="workers_count" [nzMin]="1" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_WEATHER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="weather_condition" placeholder="Sereno 18°C / Pioggia 12°C" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_WORK_PERFORMED' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="work_performed" rows="3" placeholder="Lavorazioni eseguite nella giornata..."></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CARICA DOCUMENTO CANTIERE -->
+<nz-modal
+  [nzVisible]="documentModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_DOCUMENT' | translate"
+  (nzOnCancel)="documentModalVisible.set(false)"
+  (nzOnOk)="saveDocument()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="documentForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SITE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="site_id">
+            @for (site of sites(); track site.id) {
+              <nz-option [nzValue]="site.id" [nzLabel]="site.code + ' - ' + site.client"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DOCUMENT_TITLE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="title" placeholder="Es. Piano Operativo di Sicurezza POS" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CATEGORY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="category">
+              <nz-option nzValue="pos" nzLabel="POS - Piano Operativo di Sicurezza"></nz-option>
+              <nz-option nzValue="psc" nzLabel="PSC - Piano di Sicurezza e Coordinamento"></nz-option>
+              <nz-option nzValue="durc" nzLabel="DURC - Documento Unico Regolarità Contributiva"></nz-option>
+              <nz-option nzValue="insurance" nzLabel="Polizza Assicurativa CAR / Decennale"></nz-option>
+              <nz-option nzValue="compliance" nzLabel="Certificato di Conformità Impianti"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CONSTRUCTION.FIELD_EXPIRES_AT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="expires_at" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REGISTRA SUBAPPALTATORE -->
+<nz-modal
+  [nzVisible]="subcontractorModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_SUBCONTRACTOR' | translate"
+  (nzOnCancel)="subcontractorModalVisible.set(false)"
+  (nzOnOk)="saveSubcontractor()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="subcontractorForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_COMPANY_NAME' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="company_name" placeholder="Ragione Sociale" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_VAT_NUMBER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="vat_number" placeholder="CHE-123.456.789 / P.IVA" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONSTRUCTION.FIELD_QUALIFICATION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="qualification" placeholder="Opere di finitura, cartongesso, impianti..." />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO SUBAPPALTO -->
+<nz-modal
+  [nzVisible]="subcontractModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_NEW_SUBCONTRACT' | translate"
+  (nzOnCancel)="subcontractModalVisible.set(false)"
+  (nzOnOk)="saveSubcontract()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="subcontractForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SITE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="site_id">
+            @for (site of sites(); track site.id) {
+              <nz-option [nzValue]="site.id" [nzLabel]="site.code + ' - ' + site.client"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SUBCONTRACTOR' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="subcontractor_id">
+            @for (sub of subcontractors(); track sub.id) {
+              <nz-option [nzValue]="sub.id" [nzLabel]="sub.company_name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SCOPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="scope_of_work" placeholder="Fornitura e posa in opera..." />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CONTRACT_AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="contract_amount" placeholder="25000.00" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CERTIFICA SAL SUBAPPALTO -->
+<nz-modal
+  [nzVisible]="certifySubcontractModalVisible()"
+  [nzTitle]="'CONSTRUCTION.MODAL_CERTIFY_SUB' | translate"
+  (nzOnCancel)="certifySubcontractModalVisible.set(false)"
+  (nzOnOk)="saveCertifySubcontract()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="certifyForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CERTIFY_AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="amount" placeholder="5000.00" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
