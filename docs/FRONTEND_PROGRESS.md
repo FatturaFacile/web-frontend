@@ -39,6 +39,7 @@ Last updated: 2026-11-09
 | **21** | **Document Management (/dms)** | 37 | 37 | Document Explorer, Folders Hierarchy, SHA-256 Versioning, Legal Hold, OCR Extractions, Linked ERP Entities, Retention Policies | 11 | **Done** | Covered /dms/documents, /dms/folders, /dms/tags, /dms/retention-policies, /dms/documents/{id}/versions, /dms/documents/{id}/check-out, /dms/documents/{id}/legal-hold, /dms/documents/{id}/links, /dms/documents/{id}/extractions, /dms/ai-settings |
 | **22** | **Contract Register (/contract-register)** | 23 | 23 | Active & Passive Contracts, Term Renewals, Termination Notices, Obligations Schedule, Milestone Tracking, Alert Notifications | 11 | **Done** | Covered /contract-register, /contract-register/{kind}/{id}/terms, /contract-register/{kind}/{id}/renew, /contract-register/{kind}/{id}/notice, /contract-register/{kind}/{id}/parties, /contract-register/obligations, /contract-register/alerts |
 | **23** | **Associations & Third Sector (/associations)** | 216 | 216 | Members Register, Fees & Collections, Sports Courses, Donations & 5x1000, RUNTS Volunteers, Expense Reimbursements, General Meetings | 12 | **Done** | Covered /associations/members, /associations/fee-assignments, /associations/courses, /associations/donations, /associations/five-per-mille, /associations/volunteers, /associations/reimbursements, /associations/meetings |
+| **24** | **Automotive Workshop & Job Cards (/automotive/workshop)** | 18 | 18 | Repair Orders, Job Lines & Spare Parts, Mechanic Time Tracking & Billing, Vehicle History, Vehicle Stock & Sales, Scheduled Maintenance | 13 | **Done** | Covered /workshop/folders, /workshop/folders/{id}/lines, /workshop/folders/{id}/status, quote/DDT/invoice conversions, /time-entries, /vehicle-stock, /recurring-services |
 
 ---
 
@@ -62,7 +63,13 @@ Last updated: 2026-11-09
 16. `[DONE]` **Module 16: HR & Payroll**
 17. `[DONE]` **Module 17: Verticals & Minor Modules**
 18. `[DONE]` **Module 18: Final Polish & KPI Dashboards**
+19. `[DONE]` **Module 19: Customs & Cross-Border Logistics (`/customs`)**
+20. `[DONE]` **Module 20: Approval Workflows & BPMN Inbox (`/workflows`)**
+21. `[DONE]` **Module 21: Document Management System (`/dms`)**
+22. `[DONE]` **Module 22: Contract Register & Obligations (`/contract-register`)**
+23. `[DONE]` **Module 23: Third Sector & Non-Profit Associations (`/associations`)**
+24. `[DONE]` **Module 24: Automotive Workshop & Job Cards (`/automotive/workshop`)**
 
 ---
 
-### Overall Status: 23 ERP MODULES FULLY IMPLEMENTED & TESTED (501/501 tests passing, ng build passing)
+### Overall Status: 24 ERP MODULES FULLY IMPLEMENTED & TESTED (514/514 tests passing, ng build passing)

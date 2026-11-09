@@ -52,3 +52,4 @@ export * from './api/workflow-api.service';
 export * from './api/dms-api.service';
 export * from './api/contract-register-api.service';
 export * from './api/associations-api.service';
+export * from './api/workshop-api.service';

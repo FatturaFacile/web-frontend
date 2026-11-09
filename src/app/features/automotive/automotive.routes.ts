@@ -16,6 +16,6 @@ export const AUTOMOTIVE_ROUTES: Routes = [
     path: 'workshop',
     data: { breadcrumb: 'Officina & Schede', title: 'Officina' },
     loadComponent: () =>
-      import('./tire-hotel.component').then((m) => m.TireHotelComponent),
+      import('./workshop/workshop.component').then((m) => m.WorkshopComponent),
   },
 ];
