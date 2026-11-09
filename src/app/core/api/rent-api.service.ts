@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   CheckInInspectionPayload,
+  CheckOutInspectionPayload,
   RentalBooking,
   RentalVehicle,
 } from '../models';
@@ -24,5 +25,9 @@ export class RentApiService {
 
   recordCheckInInspection(payload: CheckInInspectionPayload): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.base}/check-in-inspection`, payload);
+  }
+
+  recordCheckOutInspection(payload: CheckOutInspectionPayload): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.base}/check-out-inspection`, payload);
   }
 }

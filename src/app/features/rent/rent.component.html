@@ -1,46 +1,474 @@
-<app-page-header [title]="'RENT.TITLE' | translate" [subtitle]="'RENT.SUBTITLE' | translate" />
-
-<nz-card [nzTitle]="'RENT.CARD_TITLE' | translate">
-  <nz-table
-    #rTable
-    [nzData]="vehicles()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    nzSize="middle"
+<div class="rent-container">
+  <app-page-header
+    [title]="'RENT.PAGE_TITLE' | translate"
+    [subtitle]="'RENT.PAGE_SUBTITLE' | translate"
   >
-    <thead>
-      <tr>
-        <th>{{ "RENT.COL_PLATE_MODEL" | translate }}</th>
-        <th>{{ "RENT.COL_TYPE" | translate }}</th>
-        <th>{{ "RENT.COL_CLIENT" | translate }}</th>
-        <th>{{ "RENT.COL_VIGNETTE" | translate }}</th>
-        <th>{{ "RENT.COL_RETURN" | translate }}</th>
-        <th>{{ "COMMON.STATUS" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (v of rTable.data; track v.plate) {
-        <tr>
-          <td>
-            <strong>{{ v.plate }}</strong> - {{ v.model }}
-          </td>
-          <td>{{ v.type }}</td>
-          <td>{{ v.client }}</td>
-          <td>
-            <nz-tag [nzColor]="v.vignette ? 'success' : 'default'">
-              {{
-                v.vignette
-                  ? ("RENT.VIGNETTE_ACTIVE" | translate)
-                  : ("RENT.VIGNETTE_NONE" | translate)
-              }}
-            </nz-tag>
-          </td>
-          <td>{{ v.returnDate }}</td>
-          <td>
-            <nz-tag nzColor="blue">{{ v.status }}</nz-tag>
-          </td>
-        </tr>
+    <div class="header-actions">
+      <button nz-button nzType="primary" (click)="openRegisterVehicleModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'RENT.REGISTER_VEHICLE' | translate }}
+      </button>
+      <button nz-button (click)="loadVehicles(); loadBookings()">
+        <span nz-icon nzType="reload"></span>
+        {{ 'RENT.REFRESH' | translate }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <nz-card class="main-card">
+    <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+      <!-- TAB 1: Rental Fleet Vehicles -->
+      <nz-tab [nzTitle]="'RENT.TAB_FLEET' | translate">
+        <div class="tab-toolbar">
+          <div class="filter-group">
+            <label for="statusFilter"><strong>{{ 'RENT.FILTER_STATUS' | translate }}:</strong></label>
+            <nz-select
+              id="statusFilter"
+              class="status-select"
+              [(ngModel)]="vehicleFilterStatus"
+              [nzPlaceHolder]="'RENT.ALL_STATUSES' | translate"
+              nzAllowClear
+            >
+              <nz-option nzValue="" [nzLabel]="'RENT.ALL_STATUSES' | translate"></nz-option>
+              <nz-option nzValue="available" [nzLabel]="'RENT.STATUS_AVAILABLE' | translate"></nz-option>
+              <nz-option nzValue="rented" [nzLabel]="'RENT.STATUS_RENTED' | translate"></nz-option>
+              <nz-option nzValue="reserved" [nzLabel]="'RENT.STATUS_RESERVED' | translate"></nz-option>
+              <nz-option nzValue="maintenance" [nzLabel]="'RENT.STATUS_MAINTENANCE' | translate"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+
+        <nz-table
+          #vehiclesTable
+          [nzData]="vehicles()"
+          [nzLoading]="loading()"
+          [nzBordered]="true"
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'RENT.PLATE' | translate }}</th>
+              <th>{{ 'RENT.MODEL' | translate }}</th>
+              <th>{{ 'RENT.TYPE' | translate }}</th>
+              <th>{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
+              <th>{{ 'RENT.VIGNETTE' | translate }}</th>
+              <th>{{ 'RENT.RETURN_DATE' | translate }}</th>
+              <th>{{ 'RENT.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of vehiclesTable.data; track (v.id || v.plate)) {
+              @if (!vehicleFilterStatus() || v.status === vehicleFilterStatus()) {
+                <tr>
+                  <td>
+                    <strong><code>{{ v.plate }}</code></strong>
+                  </td>
+                  <td>{{ v.make ? v.make + ' ' : '' }}{{ v.model }}</td>
+                  <td>{{ v.type }}</td>
+                  <td>{{ v.client || '-' }}</td>
+                  <td>
+                    <nz-tag [nzColor]="v.vignette ? 'success' : 'default'">
+                      {{ (v.vignette ? 'RENT.YES' : 'RENT.NO') | translate }}
+                    </nz-tag>
+                  </td>
+                  <td>{{ v.returnDate || '-' }}</td>
+                  <td>
+                    <nz-tag [nzColor]="getVehicleStatusBadgeColor(v.status)">
+                      {{ v.status | uppercase }}
+                    </nz-tag>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <!-- TAB 2: Rental Bookings & Contracts -->
+      <nz-tab [nzTitle]="'RENT.TAB_BOOKINGS' | translate">
+        <nz-table
+          #bookingsTable
+          [nzData]="bookings()"
+          [nzLoading]="loading()"
+          [nzBordered]="true"
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'RENT.BOOKING_ID' | translate }}</th>
+              <th>{{ 'RENT.VEHICLE' | translate }}</th>
+              <th>{{ 'RENT.CLIENT' | translate }}</th>
+              <th>{{ 'RENT.START_DATE' | translate }}</th>
+              <th>{{ 'RENT.END_DATE' | translate }}</th>
+              <th>{{ 'RENT.DAILY_RATE' | translate }}</th>
+              <th>{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
+              <th>{{ 'RENT.STATUS' | translate }}</th>
+              <th>{{ 'RENT.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of bookingsTable.data; track b.id) {
+              <tr>
+                <td><code>{{ b.id }}</code></td>
+                <td>
+                  <strong>{{ b.vehicle_plate || b.vehicle_id }}</strong>
+                  @if (b.vehicle_model) {
+                    <div class="sub-text">{{ b.vehicle_model }}</div>
+                  }
+                </td>
+                <td>{{ b.client_name || b.client_id }}</td>
+                <td>{{ b.start_date }}</td>
+                <td>{{ b.end_date }}</td>
+                <td>{{ b.daily_rate | money: 'EUR' }}</td>
+                <td><strong>{{ b.total_amount | money: 'EUR' }}</strong></td>
+                <td>
+                  <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">
+                    {{ b.status | uppercase }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button nz-button nzType="link" nzSize="small" (click)="openBookingDetails(b)">
+                      <span nz-icon nzType="eye"></span>
+                      {{ 'RENT.DETAILS' | translate }}
+                    </button>
+                    @if (b.status === 'booked') {
+                      <button nz-button nzType="primary" nzSize="small" (click)="openCheckOutModal(b)">
+                        <span nz-icon nzType="car"></span>
+                        {{ 'RENT.CHECK_OUT' | translate }}
+                      </button>
+                    }
+                    @if (b.status === 'active') {
+                      <button nz-button nzType="primary" nzGhost nzSize="small" (click)="openCheckInModal(b)">
+                        <span nz-icon nzType="check-circle"></span>
+                        {{ 'RENT.CHECK_IN' | translate }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <!-- TAB 3: Automotive Vehicle Registry -->
+      <nz-tab [nzTitle]="'RENT.TAB_REGISTRY' | translate">
+        <div class="tab-toolbar">
+          <p class="description">{{ 'RENT.REGISTRY_DESCRIPTION' | translate }}</p>
+          <button nz-button nzType="primary" (click)="openRegisterVehicleModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'RENT.REGISTER_VEHICLE' | translate }}
+          </button>
+        </div>
+
+        <nz-table
+          #autoTable
+          [nzData]="automotiveVehicles()"
+          [nzLoading]="loading()"
+          [nzBordered]="true"
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'RENT.PLATE' | translate }}</th>
+              <th>{{ 'RENT.MAKE' | translate }}</th>
+              <th>{{ 'RENT.MODEL' | translate }}</th>
+              <th>{{ 'RENT.YEAR' | translate }}</th>
+              <th>{{ 'RENT.VIN' | translate }}</th>
+              <th>{{ 'RENT.CUSTOMER' | translate }}</th>
+              <th>{{ 'RENT.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (av of autoTable.data; track av.id) {
+              <tr>
+                <td><strong><code>{{ av.license_plate }}</code></strong></td>
+                <td>{{ av.make }}</td>
+                <td>{{ av.model }}</td>
+                <td>{{ av.year || '-' }}</td>
+                <td><code>{{ av.vin || '-' }}</code></td>
+                <td>{{ av.customer_name || '-' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button nz-button nzType="link" nzSize="small" (click)="openEditVehicleModal(av)">
+                      <span nz-icon nzType="edit"></span>
+                      {{ 'RENT.EDIT' | translate }}
+                    </button>
+                    <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteVehicle(av)">
+                      <span nz-icon nzType="delete"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+
+  <!-- MODAL: Check-Out Handover Inspection -->
+  <nz-modal
+    [nzVisible]="isCheckOutModalVisible()"
+    [nzTitle]="'RENT.CHECK_OUT_MODAL_TITLE' | translate"
+    (nzOnCancel)="closeCheckOutModal()"
+    (nzOnOk)="submitCheckOutInspection()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="checkOutForm" nzLayout="vertical">
+        <nz-alert
+          nzType="info"
+          [nzMessage]="'RENT.CHECK_OUT_INSPECTION_INFO' | translate"
+          nzShowIcon
+          class="inspection-alert"
+        ></nz-alert>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.START_MILEAGE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="mileage" [nzMin]="0" class="full-width"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="fuel_level">
+              <nz-option nzValue="8/8" nzLabel="8/8 (Pieno / Full)"></nz-option>
+              <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
+              <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
+              <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
+              <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
+              <nz-option nzValue="1/8" nzLabel="1/8 (Riserva)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.DAMAGE_MARKERS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <div class="damage-input-group">
+              <input
+                nz-input
+                [(ngModel)]="tempDamageMarker"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="addDamageMarker()"
+                [placeholder]="'RENT.DAMAGE_MARKER_PLACEHOLDER' | translate"
+              />
+              <button nz-button type="button" (click)="addDamageMarker()">
+                <span nz-icon nzType="plus"></span>
+              </button>
+            </div>
+            <div class="damage-tags">
+              @for (dm of currentDamageMarkers(); track $index) {
+                <nz-tag nzMode="closeable" nzColor="orange" (nzOnClose)="removeDamageMarker($index)">
+                  {{ dm }}
+                </nz-tag>
+              }
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input rows="2" formControlName="notes"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Check-In Return Inspection -->
+  <nz-modal
+    [nzVisible]="isCheckInModalVisible()"
+    [nzTitle]="'RENT.CHECK_IN_MODAL_TITLE' | translate"
+    (nzOnCancel)="closeCheckInModal()"
+    (nzOnOk)="submitCheckInInspection()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="checkInForm" nzLayout="vertical">
+        <nz-alert
+          nzType="success"
+          [nzMessage]="'RENT.CHECK_IN_INSPECTION_INFO' | translate"
+          nzShowIcon
+          class="inspection-alert"
+        ></nz-alert>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.RETURN_MILEAGE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="mileage" [nzMin]="0" class="full-width"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="fuel_level">
+              <nz-option nzValue="8/8" nzLabel="8/8 (Pieno / Full)"></nz-option>
+              <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
+              <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
+              <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
+              <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
+              <nz-option nzValue="1/8" nzLabel="1/8 (Riserva)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.DAMAGE_MARKERS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <div class="damage-input-group">
+              <input
+                nz-input
+                [(ngModel)]="tempDamageMarker"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="addDamageMarker()"
+                [placeholder]="'RENT.DAMAGE_MARKER_PLACEHOLDER' | translate"
+              />
+              <button nz-button type="button" (click)="addDamageMarker()">
+                <span nz-icon nzType="plus"></span>
+              </button>
+            </div>
+            <div class="damage-tags">
+              @for (dm of currentDamageMarkers(); track $index) {
+                <nz-tag nzMode="closeable" nzColor="red" (nzOnClose)="removeDamageMarker($index)">
+                  {{ dm }}
+                </nz-tag>
+              }
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input rows="2" formControlName="notes"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Register / Edit Automotive Vehicle -->
+  <nz-modal
+    [nzVisible]="isVehicleModalVisible()"
+    [nzTitle]="(isEditingVehicle() ? 'RENT.EDIT_VEHICLE' : 'RENT.REGISTER_VEHICLE') | translate"
+    (nzOnCancel)="closeVehicleModal()"
+    (nzOnOk)="submitVehicle()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="vehicleForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.PLATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="license_plate" placeholder="e.g. TI 98765 / AA123BB" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="grid-2">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'RENT.MAKE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="make" placeholder="e.g. Volkswagen" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'RENT.MODEL' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="model" placeholder="e.g. Golf 8" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="grid-2">
+          <nz-form-item>
+            <nz-form-label>{{ 'RENT.YEAR' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2030" class="full-width"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ 'RENT.VIN' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="vin" placeholder="WVWZZZ..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.CUSTOMER' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="customer_name" placeholder="Owner / Client Name" />
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- DRAWER: Booking Details -->
+  <nz-drawer
+    [nzVisible]="isBookingDrawerVisible()"
+    [nzTitle]="'RENT.BOOKING_DETAILS' | translate"
+    (nzOnClose)="closeBookingDrawer()"
+    [nzWidth]="480"
+  >
+    <ng-container *nzDrawerContent>
+      @if (selectedBooking(); as b) {
+        <nz-descriptions [nzColumn]="1" nzBordered size="small">
+          <nz-descriptions-item [nzTitle]="'RENT.BOOKING_ID' | translate">
+            <code>{{ b.id }}</code>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.STATUS' | translate">
+            <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">{{ b.status | uppercase }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.VEHICLE' | translate">
+            {{ b.vehicle_plate || b.vehicle_id }} {{ b.vehicle_model ? '(' + b.vehicle_model + ')' : '' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.CLIENT' | translate">
+            {{ b.client_name || b.client_id }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.START_DATE' | translate">
+            {{ b.start_date }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.END_DATE' | translate">
+            {{ b.end_date }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.DAILY_RATE' | translate">
+            {{ b.daily_rate | money: 'EUR' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.TOTAL_AMOUNT' | translate">
+            <strong>{{ b.total_amount | money: 'EUR' }}</strong>
+          </nz-descriptions-item>
+          @if (b.deposit_amount) {
+            <nz-descriptions-item [nzTitle]="'RENT.DEPOSIT_AMOUNT' | translate">
+              {{ b.deposit_amount | money: 'EUR' }}
+            </nz-descriptions-item>
+          }
+          @if (b.check_out_mileage) {
+            <nz-descriptions-item [nzTitle]="'RENT.CHECK_OUT_MILEAGE' | translate">
+              {{ b.check_out_mileage }} km
+            </nz-descriptions-item>
+          }
+          @if (b.check_in_mileage) {
+            <nz-descriptions-item [nzTitle]="'RENT.CHECK_IN_MILEAGE' | translate">
+              {{ b.check_in_mileage }} km
+            </nz-descriptions-item>
+          }
+          @if (b.notes) {
+            <nz-descriptions-item [nzTitle]="'RENT.NOTES' | translate">
+              {{ b.notes }}
+            </nz-descriptions-item>
+          }
+        </nz-descriptions>
       }
-    </tbody>
-  </nz-table>
-</nz-card>
+    </ng-container>
+  </nz-drawer>
+</div>

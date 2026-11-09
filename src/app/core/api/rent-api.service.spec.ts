@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
+import { CheckInInspectionPayload, CheckOutInspectionPayload, RentalVehicle } from '../models';
 import { RentApiService } from './rent-api.service';
-import { CheckInInspectionPayload, RentalVehicle } from '../models';
 
 describe('RentApiService', () => {
   let service: RentApiService;
@@ -63,27 +63,46 @@ describe('RentApiService', () => {
           start_date: '2026-04-10',
           end_date: '2026-04-15',
           status: 'active',
+          daily_rate: 85,
+          total_amount: 425,
         },
       ],
     });
   });
 
-  it('records check-in inspection', () => {
-    const payload: CheckInInspectionPayload = {
+  it('records check-in and check-out inspection', () => {
+    const inPayload: CheckInInspectionPayload = {
       rental_booking_id: 'bk-1',
       mileage: 45200,
-      fuel_level_eighths: 8,
-      damages: [],
+      fuel_level: '8/8',
+      damage_markers: [],
       notes: 'Veicolo restituito in perfetto stato con serbatoio pieno',
     };
 
-    service.recordCheckInInspection(payload).subscribe((res) => {
+    service.recordCheckInInspection(inPayload).subscribe((res) => {
       expect(res).toBeTruthy();
     });
 
-    const postReq = httpMock.expectOne(`${base}/check-in-inspection`);
-    expect(postReq.request.method).toBe('POST');
-    expect(postReq.request.body).toEqual(payload);
-    postReq.flush({ success: true });
+    const inReq = httpMock.expectOne(`${base}/check-in-inspection`);
+    expect(inReq.request.method).toBe('POST');
+    expect(inReq.request.body).toEqual(inPayload);
+    inReq.flush({ success: true });
+
+    const outPayload: CheckOutInspectionPayload = {
+      rental_booking_id: 'bk-1',
+      mileage: 45000,
+      fuel_level: '8/8',
+      damage_markers: ['graffio paraurti anteriore'],
+      notes: 'Check-out completato',
+    };
+
+    service.recordCheckOutInspection(outPayload).subscribe((res) => {
+      expect(res).toBeTruthy();
+    });
+
+    const outReq = httpMock.expectOne(`${base}/check-out-inspection`);
+    expect(outReq.request.method).toBe('POST');
+    expect(outReq.request.body).toEqual(outPayload);
+    outReq.flush({ success: true });
   });
 });
