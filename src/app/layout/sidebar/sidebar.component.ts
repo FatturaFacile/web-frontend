@@ -301,8 +301,14 @@ export class SidebarComponent {
         {
           key: 'NAV.MANUFACTURING',
           icon: 'fa-solid fa-industry',
-          route: '/manufacturing',
           module: 'manufacturing',
+          children: [
+            { key: 'NAV.MANUFACTURING_OVERVIEW', route: '/manufacturing', icon: 'fa-solid fa-gauge', module: 'manufacturing' },
+            { key: 'NAV.MFG_ENGINEERING', route: '/manufacturing/engineering', icon: 'fa-solid fa-diagram-project', module: 'manufacturing' },
+            { key: 'NAV.MFG_PRODUCTION', route: '/manufacturing/production', icon: 'fa-solid fa-gears', module: 'manufacturing' },
+            { key: 'NAV.MFG_QUALITY', route: '/manufacturing/quality', icon: 'fa-solid fa-clipboard-check', module: 'manufacturing' },
+            { key: 'NAV.MFG_PLANNING', route: '/manufacturing/planning', icon: 'fa-solid fa-calendar-days', module: 'manufacturing' },
+          ],
         },
         {
           key: 'NAV.HOSPITALITY',
