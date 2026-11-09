@@ -96,6 +96,20 @@ describe('CrudTableComponent', () => {
     expect(c.form.get('code')?.errors?.serverError).toBe('Duplicate code');
   });
 
+  it('runs a row action that returns an Observable and reloads the list', () => {
+    const action = vi.fn().mockReturnValue(of({}));
+    const list = vi.fn().mockReturnValue(of([{ id: '1', code: 'IT', name: 'IT dept' }]));
+    configure({ list, rowActions: [{ labelKey: 'hrmCommon.view', run: action, writeOnly: true }] });
+    const calls = list.mock.calls.length;
+    (component as unknown as { runAction(a: unknown, r: Row, v: string): void }).runAction(
+      { labelKey: 'x', run: action },
+      { id: '1' },
+      '95',
+    );
+    expect(action).toHaveBeenCalledWith({ id: '1' }, '95');
+    expect(list.mock.calls.length).toBe(calls + 1);
+  });
+
   it('hides write actions without permission and for read-only rows', async () => {
     configure({ canWrite: false });
     await fixture.whenStable();

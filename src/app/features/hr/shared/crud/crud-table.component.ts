@@ -15,7 +15,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { decimalStringValidator } from '../hr-decimal.validator';
 import { reportHttpError } from '../hr-http.util';
 import { ReasonButtonComponent } from '../reason-button.component';
-import { CrudConfig, CrudField, CrudOption } from './crud.types';
+import { Observable } from 'rxjs';
+import { CrudConfig, CrudField, CrudOption, CrudRowAction } from './crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -154,6 +155,20 @@ export class CrudTableComponent {
         }
       },
     });
+  }
+
+  /** Runs a row action; an returned Observable is subscribed (toast, reload, error report). */
+  protected runAction(action: CrudRowAction<Row>, row: Row, value?: string): void {
+    const result = action.run(row, value);
+    if (result instanceof Observable) {
+      result.subscribe({
+        next: () => {
+          this.message.success(this.i18n.translate('hrmCommon.saved'));
+          this.reload();
+        },
+        error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
+      });
+    }
   }
 
   protected remove(row: Row, reason?: string): void {
