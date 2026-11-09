@@ -183,6 +183,12 @@ export class SidebarComponent {
           route: '/dms',
           module: 'documents',
         },
+        {
+          key: 'NAV.CONTRACT_REGISTER',
+          icon: 'fa-solid fa-file-signature',
+          route: '/contract-register',
+          module: 'contracts',
+        },
       ],
     },
     {

@@ -136,6 +136,13 @@ export const routes: Routes = [
       import('./features/dms/dms.routes').then((m) => m.DMS_ROUTES),
   },
   {
+    path: 'contract-register',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Registro Contratti', title: 'Registro Contratti & Obbligazioni' },
+    loadChildren: () =>
+      import('./features/contract-register/contract-register.routes').then((m) => m.CONTRACT_REGISTER_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },

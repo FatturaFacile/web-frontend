@@ -28,3 +28,4 @@ export * from './sales.model';
 export * from './customs.model';
 export * from './workflow.model';
 export * from './dms.model';
+export * from './contract-register.model';

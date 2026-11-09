@@ -1,0 +1,692 @@
+<app-page-header
+  [title]="'CONTRACTS.TITLE' | translate"
+  [subtitle]="'CONTRACTS.SUBTITLE' | translate"
+>
+</app-page-header>
+
+<nz-card class="contracts-card">
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: REGISTRO CONTRATTI -->
+    <nz-tab [nzTitle]="'CONTRACTS.TAB_REGISTER' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <input
+            nz-input
+            [placeholder]="'CONTRACTS.SEARCH_PLACEHOLDER' | translate"
+            [ngModel]="searchKeyword()"
+            (ngModelChange)="searchKeyword.set($event); loadContracts()"
+            class="filter-input"
+          />
+
+          <nz-select
+            [ngModel]="filterKind()"
+            (ngModelChange)="filterKind.set($event); loadContracts()"
+            nzPlaceHolder="Tutti i tipi"
+            class="filter-select"
+          >
+            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
+            <nz-option nzValue="customer" nzLabel="Clienti"></nz-option>
+            <nz-option nzValue="supplier" nzLabel="Fornitori"></nz-option>
+          </nz-select>
+
+          <nz-select
+            [ngModel]="filterStatus()"
+            (ngModelChange)="filterStatus.set($event); loadContracts()"
+            nzPlaceHolder="Tutti gli stati"
+            class="filter-select"
+          >
+            <nz-option nzValue="" nzLabel="Tutti gli stati"></nz-option>
+            <nz-option nzValue="active" nzLabel="Attivo"></nz-option>
+            <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
+            <nz-option nzValue="renewed" nzLabel="Rinnovato"></nz-option>
+            <nz-option nzValue="expired" nzLabel="Scaduto"></nz-option>
+            <nz-option nzValue="terminated" nzLabel="Cessato"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadContracts()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openCreateModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ 'CONTRACTS.NEW_CONTRACT' | translate }}
+        </button>
+      </div>
+
+      <nz-table
+        #contractsTable
+        nzShowSizeChanger
+        [nzData]="contracts()"
+        [nzFrontPagination]="false"
+        [nzLoading]="contractsLoading()"
+        [nzTotal]="contractsTotal()"
+        [nzPageIndex]="contractsPageIndex()"
+        [nzPageSize]="contractsPageSize()"
+        (nzQueryParams)="onContractsTableQueryChange($event)"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</th>
+            <th>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th>{{ 'CONTRACTS.KIND' | translate }}</th>
+            <th>{{ 'CONTRACTS.COUNTERPARTY' | translate }}</th>
+            <th>{{ 'CONTRACTS.PERIOD' | translate }}</th>
+            <th>{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of contractsTable.data; track c.id) {
+            <tr>
+              <td>
+                <button
+                  type="button"
+                  class="link-button"
+                  (click)="openDrawer(c)"
+                >
+                  <strong>{{ c.contract_number }}</strong>
+                </button>
+              </td>
+              <td>{{ c.title }}</td>
+              <td>
+                <nz-tag [nzColor]="c.kind === 'customer' ? 'blue' : 'purple'">
+                  {{ c.kind === 'customer' ? 'CLIENTE' : 'FORNITORE' }}
+                </nz-tag>
+              </td>
+              <td>{{ c.counterparty_name || c.counterparty_id }}</td>
+              <td>
+                <div>{{ c.start_date | date: 'dd/MM/yyyy' }} &rarr; {{ c.end_date ? (c.end_date | date: 'dd/MM/yyyy') : 'A tempo indeterminato' }}</div>
+                @if (c.auto_renew) {
+                  <span class="text-muted">Rinnovo automatico ({{ c.renewal_term_months || 12 }}m)</span>
+                }
+              </td>
+              <td>
+                <strong>{{ c.total_value | money: c.currency }}</strong>
+              </td>
+              <td>
+                <nz-tag [nzColor]="getStatusColor(c.status)">
+                  {{ c.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td nzAlign="right">
+                <nz-space>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="default"
+                    nzSize="small"
+                    (click)="openDrawer(c)"
+                  >
+                    <span nz-icon nzType="eye"></span>
+                  </button>
+
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="default"
+                    nzSize="small"
+                    (click)="openRenewModal(c)"
+                  >
+                    <span nz-icon nzType="reload"></span>
+                    {{ 'CONTRACTS.RENEW' | translate }}
+                  </button>
+
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzDanger
+                    nzSize="small"
+                    (click)="openNoticeModal(c)"
+                  >
+                    {{ 'CONTRACTS.NOTICE' | translate }}
+                  </button>
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: SCADENZARIO OBBLIGAZIONI & MILESTONES -->
+    <nz-tab [nzTitle]="'CONTRACTS.TAB_OBLIGATIONS' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <nz-select
+            [ngModel]="obligationStatusFilter()"
+            (ngModelChange)="obligationStatusFilter.set($event); loadGlobalObligations()"
+            nzPlaceHolder="Tutti gli stati"
+            class="filter-select"
+          >
+            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
+            <nz-option nzValue="pending" nzLabel="In attesa"></nz-option>
+            <nz-option nzValue="completed" nzLabel="Completati"></nz-option>
+            <nz-option nzValue="waived" nzLabel="Condonati"></nz-option>
+            <nz-option nzValue="overdue" nzLabel="Scaduti"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadGlobalObligations()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #obTable
+        nzShowSizeChanger
+        [nzData]="globalObligations()"
+        [nzFrontPagination]="false"
+        [nzLoading]="obligationsLoading()"
+        [nzTotal]="obligationsTotal()"
+        [nzPageIndex]="obligationsPageIndex()"
+        [nzPageSize]="obligationsPageSize()"
+        (nzQueryParams)="onObligationsTableQueryChange($event)"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CONTRACTS.TYPE' | translate }}</th>
+            <th>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th>{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
+            <th>{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
+            <th>{{ 'CONTRACTS.PENALTY' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ob of obTable.data; track ob.id) {
+            <tr>
+              <td>
+                <nz-tag [nzColor]="ob.type === 'milestone' ? 'cyan' : 'orange'">
+                  {{ ob.type | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <strong>{{ ob.title }}</strong>
+                @if (ob.description) {
+                  <div class="text-muted">{{ ob.description }}</div>
+                }
+              </td>
+              <td>{{ ob.due_date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ ob.responsible_party || '-' }}</td>
+              <td>
+                @if (ob.penalty_amount) {
+                  <span class="text-danger">{{ ob.penalty_amount | money: 'CHF' }}</span>
+                } @else {
+                  <span class="text-muted">-</span>
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="getStatusColor(ob.status)">
+                  {{ ob.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td nzAlign="right">
+                <nz-space>
+                  @if (ob.status === 'pending') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="primary"
+                      nzSize="small"
+                      (click)="openCompleteObligationModal(ob)"
+                    >
+                      <span nz-icon nzType="check"></span>
+                      {{ 'CONTRACTS.COMPLETE' | translate }}
+                    </button>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="default"
+                      nzSize="small"
+                      (click)="openWaiveObligationModal(ob)"
+                    >
+                      {{ 'CONTRACTS.WAIVE' | translate }}
+                    </button>
+                  }
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: ALERTS & SCADENZE PREAVVISO -->
+    <nz-tab [nzTitle]="'CONTRACTS.TAB_ALERTS' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="default" (click)="loadAlerts()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <nz-table
+        [nzData]="alerts()"
+        [nzFrontPagination]="true"
+        [nzLoading]="alertsLoading()"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CONTRACTS.ALERT_TYPE' | translate }}</th>
+            <th>{{ 'CONTRACTS.CONTRACT' | translate }}</th>
+            <th>{{ 'CONTRACTS.DUE_ON' | translate }}</th>
+            <th>{{ 'CONTRACTS.MESSAGE' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of alerts(); track a.id) {
+            <tr>
+              <td>
+                <nz-tag [nzColor]="a.alert_type === 'notice_deadline' ? 'volcano' : 'red'">
+                  {{ a.alert_type === 'notice_deadline' ? 'TERMINE PREAVVISO' : 'SCADENZA CONTRATTO' }}
+                </nz-tag>
+              </td>
+              <td>
+                <strong>{{ a.contract_number }}</strong>
+                <div>{{ a.contract_title }}</div>
+              </td>
+              <td>
+                <strong>{{ a.due_on | date: 'dd/MM/yyyy' }}</strong>
+              </td>
+              <td>{{ a.message || '-' }}</td>
+              <td>
+                @if (a.is_acknowledged) {
+                  <nz-tag nzColor="success">CONFERMATO</nz-tag>
+                } @else {
+                  <nz-tag nzColor="warning">DA VERIFICARE</nz-tag>
+                }
+              </td>
+              <td nzAlign="right">
+                @if (!a.is_acknowledged) {
+                  <button nz-button nzType="primary" nzSize="small" (click)="acknowledgeAlert(a)">
+                    <span nz-icon nzType="check"></span>
+                    {{ 'CONTRACTS.ACKNOWLEDGE' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: REGISTRA NUOVO CONTRATTO -->
+<nz-modal
+  [nzVisible]="createModalVisible()"
+  [nzTitle]="'CONTRACTS.NEW_CONTRACT' | translate"
+  [nzOkLoading]="createSubmitting()"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateContract()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="contractForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.KIND' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="kind">
+            <nz-option nzValue="customer" nzLabel="Contratto Attivo (Cliente)"></nz-option>
+            <nz-option nzValue="supplier" nzLabel="Contratto Passivo (Fornitore)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="contract_number" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="title" placeholder="es. Fornitura e Manutenzione IT" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.COUNTERPARTY_ID' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="counterparty_id" placeholder="UUID Cliente o Fornitore" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.START_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="start_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.END_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="end_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.NOTICE_DAYS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number formControlName="notice_period_days" [nzMin]="0"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="total_value" placeholder="10000.00" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: RINNOVO CONTRATTO -->
+<nz-modal
+  [nzVisible]="renewModalVisible()"
+  [nzTitle]="'CONTRACTS.RENEW_TITLE' | translate"
+  [nzOkLoading]="renewSubmitting()"
+  (nzOnCancel)="renewModalVisible.set(false)"
+  (nzOnOk)="submitRenewContract()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="renewForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.NEW_END_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="new_end_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.RENEWAL_MONTHS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number formControlName="renewal_term_months" [nzMin]="1"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.REVISED_VALUE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="revised_value" placeholder="Importo rinegoziato" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: PREAVVISO DISDETTA -->
+<nz-modal
+  [nzVisible]="noticeModalVisible()"
+  [nzTitle]="'CONTRACTS.NOTICE_TITLE' | translate"
+  [nzOkLoading]="noticeSubmitting()"
+  (nzOnCancel)="noticeModalVisible.set(false)"
+  (nzOnOk)="submitNotice()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'CONTRACTS.NOTICE_CONFIRM' | translate }} <strong>{{ noticeContractTarget()?.contract_number }}</strong>?</p>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'CONTRACTS.NOTICE_DATE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <input nz-input type="date" [ngModel]="noticeDate()" (ngModelChange)="noticeDate.set($event)" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label>{{ 'CONTRACTS.REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input rows="2" [ngModel]="noticeReason()" (ngModelChange)="noticeReason.set($event)"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: COMPLETA OBBLIGAZIONE -->
+<nz-modal
+  [nzVisible]="completeModalVisible()"
+  [nzTitle]="'CONTRACTS.COMPLETE_OBLIGATION' | translate"
+  (nzOnCancel)="completeModalVisible.set(false)"
+  (nzOnOk)="submitCompleteObligation()"
+>
+  <ng-container *nzModalContent>
+    <p>Confermi il completamento dell obbligazione: <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
+    <nz-form-item>
+      <nz-form-label>{{ 'CONTRACTS.NOTES' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input rows="2" [ngModel]="completeNotes()" (ngModelChange)="completeNotes.set($event)"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: WAIVE OBBLIGAZIONE -->
+<nz-modal
+  [nzVisible]="waiveModalVisible()"
+  [nzTitle]="'CONTRACTS.WAIVE_OBLIGATION' | translate"
+  (nzOnCancel)="waiveModalVisible.set(false)"
+  (nzOnOk)="submitWaiveObligation()"
+>
+  <ng-container *nzModalContent>
+    <p>Confermi la rinuncia (waive) all obbligazione: <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
+    <nz-form-item>
+      <nz-form-label>{{ 'CONTRACTS.REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input rows="2" [ngModel]="waiveReason()" (ngModelChange)="waiveReason.set($event)"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- DRAWER: DETTAGLIO CONTRATTO -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="640"
+  [nzTitle]="selectedContract()?.title || ('CONTRACTS.CONTRACT_DETAILS' | translate)"
+  (nzOnClose)="drawerVisible.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedContract(); as c) {
+      <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
+        <nz-descriptions-item [nzTitle]="'CONTRACTS.CONTRACT_NUMBER' | translate">
+          <strong>{{ c.contract_number }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONTRACTS.KIND' | translate">
+          <nz-tag [nzColor]="c.kind === 'customer' ? 'blue' : 'purple'">
+            {{ c.kind === 'customer' ? 'CONTRATTO ATTIVO (CLIENTE)' : 'CONTRATTO PASSIVO (FORNITORE)' }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CONTRACTS.TOTAL_VALUE' | translate">
+          <strong>{{ c.total_value | money: c.currency }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+          <nz-tag [nzColor]="getStatusColor(c.status)">{{ c.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- PARTI -->
+      <div class="tab-toolbar mt-4">
+        <h4>{{ 'CONTRACTS.PARTIES' | translate }}</h4>
+        <button nz-button nzType="default" nzSize="small" (click)="openPartyModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ 'CONTRACTS.ADD_PARTY' | translate }}
+        </button>
+      </div>
+
+      <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>Ruolo</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of contractParties(); track p.id) {
+            <tr>
+              <td>
+                <nz-tag>{{ p.role }}</nz-tag>
+              </td>
+              <td>{{ p.name }}</td>
+              <td>{{ p.contact_email || '-' }}</td>
+              <td nzAlign="right">
+                <button nz-button nzDanger nzSize="small" (click)="deleteParty(p)">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <!-- OBBLIGAZIONI DEL CONTRATTO -->
+      <div class="tab-toolbar mt-4">
+        <h4>{{ 'CONTRACTS.OBLIGATIONS' | translate }}</h4>
+        <button nz-button nzType="default" nzSize="small" (click)="openObligationModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ 'CONTRACTS.ADD_OBLIGATION' | translate }}
+        </button>
+      </div>
+
+      <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Titolo</th>
+            <th>Scadenza</th>
+            <th>Stato</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ob of contractObligations(); track ob.id) {
+            <tr>
+              <td>
+                <nz-tag [nzColor]="ob.type === 'milestone' ? 'cyan' : 'orange'">
+                  {{ ob.type }}
+                </nz-tag>
+              </td>
+              <td>{{ ob.title }}</td>
+              <td>{{ ob.due_date | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <nz-tag [nzColor]="getStatusColor(ob.status)">{{ ob.status }}</nz-tag>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <!-- STORICO -->
+      <h4 class="mt-4">{{ 'CONTRACTS.HISTORY' | translate }}</h4>
+      <nz-table [nzData]="contractHistory()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>Da</th>
+            <th>A</th>
+            <th>Data</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (h of contractHistory(); track h.id) {
+            <tr>
+              <td>
+                <nz-tag>{{ h.from_status }}</nz-tag>
+              </td>
+              <td>
+                <nz-tag>{{ h.to_status }}</nz-tag>
+              </td>
+              <td>{{ h.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ h.reason || '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- MODAL: AGGIUNGI PARTE -->
+<nz-modal
+  [nzVisible]="partyModalVisible()"
+  [nzTitle]="'CONTRACTS.ADD_PARTY' | translate"
+  (nzOnCancel)="partyModalVisible.set(false)"
+  (nzOnOk)="submitParty()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="partyForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.ROLE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="role" placeholder="es. Contraente, Garante, Subappaltatore" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="name" placeholder="Ragione sociale o Nominativo" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMON.EMAIL' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="contact_email" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AGGIUNGI OBBLIGAZIONE -->
+<nz-modal
+  [nzVisible]="obligationModalVisible()"
+  [nzTitle]="'CONTRACTS.ADD_OBLIGATION' | translate"
+  (nzOnCancel)="obligationModalVisible.set(false)"
+  (nzOnOk)="submitObligation()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="obligationForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="type">
+            <nz-option nzValue="obligation" nzLabel="Obbligazione contrattuale"></nz-option>
+            <nz-option nzValue="milestone" nzLabel="Milestone di consegna / collaudo"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="title" placeholder="es. Rilascio Certificazione Conformità" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CONTRACTS.DUE_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="due_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.PENALTY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="penalty_amount" placeholder="Importo penale in caso di inadempienza" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
