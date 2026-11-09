@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CurrencyPipe, DatePipe, DecimalPipe, PercentPipe, TitleCasePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -34,8 +34,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     ReactiveFormsModule,
     DatePipe,
     CurrencyPipe,
-    DecimalPipe,
-    PercentPipe,
     TitleCasePipe,
     NzTabsModule,
     NzCardModule,
