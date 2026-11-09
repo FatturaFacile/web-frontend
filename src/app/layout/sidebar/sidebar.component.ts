@@ -195,6 +195,12 @@ export class SidebarComponent {
           route: '/associations',
           module: 'associations',
         },
+        {
+          key: 'NAV.CHILDCARE',
+          icon: 'fa-solid fa-shapes',
+          route: '/childcare',
+          module: 'childcare',
+        },
       ],
     },
     {
