@@ -29,3 +29,4 @@ export * from './customs.model';
 export * from './workflow.model';
 export * from './dms.model';
 export * from './contract-register.model';
+export * from './associations.model';

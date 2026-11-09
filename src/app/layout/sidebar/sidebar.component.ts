@@ -189,6 +189,12 @@ export class SidebarComponent {
           route: '/contract-register',
           module: 'contracts',
         },
+        {
+          key: 'NAV.ASSOCIATIONS',
+          icon: 'fa-solid fa-hands-holding-child',
+          route: '/associations',
+          module: 'associations',
+        },
       ],
     },
     {
