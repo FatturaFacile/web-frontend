@@ -1,0 +1,156 @@
+<app-page-header [title]="'SUBX.TITLE' | translate" [subtitle]="'SUBX.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'SUBX.CHANGES.TITLE' | translate">
+      <app-contract-changes />
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SUBX.USAGE.TITLE' | translate">
+      @if (canWrite()) {
+        <div class="form-grid">
+          <div>
+            <label for="use-item">{{ 'SUBX.USAGE.ITEM_ID' | translate }}</label>
+            <input nz-input id="use-item" class="field" [(ngModel)]="itemId" />
+          </div>
+          <div>
+            <label for="use-metric">{{ 'SUBX.USAGE.METRIC' | translate }}</label>
+            <input nz-input id="use-metric" class="field" [(ngModel)]="metricCode" />
+          </div>
+          <div>
+            <label for="use-qty">{{ 'SUBX.USAGE.QUANTITY' | translate }}</label>
+            <input nz-input id="use-qty" inputmode="decimal" class="field" [(ngModel)]="usageQuantity" />
+          </div>
+          <div>
+            <label for="use-key">{{ 'SUBX.USAGE.IDEMPOTENCY_KEY' | translate }}</label>
+            <input nz-input id="use-key" class="field" [(ngModel)]="idempotencyKey" />
+          </div>
+        </div>
+        <div class="toolbar">
+          <button nz-button nzType="primary" type="button" [disabled]="!usageValid()" (click)="recordUsage()">
+            <nz-icon nzType="plus" /> {{ 'SUBX.USAGE.RECORD' | translate }}
+          </button>
+        </div>
+      }
+      <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'SUBX.USAGE.METRIC' | translate }}</th>
+            <th>{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
+            <th class="num">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
+            <th>{{ 'SUBX.USAGE.TIMESTAMP' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of usage(); track u.id) {
+            <tr>
+              <td>{{ u.metric_code }}</td>
+              <td>{{ u.subscription_item_id }}</td>
+              <td class="num">{{ u.quantity }}</td>
+              <td>{{ u.event_timestamp ?? '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SUBX.RUNS.TITLE' | translate">
+      @if (canWrite()) {
+        <div class="toolbar">
+          <label for="run-date">{{ 'SUBX.RUNS.RUN_DATE' | translate }}</label>
+          <input nz-input id="run-date" type="date" class="narrow" [(ngModel)]="runDate" />
+          <label for="run-lookahead">{{ 'SUBX.RUNS.LOOKAHEAD' | translate }}</label>
+          <input nz-input id="run-lookahead" type="number" min="0" class="narrow" [(ngModel)]="lookaheadDays" />
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'SUBX.RUNS.CONFIRM' | translate"
+            (nzOnConfirm)="runBilling()"
+          >
+            <nz-icon nzType="sync" /> {{ 'SUBX.RUNS.RUN' | translate }}
+          </button>
+        </div>
+      }
+      <nz-table [nzData]="runs()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'SUBX.RUNS.RUN_DATE' | translate }}</th>
+            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
+            <th class="num">{{ 'SUBX.RUNS.INVOICES' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of runs(); track r.id) {
+            <tr>
+              <td>{{ r.run_date ?? '-' }}</td>
+              <td>{{ r.status ?? '-' }}</td>
+              <td class="num">{{ r.invoices_created ?? '-' }}</td>
+              <td>
+                <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="viewRun(r)">
+                  <nz-icon nzType="eye" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SUBX.REVENUE.TITLE' | translate">
+      @if (canWrite()) {
+        <div class="toolbar">
+          <label for="rev-period">{{ 'SUBX.REVENUE.PERIOD_DATE' | translate }}</label>
+          <input nz-input id="rev-period" type="date" class="narrow" [(ngModel)]="periodDate" />
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'SUBX.REVENUE.CONFIRM' | translate"
+            (nzOnConfirm)="recognize()"
+          >
+            <nz-icon nzType="calculator" /> {{ 'SUBX.REVENUE.RECOGNIZE' | translate }}
+          </button>
+        </div>
+      }
+      <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of revenueContracts(); track c.id) {
+            <tr>
+              <td>{{ c.id }}</td>
+              <td>{{ c.status ?? '-' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <h4>{{ 'SUBX.REVENUE.FORECAST' | translate }}</h4>
+      <div class="toolbar">
+        <label for="forecast-months">{{ 'SUBX.REVENUE.MONTHS' | translate }}</label>
+        <input nz-input id="forecast-months" type="number" min="1" max="36" class="narrow" [(ngModel)]="forecastMonths" />
+        <button nz-button type="button" (click)="loadForecast()"><nz-icon nzType="reload" /> {{ 'SUBX.REVENUE.REFRESH' | translate }}</button>
+      </div>
+      <pre class="json">{{ forecastJson() }}</pre>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="!!selectedRun()"
+  [nzWidth]="520"
+  [nzTitle]="'SUBX.RUNS.DETAIL' | translate"
+  (nzOnClose)="selectedRun.set(null)"
+>
+  <ng-container *nzDrawerContent>
+    <pre class="json">{{ runJson() }}</pre>
+  </ng-container>
+</nz-drawer>

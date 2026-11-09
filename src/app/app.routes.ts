@@ -233,6 +233,13 @@ export const routes: Routes = [
       import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
   },
   {
+    path: 'catalog',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Anagrafiche catalogo', title: 'Anagrafiche catalogo' },
+    loadComponent: () =>
+      import('./features/catalog/catalog-master-data.component').then((m) => m.CatalogMasterDataComponent),
+  },
+  {
     path: 'subscriptions',
     canActivate: [authGuard],
     data: { breadcrumb: 'Abbonamenti & Contratti Recurrenti', title: 'Abbonamenti' },
