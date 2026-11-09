@@ -62,3 +62,4 @@ export * from './api/visitors-api.service';
 export * from './api/tessera-sanitaria-api.service';
 export * from './api/intrastat-api.service';
 export * from './api/portal-api.service';
+export * from './api/document-trust-api.service';
