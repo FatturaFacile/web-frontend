@@ -24,7 +24,8 @@ import {
   ProjectResource,
   StoreProjectPayload,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { RouterLink } from '@angular/router';
 import { ProjectDetailDrawerComponent } from './components/project-detail-drawer/project-detail-drawer.component';
 
 @Component({
@@ -49,6 +50,8 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
     PageHeaderComponent,
     MoneyPipe,
     ProjectDetailDrawerComponent,
+    RouterLink,
+    TranslatePipe,
   ],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss',

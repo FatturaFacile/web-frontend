@@ -58,3 +58,8 @@ export * from './billing.model';
 export * from './crm-engagement.model';
 export * from './catalog.model';
 export * from './subscription-billing.model';
+export * from './general-ledger.model';
+export * from './treasury-ops.model';
+export * from './eam-ops.model';
+export * from './project-control.model';
+export * from './general-ledger-fiscal.model';
