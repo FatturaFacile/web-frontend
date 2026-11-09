@@ -157,6 +157,12 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'portal',
+    data: { breadcrumb: 'NAV.PORTAL', title: 'Area Clienti & Portale B2B' },
+    loadChildren: () =>
+      import('./features/portal/portal.routes').then((m) => m.PORTAL_ROUTES),
+  },
+  {
     path: 'intrastat',
     canActivate: [authGuard],
     data: { breadcrumb: 'NAV.INTRASTAT', title: 'Elenchi Intrastat UE' },

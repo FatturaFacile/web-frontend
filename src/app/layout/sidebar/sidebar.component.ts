@@ -153,6 +153,11 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.PORTAL',
+          icon: 'fa-solid fa-users-viewfinder',
+          route: '/portal',
+        },
+        {
           key: 'NAV.INTRASTAT',
           icon: 'fa-solid fa-earth-europe',
           route: '/intrastat',

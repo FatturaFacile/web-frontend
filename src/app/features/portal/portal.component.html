@@ -1,0 +1,792 @@
+<div class="portal-container">
+  <app-page-header
+    [title]="'PORTAL.TITLE' | translate"
+    [subtitle]="'PORTAL.SUBTITLE' | translate"
+  >
+    <div class="header-actions">
+      <nz-input-group nzCompact class="token-input-group">
+        <input
+          nz-input
+          [ngModel]="token()"
+          (ngModelChange)="token.set($event)"
+          [placeholder]="'PORTAL.ENTER_ACCESS_TOKEN' | translate"
+          class="token-field"
+        />
+        <button nz-button nzType="primary" (click)="loadAll()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'PORTAL.RELOAD' | translate }}
+        </button>
+      </nz-input-group>
+    </div>
+  </app-page-header>
+
+  <!-- Portal Navigation Tabs -->
+  <nz-tabs
+    [nzSelectedIndex]="selectedTabIndex()"
+    (nzSelectedIndexChange)="selectedTabIndex.set($event)"
+    nzType="line"
+    class="portal-tabs"
+  >
+    <!-- TAB 1: DASHBOARD & SUMMARY -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_DASHBOARD' | translate">
+      @if (accessData(); as acc) {
+        <div class="dashboard-grid">
+          <nz-card [nzTitle]="'PORTAL.WELCOME_CLIENT' | translate" class="welcome-card">
+            <nz-descriptions nzBordered [nzColumn]="{ xxl: 3, xl: 3, lg: 2, md: 1, sm: 1, xs: 1 }">
+              <nz-descriptions-item [nzTitle]="'PORTAL.CLIENT_NAME' | translate">
+                <strong>{{ acc.customer.name }}</strong>
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'PORTAL.EMAIL' | translate">
+                {{ acc.customer.email }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'PORTAL.VAT_NUMBER' | translate">
+                {{ acc.customer.vat_number || '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'PORTAL.TOKEN_TYPE' | translate">
+                <nz-tag nzColor="blue">{{ acc.token_type || 'Magic Link' }}</nz-tag>
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'PORTAL.SCOPE_TYPE' | translate">
+                {{ acc.scope_type || 'Customer Self-Service' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'PORTAL.EXPIRES_AT' | translate">
+                {{ acc.expires_at || ('PORTAL.NEVER_EXPIRES' | translate) }}
+              </nz-descriptions-item>
+            </nz-descriptions>
+          </nz-card>
+
+          <!-- KPI Cards -->
+          <div class="kpi-row">
+            <nz-card class="kpi-card">
+              <nz-statistic
+                [nzValue]="acc.summary.pending_quotes"
+                [nzTitle]="'PORTAL.PENDING_QUOTES' | translate"
+                [nzValueStyle]="{ color: '#fa8c16' }"
+                [nzPrefix]="quoteIcon"
+              ></nz-statistic>
+              <ng-template #quoteIcon><span nz-icon nzType="file-text"></span></ng-template>
+            </nz-card>
+
+            <nz-card class="kpi-card">
+              <nz-statistic
+                [nzValue]="acc.summary.unpaid_invoices"
+                [nzTitle]="'PORTAL.UNPAID_INVOICES' | translate"
+                [nzValueStyle]="{ color: '#f5222d' }"
+                [nzPrefix]="invIcon"
+              ></nz-statistic>
+              <ng-template #invIcon><span nz-icon nzType="dollar"></span></ng-template>
+            </nz-card>
+
+            <nz-card class="kpi-card">
+              <nz-statistic
+                [nzValue]="acc.summary.open_tickets"
+                [nzTitle]="'PORTAL.OPEN_TICKETS' | translate"
+                [nzValueStyle]="{ color: '#1890ff' }"
+                [nzPrefix]="ticketIcon"
+              ></nz-statistic>
+              <ng-template #ticketIcon><span nz-icon nzType="team"></span></ng-template>
+            </nz-card>
+
+            <nz-card class="kpi-card">
+              <nz-statistic
+                [nzValue]="acc.summary.upcoming_appointments"
+                [nzTitle]="'PORTAL.UPCOMING_APPOINTMENTS' | translate"
+                [nzValueStyle]="{ color: '#52c41a' }"
+                [nzPrefix]="calendarIcon"
+              ></nz-statistic>
+              <ng-template #calendarIcon><span nz-icon nzType="calendar"></span></ng-template>
+            </nz-card>
+          </div>
+
+          <!-- Appointments List Card -->
+          @if (appointments().length > 0) {
+            <nz-card [nzTitle]="'PORTAL.APPOINTMENTS_SCHEDULE' | translate" class="appointments-card">
+              <nz-table
+                #aptTable
+                [nzData]="appointments()"
+                [nzFrontPagination]="false"
+                [nzShowPagination]="false"
+                nzSize="small"
+              >
+                <thead>
+                  <tr>
+                    <th>{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
+                    <th>{{ 'PORTAL.DATE_START' | translate }}</th>
+                    <th>{{ 'PORTAL.DATE_END' | translate }}</th>
+                    <th>{{ 'PORTAL.TECHNICIAN' | translate }}</th>
+                    <th>{{ 'PORTAL.STATUS' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (apt of aptTable.data; track apt.id) {
+                    <tr>
+                      <td><strong>{{ apt.title }}</strong></td>
+                      <td>{{ apt.start_at }}</td>
+                      <td>{{ apt.end_at }}</td>
+                      <td>{{ apt.technician_name || '-' }}</td>
+                      <td>
+                        <nz-tag [nzColor]="apt.status === 'confirmed' ? 'green' : 'blue'">
+                          {{ apt.status | uppercase }}
+                        </nz-tag>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </nz-table>
+            </nz-card>
+          }
+        </div>
+      }
+    </nz-tab>
+
+    <!-- TAB 2: PREVENTIVI & OFFERTE -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_QUOTES' | translate">
+      <nz-card [nzTitle]="'PORTAL.ACTIVE_QUOTES' | translate">
+        <nz-table
+          #quoteTable
+          [nzData]="quotes()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+          [nzLoading]="loading()"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.NUMBER' | translate }}</th>
+              <th>{{ 'PORTAL.DATE' | translate }}</th>
+              <th>{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
+              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+              <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (q of quoteTable.data; track q.id) {
+              <tr>
+                <td><strong>{{ q.quote_number }}</strong></td>
+                <td>{{ q.date }}</td>
+                <td>{{ q.valid_until || '-' }}</td>
+                <td><strong>{{ q.total_gross | money }}</strong></td>
+                <td>
+                  @if (q.is_accepted) {
+                    <nz-tag nzColor="success">{{ 'PORTAL.ACCEPTED' | translate }} ({{ q.signed_by }})</nz-tag>
+                  } @else if (q.is_rejected) {
+                    <nz-tag nzColor="error">{{ 'PORTAL.REJECTED' | translate }}</nz-tag>
+                  } @else {
+                    <nz-tag nzColor="warning">{{ 'PORTAL.PENDING_REVIEW' | translate }}</nz-tag>
+                  }
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button nz-button nzSize="small" (click)="selectedQuote.set(q); downloadQuotePdf()">
+                      <span nz-icon nzType="download"></span>
+                      PDF
+                    </button>
+                    @if (!q.is_accepted && !q.is_rejected) {
+                      <button nz-button nzType="primary" nzSize="small" (click)="openApproveModal(q)">
+                        <span nz-icon nzType="check"></span>
+                        {{ 'PORTAL.ACCEPT' | translate }}
+                      </button>
+                      <button nz-button nzDanger nzSize="small" (click)="openRejectModal(q)">
+                        <span nz-icon nzType="close"></span>
+                        {{ 'PORTAL.REJECT' | translate }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: FATTURE & ABBONAMENTI -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_INVOICES' | translate">
+      <nz-card [nzTitle]="'PORTAL.INVOICES_REGISTRY' | translate" class="mb-4">
+        <nz-table
+          #invTable
+          [nzData]="invoices()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+          [nzLoading]="loading()"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
+              <th>{{ 'PORTAL.DATE' | translate }}</th>
+              <th>{{ 'PORTAL.DUE_DATE' | translate }}</th>
+              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th>{{ 'PORTAL.PAID' | translate }}</th>
+              <th>{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
+              <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (inv of invTable.data; track inv.id) {
+              <tr>
+                <td><strong>{{ inv.invoice_number }}</strong></td>
+                <td>{{ inv.date }}</td>
+                <td>{{ inv.due_date || '-' }}</td>
+                <td><strong>{{ inv.total_gross | money }}</strong></td>
+                <td>{{ inv.total_paid | money }}</td>
+                <td>
+                  <nz-tag [nzColor]="getPaymentStatusBadge(inv.payment_status)">
+                    {{ inv.payment_status | uppercase }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button nz-button nzSize="small" (click)="downloadInvoicePdf(inv)">
+                    <span nz-icon nzType="download"></span>
+                    PDF
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+
+      <!-- Subscriptions -->
+      @if (subscriptions().length > 0) {
+        <nz-card [nzTitle]="'PORTAL.ACTIVE_SUBSCRIPTIONS' | translate">
+          <nz-table
+            #subTable
+            [nzData]="subscriptions()"
+            [nzFrontPagination]="false"
+            [nzShowPagination]="false"
+          >
+            <thead>
+              <tr>
+                <th>{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
+                <th>{{ 'PORTAL.PLAN' | translate }}</th>
+                <th>{{ 'PORTAL.STATUS' | translate }}</th>
+                <th>{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
+                <th>{{ 'PORTAL.AUTO_RENEW' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sub of subTable.data; track sub.id) {
+                <tr>
+                  <td><strong>{{ sub.subscription_number }}</strong></td>
+                  <td>{{ sub.name }} ({{ sub.plan }})</td>
+                  <td><nz-tag nzColor="green">{{ sub.status | uppercase }}</nz-tag></td>
+                  <td>{{ sub.next_billing_date || '-' }}</td>
+                  <td>
+                    <nz-badge [nzStatus]="sub.auto_renew ? 'success' : 'default'"></nz-badge>
+                    {{ sub.auto_renew ? ('PORTAL.YES' | translate) : ('PORTAL.NO' | translate) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+      }
+    </nz-tab>
+
+    <!-- TAB 4: ASSISTENZA & HELPDESK -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_HELPDESK' | translate">
+      <div class="helpdesk-layout">
+        @if (survey(); as s) {
+          <nz-alert
+            nzType="info"
+            nzShowIcon
+            [nzMessage]="'PORTAL.CSAT_ALERT_TITLE' | translate"
+            [nzDescription]="'PORTAL.CSAT_ALERT_DESC' | translate"
+            class="mb-4 csat-alert"
+          >
+            <div alert-action>
+              @if (s.can_answer) {
+                <button nz-button nzType="primary" nzSize="small" (click)="openCsatModal()">
+                  <span nz-icon nzType="check-circle"></span>
+                  {{ 'PORTAL.ANSWER_SURVEY' | translate }}
+                </button>
+              } @else {
+                <nz-rate [ngModel]="s.score || 5" [nzDisabled]="true"></nz-rate>
+              }
+            </div>
+          </nz-alert>
+        }
+
+        <nz-card [nzTitle]="'PORTAL.SUPPORT_TICKETS' | translate" [nzExtra]="ticketAction">
+          <ng-template #ticketAction>
+            <button nz-button nzType="primary" (click)="openCreateTicketModal()">
+              <span nz-icon nzType="plus"></span>
+              {{ 'PORTAL.NEW_TICKET' | translate }}
+            </button>
+          </ng-template>
+
+          <nz-table
+            #ticketsTable
+            [nzData]="tickets()"
+            [nzFrontPagination]="false"
+            [nzShowPagination]="false"
+            [nzLoading]="loading()"
+          >
+            <thead>
+              <tr>
+                <th>{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
+                <th>{{ 'PORTAL.SUBJECT' | translate }}</th>
+                <th>{{ 'PORTAL.PRIORITY' | translate }}</th>
+                <th>{{ 'PORTAL.STATUS' | translate }}</th>
+                <th>{{ 'PORTAL.CREATED_AT' | translate }}</th>
+                <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of ticketsTable.data; track t.id) {
+                <tr>
+                  <td><strong>{{ t.ticket_number }}</strong></td>
+                  <td>{{ t.subject }}</td>
+                  <td><nz-tag nzColor="blue">{{ t.priority | uppercase }}</nz-tag></td>
+                  <td>
+                    <nz-tag [nzColor]="getTicketStatusBadge(t.status)">
+                      {{ t.status | uppercase }}
+                    </nz-tag>
+                  </td>
+                  <td>{{ t.created_at }}</td>
+                  <td>
+                    <button nz-button nzSize="small" (click)="openTicketDrawer(t)">
+                      <span nz-icon nzType="mail"></span>
+                      {{ 'PORTAL.VIEW_CONVERSATION' | translate }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 5: KNOWLEDGE BASE -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_KB' | translate">
+      <nz-card [nzTitle]="'PORTAL.KB_TITLE' | translate">
+        <div class="kb-header-row mb-4">
+          <input
+            nz-input
+            [ngModel]="kbSearchQuery()"
+            (ngModelChange)="kbSearchQuery.set($event); searchKnowledgeBase()"
+            [placeholder]="'PORTAL.SEARCH_ARTICLES_PLACEHOLDER' | translate"
+            class="kb-search"
+          />
+        </div>
+
+        <div class="articles-grid">
+          @for (art of kbArticles(); track art.id) {
+            <nz-card
+              [nzTitle]="art.title"
+              nzHoverable
+              class="article-card"
+              (click)="openArticleModal(art)"
+            >
+              <p class="article-summary">{{ art.summary || art.content | slice:0:150 }}...</p>
+              <div class="article-footer">
+                <span nz-icon nzType="eye"></span> {{ art.views_count || 0 }}
+                <span class="mx-2">•</span>
+                <span nz-icon nzType="check"></span> {{ art.helpful_count || 0 }}
+              </div>
+            </nz-card>
+          }
+        </div>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 6: RAPPORTI TECNICI & MAGAZZINO -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_OPERATIONS' | translate">
+      <!-- Service Reports -->
+      <nz-card [nzTitle]="'PORTAL.SERVICE_REPORTS' | translate" class="mb-4">
+        <nz-table
+          #repTable
+          [nzData]="serviceReports()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
+              <th>{{ 'PORTAL.DATE' | translate }}</th>
+              <th>{{ 'PORTAL.SITE' | translate }}</th>
+              <th>{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
+              <th>{{ 'PORTAL.SIGNED' | translate }}</th>
+              <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rep of repTable.data; track rep.id) {
+              <tr>
+                <td><strong>{{ rep.report_number }}</strong></td>
+                <td>{{ rep.report_date }}</td>
+                <td>{{ rep.site_address || '-' }}</td>
+                <td>{{ rep.total_hours }} h</td>
+                <td>
+                  <nz-tag [nzColor]="rep.is_signed ? 'green' : 'orange'">
+                    {{ rep.is_signed ? ('PORTAL.SIGNED' | translate) : ('PORTAL.NOT_SIGNED' | translate) }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button nz-button nzSize="small" (click)="downloadServiceReportPdf(rep)">
+                    <span nz-icon nzType="download"></span>
+                    PDF
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+
+      <!-- Consignment Stock Lines & Requests -->
+      <nz-card
+        [nzTitle]="'PORTAL.CONSIGNMENT_STOCK' | translate"
+        [nzExtra]="movementAction"
+        class="mb-4"
+      >
+        <ng-template #movementAction>
+          <button nz-button nzType="default" (click)="openMovementModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'PORTAL.NEW_MOVEMENT_REQUEST' | translate }}
+          </button>
+        </ng-template>
+
+        <nz-table
+          #stkTable
+          [nzData]="stockLines()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.SKU' | translate }}</th>
+              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th>{{ 'PORTAL.WAREHOUSE' | translate }}</th>
+              <th>{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
+              <th>{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of stkTable.data; track s.id) {
+              <tr>
+                <td><code>{{ s.product_sku }}</code></td>
+                <td><strong>{{ s.product_name }}</strong></td>
+                <td>{{ s.warehouse_name }}</td>
+                <td>{{ s.available_qty }} {{ s.unit_of_measure }}</td>
+                <td>{{ s.reserved_qty }} {{ s.unit_of_measure }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 7: SPEDIZIONI DOGANALI -->
+    <nz-tab [nzTitle]="'PORTAL.TAB_CUSTOMS' | translate">
+      <nz-card [nzTitle]="'PORTAL.CUSTOMS_DOSSIERS' | translate" [nzExtra]="customsAction">
+        <ng-template #customsAction>
+          <button nz-button nzType="primary" (click)="openShipmentModal()">
+            <span nz-icon nzType="send"></span>
+            {{ 'PORTAL.NEW_SHIPMENT_REQUEST' | translate }}
+          </button>
+        </ng-template>
+
+        <nz-table
+          #customsTable
+          [nzData]="customsDossiers()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
+              <th>{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th>{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th>{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th>{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th>{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of customsTable.data; track d.id) {
+              <tr>
+                <td><strong>{{ d.dossier_number }}</strong></td>
+                <td><nz-tag nzColor="blue">{{ d.direction | uppercase }}</nz-tag></td>
+                <td>{{ d.origin_country }}</td>
+                <td>{{ d.destination_country }}</td>
+                <td>{{ d.packages }}</td>
+                <td>{{ d.gross_weight_kg }} kg</td>
+                <td><nz-tag nzColor="geekblue">{{ d.status | uppercase }}</nz-tag></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+
+  <!-- MODALS -->
+
+  <!-- Approve Quote Modal -->
+  <nz-modal
+    [nzVisible]="approveModalVisible()"
+    [nzTitle]="'PORTAL.APPROVE_QUOTE_TITLE' | translate"
+    (nzOnCancel)="approveModalVisible.set(false)"
+    (nzOnOk)="submitApproveQuote()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="approveForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.SIGNER_NAME' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="signer_name" [placeholder]="'PORTAL.ENTER_SIGNER_NAME' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="notes" rows="3" [placeholder]="'PORTAL.ENTER_NOTES' | translate"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Reject Quote Modal -->
+  <nz-modal
+    [nzVisible]="rejectModalVisible()"
+    [nzTitle]="'PORTAL.REJECT_QUOTE_TITLE' | translate"
+    (nzOnCancel)="rejectModalVisible.set(false)"
+    (nzOnOk)="submitRejectQuote()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="rejectForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.REJECTION_REASON' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="reason" rows="3" [placeholder]="'PORTAL.ENTER_REJECTION_REASON' | translate"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Create Ticket Modal -->
+  <nz-modal
+    [nzVisible]="createTicketModalVisible()"
+    [nzTitle]="'PORTAL.NEW_TICKET_TITLE' | translate"
+    (nzOnCancel)="createTicketModalVisible.set(false)"
+    (nzOnOk)="submitCreateTicket()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="ticketForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.SUBJECT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="subject" [placeholder]="'PORTAL.ENTER_SUBJECT' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.DESCRIPTION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="description" rows="4" [placeholder]="'PORTAL.ENTER_DESCRIPTION' | translate"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Ticket Conversation Drawer -->
+  <nz-drawer
+    [nzVisible]="ticketDrawerVisible()"
+    [nzTitle]="('PORTAL.TICKET_DETAILS' | translate) + ': ' + (selectedTicket()?.ticket_number || '')"
+    (nzOnClose)="ticketDrawerVisible.set(false)"
+    [nzWidth]="640"
+  >
+    <ng-container *nzDrawerContent>
+      @if (selectedTicket(); as t) {
+        <div class="ticket-header mb-4">
+          <h4>{{ t.subject }}</h4>
+          <div class="meta-row">
+            <nz-tag [nzColor]="getTicketStatusBadge(t.status)">{{ t.status | uppercase }}</nz-tag>
+            <nz-tag nzColor="blue">{{ t.priority | uppercase }}</nz-tag>
+            <span class="text-muted">{{ t.created_at }}</span>
+          </div>
+        </div>
+
+        <div class="message-thread mb-4">
+          @for (m of t.messages; track m.id) {
+            <div class="message-card mb-2" [class.author-customer]="m.author_type === 'customer'">
+              <div class="message-author">
+                <strong>{{ m.author_name || ('PORTAL.SUPPORT_TEAM' | translate) }}</strong>
+                <span class="message-time">{{ m.created_at }}</span>
+              </div>
+              <p class="message-text">{{ m.message }}</p>
+            </div>
+          }
+        </div>
+
+        <form nz-form [formGroup]="replyForm" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'PORTAL.REPLY_MESSAGE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <textarea nz-input formControlName="message" rows="3" [placeholder]="'PORTAL.ENTER_REPLY' | translate"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="primary" (click)="submitTicketReply()" [nzLoading]="loading()">
+            <span nz-icon nzType="send"></span>
+            {{ 'PORTAL.SEND_REPLY' | translate }}
+          </button>
+        </form>
+      }
+    </ng-container>
+  </nz-drawer>
+
+  <!-- CSAT Modal -->
+  <nz-modal
+    [nzVisible]="csatModalVisible()"
+    [nzTitle]="'PORTAL.CSAT_MODAL_TITLE' | translate"
+    (nzOnCancel)="csatModalVisible.set(false)"
+    (nzOnOk)="submitCsat()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="csatForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.SCORE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-rate formControlName="score"></nz-rate>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.FEEDBACK' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="feedback" rows="3" [placeholder]="'PORTAL.ENTER_FEEDBACK' | translate"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Knowledge Article Detail Modal -->
+  <nz-modal
+    [nzVisible]="articleModalVisible()"
+    [nzTitle]="selectedArticle()?.title || ''"
+    (nzOnCancel)="articleModalVisible.set(false)"
+    [nzFooter]="null"
+    [nzWidth]="720"
+  >
+    <ng-container *nzModalContent>
+      @if (selectedArticle(); as art) {
+        <div class="article-detail-content">
+          <div class="article-meta text-muted mb-3">
+            <span>{{ 'PORTAL.UPDATED_AT' | translate }}: {{ art.updated_at || '-' }}</span>
+          </div>
+          <div class="article-body">
+            <p>{{ art.content }}</p>
+          </div>
+        </div>
+      }
+    </ng-container>
+  </nz-modal>
+
+  <!-- Consignment Movement Request Modal -->
+  <nz-modal
+    [nzVisible]="movementModalVisible()"
+    [nzTitle]="'PORTAL.NEW_MOVEMENT_REQUEST' | translate"
+    (nzOnCancel)="movementModalVisible.set(false)"
+    (nzOnOk)="submitMovementRequest()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="movementForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.REQUEST_TYPE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="request_type">
+              <nz-option nzValue="withdrawal" [nzLabel]="'PORTAL.TYPE_WITHDRAWAL' | translate"></nz-option>
+              <nz-option nzValue="return" [nzLabel]="'PORTAL.TYPE_RETURN' | translate"></nz-option>
+              <nz-option nzValue="transfer" [nzLabel]="'PORTAL.TYPE_TRANSFER' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.QUANTITY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="quantity" [nzMin]="1" class="w-100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="notes" rows="2"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Customs Shipment Request Modal -->
+  <nz-modal
+    [nzVisible]="shipmentModalVisible()"
+    [nzTitle]="'PORTAL.NEW_SHIPMENT_REQUEST' | translate"
+    (nzOnCancel)="shipmentModalVisible.set(false)"
+    (nzOnOk)="submitShipmentRequest()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="shipmentForm" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.SERVICE_TYPE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="service_type" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="form-row-2">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'PORTAL.ORIGIN_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="origin_country" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'PORTAL.DESTINATION_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="destination_country" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="form-row-2">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'PORTAL.GROSS_WEIGHT_KG' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="gross_weight_kg" [nzMin]="0.1" class="w-100"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'PORTAL.PACKAGES' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="packages" [nzMin]="1" class="w-100"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="notes" rows="2"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>

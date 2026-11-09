@@ -86,7 +86,8 @@ Last updated: 2026-11-09
 31. `[DONE]` **Module 31: Visitors & Reception Kiosk (`/visitors` & `/visitor-kiosk`)**
 32. `[DONE]` **Module 32: Sistema Tessera Sanitaria (`/tessera-sanitaria`)**
 33. `[DONE]` **Module 33: European Intrastat Reporting (`/intrastat`)**
+34. `[DONE]` **Module 34: Customer & Partner Self-Service Portal (`/portal`)**
 
 ---
 
-### Overall Status: 33 ERP MODULES FULLY IMPLEMENTED & TESTED (636/636 tests passing, ng build passing)
+### Overall Status: 34 ERP MODULES FULLY IMPLEMENTED & TESTED (652/652 tests passing, ng build passing)
