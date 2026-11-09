@@ -15,7 +15,7 @@ import {
   LedgerReconciliationType,
   PayrollPosting,
   PayrollSettings,
-  PayrollSettingsPayload,
+  LedgerPayrollSettingsPayload,
   StatementScheme,
   StatementSchemePayload,
   SubledgerPage,
@@ -69,7 +69,7 @@ export class GeneralLedgerFiscalApiService {
     return this.http.get<{ data: PayrollSettings }>(`${this.base}/payroll-settings`);
   }
 
-  updatePayrollSettings(payload: PayrollSettingsPayload): Observable<{ data: PayrollSettings }> {
+  updatePayrollSettings(payload: LedgerPayrollSettingsPayload): Observable<{ data: PayrollSettings }> {
     return this.http.put<{ data: PayrollSettings }>(`${this.base}/payroll-settings`, payload);
   }
 
