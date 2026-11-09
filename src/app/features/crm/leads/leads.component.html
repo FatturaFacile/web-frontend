@@ -2,7 +2,7 @@
   title="CRM Leads"
   subtitle="Manage prospective clients, lead scoring, qualifications, and conversions"
 >
-  <div header-actions>
+  <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateDrawer()">
       <nz-icon nzType="plus" />
       New Lead
@@ -13,7 +13,8 @@
 <nz-card>
   <div class="filter-bar">
     <div class="search-box">
-      <nz-input-group nzPrefixIcon="search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
         <input
           type="text"
           nz-input
@@ -21,7 +22,7 @@
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
-      </nz-input-group>
+      </nz-input-wrapper>
     </div>
 
     <div class="select-filters">
@@ -86,7 +87,7 @@
             <div class="lead-info">
               <span class="lead-name">{{ lead.full_name || lead.company_name }}</span>
               @if (lead.title && lead.company_name) {
-                <span class="lead-sub">{{ lead.title }} @ {{ lead.company_name }}</span>
+                <span class="lead-sub">{{ lead.title }} &#64; {{ lead.company_name }}</span>
               }
               @if (lead.email) {
                 <span class="lead-sub">{{ lead.email }}</span>

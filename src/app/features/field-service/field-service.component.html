@@ -7,7 +7,8 @@
   <!-- Filter bar -->
   <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center;">
     <div style="min-width: 240px; flex: 1;">
-      <nz-input-group nzPrefixIcon="search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
         <input
           type="text"
           nz-input
@@ -16,7 +17,7 @@
           (ngModelChange)="searchQuery.set($event)"
           (keyup.enter)="onSearch()"
         />
-      </nz-input-group>
+      </nz-input-wrapper>
     </div>
 
     <div style="width: 170px;">

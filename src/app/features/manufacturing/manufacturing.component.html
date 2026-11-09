@@ -55,7 +55,8 @@
     <nz-tab nzTitle="Ordini di Produzione">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+          <nz-input-wrapper style="width: 250px;">
+            <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
               nz-input
@@ -63,7 +64,7 @@
               [ngModel]="ordersSearch()"
               (ngModelChange)="ordersSearch.set($event); loadOrders(1)"
             />
-          </nz-input-group>
+          </nz-input-wrapper>
 
           <nz-select
             [ngModel]="ordersStatusFilter()"
@@ -173,7 +174,8 @@
     <nz-tab nzTitle="Distinte Base (BOM)">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+          <nz-input-wrapper style="width: 250px;">
+            <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
               nz-input
@@ -181,7 +183,7 @@
               [ngModel]="bomsSearch()"
               (ngModelChange)="bomsSearch.set($event); loadBoms(1)"
             />
-          </nz-input-group>
+          </nz-input-wrapper>
 
           <button nz-button nzType="default" (click)="loadBoms(bomsPage())">
             <span nz-icon nzType="reload"></span>
@@ -595,7 +597,7 @@
       <nz-divider nzText="Componenti della Distinta"></nz-divider>
 
       <div formArrayName="components">
-        @for (comp of bomComponentsFormArray.controls; track $index) {
+        @for (_ of bomComponentsFormArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
             <div style="flex: 2;">
               <input nz-input formControlName="component_item_id" placeholder="UUID Componente / Materia Prima" />

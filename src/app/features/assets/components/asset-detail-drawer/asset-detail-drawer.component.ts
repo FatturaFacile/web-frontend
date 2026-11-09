@@ -5,7 +5,7 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzMessageService } from 'ng-zorro-antd/message';
+
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -41,7 +41,7 @@ export class AssetDetailDrawerComponent implements OnInit {
   closed = output<void>();
 
   private readonly assetApi = inject(AssetApiService);
-  private readonly message = inject(NzMessageService);
+
 
   readonly loadingBooks = signal(false);
   readonly books = signal<AssetBookResource[]>([]);

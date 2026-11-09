@@ -181,7 +181,7 @@
       <nz-divider nzText="Righe Documento"></nz-divider>
 
       <div formArrayName="lines">
-        @for (line of linesArray.controls; track $index) {
+        @for (_ of linesArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
             <div style="flex: 2;">
               <input nz-input formControlName="description" placeholder="Descrizione Prodotto/Servizio" />

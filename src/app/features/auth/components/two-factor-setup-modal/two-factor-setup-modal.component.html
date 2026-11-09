@@ -35,7 +35,8 @@
           <nz-form-item>
             <nz-form-label nzRequired>Password attuale</nz-form-label>
             <nz-form-control nzErrorTip="Inserisci la tua password attuale">
-              <nz-input-group nzPrefixIcon="lock">
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="lock" />
                 <input
                   nz-input
                   type="password"
@@ -43,7 +44,7 @@
                   placeholder="Password attuale"
                   autocomplete="current-password"
                 />
-              </nz-input-group>
+              </nz-input-wrapper>
             </nz-form-control>
           </nz-form-item>
 
@@ -86,7 +87,8 @@
           <nz-form-item>
             <nz-form-label nzRequired>Codice a 6 cifre visualizzato nell'app</nz-form-label>
             <nz-form-control nzErrorTip="Inserisci il codice temporaneo generato dall'app">
-              <nz-input-group nzPrefixIcon="safety">
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="safety" />
                 <input
                   nz-input
                   type="text"
@@ -95,7 +97,7 @@
                   maxlength="16"
                   autocomplete="one-time-code"
                 />
-              </nz-input-group>
+              </nz-input-wrapper>
             </nz-form-control>
           </nz-form-item>
 
