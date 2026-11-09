@@ -113,6 +113,8 @@ export class SidebarComponent {
             { key: 'NAV.SC_DEBIT', route: '/sales/billing/debit-notes', icon: 'fa-solid fa-file-circle-plus', module: 'invoicing' },
             { key: 'NAV.SC_REPORTS', route: '/sales/billing/reports', icon: 'fa-solid fa-table-list', module: 'invoicing' },
             { key: 'NAV.SC_APPROVALS', route: '/sales/billing/approvals', icon: 'fa-solid fa-user-check', module: 'invoicing' },
+            { key: 'NAV.CAT_MASTER_DATA', route: '/catalog', icon: 'fa-solid fa-boxes-stacked', module: 'invoicing' },
+            { key: 'NAV.SUBX_BILLING', route: '/subscriptions/billing', icon: 'fa-solid fa-arrows-rotate', module: 'subscriptions' },
           ],
         },
         {

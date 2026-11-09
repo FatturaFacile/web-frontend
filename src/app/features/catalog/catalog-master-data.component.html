@@ -1,0 +1,293 @@
+<app-page-header [title]="'CAT.TITLE' | translate" [subtitle]="'CAT.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'CAT.TERMS' | translate">
+      <div class="toolbar">
+        <span class="spacer"></span>
+        @if (canWrite()) {
+          <button nz-button nzType="primary" type="button" (click)="openTerm(null)">
+            <nz-icon nzType="plus" /> {{ 'CAT.NEW_TERM' | translate }}
+          </button>
+        }
+      </div>
+      <nz-table [nzData]="terms()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'CAT.CODE' | translate }}</th>
+            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th>{{ 'CAT.DAYS' | translate }}</th>
+            <th>{{ 'CAT.END_OF_MONTH' | translate }}</th>
+            <th>{{ 'CAT.DISCOUNT' | translate }}</th>
+            <th>SDI</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of terms(); track t.id) {
+            <tr>
+              <td><code>{{ t.code }}</code></td>
+              <td>{{ t.name }}</td>
+              <td>{{ t.days ?? '-' }}</td>
+              <td>{{ (t.end_of_month ? 'CAT.YES' : 'CAT.NO') | translate }}</td>
+              <td>{{ t.discount_percent ? t.discount_percent + '% / ' + (t.discount_days ?? 0) + 'g' : '-' }}</td>
+              <td>{{ t.sdi_terms_code ?? '-' }}</td>
+              <td>
+                <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CAT.SCHEDULE' | translate" (click)="openSchedule(t)">
+                  <nz-icon nzType="calendar" />
+                </button>
+                @if (canWrite()) {
+                  <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CAT.EDIT' | translate" (click)="openTerm(t)">
+                    <nz-icon nzType="edit" />
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [nzPopconfirmTitle]="'CAT.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="removeTerm(t)"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'CAT.BRANDS' | translate">
+      <div class="toolbar">
+        <span class="spacer"></span>
+        @if (canWrite()) {
+          <button nz-button nzType="primary" type="button" (click)="openSimple('brand')">
+            <nz-icon nzType="plus" /> {{ 'CAT.NEW_BRAND' | translate }}
+          </button>
+        }
+      </div>
+      <nz-table [nzData]="brands()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of brands(); track b.id) {
+            <tr>
+              <td>{{ b.name }}</td>
+              <td>
+                @if (canWrite()) {
+                  <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CAT.EDIT' | translate" (click)="openSimple('brand', b)">
+                    <nz-icon nzType="edit" />
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [nzPopconfirmTitle]="'CAT.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="removeSimple('brand', b.id)"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'CAT.CATEGORIES' | translate">
+      <div class="toolbar">
+        <span class="spacer"></span>
+        @if (canWrite()) {
+          <button nz-button nzType="primary" type="button" (click)="openSimple('category')">
+            <nz-icon nzType="plus" /> {{ 'CAT.NEW_CATEGORY' | translate }}
+          </button>
+        }
+      </div>
+      <nz-table [nzData]="categories()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th>{{ 'CAT.PARENT' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of categories(); track c.id) {
+            <tr>
+              <td>{{ c.name }}</td>
+              <td>{{ categoryName(c.parent_id) }}</td>
+              <td>
+                @if (canWrite()) {
+                  <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CAT.EDIT' | translate" (click)="openSimple('category', c)">
+                    <nz-icon nzType="edit" />
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [nzPopconfirmTitle]="'CAT.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="removeSimple('category', c.id)"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'CAT.UNITS' | translate">
+      <div class="toolbar">
+        <span class="spacer"></span>
+        @if (canWrite()) {
+          <button nz-button nzType="primary" type="button" (click)="openSimple('unit')">
+            <nz-icon nzType="plus" /> {{ 'CAT.NEW_UNIT' | translate }}
+          </button>
+        }
+      </div>
+      <nz-table [nzData]="units()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'CAT.CODE' | translate }}</th>
+            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of units(); track u.id) {
+            <tr>
+              <td><code>{{ u.code }}</code></td>
+              <td>{{ u.name }}</td>
+              <td>
+                @if (canWrite()) {
+                  <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CAT.EDIT' | translate" (click)="openSimple('unit', u)">
+                    <nz-icon nzType="edit" />
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [nzPopconfirmTitle]="'CAT.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="removeSimple('unit', u.id)"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="termOpen()"
+  [nzTitle]="(editingTerm() ? 'CAT.EDIT_TERM' : 'CAT.NEW_TERM') | translate"
+  nzWidth="640px"
+  [nzOkDisabled]="!termValid()"
+  (nzOnCancel)="termOpen.set(false)"
+  (nzOnOk)="saveTerm()"
+>
+  <ng-container *nzModalContent>
+    <div class="two-cols">
+      <div>
+        <label for="term-code">{{ 'CAT.CODE' | translate }}</label>
+        <input nz-input id="term-code" class="field" [(ngModel)]="termDraft.code" />
+      </div>
+      <div>
+        <label for="term-name">{{ 'CAT.NAME' | translate }}</label>
+        <input nz-input id="term-name" class="field" [(ngModel)]="termDraft.name" />
+      </div>
+      <div>
+        <label for="term-days">{{ 'CAT.DAYS' | translate }}</label>
+        <input nz-input id="term-days" type="number" min="0" class="field" [(ngModel)]="termDraft.days" />
+      </div>
+      <div>
+        <label for="term-sdi">SDI</label>
+        <nz-select nzId="term-sdi" class="field" nzAllowClear [(ngModel)]="termDraft.sdi_terms_code">
+          <nz-option nzValue="TP01" nzLabel="TP01"></nz-option>
+          <nz-option nzValue="TP02" nzLabel="TP02"></nz-option>
+          <nz-option nzValue="TP03" nzLabel="TP03"></nz-option>
+        </nz-select>
+      </div>
+      <div>
+        <label for="term-discount">{{ 'CAT.DISCOUNT_PERCENT' | translate }}</label>
+        <input nz-input id="term-discount" inputmode="decimal" class="field" [(ngModel)]="termDraft.discount_percent" />
+      </div>
+      <div>
+        <label for="term-discount-days">{{ 'CAT.DISCOUNT_DAYS' | translate }}</label>
+        <input nz-input id="term-discount-days" type="number" min="0" class="field" [(ngModel)]="termDraft.discount_days" />
+      </div>
+    </div>
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-checkbox [(ngModel)]="termDraft.end_of_month">{{ 'CAT.END_OF_MONTH' | translate }}</label>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="!!scheduleFor()"
+  [nzTitle]="'CAT.SCHEDULE' | translate"
+  [nzFooter]="null"
+  (nzOnCancel)="scheduleFor.set(null)"
+>
+  <ng-container *nzModalContent>
+    <div class="toolbar">
+      <label for="schedule-amount">{{ 'CAT.AMOUNT' | translate }}</label>
+      <input nz-input id="schedule-amount" inputmode="decimal" class="amount" [(ngModel)]="scheduleAmount" />
+      <button nz-button type="button" (click)="loadSchedule()"><nz-icon nzType="calculator" /> {{ 'CAT.COMPUTE' | translate }}</button>
+    </div>
+    <pre class="schedule">{{ scheduleJson() }}</pre>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="!!simpleOpen()"
+  [nzTitle]="'CAT.EDIT' | translate"
+  [nzOkDisabled]="!simpleValid()"
+  (nzOnCancel)="simpleOpen.set(null)"
+  (nzOnOk)="saveSimple()"
+>
+  <ng-container *nzModalContent>
+    @if (simpleOpen() === 'unit') {
+      <label for="simple-code">{{ 'CAT.CODE' | translate }}</label>
+      <input nz-input id="simple-code" class="field" [(ngModel)]="simpleCode" />
+    }
+    <label for="simple-name">{{ 'CAT.NAME' | translate }}</label>
+    <input nz-input id="simple-name" class="field" [(ngModel)]="simpleName" />
+    @if (simpleOpen() === 'category') {
+      <label for="simple-parent">{{ 'CAT.PARENT' | translate }}</label>
+      <nz-select nzId="simple-parent" class="field" nzAllowClear [(ngModel)]="simpleParent">
+        @for (c of categories(); track c.id) {
+          @if (c.id !== editingId()) {
+            <nz-option [nzValue]="c.id" [nzLabel]="c.name"></nz-option>
+          }
+        }
+      </nz-select>
+    }
+  </ng-container>
+</nz-modal>

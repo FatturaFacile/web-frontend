@@ -1,0 +1,98 @@
+@if (!canWrite()) {
+  <nz-alert nzType="info" nzShowIcon [nzMessage]="'SUBX.COMMON.READ_ONLY' | translate" />
+}
+
+<div class="form-grid">
+  <div>
+    <label for="chg-contract">{{ 'SUBX.CHANGES.CONTRACT' | translate }}</label>
+    <nz-select nzId="chg-contract" class="field" nzShowSearch nzAllowClear [ngModel]="contractId" (ngModelChange)="selectContract($event)">
+      @for (c of contracts(); track c.id) {
+        <nz-option [nzValue]="c.id" [nzLabel]="c.contract_number + ' - ' + (c.customer_name ?? '') + ' (' + c.status + ')'"></nz-option>
+      }
+    </nz-select>
+  </div>
+  <div>
+    <label for="chg-kind">{{ 'SUBX.CHANGES.KIND' | translate }}</label>
+    <nz-select nzId="chg-kind" class="field" [(ngModel)]="kind">
+      @for (k of kinds; track k) {
+        <nz-option [nzValue]="k" [nzLabel]="'SUBX.CHANGES.KIND_' + k | translate"></nz-option>
+      }
+    </nz-select>
+  </div>
+  @if (needsPlan()) {
+    <div>
+      <label for="chg-plan">{{ 'SUBX.CHANGES.NEW_PLAN' | translate }}</label>
+      <nz-select nzId="chg-plan" class="field" nzShowSearch [(ngModel)]="newPlanId">
+        @for (p of plans(); track p.id) {
+          <nz-option [nzValue]="p.id" [nzLabel]="p.plan_code + ' - ' + p.name"></nz-option>
+        }
+      </nz-select>
+    </div>
+  }
+  @if (kind !== 'suspend' && kind !== 'collection') {
+    <div>
+      <label for="chg-quantity">{{ 'SUBX.CHANGES.QUANTITY' | translate }}</label>
+      <input nz-input id="chg-quantity" inputmode="decimal" class="field" [(ngModel)]="quantity" />
+    </div>
+    <div>
+      <label for="chg-effective">{{ 'SUBX.CHANGES.EFFECTIVE_DATE' | translate }}</label>
+      <input nz-input id="chg-effective" type="date" class="field" [(ngModel)]="effectiveDate" />
+    </div>
+  }
+  @if (kind === 'suspend') {
+    <div>
+      <label for="chg-resume">{{ 'SUBX.CHANGES.RESUME_ON' | translate }}</label>
+      <input nz-input id="chg-resume" type="date" class="field" [(ngModel)]="resumeOn" />
+    </div>
+  }
+  @if (kind === 'collection') {
+    <div>
+      <label for="chg-invoice">{{ 'SUBX.CHANGES.INVOICE_ID' | translate }}</label>
+      <input nz-input id="chg-invoice" class="field" [(ngModel)]="invoiceId" />
+    </div>
+  }
+  <div>
+    <label for="chg-reason">{{ 'SUBX.CHANGES.REASON' | translate }}</label>
+    <input nz-input id="chg-reason" class="field" [(ngModel)]="reason" />
+  </div>
+</div>
+
+<div class="toolbar">
+  @if (kind === 'upgrade' || kind === 'downgrade' || kind === 'quantity') {
+    <button nz-button type="button" [disabled]="!canPreview()" (click)="previewProration()">
+      <nz-icon nzType="calculator" /> {{ 'SUBX.CHANGES.PREVIEW' | translate }}
+    </button>
+  }
+  @if (canWrite()) {
+    <button nz-button nzType="primary" type="button" [nzLoading]="working()" [disabled]="!valid()" (click)="apply()">
+      <nz-icon nzType="check" /> {{ 'SUBX.CHANGES.APPLY' | translate }}
+    </button>
+  }
+</div>
+
+@if (preview()) {
+  <h4>{{ 'SUBX.CHANGES.PRORATION' | translate }}</h4>
+  <pre class="json">{{ previewJson() }}</pre>
+}
+
+@if (contractId) {
+  <h4>{{ 'SUBX.CHANGES.DUNNING' | translate }}</h4>
+  <nz-table [nzData]="dunning()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ 'SUBX.CHANGES.INVOICE_ID' | translate }}</th>
+        <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
+        <th>{{ 'SUBX.CHANGES.LEVEL' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (d of dunning(); track d.id) {
+        <tr>
+          <td>{{ d.invoice_id ?? '-' }}</td>
+          <td>{{ d.status ?? '-' }}</td>
+          <td>{{ d.level ?? '-' }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+}
