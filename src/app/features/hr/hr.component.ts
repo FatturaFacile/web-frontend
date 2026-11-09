@@ -1,6 +1,7 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -30,7 +31,7 @@ import {
   TerminateEmployeePayload,
   TimesheetResource,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-hr',
@@ -40,6 +41,7 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
     DatePipe,
     UpperCasePipe,
     MoneyPipe,
+    TranslatePipe,
     NzCardModule,
     NzTableModule,
     NzTagModule,
@@ -64,6 +66,7 @@ export class HrComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
+  private readonly router = inject(Router);
 
   readonly selectedTab = signal<number>(0);
 
@@ -244,6 +247,10 @@ export class HrComponent implements OnInit {
         });
       },
     });
+  }
+
+  openEmployeeFile(emp: EmployeeResource): void {
+    void this.router.navigate(['/hr/employees', emp.id]);
   }
 
   promoteEmployee(emp: EmployeeResource): void {

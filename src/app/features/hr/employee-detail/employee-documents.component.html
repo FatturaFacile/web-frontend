@@ -1,0 +1,127 @@
+<div class="flex justify-between items-center mb-3">
+  <h3 class="m-0">{{ 'hrmEmp.documents' | translate }}</h3>
+  @if (canWrite()) {
+    <button nz-button nzType="primary" type="button" (click)="openForm()">
+      <nz-icon nzType="upload" />
+      {{ 'hrmEmp.uploadDocument' | translate }}
+    </button>
+  }
+</div>
+
+<nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
+  <thead>
+    <tr>
+      <th>{{ 'hrmCommon.title' | translate }}</th>
+      <th>{{ 'hrmCommon.type' | translate }}</th>
+      <th>{{ 'hrmEmp.expiryDate' | translate }}</th>
+      <th>{{ 'hrmEmp.retentionUntil' | translate }}</th>
+      <th>{{ 'hrmEmp.flags' | translate }}</th>
+      <th>{{ 'hrmCommon.actions' | translate }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (doc of table.data; track doc.id) {
+      <tr>
+        <td>{{ doc.title }}</td>
+        <td>{{ 'hrmEmp.docType.' + doc.document_type | translate }}</td>
+        <td>{{ doc.expiry_date | date: 'mediumDate' }}</td>
+        <td>{{ doc.retention_until | date: 'mediumDate' }}</td>
+        <td>
+          @if (doc.contains_health_data) {
+            <nz-tag nzColor="red">{{ 'hrmEmp.healthData' | translate }}</nz-tag>
+          }
+          @if (doc.is_confidential) {
+            <nz-tag nzColor="orange">{{ 'hrmEmp.confidential' | translate }}</nz-tag>
+          }
+          @if (doc.visible_to_employee) {
+            <nz-tag nzColor="blue">{{ 'hrmEmp.visibleToEmployee' | translate }}</nz-tag>
+          }
+        </td>
+        <td>
+          <button nz-button nzSize="small" type="button" (click)="download(doc)">
+            <nz-icon nzType="download" />
+            {{ 'hrmCommon.download' | translate }}
+          </button>
+          @if (canWrite()) {
+            <button
+              nz-button
+              nzSize="small"
+              nzDanger
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'hrmShared.confirmDelete' | translate"
+              (nzOnConfirm)="remove(doc)"
+            >
+              {{ 'hrmCommon.delete' | translate }}
+            </button>
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</nz-table>
+
+<nz-modal
+  [nzVisible]="formOpen()"
+  [nzTitle]="'hrmEmp.uploadDocument' | translate"
+  [nzOkText]="'hrmCommon.save' | translate"
+  [nzCancelText]="'hrmCommon.cancel' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="upload()"
+  (nzOnCancel)="formOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="doc-file">{{ 'hrmEmp.file' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="doc-file" type="file" (change)="onFileSelected($event)" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="doc-type">{{ 'hrmCommon.type' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+          <nz-select id="doc-type" formControlName="document_type">
+            @for (type of typeOptions; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'hrmEmp.docType.' + type | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="doc-title">{{ 'hrmCommon.title' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+          <input nz-input id="doc-title" maxlength="255" formControlName="title" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="doc-issue">{{ 'hrmEmp.issueDate' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="doc-issue" type="date" formControlName="issue_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="doc-expiry">{{ 'hrmEmp.expiryDate' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="doc-expiry" type="date" formControlName="expiry_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="doc-retention">{{ 'hrmEmp.retentionUntil' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="doc-retention" type="date" formControlName="retention_until" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-checkbox formControlName="contains_health_data">{{ 'hrmEmp.healthData' | translate }}</label>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-checkbox formControlName="is_confidential">{{ 'hrmEmp.confidential' | translate }}</label>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-checkbox formControlName="visible_to_employee">{{ 'hrmEmp.visibleToEmployee' | translate }}</label>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
