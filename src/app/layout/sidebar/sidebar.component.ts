@@ -168,6 +168,11 @@ export class SidebarComponent {
           route: '/document-trust',
         },
         {
+          key: 'NAV.ECOMMERCE_INTEGRATIONS',
+          icon: 'fa-solid fa-cart-shopping',
+          route: '/ecommerce-integrations',
+        },
+        {
           key: 'NAV.TESSERA_SANITARIA',
           icon: 'fa-solid fa-file-medical',
           route: '/tessera-sanitaria',

@@ -177,6 +177,13 @@ export const routes: Routes = [
       import('./features/document-trust/document-trust.routes').then((m) => m.DOCUMENT_TRUST_ROUTES),
   },
   {
+    path: 'ecommerce-integrations',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS', title: 'E-commerce & Integrazioni API' },
+    loadChildren: () =>
+      import('./features/ecommerce-integrations/ecommerce-integrations.routes').then((m) => m.ECOMMERCE_INTEGRATIONS_ROUTES),
+  },
+  {
     path: 'tessera-sanitaria',
     canActivate: [authGuard],
     data: { breadcrumb: 'NAV.TESSERA_SANITARIA', title: 'Sistema Tessera Sanitaria (STS)' },
