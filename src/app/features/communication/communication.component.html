@@ -1,0 +1,706 @@
+<app-page-header
+  [title]="'COMMUNICATION.TITLE' | translate"
+  [subtitle]="'COMMUNICATION.SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    <button nz-button nzType="primary" (click)="selectedTabIndex.set(3)">
+      <span nz-icon nzType="send"></span>
+      {{ 'COMMUNICATION.QUICK_SEND' | translate }}
+    </button>
+  </div>
+</app-page-header>
+
+<!-- STATS SUMMARY -->
+<div class="stats-grid">
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalSent()"
+      [nzTitle]="'COMMUNICATION.SENT' | translate"
+      [nzPrefix]="sentIcon"
+    ></nz-statistic>
+    <ng-template #sentIcon><span nz-icon nzType="check-circle" class="text-success"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalFailed()"
+      [nzTitle]="'COMMUNICATION.FAILED' | translate"
+      [nzPrefix]="failedIcon"
+    ></nz-statistic>
+    <ng-template #failedIcon><span nz-icon nzType="close-circle" class="text-danger"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="activeChannelsCount()"
+      [nzTitle]="'COMMUNICATION.ACTIVE_CHANNELS' | translate"
+      [nzPrefix]="channelsIcon"
+    ></nz-statistic>
+    <ng-template #channelsIcon><span nz-icon nzType="setting"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="deliveries().length"
+      [nzTitle]="'COMMUNICATION.TOTAL_DELIVERIES' | translate"
+      [nzPrefix]="totalIcon"
+    ></nz-statistic>
+    <ng-template #totalIcon><span nz-icon nzType="clock-circle"></span></ng-template>
+  </nz-card>
+</div>
+
+<nz-card class="main-card">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 0: DELIVERIES LOG -->
+    <nz-tab [nzTitle]="'COMMUNICATION.TAB_DELIVERIES' | translate">
+      <div class="tab-toolbar">
+        <div class="filters">
+          <nz-select
+            [ngModel]="filterChannel()"
+            (ngModelChange)="filterChannel.set($event); loadDeliveries()"
+            nzPlaceHolder="Canale"
+            style="width: 140px"
+          >
+            <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
+            <nz-option nzValue="email" nzLabel="Email"></nz-option>
+            <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+            <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
+            <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
+          </nz-select>
+
+          <nz-select
+            [ngModel]="filterStatus()"
+            (ngModelChange)="filterStatus.set($event); loadDeliveries()"
+            nzPlaceHolder="Stato"
+            style="width: 140px"
+          >
+            <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_STATUSES' | translate"></nz-option>
+            <nz-option nzValue="sent" [nzLabel]="'COMMUNICATION.STATUS_SENT' | translate"></nz-option>
+            <nz-option nzValue="simulated" [nzLabel]="'COMMUNICATION.STATUS_SIMULATED' | translate"></nz-option>
+            <nz-option nzValue="failed" [nzLabel]="'COMMUNICATION.STATUS_FAILED' | translate"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="actions">
+          <button nz-button (click)="loadDeliveries()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMUNICATION.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #deliveriesTable
+        [nzData]="deliveries()"
+        [nzLoading]="deliveriesLoading()"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
+            <th>{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th>{{ 'COMMUNICATION.DRIVER' | translate }}</th>
+            <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
+            <th>{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
+            <th>{{ 'COMMUNICATION.DATE' | translate }}</th>
+            <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of deliveriesTable.data; track item.id) {
+            <tr>
+              <td>
+                <strong>{{ item.recipient }}</strong>
+                @if (item.error) {
+                  <div class="error-snippet text-danger">{{ item.error }}</div>
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">
+                  {{ item.channel | uppercase }}
+                </nz-tag>
+              </td>
+              <td><code>{{ item.driver }}</code></td>
+              <td>
+                <nz-tag [nzColor]="getDeliveryStatusColor(item.status)">
+                  {{ item.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <span class="provider-ref">{{ item.provider_reference || '-' }}</span>
+              </td>
+              <td>{{ item.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td nzAlign="center">
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  (click)="openDeliveryDrawer(item)"
+                >
+                  <span nz-icon nzType="eye"></span>
+                  {{ 'COMMUNICATION.DETAILS' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 1: CHANNELS & GATEWAYS -->
+    <nz-tab [nzTitle]="'COMMUNICATION.TAB_CHANNELS' | translate">
+      <div class="tab-toolbar">
+        <div class="toolbar-info">
+          <span>{{ 'COMMUNICATION.CHANNELS_SUBTITLE' | translate }}</span>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadChannels()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMUNICATION.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="channels-grid">
+        @for (channel of channels(); track channel.channel) {
+          <nz-card class="channel-card" [nzTitle]="channel.channel | uppercase">
+            <div class="channel-body">
+              <div class="channel-meta">
+                <div class="meta-row">
+                  <span class="meta-label">{{ 'COMMUNICATION.STATUS' | translate }}:</span>
+                  @if (channel.is_enabled) {
+                    <nz-tag nzColor="success">{{ 'COMMUNICATION.ENABLED' | translate }}</nz-tag>
+                  } @else {
+                    <nz-tag nzColor="default">{{ 'COMMUNICATION.DISABLED' | translate }}</nz-tag>
+                  }
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">{{ 'COMMUNICATION.DRIVER' | translate }}:</span>
+                  <code>{{ channel.driver }}</code>
+                </div>
+              </div>
+
+              <div class="channel-actions">
+                <button
+                  nz-button
+                  nzType="default"
+                  (click)="openChannelConfigModal(channel)"
+                >
+                  <span nz-icon nzType="setting"></span>
+                  {{ 'COMMUNICATION.CONFIGURE' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzType="dashed"
+                  (click)="openTestChannelModal(channel)"
+                >
+                  <span nz-icon nzType="send"></span>
+                  {{ 'COMMUNICATION.TEST' | translate }}
+                </button>
+              </div>
+            </div>
+          </nz-card>
+        }
+      </div>
+    </nz-tab>
+
+    <!-- TAB 2: TEMPLATES -->
+    <nz-tab [nzTitle]="'COMMUNICATION.TAB_TEMPLATES' | translate">
+      <div class="tab-toolbar">
+        <div class="filters">
+          <nz-select
+            [ngModel]="filterTemplateChannel()"
+            (ngModelChange)="filterTemplateChannel.set($event); loadTemplates()"
+            nzPlaceHolder="Canale"
+            style="width: 140px"
+          >
+            <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
+            <nz-option nzValue="email" nzLabel="Email"></nz-option>
+            <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+            <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
+            <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="actions">
+          <button nz-button (click)="loadTemplates()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMUNICATION.REFRESH' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="openCreateTemplateModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'COMMUNICATION.NEW_TEMPLATE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #templatesTable
+        [nzData]="templates()"
+        [nzLoading]="templatesLoading()"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
+            <th>{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th>{{ 'COMMUNICATION.LOCALE' | translate }}</th>
+            <th>{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
+            <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
+            <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of templatesTable.data; track item.id) {
+            <tr>
+              <td><code>{{ item.code }}</code></td>
+              <td>
+                <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">
+                  {{ item.channel | uppercase }}
+                </nz-tag>
+              </td>
+              <td><nz-tag>{{ item.locale }}</nz-tag></td>
+              <td>{{ item.subject || '-' }}</td>
+              <td>
+                @if (item.is_active) {
+                  <nz-tag nzColor="success">{{ 'COMMUNICATION.ACTIVE' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="default">{{ 'COMMUNICATION.INACTIVE' | translate }}</nz-tag>
+                }
+              </td>
+              <td nzAlign="center">
+                <nz-space>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="openPreviewModal(item)"
+                  >
+                    <span nz-icon nzType="eye"></span>
+                    {{ 'COMMUNICATION.PREVIEW' | translate }}
+                  </button>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="openEditTemplateModal(item)"
+                  >
+                    <span nz-icon nzType="edit"></span>
+                    {{ 'COMMUNICATION.EDIT' | translate }}
+                  </button>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzDanger
+                    nzSize="small"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'COMMUNICATION.CONFIRM_DELETE_TEMPLATE' | translate"
+                    (nzOnConfirm)="deleteTemplate(item.id)"
+                  >
+                    <span nz-icon nzType="delete"></span>
+                    {{ 'COMMUNICATION.DELETE' | translate }}
+                  </button>
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: QUICK SEND -->
+    <nz-tab [nzTitle]="'COMMUNICATION.TAB_SEND_MESSAGE' | translate">
+      <nz-card class="sub-card" [nzTitle]="'COMMUNICATION.QUICK_SEND_TITLE' | translate">
+        <form nz-form [formGroup]="quickSendForm" (ngSubmit)="sendQuickCommunication()">
+          <nz-form-item>
+            <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.SEND_TYPE' | translate }}</nz-form-label>
+            <nz-form-control [nzSpan]="12">
+              <nz-select formControlName="mode">
+                <nz-option nzValue="message" [nzLabel]="'COMMUNICATION.SEND_MODE_MESSAGE' | translate"></nz-option>
+                <nz-option nzValue="document" [nzLabel]="'COMMUNICATION.SEND_MODE_DOCUMENT' | translate"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.CHANNEL' | translate }}</nz-form-label>
+            <nz-form-control [nzSpan]="12">
+              <nz-select formControlName="channel">
+                <nz-option nzValue="email" nzLabel="Email"></nz-option>
+                <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+                <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
+                <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.RECIPIENT' | translate }}</nz-form-label>
+            <nz-form-control [nzSpan]="12">
+              <input
+                nz-input
+                formControlName="recipient"
+                [placeholder]="'COMMUNICATION.RECIPIENT_PLACEHOLDER' | translate"
+              />
+            </nz-form-control>
+          </nz-form-item>
+
+          @if (quickSendForm.get('mode')?.value === 'document') {
+            <nz-form-item>
+              <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.DOCUMENT_TYPE' | translate }}</nz-form-label>
+              <nz-form-control [nzSpan]="12">
+                <nz-select formControlName="document_type">
+                  <nz-option nzValue="invoice" [nzLabel]="'COMMUNICATION.DOC_INVOICE' | translate"></nz-option>
+                  <nz-option nzValue="quote" [nzLabel]="'COMMUNICATION.DOC_QUOTE' | translate"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.DOCUMENT_ID' | translate }}</nz-form-label>
+              <nz-form-control [nzSpan]="12">
+                <input
+                  nz-input
+                  formControlName="document_id"
+                  [placeholder]="'COMMUNICATION.DOCUMENT_ID_PLACEHOLDER' | translate"
+                />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label [nzSpan]="5">{{ 'COMMUNICATION.ATTACHMENT_MESSAGE' | translate }}</nz-form-label>
+              <nz-form-control [nzSpan]="12">
+                <textarea
+                  nz-input
+                  rows="3"
+                  formControlName="message"
+                  [placeholder]="'COMMUNICATION.OPTIONAL_MESSAGE' | translate"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          } @else {
+            <nz-form-item>
+              <nz-form-label [nzSpan]="5">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
+              <nz-form-control [nzSpan]="12">
+                <input
+                  nz-input
+                  formControlName="template_code"
+                  placeholder="payment.reminder"
+                />
+              </nz-form-control>
+            </nz-form-item>
+          }
+
+          <nz-form-item>
+            <nz-form-control [nzOffset]="5" [nzSpan]="12">
+              <button nz-button nzType="primary">
+                <span nz-icon nzType="send"></span>
+                {{ 'COMMUNICATION.SUBMIT_SEND' | translate }}
+              </button>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- DELIVERY DETAILS DRAWER -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="600"
+  [nzTitle]="'COMMUNICATION.DELIVERY_DETAILS' | translate"
+  (nzOnClose)="closeDeliveryDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedDelivery(); as d) {
+      <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.DELIVERY_ID' | translate">
+          <code>{{ d.id }}</code>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.CHANNEL' | translate">
+          <nz-tag [nzColor]="getChannelBadgeColor(d.channel)">{{ d.channel | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.DRIVER' | translate">
+          <code>{{ d.driver }}</code>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.STATUS' | translate">
+          <nz-tag [nzColor]="getDeliveryStatusColor(d.status)">{{ d.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.RECIPIENT' | translate">
+          <strong>{{ d.recipient }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.PROVIDER_REF' | translate">
+          {{ d.provider_reference || '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMUNICATION.CREATED_AT' | translate">
+          {{ d.created_at | date: 'dd/MM/yyyy HH:mm:ss' }}
+        </nz-descriptions-item>
+        @if (d.subject) {
+          <nz-descriptions-item [nzTitle]="'COMMUNICATION.SUBJECT' | translate">
+            {{ d.subject }}
+          </nz-descriptions-item>
+        }
+        @if (d.document_type) {
+          <nz-descriptions-item [nzTitle]="'COMMUNICATION.DOCUMENT_TYPE' | translate">
+            {{ d.document_type | uppercase }} {{ d.document_id ? '(' + d.document_id + ')' : '' }}
+          </nz-descriptions-item>
+        }
+        @if (d.error) {
+          <nz-descriptions-item [nzTitle]="'COMMUNICATION.ERROR' | translate">
+            <nz-alert nzType="error" [nzMessage]="d.error" nzShowIcon></nz-alert>
+          </nz-descriptions-item>
+        }
+      </nz-descriptions>
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- CHANNEL CONFIG MODAL -->
+<nz-modal
+  [(nzVisible)]="configModalVisible"
+  [nzTitle]="'COMMUNICATION.CONFIG_CHANNEL_TITLE' | translate"
+  (nzOnCancel)="configModalVisible.set(false)"
+  (nzOnOk)="saveChannelConfig()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="channelConfigForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMUNICATION.DRIVER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="driver">
+            <nz-option nzValue="smtp" nzLabel="SMTP"></nz-option>
+            <nz-option nzValue="ses" nzLabel="Amazon SES"></nz-option>
+            <nz-option nzValue="sendgrid" nzLabel="SendGrid"></nz-option>
+            <nz-option nzValue="mailgun" nzLabel="Mailgun"></nz-option>
+            <nz-option nzValue="twilio" nzLabel="Twilio"></nz-option>
+            <nz-option nzValue="whatsapp_cloud" nzLabel="WhatsApp Cloud API"></nz-option>
+            <nz-option nzValue="telegram_bot" nzLabel="Telegram Bot"></nz-option>
+            <nz-option nzValue="log" nzLabel="Log (Simulator)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMUNICATION.CHANNEL_ENABLED' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-switch formControlName="is_enabled"></nz-switch>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.HOST' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="host" placeholder="smtp.example.com" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.PORT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="port" placeholder="587" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.ENCRYPTION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="encryption">
+              <nz-option nzValue="tls" nzLabel="TLS"></nz-option>
+              <nz-option nzValue="ssl" nzLabel="SSL"></nz-option>
+              <nz-option nzValue="none" nzLabel="None"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.USERNAME' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="username" placeholder="user@example.com" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMUNICATION.PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="password" formControlName="password" placeholder="••••••••" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.FROM_ADDRESS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="from_address" placeholder="billing@company.com" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.FROM_NAME' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="from_name" placeholder="Fattura Facile" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- TEST CHANNEL MODAL -->
+<nz-modal
+  [(nzVisible)]="testModalVisible"
+  [nzTitle]="'COMMUNICATION.TEST_CHANNEL_TITLE' | translate"
+  (nzOnCancel)="testModalVisible.set(false)"
+  (nzOnOk)="runChannelTest()"
+  [nzOkLoading]="testLoading()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="testForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMUNICATION.TEST_RECIPIENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input
+            nz-input
+            formControlName="recipient"
+            placeholder="test@example.com o +39333000000"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- TEMPLATE CREATE / EDIT MODAL -->
+<nz-modal
+  [(nzVisible)]="templateModalVisible"
+  [nzTitle]="(selectedTemplate() ? 'COMMUNICATION.EDIT_TEMPLATE' : 'COMMUNICATION.NEW_TEMPLATE') | translate"
+  (nzOnCancel)="templateModalVisible.set(false)"
+  (nzOnOk)="saveTemplate()"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="templateForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="code" placeholder="invoice.created" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'COMMUNICATION.CHANNEL' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="channel">
+              <nz-option nzValue="email" nzLabel="Email"></nz-option>
+              <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+              <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
+              <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'COMMUNICATION.LOCALE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="locale">
+              <nz-option nzValue="it_IT" nzLabel="Italiano (it_IT)"></nz-option>
+              <nz-option nzValue="en_US" nzLabel="English (en_US)"></nz-option>
+              <nz-option nzValue="de_DE" nzLabel="Deutsch (de_DE)"></nz-option>
+              <nz-option nzValue="fr_FR" nzLabel="Français (fr_FR)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.ACTIVE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch formControlName="is_active"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMUNICATION.SUBJECT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="subject" placeholder="Nuova Fattura {{ '{' }}{{ '{' }}number{{ '}' }}{{ '}' }}" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMUNICATION.TEMPLATE_BODY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            rows="6"
+            formControlName="body"
+            placeholder="Gentile {{ '{' }}{{ '{' }}name{{ '}' }}{{ '}' }}, in allegato la fattura {{ '{' }}{{ '{' }}number{{ '}' }}{{ '}' }}..."
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- PREVIEW MODAL -->
+<nz-modal
+  [(nzVisible)]="previewModalVisible"
+  [nzTitle]="'COMMUNICATION.TEMPLATE_PREVIEW' | translate"
+  (nzOnCancel)="previewModalVisible.set(false)"
+  [nzFooter]="previewFooter"
+  nzWidth="650px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="previewForm" nzLayout="inline" class="preview-vars-form">
+      <nz-form-item>
+        <nz-form-label>Name</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="sample_name" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Number</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="sample_number" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button nz-button (click)="runPreview()">
+            <span nz-icon nzType="sync"></span>
+            {{ 'COMMUNICATION.REFRESH' | translate }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    @if (previewContent(); as p) {
+      <div class="preview-result">
+        @if (p.subject) {
+          <div class="preview-field">
+            <span class="preview-label">{{ 'COMMUNICATION.SUBJECT' | translate }}:</span>
+            <strong>{{ p.subject }}</strong>
+          </div>
+        }
+        <div class="preview-field">
+          <span class="preview-label">{{ 'COMMUNICATION.BODY' | translate }}:</span>
+          <pre class="preview-body">{{ p.body }}</pre>
+        </div>
+      </div>
+    }
+  </ng-container>
+  <ng-template #previewFooter>
+    <button nz-button nzType="primary" (click)="previewModalVisible.set(false)">
+      {{ 'COMMUNICATION.CLOSE' | translate }}
+    </button>
+  </ng-template>
+</nz-modal>

@@ -45,6 +45,7 @@ Last updated: 2026-11-09
 | **27** | **Hospitality & POS Comande (/hospitality)** | 20 | 20 | Dining Rooms & Tables Layout, Table Orders, Kitchen Display System (KDS), Course Firing, Pre-Bill Printing, Order Payment, Reservations & Seating | 16 | **Done** | Covered /hospitality/rooms, /hospitality/rooms/{id}/tables, /hospitality/orders, /hospitality/orders/{id}/items, /hospitality/orders/{id}/fire, /hospitality/orders/{id}/bill, /hospitality/orders/{id}/pay, /hospitality/orders/{id}/move, /hospitality/kitchen-tickets, /hospitality/reservations, /hospitality/reservations/{id}/seat |
 | **28** | **Practice Management & Studi Professionali (/practice & /professionals)** | 16 | 16 | Legal/Fiscal Cases, Unbilled Activity Control & Time Logs, Fee Notes from Activities, Client Trust Retainers & Balances, Period Closings & Checklists | 14 | **Done** | Covered /professionals/cases, /professionals/time-logs, /professionals/fee-notes, /practice/activity-control, /practice/fee-notes/from-activities, /practice/fee-notes/{id}/activities, /practice/closing-overview, /practice/closings, /practice/closings/{id}/checklist, /practice/closings/{id}/close, /practice/closings/{id}/reopen, /practice/retainers, /practice/retainers/balances, /practice/retainers/{id}/apply, /practice/retainers/{id}/void, /practice/fee-notes/{id}/retainers |
 | **29** | **Appointments & Calendar Scheduling (/appointments)** | 6 | 6 | Appointment Booking, Resource & Technician Calendar View, Real-Time Conflict Detection, Attendance Details, Service Report Conversion, Cancellation Flow | 12 | **Done** | Covered /appointments, /appointments/calendar, /appointments/check-conflicts, /appointments/{id}, /appointments/{id}/cancel, /appointments/{id}/convert-to-service-report |
+| **30** | **Multi-Channel Communication (/communication)** | 10 | 10 | Delivery Logs, Channel Gateways (Email, WhatsApp, Telegram, SMS), Credentials Config, Driver Connectivity Test, Message Templates CRUD & Preview, Direct Dispatch | 17 | **Done** | Covered /communication/documents/send, /deliveries, /deliveries/{id}, /channels, /channels/{channel}, /channels/{channel}/test, /messages/send, /templates, /templates/{id}, /templates/{id}/preview |
 
 ---
 
@@ -79,7 +80,8 @@ Last updated: 2026-11-09
 27. `[DONE]` **Module 27: Hospitality & POS Comande (`/hospitality`)**
 28. `[DONE]` **Module 28: Practice Management & Studi Professionali (`/practice` & `/professionals`)**
 29. `[DONE]` **Module 29: Appointments & Calendar Scheduling (`/appointments`)**
+30. `[DONE]` **Module 30: Multi-Channel Communication (`/communication`)**
 
 ---
 
-### Overall Status: 29 ERP MODULES FULLY IMPLEMENTED & TESTED (573/573 tests passing, ng build passing)
+### Overall Status: 30 ERP MODULES FULLY IMPLEMENTED & TESTED (590/590 tests passing, ng build passing)

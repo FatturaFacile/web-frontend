@@ -157,6 +157,13 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'communication',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.COMMUNICATION', title: 'Comunicazioni Multi-Canale' },
+    loadChildren: () =>
+      import('./features/communication/communication.routes').then((m) => m.COMMUNICATION_ROUTES),
+  },
+  {
     path: 'appointments',
     canActivate: [authGuard],
     data: { breadcrumb: 'Agenda & Appuntamenti', title: 'Appuntamenti & Calendario' },

@@ -153,6 +153,11 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.COMMUNICATION',
+          icon: 'fa-solid fa-tower-broadcast',
+          route: '/communication',
+        },
+        {
           key: 'NAV.APPOINTMENTS',
           icon: 'fa-solid fa-calendar-check',
           route: '/appointments',
