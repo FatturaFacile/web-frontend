@@ -3320,5 +3320,9 @@
   "SUBX.REVENUE.RECOGNIZED": "Erlöse realisiert",
   "SUBX.REVENUE.FORECAST": "Fakturierungsprognose",
   "SUBX.REVENUE.MONTHS": "Monate",
-  "SUBX.REVENUE.REFRESH": "Aktualisieren"
+  "SUBX.REVENUE.REFRESH": "Aktualisieren",
+  "CRMX.PIPELINE.CREATE_QUOTE": "Angebot erstellen",
+  "CRMX.PIPELINE.CREATE_PROJECT": "Projekt erstellen",
+  "CRMX.PIPELINE.QUOTE_CREATED": "Angebot aus der Opportunity erstellt",
+  "CRMX.PIPELINE.PROJECT_CREATED": "Projekt aus der Opportunity erstellt"
 }

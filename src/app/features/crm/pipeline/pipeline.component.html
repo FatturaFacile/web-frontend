@@ -101,6 +101,28 @@
             <button
               nz-button
               nzType="text"
+              nzSize="small"
+              type="button"
+              [attr.aria-label]="i18n.translate('CRMX.PIPELINE.CREATE_QUOTE')"
+              [title]="i18n.translate('CRMX.PIPELINE.CREATE_QUOTE')"
+              (click)="createQuote(opp)"
+            >
+              <nz-icon nzType="file-text" />
+            </button>
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              type="button"
+              [attr.aria-label]="i18n.translate('CRMX.PIPELINE.CREATE_PROJECT')"
+              [title]="i18n.translate('CRMX.PIPELINE.CREATE_PROJECT')"
+              (click)="createProject(opp)"
+            >
+              <nz-icon nzType="folder-open" />
+            </button>
+            <button
+              nz-button
+              nzType="text"
               nzDanger
               nzSize="small"
               nz-popconfirm

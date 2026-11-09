@@ -187,6 +187,20 @@ export class PipelineComponent implements OnInit {
     });
   }
 
+  createQuote(opp: OpportunityResource): void {
+    this.crmApi.createQuoteFromOpportunity(opp.id).subscribe({
+      next: () => this.message.success(this.i18n.translate('CRMX.PIPELINE.QUOTE_CREATED')),
+      error: () => undefined,
+    });
+  }
+
+  createProject(opp: OpportunityResource): void {
+    this.crmApi.createProjectFromOpportunity(opp.id).subscribe({
+      next: () => this.message.success(this.i18n.translate('CRMX.PIPELINE.PROJECT_CREATED')),
+      error: () => undefined,
+    });
+  }
+
   deleteOpportunity(opp: OpportunityResource): void {
     this.crmApi.deleteOpportunity(opp.id).subscribe({
       next: () => {
