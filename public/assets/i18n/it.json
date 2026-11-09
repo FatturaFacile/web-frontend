@@ -2754,5 +2754,48 @@
       "forbidden": "Non autorizzata",
       "failed": "Errore"
     }
+  },
+  "NAV.WORKSPACE": "Integrazione Cloud Workspace",
+  "WORKSPACE": {
+    "TITLE": "Integrazione Cloud Workspace & Sincronizzazione",
+    "SUBTITLE": "Collega account Google Workspace e Microsoft 365 per sincronizzare automaticamente calendario, eventi e corrispondenza",
+    "TABS": {
+      "CONNECTIONS": "Connessioni Cloud",
+      "ITEMS": "Elementi Sincronizzati"
+    },
+    "GOOGLE_DESC": "Sincronizza riunioni Google Calendar e metadati email Gmail direttamente nel gestionale",
+    "MS_DESC": "Integrazione bidirezionale con Microsoft Outlook Calendar ed email Exchange",
+    "STATUS_CONNECTED": "Connesso & Attivo",
+    "STATUS_DISCONNECTED": "Non Connesso",
+    "CONSENT_DATE": "Consenso Accordato",
+    "LAST_SYNC": "Ultima Sincronizzazione",
+    "NEVER": "Mai sincronizzato",
+    "SCOPES": "Permessi Attivi",
+    "SYNC_NOW": "Sincronizza Ora",
+    "DISCONNECT": "Disconnetti",
+    "CONNECT_BUTTON": "Collega Account",
+    "MANUAL_CODE": "Inserisci codice manuale",
+    "CONNECT_HELP_GOOGLE": "Autorizza l'accesso al tuo account Google Workspace per condividere appuntamenti e storico comunicazioni.",
+    "CONNECT_HELP_MS": "Autorizza l'accesso al tuo tenant Microsoft 365 per sincronizzare meeting di lavoro e corrispondenza.",
+    "FILTER_KIND": "Filtra per tipo",
+    "KIND_CALENDAR": "Evento Calendario",
+    "KIND_EMAIL": "Email",
+    "ITEM_TYPE": "Tipo",
+    "ITEM_SUBJECT": "Oggetto / Riunione",
+    "ITEM_COUNTERPART": "Partecipante / Mittente",
+    "ITEM_DATE": "Data & Orario",
+    "UNTIL": "fino alle",
+    "MODAL_AUTH_TITLE": "Autorizzazione Cloud",
+    "MODAL_AUTH_DESC": "Seleziona gli ambiti di sincronizzazione e accorda il consenso per connettere il provider cloud.",
+    "SELECT_SCOPES": "Ambiti da Sincronizzare",
+    "SCOPE_CALENDAR": "Calendario & Appuntamenti",
+    "SCOPE_MAIL": "Posta & Metadati Messaggi",
+    "CONSENT_CHECKBOX": "Accetto il trattamento dei dati e autorizzo la connessione cloud (GDPR compliant)",
+    "MODAL_CALLBACK_TITLE": "Completa Connessione",
+    "MODAL_CALLBACK_DESC": "Incolla il codice di autorizzazione OAuth e lo stato ricevuti dal fornitore di identità.",
+    "AUTH_CODE": "Codice Autorizzazione",
+    "AUTH_CODE_PLACEHOLDER": "Inserisci il codice OAuth fornito...",
+    "STATE_NONCE": "Token di Stato (Nonce)",
+    "STATE_PLACEHOLDER": "Inserisci il token di stato..."
   }
 }

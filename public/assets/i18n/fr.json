@@ -2698,5 +2698,48 @@
       "forbidden": "Non autorisée",
       "failed": "Échouée"
     }
+  },
+  "NAV.WORKSPACE": "Intégration Cloud Workspace",
+  "WORKSPACE": {
+    "TITLE": "Intégration & Synchronisation Cloud Workspace",
+    "SUBTITLE": "Connectez vos comptes Google Workspace et Microsoft 365 pour synchroniser automatiquement calendriers, événements et courriels",
+    "TABS": {
+      "CONNECTIONS": "Connexions Cloud",
+      "ITEMS": "Éléments Synchronisés"
+    },
+    "GOOGLE_DESC": "Synchronisez réunions Google Agenda et métadonnées Gmail directement dans l'ERP",
+    "MS_DESC": "Intégration bidirectionnelle avec Microsoft Outlook Calendar et les courriels Exchange",
+    "STATUS_CONNECTED": "Connecté & Actif",
+    "STATUS_DISCONNECTED": "Non connecté",
+    "CONSENT_DATE": "Consentement accordé",
+    "LAST_SYNC": "Dernière synchronisation",
+    "NEVER": "Jamais synchronisé",
+    "SCOPES": "Périmètres actifs",
+    "SYNC_NOW": "Synchroniser maintenant",
+    "DISCONNECT": "Déconnecter",
+    "CONNECT_BUTTON": "Connecter le compte",
+    "MANUAL_CODE": "Saisir le code manuel",
+    "CONNECT_HELP_GOOGLE": "Autorisez l'accès à votre compte Google Workspace pour synchroniser réunions et communications.",
+    "CONNECT_HELP_MS": "Autorisez l'accès à votre tenant Microsoft 365 pour synchroniser réunions et courriels.",
+    "FILTER_KIND": "Filtrer par type",
+    "KIND_CALENDAR": "Événement Calendrier",
+    "KIND_EMAIL": "Courriel",
+    "ITEM_TYPE": "Type",
+    "ITEM_SUBJECT": "Objet / Réunion",
+    "ITEM_COUNTERPART": "Participant / Expéditeur",
+    "ITEM_DATE": "Date & Heure",
+    "UNTIL": "jusqu'à",
+    "MODAL_AUTH_TITLE": "Autorisation Cloud",
+    "MODAL_AUTH_DESC": "Sélectionnez les périmètres de synchronisation et accordez votre consentement.",
+    "SELECT_SCOPES": "Périmètres à synchroniser",
+    "SCOPE_CALENDAR": "Calendrier & Rendez-vous",
+    "SCOPE_MAIL": "Courriels & Métadonnées",
+    "CONSENT_CHECKBOX": "J'accepte le traitement des données et autorise la connexion cloud (conforme RGPD)",
+    "MODAL_CALLBACK_TITLE": "Finaliser la connexion",
+    "MODAL_CALLBACK_DESC": "Collez le code d'autorisation OAuth et le jeton d'état reçus.",
+    "AUTH_CODE": "Code d'Autorisation",
+    "AUTH_CODE_PLACEHOLDER": "Saisir le code OAuth fourni...",
+    "STATE_NONCE": "Jeton d'état (Nonce)",
+    "STATE_PLACEHOLDER": "Saisir le jeton d'état..."
   }
 }

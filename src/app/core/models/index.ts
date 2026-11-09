@@ -44,3 +44,4 @@ export * from './document-trust.model';
 export * from './ecommerce-integrations.model';
 export * from './assistant.model';
 export * from './loyalty.model';
+export * from './workspace.model';

@@ -1,0 +1,376 @@
+<app-page-header
+  [title]="'WORKSPACE.TITLE' | translate"
+  [subtitle]="'WORKSPACE.SUBTITLE' | translate"
+/>
+
+<div class="workspace-page-content">
+  @if (errorMessage()) {
+    <nz-alert
+      nzType="error"
+      [nzMessage]="errorMessage()!"
+      nzShowIcon
+      nzCloseable
+      class="mb-4"
+      (nzOnClose)="errorMessage.set(null)"
+    />
+  }
+
+  <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
+    <!-- TAB 1: CLOUD PROVIDERS -->
+    <nz-tab [nzTitle]="'WORKSPACE.TABS.CONNECTIONS' | translate">
+      <div class="providers-grid">
+        <!-- GOOGLE WORKSPACE CARD -->
+        <nz-card [nzTitle]="'Google Workspace'" class="provider-card">
+          <div class="provider-body">
+            <div class="provider-header">
+              <div class="provider-icon google-icon">
+                <i class="fa-brands fa-google text-2xl"></i>
+              </div>
+              <div class="provider-info">
+                <h3 class="provider-name">Google Calendar & Gmail</h3>
+                <p class="provider-desc">{{ 'WORKSPACE.GOOGLE_DESC' | translate }}</p>
+              </div>
+            </div>
+
+            @if (googleConnection(); as conn) {
+              <div class="connection-status connected">
+                <div class="status-indicator">
+                  <nz-tag nzColor="success">
+                    <i class="fa-solid fa-check-circle mr-1"></i>
+                    {{ 'WORKSPACE.STATUS_CONNECTED' | translate }}
+                  </nz-tag>
+                </div>
+
+                <div class="connection-meta">
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.CONSENT_DATE' | translate }}:</span>
+                    <span class="meta-val">{{ conn.consent_given_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.LAST_SYNC' | translate }}:</span>
+                    <span class="meta-val">
+                      {{ conn.last_synced_at ? (conn.last_synced_at | date: 'dd/MM/yyyy HH:mm') : ('WORKSPACE.NEVER' | translate) }}
+                    </span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.SCOPES' | translate }}:</span>
+                    <span class="meta-val">
+                      @for (s of conn.scopes; track s) {
+                        <nz-tag nzColor="default" class="text-xs">{{ s }}</nz-tag>
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div class="provider-actions">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    type="button"
+                    [nzLoading]="isSyncing()"
+                    (click)="syncConnection(conn)"
+                  >
+                    <i class="fa-solid fa-rotate mr-1"></i>
+                    {{ 'WORKSPACE.SYNC_NOW' | translate }}
+                  </button>
+
+                  <button
+                    nz-button
+                    nzType="default"
+                    nzDanger
+                    type="button"
+                    (click)="revokeConnection(conn)"
+                  >
+                    <i class="fa-solid fa-link-slash mr-1"></i>
+                    {{ 'WORKSPACE.DISCONNECT' | translate }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="connection-status disconnected">
+                <div class="status-indicator">
+                  <nz-tag nzColor="default">{{ 'WORKSPACE.STATUS_DISCONNECTED' | translate }}</nz-tag>
+                </div>
+
+                <p class="status-help">{{ 'WORKSPACE.CONNECT_HELP_GOOGLE' | translate }}</p>
+
+                <div class="provider-actions">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    type="button"
+                    (click)="openAuthorizeModal('google')"
+                  >
+                    <i class="fa-solid fa-plug mr-1"></i>
+                    {{ 'WORKSPACE.CONNECT_BUTTON' | translate }}
+                  </button>
+
+                  <button
+                    nz-button
+                    nzType="link"
+                    type="button"
+                    (click)="openCallbackModal('google')"
+                  >
+                    {{ 'WORKSPACE.MANUAL_CODE' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </nz-card>
+
+        <!-- MICROSOFT 365 CARD -->
+        <nz-card [nzTitle]="'Microsoft 365'" class="provider-card">
+          <div class="provider-body">
+            <div class="provider-header">
+              <div class="provider-icon ms-icon">
+                <i class="fa-brands fa-microsoft text-2xl"></i>
+              </div>
+              <div class="provider-info">
+                <h3 class="provider-name">Outlook Calendar & Mail</h3>
+                <p class="provider-desc">{{ 'WORKSPACE.MS_DESC' | translate }}</p>
+              </div>
+            </div>
+
+            @if (microsoftConnection(); as conn) {
+              <div class="connection-status connected">
+                <div class="status-indicator">
+                  <nz-tag nzColor="success">
+                    <i class="fa-solid fa-check-circle mr-1"></i>
+                    {{ 'WORKSPACE.STATUS_CONNECTED' | translate }}
+                  </nz-tag>
+                </div>
+
+                <div class="connection-meta">
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.CONSENT_DATE' | translate }}:</span>
+                    <span class="meta-val">{{ conn.consent_given_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.LAST_SYNC' | translate }}:</span>
+                    <span class="meta-val">
+                      {{ conn.last_synced_at ? (conn.last_synced_at | date: 'dd/MM/yyyy HH:mm') : ('WORKSPACE.NEVER' | translate) }}
+                    </span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="meta-label">{{ 'WORKSPACE.SCOPES' | translate }}:</span>
+                    <span class="meta-val">
+                      @for (s of conn.scopes; track s) {
+                        <nz-tag nzColor="default" class="text-xs">{{ s }}</nz-tag>
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div class="provider-actions">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    type="button"
+                    [nzLoading]="isSyncing()"
+                    (click)="syncConnection(conn)"
+                  >
+                    <i class="fa-solid fa-rotate mr-1"></i>
+                    {{ 'WORKSPACE.SYNC_NOW' | translate }}
+                  </button>
+
+                  <button
+                    nz-button
+                    nzType="default"
+                    nzDanger
+                    type="button"
+                    (click)="revokeConnection(conn)"
+                  >
+                    <i class="fa-solid fa-link-slash mr-1"></i>
+                    {{ 'WORKSPACE.DISCONNECT' | translate }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="connection-status disconnected">
+                <div class="status-indicator">
+                  <nz-tag nzColor="default">{{ 'WORKSPACE.STATUS_DISCONNECTED' | translate }}</nz-tag>
+                </div>
+
+                <p class="status-help">{{ 'WORKSPACE.CONNECT_HELP_MS' | translate }}</p>
+
+                <div class="provider-actions">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    type="button"
+                    (click)="openAuthorizeModal('microsoft')"
+                  >
+                    <i class="fa-solid fa-plug mr-1"></i>
+                    {{ 'WORKSPACE.CONNECT_BUTTON' | translate }}
+                  </button>
+
+                  <button
+                    nz-button
+                    nzType="link"
+                    type="button"
+                    (click)="openCallbackModal('microsoft')"
+                  >
+                    {{ 'WORKSPACE.MANUAL_CODE' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </nz-card>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 2: SYNCED ITEMS -->
+    <nz-tab [nzTitle]="'WORKSPACE.TABS.ITEMS' | translate">
+      <nz-card>
+        <div class="toolbar mb-4 flex justify-between items-center">
+          <div class="filter-group flex items-center gap-2">
+            <span class="font-medium text-sm">{{ 'WORKSPACE.FILTER_KIND' | translate }}:</span>
+            <nz-select
+              [ngModel]="itemFilterKind()"
+              (ngModelChange)="itemFilterKind.set($event); loadItems()"
+              class="w-48"
+            >
+              <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
+              <nz-option nzValue="calendar_event" [nzLabel]="'WORKSPACE.KIND_CALENDAR' | translate"></nz-option>
+              <nz-option nzValue="email" [nzLabel]="'WORKSPACE.KIND_EMAIL' | translate"></nz-option>
+            </nz-select>
+          </div>
+
+          <button nz-button nzType="default" type="button" (click)="loadItems()">
+            <i class="fa-solid fa-rotate mr-1"></i>
+            {{ 'COMMON.REFRESH' | translate }}
+          </button>
+        </div>
+
+        <nz-table
+          #itemsTable
+          [nzData]="filteredItems()"
+          [nzPageSize]="10"
+          nzBordered
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="15%">{{ 'WORKSPACE.ITEM_TYPE' | translate }}</th>
+              <th nzWidth="40%">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
+              <th nzWidth="25%">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
+              <th nzWidth="20%">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itemsTable.data; track item.id) {
+              <tr>
+                <td>
+                  <nz-tag [nzColor]="getItemKindColor(item.kind)">
+                    {{ (item.kind === 'calendar_event' ? 'WORKSPACE.KIND_CALENDAR' : 'WORKSPACE.KIND_EMAIL') | translate }}
+                  </nz-tag>
+                </td>
+                <td class="font-medium">{{ item.subject || '-' }}</td>
+                <td>{{ item.counterpart || '-' }}</td>
+                <td>
+                  @if (item.starts_at) {
+                    <span>{{ item.starts_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    @if (item.ends_at) {
+                      <span class="text-muted text-xs block">
+                        {{ 'WORKSPACE.UNTIL' | translate }} {{ item.ends_at | date: 'HH:mm' }}
+                      </span>
+                    }
+                  } @else {
+                    <span>-</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+
+  <!-- MODAL: AUTHORIZE OAUTH -->
+  <nz-modal
+    [nzVisible]="isAuthorizeModalVisible()"
+    [nzTitle]="('WORKSPACE.MODAL_AUTH_TITLE' | translate) + ' ' + (selectedProvider() | uppercase)"
+    [nzOkLoading]="isAuthorizing()"
+    (nzOnCancel)="isAuthorizeModalVisible.set(false)"
+    (nzOnOk)="submitAuthorize()"
+  >
+    <ng-container *nzModalContent>
+      <form [formGroup]="authForm" nzLayout="vertical">
+        <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_AUTH_DESC' | translate }}</p>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKSPACE.SELECT_SCOPES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span>
+                  <i class="fa-solid fa-calendar mr-1 text-blue-500"></i>
+                  {{ 'WORKSPACE.SCOPE_CALENDAR' | translate }}
+                </span>
+                <nz-switch formControlName="calendar"></nz-switch>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>
+                  <i class="fa-solid fa-envelope mr-1 text-green-500"></i>
+                  {{ 'WORKSPACE.SCOPE_MAIL' | translate }}
+                </span>
+                <nz-switch formControlName="mail"></nz-switch>
+              </div>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="mt-4">
+          <nz-form-control>
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-xs">{{ 'WORKSPACE.CONSENT_CHECKBOX' | translate }}</span>
+              <nz-switch formControlName="consent"></nz-switch>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: COMPLETE WITH CALLBACK CODE -->
+  <nz-modal
+    [nzVisible]="isCallbackModalVisible()"
+    [nzTitle]="('WORKSPACE.MODAL_CALLBACK_TITLE' | translate) + ' ' + (selectedProvider() | uppercase)"
+    [nzOkLoading]="isAuthorizing()"
+    (nzOnCancel)="isCallbackModalVisible.set(false)"
+    (nzOnOk)="submitCallback()"
+  >
+    <ng-container *nzModalContent>
+      <form [formGroup]="callbackForm" nzLayout="vertical">
+        <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_CALLBACK_DESC' | translate }}</p>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ws-callback-code">{{ 'WORKSPACE.AUTH_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input
+              id="ws-callback-code"
+              nz-input
+              formControlName="code"
+              [placeholder]="'WORKSPACE.AUTH_CODE_PLACEHOLDER' | translate"
+            />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ws-callback-state">{{ 'WORKSPACE.STATE_NONCE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input
+              id="ws-callback-state"
+              nz-input
+              formControlName="state"
+              [placeholder]="'WORKSPACE.STATE_PLACEHOLDER' | translate"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>
