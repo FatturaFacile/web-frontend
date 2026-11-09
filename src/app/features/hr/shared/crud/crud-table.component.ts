@@ -14,6 +14,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { decimalStringValidator } from '../hr-decimal.validator';
 import { reportHttpError } from '../hr-http.util';
+import { ReasonButtonComponent } from '../reason-button.component';
 import { CrudConfig, CrudField, CrudOption } from './crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -36,6 +37,7 @@ type Row = { id: string } & Record<string, unknown>;
     NzSelectModule,
     NzTableModule,
     TranslatePipe,
+    ReasonButtonComponent,
   ],
   templateUrl: './crud-table.component.html',
 })
@@ -112,7 +114,12 @@ export class CrudTableComponent {
         continue;
       }
       const raw = row ? row[field.key] : field.defaultValue;
-      const initial = field.type === 'boolean' ? Boolean(raw ?? false) : String(raw ?? '');
+      const initial =
+        field.type === 'boolean'
+          ? Boolean(raw ?? false)
+          : field.type === 'datetime'
+            ? String(raw ?? '').slice(0, 16)
+            : String(raw ?? '');
       controls[field.key] = new FormControl(initial, { nonNullable: true, validators: this.validators(field) });
     }
     this.form = new FormGroup(controls);
@@ -149,9 +156,9 @@ export class CrudTableComponent {
     });
   }
 
-  protected remove(row: Row): void {
+  protected remove(row: Row, reason?: string): void {
     this.config()
-      .remove?.(row.id)
+      .remove?.(row.id, reason)
       .subscribe({
         next: () => {
           this.message.success(this.i18n.translate('hrmCommon.deleted'));
@@ -205,7 +212,8 @@ export class CrudTableComponent {
         }
         continue;
       }
-      payload[field.key] = field.type === 'integer' ? Number(text) : text;
+      payload[field.key] =
+        field.type === 'integer' ? Number(text) : field.type === 'datetime' && text.length === 16 ? text + ':00' : text;
     }
     return payload;
   }

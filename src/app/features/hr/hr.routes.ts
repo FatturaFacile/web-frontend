@@ -33,6 +33,16 @@ export const HR_ROUTES: Routes = [
       ),
   },
   {
+    path: 'leave',
+    data: { breadcrumb: 'NAV.HR_LEAVE', title: 'NAV.HR_LEAVE' },
+    loadComponent: () => import('./leave/leave.component').then((m) => m.LeaveComponent),
+  },
+  {
+    path: 'time',
+    data: { breadcrumb: 'NAV.HR_TIME', title: 'NAV.HR_TIME' },
+    loadComponent: () => import('./time/time.component').then((m) => m.TimeComponent),
+  },
+  {
     path: 'self-service',
     data: { breadcrumb: 'NAV.HR_SELF_SERVICE', title: 'NAV.HR_SELF_SERVICE' },
     loadComponent: () =>
