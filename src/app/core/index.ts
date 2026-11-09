@@ -71,3 +71,4 @@ export * from './api/general-ledger-api.service';
 export * from './api/treasury-ops-api.service';
 export * from './api/eam-ops-api.service';
 export * from './api/project-control-api.service';
+export * from './api/general-ledger-fiscal-api.service';
