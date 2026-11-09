@@ -153,6 +153,12 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.APPOINTMENTS',
+          icon: 'fa-solid fa-calendar-check',
+          route: '/appointments',
+          module: 'service',
+        },
+        {
           key: 'NAV.FIELD_SERVICE',
           icon: 'fa-solid fa-screwdriver-wrench',
           module: 'service',

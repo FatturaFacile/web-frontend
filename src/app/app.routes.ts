@@ -157,6 +157,13 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'appointments',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Agenda & Appuntamenti', title: 'Appuntamenti & Calendario' },
+    loadChildren: () =>
+      import('./features/appointments/appointments.routes').then((m) => m.APPOINTMENTS_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },

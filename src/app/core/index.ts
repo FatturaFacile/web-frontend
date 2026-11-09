@@ -56,3 +56,4 @@ export * from './api/workshop-api.service';
 export * from './api/childcare-api.service';
 export * from './api/hospitality-api.service';
 export * from './api/practice-api.service';
+export * from './api/appointment-api.service';
