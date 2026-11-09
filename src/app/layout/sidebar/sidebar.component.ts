@@ -102,6 +102,11 @@ export class SidebarComponent {
             { key: 'NAV.SC_RETURNS', route: '/sales/cycle/returns', icon: 'fa-solid fa-rotate-left', module: 'invoicing' },
             { key: 'NAV.SC_PRICING', route: '/sales/cycle/pricing', icon: 'fa-solid fa-tags', module: 'invoicing' },
             { key: 'NAV.SC_CREDIT', route: '/sales/cycle/credit', icon: 'fa-solid fa-scale-balanced', module: 'invoicing' },
+            { key: 'NAV.SC_PLANS', route: '/sales/billing/plans', icon: 'fa-solid fa-calendar-check', module: 'invoicing' },
+            { key: 'NAV.SC_DEFERRED', route: '/sales/billing/deferred', icon: 'fa-solid fa-layer-group', module: 'invoicing' },
+            { key: 'NAV.SC_DEBIT', route: '/sales/billing/debit-notes', icon: 'fa-solid fa-file-circle-plus', module: 'invoicing' },
+            { key: 'NAV.SC_REPORTS', route: '/sales/billing/reports', icon: 'fa-solid fa-table-list', module: 'invoicing' },
+            { key: 'NAV.SC_APPROVALS', route: '/sales/billing/approvals', icon: 'fa-solid fa-user-check', module: 'invoicing' },
           ],
         },
         {
