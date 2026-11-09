@@ -32,6 +32,7 @@ exclude:
   - name: JSUnusedGlobalSymbols
     paths:
       - src/app/core/api
+      - src/app/core/models
       - playwright.config.ts
       - proxy.conf.mjs
       - src/app/core/auth/token-storage.service.ts
@@ -43,6 +44,8 @@ exclude:
       - src/app/shared/components/base-table/table-state.service.ts
 
   # The brand logo is an SVG: NgOptimizedImage does not optimise vector images (no srcset, no resize).
+  - name: ES6PreferShortImport
+
   - name: AngularNgOptimizedImage
     paths:
       - src/app/layout/sidebar/sidebar.component.html

@@ -1,5 +1,9 @@
 .page-header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 }
 .page-title {
   font-size: 20px;

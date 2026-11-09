@@ -2,7 +2,7 @@
   title="CRM Pipeline"
   subtitle="Track sales opportunities, deal stages, and duplicate contact detection"
 >
-  <div header-actions>
+  <div class="header-actions">
     <nz-space>
       <button *nzSpaceItem nz-button nzType="default" [nzLoading]="checkingDuplicates()" (click)="checkDuplicates()">
         <nz-icon nzType="swap" />
@@ -19,7 +19,8 @@
 <nz-card>
   <div class="filter-bar">
     <div class="search-box">
-      <nz-input-group nzPrefixIcon="search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
         <input
           type="text"
           nz-input
@@ -27,7 +28,7 @@
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
-      </nz-input-group>
+      </nz-input-wrapper>
     </div>
 
     <div class="select-filters">

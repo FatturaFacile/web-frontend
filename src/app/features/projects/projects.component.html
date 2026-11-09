@@ -2,7 +2,7 @@
   title="Projects & Work Orders"
   subtitle="Manage enterprise projects, task schedules, EVM indicators, and billing milestones"
 >
-  <div header-actions>
+  <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateModal()">
       <nz-icon nzType="plus" />
       New Project
@@ -13,7 +13,8 @@
 <nz-card>
   <div class="filter-bar">
     <div class="search-box">
-      <nz-input-group nzPrefixIcon="search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
         <input
           type="text"
           nz-input
@@ -21,7 +22,7 @@
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
-      </nz-input-group>
+      </nz-input-wrapper>
     </div>
 
     <div class="select-filters">

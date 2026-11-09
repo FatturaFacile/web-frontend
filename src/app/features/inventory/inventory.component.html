@@ -595,9 +595,10 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-group nzPrefixIcon="search">
+          <nz-input-wrapper>
+            <nz-icon nzInputPrefix nzType="search" />
             <input nz-input formControlName="stock_item_id" placeholder="UUID articolo" />
-          </nz-input-group>
+          </nz-input-wrapper>
         </nz-form-control>
       </nz-form-item>
 

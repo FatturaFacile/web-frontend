@@ -58,4 +58,8 @@ describe('PermissionsService', () => {
     expect(service.canRead('treasury')).toBe(true);
     expect(service.canWrite('treasury')).toBe(false);
   });
+
+  it('returns available modules list', () => {
+    expect(service.getAvailableModules().length).toBeGreaterThan(0);
+  });
 });

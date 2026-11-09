@@ -2,7 +2,7 @@
   title="Asset Management (Cespiti & EAM)"
   subtitle="Fixed assets registers, parallel accounting books (IT/CH), depreciations, and QR identification"
 >
-  <div header-actions>
+  <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateModal()">
       <nz-icon nzType="plus" />
       New Asset
@@ -13,7 +13,8 @@
 <nz-card>
   <div class="filter-bar">
     <div class="search-box">
-      <nz-input-group nzPrefixIcon="search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
         <input
           type="text"
           nz-input
@@ -21,7 +22,7 @@
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
-      </nz-input-group>
+      </nz-input-wrapper>
     </div>
 
     <div class="select-filters">

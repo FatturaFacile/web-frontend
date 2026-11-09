@@ -236,6 +236,9 @@
                   <button nz-button nzType="link" nzSize="small" (click)="invoiceOrder(o.id)">
                     <nz-icon nzType="file-text" /> Fattura
                   </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o.id)">
+                    <nz-icon nzType="close-circle" /> {{ 'COMMON.CANCEL' | translate }}
+                  </button>
                 }
               </td>
             </tr>
@@ -390,23 +393,23 @@
       <nz-divider nzText="Righe Preventivo" nzOrientation="left"></nz-divider>
 
       <div formArrayName="items">
-        @for (item of quoteItems.controls; track $index) {
+        @for (_ of quoteItems.controls; track $index) {
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
               <nz-col [nzSpan]="8">
                 <input nz-input formControlName="description" placeholder="Descrizione articolo / servizio" />
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="quantity" [nzMin]="0.001" placeholder="Q.tà" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="unit_price" [nzMin]="0" placeholder="Prezzo unitario" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="tax_rate" [nzMin]="0" placeholder="IVA %" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzPlaceHolder]="'IVA %'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" placeholder="Sconto %" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="2" style="display: flex; align-items: center;">
                 <button nz-button nzType="text" nzDanger (click)="removeQuoteItem($index)">
@@ -477,23 +480,23 @@
       <nz-divider nzText="Righe Ordine" nzOrientation="left"></nz-divider>
 
       <div formArrayName="items">
-        @for (item of orderItems.controls; track $index) {
+        @for (_ of orderItems.controls; track $index) {
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
               <nz-col [nzSpan]="8">
                 <input nz-input formControlName="description" placeholder="Descrizione articolo" />
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="quantity" [nzMin]="0.001" placeholder="Q.tà" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="unit_price" [nzMin]="0" placeholder="Prezzo unitario" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="tax_rate" [nzMin]="0" placeholder="IVA %" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzPlaceHolder]="'IVA %'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" placeholder="Sconto %" style="width: 100%;"></nz-input-number>
+                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'" style="width: 100%;"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="2" style="display: flex; align-items: center;">
                 <button nz-button nzType="text" nzDanger (click)="removeOrderItem($index)">

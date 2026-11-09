@@ -29,7 +29,7 @@ import {
   PaymentBatchStatus,
   PaymentMethodType,
   TreasuryApiService,
-  TranslateService,
+
 } from '@core';
 import {
   BaseTableComponent,
@@ -77,7 +77,7 @@ export class TreasuryComponent implements OnInit {
   private readonly bankingApi = inject(BankingApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
-  private readonly translate = inject(TranslateService);
+
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly tableState = inject(TableStateService<BankTransactionResource>);
 

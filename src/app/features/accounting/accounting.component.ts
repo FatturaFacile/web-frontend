@@ -122,7 +122,7 @@ export class AccountingComponent implements OnInit {
   private readonly currencyTpl = viewChild<TemplateRef<unknown>>('currencyTpl');
   private readonly accountTypeTpl = viewChild<TemplateRef<unknown>>('accountTypeTpl');
   private readonly vatStatusTpl = viewChild<TemplateRef<unknown>>('vatStatusTpl');
-  private readonly actionsTpl = viewChild<TemplateRef<unknown>>('actionsTpl');
+
 
   readonly ledgerColumns = computed<TableColumnDef<JournalEntryResource>[]>(() => [
     {

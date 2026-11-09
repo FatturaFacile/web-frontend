@@ -56,7 +56,8 @@
     <nz-tab nzTitle="Dipendenti">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-group nzPrefixIcon="search" style="width: 250px;">
+          <nz-input-wrapper style="width: 250px;">
+            <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
               nz-input
@@ -64,7 +65,7 @@
               [ngModel]="employeesSearch()"
               (ngModelChange)="employeesSearch.set($event); loadEmployees(1)"
             />
-          </nz-input-group>
+          </nz-input-wrapper>
 
           <nz-select
             [ngModel]="employeesStatusFilter()"
