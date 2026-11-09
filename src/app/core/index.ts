@@ -77,3 +77,6 @@ export * from './api/assistant-api.service';
 export * from './api/loyalty-api.service';
 export * from './api/workspace-api.service';
 export * from './api/resource-api.service';
+export * from './api/sales-cycle-api.service';
+export * from './api/billing-api.service';
+export * from './api/catalog-api.service';

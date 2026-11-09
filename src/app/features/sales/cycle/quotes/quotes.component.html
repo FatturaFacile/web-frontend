@@ -1,0 +1,162 @@
+<app-page-header [title]="'SC.QUOTES.TITLE' | translate" [subtitle]="'SC.QUOTES.SUBTITLE' | translate" />
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.ALL_STATUSES' | translate"
+      [attr.aria-label]="'SC.COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status"
+      (ngModelChange)="facade.setFilter({ status: $event ?? undefined })"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusKey(s) | translate"></nz-option>
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite()) {
+      <button
+        nz-button
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'SC.QUOTES.EXPIRE_CONFIRM' | translate"
+        (nzOnConfirm)="expireOverdue()"
+      >
+        <nz-icon nzType="clock-circle" /> {{ 'SC.QUOTES.EXPIRE_OVERDUE' | translate }}
+      </button>
+      <button nz-button nzType="primary" type="button" (click)="create()">
+        <nz-icon nzType="plus" /> {{ 'SC.QUOTES.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <ng-template #numberTpl let-q><code>{{ q.quote_number }}</code></ng-template>
+  <ng-template #customerTpl let-q>{{ lookups.contactName(q.contact_id, q.contact) }}</ng-template>
+  <ng-template #statusTpl let-q>
+    <nz-tag [nzColor]="statusColor(q.status)">{{ statusKey(q.status) | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #totalTpl let-q><strong>{{ q.total_gross | money: q.currency }}</strong></ng-template>
+  <ng-template #actionsTpl let-q>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(q)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  [nzWidth]="860"
+  [nzTitle]="selected()?.quote_number ?? ''"
+  (nzOnClose)="drawerOpen.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as q) {
+      <nz-tag [nzColor]="statusColor(q.status)">{{ statusKey(q.status) | translate }}</nz-tag>
+      @if (q.status === 'expired') {
+        <p class="note">{{ 'SC.QUOTES.EXPIRED_NOTE' | translate }}</p>
+      }
+      @if (q.status === 'superseded') {
+        <p class="note">{{ 'SC.QUOTES.SUPERSEDED_NOTE' | translate }}</p>
+      }
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.CUSTOMER' | translate">{{ lookups.contactName(q.contact_id, q.contact) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.DATE' | translate">{{ q.date | date: 'mediumDate' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.QUOTES.VALID_UNTIL' | translate">{{ q.valid_until ? (q.valid_until | date: 'mediumDate') : '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.CURRENCY' | translate">{{ q.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.NET' | translate">{{ q.total_net | money: q.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.TAX' | translate">{{ q.total_tax | money: q.currency }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'SC.COMMON.TOTAL' | translate">{{ q.total_gross | money: q.currency }}</nz-descriptions-item>
+        @if (q.revision_of_quote_id) {
+          <nz-descriptions-item [nzTitle]="'SC.QUOTES.REVISION_OF' | translate">{{ q.revision_of_quote_id }}</nz-descriptions-item>
+        }
+        @if (q.signed_by) {
+          <nz-descriptions-item [nzTitle]="'SC.QUOTES.SIGNED_BY' | translate">{{ q.signed_by }}</nz-descriptions-item>
+        }
+        @if (q.notes) {
+          <nz-descriptions-item [nzTitle]="'SC.COMMON.NOTES' | translate" [nzSpan]="2">{{ q.notes }}</nz-descriptions-item>
+        }
+      </nz-descriptions>
+      <app-document-lines-view [lines]="q.items ?? []" [currency]="q.currency" />
+
+      @if (canWrite() && isOpen(q)) {
+        <div class="actions">
+          @if (q.status === 'draft') {
+            <button nz-button type="button" (click)="edit(q)"><nz-icon nzType="edit" /> {{ 'SC.COMMON.EDIT' | translate }}</button>
+          }
+          <button nz-button type="button" [nzLoading]="working()" (click)="revise(q)">
+            <nz-icon nzType="copy" /> {{ 'SC.QUOTES.REVISE' | translate }}
+          </button>
+          <button nz-button type="button" (click)="openSignature()"><nz-icon nzType="highlight" /> {{ 'SC.QUOTES.SIGN' | translate }}</button>
+          <button nz-button type="button" (click)="ddtOpen.set(true)"><nz-icon nzType="car" /> {{ 'SC.DDT.NEW' | translate }}</button>
+          <button
+            nz-button
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'SC.QUOTES.INVOICE_CONFIRM' | translate"
+            (nzOnConfirm)="invoice(q)"
+          >
+            <nz-icon nzType="file-text" /> {{ 'SC.QUOTES.INVOICE' | translate }}
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'SC.QUOTES.CONVERT_CONFIRM' | translate"
+            (nzOnConfirm)="convert(q)"
+          >
+            <nz-icon nzType="shopping-cart" /> {{ 'SC.QUOTES.CONVERT' | translate }}
+          </button>
+          @if (q.status === 'draft') {
+            <button
+              nz-button
+              nzDanger
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="remove(q)"
+            >
+              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
+            </button>
+          }
+        </div>
+      }
+
+      <app-delivery-note-form-modal [source]="ddtSource(q)" [(visible)]="ddtOpen" />
+
+      <nz-modal
+        [nzVisible]="signOpen()"
+        [nzTitle]="'SC.QUOTES.SIGN' | translate"
+        [nzOkText]="'SC.QUOTES.SIGN_ACCEPT' | translate"
+        [nzOkLoading]="working()"
+        (nzOnCancel)="signOpen.set(false)"
+        (nzOnOk)="submitSignature(q)"
+      >
+        <ng-container *nzModalContent>
+          <label for="signed-by">{{ 'SC.QUOTES.SIGNED_BY' | translate }}</label>
+          <input nz-input id="signed-by" maxlength="100" [(ngModel)]="signedBy" class="signed-by" />
+          <app-signature-pad (signatureChange)="signature = $event" />
+        </ng-container>
+      </nz-modal>
+    }
+  </ng-container>
+</nz-drawer>
+
+<app-document-form-modal
+  kind="quote"
+  [document]="editing()"
+  [(visible)]="formOpen"
+  (saved)="onSaved($event)"
+/>

@@ -53,3 +53,8 @@ export * from './payroll.model';
 export * from './hr-talent.model';
 export * from './hr-shift.model';
 export * from './payroll-employee.model';
+export * from './sales-cycle.model';
+export * from './billing.model';
+export * from './crm-engagement.model';
+export * from './catalog.model';
+export * from './subscription-billing.model';
