@@ -7,14 +7,13 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { FormsModule } from '@angular/forms';
-import {
-  AppStore,
-  AuthApiService,
-  AuthStore,
-  PermissionsService,
-  SupportedLanguage,
-} from '@core';
-import { TranslatePipe } from '@shared';
+// Deep imports keep the `@core` and `@shared` barrels (every API service, every resource page) out of the initial bundle.
+import { AuthApiService } from '@core/api/auth-api.service';
+import { AuthStore } from '@core/auth/auth.store';
+import { PermissionsService } from '@core/auth/permissions.service';
+import type { SupportedLanguage } from '@core/i18n/i18n.types';
+import { AppStore } from '@core/state/app.store';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-header',

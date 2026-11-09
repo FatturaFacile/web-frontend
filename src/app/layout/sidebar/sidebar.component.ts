@@ -4,8 +4,11 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { filter, map } from 'rxjs';
-import { AppStore, AuthStore, PermissionsService } from '@core';
-import { TranslatePipe } from '@shared';
+// Deep imports keep the `@core` and `@shared` barrels out of the initial bundle.
+import { AuthStore } from '@core/auth/auth.store';
+import { PermissionsService } from '@core/auth/permissions.service';
+import { AppStore } from '@core/state/app.store';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 interface MenuItem {
   key: string;
