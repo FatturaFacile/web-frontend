@@ -248,7 +248,7 @@ export class InvoicesComponent {
   }
 
   // Swiss QR-Bill
-  protected viewQrBill(inv: InvoiceResource): void {
+  viewQrBill(inv: InvoiceResource): void {
     this.run(inv, this.api.getQrBill(inv.id), null, (res) => {
       this.currentQrBill.set(res.data);
       this.qrModalVisible.set(true);
@@ -282,21 +282,21 @@ export class InvoicesComponent {
     );
   }
 
-  protected generateSdiXml(inv: InvoiceResource): void {
+  generateSdiXml(inv: InvoiceResource): void {
     this.run(inv, this.api.generateSdiXml(inv.id), null, (res) => {
       this.message.success(`FatturaPA XML generato con successo (${res.data.status})`);
       this.facade.reload();
     });
   }
 
-  protected viewSdiLogs(inv: InvoiceResource): void {
+  viewSdiLogs(inv: InvoiceResource): void {
     this.run(inv, this.api.getSdiLogs(inv.id), null, (res) => {
       this.currentSdiLogs.set(res.data);
       this.sdiLogsModalVisible.set(true);
     });
   }
 
-  protected sendBulkSdi(): void {
+  sendBulkSdi(): void {
     const items = this.facade.items();
     const itInvoiceIds = items
       .filter((i) => (i.jurisdiction ?? (i.currency === 'CHF' ? 'CH' : 'IT')) === 'IT' && i.status !== 'cancelled')
@@ -319,7 +319,7 @@ export class InvoicesComponent {
   }
 
   // Credit Notes
-  protected openCreditNoteModal(inv: InvoiceResource): void {
+  openCreditNoteModal(inv: InvoiceResource): void {
     this.creditNoteForm.reset({
       original_invoice_id: inv.id,
       date: new Date().toISOString().substring(0, 10),
@@ -332,7 +332,7 @@ export class InvoicesComponent {
     this.creditNoteModalVisible.set(true);
   }
 
-  protected submitCreditNote(): void {
+  submitCreditNote(): void {
     if (this.creditNoteForm.invalid) {
       this.creditNoteForm.markAllAsTouched();
       return;
@@ -369,7 +369,7 @@ export class InvoicesComponent {
   }
 
   // Installments / Scadenze
-  protected viewInstallments(inv: InvoiceResource): void {
+  viewInstallments(inv: InvoiceResource): void {
     this.run(inv, this.api.getInstallments(inv.id), null, (res) => {
       this.currentInstallments.set(res.data || []);
       this.installmentsModalVisible.set(true);

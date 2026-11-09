@@ -1,5 +1,5 @@
 import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -18,7 +18,6 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
-  BomStatus,
   BomType,
   CreateBomPayload,
   CreateProductionOrderPayload,
@@ -32,17 +31,11 @@ import {
   MfgShortageResource,
   MfgWorkCenterResource,
   MrpRunType,
-  ProductionOrderStatus,
   RunMrpPayload,
 } from '@core';
 import {
-  BaseTableComponent,
   MoneyPipe,
   PageHeaderComponent,
-  TableColumnDef,
-  TableQueryParams,
-  TableStateService,
-  TranslatePipe,
 } from '@shared';
 
 @Component({

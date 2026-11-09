@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
 import { ProfessionalsApiService } from './professionals-api.service';
-import { CreateTimeLogPayload, FeeNote, LegalCase, TimeLog } from '../models';
+import { CreateTimeLogPayload, LegalCase } from '../models';
 
 describe('ProfessionalsApiService', () => {
   let service: ProfessionalsApiService;

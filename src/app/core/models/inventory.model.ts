@@ -77,13 +77,13 @@ export interface PriceListItem {
   valid_to?: string | null;
   parent_price_list_id?: string | null;
   price_adjustment_percent?: number | null;
-  items?: Array<{
+  items?: {
     product_id: string;
     price: number;
     min_quantity?: number | null;
     valid_from?: string | null;
     valid_to?: string | null;
-  }>;
+  }[];
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -97,13 +97,13 @@ export interface StorePriceListPayload {
   valid_to?: string | null;
   parent_price_list_id?: string | null;
   price_adjustment_percent?: number | null;
-  items?: Array<{
+  items?: {
     product_id: string;
     price: number;
     min_quantity?: number | null;
     valid_from?: string | null;
     valid_to?: string | null;
-  }>;
+  }[];
 }
 
 // Module 09: Inventory & Logistics
@@ -183,27 +183,27 @@ export interface InventoryAdjustmentItem {
   notes?: string | null;
   warehouse?: WarehouseItem | null;
   created_at?: string | null;
-  lines?: Array<{
+  lines?: {
     id?: string;
     stock_item_id: string;
     warehouse_bin_id?: string | null;
     quantity_delta: number;
     unit_cost?: number;
     reason?: string | null;
-  }>;
+  }[];
 }
 
 export interface StoreInventoryAdjustmentPayload {
   warehouse_id: string;
   reason: 'cycle_count_variance' | 'damage_loss' | 'obsolete_write_off' | 'found_stock' | 'scrap' | string;
   notes?: string | null;
-  lines: Array<{
+  lines: {
     stock_item_id: string;
     warehouse_bin_id?: string | null;
     quantity_delta: number;
     unit_cost?: number;
     reason?: string | null;
-  }>;
+  }[];
 }
 
 export interface InventoryCountLine {

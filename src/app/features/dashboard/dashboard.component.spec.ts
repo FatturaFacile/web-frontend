@@ -7,14 +7,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { icons } from '../../icons-provider';
-import { AuthStore, DashboardApiService, InvoiceApiService, InvoiceResource, KpiSummary } from '@core';
+import { DashboardApiService, InvoiceApiService, InvoiceResource, KpiSummary } from '@core';
 import { DashboardComponent } from './dashboard.component';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
-  let dashboardApiMock: any;
-  let invoiceApiMock: any;
+  let dashboardApiMock: Partial<DashboardApiService>;
+  let invoiceApiMock: Partial<InvoiceApiService>;
 
   const mockKpi: KpiSummary = {
     revenue_month: 25000,

@@ -2,14 +2,8 @@
 
 Enterprise ERP web application built with **Angular 22**, **NG-ZORRO (Ant Design)**, **FontAwesome 6 Free**, and **Clean Architecture / DDD**, tailored for cross-border operations between **Italy (IT)** and **Switzerland (CH)**.
 
----
-
-# FatturaFacile - Web Client Demo
-
-[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
-[![Deploy to Pages](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml)
-[![GitHub Release](https://img.shields.io/github/v/release/<OWNER>/<REPO>?sort=semver&logo=github&color=blue)](https://github.com/<OWNER>/<REPO>/releases/latest)
-[![Demo](https://demo.fatturafacile.eu)](https://demo.fatturafacile.eu)
+[![CI](https://github.com/FatturaFacile/web-frontend/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/FatturaFacile/web-frontend/actions/workflows/ci.yml)
+[![Deploy Dev](https://github.com/FatturaFacile/web-frontend/actions/workflows/deploy-dev.yml/badge.svg)](https://github.com/FatturaFacile/web-frontend/actions/workflows/deploy-dev.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -19,83 +13,63 @@ Enterprise ERP web application built with **Angular 22**, **NG-ZORRO (Ant Design
 The application layout shell is located in `src/app/layout/` and implements:
 
 - **Multi-Level Collapsible Sidebar (`SidebarComponent`)**:
-    - Tree navigation across all 17 ERP business modules with dynamic route matching (`nzMatchRouter`).
-    - Integrated FontAwesome 6 Free icons (`fa-solid fa-*`).
-    - Collapsed state synchronization with `@ngrx/signals` (`AppStore`).
+  - Tree navigation across all 17 ERP business modules with dynamic route matching (`nzMatchRouter`).
+  - FontAwesome 6 Free icon integrations (`fa-solid fa-*`).
+  - Collapsed state synchronization managed with `@ngrx/signals` (`AppStore`).
 - **Global Header (`HeaderComponent`)**:
-    - **Multi-Tenant / Company Selector**: Instant switching between legal entities (e.g., *Rossi Impianti S.r.l. - IT* vs. *Helvetia Tech SA - CH*).
-    - **Active Jurisdiction Switcher**: `IT` (Italia - SDI, F24, D.Lgs. 66/2003) vs. `CH` (Svizzera - QR-Bill, ArG OLL 1, KMU/PME).
-    - **Currency Selector**: `EUR (€)` vs. `CHF`.
-    - **Locale Switcher**: Quad-lingual support (`IT`, `DE`, `FR`, `EN`) with flags.
-    - **Dark / Light Mode**: Dynamic CSS custom property switching persisted to `localStorage`.
-    - **User Profile Dropdown**: Role verification, tenant details, and logout action.
-- **Dynamic Breadcrumbs (`BreadcrumbComponent`)**: Auto-derived from activated route `data.breadcrumb` hierarchies.
+  - **Multi-Tenant / Company Selector**: Instant switching between legal entities (e.g., *Rossi Impianti S.r.l. - IT* vs. *Helvetia Tech SA - CH*).
+  - **Active Jurisdiction Switcher**: `IT` (Italy - SDI, F24, D.Lgs. 66/2003) vs. `CH` (Switzerland - QR-Bill, ArG OLL 1, KMU/PME).
+  - **Currency Selector**: `EUR (€)` vs. `CHF`.
+  - **Locale Switcher**: Quad-lingual support (`IT`, `DE`, `FR`, `EN`) with native labels and flags.
+  - **Dark / Light Mode**: Dynamic CSS custom property switching persisted to `localStorage`.
+  - **User Profile Dropdown**: Accessible menu for role verification, tenant details, security settings, 2FA policies, and secure logout.
+- **Dynamic Breadcrumbs (`BreadcrumbComponent`)**: Derived automatically from active route `data.breadcrumb` hierarchies.
 
 ---
 
-## 2. All 17 ERP Business Modules
+## 2. ERP Business Modules
 
-| Module                      | Route                    | Icon                     | Description                                                                                        |
-|-----------------------------|--------------------------|--------------------------|----------------------------------------------------------------------------------------------------|
-| **Dashboard**               | `/dashboard`             | `fa-gauge-high`          | Executive KPIs, financial charts, and jurisdiction banners                                         |
-| **CRM & Anagrafiche**       | `/crm/clients`           | `fa-users`               | Cross-border clients with IT (P.IVA, SDI, PEC) and CH (IDI/UID, QR-IBAN) profiles                  |
-| **Vendite & Fatturazione**  | `/sales/qr-bill`         | `fa-file-invoice-dollar` | Italian SDI e-invoicing & Swiss QR-Bill (QR-Rechnung)                                              |
-| **Acquisti & AP**           | `/purchases/sdi-inbox`   | `fa-cart-flatbed`        | Passive SDI XML reception, QR-Bill scanner, and ISO 20022 `pain.001` payment batches               |
-| **Tesoreria & Banche**      | `/treasury`              | `fa-building-columns`    | ISO 20022 bank statements (`camt.053` / `camt.054`), CBI import, auto-reconciliation               |
-| **Magazzino & Logistica**   | `/inventory/stock`       | `fa-boxes-stacked`       | Multimagazzino (Milano / Chiasso), DDT, HS/TARIC customs codes, CMR                                |
-| **Assistenza & Interventi** | `/field-service/tickets` | `fa-screwdriver-wrench`  | Helpdesk tickets with SLA countdown and mobile field technician work orders                        |
-| **Automotive & Gomme**      | `/automotive/tire-hotel` | `fa-car`                 | Workshop job sheets, Hotel Pneumatici (tread depth mm, rack allocation, seasonal reminders)        |
-| **Noleggio Flotte**         | `/rent/fleet`            | `fa-car-side`            | Rental fleet schedule, digital damage check-in/out appraisal, Swiss Highway Vignette               |
-| **Cantieri & Impianti**     | `/construction`          | `fa-person-digging`      | Cantieri, SAL, SIA 118 & CRB/NPK, Italian DiCo (DM 37/08) and Swiss NIV/OIBT electrical compliance |
-| **Studi Professionali**     | `/professionals`         | `fa-scale-balanced`      | Practice registry (Fascicoli), AML/KYC checks, billable time, parcelle with CPA & ritenuta         |
-| **Produzione & MRP**        | `/manufacturing`         | `fa-industry`            | Multilevel BOM, routing, machine capacity, production orders (OdP), CE/CH compliance               |
-| **Vendita al Banco & POS**  | `/retail`                | `fa-cash-register`       | Touch POS, Italian RT cash register, Swiss terminal integrations (Twint, SumUp, Worldline)         |
-| **Presenze & Cartellino**   | `/time-attendance`       | `fa-clock`               | Virtual clock-in/out terminal, Swiss ArG 45h/50h limit tracker, D.Lgs. 66/2003 rest monitoring     |
-| **Payroll & HR IT-CH**      | `/hr/employees`          | `fa-user-tie`            | Cross-border commuters (*Frontalieri*), Swiss social security (AVS/LPP) and Italian LUL/INPS       |
-| **Contabilità & Fiscale**   | `/accounting`            | `fa-landmark`            | Dual-ledger: Italian General Ledger & Swiss SME Chart of Accounts (*KMU / PME Kontenrahmen*)       |
-| **Impostazioni & Tenant**   | `/settings`              | `fa-gears`               | Multi-tenant company config, ECB/SNB exchange rate sync, RBAC, GDPR & Swiss revised FADP (LPD)     |
+| Module | Route | Icon | Description |
+|---|---|---|---|
+| **Dashboard** | `/dashboard` | `fa-gauge-high` | Executive KPIs, revenue growth, receivables, and jurisdiction notices. |
+| **CRM & Master Data** | `/crm/clients` | `fa-users` | Cross-border accounts with IT (VAT, SDI code, PEC) and CH (UID/IDI, QR-IBAN) profiles, leads, scoring, and duplicate detection. |
+| **Sales & Invoicing** | `/sales/invoices` | `fa-file-invoice-dollar` | Quotes, orders, delivery notes (DDT), Italian SDI e-invoicing (FatturaPA XML), and Swiss QR-Bill (*QR-Rechnung*). |
+| **Purchases & AP** | `/purchases` | `fa-cart-flatbed` | Supplier purchase orders, goods receipts, 3-way matching, passive SDI XML intake, and ISO 20022 `pain.001` payment batches. |
+| **Treasury & Banking** | `/treasury` | `fa-building-columns` | Bank account management, ISO 20022 statements (`camt.053` / `camt.054`), CBI import, auto-reconciliation, and cash flow forecasting. |
+| **Inventory & Warehouses** | `/inventory` | `fa-boxes-stacked` | Multi-warehouse management (e.g. Milan vs. Chiasso), stock transfers, inventory adjustments, physical count sessions, and valuation snapshots. |
+| **Field Service** | `/field-service` | `fa-screwdriver-wrench` | Helpdesk ticketing, priority/SLA timers, field technician work orders, and internal notes. |
+| **Automotive & Tires** | `/automotive` | `fa-car` | Workshop job cards, vehicle profiles, and Tire Hotel management (tread depth mm, seasonal storage rack allocations). |
+| **Fleet Rental** | `/rent` | `fa-car-side` | Rental fleet booking calendar, digital condition check-in/out reports, and Swiss Highway Vignette tracking. |
+| **Construction & Sites** | `/construction` | `fa-person-digging` | Job sites, progress billings (SAL), SIA 118 / CRB-NPK standards, Italian DiCo (DM 37/08), and Swiss NIV/OIBT electrical compliance. |
+| **Professional Services** | `/professionals` | `fa-scale-balanced` | Practice client matters, AML/KYC audits, billable time logs, and fee notes (*parcelle*) with withholding tax and professional funds. |
+| **Manufacturing & MRP** | `/manufacturing` | `fa-industry` | Multilevel Bills of Materials (BOM), routings, work centers, MRP computation runs, and production orders (OdP). |
+| **Retail & POS** | `/retail` | `fa-cash-register` | Touch-screen POS, Italian RT fiscal receipts (*corrispettivi telematici*), and Swiss terminal integrations (Twint, SumUp, Worldline). |
+| **Time & Attendance** | `/time-attendance` | `fa-clock` | Virtual clock-in/out terminal, Swiss ArG weekly work limit monitoring (45h/50h), and Italian D.Lgs. 66/2003 mandatory daily rest checks. |
+| **HR & Payroll** | `/hr` | `fa-user-tie` | Employee lifecycle, cross-border commuter (*Frontalieri*) management, leaves, timesheets, Swiss AVS/LPP and Italian LUL/INPS payroll. |
+| **Accounting & General Ledger** | `/accounting` | `fa-landmark` | Dual-ledger system: Italian Libro Giornale & Swiss SME Chart of Accounts (*KMU / PME Kontenrahmen*), VAT settlements, Intrastat declarations. |
+| **Settings & Security** | `/settings` | `fa-gears` | Multi-tenant organization settings, ECB/SNB currency exchange rate sync, role-based access control (RBAC), 2FA enforcement, and audit logs. |
 
 ---
 
-## 3. Interactive Showcase Implementations
+## 3. Interactive Cross-Border Features
 
 ### Swiss QR-Bill (`/sales/qr-bill`)
-
 - **Clean Architecture**: `SwissQrBillStore` + `QrBillRepository` + `QrBillMapper` + `QrBillDto` + `QrBill` model.
-- **Swiss 0.05 CHF Rounding**: Deterministic cash rounding (`Math.round(amount * 20) / 20`) with live display of rounding differences.
-- **SCOR Structured Reference**: 27-digit QR reference generator and validator (`21 00000 00003 13947 14300 09017`).
-- **Visual Swiss QR Voucher**: Payment Part (*Zahlteil*) and Receipt (*Empfangsschein*) featuring the Swiss cross in the center.
+- **Swiss 0.05 CHF Cash Rounding**: Deterministic currency rounding (`Math.round(amount * 20) / 20`) displaying exact rounding differences.
+- **SCOR Structured Reference**: 27-digit QR reference generator with Modulo 10 recursive validation.
+- **Visual Swiss QR Voucher**: Payment Part (*Zahlteil*) and Receipt (*Empfangsschein*) including the official Swiss Cross emblem rendered with `nz-qrcode`.
 
 ### Time Attendance & Labor Compliance (`/time-attendance`)
-
-- **Clean Architecture**: `TimeAttendanceStore` + `TimeAttendanceRepository` + `TimeAttendanceMapper` + `TimeAttendanceDto` + `TimeAttendance` model.
-- **Virtual Terminal**: Interactive toggle between clock-in and clock-out with session timers.
-- **Swiss ArG Tracker**: Real-time gauge tracking weekly statutory limits (45h / 50h max under ArG Art. 9).
-- **Italian Compliance**: D.Lgs. 66/2003 mandatory 11-hour daily rest monitoring.
-- **Accruals**: Vacation days (*Ferie*) and ROL / *Banca Ore* counters.
+- **Virtual Terminal**: Instant toggle between clock-in and clock-out with elapsed session counters.
+- **Swiss ArG Tracker**: Real-time gauge for statutory weekly maximums (45h / 50h under ArG Art. 9).
+- **Italian Compliance**: Monitoring for D.Lgs. 66/2003 mandatory consecutive 11-hour rest periods.
+- **Accrual Balances**: Live counters for Vacation (*Ferie*) and ROL / Paid Time Off banking.
 
 ---
 
-## 4. Demo Mock Engine & Offline Data
+## 4. Development & Testing Commands
 
-When running in **Demo Mode**, the application operates 100% autonomously without external backends:
-
-- **`MockDataInterceptor`** (`src/app/core/interceptors/mock-data.interceptor.ts`):
-    - Automatically enabled when `environment.demoMode === true`.
-    - Intercepts `/api/*` calls and serves realistic mock JSON datasets with simulated network latency (200ms).
-- **Datasets** located in `public/assets/mock-data/`:
-    - `auth-user.json`: User profile, roles, tenants, and permissions.
-    - `crm-clients.json`: Cross-border clients with IT (P.IVA, SDI, PEC) and CH (IDI/UID, QR-IBAN) profiles.
-    - `sales-qr-bills.json`: Swiss QR-bill dataset (creditor, debtor, SCOR reference, amount in CHF).
-    - `sales-sdi-invoices.json`: Italian electronic invoice metadata and SDI transmission states.
-    - `automotive-tire-hotel.json`: Tire Hotel storage records with tread depths (mm) and shelf locations.
-    - `time-attendance.json`: Clocking sessions, daily balances, and ArG compliance notes.
-
----
-
-## 5. Development & Testing Commands
-
-This repository enforces **pnpm** exclusively (`packageManager: pnpm@12.16.1` and `preinstall` guard). Any unintentional `npm install` execution will fail immediately.
+This repository enforces **pnpm** exclusively (`packageManager: pnpm@12.16.1` with a `preinstall` guard). Running `npm install` directly will abort with an error.
 
 ### Dependency Installation
 
@@ -109,102 +83,99 @@ pnpm install --frozen-lockfile
 pnpm start
 ```
 
-Starts the local dev server at `https://localhost:4200/`. `/api` and `/sanctum` are proxied to the shared dev
-API (`https://dev-api.fatturafacile.eu`, set in `env/development.env`).
+Starts the local development server at `https://localhost:4200/`. API requests (`/api` and `/sanctum`) are automatically proxied to the target configured in `env/development.env` (default: `https://dev-api.fatturafacile.eu`).
 
-### Environment Configuration
+### Run Against Local Backend
 
-The API endpoint is never hardcoded in the source: it is read from environment variables and injected at build
-time. `pnpm start`, `pnpm run start:local`, `pnpm run build` and `pnpm run watch` go through
-[`scripts/ng-env.mjs`](scripts/ng-env.mjs), which resolves the variables and passes them to the Angular CLI
-(`--define`) and to the dev-server proxy ([`proxy.conf.mjs`](proxy.conf.mjs)).
+```bash
+pnpm run start:local
+```
 
-| Variable           | Required                          | Description                                                                                          |
-|--------------------|-----------------------------------|------------------------------------------------------------------------------------------------------|
-| `API_BASE_URL`     | yes                               | API base URL used by the app: a same-origin path (`/api/v1`) or an absolute URL.                      |
-| `API_PROXY_TARGET` | with `pnpm start` and a path URL  | Backend that the dev server proxies `/api` and `/sanctum` to.                                         |
-| `DEMO_MODE`        | no (default `false`)              | `true` pre-fills the login form with the demo account credentials.                                   |
-
-Values are resolved in this order, the first one found wins:
-
-1. **Shell / CI environment variables**, e.g. `API_BASE_URL=https://api.example.com/api/v1 pnpm run build`.
-2. **`.env`** in the project root: personal overrides, git-ignored. Start from [`.env.example`](.env.example).
-3. **`env/<configuration>.env`**: committed defaults for each Angular configuration. With several configurations
-   (`--configuration production,demo`) the files are applied in order, later ones overriding earlier ones.
-
-| Environment | Command                                            | Env file(s)                           | API                                               |
-|-------------|----------------------------------------------------|---------------------------------------|---------------------------------------------------|
-| development | `pnpm start`                                       | `env/development.env`                 | `/api/v1`, proxied to `https://dev-api.fatturafacile.eu` |
-| local       | `pnpm run start:local`                             | `env/local.env`                       | `/api/v1`, proxied to `http://localhost:8000`     |
-| dev         | `pnpm run build -- --configuration dev`            | `env/dev.env`                         | `/api/v1`, served on the same origin by nginx on dev.fatturafacile.eu |
-| demo        | `pnpm run build -- --configuration production,demo`   | `env/production.env`, `env/demo.env` | `https://api.fatturafacile.eu/api/v1`             |
-| production  | `pnpm run build`                                   | `env/production.env`                  | `https://api.fatturafacile.eu/api/v1`             |
-
-The CI workflows use the same commands: `deploy-dev.yml` builds `dev` on every push to `dev`, `deploy.yml` builds
-`production,demo` for GitHub Pages. To point an environment to another API, change its `env/<configuration>.env`
-(or set the variable in the workflow); no source change is needed.
-
-Sanctum cookie authentication needs the browser to read the `XSRF-TOKEN` cookie, so a relative `/api/v1` served on
-the frontend origin (proxy or nginx) is preferred. With an absolute URL, the API must share the frontend's site and
-set `SESSION_DOMAIN` so the cookie is visible to the frontend host.
-
-Running `ng serve` / `ng build` directly skips the wrapper: the app falls back to `/api/v1` and the dev-server proxy
-refuses to start without `API_PROXY_TARGET`. Vitest uses the same fallback; specs set `environment.apiBaseUrl` to the
-fictitious host in `src/testing/api.ts`.
+Proxies `/api` and `/sanctum` to `http://localhost:8000` for seamless local development with Laravel Sanctum cookie authentication.
 
 ### Local HTTPS Certificates
 
-The dev server runs over HTTPS and needs a locally trusted certificate in `certs/`, generated once per machine
-with [mkcert](https://github.com/FiloSottile/mkcert). The certificate files are git-ignored, so every developer
-creates their own:
+The dev server operates over HTTPS and requires a locally trusted certificate in `certs/`, generated once using [mkcert](https://github.com/FiloSottile/mkcert):
 
 ```bash
 mkcert -install
 mkcert -cert-file certs/localhost.crt -key-file certs/localhost.key localhost 127.0.0.1
 ```
 
-See [`certs/README.md`](certs/README.md) for the full macOS and Windows steps.
+*(Certificate files are git-ignored so each developer creates their own).*
 
-### Run Against a Local Backend
-
-```bash
-# In web-api: php artisan serve   (or ./vendor/bin/sail up, with APP_PORT=8000)
-pnpm run start:local
-```
-
-Starts the dev server with demo mode off. `/api` and `/sanctum` are proxied to `http://localhost:8000`
-(`API_PROXY_TARGET` in `env/local.env`, override it in `.env` if your backend runs elsewhere), so requests stay
-same-origin and Sanctum cookie authentication works with the backend's default `SANCTUM_STATEFUL_DOMAINS`
-(`localhost:4200`).
-
-### Run Unit Tests (Vitest)
+### Linting & Static Analysis
 
 ```bash
-pnpm test --watch=false
+# Run ESLint across all TypeScript and HTML template files
+pnpm run lint
+
+# Automatically fix linting issues where supported
+pnpm run lint --fix
 ```
 
-Executes all 24 unit tests across mappers, repositories, SignalStores, and components.
+### Unit Tests (Vitest)
 
-### Build Production Bundle
+```bash
+# Run the full unit test suite (444 tests across 77 test files)
+pnpm test --run
+
+# Run tests in watch mode during development
+pnpm test
+
+# Run tests with code coverage report
+pnpm test --coverage
+```
+
+### Production Build
 
 ```bash
 pnpm run build
 ```
 
-Generates optimized and code-split production bundles in `dist/fatturafacile` with zero warnings, using the
-production API from `env/production.env` (see [Environment Configuration](#environment-configuration) for the other
-environments).
+Compiles the Angular application with ahead-of-time (AOT) compilation, tree-shaking, and lazy-chunk route splitting into `dist/fatturafacile`.
 
-### Agent Sandboxing
-
-This repository includes a secure sandboxing boundary for autonomous agents, CI runners, and automated generation tools:
+### End-to-End (E2E) Testing (Playwright)
 
 ```bash
-# Execute command inside the isolated sandbox runner
-pnpm run agent:sandbox -- pnpm test
+# Install browsers once
+pnpm exec playwright install --with-deps
 
-# Run inside the walled Docker container profile (if Docker is available)
-pnpm run agent:docker -- pnpm run build
+# Run Playwright tests headlessly
+pnpm exec playwright test
 ```
 
-See [`docs/agent-sandboxing.md`](docs/agent-sandboxing.md) for comprehensive architectural details and security policies.
+---
+
+## 5. Environment Configuration
+
+API endpoints and operational modes are configured dynamically via [`scripts/ng-env.mjs`](scripts/ng-env.mjs):
+
+| Variable | Required | Description |
+|---|---|---|
+| `API_BASE_URL` | Yes | API base endpoint used by the client (relative `/api/v1` or absolute URL). |
+| `API_PROXY_TARGET` | For `pnpm start` | Target host that the dev proxy forwards `/api` and `/sanctum` requests to. |
+| `DEMO_MODE` | No | Pre-fills the login form with demo credentials when enabled. |
+
+Configurations are resolved in precedence order:
+1. Shell / CI environment variables.
+2. Root `.env` file (git-ignored, customized per developer).
+3. Preset configurations under `env/<configuration>.env` (`development`, `local`, `dev`, `production`, `demo`).
+
+---
+
+## 6. Continuous Integration & Quality Standards
+
+Every push and pull request executes our automated CI pipeline defined in [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+
+- **Validation**: ESLint static analysis (strict type rules, accessibility checks, no `any`, template validations) and Vitest unit test suite with coverage thresholds.
+- **Production Build**: Full Angular production compilation with budget validations.
+- **E2E Testing**: Automated Playwright browser verification against self-signed local HTTPS endpoints.
+- **Qodana Code Inspection**: Deep static analysis with JetBrains Qodana engine.
+- **Notifications**: Automated Telegram status updates on pipeline success or failure.
+
+---
+
+## 7. License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

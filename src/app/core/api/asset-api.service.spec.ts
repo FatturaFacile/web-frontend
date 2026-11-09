@@ -7,7 +7,6 @@ import {
   AssetApiService,
   AssetBookResource,
   AssetTagData,
-  DepreciationRunResource,
   DepreciationScheduleResource,
   FixedAssetResource,
   StoreFixedAssetPayload,

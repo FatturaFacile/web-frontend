@@ -5,7 +5,8 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalRef } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
@@ -23,8 +24,8 @@ import { HrComponent } from './hr.component';
 describe('HrComponent', () => {
   let component: HrComponent;
   let fixture: ComponentFixture<HrComponent>;
-  let apiService: any;
-  let messageService: any;
+  let apiService: Partial<HrApiService>;
+  let messageService: Partial<NzMessageService>;
 
   const mockEmployee: EmployeeResource = {
     id: 'emp-1',
@@ -128,9 +129,9 @@ describe('HrComponent', () => {
 
     fixture = TestBed.createComponent(HrComponent);
     component = fixture.componentInstance;
-    vi.spyOn((component as any).modal, 'confirm').mockImplementation((config: any) => {
+    vi.spyOn((component as unknown as { modal: { confirm: (opts: { nzOnOk?: () => void }) => NzModalRef } }).modal, 'confirm').mockImplementation(config => {
       if (config.nzOnOk) config.nzOnOk();
-      return {} as any;
+      return {} as NzModalRef;
     });
     fixture.detectChanges();
   });

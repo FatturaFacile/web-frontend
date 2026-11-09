@@ -90,13 +90,13 @@ export interface SwissQrBillData {
 export interface BulkSdiResult {
   sent: number;
   failed: number;
-  results: Array<{
+  results: {
     id?: string;
     invoice_id?: string;
     success?: boolean;
     status?: string;
     error?: string;
-  }>;
+  }[];
 }
 
 export interface SdiLogEntry {
@@ -118,13 +118,13 @@ export interface CreateCreditNotePayload {
   original_invoice_id: string;
   date?: string | null;
   notes?: string | null;
-  items: Array<{
+  items: {
     product_id?: string | null;
     description: string;
     quantity: number;
     unit_price: number;
     tax_rate: number;
-  }>;
+  }[];
 }
 
 export interface CreditNoteResource {

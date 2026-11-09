@@ -4,13 +4,10 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { environment } from '@env';
 import {
-  ConsentHistoryItem,
   ConsentResponse,
-  ContactMergeRecord,
   CrmApiService,
   CrmDuplicateMatch,
   LeadResource,
-  OpportunityResource,
   PipelineStageResource,
   StoreConsentPayload,
   StoreLeadPayload,

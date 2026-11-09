@@ -8,7 +8,6 @@ import {
   ProjectFinancialSummary,
   ProjectResource,
   ProjectTaskResource,
-  ProjectTimesheetResource,
   StoreProjectPayload,
   StoreProjectTaskPayload,
   StoreProjectTimesheetPayload,

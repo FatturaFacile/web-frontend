@@ -6,12 +6,9 @@ import { HrApiService } from './hr-api.service';
 import {
   EmployeeResource,
   HireEmployeePayload,
-  LeaveRequestResource,
   PaginatedResponse,
-  PayrollRunResource,
   SubmitLeaveRequestPayload,
   SubmitTimesheetPayload,
-  TimesheetResource,
 } from '../models';
 
 describe('HrApiService', () => {
