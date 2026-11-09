@@ -2710,5 +2710,49 @@
     "VEHICLE_DELETED_SUCCESS": "Veicolo rimosso con successo",
     "VEHICLE_DELETE_FAILED": "Impossibile rimuovere il veicolo",
     "BOOKING_DETAILS": "Dettaglio Contratto di Noleggio"
+  },
+  "ASSISTANT": {
+    "TITLE": "Assistente Aziendale AI & Copilot Dati",
+    "SUBTITLE": "Interroga i dati aziendali in linguaggio naturale, consulta il catalogo delle query ed esamina i log delle richieste",
+    "ASK_CARD_TITLE": "Cosa vuoi chiedere all'Assistente?",
+    "INPUT_LABEL": "Domanda per l'assistente",
+    "INPUT_PLACEHOLDER": "Es. Quali sono i primi 5 clienti per fatturato? Mostra gli articoli sotto scorta...",
+    "ENTER_HINT": "Premi Invio o il pulsante Invia Domanda",
+    "SUBMIT_BUTTON": "Invia Domanda",
+    "SUGGESTIONS_LABEL": "Domande suggerite dal catalogo",
+    "ANALYZING": "Analisi in corso...",
+    "ANSWER_TITLE": "Risultato dell'Interrogazione",
+    "NO_ROWS_RETURNED": "La query non ha restituito alcun record.",
+    "UNMATCHED_MESSAGE": "Domanda non riconosciuta",
+    "UNMATCHED_DESCRIPTION": "L'assistente non ha trovato una query nel catalogo che corrisponda alla tua richiesta. Prova a riformulare o consulta il catalogo.",
+    "FORBIDDEN_MESSAGE": "Accesso negato",
+    "FORBIDDEN_DESCRIPTION": "Il tuo ruolo utente non ha i permessi per visualizzare questi dati aziendali riservati.",
+    "FAILED_MESSAGE": "Elaborazione non riuscita. Riprova più tardi.",
+    "EXPORT_CSV": "Esporta CSV",
+    "CATALOGUE_TITLE": "Catalogo delle Query Disponibili",
+    "SEARCH_CATALOGUE": "Cerca nel catalogo...",
+    "QUERY_KEY": "Chiave Query",
+    "DESCRIPTION": "Descrizione",
+    "ASK_THIS": "Chiedi",
+    "LOGS_TITLE": "Registro Richieste & Audit",
+    "FILTER_OUTCOME": "Filtra per esito",
+    "LOG_DATE": "Data/Ora",
+    "QUESTION": "Domanda",
+    "RESOLVER": "Risolutore",
+    "OUTCOME": "Esito",
+    "ROW_COUNT": "Righe",
+    "LOG_DETAIL_TITLE": "Dettagli Richiesta Assistente",
+    "USER_ROLE": "Ruolo Utente",
+    "TABS": {
+      "COPILOT": "Assistente AI",
+      "CATALOGUE": "Catalogo Query",
+      "LOGS": "Audit & Storico"
+    },
+    "OUTCOMES": {
+      "answered": "Risposta fornita",
+      "unmatched": "Non riconosciuta",
+      "forbidden": "Non autorizzata",
+      "failed": "Errore"
+    }
   }
 }

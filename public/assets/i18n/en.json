@@ -2710,5 +2710,49 @@
     "VEHICLE_DELETED_SUCCESS": "Vehicle deleted successfully",
     "VEHICLE_DELETE_FAILED": "Failed to delete vehicle",
     "BOOKING_DETAILS": "Rental Booking Details"
+  },
+  "ASSISTANT": {
+    "TITLE": "AI Business Assistant & Data Copilot",
+    "SUBTITLE": "Query business data in natural language, explore the query catalogue, and review audit logs",
+    "ASK_CARD_TITLE": "What would you like to ask the Assistant?",
+    "INPUT_LABEL": "Assistant question",
+    "INPUT_PLACEHOLDER": "E.g. Who are the top 5 customers by revenue? Show items below reorder level...",
+    "ENTER_HINT": "Press Enter or click Submit Question",
+    "SUBMIT_BUTTON": "Submit Question",
+    "SUGGESTIONS_LABEL": "Suggested questions from catalogue",
+    "ANALYZING": "Analyzing query...",
+    "ANSWER_TITLE": "Query Result",
+    "NO_ROWS_RETURNED": "The query returned no records.",
+    "UNMATCHED_MESSAGE": "Question not matched",
+    "UNMATCHED_DESCRIPTION": "The assistant could not find a matching catalogue query for your request. Please rephrase or explore the catalogue.",
+    "FORBIDDEN_MESSAGE": "Access denied",
+    "FORBIDDEN_DESCRIPTION": "Your user role does not have permission to access these confidential business records.",
+    "FAILED_MESSAGE": "Processing failed. Please try again later.",
+    "EXPORT_CSV": "Export CSV",
+    "CATALOGUE_TITLE": "Available Query Catalogue",
+    "SEARCH_CATALOGUE": "Search catalogue...",
+    "QUERY_KEY": "Query Key",
+    "DESCRIPTION": "Description",
+    "ASK_THIS": "Ask",
+    "LOGS_TITLE": "Question History & Audit Trail",
+    "FILTER_OUTCOME": "Filter by outcome",
+    "LOG_DATE": "Date/Time",
+    "QUESTION": "Question",
+    "RESOLVER": "Resolver",
+    "OUTCOME": "Outcome",
+    "ROW_COUNT": "Rows",
+    "LOG_DETAIL_TITLE": "Assistant Request Details",
+    "USER_ROLE": "User Role",
+    "TABS": {
+      "COPILOT": "AI Copilot",
+      "CATALOGUE": "Query Catalogue",
+      "LOGS": "Audit & Logs"
+    },
+    "OUTCOMES": {
+      "answered": "Answered",
+      "unmatched": "Unmatched",
+      "forbidden": "Forbidden",
+      "failed": "Failed"
+    }
   }
 }
