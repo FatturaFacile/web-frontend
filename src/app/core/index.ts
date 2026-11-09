@@ -39,6 +39,8 @@ export * from './api/project-api.service';
 export * from './api/asset-api.service';
 export * from './api/subscription-api.service';
 export * from './api/hr-api.service';
+export * from './api/hr-self-service-api.service';
+export * from './api/hr-leave-api.service';
 export * from './api/retail-api.service';
 export * from './api/sales-api.service';
 export * from './lookups/lookup.service';
