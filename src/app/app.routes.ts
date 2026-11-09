@@ -143,6 +143,13 @@ export const routes: Routes = [
       import('./features/contract-register/contract-register.routes').then((m) => m.CONTRACT_REGISTER_ROUTES),
   },
   {
+    path: 'associations',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Associazioni & Terzo Settore', title: 'Associazioni ETS & Sportive' },
+    loadChildren: () =>
+      import('./features/associations/associations.routes').then((m) => m.ASSOCIATIONS_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },

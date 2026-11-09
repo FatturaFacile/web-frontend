@@ -1,0 +1,221 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Service } from '@angular/core';
+import { environment } from '@env';
+import { Observable } from 'rxjs';
+import {
+  ApiResponse,
+  AssociationCourse,
+  AssociationCourseParams,
+  AssociationCourseRequest,
+  AssociationDonation,
+  AssociationDonationParams,
+  AssociationDonationRequest,
+  AssociationFeeAssignment,
+  AssociationFeeParams,
+  AssociationMeeting,
+  AssociationMeetingRequest,
+  AssociationMember,
+  AssociationMemberParams,
+  AssociationMemberRequest,
+  AssociationReimbursement,
+  AssociationVolunteer,
+  PaginatedResponse,
+} from '../models';
+import { toHttpParams } from '../http/laravel-http.utils';
+
+@Service()
+export class AssociationsApiService {
+  private readonly http = inject(HttpClient);
+  private readonly base = environment.apiBaseUrl;
+
+  // --- MEMBERS ---
+  getMembers(params?: AssociationMemberParams): Observable<PaginatedResponse<AssociationMember>> {
+    return this.http.get<PaginatedResponse<AssociationMember>>(`${this.base}/associations/members`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getMember(id: string): Observable<ApiResponse<AssociationMember>> {
+    return this.http.get<ApiResponse<AssociationMember>>(`${this.base}/associations/members/${id}`);
+  }
+
+  createMember(payload: AssociationMemberRequest): Observable<ApiResponse<AssociationMember>> {
+    return this.http.post<ApiResponse<AssociationMember>>(`${this.base}/associations/members`, payload);
+  }
+
+  updateMember(
+    id: string,
+    payload: Partial<AssociationMemberRequest>,
+  ): Observable<ApiResponse<AssociationMember>> {
+    return this.http.put<ApiResponse<AssociationMember>>(`${this.base}/associations/members/${id}`, payload);
+  }
+
+  deleteMember(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/associations/members/${id}`);
+  }
+
+  getMemberFeeStanding(id: string): Observable<ApiResponse<{ is_in_good_standing: boolean; outstanding_amount: string }>> {
+    return this.http.get<ApiResponse<{ is_in_good_standing: boolean; outstanding_amount: string }>>(
+      `${this.base}/associations/members/${id}/fee-standing`,
+    );
+  }
+
+  // --- FEES & INSTALMENTS ---
+  getFeeAssignments(params?: AssociationFeeParams): Observable<PaginatedResponse<AssociationFeeAssignment>> {
+    return this.http.get<PaginatedResponse<AssociationFeeAssignment>>(
+      `${this.base}/associations/fee-assignments`,
+      {
+        params: params ? toHttpParams(params) : undefined,
+      },
+    );
+  }
+
+  createFeeAssignment(payload: {
+    member_id: string;
+    fee_type: string;
+    year: number;
+    amount: string;
+    due_date: string;
+  }): Observable<ApiResponse<AssociationFeeAssignment>> {
+    return this.http.post<ApiResponse<AssociationFeeAssignment>>(
+      `${this.base}/associations/fee-assignments`,
+      payload,
+    );
+  }
+
+  cancelFeeAssignment(id: string): Observable<ApiResponse<{ success: boolean }>> {
+    return this.http.post<ApiResponse<{ success: boolean }>>(
+      `${this.base}/associations/fee-assignments/${id}/cancel`,
+      {},
+    );
+  }
+
+  recordFeePayment(
+    instalmentId: string,
+    payload: { amount: string; payment_date: string; payment_method: string },
+  ): Observable<ApiResponse<{ success: boolean }>> {
+    return this.http.post<ApiResponse<{ success: boolean }>>(
+      `${this.base}/associations/instalments/${instalmentId}/payments`,
+      payload,
+    );
+  }
+
+  // --- COURSES & ATTENDANCE ---
+  getCourses(params?: AssociationCourseParams): Observable<PaginatedResponse<AssociationCourse>> {
+    return this.http.get<PaginatedResponse<AssociationCourse>>(`${this.base}/associations/courses`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createCourse(payload: AssociationCourseRequest): Observable<ApiResponse<AssociationCourse>> {
+    return this.http.post<ApiResponse<AssociationCourse>>(`${this.base}/associations/courses`, payload);
+  }
+
+  updateCourse(
+    id: string,
+    payload: Partial<AssociationCourseRequest>,
+  ): Observable<ApiResponse<AssociationCourse>> {
+    return this.http.put<ApiResponse<AssociationCourse>>(`${this.base}/associations/courses/${id}`, payload);
+  }
+
+  deleteCourse(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/associations/courses/${id}`);
+  }
+
+  getCourseParticipants(courseId: string): Observable<ApiResponse<AssociationMember[]>> {
+    return this.http.get<ApiResponse<AssociationMember[]>>(
+      `${this.base}/associations/courses/${courseId}/participants`,
+    );
+  }
+
+  enrolInCourse(
+    courseId: string,
+    payload: { member_id: string },
+  ): Observable<ApiResponse<{ success: boolean }>> {
+    return this.http.post<ApiResponse<{ success: boolean }>>(
+      `${this.base}/associations/courses/${courseId}/enrolments`,
+      payload,
+    );
+  }
+
+  // --- DONATIONS & 5 PER MILLE ---
+  getDonations(params?: AssociationDonationParams): Observable<PaginatedResponse<AssociationDonation>> {
+    return this.http.get<PaginatedResponse<AssociationDonation>>(`${this.base}/associations/donations`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createDonation(payload: AssociationDonationRequest): Observable<ApiResponse<AssociationDonation>> {
+    return this.http.post<ApiResponse<AssociationDonation>>(`${this.base}/associations/donations`, payload);
+  }
+
+  generateDonationReceipt(donationId: string): Observable<ApiResponse<{ receipt_number: string }>> {
+    return this.http.post<ApiResponse<{ receipt_number: string }>>(
+      `${this.base}/associations/donations/${donationId}/receipt`,
+      {},
+    );
+  }
+
+  getFivePerMille(year?: number): Observable<ApiResponse<{ year: number; total_received: string; allocated: string }>> {
+    return this.http.get<ApiResponse<{ year: number; total_received: string; allocated: string }>>(
+      `${this.base}/associations/five-per-mille`,
+      { params: year ? { year } : undefined },
+    );
+  }
+
+  // --- MEETINGS & MINUTES ---
+  getMeetings(): Observable<ApiResponse<AssociationMeeting[]>> {
+    return this.http.get<ApiResponse<AssociationMeeting[]>>(`${this.base}/associations/meetings`);
+  }
+
+  createMeeting(payload: AssociationMeetingRequest): Observable<ApiResponse<AssociationMeeting>> {
+    return this.http.post<ApiResponse<AssociationMeeting>>(`${this.base}/associations/meetings`, payload);
+  }
+
+  // --- VOLUNTEERS & RUNTS ---
+  getVolunteers(year?: number): Observable<ApiResponse<AssociationVolunteer[]>> {
+    const yr = year || new Date().getFullYear();
+    return this.http.get<ApiResponse<AssociationVolunteer[]>>(
+      `${this.base}/associations/volunteers/year/${yr}`,
+    );
+  }
+
+  getVolunteerExpiries(): Observable<ApiResponse<{ expired_count: number; expiring_soon_count: number }>> {
+    return this.http.get<ApiResponse<{ expired_count: number; expiring_soon_count: number }>>(
+      `${this.base}/associations/volunteers/expiries`,
+    );
+  }
+
+  getReimbursements(): Observable<ApiResponse<AssociationReimbursement[]>> {
+    return this.http.get<ApiResponse<AssociationReimbursement[]>>(`${this.base}/associations/reimbursements`);
+  }
+
+  createReimbursement(payload: {
+    volunteer_id: string;
+    amount: string;
+    description: string;
+    expense_date: string;
+  }): Observable<ApiResponse<AssociationReimbursement>> {
+    return this.http.post<ApiResponse<AssociationReimbursement>>(
+      `${this.base}/associations/reimbursements`,
+      payload,
+    );
+  }
+
+  decideReimbursement(
+    id: string,
+    payload: { approved: boolean; reason?: string },
+  ): Observable<ApiResponse<AssociationReimbursement>> {
+    return this.http.post<ApiResponse<AssociationReimbursement>>(
+      `${this.base}/associations/reimbursements/${id}/decision`,
+      payload,
+    );
+  }
+
+  payReimbursement(id: string): Observable<ApiResponse<{ success: boolean }>> {
+    return this.http.post<ApiResponse<{ success: boolean }>>(
+      `${this.base}/associations/reimbursements/${id}/pay`,
+      {},
+    );
+  }
+}
