@@ -153,6 +153,11 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.VISITORS',
+          icon: 'fa-solid fa-id-badge',
+          route: '/visitors',
+        },
+        {
           key: 'NAV.COMMUNICATION',
           icon: 'fa-solid fa-tower-broadcast',
           route: '/communication',

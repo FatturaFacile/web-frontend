@@ -36,3 +36,4 @@ export * from './hospitality.model';
 export * from './practice.model';
 export * from './appointment.model';
 export * from './communication.model';
+export * from './visitors.model';
