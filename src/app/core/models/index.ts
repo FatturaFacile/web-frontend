@@ -26,3 +26,4 @@ export * from './hr.model';
 export * from './retail.model';
 export * from './sales.model';
 export * from './customs.model';
+export * from './workflow.model';
