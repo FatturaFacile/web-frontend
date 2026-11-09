@@ -108,3 +108,24 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.plan-row {
+  display: grid;
+  grid-template-columns: 1.6fr 0.6fr 0.8fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.tier-row {
+  display: grid;
+  grid-template-columns: 70px 120px 1.2fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.hint {
+  color: var(--ant-color-text-secondary, #666);
+  margin: 8px 0;
+}

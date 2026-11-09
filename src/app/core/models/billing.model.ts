@@ -102,8 +102,74 @@ export interface SalesRegisterParams {
   document_type?: SalesRegisterDocumentType | null;
 }
 
-export type SalesRegisterReport = Record<string, unknown>;
-export type ReceivablesAgingReport = Record<string, unknown>;
+export interface SalesRegisterRow {
+  invoice_id: string;
+  invoice_number: string;
+  date: string;
+  document_type: string;
+  customer_id: string;
+  customer_name: string | null;
+  customer_vat_number?: string | null;
+  currency: string;
+  exchange_rate: string;
+  total_net: string;
+  total_tax: string;
+  total_gross: string;
+  journal_entry_id?: string | null;
+  vat: Record<string, unknown>[];
+}
+
+export interface SalesRegisterTotal {
+  currency: string;
+  documents: number;
+  total_net: string;
+  total_tax: string;
+  total_gross: string;
+}
+
+export interface SalesRegisterReport {
+  from: string;
+  to: string;
+  documents: SalesRegisterRow[];
+  totals: SalesRegisterTotal[];
+}
+
+export interface AgingBuckets {
+  current: string;
+  days_1_30: string;
+  days_31_60: string;
+  days_61_90: string;
+  over_90: string;
+}
+
+export interface AgingInstallment {
+  invoice_id: string;
+  invoice_number: string;
+  installment: number;
+  due_date: string;
+  open_amount: string;
+  days_past_due: number;
+  bucket: keyof AgingBuckets;
+}
+
+export interface ReceivablesAgingCustomer extends AgingBuckets {
+  customer_id: string;
+  customer_name: string | null;
+  currency: string;
+  total_open: string;
+  documents: AgingInstallment[];
+}
+
+export interface ReceivablesAgingTotal extends AgingBuckets {
+  currency: string;
+  total_open: string;
+}
+
+export interface ReceivablesAgingReport {
+  as_of: string;
+  customers: ReceivablesAgingCustomer[];
+  totals: ReceivablesAgingTotal[];
+}
 
 export interface CustomerLedgerEntry {
   id?: string;
