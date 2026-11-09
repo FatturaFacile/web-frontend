@@ -1,0 +1,716 @@
+<app-page-header
+  [title]="'CUSTOMS.TITLE' | translate"
+  [subtitle]="'CUSTOMS.SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    <button nz-button nzType="primary" (click)="openCreateDossierModal()">
+      <nz-icon nzType="plus" />
+      {{ 'CUSTOMS.ACTIONS.NEW_DOSSIER' | translate }}
+    </button>
+  </div>
+</app-page-header>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: PRATICHE DOGANALI (DOSSIERS) -->
+    <nz-tab [nzTitle]="'CUSTOMS.TABS.DOSSIERS' | translate">
+      <div class="filter-bar">
+        <div class="search-box">
+          <nz-input-wrapper>
+            <nz-icon nzInputPrefix nzType="search" />
+            <input
+              type="text"
+              nz-input
+              [placeholder]="'CUSTOMS.SEARCH_DOSSIERS_PLACEHOLDER' | translate"
+              [value]="dossierSearch()"
+              (input)="onDossierSearch($event)"
+            />
+          </nz-input-wrapper>
+        </div>
+
+        <div class="filter-controls">
+          <nz-select
+            [ngModel]="dossierStatusFilter()"
+            (ngModelChange)="dossierStatusFilter.set($event); loadDossiers(1)"
+            style="width: 180px;"
+            [nzPlaceHolder]="'CUSTOMS.FILTER_STATUS' | translate"
+            nzAllowClear
+          >
+            <nz-option nzValue="open" [nzLabel]="'CUSTOMS.STATUS.OPEN' | translate"></nz-option>
+            <nz-option nzValue="quoted" [nzLabel]="'CUSTOMS.STATUS.QUOTED' | translate"></nz-option>
+            <nz-option nzValue="in_transit" [nzLabel]="'CUSTOMS.STATUS.IN_TRANSIT' | translate"></nz-option>
+            <nz-option nzValue="delivered" [nzLabel]="'CUSTOMS.STATUS.DELIVERED' | translate"></nz-option>
+            <nz-option nzValue="invoiced" [nzLabel]="'CUSTOMS.STATUS.INVOICED' | translate"></nz-option>
+            <nz-option nzValue="closed" [nzLabel]="'CUSTOMS.STATUS.CLOSED' | translate"></nz-option>
+            <nz-option nzValue="cancelled" [nzLabel]="'CUSTOMS.STATUS.CANCELLED' | translate"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadDossiers(1)">
+            <nz-icon nzType="reload" />
+            {{ 'COMMON.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #dossiersTable
+        [nzData]="dossiers()"
+        [nzLoading]="loadingDossiers()"
+        [nzTotal]="totalDossiers()"
+        [nzPageIndex]="dossierPage()"
+        [nzPageSize]="dossierPageSize()"
+        [nzFrontPagination]="false"
+        (nzQueryParams)="onDossierTableQueryParams($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CUSTOMS.COLS.DOSSIER_NUMBER' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.ROUTE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.WEIGHT_VOL' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of dossiersTable.data; track d.id) {
+            <tr>
+              <td>
+                <span class="dossier-code">{{ d.dossier_number }}</span>
+              </td>
+              <td>
+                <nz-tag [nzColor]="getDirectionColor(d.direction)">
+                  {{ d.direction | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ d.service_type }}</td>
+              <td>{{ d.origin_country || '-' }} &rarr; {{ d.destination_country || '-' }}</td>
+              <td>
+                {{ d.gross_weight_kg || '0' }} kg / {{ d.volume_m3 || '0' }} m³
+                @if (d.packages) {
+                  ({{ d.packages }} pkgs)
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="getDossierStatusColor(d.status)">
+                  {{ d.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <nz-space>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="openProfitabilityModal(d.id)"
+                  >
+                    <nz-icon nzType="dollar" />
+                    {{ 'CUSTOMS.ACTIONS.PROFITABILITY' | translate }}
+                  </button>
+                  @if (d.status !== 'invoiced' && d.status !== 'closed' && d.status !== 'cancelled') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzSize="small"
+                      (click)="invoiceDossier(d.id)"
+                    >
+                      <nz-icon nzType="file-text" />
+                      {{ 'CUSTOMS.ACTIONS.INVOICE' | translate }}
+                    </button>
+                  }
+                </nz-space>
+              </td>
+            </tr>
+          } @empty {
+            @if (!loadingDossiers()) {
+              <tr>
+                <td colspan="7">
+                  <nz-empty nzNotFoundImage="simple"></nz-empty>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: DICHIARAZIONI DOGANALI (DECLARATIONS) -->
+    <nz-tab [nzTitle]="'CUSTOMS.TABS.DECLARATIONS' | translate">
+      <div class="filter-bar">
+        <div class="search-box">
+          <nz-input-wrapper>
+            <nz-icon nzInputPrefix nzType="search" />
+            <input
+              type="text"
+              nz-input
+              [placeholder]="'CUSTOMS.SEARCH_DECLARATIONS_PLACEHOLDER' | translate"
+              [value]="declarationSearch()"
+              (input)="onDeclarationSearch($event)"
+            />
+          </nz-input-wrapper>
+        </div>
+
+        <div class="filter-controls">
+          <button nz-button nzType="primary" (click)="openCreateDeclarationModal()">
+            <nz-icon nzType="plus" />
+            {{ 'CUSTOMS.ACTIONS.NEW_DECLARATION' | translate }}
+          </button>
+          <button nz-button nzType="default" (click)="loadDeclarations(1)">
+            <nz-icon nzType="reload" />
+            {{ 'COMMON.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #declarationsTable
+        [nzData]="declarations()"
+        [nzLoading]="loadingDeclarations()"
+        [nzTotal]="totalDeclarations()"
+        [nzPageIndex]="declarationPage()"
+        [nzPageSize]="declarationPageSize()"
+        [nzFrontPagination]="false"
+        (nzQueryParams)="onDeclarationTableQueryParams($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CUSTOMS.COLS.DECLARATION_NR' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.TYPE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.STATISTICAL_VALUE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.TOTAL_MASS' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (decl of declarationsTable.data; track decl.id) {
+            <tr>
+              <td>
+                <strong>{{ decl.trader_declaration_number }}</strong>
+              </td>
+              <td>{{ decl.mrn || '-' }}</td>
+              <td>
+                <nz-tag [nzColor]="getDirectionColor(decl.declaration_type)">
+                  {{ decl.declaration_type | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ decl.total_statistical_value | money: authStore.activeCurrency() }}</td>
+              <td>{{ decl.total_gross_mass || '0' }} kg</td>
+              <td>
+                <nz-tag [nzColor]="getDeclarationStatusColor(decl.status)">
+                  {{ decl.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <nz-space>
+                  @if (decl.status === 'draft') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzSize="small"
+                      (click)="validateDeclaration(decl.id)"
+                    >
+                      <nz-icon nzType="check" />
+                      {{ 'CUSTOMS.ACTIONS.VALIDATE' | translate }}
+                    </button>
+                  }
+                  @if (decl.status === 'validated') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzSize="small"
+                      (click)="submitDeclaration(decl.id)"
+                    >
+                      <nz-icon nzType="send" />
+                      {{ 'CUSTOMS.ACTIONS.SUBMIT' | translate }}
+                    </button>
+                  }
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="downloadDeclarationPdf(decl.id)"
+                  >
+                    <nz-icon nzType="file-pdf" />
+                    PDF
+                  </button>
+                  @if (decl.status !== 'cancelled' && decl.status !== 'accepted') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzDanger
+                      nzSize="small"
+                      (click)="cancelDeclaration(decl.id)"
+                    >
+                      <nz-icon nzType="close" />
+                      {{ 'COMMON.CANCEL' | translate }}
+                    </button>
+                  }
+                </nz-space>
+              </td>
+            </tr>
+          } @empty {
+            @if (!loadingDeclarations()) {
+              <tr>
+                <td colspan="7">
+                  <nz-empty nzNotFoundImage="simple"></nz-empty>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: DECISIONI D'IMPOSIZIONE (ASSESSMENT DECISIONS - eVV) -->
+    <nz-tab [nzTitle]="'CUSTOMS.TABS.ASSESSMENTS' | translate">
+      <div class="filter-bar">
+        <div class="search-box">
+          <nz-input-wrapper>
+            <nz-icon nzInputPrefix nzType="search" />
+            <input
+              type="text"
+              nz-input
+              [placeholder]="'CUSTOMS.SEARCH_ASSESSMENTS_PLACEHOLDER' | translate"
+              [value]="assessmentSearch()"
+              (input)="onAssessmentSearch($event)"
+            />
+          </nz-input-wrapper>
+        </div>
+
+        <div class="filter-controls">
+          <button
+            nz-button
+            nzType="default"
+            [nzLoading]="retrievingAssessments()"
+            (click)="retrieveAssessments()"
+          >
+            <nz-icon nzType="cloud-download" />
+            {{ 'CUSTOMS.ACTIONS.RETRIEVE_EVV' | translate }}
+          </button>
+          <button nz-button nzType="default" (click)="loadAssessments(1)">
+            <nz-icon nzType="reload" />
+            {{ 'COMMON.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #assessmentsTable
+        [nzData]="assessments()"
+        [nzLoading]="loadingAssessments()"
+        [nzTotal]="totalAssessments()"
+        [nzPageIndex]="assessmentPage()"
+        [nzPageSize]="assessmentPageSize()"
+        [nzFrontPagination]="false"
+        (nzQueryParams)="onAssessmentTableQueryParams($event)"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.VERSION' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.DOC_TYPE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.DOC_DATE' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.DUTY_AMOUNT' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.VAT_AMOUNT' | translate }}</th>
+            <th>{{ 'CUSTOMS.COLS.SIGNATURE' | translate }}</th>
+            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ass of assessmentsTable.data; track ass.id) {
+            <tr>
+              <td>
+                <span class="dossier-code">{{ ass.mrn }}</span>
+              </td>
+              <td>v{{ ass.version }}</td>
+              <td>{{ ass.document_type }}</td>
+              <td>
+                <nz-tag [nzColor]="getDirectionColor(ass.direction)">
+                  {{ ass.direction | uppercase }}
+                </nz-tag>
+              </td>
+              <td>{{ ass.document_date }}</td>
+              <td>{{ ass.duty_amount | money: authStore.activeCurrency() }}</td>
+              <td>{{ ass.vat_amount | money: authStore.activeCurrency() }}</td>
+              <td>
+                <nz-tag [nzColor]="getSignatureStatusColor(ass.signature_status)">
+                  {{ ass.signature_status | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <button nz-button nzType="link" nzSize="small" (click)="downloadAssessmentPdf(ass.id)">
+                  <nz-icon nzType="file-pdf" />
+                  PDF eVV
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            @if (!loadingAssessments()) {
+              <tr>
+                <td colspan="9">
+                  <nz-empty nzNotFoundImage="simple"></nz-empty>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 4: GRIGLIE TARIFFARIE & RICHIESTE (TARIFF GRIDS & SHIPMENTS) -->
+    <nz-tab [nzTitle]="'CUSTOMS.TABS.GRIDS_SHIPMENTS' | translate">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzXs]="24" [nzLg]="12">
+          <nz-card [nzTitle]="'CUSTOMS.TARIFF_GRIDS' | translate" [nzExtra]="gridExtra">
+            <ng-template #gridExtra>
+              <button nz-button nzType="primary" nzSize="small" (click)="openCreateGridModal()">
+                <nz-icon nzType="plus" />
+                {{ 'CUSTOMS.ACTIONS.NEW_GRID' | translate }}
+              </button>
+            </ng-template>
+
+            <nz-table
+              #gridsTable
+              [nzData]="tariffGrids()"
+              [nzLoading]="loadingGrids()"
+              [nzFrontPagination]="true"
+              [nzPageSize]="5"
+              nzSize="small"
+            >
+              <thead>
+                <tr>
+                  <th>{{ 'CUSTOMS.COLS.NAME' | translate }}</th>
+                  <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+                  <th>{{ 'CUSTOMS.COLS.CURRENCY' | translate }}</th>
+                  <th>{{ 'CUSTOMS.COLS.ACTIVE' | translate }}</th>
+                  <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (g of gridsTable.data; track g.id) {
+                  <tr>
+                    <td>{{ g.name }}</td>
+                    <td>{{ g.service_type }}</td>
+                    <td>{{ g.currency }}</td>
+                    <td>
+                      <nz-tag [nzColor]="g.is_active ? 'green' : 'default'">
+                        {{ (g.is_active ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+                      </nz-tag>
+                    </td>
+                    <td>
+                      <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteTariffGrid(g.id)">
+                        <nz-icon nzType="delete" />
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-card>
+        </div>
+
+        <div nz-col [nzXs]="24" [nzLg]="12">
+          <nz-card [nzTitle]="'CUSTOMS.SHIPMENT_REQUESTS' | translate">
+            <nz-table
+              #shipmentsTable
+              [nzData]="shipmentRequests()"
+              [nzLoading]="loadingShipments()"
+              [nzFrontPagination]="true"
+              [nzPageSize]="5"
+              nzSize="small"
+            >
+              <thead>
+                <tr>
+                  <th>{{ 'CUSTOMS.COLS.REQUEST_NR' | translate }}</th>
+                  <th>{{ 'CUSTOMS.COLS.CUSTOMER' | translate }}</th>
+                  <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+                  <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sr of shipmentsTable.data; track sr.id) {
+                  <tr>
+                    <td>{{ sr.request_number }}</td>
+                    <td>{{ sr.customer_name || '-' }}</td>
+                    <td>
+                      <nz-tag [nzColor]="getShipmentStatusColor(sr.status)">
+                        {{ sr.status | uppercase }}
+                      </nz-tag>
+                    </td>
+                    <td>
+                      @if (sr.status === 'pending') {
+                        <nz-space>
+                          <button
+                            *nzSpaceItem
+                            nz-button
+                            nzType="link"
+                            nzSize="small"
+                            (click)="acceptShipmentRequest(sr.id)"
+                          >
+                            <nz-icon nzType="check" />
+                            {{ 'CUSTOMS.ACTIONS.ACCEPT' | translate }}
+                          </button>
+                          <button
+                            *nzSpaceItem
+                            nz-button
+                            nzType="link"
+                            nzDanger
+                            nzSize="small"
+                            (click)="refuseShipmentRequest(sr.id)"
+                          >
+                            <nz-icon nzType="close" />
+                            {{ 'CUSTOMS.ACTIONS.REFUSE' | translate }}
+                          </button>
+                        </nz-space>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-card>
+        </div>
+      </div>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: NUOVA PRATICA DOGANALE -->
+<nz-modal
+  [nzVisible]="createDossierModalVisible()"
+  [nzTitle]="'CUSTOMS.MODAL.CREATE_DOSSIER_TITLE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="submittingDossier()"
+  (nzOnCancel)="createDossierModalVisible.set(false)"
+  (nzOnOk)="submitDossierForm()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="dossierForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.CUSTOMER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.REQUIRED' | translate">
+          <input
+            nz-input
+            formControlName="customer_contact_id"
+            [placeholder]="'CUSTOMS.FORM.CUSTOMER_PLACEHOLDER' | translate"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DIRECTION' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="direction">
+                <nz-option nzValue="import" nzLabel="Import (CH &larr; IT/EU)"></nz-option>
+                <nz-option nzValue="export" nzLabel="Export (CH &rarr; IT/EU)"></nz-option>
+                <nz-option nzValue="transit" nzLabel="Transito"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.SERVICE_TYPE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="service_type" placeholder="es. standard_customs" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.ORIGIN_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="origin_country" placeholder="IT" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.DESTINATION_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="destination_country" placeholder="CH" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.GROSS_WEIGHT' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                formControlName="gross_weight_kg"
+                [nzMin]="0"
+                [nzStep]="0.1"
+                style="width: 100%;"
+              ></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.VOLUME' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                formControlName="volume_m3"
+                [nzMin]="0"
+                [nzStep]="0.01"
+                style="width: 100%;"
+              ></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.PACKAGES' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                formControlName="packages"
+                [nzMin]="1"
+                [nzStep]="1"
+                style="width: 100%;"
+              ></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CUSTOMS.FORM.NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA DICHIARAZIONE DOGANALE -->
+<nz-modal
+  [nzVisible]="createDeclarationModalVisible()"
+  [nzTitle]="'CUSTOMS.MODAL.CREATE_DECLARATION_TITLE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="submittingDeclaration()"
+  (nzOnCancel)="createDeclarationModalVisible.set(false)"
+  (nzOnOk)="submitDeclarationForm()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="declarationForm" nz-form nzLayout="vertical">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DECLARATION_TYPE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="declaration_type">
+                <nz-option nzValue="import" nzLabel="Import (e-dec / Passar)"></nz-option>
+                <nz-option nzValue="export" nzLabel="Export (e-dec)"></nz-option>
+                <nz-option nzValue="transit" nzLabel="Transito (NCTS)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.CUSTOMS_OFFICE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="customs_office_number" placeholder="es. CH001234" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.TRADER_DECL_NR' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="trader_declaration_number" placeholder="es. DEC-2026-001" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.TRADER_REF' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="trader_reference" placeholder="Rif. interno" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.DISPATCH_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="dispatch_country" placeholder="IT" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'CUSTOMS.FORM.DESTINATION_COUNTRY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="destination_country" placeholder="CH" maxlength="2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: PROFITABILITY -->
+<nz-modal
+  [nzVisible]="profitabilityModalVisible()"
+  [nzTitle]="'CUSTOMS.MODAL.PROFITABILITY_TITLE' | translate"
+  [nzOkText]="'COMMON.CLOSE' | translate"
+  [nzOkDisabled]="false"
+  (nzOnCancel)="profitabilityModalVisible.set(false)"
+  (nzOnOk)="profitabilityModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (profitabilityData(); as p) {
+      <nz-descriptions nzBordered [nzColumn]="1">
+        <nz-descriptions-item [nzTitle]="'CUSTOMS.PROFIT.REVENUE' | translate">
+          {{ p.revenue | money: p.currency }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CUSTOMS.PROFIT.DIRECT_COSTS' | translate">
+          {{ p.direct_costs | money: p.currency }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CUSTOMS.PROFIT.INDIRECT_COSTS' | translate">
+          {{ p.indirect_costs | money: p.currency }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CUSTOMS.PROFIT.CONTRIBUTION_MARGIN' | translate">
+          <strong>{{ p.contribution_margin | money: p.currency }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CUSTOMS.PROFIT.MARGIN_PERCENT' | translate">
+          <strong>{{ p.margin_percent }}%</strong>
+        </nz-descriptions-item>
+      </nz-descriptions>
+    } @else {
+      <nz-empty nzNotFoundImage="simple"></nz-empty>
+    }
+  </ng-container>
+</nz-modal>

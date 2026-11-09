@@ -47,3 +47,4 @@ export * from './lookups/lookup-label.pipe';
 export * from './lookups/lookup-label.directive';
 export * from './lookups/lookup-select.component';
 export * from './state/list-facade';
+export * from './api/customs-api.service';

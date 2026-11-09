@@ -253,6 +253,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/general-ledger/accruals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The accruals and deferrals of the tenant */
+        get: operations["accrual.index"];
+        put?: never;
+        /** Computes and posts an accrual or deferral */
+        post: operations["accrual.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/accruals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One accrual or deferral */
+        get: operations["accrual.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/crm/activities/timeline": {
         parameters: {
             query?: never;
@@ -579,6 +614,22 @@ export interface paths {
         get: operations["integrations.api-keys.index"];
         put?: never;
         post: operations["integrations.api-keys.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/integrations/api-keys/{id}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["integrations.api-keys.rotate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1808,6 +1859,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/banking/reconciliation-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The rules of the tenant, by ascending priority */
+        get: operations["banking.reconciliation-rules.index"];
+        put?: never;
+        /** Creates a rule */
+        post: operations["banking.reconciliation-rules.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/banking/reconciliation-rules/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Updates a rule */
+        put: operations["banking.reconciliation-rules.update"];
+        post?: never;
+        /** Deletes a rule; lines it already categorised keep their categorisation */
+        delete: operations["banking.reconciliation-rules.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/banking/statements": {
         parameters: {
             query?: never;
@@ -1937,6 +2024,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["inventory.barcode.scan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/barcode/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.barcode.lookup"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2154,6 +2257,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/invoicing/billing-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the billing plans of the active company, optionally of one order or in one status */
+        get: operations["invoicing.billing-plans.index"];
+        put?: never;
+        /** Creates the billing plan of a sales order */
+        post: operations["invoicing.billing-plans.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/billing-plans/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues every pending billing plan item due on or before a date */
+        post: operations["invoicing.billing-plans.run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/billing-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Returns one billing plan of the active company */
+        get: operations["invoicing.billing-plans.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/billing-plans/{id}/items/{itemId}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues the invoice of one item of a billing plan */
+        post: operations["invoicing.billing-plans.items.invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/billing-plans/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels a billing plan */
+        post: operations["invoicing.billing-plans.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/manufacturing/boms": {
         parameters: {
             query?: never;
@@ -2161,10 +2350,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated list of boms of the active tenant */
+        /** Paginated BOM revisions */
         get: operations["mfg.boms.index"];
         put?: never;
-        /** Creates a new bom in the active tenant */
+        /** Creates a draft BOM revision */
         post: operations["mfg.boms.store"];
         delete?: never;
         options?: never;
@@ -2179,9 +2368,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns a single bom of the active tenant */
+        /** One BOM revision with its components */
         get: operations["mfg.boms.show"];
-        put?: never;
+        /** Changes a draft revision */
+        put: operations["mfg.boms.update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2196,7 +2386,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the component tree of a bill of materials for the given quantity */
+        /** Multi-level explosion of a revision */
         get: operations["mfg.boms.explode"];
         put?: never;
         post?: never;
@@ -2215,8 +2405,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Creates a new revision of a bill of materials */
+        /** Copies a revision into a new draft revision */
         post: operations["mfg.boms.revise"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/boms/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Releases a draft revision */
+        post: operations["mfg.boms.activate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2616,6 +2823,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/treasury/cash-registers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The cash registers of the tenant */
+        get: operations["treasury.cash-registers.index"];
+        put?: never;
+        /** Opens a cash register */
+        post: operations["treasury.cash-registers.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/cash-registers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One cash register */
+        get: operations["treasury.cash-registers.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/cash-registers/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The movements of a cash register, newest first */
+        get: operations["treasury.cash-registers.movements.index"];
+        put?: never;
+        /** Records a receipt or a payment */
+        post: operations["treasury.cash-registers.movements.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/cash-registers/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Closes a day of the register */
+        post: operations["treasury.cash-registers.close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/cash-registers/{id}/closings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The daily closings of a register, newest first */
+        get: operations["treasury.cash-registers.closings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/associations/catalogs/{catalog}": {
         parameters: {
             query?: never;
@@ -2789,7 +3083,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Return the groups of the kindergarten */
+        /** Return the groups of the kindergarten with the active children they hold and the places left */
         get: operations["v1.childcare.groups.index"];
         put?: never;
         /** Create a group or room */
@@ -2830,6 +3124,40 @@ export interface paths {
         /** Change the data of a child */
         put: operations["v1.childcare.children.update"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/childcare/waiting-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the children waiting for a place, in the order of their applications */
+        get: operations["v1.childcare.waiting-list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/childcare/children/{id}/admit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admit a waiting child into a group with a free place */
+        post: operations["v1.childcare.children.admit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3210,6 +3538,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/fiscal-retail/commercial-documents/{id}/retransmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["fiscal-retail.documents.retransmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/fiscal-retail/commercial-documents/{id}/void": {
         parameters: {
             query?: never;
@@ -3268,6 +3612,23 @@ export interface paths {
         };
         /** List deliveries */
         get: operations["communication.deliveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/communication/deliveries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a delivery */
+        get: operations["communication.deliveries.show"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3493,6 +3854,197 @@ export interface paths {
         put?: never;
         post: operations["crm.contacts.statement.email"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the documents of a contract */
+        get: operations["contracts.documents.index"];
+        put?: never;
+        /** Attach a document */
+        post: operations["contracts.documents.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Detach a document */
+        delete: operations["contracts.documents.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change the status of a contract */
+        post: operations["contracts.transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status history of a contract */
+        get: operations["contracts.history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/obligations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obligations of the company */
+        get: operations["contracts.obligations.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/obligations/{obligationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change an obligation */
+        put: operations["contracts.obligations.update"];
+        post?: never;
+        /** Delete an obligation */
+        delete: operations["contracts.obligations.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/obligations/{obligationId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete an obligation */
+        post: operations["contracts.obligations.complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/obligations/{obligationId}/waive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Waive an obligation */
+        post: operations["contracts.obligations.waive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/obligations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obligations of one contract */
+        get: operations["contracts.obligations.contract"];
+        put?: never;
+        /** Add an obligation */
+        post: operations["contracts.obligations.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/parties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the parties of a contract */
+        get: operations["contracts.parties.index"];
+        put?: never;
+        /** Link a party */
+        post: operations["contracts.parties.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contract-register/{kind}/{id}/parties/{partyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Unlink a party */
+        delete: operations["contracts.parties.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4500,6 +5052,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/abc-classification/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.abc-classification.run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/cycle-count-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.cycle-count-plans.index"];
+        put?: never;
+        post: operations["inventory.cycle-count-plans.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/cycle-count-plans/run-due": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.cycle-count-plans.run-due"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/cycle-count-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["inventory.cycle-count-plans.update"];
+        post?: never;
+        delete: operations["inventory.cycle-count-plans.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/cycle-count-plans/{id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.cycle-count-plans.run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dashboard/kpi-summary": {
         parameters: {
             query?: never;
@@ -4612,6 +5244,23 @@ export interface paths {
         get: operations["dashboard.data"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/debit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues a debit note for an issued invoice */
+        post: operations["invoicing.debit-notes.store"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5161,6 +5810,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/general-ledger/cost-centers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["dimension.indexCostCenters"];
+        put?: never;
+        post: operations["dimension.storeCostCenter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/cost-centers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["dimension.updateCostCenter"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/profit-centers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["dimension.indexProfitCenters"];
+        put?: never;
+        post: operations["dimension.storeProfitCenter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/profit-centers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["dimension.updateProfitCenter"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dms/documents": {
         parameters: {
             query?: never;
@@ -5239,7 +5952,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List the records a document is linked to */
+        get: operations["dms.documents.links.index"];
         put?: never;
         /** Link document */
         post: operations["dms.documents.link"];
@@ -5405,6 +6119,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dms/documents/{id}/check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check a document out */
+        post: operations["dms.documents.check-out"];
+        /** Cancel a check-out */
+        delete: operations["dms.documents.check-out.cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dms/documents/{id}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check a document in */
+        post: operations["dms.documents.check-in"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dms/documents/{id}/audit-trail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit trail of a document */
+        get: operations["dms.documents.audit-trail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/documents/{type}/{id}/pdf": {
         parameters: {
             query?: never;
@@ -5533,6 +6299,23 @@ export interface paths {
         put?: never;
         /** Sign the stored XML of a tenant document */
         post: operations["document-trust.sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/document-trust/signatures/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify a stored signature against the current XML of its document */
+        post: operations["document-trust.verify"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5903,6 +6686,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/edocument-networks/transmissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show one transmission */
+        get: operations["edocument-networks.transmissions.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/edocument-networks/{network}/transmissions": {
         parameters: {
             query?: never;
@@ -6133,6 +6933,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/hr/employees/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the documents of an employee */
+        get: operations["v1.hr.employee-documents.index"];
+        put?: never;
+        /** Upload a document to the personnel file */
+        post: operations["v1.hr.employee-documents.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/employee-documents/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a document of the personnel file */
+        get: operations["v1.hr.employee-documents.download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/employee-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a document */
+        delete: operations["v1.hr.employee-documents.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payroll/employee-profiles": {
         parameters: {
             query?: never;
@@ -6276,6 +7128,196 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/hr/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The own employee record */
+        get: operations["v1.hr.me.profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/leave-balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The own leave balances */
+        get: operations["v1.hr.me.leave-balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/leave-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The own leave requests */
+        get: operations["v1.hr.me.leave-requests.index"];
+        put?: never;
+        /** Submit an own leave request */
+        post: operations["v1.hr.me.leave-requests.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/leave-requests/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw an own leave request */
+        post: operations["v1.hr.me.leave-requests.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/training": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The own training records and certifications */
+        get: operations["v1.hr.me.training"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The own documents HR made visible */
+        get: operations["v1.hr.me.documents.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/me/documents/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download an own visible document */
+        get: operations["v1.hr.me.documents.download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/employees/{id}/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the contracts of an employee, newest first */
+        get: operations["v1.hr.contracts.index"];
+        put?: never;
+        /** Start a new contract that supersedes the active one */
+        post: operations["v1.hr.contracts.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/contracts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change the descriptive data of the active contract */
+        put: operations["v1.hr.contracts.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/contracts/{id}/salary-components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a salary component to the active contract */
+        post: operations["v1.hr.salary-components.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/salary-components/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a salary component of the active contract */
+        put: operations["v1.hr.salary-components.update"];
+        post?: never;
+        /** Remove a salary component of the active contract */
+        delete: operations["v1.hr.salary-components.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/general-ledger/enasarco/parameters": {
         parameters: {
             query?: never;
@@ -6323,6 +7365,109 @@ export interface paths {
         put?: never;
         /** Computes the quarterly statement of the tenant as a principal and posts its share */
         post: operations["enasarco.generatePrincipalStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated engineering changes */
+        get: operations["mfg.ecos.index"];
+        put?: never;
+        /** Creates a draft engineering change */
+        post: operations["mfg.ecos.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One engineering change */
+        get: operations["mfg.ecos.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submits a draft change for approval */
+        post: operations["mfg.ecos.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approves a submitted change */
+        post: operations["mfg.ecos.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejects a submitted change */
+        post: operations["mfg.ecos.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/engineering-changes/{id}/implement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Implements an approved change */
+        post: operations["mfg.ecos.implement"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7773,6 +8918,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/procurement/contracts/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lines of an agreement */
+        get: operations["procurement.contracts.lines.index"];
+        put?: never;
+        /** Adds an item to the agreement */
+        post: operations["procurement.contracts.lines.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/contracts/{id}/call-offs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creates a call-off order on the agreement */
+        post: operations["procurement.contracts.call-offs.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/associations/donations": {
         parameters: {
             query?: never;
@@ -7975,7 +9155,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Revalues the balances in a foreign currency at the given spot rate and period end date */
+        /** Period-end revaluation of the foreign-currency bank accounts, posted to the ledger */
         post: operations["fxRisk.revalue"];
         delete?: never;
         options?: never;
@@ -8144,11 +9324,29 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Show one flagged expense */
+        get: operations["tessera-sanitaria.expenses.show"];
         put?: never;
         post?: never;
         /** Remove the flag from a document */
         delete: operations["tessera-sanitaria.expenses.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tessera-sanitaria/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Totals of a payment year by expense type */
+        get: operations["tessera-sanitaria.summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -8846,6 +10044,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/counts/{id}/recount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.counts.recount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/counts/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.counts.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invoicing/invoices": {
         parameters: {
             query?: never;
@@ -9208,6 +10438,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/manufacturing/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated items of the company */
+        get: operations["mfg.items.index"];
+        put?: never;
+        /** Creates an item */
+        post: operations["mfg.items.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One item */
+        get: operations["mfg.items.show"];
+        /** Updates an item */
+        put: operations["mfg.items.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/items/{id}/cost-rollup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rolls up and stores the standard cost of the item */
+        post: operations["mfg.items.cost_rollup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/items/{id}/where-used": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** BOM revisions that use the item */
+        get: operations["mfg.items.where_used"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/general-ledger/journal-book/export": {
         parameters: {
             query?: never;
@@ -9269,6 +10569,57 @@ export interface paths {
         put?: never;
         /** Creates the reversal of a posted journal entry at the given date */
         post: operations["journalEntry.reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/journals/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sends a draft manual journal to approval (four-eyes) */
+        post: operations["journalEntry.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/journals/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approves and posts a journal waiting for approval */
+        post: operations["journalEntry.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/journals/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejects a journal waiting for approval */
+        post: operations["journalEntry.reject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9541,6 +10892,229 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/analytics/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All indicators in one call */
+        get: operations["analytics.kpis.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/kpis-export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Summary CSV */
+        get: operations["analytics.kpis.export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/kpis/{kpi}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One indicator */
+        get: operations["analytics.kpis.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/kpis/{kpi}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail CSV */
+        get: operations["analytics.kpis.export-detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workshop/folders/{id}/time-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the time entries of a folder with the minutes and hours per technician */
+        get: operations["v1.workshop.folders.time.index"];
+        put?: never;
+        /** Enter time worked on a folder without clocking */
+        post: operations["v1.workshop.folders.time.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workshop/folders/{id}/time-entries/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clock a technician on a folder in progress */
+        post: operations["v1.workshop.folders.time.start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workshop/folders/{id}/time-entries/bill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bill the unbilled time of a folder as labour lines, one per technician */
+        post: operations["v1.workshop.folders.time.bill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workshop/time-entries/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clock the technician off */
+        post: operations["v1.workshop.time.stop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workshop/vehicles/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the service history of a vehicle: its folders with mileage and net total */
+        get: operations["v1.workshop.vehicles.history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/landed-costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated landed costs */
+        get: operations["procurement.landed-costs.index"];
+        put?: never;
+        /** Creates and allocates a landed cost */
+        post: operations["procurement.landed-costs.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/landed-costs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One landed cost with its allocation */
+        get: operations["procurement.landed-costs.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/landed-costs/{id}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Posts a draft landed cost */
+        post: operations["procurement.landed-costs.post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/landed-costs/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels a draft landed cost */
+        post: operations["procurement.landed-costs.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/crm/leads/duplicates": {
         parameters: {
             query?: never;
@@ -9730,7 +11304,8 @@ export interface paths {
         };
         get: operations["v1.hr.leave-types.index"];
         put?: never;
-        post?: never;
+        /** Create an absence type */
+        post: operations["v1.hr.leave-types.store"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9849,6 +11424,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/hr/leave-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change an absence type */
+        put: operations["v1.hr.leave-types.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/leave-accrual-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the accrual policies */
+        get: operations["v1.hr.leave-accrual-policies.index"];
+        put?: never;
+        /** Create an accrual policy */
+        post: operations["v1.hr.leave-accrual-policies.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/leave-accrual-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change an accrual policy */
+        put: operations["v1.hr.leave-accrual-policies.update"];
+        post?: never;
+        /** Delete an accrual policy */
+        delete: operations["v1.hr.leave-accrual-policies.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/leave-requests/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel a leave request */
+        post: operations["v1.hr.leave-requests.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/leave-calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The leave calendar of a period */
+        get: operations["v1.hr.leave-calendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/general-ledger/budgets": {
         parameters: {
             query?: never;
@@ -9954,6 +11616,126 @@ export interface paths {
         };
         get: operations["ledgerBudget.rollingForecast"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/reports/trial-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Trial balance of a date range */
+        get: operations["ledgerReport.trialBalance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/reports/account-ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ledger of one account (mastrino) with running balance */
+        get: operations["ledgerReport.accountLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/reports/balance-sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Balance sheet at a date */
+        get: operations["ledgerReport.balanceSheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/reports/income-statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Income statement of a range */
+        get: operations["ledgerReport.incomeStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/reports/dimensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Result by cost centre, profit centre or project */
+        get: operations["ledgerReport.dimensions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/audit-trail/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit trail of the journal entries of a range */
+        get: operations["ledgerReport.auditTrail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The settings with the account resolved for each role and where it comes from */
+        get: operations["ledgerSettings.show"];
+        /** Changes the settings sent */
+        put: operations["ledgerSettings.update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -10199,6 +11981,76 @@ export interface paths {
         /** Transfers funds between two bank accounts of the group */
         post: operations["liquidity.intercompanyTransfer"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/liquidity/forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The daily liquidity forecast of one currency for each scenario */
+        get: operations["treasury.liquidity.forecast"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/forecast-scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The forecast scenarios of the tenant */
+        get: operations["treasury.forecast-scenarios.index"];
+        put?: never;
+        /** Creates a scenario */
+        post: operations["treasury.forecast-scenarios.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/recurring-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The recurring cash items of the tenant */
+        get: operations["treasury.recurring-items.index"];
+        put?: never;
+        /** Creates a recurring item */
+        post: operations["treasury.recurring-items.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/recurring-items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes a recurring item */
+        delete: operations["treasury.recurring-items.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -10453,6 +12305,41 @@ export interface paths {
         put?: never;
         /** Cancels a work order */
         post: operations["eam.maintenance.work_orders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** KPIs of a window */
+        get: operations["mfg.kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/settings/accounting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Account codes in force */
+        get: operations["mfg.settings.accounting"];
+        /** Changes the account codes */
+        put: operations["mfg.settings.accounting.update"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11375,6 +13262,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/communication/messages/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a message */
+        post: operations["communication.messages.send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/communication/channels/{channel}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test a channel */
+        post: operations["communication.channels.test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/subscriptions/metrics": {
         parameters: {
             query?: never;
@@ -11512,11 +13433,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated list of runs of the active tenant */
+        /** Paginated MRP runs */
         get: operations["mfg.mrp.runs.index"];
         put?: never;
-        /** Runs material requirements planning on the given horizon */
+        /** Runs MRP */
         post: operations["mfg.mrp.runs.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/mrp/runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One MRP run with its results */
+        get: operations["mfg.mrp.runs.show"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11530,8 +13468,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated planned orders of the active tenant, latest first */
+        /** Paginated planned orders */
         get: operations["mfg.mrp.planned_orders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/mrp/purchase-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open purchase suggestions for Procurement */
+        get: operations["mfg.mrp.purchase_suggestions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -11547,7 +13502,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated material shortages of the active tenant, latest first */
+        /** Paginated shortages */
         get: operations["mfg.mrp.shortages"];
         put?: never;
         post?: never;
@@ -11566,9 +13521,61 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Converts a planned order into a firm order and returns its identifier */
+        /** Converts a make planned order into a production order */
         post: operations["mfg.mrp.planned_orders.convert"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/mrp/planned-orders/{id}/procurement-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Records the procurement document of a purchase suggestion */
+        post: operations["mfg.mrp.planned_orders.procurement_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/mrp/forecasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated demand forecasts */
+        get: operations["mfg.mrp.forecasts.index"];
+        put?: never;
+        /** Creates a demand forecast */
+        post: operations["mfg.mrp.forecasts.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/mrp/forecasts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes a demand forecast */
+        delete: operations["mfg.mrp.forecasts.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -11760,6 +13767,24 @@ export interface paths {
         get: operations["openBanking.showPayment"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/fx-revaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The revaluations already run */
+        get: operations["openItemFxRevaluation.index"];
+        put?: never;
+        /** Revalues the open items at a date */
+        post: operations["openItemFxRevaluation.store"];
         delete?: never;
         options?: never;
         head?: never;
@@ -12043,6 +14068,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/invoicing/invoices/deferred": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues one deferred invoice for several dispatched delivery notes of the same customer */
+        post: operations["invoicing.invoices.deferred"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/invoices/deferred-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Runs the deferred billing: one invoice per customer and currency for the delivery notes up to a date */
+        post: operations["invoicing.invoices.deferred-run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/orders/{orderId}/down-payment-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues a down-payment invoice (TD02) for a percentage or an amount of the net total of a sales order */
+        post: operations["invoicing.orders.down-payment-invoices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/hr/departments": {
         parameters: {
             query?: never;
@@ -12124,6 +14200,136 @@ export interface paths {
         put?: never;
         /** Generates the cost and payroll forecast of a period */
         post: operations["v1.hr.payroll-forecast"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/departments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Changes a department of the org chart */
+        put: operations["v1.hr.departments.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/positions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Changes a position of the org chart */
+        put: operations["v1.hr.positions.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/sales-orders/{id}/reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.sales-orders.reserve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/sales-orders/{id}/release-reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.sales-orders.release-reservations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/waves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.waves.index"];
+        put?: never;
+        post: operations["inventory.waves.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/waves/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.waves.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/waves/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.waves.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/pick-lists/{id}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.pick-lists.ship"];
         delete?: never;
         options?: never;
         head?: never;
@@ -12465,6 +14671,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/payment-links/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["payment-links.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payment-links/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["payment-links.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/webhooks/payment-links/{tenant}": {
         parameters: {
             query?: never;
@@ -12475,6 +14713,75 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["payment-links.webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/payment-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The proposals of the tenant, newest first */
+        get: operations["treasury.payment-proposals.index"];
+        put?: never;
+        /** Prepares a draft proposal */
+        post: operations["treasury.payment-proposals.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/payment-proposals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One proposal with its lines */
+        get: operations["treasury.payment-proposals.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/payment-proposals/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approves a proposal and turns it into an approved payment batch */
+        post: operations["treasury.payment-proposals.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/payment-proposals/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rejects a draft proposal */
+        post: operations["treasury.payment-proposals.reject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13061,6 +15368,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/payroll/runs/{id}/cost-allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Allocate the labour cost of a run to projects and cost centres */
+        get: operations["v1.payroll.runs.cost-allocation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payroll/reports/year-end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Year-end summary per employee */
+        get: operations["v1.payroll.reports.year-end"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payroll/runs/simulate": {
         parameters: {
             query?: never;
@@ -13140,6 +15481,23 @@ export interface paths {
         get: operations["v1.payroll.runs.show"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payroll/runs/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve a calculated run */
+        post: operations["v1.payroll.runs.approve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13295,6 +15653,57 @@ export interface paths {
         get: operations["v1.payroll.payslips.pdf"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/fiscal-periods/{id}/close-checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The checklist of a period */
+        get: operations["periodClose.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/fiscal-periods/{id}/close-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adds a task to the checklist */
+        post: operations["periodClose.storeTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/fiscal-periods/{id}/close-tasks/{taskId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marks a task done, waived or open */
+        post: operations["periodClose.updateTaskStatus"];
         delete?: never;
         options?: never;
         head?: never;
@@ -14287,6 +16696,178 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/procurement/analytics/spend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Spend of the period by dimension */
+        get: operations["procurement.analytics.spend"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/analytics/open-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open purchase orders */
+        get: operations["procurement.analytics.open-orders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/analytics/price-variance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Price variance against the supplier price lists */
+        get: operations["procurement.analytics.price-variance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tolerances of the company */
+        get: operations["procurement.settings.show"];
+        /** Updates the tolerances */
+        put: operations["procurement.settings.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/approval-matrices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Approval matrices of orders and requisitions */
+        get: operations["procurement.approval-matrices.index"];
+        put?: never;
+        /** Creates an approval matrix */
+        post: operations["procurement.approval-matrices.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/approval-matrices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deactivates an approval matrix */
+        delete: operations["procurement.approval-matrices.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/purchase-orders/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marks an approved order as sent to the supplier */
+        post: operations["procurement.orders.send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/goods-receipts/{id}/inspection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Records the quality inspection of a receipt */
+        post: operations["procurement.receipts.inspection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/returns/{id}/credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Links the credit note received for a return */
+        post: operations["procurement.returns.credit-note"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/three-way-match/{id}/approve-variance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approves the variance of a failed three-way match */
+        post: operations["procurement.three-way-match.approve-variance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/inventory/products/{id}/barcode": {
         parameters: {
             query?: never;
@@ -14555,6 +17136,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/manufacturing/production-orders/{id}/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues components to an order */
+        post: operations["mfg.production_orders.issues"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/operations/{operationId}/confirmations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirms an operation */
+        post: operations["mfg.production_orders.confirmations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receives output */
+        post: operations["mfg.production_orders.receipts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Material movements and confirmations of an order */
+        get: operations["mfg.production_orders.transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/cost-rollup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cost report of an order */
+        get: operations["mfg.production_orders.cost_rollup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/manufacturing/production-orders": {
         parameters: {
             query?: never;
@@ -14562,10 +17228,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated list of production orders of the active tenant */
+        /** Paginated production orders */
         get: operations["mfg.production_orders.index"];
         put?: never;
-        /** Creates a new production order in the active tenant */
+        /** Creates a planned production order */
         post: operations["mfg.production_orders.store"];
         delete?: never;
         options?: never;
@@ -14580,10 +17246,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns a single production order of the active tenant */
+        /** One production order with lines and operations */
         get: operations["mfg.production_orders.show"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Moves the planned dates of an order not yet started */
+        post: operations["mfg.production_orders.reschedule"];
         delete?: never;
         options?: never;
         head?: never;
@@ -14599,7 +17282,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Releases a production order to the shop floor */
+        /** Releases a planned order */
         post: operations["mfg.production_orders.release"];
         delete?: never;
         options?: never;
@@ -14616,7 +17299,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Starts a released production order */
+        /** Starts a released order */
         post: operations["mfg.production_orders.start"];
         delete?: never;
         options?: never;
@@ -14633,7 +17316,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Completes a production order */
+        /** Completes an order technically */
         post: operations["mfg.production_orders.complete"];
         delete?: never;
         options?: never;
@@ -14650,7 +17333,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Closes a completed production order */
+        /** Closes a completed order and settles its variances */
         post: operations["mfg.production_orders.close"];
         delete?: never;
         options?: never;
@@ -14667,25 +17350,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Cancels a production order, recording the reason */
+        /** Cancels an order that moved nothing */
         post: operations["mfg.production_orders.cancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/manufacturing/production-orders/{id}/cost-rollup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Returns the standard cost rollup and the actual cost with its variance for a production order */
-        get: operations["mfg.production_orders.cost_rollup"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -16101,6 +18767,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/procurement/purchase-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated suggestions */
+        get: operations["procurement.suggestions.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/purchase-suggestions/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generates the missing suggestions */
+        post: operations["procurement.suggestions.generate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/purchase-suggestions/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Converts suggestions into purchase orders */
+        post: operations["procurement.suggestions.convert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/purchase-suggestions/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismisses a suggestion */
+        post: operations["procurement.suggestions.dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/purchases/requests": {
         parameters: {
             query?: never;
@@ -16188,6 +18922,88 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/putaway-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.putaway-rules.index"];
+        put?: never;
+        post: operations["inventory.putaway-rules.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/putaway-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["inventory.putaway-rules.update"];
+        post?: never;
+        delete: operations["inventory.putaway-rules.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/putaway/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.putaway.suggest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/putaway": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.putaway.execute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/quality/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated inspection plans */
+        get: operations["mfg.quality.plans"];
+        put?: never;
+        /** Creates an inspection plan */
+        post: operations["mfg.quality.plans.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/manufacturing/quality/inspections": {
         parameters: {
             query?: never;
@@ -16195,10 +19011,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated quality inspections of the active tenant, latest first */
+        /** Paginated inspections */
         get: operations["mfg.quality.inspections"];
         put?: never;
-        /** Records a quality inspection against a quality plan */
+        /** Records an inspection */
         post: operations["mfg.quality.record_inspection"];
         delete?: never;
         options?: never;
@@ -16213,10 +19029,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Returns the paginated quality non-conformances of the active tenant, latest first */
+        /** Paginated non-conformances */
         get: operations["mfg.quality.non_conformances"];
         put?: never;
-        post?: never;
+        /** Raises a non-conformance by hand */
+        post: operations["mfg.quality.non_conformances.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/quality/non-conformances/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Closes a non-conformance */
+        post: operations["mfg.quality.non_conformances.resolve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -16386,6 +19220,40 @@ export interface paths {
         put?: never;
         /** Change the status of a quote */
         post: operations["v1.customs.quotes.status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/quotes/expire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Expires the open quotes of the company past their validity date */
+        post: operations["sales.quotes.expire"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/quotes/{id}/revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creates the next revision of an open quote */
+        post: operations["sales.quotes.revise"];
         delete?: never;
         options?: never;
         head?: never;
@@ -16736,6 +19604,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/general-ledger/recurring-journals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The recurring journals of the tenant */
+        get: operations["recurringJournal.index"];
+        put?: never;
+        /** Saves a recurring journal template */
+        post: operations["recurringJournal.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/recurring-journals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A recurring journal with its runs */
+        get: operations["recurringJournal.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/recurring-journals/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pauses, resumes or ends a template */
+        post: operations["recurringJournal.changeStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/recurring-journals/{id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Posts the next due run of a template now */
+        post: operations["recurringJournal.run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/general-ledger/scheduled-journals/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Runs the scheduled ledger work of the tenant up to a day */
+        post: operations["recurringJournal.runScheduled"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workshop/recurring-services": {
         parameters: {
             query?: never;
@@ -17079,6 +20033,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/reorder-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.reorder-rules.index"];
+        put?: never;
+        post: operations["inventory.reorder-rules.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/reorder-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["inventory.reorder-rules.update"];
+        post?: never;
+        delete: operations["inventory.reorder-rules.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/replenishment/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.replenishment.suggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/replenishment/hand-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.replenishment.hand-off"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/report-definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List definitions */
+        get: operations["analytics.report-definitions.index"];
+        put?: never;
+        /** Save a definition */
+        post: operations["analytics.report-definitions.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/report-definitions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a definition */
+        get: operations["analytics.report-definitions.show"];
+        /** Update a definition */
+        put: operations["analytics.report-definitions.update"];
+        post?: never;
+        /** Delete a definition */
+        delete: operations["analytics.report-definitions.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/report-definitions/{id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Run a definition */
+        get: operations["analytics.report-definitions.run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/report-definitions/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export a definition */
+        get: operations["analytics.report-definitions.export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/exports/csv/{dataset}": {
         parameters: {
             query?: never;
@@ -17103,6 +20192,182 @@ export interface paths {
             cookie?: never;
         };
         get: operations["reporting.feed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitality/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the reservations of one calendar day of the venue (its own wall clock), in time order */
+        get: operations["v1.hospitality.reservations.index"];
+        put?: never;
+        /**
+         * Book a table for a party. The table may be left out and assigned later; when given it must seat the party and be
+         *     free for the interval
+         */
+        post: operations["v1.hospitality.reservations.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitality/reservations/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the active tables that seat the party and are free for the whole interval */
+        get: operations["v1.hospitality.reservations.availability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitality/reservations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a reservation */
+        get: operations["v1.hospitality.reservations.show"];
+        /** Move a booked reservation: time, duration, party, table or guest details, with the same checks as a booking */
+        put: operations["v1.hospitality.reservations.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitality/reservations/{id}/seat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Seat the guests of a booked reservation: opens the order of the table with the party size as covers */
+        post: operations["v1.hospitality.reservations.seat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitality/reservations/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel, mark no-show or complete a reservation */
+        post: operations["v1.hospitality.reservations.status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/practice/retainers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the retainers, optionally of one client or one status */
+        get: operations["v1.practice.retainers.index"];
+        put?: never;
+        /** Register a retainer received from a client */
+        post: operations["v1.practice.retainers.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/practice/retainers/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return, per client, the retainers received, applied and still available */
+        get: operations["v1.practice.retainers.balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/practice/retainers/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply part of a retainer to a fee note of the same client */
+        post: operations["v1.practice.retainers.apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/practice/retainers/{id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void a retainer entered by mistake, while nothing of it has been applied */
+        post: operations["v1.practice.retainers.void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/practice/fee-notes/{id}/retainers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return what a fee note still asks after the retainers applied to it */
+        get: operations["v1.practice.fee-notes.retainers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -17198,7 +20463,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/treasury/riba/batches": {
+    "/v1/procurement/rfqs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated requests for quotation */
+        get: operations["procurement.rfqs.index"];
+        put?: never;
+        /** Creates a request for quotation */
+        post: operations["procurement.rfqs.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One request with lines, suppliers and quotes */
+        get: operations["procurement.rfqs.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}/issue": {
         parameters: {
             query?: never;
             header?: never;
@@ -17206,6 +20506,92 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
+        /** Issues the request to the suppliers */
+        post: operations["procurement.rfqs.issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Records the quote of an invited supplier */
+        post: operations["procurement.rfqs.quotes.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}/comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Side-by-side comparison of the quotes */
+        get: operations["procurement.rfqs.comparison"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}/award": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Awards the request to a quote */
+        post: operations["procurement.rfqs.award"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/rfqs/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels an open request */
+        post: operations["procurement.rfqs.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/riba/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The Ri.Ba. batches, newest first */
+        get: operations["treasury.riba.index"];
         put?: never;
         post: operations["treasury.riba.store"];
         delete?: never;
@@ -17288,6 +20674,58 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["treasury.riba.unpaid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/riba/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The portfolio of receipts: totals by status and the open receipts */
+        get: operations["treasury.riba.portfolio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/routings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated routings */
+        get: operations["mfg.routings.index"];
+        put?: never;
+        /** Creates a routing */
+        post: operations["mfg.routings.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/routings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One routing with its operations */
+        get: operations["mfg.routings.show"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -17596,6 +21034,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sales/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sales indicators for a period */
+        get: operations["sales.kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invoicing/orders": {
         parameters: {
             query?: never;
@@ -17766,6 +21221,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/sales/orders/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirms a draft order behind the credit check of the company */
+        post: operations["sales.orders.confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels an order and releases its reserved stock */
+        post: operations["sales.orders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/orders/{id}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Availability to promise of the open lines of an order */
+        get: operations["sales.orders.availability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/orders/{id}/reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reserves the stock of the open lines of an order */
+        post: operations["sales.orders.reserve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/backorders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backorder: the open order lines still to be delivered */
+        get: operations["sales.backorders.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sales/order-lines": {
         parameters: {
             query?: never;
@@ -17778,6 +21318,60 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/pricing/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Price of a product for a customer */
+        get: operations["sales.pricing.price"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/discount-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The discount policies of the company */
+        get: operations["sales.discount-policies.index"];
+        put?: never;
+        /** Creates a discount policy */
+        post: operations["sales.discount-policies.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/discount-policies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A discount policy with its rules */
+        get: operations["sales.discount-policies.show"];
+        /** Updates a discount policy */
+        put: operations["sales.discount-policies.update"];
+        post?: never;
+        /** Deletes a discount policy */
+        delete: operations["sales.discount-policies.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -17897,6 +21491,177 @@ export interface paths {
         put?: never;
         /** Creates a sales order from a sales quote */
         post: operations["invoicing.quotes.convert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/invoices/{id}/installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The payment schedule (scadenze) of a sales document */
+        get: operations["invoicing.invoices.installments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/reports/sales-register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The sales register of a period */
+        get: operations["invoicing.reports.sales-register"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invoicing/reports/receivables-aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The receivables aging at a date */
+        get: operations["invoicing.reports.receivables-aging"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the returns of the company */
+        get: operations["sales.returns.index"];
+        put?: never;
+        /** Records a return request */
+        post: operations["sales.returns.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A return with its lines */
+        get: operations["sales.returns.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authorises a requested return */
+        post: operations["sales.returns.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refuses a requested return */
+        post: operations["sales.returns.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels a return not received yet */
+        post: operations["sales.returns.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receives an authorised return in the warehouse */
+        post: operations["sales.returns.receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/sales/returns/{id}/credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Credits a received return */
+        post: operations["sales.returns.credit-note"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18789,9 +22554,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Paginated job cards */
+        get: operations["mfg.shop_floor.executions"];
         put?: never;
-        /** Records the execution of a production order operation on a work center */
+        /** Starts a job card */
         post: operations["mfg.shop_floor.record_execution"];
         delete?: never;
         options?: never;
@@ -18808,7 +22574,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Completes a shop floor execution with its good and scrap units */
+        /** Completes a job card */
         post: operations["mfg.shop_floor.complete_execution"];
         delete?: never;
         options?: never;
@@ -18825,7 +22591,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Records machine downtime on a shop floor execution */
+        /** Reports downtime on a job card */
         post: operations["mfg.shop_floor.record_downtime"];
         delete?: never;
         options?: never;
@@ -19033,6 +22799,93 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/sites/{id}/diary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the diary of a site, latest day first */
+        get: operations["v1.construction-trades.sites.diary.index"];
+        put?: never;
+        /** Write the diary of a day: weather, workers present, work performed and incidents */
+        post: operations["v1.construction-trades.sites.diary.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/diary/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Correct a diary entry; the day itself does not change */
+        put: operations["v1.construction-trades.diary.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/sites/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the safety and compliance documents of a site, with those of its subcontractors */
+        get: operations["v1.construction-trades.sites.documents.index"];
+        put?: never;
+        /** Record a safety or compliance document of the site or of a subcontractor, with its expiry date */
+        post: operations["v1.construction-trades.sites.documents.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/site-documents/expiring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the documents that are expired or expire within the given days, across every site */
+        get: operations["v1.construction-trades.site-documents.expiring"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/site-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a document record (the file stays in the Documents module) */
+        delete: operations["v1.construction-trades.site-documents.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -19436,7 +23289,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Manual signed stock correction (inventory count result) */
+        /**
+         * Manual signed stock correction (inventory count result). Deprecated: it moves the stock at once, with no approval
+         *     threshold and no ledger entry. It keeps working unchanged for existing clients and flags every response with
+         *     `X-Deprecated: true` and a `Link` header to the successor, POST /api/v1/inventory/adjustments (approval above the
+         *     tenant threshold, valuation posted to the General Ledger)
+         */
         post: operations["inventory.stock-adjustments.store"];
         delete?: never;
         options?: never;
@@ -19614,6 +23472,22 @@ export interface paths {
         get: operations["inventory.availability"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/lots/{id}/recall": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.lots.recall-report"];
+        put?: never;
+        post: operations["inventory.lots.recall"];
         delete?: never;
         options?: never;
         head?: never;
@@ -19876,6 +23750,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/valuation/at-date": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.valuation.at-date"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/inventory/valuation/snapshot": {
         parameters: {
             query?: never;
@@ -19886,6 +23776,211 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["inventory.valuation.snapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/production-orders/{id}/subcontract-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sends components to a subcontractor */
+        post: operations["mfg.production_orders.subcontract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/subcontract-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated subcontract orders */
+        get: operations["mfg.subcontract_orders.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/subcontract-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One subcontract order */
+        get: operations["mfg.subcontract_orders.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/subcontract-orders/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receives processed quantity from the subcontractor */
+        post: operations["mfg.subcontract_orders.receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/subcontract-orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancels a subcontract order with nothing received */
+        post: operations["mfg.subcontract_orders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/subcontractors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the subcontractors of the company */
+        get: operations["v1.construction-trades.subcontractors.index"];
+        put?: never;
+        /** Register a subcontractor */
+        post: operations["v1.construction-trades.subcontractors.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/subcontractors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a subcontractor, or suspend it so that it takes no new subcontract */
+        put: operations["v1.construction-trades.subcontractors.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/sites/{id}/subcontracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the subcontracts of a construction site */
+        get: operations["v1.construction-trades.sites.subcontracts.index"];
+        put?: never;
+        /** Entrust work on a site to a subcontractor for an agreed amount */
+        post: operations["v1.construction-trades.sites.subcontracts.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/subcontracts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a subcontract with its certifications and the amounts certified and left */
+        get: operations["v1.construction-trades.subcontracts.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/subcontracts/{id}/certifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Certify work of the subcontractor */
+        post: operations["v1.construction-trades.subcontracts.certifications.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/construction-trades/subcontracts/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete or cancel an active subcontract */
+        post: operations["v1.construction-trades.subcontracts.status"];
         delete?: never;
         options?: never;
         head?: never;
@@ -20332,6 +24427,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/procurement/catalogs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated catalogue entries */
+        get: operations["procurement.catalogs.index"];
+        put?: never;
+        /** Creates a catalogue entry */
+        post: operations["procurement.catalogs.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/catalogs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One catalogue entry with its prices */
+        get: operations["procurement.catalogs.show"];
+        /** Updates a catalogue entry */
+        put: operations["procurement.catalogs.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/catalogs/{id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adds a price to the list of the entry */
+        post: operations["procurement.catalogs.prices.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/catalogs/{id}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The applicable price of the entry for a quantity on a date */
+        get: operations["procurement.catalogs.price"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Offers of every supplier for an internal SKU */
+        get: operations["procurement.offers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/procurement/contracts": {
         parameters: {
             query?: never;
@@ -20553,6 +24735,126 @@ export interface paths {
         put?: never;
         /** Issue the integration or self-invoice of a received invoice */
         post: operations["purchases.passive-invoices.self-invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/suppliers/{id}/qualification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Sets the qualification status of a supplier */
+        put: operations["procurement.suppliers.qualification"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/suppliers/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Qualification documents of a supplier */
+        get: operations["procurement.suppliers.documents.index"];
+        put?: never;
+        /** Adds a qualification document */
+        post: operations["procurement.suppliers.documents.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/supplier-documents/expiring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Documents expiring soon */
+        get: operations["procurement.supplier-documents.expiring"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/supplier-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Removes a qualification document */
+        delete: operations["procurement.supplier-documents.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/supplier-qualifications/expire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Expires the qualification of suppliers with an expired mandatory document */
+        post: operations["procurement.supplier-qualifications.expire"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/suppliers/{id}/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Measured performance of a supplier in a period */
+        get: operations["procurement.suppliers.performance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/procurement/suppliers/{id}/evaluations/compute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Records an evaluation from the measured performance */
+        post: operations["procurement.suppliers.evaluations.compute"];
         delete?: never;
         options?: never;
         head?: never;
@@ -21004,6 +25306,60 @@ export interface paths {
         get: operations["taxSettlement.statement"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/communication/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List templates */
+        get: operations["communication.templates.index"];
+        put?: never;
+        /** Create a template */
+        post: operations["communication.templates.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/communication/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a template */
+        get: operations["communication.templates.show"];
+        /** Update a template */
+        put: operations["communication.templates.update"];
+        post?: never;
+        /** Delete a template */
+        delete: operations["communication.templates.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/communication/templates/{id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview a template */
+        post: operations["communication.templates.preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -21679,6 +26035,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/transfer-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.transfer-orders.index"];
+        put?: never;
+        post: operations["inventory.transfer-orders.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/transfer-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.transfer-orders.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/transfer-orders/{id}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.transfer-orders.ship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/transfer-orders/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.transfer-orders.receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/transfer-orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["inventory.transfer-orders.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/translations/{locale}": {
         parameters: {
             query?: never;
@@ -21778,6 +26214,125 @@ export interface paths {
         put?: never;
         /** Import Italian CBI bank statement format */
         post: operations["treasury.import-cbi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The balances of every active bank account at a date */
+        get: operations["treasury.balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/bank-accounts/{id}/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The daily book balance of one bank account over a period */
+        get: operations["treasury.bank-accounts.balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/positions/cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The cash position over bank accounts and cash registers */
+        get: operations["treasury.positions.cash"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The KPIs of one currency at a date */
+        get: operations["treasury.kpis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/bank-accounts/{id}/charges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Posts a bank fee or interest on a bank account */
+        post: operations["treasury.bank-accounts.charges"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the treasury bank movements, newest first */
+        get: operations["treasury.movements.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/treasury/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transfers money between two bank accounts of the tenant */
+        post: operations["treasury.transfers.store"];
         delete?: never;
         options?: never;
         head?: never;
@@ -22437,6 +26992,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/warehouses/{id}/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The zones of a warehouse with the number of their bins */
+        get: operations["inventory.warehouses.zones.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/warehouses/{id}/bins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory.warehouses.bins.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/zones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["inventory.zones.update"];
+        trace?: never;
+    };
+    "/v1/inventory/bins/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["inventory.bins.update"];
+        trace?: never;
+    };
     "/v1/inventory/terminal/receipt": {
         parameters: {
             query?: never;
@@ -22699,6 +27319,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/manufacturing/work-centers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated work centres */
+        get: operations["mfg.work_centers.index"];
+        put?: never;
+        /** Creates a work centre */
+        post: operations["mfg.work_centers.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/work-centers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One work centre with its calendar */
+        get: operations["mfg.work_centers.show"];
+        /** Updates a work centre */
+        put: operations["mfg.work_centers.update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/work-centers/{id}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replaces the weekly calendar */
+        put: operations["mfg.work_centers.calendar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/work-centers/{id}/calendar-exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sets a dated capacity exception */
+        post: operations["mfg.work_centers.exceptions.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/manufacturing/work-centers/{id}/capacity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capacity and load per day */
+        get: operations["mfg.work_centers.capacity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/construction-trades/work-cycles": {
         parameters: {
             query?: never;
@@ -22902,6 +27609,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/esm/work-orders/{workOrder}/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issues a stocked part to a work order */
+        post: operations["v1.esm.work-orders.parts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/esm/work-orders/{workOrder}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Drafts the sales invoice of a completed work order */
+        post: operations["v1.esm.work-orders.invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workflows/my-pending": {
         parameters: {
             query?: never;
@@ -23090,6 +27831,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workflows/escalation-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List rules */
+        get: operations["workflows.escalation-rules.index"];
+        put?: never;
+        /** Create a rule */
+        post: operations["workflows.escalation-rules.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/escalation-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update a rule */
+        put: operations["workflows.escalation-rules.update"];
+        post?: never;
+        /** Delete a rule */
+        delete: operations["workflows.escalation-rules.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/my-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My tasks */
+        get: operations["workflows.inbox.my-tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/my-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My decisions */
+        get: operations["workflows.inbox.my-history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/my-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My requests */
+        get: operations["workflows.inbox.my-requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/sla-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** SLA report */
+        get: operations["workflows.inbox.sla-report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workflows/instances": {
         parameters: {
             query?: never;
@@ -23153,6 +27998,111 @@ export interface paths {
         get: operations["workflows.instances.audit-trail"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workflows/instances/{id}/audit-trail/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verifies the hash chain of the audit trail of an instance */
+        get: operations["workflows.instances.audit-trail.verify"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/time/overtime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The overtime of an employee in a period */
+        get: operations["v1.hr.time.overtime"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/overtime-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the overtime rules */
+        get: operations["v1.hr.overtime-rules.index"];
+        put?: never;
+        /** Create an overtime rule */
+        post: operations["v1.hr.overtime-rules.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/overtime-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change an overtime rule */
+        put: operations["v1.hr.overtime-rules.update"];
+        post?: never;
+        /** Delete an overtime rule */
+        delete: operations["v1.hr.overtime-rules.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/time-closings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the monthly closings */
+        get: operations["v1.hr.time-closings.index"];
+        put?: never;
+        /** Close a month */
+        post: operations["v1.hr.time-closings.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hr/time-closings/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reopen a closed month */
+        post: operations["v1.hr.time-closings.reopen"];
         delete?: never;
         options?: never;
         head?: never;
@@ -23292,6 +28242,28 @@ export interface components {
             created_at: string | null;
             updated_at: string | null;
         };
+        /** AccrualResource */
+        AccrualResource: {
+            id: string;
+            accrual_type: string;
+            description: string;
+            total_amount: string;
+            coverage_start: string | null;
+            coverage_end: string | null;
+            cutoff_date: string | null;
+            coverage_days: number;
+            accrued_days: number;
+            amount: string;
+            income_statement_account_id: string;
+            balance_sheet_account_id: string;
+            cost_center_id: string | null;
+            journal_entry_id: string | null;
+            journal_status: string | null;
+            reversal_date: string | null;
+            reversal_journal_entry_id: string | null;
+            created_by: string | null;
+            created_at: string | null;
+        };
         /**
          * AcquireAssetRequest
          * @description Validation of an asset registered from a passive invoice line or a purchase order item.
@@ -23409,6 +28381,12 @@ export interface components {
             score: number;
             feedback?: string | null;
         };
+        /**
+         * AnswerOutcome
+         * @description Allowed values of answer outcome in the Assistant module.
+         * @enum {string}
+         */
+        AnswerOutcome: "answered" | "unmatched" | "forbidden" | "failed";
         /** ApiKey */
         ApiKey: {
             id: string;
@@ -23469,7 +28447,10 @@ export interface components {
          * @enum {string}
          */
         ApplicationStatus: "submitted" | "pending_board" | "approved" | "rejected";
-        /** ApplyCreditNoteRequest */
+        /**
+         * ApplyCreditNoteRequest
+         * @description Application of an issued credit note to an issued invoice of the same customer of the active company.
+         */
         ApplyCreditNoteRequest: {
             /** Format: uuid */
             target_invoice_id: string;
@@ -23539,7 +28520,7 @@ export interface components {
             effective_user_id: string;
             decision: string;
             comment: string | null;
-            decided_at: string;
+            decided_at: string | null;
         };
         /**
          * ApprovalMode
@@ -23945,6 +28926,16 @@ export interface components {
             /** @enum {string} */
             strategy: "round_robin" | "least_loaded";
         };
+        /**
+         * AwardRfqRequest
+         * @description The winning quote of a request for quotation.
+         */
+        AwardRfqRequest: {
+            /** Format: uuid */
+            supplier_quote_id: string;
+            /** Format: date */
+            expected_delivery_date?: string | null;
+        };
         /** BankAccountResource */
         BankAccountResource: {
             id: string;
@@ -23980,6 +28971,26 @@ export interface components {
             approved_at: string | null;
             created_at: string | null;
         };
+        /** BankReconciliationRuleResource */
+        BankReconciliationRuleResource: {
+            id: string;
+            name: string;
+            priority: number;
+            is_active: boolean;
+            direction: string | null;
+            expected_amount: string | null;
+            amount_tolerance: string;
+            min_amount: string | null;
+            max_amount: string | null;
+            reference_contains: string | null;
+            description_contains: string | null;
+            counterparty_iban: string | null;
+            counterparty_name_contains: string | null;
+            category: string;
+            ledger_account_code: string | null;
+            created_at: string | null;
+            updated_at: string | null;
+        };
         /** BankStatementLineResource */
         BankStatementLineResource: {
             id: string;
@@ -24002,6 +29013,8 @@ export interface components {
             reconciliation_category: string | null;
             ledger_account_code: string | null;
             reconciliation_notes: string | null;
+            journal_entry_id: string | null;
+            reconciliation_rule_id: string | null;
         };
         /** BankStatementResource */
         BankStatementResource: {
@@ -24090,6 +29103,33 @@ export interface components {
             /** Format: date-time */
             updated_at: string | null;
             fee_note_id: string | null;
+        };
+        /** BillingPlanResource */
+        BillingPlanResource: {
+            id: string;
+            schedule_number: string;
+            sales_order_id: string | null;
+            customer_id: string;
+            status: string;
+            currency: string;
+            total_amount: string;
+            billed_amount: string;
+            remaining_amount: string;
+            start_date: string | null;
+            end_date: string | null;
+            next_billing_date: string | null;
+            items?: {
+                id: string;
+                name: string;
+                milestone_id: string | null;
+                percentage: string | null;
+                amount: string;
+                target_date: string | null;
+                status: string;
+                invoice_id: string | null;
+                invoiced_at: string | null;
+            }[];
+            created_at: string | null;
         };
         /** BookShipmentRequest */
         BookShipmentRequest: {
@@ -24214,6 +29254,13 @@ export interface components {
             reason: string;
         };
         /**
+         * CancelSalesOrderRequest
+         * @description Cancellation of a sales order: the reason is kept in the notes of the order.
+         */
+        CancelSalesOrderRequest: {
+            reason: string;
+        };
+        /**
          * CancelSubscriptionRequest
          * @description A cancellation: reason code and text, immediate or at the end of the term, refund of the unused period.
          */
@@ -24254,6 +29301,20 @@ export interface components {
             useful_life_years?: number | null;
             auto_post_to_gl?: boolean | null;
         };
+        /** CashClosingResource */
+        CashClosingResource: {
+            id: string;
+            cash_register_id: string;
+            closing_date: string;
+            opening_balance: string;
+            total_in: string;
+            total_out: string;
+            expected_balance: string;
+            counted_balance: string;
+            difference: string;
+            difference_journal_entry_id: string | null;
+            notes: string | null;
+        };
         /** CashForecastResource */
         CashForecastResource: {
             id: string;
@@ -24268,6 +29329,31 @@ export interface components {
             deficit_detected: boolean;
             deficit_date: string | null;
             created_at: string | null;
+        };
+        /** CashMovementResource */
+        CashMovementResource: {
+            id: string;
+            cash_register_id: string;
+            movement_date: string;
+            direction: string;
+            payment_method: string;
+            amount: string;
+            counter_account_id: string;
+            description: string;
+            reference: string | null;
+            journal_entry_id: string | null;
+        };
+        /** CashRegisterResource */
+        CashRegisterResource: {
+            id: string;
+            code: string;
+            name: string;
+            currency: string;
+            gl_account_id: string;
+            opening_balance: string;
+            current_balance: string;
+            last_closed_date: string | null;
+            is_active: boolean;
         };
         /**
          * CastVoteRequest
@@ -24284,8 +29370,9 @@ export interface components {
         CatalogResource: unknown[];
         /**
          * CategorizeLineRequest
-         * @description Manual categorisation of a line that is not linked to an invoice. The ledger account defaults to the tenant
-         *     preference of the category (taxes, payroll, bank expenses) when omitted.
+         * @description Manual categorisation of a line that is not linked to an invoice. The ledger account must be in the chart of accounts
+         *     of the tenant; when omitted, the account configured for the category in `banking.ledger_defaults` is used, and
+         *     without one the categorisation is refused.
          */
         CategorizeLineRequest: {
             /** @enum {string} */
@@ -24367,6 +29454,14 @@ export interface components {
             /** Format: date-time */
             effective_date?: string | null;
             reason?: string | null;
+        };
+        /**
+         * ChangeRecurringJournalStatusRequest
+         * @description Pause, resume or end a recurring journal.
+         */
+        ChangeRecurringJournalStatusRequest: {
+            /** @enum {string} */
+            status: "active" | "paused" | "ended";
         };
         /** ChangeRequestResource */
         ChangeRequestResource: {
@@ -24454,9 +29549,28 @@ export interface components {
         CheckIbanRequest: {
             iban: string;
         };
+        /**
+         * CheckInDocumentRequest
+         * @description Validates the input of the document check-in: the edited file is optional (access is decided by module.access).
+         */
+        CheckInDocumentRequest: {
+            /**
+             * Format: binary
+             * @description Maximum file size: 25600 kilobytes.
+             */
+            file?: string | null;
+            comment?: string | null;
+        };
         /** CheckInRequest */
         CheckInRequest: {
             ticket_code: string;
+        };
+        /**
+         * CheckOutDocumentRequest
+         * @description Validates the input of the document check-out (access is decided by module.access).
+         */
+        CheckOutDocumentRequest: {
+            note?: string | null;
         };
         /** ChildcareResource */
         ChildcareResource: unknown[];
@@ -24476,9 +29590,27 @@ export interface components {
             break_minutes?: number | null;
             notes?: string | null;
         };
+        /**
+         * CloseCashRegisterRequest
+         * @description The daily closing of a cash register: the day and the cash counted.
+         */
+        CloseCashRegisterRequest: {
+            /** Format: date */
+            closing_date: string;
+            counted_balance: number;
+            notes?: string | null;
+        };
         /** ClosePosSessionRequest */
         ClosePosSessionRequest: {
             closing_cash: number;
+        };
+        /**
+         * CloseTimePeriodRequest
+         * @description The month whose working time records are closed.
+         */
+        CloseTimePeriodRequest: {
+            year: number;
+            month: number;
         };
         /**
          * CollectionFailureRequest
@@ -24537,17 +29669,19 @@ export interface components {
             /** @enum {string} */
             on_duplicate?: "skip" | "update";
         };
-        /** CommunicationChannel */
-        CommunicationChannel: {
-            id: string;
-            tenant_id: string;
-            channel: string;
-            driver: string;
-            is_enabled: boolean;
+        /**
+         * CompleteExecutionRequest
+         * @description Validation of a job card completion: good and scrapped units, optional setup and labour minutes.
+         */
+        CompleteExecutionRequest: {
+            good_units: number;
+            scrap_units?: number | null;
+            scrap_reason?: string | null;
+            setup_minutes?: number | null;
+            labor_minutes?: number | null;
+            is_final?: boolean | null;
             /** Format: date-time */
-            created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
+            posting_date?: string | null;
         };
         /** CompleteInspectionRequest */
         CompleteInspectionRequest: {
@@ -24576,11 +29710,39 @@ export interface components {
             }[] | null;
         };
         /**
+         * CompleteWorkOrderRequest
+         * @description Validates the completion of a work order with its notes and the customer sign-off.
+         */
+        CompleteWorkOrderRequest: {
+            completion_notes?: string | null;
+            resolution_summary?: string | null;
+            customer_signature_url?: string | null;
+            signed_by_customer_name?: string | null;
+            /** Format: date-time */
+            signed_at?: string | null;
+        };
+        /**
          * ConfirmExtractionRequest
          * @description Validates the input of the confirm extraction operation (authorization is decided by module.access).
          */
         ConfirmExtractionRequest: {
             fields: (string | null)[];
+        };
+        /**
+         * ConfirmOperationRequest
+         * @description Validation of an operation confirmation: actual minutes, good and scrapped quantities.
+         */
+        ConfirmOperationRequest: {
+            setup_minutes?: number | null;
+            run_minutes?: number | null;
+            labor_minutes?: number | null;
+            downtime_minutes?: number | null;
+            good_quantity?: number | null;
+            scrap_quantity?: number | null;
+            scrap_reason?: string | null;
+            is_final?: boolean | null;
+            /** Format: date-time */
+            posting_date?: string | null;
         };
         /** ConfirmPickLineRequest */
         ConfirmPickLineRequest: {
@@ -24668,6 +29830,19 @@ export interface components {
             /** @enum {string} */
             action: "approve" | "reject";
             comment?: string | null;
+        };
+        /**
+         * ConsumeWorkOrderPartRequest
+         * @description Validates the issue of a stocked part to a work order. The item number is the SKU of a product of the company.
+         */
+        ConsumeWorkOrderPartRequest: {
+            item_number: string;
+            quantity: number;
+            unit_cost?: number | null;
+            unit_price?: number | null;
+            description?: string | null;
+            /** Format: uuid */
+            warehouse_id?: string | null;
         };
         /** Contact */
         Contact: {
@@ -24768,6 +29943,26 @@ export interface components {
          * @enum {string}
          */
         ContractKind: "customer" | "supplier";
+        /** ContractObligationResource */
+        ContractObligationResource: {
+            id: string;
+            contract_kind: string;
+            contract_id: string;
+            type: string;
+            title: string;
+            description: string | null;
+            responsible_party: string;
+            owner_user_id: string | null;
+            due_date: string;
+            amount: string | null;
+            currency: string | null;
+            status: string;
+            is_overdue: boolean;
+            remind_days_before: number;
+            reminded_at: string | null;
+            completed_at: string | null;
+            completion_note: string | null;
+        };
         /** ContractResource */
         ContractResource: {
             /** @enum {string} */
@@ -24787,7 +29982,18 @@ export interface components {
             alert_days_before: number;
             notice_deadline: string | null;
             notice_given_at: string;
+            /** @enum {string|null} */
+            lifecycle_status: "draft" | "review" | "active" | "renewal" | "expired" | "terminated" | null;
+            allowed_transitions: unknown[];
+            days_to_notice_deadline: number | null;
+            notice_given_late: boolean;
         };
+        /**
+         * ContractStatus
+         * @description Lifecycle of a contract of the register: draft, review, active, renewal (still in force while the renewal is negotiated), then expired or terminated. Customer and supplier contracts had their own spellings before the register (`pending_approval`, `cancelled`); they are read as the status they mean.
+         * @enum {string}
+         */
+        ContractStatus: "draft" | "review" | "active" | "renewal" | "expired" | "terminated";
         /**
          * ConvertLeadRequest
          * @description Conversion of a lead. The account and the contact can be chosen among the tenant's own records; otherwise they are
@@ -24811,15 +30017,29 @@ export interface components {
             /** Format: uuid */
             owner_user_id?: string | null;
         };
-        /** ConvertToDeliveryNoteRequest */
+        /**
+         * ConvertToDeliveryNoteRequest
+         * @description Delivery note (DDT) of an order or a quote: the lines to ship (order line id => quantity, every open quantity when
+         *     omitted), the warehouse the goods leave from and the transport data printed on the note.
+         */
         ConvertToDeliveryNoteRequest: {
             lines?: number[] | null;
+            /** Format: uuid */
+            warehouse_id?: string | null;
             transport_reason?: string | null;
             goods_appearance?: string | null;
             packages_count?: number | null;
             gross_weight_kg?: number | null;
+            net_weight_kg?: number | null;
             carrier_name?: string | null;
+            carrier_license_plate?: string | null;
+            /** Format: date-time */
+            departure_time?: string | null;
+            shipping_terms?: string | null;
+            /** @enum {string|null} */
+            transport_by?: "sender" | "recipient" | "carrier" | null;
             courier?: string | null;
+            tracking_number?: string | null;
             shipping_address?: string | null;
             show_prices?: boolean | null;
             notes?: string | null;
@@ -24843,27 +30063,37 @@ export interface components {
          * @enum {string}
          */
         CourseKind: "recurring" | "event" | "big_event";
-        /** CreateBomRequest */
+        /**
+         * CreateBomRequest
+         * @description Validation of a new BOM revision (draft) with its components; on PUT, of the changes to a draft revision.
+         */
         CreateBomRequest: {
             /** Format: uuid */
             mfg_item_id: string;
             name: string;
+            bom_number?: string | null;
             revision?: string | null;
             /** @enum {string|null} */
-            bom_type?: "standard" | "alternate" | "phantom" | null;
+            bom_type?: "standard" | "phantom" | "engineering" | null;
             base_quantity?: number | null;
             uom?: string | null;
             /** Format: date-time */
             effective_from?: string | null;
             /** Format: date-time */
             effective_to?: string | null;
+            notes?: string | null;
             components: {
                 /** Format: uuid */
                 component_item_id: string;
                 quantity_per: number;
+                sequence?: number | null;
                 scrap_percentage?: number | null;
                 yield_percentage?: number | null;
                 is_phantom?: boolean | null;
+                /** @enum {string|null} */
+                issue_method?: "manual" | "backflush" | null;
+                operation_sequence?: number | null;
+                notes?: string | null;
             }[];
         };
         /** CreateDelegationRequest */
@@ -24878,7 +30108,11 @@ export interface components {
             ends_at: string;
             reason?: string | null;
         };
-        /** CreateDeliveryNoteRequest */
+        /**
+         * CreateDeliveryNoteRequest
+         * @description Draft delivery note of an order of the active company: the order lines shipped (each within its open quantity) and the
+         *     transport data of the DDT.
+         */
         CreateDeliveryNoteRequest: {
             /** Format: uuid */
             sales_order_id: string;
@@ -24890,8 +30124,14 @@ export interface components {
             goods_appearance?: string | null;
             packages_count?: number | null;
             gross_weight_kg?: number | null;
+            net_weight_kg?: number | null;
             carrier_name?: string | null;
             carrier_license_plate?: string | null;
+            /** Format: date-time */
+            departure_time?: string | null;
+            shipping_terms?: string | null;
+            /** @enum {string|null} */
+            transport_by?: "sender" | "recipient" | "carrier" | null;
             shipping_address?: string | null;
             courier?: string | null;
             tracking_number?: string | null;
@@ -24904,6 +30144,35 @@ export interface components {
                 serial_number?: string | null;
             }[];
         };
+        /**
+         * CreateEcoRequest
+         * @description Validation of a new engineering change on a released BOM revision.
+         */
+        CreateEcoRequest: {
+            /** Format: uuid */
+            bom_id: string;
+            title: string;
+            reason: string;
+            description?: string | null;
+            /** @enum {string|null} */
+            change_type?: "bom_change" | "component_substitution" | "quantity_change" | null;
+            /** Format: date-time */
+            effective_date?: string | null;
+            new_revision?: string | null;
+            components: {
+                /** @enum {string} */
+                action: "add" | "update" | "remove";
+                /** Format: uuid */
+                component_item_id: string;
+                quantity_per?: number | null;
+                scrap_percentage?: number | null;
+                yield_percentage?: number | null;
+                is_phantom?: boolean | null;
+                /** @enum {string|null} */
+                issue_method?: "manual" | "backflush" | null;
+                operation_sequence?: number | null;
+            }[];
+        };
         /** CreateInventoryCountSessionRequest */
         CreateInventoryCountSessionRequest: {
             /** Format: uuid */
@@ -24914,14 +30183,17 @@ export interface components {
             scheduled_date: string;
             /** Format: uuid */
             warehouse_zone_id?: string | null;
+            freezes_stock?: boolean;
+            bin_ids?: string[];
             notes?: string | null;
             /** Format: date-time */
             effective_at?: string | null;
         };
         /**
          * CreateInvoiceFromSourceRequest
-         * @description What a caller may state when an invoice is generated from a sales order or a delivery note. The customer, the lines,
-         *     the source documents and the number always come from the source document and the numbering service.
+         * @description What a caller may state when an invoice is generated from a sales order or a delivery note. The customer, the
+         *     source documents and the number always come from the source document and the numbering service. For an order, `lines`
+         *     bills only the given quantities of the given order lines (partial billing); without it every open quantity is billed.
          */
         CreateInvoiceFromSourceRequest: {
             /** Format: date-time */
@@ -24933,8 +30205,17 @@ export interface components {
             payment_terms?: string | null;
             bank_name?: string | null;
             bank_iban?: string | null;
+            lines?: {
+                /** Format: uuid */
+                sales_order_item_id?: string;
+                quantity?: number;
+            }[];
         };
-        /** CreateInvoiceRequest */
+        /**
+         * CreateInvoiceRequest
+         * @description A sales document created as a draft in the invoicing module. Every referenced record must belong to the active company;
+         *     the number is assigned at emission by the numbering service.
+         */
         CreateInvoiceRequest: {
             /** Format: uuid */
             contact_id: string;
@@ -25077,7 +30358,10 @@ export interface components {
             min_stock?: number | null;
             is_active?: boolean;
         };
-        /** CreateProductionOrderRequest */
+        /**
+         * CreateProductionOrderRequest
+         * @description Validation of a new production order.
+         */
         CreateProductionOrderRequest: {
             /** Format: uuid */
             mfg_item_id: string;
@@ -25092,7 +30376,51 @@ export interface components {
             routing_id?: string | null;
             /** Format: uuid */
             project_id?: string | null;
+            /** Format: uuid */
+            sales_order_id?: string | null;
+            /** Format: uuid */
+            warehouse_id?: string | null;
+            /** Format: uuid */
+            receipt_warehouse_id?: string | null;
             notes?: string | null;
+        };
+        /**
+         * CreateRoutingRequest
+         * @description Validation of a new routing with its operations.
+         */
+        CreateRoutingRequest: {
+            /** Format: uuid */
+            mfg_item_id: string;
+            name: string;
+            revision?: string | null;
+            is_default?: boolean | null;
+            /** Format: date-time */
+            effective_from?: string | null;
+            /** Format: date-time */
+            effective_to?: string | null;
+            notes?: string | null;
+            operations: {
+                sequence?: number | null;
+                operation_code: string;
+                name: string;
+                description?: string | null;
+                /** Format: uuid */
+                work_center_id: string;
+                /** Format: uuid */
+                machine_center_id?: string | null;
+                setup_time_minutes?: number | null;
+                run_time_minutes_per_unit?: number | null;
+                labor_time_minutes_per_unit?: number | null;
+                queue_time_minutes?: number | null;
+                wait_time_minutes?: number | null;
+                teardown_time_minutes?: number | null;
+                is_subcontracted?: boolean | null;
+                /** Format: uuid */
+                subcontractor_contact_id?: string | null;
+                subcontract_unit_cost?: number | null;
+                /** Format: uuid */
+                quality_plan_id?: string | null;
+            }[];
         };
         /** CreateSalesOrderRequest */
         CreateSalesOrderRequest: {
@@ -25125,7 +30453,7 @@ export interface components {
                 description: string;
                 quantity: number;
                 unit_price?: number | null;
-                tax_rate?: number | null;
+                tax_rate: number;
                 discount_percentage?: number | null;
                 uom?: string | null;
             }[];
@@ -25152,7 +30480,7 @@ export interface components {
                 description: string;
                 quantity: number;
                 unit_price?: number | null;
-                tax_rate?: number | null;
+                tax_rate: number;
                 discount_percentage?: number | null;
                 uom?: string | null;
             }[];
@@ -25375,6 +30703,23 @@ export interface components {
             created_at: string | null;
             /** Format: date-time */
             updated_at: string | null;
+        };
+        /**
+         * CycleCountPlanRequest
+         * @description A cycle count plan: the warehouse, the ABC class it counts (none = every item), how often, and whether its sessions
+         *     freeze the stock they count.
+         */
+        CycleCountPlanRequest: {
+            /** Format: uuid */
+            warehouse_id: string;
+            name: string;
+            /** @enum {string|null} */
+            abc_class?: "A" | "B" | "C" | null;
+            interval_days: number;
+            freezes_stock?: boolean;
+            is_active?: boolean;
+            /** Format: date-time */
+            next_run_on?: string | null;
         };
         /** DailyCorrispettivo */
         DailyCorrispettivo: {
@@ -25609,8 +30954,8 @@ export interface components {
             tenant_id: string;
             channel: string;
             driver: string;
-            document_type: string;
-            document_id: string;
+            document_type: string | null;
+            document_id: string | null;
             recipient: string;
             status: string;
             provider_reference: string | null;
@@ -25620,6 +30965,10 @@ export interface components {
             created_at: string | null;
             /** Format: date-time */
             updated_at: string | null;
+            message_type: string;
+            subject: string | null;
+            template_code: string | null;
+            locale: string | null;
         };
         /**
          * DeliveryMode
@@ -25662,6 +31011,8 @@ export interface components {
             tracking_number: string | null;
             created_by: string | null;
             net_weight_kg: string | null;
+            shipping_terms: string | null;
+            transport_by: string | null;
         };
         /** DeliveryNoteResource */
         DeliveryNoteResource: unknown[];
@@ -25725,6 +31076,40 @@ export interface components {
             code?: string | null;
             recovery_code?: string | null;
         };
+        /** DiscountPolicyResource */
+        DiscountPolicyResource: {
+            id: string;
+            code: string;
+            name: string;
+            discount_type: string;
+            value: string;
+            min_order_amount: string | null;
+            min_quantity: string | null;
+            valid_from: string | null;
+            valid_to: string | null;
+            is_active: boolean;
+            priority: number;
+            is_stackable: boolean;
+            auto_apply: boolean;
+            contact_id: string | null;
+            rules?: {
+                id: string;
+                product_id: string | null;
+                customer_group_id: string | null;
+                contact_id: string | null;
+                min_threshold: string | null;
+                discount_percent: string | null;
+                discount_fixed_amount: string | null;
+            }[];
+        };
+        /**
+         * DispatchWorkOrderRequest
+         * @description Validates the technician a work order is dispatched to: it must belong to the active tenant.
+         */
+        DispatchWorkOrderRequest: {
+            /** Format: uuid */
+            technician_id?: string | null;
+        };
         /**
          * DisposeAssetRequest
          * @description Validation of a total or partial disposal (sale, scrapping, retirement, donation, loss).
@@ -25751,20 +31136,31 @@ export interface components {
         /** DocumentResource */
         DocumentResource: {
             id: string;
-            folder_id: string;
+            folder_id: string | null;
             title: string;
-            description: string;
-            document_type: string;
+            description: string | null;
+            document_type: string | null;
             status: string;
             current_version: number;
-            access_roles: string | string[];
+            access_roles: unknown[];
             metadata: string;
-            retention_policy_id: string;
+            retention_policy_id: string | null;
             retention_until: string | null;
             legal_hold: boolean;
-            legal_hold_reason: string;
-            tags?: unknown[];
-            links?: unknown[];
+            legal_hold_reason: string | null;
+            is_checked_out: boolean;
+            checked_out_by: string | null;
+            checked_out_at: string | null;
+            checkout_note: string | null;
+            tags?: {
+                id: string;
+                name: string;
+            }[];
+            links?: {
+                id: string;
+                linkable_type: string;
+                linkable_id: string;
+            }[];
             versions?: components["schemas"]["DocumentVersionResource"][];
             created_at: string | null;
             updated_at: string | null;
@@ -25845,6 +31241,24 @@ export interface components {
         };
         /** EcommerceChannelResource */
         EcommerceChannelResource: unknown[];
+        /** EmployeeDocumentResource */
+        EmployeeDocumentResource: {
+            id: string;
+            employee_id: string;
+            document_type: string;
+            title: string;
+            original_name: string | null;
+            mime_type: string | null;
+            size_bytes: number | null;
+            issue_date: string | null;
+            expiry_date: string | null;
+            retention_until: string | null;
+            contains_health_data: boolean;
+            is_confidential: boolean;
+            visible_to_employee: boolean;
+            status: string;
+            created_at: string | null;
+        };
         /** EmployeeLifecycleEvent */
         EmployeeLifecycleEvent: {
             id: string;
@@ -25916,7 +31330,7 @@ export interface components {
             manager_id: string | null;
             employment_status: string;
             employment_type: string;
-            hire_date: string;
+            hire_date: string | null;
             probation_end_date: string | null;
             termination_date: string | null;
             base_annual_salary: number;
@@ -25927,6 +31341,43 @@ export interface components {
             is_locked: boolean;
             equipment_assigned: unknown[];
             created_at: string | null;
+        };
+        /** EmploymentContractResource */
+        EmploymentContractResource: {
+            id: string;
+            employee_id: string;
+            contract_number: string;
+            contract_type: string;
+            job_title: string;
+            job_grade_id: string | null;
+            collective_agreement: string | null;
+            collective_agreement_id: string | null;
+            collective_agreement_level_id: string | null;
+            level_code: string | null;
+            start_date: string;
+            end_date: string | null;
+            probation_end_date: string | null;
+            weekly_hours: string;
+            fte_percentage: string;
+            base_annual_salary: string;
+            hourly_rate: string;
+            loaded_hourly_cost: string;
+            currency: string;
+            status: string;
+            is_active: boolean;
+            superseded_by_contract_id: string | null;
+            terms: unknown[] | null;
+            notes: string | null;
+            salary_components: {
+                id: string;
+                contract_id: string;
+                wage_type_code: string;
+                description: string;
+                amount: string;
+                frequency: string;
+                valid_from: string;
+                valid_to: string | null;
+            }[];
         };
         /** EnasarcoParameter */
         EnasarcoParameter: {
@@ -26267,6 +31718,17 @@ export interface components {
             created_at: string | null;
             updated_at: string | null;
         };
+        /** ForecastScenarioResource */
+        ForecastScenarioResource: {
+            id: string;
+            code: string;
+            name: string;
+            description: string | null;
+            collection_delay_days: number;
+            disbursement_acceleration_days: number;
+            sales_growth_factor: string;
+            is_active: boolean;
+        };
         /** ForgotPasswordRequest */
         ForgotPasswordRequest: {
             /** Format: email */
@@ -26311,25 +31773,18 @@ export interface components {
             /** Format: date-time */
             deleted_at: string | null;
         };
-        /** FxRevaluation */
-        FxRevaluation: {
+        /** FxRevaluationResource */
+        FxRevaluationResource: {
             id: string;
-            tenant_id: string;
-            company_id: string | null;
-            /** Format: date-time */
+            bank_account_id: string | null;
             period_end_date: string;
             currency: string;
+            closing_rate: string | null;
             foreign_amount: string;
             book_value_base: string;
             revalued_market_base: string;
             unrealized_gain_loss: string;
             gl_journal_entry_id: string | null;
-            /** Format: date-time */
-            created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
         };
         /** GenerateConsolidatedInvoiceRequest */
         GenerateConsolidatedInvoiceRequest: {
@@ -26731,6 +32186,18 @@ export interface components {
             /** Format: uuid */
             passive_invoice_id?: string | null;
         };
+        /**
+         * InspectGoodsReceiptRequest
+         * @description Outcome of the quality inspection of receipt lines: the quantity released from quarantine.
+         */
+        InspectGoodsReceiptRequest: {
+            results: {
+                /** Format: uuid */
+                purchase_receipt_line_id: string;
+                quantity_released: number;
+                notes?: string | null;
+            }[];
+        };
         /** IntercompanyFunding */
         IntercompanyFunding: {
             id: string;
@@ -26806,6 +32273,10 @@ export interface components {
             updated_at: string | null;
             /** Format: date-time */
             deleted_at: string | null;
+            first_counted_quantity: string | null;
+            recount_count: number;
+            /** Format: date-time */
+            recount_requested_at: string | null;
         };
         /** InventoryCountSessionResource */
         InventoryCountSessionResource: {
@@ -26815,10 +32286,16 @@ export interface components {
             warehouse_zone_id: string | null;
             count_type: string;
             status: string;
-            scheduled_date: string;
+            scheduled_date: string | null;
             effective_at: string | null;
             completed_at: string | null;
             is_locked: boolean;
+            freezes_stock: boolean;
+            frozen_at: string | null;
+            cycle_count_plan_id: string | null;
+            inventory_adjustment_id: string | null;
+            approved_by: string | null;
+            approved_at: string | null;
             warehouse?: components["schemas"]["WarehouseResource"];
             lines?: components["schemas"]["InventoryCountLine"][];
             created_at: string | null;
@@ -26846,6 +32323,21 @@ export interface components {
                 assigned_user_id: string | null;
                 status: string;
             }[];
+        };
+        /**
+         * InvoiceBillingPlanItemRequest
+         * @description The invoice of one billing plan item: only dates, notes and payment details can be stated.
+         */
+        InvoiceBillingPlanItemRequest: {
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+            notes?: string | null;
+            payment_method?: string | null;
+            payment_terms?: string | null;
+            bank_name?: string | null;
+            bank_iban?: string | null;
         };
         /** InvoiceDossierRequest */
         InvoiceDossierRequest: {
@@ -26884,6 +32376,9 @@ export interface components {
             due_date: string | null;
             currency: string;
             exchange_rate: number;
+            exchange_rate_source: string | null;
+            exchange_rate_date: string | null;
+            payment_term_id: string | null;
             total_net: number;
             total_tax: number;
             total_gross: number;
@@ -26943,7 +32438,21 @@ export interface components {
             created_at: string | null;
             updated_at: string | null;
         };
-        /** IssueCreditNoteRequest */
+        /**
+         * InvoiceWorkOrderRequest
+         * @description Validates the invoicing of a completed work order. The VAT rate is stated by the caller: a work order carries none.
+         */
+        InvoiceWorkOrderRequest: {
+            tax_rate: number;
+            /** Format: date */
+            due_date?: string | null;
+            /** Format: uuid */
+            revenue_account_id?: string | null;
+        };
+        /**
+         * IssueCreditNoteRequest
+         * @description A credit note on an issued invoice of the active company: every line states its VAT rate.
+         */
         IssueCreditNoteRequest: {
             /** Format: uuid */
             original_invoice_id: string;
@@ -26956,8 +32465,79 @@ export interface components {
                 description: string;
                 quantity: number;
                 unit_price: number;
-                tax_rate?: number | null;
+                tax_rate: number;
                 discount_percentage?: number | null;
+            }[];
+        };
+        /**
+         * IssueDebitNoteRequest
+         * @description A debit note (TD05) raising the amount of an issued invoice of the active company.
+         */
+        IssueDebitNoteRequest: {
+            /** Format: uuid */
+            original_invoice_id: string;
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+            notes?: string | null;
+            items: {
+                /** Format: uuid */
+                product_id?: string | null;
+                description: string;
+                quantity: number;
+                unit_price: number;
+                tax_rate: number;
+                discount_percentage?: number | null;
+            }[];
+        };
+        /**
+         * IssueDeferredInvoiceRequest
+         * @description A deferred invoice for dispatched delivery notes of the same customer, all of the active company.
+         */
+        IssueDeferredInvoiceRequest: {
+            delivery_note_ids: string[];
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+            notes?: string | null;
+            payment_method?: string | null;
+            payment_terms?: string | null;
+            bank_name?: string | null;
+            bank_iban?: string | null;
+        };
+        /**
+         * IssueDownPaymentRequest
+         * @description A down-payment invoice of a sales order: a percentage of the order net total or an amount, never both.
+         */
+        IssueDownPaymentRequest: {
+            percentage?: number | null;
+            amount?: number | null;
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+            notes?: string | null;
+            payment_method?: string | null;
+            payment_terms?: string | null;
+            bank_name?: string | null;
+            bank_iban?: string | null;
+        };
+        /**
+         * IssueMaterialsRequest
+         * @description Validation of a component issue to a production order.
+         */
+        IssueMaterialsRequest: {
+            /** Format: date-time */
+            posting_date?: string | null;
+            allow_over_issue?: boolean | null;
+            lines: {
+                /** Format: uuid */
+                line_id: string;
+                quantity: number;
+                /** Format: uuid */
+                lot_id?: string | null;
             }[];
         };
         /** JournalEntryResource */
@@ -26977,10 +32557,20 @@ export interface components {
             source_document_type: string | null;
             source_document_id: string | null;
             status: string;
-            total_amount: number;
+            total_amount: string;
             posted_at: string | null;
             reversed_at: string | null;
             reversal_journal_entry_id: string | null;
+            auto_reverse_on: string | null;
+            created_by: unknown;
+            submitted_by: unknown;
+            submitted_at: string | null;
+            approved_by: unknown;
+            approved_at: string | null;
+            rejected_by: unknown;
+            rejected_at: string | null;
+            rejection_reason: unknown;
+            recurring_journal_id: unknown;
             lines?: components["schemas"]["JournalLineResource"][];
         };
         /** JournalLineResource */
@@ -26999,6 +32589,8 @@ export interface components {
             currency: string;
             exchange_rate: number;
             amount_in_functional_currency: number;
+            functional_debit: number | null;
+            functional_credit: number | null;
         };
         /** JsonResource */
         JsonResource: string;
@@ -27098,6 +32690,29 @@ export interface components {
             visibility: string;
             position: number;
         };
+        /** LandedCostResource */
+        LandedCostResource: {
+            id: string;
+            landed_cost_number: string;
+            cost_type: string;
+            allocation_method: string;
+            status: string;
+            amount: string;
+            currency: string;
+            cost_date: string;
+            description: string | null;
+            passive_invoice_id: string | null;
+            supplier_id: string | null;
+            posted_at: string | null;
+            journal_entry_id: string | null;
+            allocations?: {
+                purchase_receipt_id: string;
+                purchase_receipt_line_id: string;
+                stock_item_id: string | null;
+                basis_value: string;
+                allocated_amount: string;
+            }[];
+        };
         /** LeadResource */
         LeadResource: {
             id: string;
@@ -27133,6 +32748,32 @@ export interface components {
             tags: unknown[] | null;
             created_at: string | null;
             updated_at: string | null;
+        };
+        /** LeaveAccrualPolicy */
+        LeaveAccrualPolicy: {
+            id: string;
+            tenant_id: string;
+            leave_type_id: string;
+            code: string;
+            name: string;
+            employment_type: string | null;
+            annual_entitlement_hours: string;
+            accrual_frequency: string;
+            prorate_by_fte: boolean;
+            max_balance_hours: string | null;
+            max_carryover_hours: string | null;
+            /** Format: date */
+            valid_from: string;
+            /** Format: date */
+            valid_to: string | null;
+            is_active: boolean;
+            source_reference: string | null;
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+            /** Format: date-time */
+            deleted_at: string | null;
         };
         /** LeaveBalanceResource */
         LeaveBalanceResource: {
@@ -27184,6 +32825,14 @@ export interface components {
             updated_at: string | null;
             /** Format: date-time */
             deleted_at: string | null;
+        };
+        /**
+         * LedgerAsOfRequest
+         * @description The day up to which scheduled ledger work runs (recurring journals, automatic reversals); today when omitted.
+         */
+        LedgerAsOfRequest: {
+            /** Format: date-time */
+            as_of?: string | null;
         };
         /** LedgerBudgetResource */
         LedgerBudgetResource: {
@@ -27244,7 +32893,7 @@ export interface components {
          */
         LinkDocumentRequest: {
             /** @enum {string} */
-            linkable_type: "contact" | "invoice" | "quote" | "sales_order" | "delivery_note" | "work_order" | "purchase_order" | "supplier_invoice" | "service_report" | "ticket" | "appointment" | "expense" | "journal_entry" | "project" | "asset" | "service_contract" | "supplier_contract";
+            linkable_type: "contact" | "invoice" | "quote" | "sales_order" | "delivery_note" | "work_order" | "purchase_order" | "supplier_invoice" | "service_report" | "ticket" | "appointment" | "expense" | "journal_entry" | "project" | "asset" | "service_contract" | "supplier_contract" | "supplier" | "purchase_requisition";
             /** Format: uuid */
             linkable_id: string;
         };
@@ -27387,6 +33036,16 @@ export interface components {
             invoice_id: string;
             /** @enum {string} */
             difference_handling?: "none" | "write_off" | "partial";
+        };
+        /**
+         * MarkSuggestionConvertedRequest
+         * @description Validation of the procurement document a purchase suggestion was converted into.
+         */
+        MarkSuggestionConvertedRequest: {
+            /** @enum {string} */
+            procurement_document_type: "purchase_requisition" | "purchase_order";
+            /** Format: uuid */
+            procurement_document_id: string;
         };
         /** MatchImportLineRequest */
         MatchImportLineRequest: {
@@ -27531,36 +33190,112 @@ export interface components {
             version: number;
             bom_type: string;
             status: string;
-            base_quantity: number;
+            base_quantity: string;
             uom: string;
-            is_locked: boolean;
-            components_count: number;
+            effective_from: string | null;
+            effective_to: string | null;
+            approved_by: string | null;
+            approved_at: string | null;
+            supersedes_bom_id: string | null;
+            engineering_change_order_id: string | null;
+            notes: string | null;
+            components?: {
+                id: string;
+                component_item_id: string;
+                component_item_code: string | null;
+                sequence: number;
+                quantity_per: string;
+                uom: string;
+                scrap_percentage: string;
+                yield_percentage: string;
+                is_phantom: boolean;
+                issue_method: string;
+                operation_sequence: number | null;
+                notes: string | null;
+            }[];
             created_at: string | null;
         };
-        /** MfgMrpPlannedOrder */
-        MfgMrpPlannedOrder: {
+        /** MfgEngineeringChangeOrderResource */
+        MfgEngineeringChangeOrderResource: {
             id: string;
-            tenant_id: string;
-            planned_order_number: string;
-            mrp_run_id: string;
-            mfg_item_id: string;
-            order_type: string;
-            quantity: string;
-            uom: string;
-            /** Format: date-time */
-            start_date: string;
-            /** Format: date-time */
-            due_date: string;
+            eco_number: string;
+            title: string;
+            reason: string;
+            description: string | null;
+            change_type: string;
             status: string;
             bom_id: string | null;
-            routing_id: string | null;
-            converted_order_id: string | null;
-            /** Format: date-time */
+            resulting_bom_id: string | null;
+            effective_date: string | null;
+            requested_by: string | null;
+            submitted_at: string | null;
+            approved_by: string | null;
+            approved_at: string | null;
+            rejected_by: string | null;
+            rejected_at: string | null;
+            rejection_reason: string | null;
+            implemented_at: string | null;
+            change_payload: {
+                [key: string]: unknown;
+            } | null;
             created_at: string | null;
-            /** Format: date-time */
+        };
+        /** MfgForecastResource */
+        MfgForecastResource: {
+            id: string;
+            mfg_item_id: string;
+            forecast_date: string;
+            quantity: string;
+            notes: string | null;
+            created_at: string | null;
+        };
+        /** MfgItemResource */
+        MfgItemResource: {
+            id: string;
+            item_code: string;
+            name: string;
+            description: string | null;
+            item_type: string;
+            procurement_type: string;
+            stock_item_id: string | null;
+            product_id: string | null;
+            default_bom_id: string | null;
+            default_routing_id: string | null;
+            default_warehouse_id: string | null;
+            uom: string;
+            standard_cost: string;
+            standard_material_cost: string;
+            standard_labor_cost: string;
+            standard_overhead_cost: string;
+            standard_subcontract_cost: string;
+            standard_cost_rolled_up_at: string | null;
+            safety_stock: string;
+            min_lot_size: string;
+            max_lot_size: string | null;
+            lot_size_multiple: string | null;
+            lead_time_days: number;
+            is_active: boolean;
+            created_at: string | null;
             updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
+        };
+        /** MfgMaterialMovementResource */
+        MfgMaterialMovementResource: {
+            id: string;
+            production_order_id: string;
+            production_order_line_id: string | null;
+            subcontract_order_id: string | null;
+            movement_type: string;
+            mfg_item_id: string;
+            warehouse_id: string | null;
+            quantity: string;
+            unit_cost: string;
+            total_cost: string;
+            stock_movement_id: string | null;
+            lot_id: string | null;
+            serial_number_ids: string[] | null;
+            posting_date: string;
+            journal_entry_id: string | null;
+            created_at: string | null;
         };
         /** MfgMrpRunResource */
         MfgMrpRunResource: {
@@ -27573,28 +33308,75 @@ export interface components {
             total_items_processed: number;
             total_planned_orders: number;
             total_shortages: number;
+            executed_by: string | null;
             executed_at: string | null;
+            planned_orders?: components["schemas"]["MfgPlannedOrderResource"][];
+            shortages?: components["schemas"]["MfgShortageResource"][];
         };
-        /** MfgMrpShortage */
-        MfgMrpShortage: {
+        /** MfgNonConformanceResource */
+        MfgNonConformanceResource: {
             id: string;
-            tenant_id: string;
+            nc_number: string;
+            quality_inspection_id: string | null;
+            production_order_id: string | null;
+            production_order_operation_id: string | null;
+            mfg_item_id: string | null;
+            severity: string;
+            defect_type: string;
+            description: string;
+            quantity: string;
+            disposition: string;
+            corrective_action: string | null;
+            status: string;
+            reported_by: string | null;
+            resolved_by: string | null;
+            resolved_at: string | null;
+            created_at: string | null;
+        };
+        /** MfgOperationConfirmationResource */
+        MfgOperationConfirmationResource: {
+            id: string;
+            confirmation_number: string;
+            production_order_id: string;
+            production_order_operation_id: string;
+            shop_floor_execution_id: string | null;
+            subcontract_order_id: string | null;
+            setup_minutes: string;
+            run_minutes: string;
+            labor_minutes: string;
+            downtime_minutes: string;
+            good_quantity: string;
+            scrap_quantity: string;
+            scrap_reason: string | null;
+            is_final: boolean;
+            labor_cost: string;
+            overhead_cost: string;
+            subcontract_cost: string;
+            posting_date: string;
+            journal_entry_id: string | null;
+            confirmed_by: string | null;
+            confirmed_at: string;
+        };
+        /** MfgPlannedOrderResource */
+        MfgPlannedOrderResource: {
+            id: string;
+            planned_order_number: string;
             mrp_run_id: string;
             mfg_item_id: string;
-            /** Format: date-time */
-            required_date: string;
-            gross_requirement: string;
-            available_inventory: string;
-            scheduled_receipts: string;
-            safety_stock: string;
-            net_shortage: string;
-            recommended_action: string;
-            /** Format: date-time */
-            created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
+            order_type: string;
+            quantity: string;
+            net_requirement: string;
+            bom_level: number;
+            uom: string;
+            start_date: string;
+            due_date: string;
+            status: string;
+            bom_id: string | null;
+            routing_id: string | null;
+            converted_order_id: string | null;
+            procurement_document_type: string | null;
+            procurement_document_id: string | null;
+            converted_at: string | null;
         };
         /** MfgProductionOrderResource */
         MfgProductionOrderResource: {
@@ -27603,17 +33385,75 @@ export interface components {
             mfg_item_id: string;
             bom_id: string;
             routing_id: string | null;
+            project_id: string | null;
+            sales_order_id: string | null;
+            planned_order_id: string | null;
+            warehouse_id: string | null;
+            receipt_warehouse_id: string | null;
             status: string;
-            target_quantity: number;
-            completed_quantity: number;
-            scrapped_quantity: number;
+            target_quantity: string;
+            completed_quantity: string;
+            scrapped_quantity: string;
             uom: string;
             planned_start_date: string;
             planned_end_date: string;
-            standard_cost_total: number;
-            actual_cost_total: number;
-            variance_total: number;
-            is_locked: boolean;
+            actual_start_date: string | null;
+            actual_end_date: string | null;
+            standard_unit_cost: string;
+            standard_cost_total: string;
+            actual_material_cost: string;
+            actual_labor_cost: string;
+            actual_overhead_cost: string;
+            actual_subcontract_cost: string;
+            received_value: string;
+            wip_balance: string;
+            actual_cost_total: string;
+            variance_total: string;
+            material_variance: string;
+            labor_variance: string;
+            overhead_variance: string;
+            subcontract_variance: string;
+            variance_journal_entry_id: string | null;
+            released_at: string | null;
+            closed_at: string | null;
+            notes: string | null;
+            lines?: {
+                id: string;
+                mfg_item_id: string;
+                issue_method: string;
+                operation_sequence: number | null;
+                quantity_per_unit: string;
+                required_quantity: string;
+                reserved_quantity: string;
+                issued_quantity: string;
+                open_quantity: string;
+                uom: string;
+                standard_unit_cost: string;
+                issued_cost: string;
+                warehouse_id: string | null;
+            }[];
+            operations?: {
+                id: string;
+                sequence: number;
+                operation_code: string | null;
+                name: string | null;
+                work_center_id: string;
+                status: string;
+                is_subcontracted: boolean;
+                scheduled_date: string | null;
+                planned_setup_minutes: string;
+                planned_run_minutes: string;
+                planned_labor_minutes: string;
+                actual_setup_minutes: string;
+                actual_run_minutes: string;
+                actual_labor_minutes: string;
+                labor_rate: string;
+                overhead_rate: string;
+                actual_labor_cost: string;
+                actual_overhead_cost: string;
+                completed_quantity: string;
+                scrapped_quantity: string;
+            }[];
             created_at: string | null;
         };
         /** MfgQualityInspectionResource */
@@ -27621,37 +33461,74 @@ export interface components {
             id: string;
             inspection_number: string;
             quality_plan_id: string;
+            inspection_point: string;
             production_order_id: string | null;
-            operation_id: string | null;
-            status: string;
+            production_order_operation_id: string | null;
+            material_movement_id: string | null;
+            mfg_item_id: string | null;
+            inspector_id: string | null;
             sample_size: number;
             defect_count: number;
+            quantity_inspected: string;
+            quantity_accepted: string;
+            quantity_rejected: string;
+            status: string;
             inspected_at: string | null;
             notes: string | null;
+            characteristic_results: {
+                [key: string]: unknown;
+            }[] | null;
+            non_conformances?: components["schemas"]["MfgNonConformanceResource"][];
         };
-        /** MfgQualityNonConformance */
-        MfgQualityNonConformance: {
+        /** MfgQualityPlanResource */
+        MfgQualityPlanResource: {
             id: string;
-            tenant_id: string;
-            nc_number: string;
-            quality_inspection_id: string | null;
-            production_order_id: string | null;
-            severity: string;
-            defect_type: string;
-            description: string;
-            disposition: string;
-            corrective_action: string | null;
+            plan_code: string;
+            name: string;
+            inspection_type: string;
+            mfg_item_id: string | null;
+            description: string | null;
+            acceptance_defect_limit: number;
+            is_active: boolean;
+            characteristics?: {
+                id: string;
+                characteristic_name: string;
+                target_value: string | null;
+                min_tolerance: string | null;
+                max_tolerance: string | null;
+                uom: string;
+                inspection_method: string | null;
+                is_critical: boolean;
+            }[];
+        };
+        /** MfgRoutingResource */
+        MfgRoutingResource: {
+            id: string;
+            routing_number: string;
+            mfg_item_id: string;
+            name: string;
+            revision: string;
             status: string;
-            reported_by: string | null;
-            resolved_by: string | null;
-            /** Format: date-time */
-            resolved_at: string | null;
-            /** Format: date-time */
+            is_default: boolean;
+            effective_from: string | null;
+            effective_to: string | null;
+            notes: string | null;
+            operations?: {
+                id: string;
+                sequence: number;
+                operation_code: string;
+                name: string;
+                work_center_id: string;
+                machine_center_id: string | null;
+                setup_time_minutes: string;
+                run_time_minutes_per_unit: string;
+                labor_time_minutes_per_unit: string;
+                is_subcontracted: boolean;
+                subcontractor_contact_id: string | null;
+                subcontract_unit_cost: string;
+                quality_plan_id: string | null;
+            }[];
             created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
         };
         /** MfgShopFloorExecutionResource */
         MfgShopFloorExecutionResource: {
@@ -27663,15 +33540,96 @@ export interface components {
             operator_id: string | null;
             machine_id: string | null;
             status: string;
-            good_units: number;
-            scrap_units: number;
+            good_units: string;
+            scrap_units: string;
+            downtime_minutes: string;
+            downtime_reason: string | null;
+            confirmation_id: string | null;
             started_at: string;
             completed_at: string | null;
-            downtime_reason: string | null;
+        };
+        /** MfgShortageResource */
+        MfgShortageResource: {
+            id: string;
+            mrp_run_id: string;
+            mfg_item_id: string;
+            required_date: string;
+            gross_requirement: string;
+            available_inventory: string;
+            scheduled_receipts: string;
+            safety_stock: string;
+            net_shortage: string;
+            recommended_action: string;
+        };
+        /** MfgSubcontractOrderResource */
+        MfgSubcontractOrderResource: {
+            id: string;
+            subcontract_number: string;
+            production_order_id: string;
+            production_order_operation_id: string;
+            subcontractor_contact_id: string;
+            source_warehouse_id: string;
+            subcontract_warehouse_id: string;
+            status: string;
+            quantity: string;
+            received_quantity: string;
+            scrapped_quantity: string;
+            unit_cost: string;
+            total_cost: string;
+            sent_at: string | null;
+            received_at: string | null;
+            notes: string | null;
+            lines?: {
+                id: string;
+                production_order_line_id: string;
+                mfg_item_id: string;
+                quantity_sent: string;
+                quantity_consumed: string;
+                quantity_returned: string;
+            }[];
+        };
+        /** MfgWorkCenterResource */
+        MfgWorkCenterResource: {
+            id: string;
+            work_center_code: string;
+            name: string;
+            description: string | null;
+            department_code: string | null;
+            capacity_hours_per_day: string;
+            efficiency_rate: string;
+            availability_rate: string;
+            hourly_cost_rate: string;
+            hourly_overhead_rate: string;
+            status: string;
+            calendar?: {
+                weekday: number;
+                available_hours: string;
+            }[];
+            created_at: string | null;
         };
         /** MissionReportRequest */
         MissionReportRequest: {
             answers: (string | null)[];
+        };
+        /**
+         * Modules.Associations.Http.Requests.ReasonRequest
+         * @description An operation that needs a written reason, such as cancelling a protocol entry.
+         */
+        "Modules.Associations.Http.Requests.ReasonRequest": {
+            reason: string;
+        };
+        /**
+         * Modules.Associations.Http.Requests.SendDocumentRequest
+         * @description Sends a notice or minutes on a messaging channel, to everybody, to those not reached yet or to a selection.
+         */
+        "Modules.Associations.Http.Requests.SendDocumentRequest": {
+            /**
+             * @description Channels a notice can travel on. The letter is a printable PDF that the association hands over or posts.
+             * @enum {string}
+             */
+            channel: "email" | "sms" | "whatsapp" | "telegram";
+            mode: components["schemas"]["DeliveryMode"];
+            member_ids?: string[];
         };
         /**
          * Modules.CRM.Http.Requests.GenerateForecastRequest
@@ -27695,6 +33653,13 @@ export interface components {
         "Modules.HumanResources.Http.Requests.RecordConsentRequest": {
             /** Format: date */
             consent_until: string;
+        };
+        /**
+         * Modules.Manufacturing.Http.Requests.ReasonRequest
+         * @description Validation of a reason (cancellation, rejection); required when `reason_required` is set by the route action.
+         */
+        "Modules.Manufacturing.Http.Requests.ReasonRequest": {
+            reason: string;
         };
         /** Modules.Procurement.Http.Requests.WorkflowActionRequest */
         "Modules.Procurement.Http.Requests.WorkflowActionRequest": {
@@ -27739,6 +33704,15 @@ export interface components {
             /** Format: date-time */
             scheduled_end?: string | null;
             location_address?: string | null;
+            items?: {
+                /** @enum {string|null} */
+                item_type?: "labor" | "part" | "expense" | null;
+                description?: string | null;
+                quantity?: number | null;
+                unit_cost?: number | null;
+                unit_price?: number | null;
+                is_billable?: boolean | null;
+            }[] | null;
             /** @enum {string|null} */
             billing_type?: "contract_included" | "time_and_materials" | "fixed_fee" | "non_billable" | "internal_cost" | null;
         };
@@ -27765,9 +33739,14 @@ export interface components {
             actual_end: string | null;
             location_address: string;
             billing_type: string;
-            total_labor_hours: number;
-            total_cost: number;
-            total_billed_amount: number;
+            total_labor_hours: string;
+            labor_cost: string;
+            material_cost: string;
+            total_cost: string;
+            total_billed_amount: string;
+            currency: unknown;
+            is_invoiced: boolean;
+            invoice_id: unknown;
             is_invoice_ready: boolean;
             is_locked: boolean;
             created_at: string | null;
@@ -27785,6 +33764,12 @@ export interface components {
             /** Format: uuid */
             pipeline_stage_id: string;
         };
+        /**
+         * Network
+         * @description Allowed values of network in the EDocumentNetworks module.
+         * @enum {string}
+         */
+        Network: "ebill" | "peppol" | "nso";
         /** OpenPayslipLinkRequest */
         OpenPayslipLinkRequest: {
             /** Format: date */
@@ -27837,6 +33822,30 @@ export interface components {
          */
         OutcomeRequest: {
             outcome: string;
+        };
+        /** OvertimeRule */
+        OvertimeRule: {
+            id: string;
+            tenant_id: string;
+            code: string;
+            name: string;
+            basis: string;
+            threshold_minutes: number;
+            premium_percent: string;
+            wage_type_code: string | null;
+            priority: number;
+            /** Format: date */
+            valid_from: string | null;
+            /** Format: date */
+            valid_to: string | null;
+            is_active: boolean;
+            source_reference: string | null;
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+            /** Format: date-time */
+            deleted_at: string | null;
         };
         /** PackPickListRequest */
         PackPickListRequest: {
@@ -27897,6 +33906,9 @@ export interface components {
             /** Format: date-time */
             approval_decided_at: string | null;
             stamp_duty_amount: string;
+            purchase_order_id: string | null;
+            match_status: string | null;
+            approval_status_before_block: string | null;
         };
         /** PassiveInvoiceLine */
         PassiveInvoiceLine: {
@@ -28001,6 +34013,36 @@ export interface components {
          * @enum {string}
          */
         PaymentMethod: "cash" | "bank_transfer" | "card" | "online" | "cheque";
+        /** PaymentProposalResource */
+        PaymentProposalResource: {
+            id: string;
+            proposal_number: string;
+            status: string;
+            bank_account_id: string;
+            format: string;
+            execution_date: string;
+            due_until: string;
+            include_discounts: boolean;
+            currency: string;
+            total_amount: string;
+            total_discount: string;
+            item_count: number;
+            created_by: string;
+            approved_by: string | null;
+            approved_at: string | null;
+            rejection_reason: string | null;
+            payment_batch_id: string | null;
+            lines?: {
+                passive_invoice_id: string;
+                supplier_id: string;
+                selection_reason: string;
+                due_date: string | null;
+                discount_deadline: string | null;
+                open_amount: string;
+                discount_amount: string;
+                amount: string;
+            }[];
+        };
         /** PaymentResource */
         PaymentResource: unknown[];
         /** PayrollLedgerPosting */
@@ -28094,10 +34136,10 @@ export interface components {
         };
         /**
          * PickingStrategy
-         * @description The order stock leaves the warehouse: first expired first out, or first in first out.
+         * @description The order stock leaves the warehouse: first in first out, first expired first out, or last in first out (bulk goods stacked so that the newest is on top, e.g. sand, gravel, stacked panels).
          * @enum {string}
          */
-        PickingStrategy: "fifo" | "fefo";
+        PickingStrategy: "fifo" | "fefo" | "lifo";
         /**
          * PlaceLegalHoldRequest
          * @description Validates the input of the place legal hold operation (authorization is decided by module.access).
@@ -28298,6 +34340,14 @@ export interface components {
             readiness_level: string | null;
             is_active: boolean;
         };
+        /**
+         * PostingDateRequest
+         * @description Validation of the optional document date of a posting (default today).
+         */
+        PostingDateRequest: {
+            /** Format: date-time */
+            posting_date?: string | null;
+        };
         /** PracticeResource */
         PracticeResource: {
             [key: string]: unknown;
@@ -28369,10 +34419,12 @@ export interface components {
         /** ProcessGoodsReceiptRequest */
         ProcessGoodsReceiptRequest: {
             supplier_delivery_note_ref: string;
-            /** Format: date-time */
+            /** Format: date */
             received_date: string;
             /** Format: uuid */
             warehouse_id?: string | null;
+            inspection_required?: boolean;
+            receipt_number?: string;
             /** @enum {string|null} */
             inspection_status?: "passed" | "failed" | "conditional" | null;
             notes?: string | null;
@@ -28380,8 +34432,11 @@ export interface components {
                 /** Format: uuid */
                 purchase_order_line_id: string;
                 quantity_received: number;
-                quantity_accepted: number;
+                quantity_accepted?: number | null;
                 quantity_rejected?: number | null;
+                serial_numbers?: string[] | null;
+                /** Format: uuid */
+                warehouse_bin_id?: string | null;
                 lot_number?: string | null;
                 serial_number?: string | null;
                 /** Format: uuid */
@@ -28394,18 +34449,48 @@ export interface components {
             /** Format: uuid */
             purchase_receipt_id?: string | null;
             /** Format: uuid */
-            supplier_id: string;
-            /** Format: date-time */
+            supplier_id?: string | null;
+            /** Format: date */
             return_date: string;
+            /** @enum {string|null} */
+            return_type?: "credit" | "replacement" | null;
             reason?: string | null;
             notes?: string | null;
             lines: {
                 /** Format: uuid */
-                purchase_order_line_id: string;
+                purchase_order_line_id?: string | null;
+                /** Format: uuid */
+                purchase_receipt_line_id?: string | null;
                 quantity_returned: number;
-                unit_price: number;
+                unit_price?: number | null;
                 reason?: string | null;
             }[];
+        };
+        /**
+         * ProcurementDecisionRequest
+         * @description Small decisions on procurement documents: a reason, the ids of suggestions to order, or the credit note of a return.
+         */
+        ProcurementDecisionRequest: {
+            reason?: string | null;
+            suggestion_ids?: string[];
+            /** Format: uuid */
+            passive_invoice_id?: string | null;
+            credit_note_reference?: string | null;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+        };
+        /**
+         * ProcurementPeriodRequest
+         * @description A period (`from`, `to`) for analytics and supplier evaluation; defaults to the current year up to today.
+         */
+        ProcurementPeriodRequest: {
+            /** Format: date */
+            from?: string | null;
+            /** Format: date */
+            to?: string | null;
+            comments?: string | null;
+            /** @enum {string|null} */
+            dimension?: "supplier" | "category" | "cost_center" | null;
         };
         /** Product */
         Product: {
@@ -28969,32 +35054,13 @@ export interface components {
             is_locked: string;
             created_by: string | null;
             updated_by: string | null;
-        };
-        /** PurchaseOrderLine */
-        PurchaseOrderLine: {
-            id: string;
-            tenant_id: string;
-            purchase_order_id: string;
-            line_number: number;
-            supplier_catalog_id: string | null;
-            description: string;
-            quantity_ordered: string;
-            quantity_received: string;
-            quantity_invoiced: string;
-            quantity_cancelled: string;
-            uom: string;
-            unit_price: string;
-            tax_rate: string;
-            line_net_amount: string;
-            line_tax_amount: string;
-            line_total_amount: string;
-            is_closed: boolean;
-            /** Format: date-time */
-            created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
+            submitted_at: string | null;
+            approved_at: string | null;
+            approved_by: string | null;
+            sent_at: string | null;
+            closed_at: string | null;
+            workflow_instance_id: string | null;
+            rfq_id: string | null;
         };
         /** PurchaseOrderResource */
         PurchaseOrderResource: {
@@ -29002,57 +35068,88 @@ export interface components {
             po_number: string;
             supplier_id: string;
             status: string;
-            order_type: string;
+            order_type: string | null;
             order_date: string | null;
             expected_delivery_date: string | null;
             currency: string;
-            exchange_rate: number;
-            net_amount: number;
-            tax_amount: number;
-            total_amount: number;
+            exchange_rate: string;
+            net_amount: string;
+            tax_amount: string;
+            total_amount: string;
             is_budget_encumbered: boolean;
-            budget_committed_amount: number;
+            budget_committed_amount: string;
             is_locked: boolean;
+            supplier_contract_id: string | null;
+            purchase_requisition_id: string | null;
+            rfq_id: string | null;
+            cost_center_id: string | null;
+            project_id: string | null;
+            workflow_instance_id: string | null;
+            submitted_at: string | null;
+            approved_at: string | null;
+            approved_by: string | null;
+            sent_at: string | null;
             payment_terms_code: string | null;
             incoterms: string | null;
-            shipping_address: unknown[];
+            shipping_address: {
+                [key: string]: unknown;
+            } | null;
+            notes: string | null;
             supplier?: components["schemas"]["SupplierResource"];
-            lines?: components["schemas"]["PurchaseOrderLine"][];
+            lines?: {
+                id: string;
+                line_number: number;
+                description: string;
+                supplier_catalog_id: string | null;
+                supplier_contract_line_id: string | null;
+                quantity_ordered: string;
+                quantity_received: string;
+                quantity_returned: string;
+                quantity_invoiced: string;
+                uom: string;
+                unit_price: string;
+                list_unit_price: string | null;
+                tax_rate: string;
+                line_net_amount: string;
+                line_tax_amount: string;
+                line_total_amount: string;
+                is_closed: boolean;
+            }[];
             receipts?: components["schemas"]["PurchaseReceiptResource"][];
             created_at: string | null;
             updated_at: string | null;
-        };
-        /** PurchaseReceiptLine */
-        PurchaseReceiptLine: {
-            id: string;
-            tenant_id: string;
-            purchase_receipt_id: string;
-            purchase_order_line_id: string;
-            quantity_received: string;
-            quantity_accepted: string;
-            quantity_rejected: string;
-            lot_number: string | null;
-            serial_number: string | null;
-            warehouse_location_id: string | null;
-            rejection_reason: string | null;
-            /** Format: date-time */
-            created_at: string | null;
-            /** Format: date-time */
-            updated_at: string | null;
-            /** Format: date-time */
-            deleted_at: string | null;
         };
         /** PurchaseReceiptResource */
         PurchaseReceiptResource: {
             id: string;
             receipt_number: string;
             purchase_order_id: string;
-            supplier_delivery_note_ref: string;
-            received_date: string;
+            supplier_delivery_note_ref: string | null;
+            received_date: string | null;
             received_by_user_id: string;
             warehouse_id: string | null;
-            inspection_status: string;
-            lines?: components["schemas"]["PurchaseReceiptLine"][];
+            inspection_required: boolean;
+            inspection_status: string | null;
+            inspected_at: string | null;
+            landed_cost_amount: string;
+            lines?: {
+                id: string;
+                purchase_order_line_id: string;
+                quantity_received: string;
+                quantity_accepted: string;
+                quantity_rejected: string;
+                quantity_released: string;
+                quantity_returned: string;
+                unit_cost: string | null;
+                inspection_status: string;
+                lot_number: string | null;
+                serial_numbers: [
+                    string | null
+                ] | string[];
+                warehouse_bin_id: string | null;
+                landed_cost_amount: string;
+                rejection_reason: string | null;
+            }[];
             created_at: string | null;
         };
         /** PurchaseRequest */
@@ -29101,7 +35198,7 @@ export interface components {
             title: string;
             status: string;
             urgency: string;
-            required_by_date: string;
+            required_by_date: string | null;
             total_estimated_amount: number;
             currency: string;
             project_id: string | null;
@@ -29127,6 +35224,7 @@ export interface components {
             updated_at: string | null;
             /** Format: date-time */
             deleted_at: string | null;
+            purchase_receipt_line_id: string | null;
         };
         /** PurchaseReturnResource */
         PurchaseReturnResource: {
@@ -29134,12 +35232,71 @@ export interface components {
             return_number: string;
             purchase_order_id: string;
             supplier_id: string;
-            return_date: string;
+            return_date: string | null;
             status: string;
             total_amount: number;
             reason: string | null;
             lines?: components["schemas"]["PurchaseReturnLine"][];
             created_at: string | null;
+        };
+        /** PurchaseSuggestionResource */
+        PurchaseSuggestionResource: {
+            id: string;
+            source: string;
+            source_id: string | null;
+            stock_item_id: string | null;
+            warehouse_id: string | null;
+            supplier_id: string | null;
+            supplier_catalog_id: string | null;
+            description: string;
+            quantity: string;
+            uom: string;
+            unit_price: string | null;
+            required_by_date: string | null;
+            status: string;
+            purchase_order_id: string | null;
+        };
+        /**
+         * PutawayRequest
+         * @description A putaway suggestion (warehouse, item, quantity) or a putaway move (source bin, item, quantity, optional lot and
+         *     destination bin).
+         */
+        PutawayRequest: {
+            /** Format: uuid */
+            warehouse_id?: string;
+            /** Format: uuid */
+            source_bin_id: string;
+            /** Format: uuid */
+            destination_bin_id?: string | null;
+            /** Format: uuid */
+            stock_item_id: string;
+            /** Format: uuid */
+            lot_id?: string | null;
+            quantity: number;
+            limit?: number;
+        };
+        /**
+         * PutawayRuleRequest
+         * @description A putaway rule: for an item, an item category or every item of a warehouse, where its stock goes (a bin, a zone or
+         *     a bin type) and how the bin is chosen. Creating needs the warehouse and a target; updating may change any field.
+         */
+        PutawayRuleRequest: {
+            /** Format: uuid */
+            warehouse_id: string;
+            /** Format: uuid */
+            stock_item_id?: string | null;
+            /** Format: uuid */
+            category_id?: string | null;
+            /** Format: uuid */
+            target_zone_id?: string | null;
+            /** Format: uuid */
+            target_bin_id?: string | null;
+            /** @enum {string|null} */
+            bin_type?: "storage" | "picking" | "bulk" | null;
+            /** @enum {string} */
+            strategy: "fixed_location" | "consolidate" | "empty_bin";
+            priority?: number;
+            is_active?: boolean;
         };
         /** QuoteResource */
         QuoteResource: unknown[];
@@ -29155,7 +35312,7 @@ export interface components {
         RateBasis: "flat" | "per_kg" | "per_m3";
         /**
          * ReasonRequest
-         * @description An operation that needs a written reason, such as cancelling a protocol entry.
+         * @description An action that needs a reason kept in the history (cancelling a leave request, reopening a closed month).
          */
         ReasonRequest: {
             reason: string;
@@ -29207,6 +35364,46 @@ export interface components {
             provider?: string | null;
             file_name?: string | null;
             xml: string;
+        };
+        /**
+         * ReceiveOutputRequest
+         * @description Validation of an output receipt: quantity, lot number or serial numbers for tracked items, warehouse and date.
+         */
+        ReceiveOutputRequest: {
+            quantity: number;
+            lot_number?: string | null;
+            serial_numbers?: string[] | null;
+            /** Format: uuid */
+            warehouse_id?: string | null;
+            /** Format: date-time */
+            posting_date?: string | null;
+        };
+        /**
+         * ReceiveSalesReturnRequest
+         * @description Receipt of an authorised return: optionally the warehouse and, per line, the quantity received, its condition and
+         *     whether it goes back into stock (every line is received in full when no line is given).
+         */
+        ReceiveSalesReturnRequest: {
+            /** Format: uuid */
+            warehouse_id?: string | null;
+            items?: {
+                /** Format: uuid */
+                id: string;
+                quantity_received: number;
+                /** @enum {string|null} */
+                condition?: "resellable" | "damaged" | null;
+                restock?: boolean | null;
+            }[];
+        };
+        /**
+         * ReceiveSubcontractRequest
+         * @description Validation of processed quantity received back from a subcontractor.
+         */
+        ReceiveSubcontractRequest: {
+            good_quantity: number;
+            scrap_quantity?: number | null;
+            /** Format: date-time */
+            posting_date?: string | null;
         };
         /**
          * RecognizeRevenueRequest
@@ -29281,6 +35478,14 @@ export interface components {
             cost_center_id?: string | null;
         };
         /**
+         * RecordDowntimeRequest
+         * @description Validation of downtime reported on a job card.
+         */
+        RecordDowntimeRequest: {
+            downtime_minutes: number;
+            reason: string;
+        };
+        /**
          * RecordExpenseRequest
          * @description An expense of a campaign or of the 5x1000.
          */
@@ -29326,44 +35531,37 @@ export interface components {
             reference?: string | null;
             receipt_kind?: components["schemas"]["ReceiptKind"] | null;
         };
-        /** RecordQualityInspectionRequest */
+        /**
+         * RecordQualityInspectionRequest
+         * @description Validation of a quality inspection at receipt, operation or final point.
+         */
         RecordQualityInspectionRequest: {
             /** Format: uuid */
             quality_plan_id: string;
+            /** @enum {string} */
+            inspection_point: "receipt" | "operation" | "final";
             /** Format: uuid */
             production_order_id?: string | null;
             /** Format: uuid */
-            operation_id?: string | null;
+            production_order_operation_id?: string | null;
             /** Format: uuid */
-            inspector_id?: string | null;
+            material_movement_id?: string | null;
             sample_size?: number | null;
             defect_count?: number | null;
+            quantity_inspected?: number | null;
+            quantity_rejected?: number | null;
             notes?: string | null;
-            characteristic_results?: string[] | null;
+            characteristic_results?: {
+                /** Format: uuid */
+                characteristic_id: string;
+                measured_value: number;
+            }[] | null;
         };
         /** RecordReimbursementRequest */
         RecordReimbursementRequest: {
             amount: number;
             /** Format: date */
             paid_on?: string | null;
-        };
-        /** RecordShopFloorExecutionRequest */
-        RecordShopFloorExecutionRequest: {
-            /** Format: uuid */
-            production_order_id: string;
-            /** Format: uuid */
-            production_order_operation_id: string;
-            /** Format: uuid */
-            work_center_id: string;
-            /** Format: uuid */
-            operator_id?: string | null;
-            /** Format: uuid */
-            machine_id?: string | null;
-            good_units?: number | null;
-            scrap_units?: number | null;
-            downtime_reason?: string | null;
-            labor_logs?: string[] | null;
-            machine_logs?: string[] | null;
         };
         /** RecordSportCompensationRequest */
         RecordSportCompensationRequest: {
@@ -29421,6 +35619,46 @@ export interface components {
             /** Format: date-time */
             updated_at: string | null;
         };
+        /** RecurringCashItemResource */
+        RecurringCashItemResource: {
+            id: string;
+            name: string;
+            category: string;
+            direction: string;
+            amount: string;
+            currency: string;
+            frequency: string;
+            next_date: string;
+            end_date: string | null;
+            is_active: boolean;
+        };
+        /** RecurringJournalResource */
+        RecurringJournalResource: {
+            id: string;
+            name: string;
+            description: string;
+            frequency: string;
+            start_date: string | null;
+            end_date: string | null;
+            next_run_date: string | null;
+            last_run_date: string | null;
+            reverse_next_day: boolean;
+            status: string;
+            lines: {
+                account_id: string;
+                debit_amount: string;
+                credit_amount: string;
+                description?: string | null;
+                cost_center_id?: string | null;
+                profit_center_id?: string | null;
+            }[];
+            runs?: {
+                run_date: string | null;
+                journal_entry_id: string;
+            }[];
+            created_by: string | null;
+            created_at: string | null;
+        };
         /**
          * RegimeFiscale
          * @description RegimeFiscaleType of the FatturaPA schema v1.2.3 (the schema has no RF03).
@@ -29477,6 +35715,13 @@ export interface components {
             /** Format: date-time */
             deleted_at: string | null;
         };
+        /**
+         * RejectJournalEntryRequest
+         * @description The reason of a rejected journal, kept for the audit trail.
+         */
+        RejectJournalEntryRequest: {
+            reason: string;
+        };
         /** RejectPortalQuoteRequest */
         RejectPortalQuoteRequest: {
             reason?: string | null;
@@ -29486,11 +35731,32 @@ export interface components {
             reason?: string | null;
         };
         /**
+         * RejectSalesReturnRequest
+         * @description Refusal of a return request, with the reason given to the customer.
+         */
+        RejectSalesReturnRequest: {
+            reason: string;
+        };
+        /**
          * RejectionRequest
          * @description A rejection must say why, so the author knows what to correct.
          */
         RejectionRequest: {
             reason: string;
+        };
+        /**
+         * ReleasePickWaveRequest
+         * @description Releasing a picking wave: the warehouse, the sales orders it serves and the staging bin the picks go to.
+         */
+        ReleasePickWaveRequest: {
+            /** Format: uuid */
+            warehouse_id: string;
+            /** Format: uuid */
+            staging_bin_id: string;
+            sales_order_ids: string[];
+            /** Format: uuid */
+            assigned_picker_user_id?: string | null;
+            notes?: string | null;
         };
         /**
          * RenewContractRequest
@@ -29552,6 +35818,25 @@ export interface components {
         ReopenPayrollRunRequest: {
             reason: string;
         };
+        /**
+         * ReorderRuleRequest
+         * @description A min/max reorder rule of an item in a warehouse. The levels must be consistent: minimum <= reorder point <= maximum.
+         *     Every value is the company's: nothing is defaulted except the lead time, which keeps its column default.
+         */
+        ReorderRuleRequest: {
+            /** Format: uuid */
+            warehouse_id: string;
+            /** Format: uuid */
+            stock_item_id: string;
+            min_stock_level: number;
+            reorder_point: number;
+            max_stock_level: number;
+            economic_order_quantity: number;
+            lead_time_days?: number;
+            /** Format: uuid */
+            preferred_supplier_id?: string | null;
+            auto_trigger_requisition?: boolean;
+        };
         /** RepairOrder */
         RepairOrder: {
             id: string;
@@ -29608,6 +35893,20 @@ export interface components {
             author_name?: string | null;
             attachments?: string[] | null;
         };
+        /** ReportDefinitionResource */
+        ReportDefinitionResource: {
+            id: string;
+            user_id: string;
+            name: string;
+            description: string | null;
+            kpis: string[];
+            period_preset: string;
+            from_date: string | null;
+            to_date: string | null;
+            compare: string;
+            is_shared: boolean;
+            is_owner: boolean;
+        };
         /**
          * ReportingClass
          * @description Class of an account for the cash flow statement and the ratios.
@@ -29618,16 +35917,45 @@ export interface components {
         RequestAffiliationRequest: {
             affiliation_code: string;
         };
+        /**
+         * RescheduleRequest
+         * @description Validation of new planned dates of a production order.
+         */
+        RescheduleRequest: {
+            /** Format: date-time */
+            planned_start_date: string;
+            /** Format: date-time */
+            planned_end_date: string;
+        };
         /** ResendVerificationRequest */
         ResendVerificationRequest: {
             /** Format: email */
             email: string;
+        };
+        /**
+         * ReserveSalesOrderRequest
+         * @description Reserving stock for a sales order: the warehouse to reserve in, and optionally when the reservations lapse.
+         */
+        ReserveSalesOrderRequest: {
+            /** Format: uuid */
+            warehouse_id: string;
+            /** Format: date-time */
+            expires_at?: string | null;
         };
         /** ResetPasswordRequest */
         ResetPasswordRequest: {
             token: string;
             password: string;
             password_confirmation: string;
+        };
+        /**
+         * ResolveNonConformanceRequest
+         * @description Validation of the closing disposition of a non-conformance.
+         */
+        ResolveNonConformanceRequest: {
+            /** @enum {string} */
+            disposition: "use_as_is" | "rework" | "scrap" | "return_to_supplier";
+            corrective_action: string;
         };
         /** ResolveTicketRequest */
         ResolveTicketRequest: {
@@ -29697,10 +36025,82 @@ export interface components {
             /** Format: date */
             reversed_on?: string | null;
         };
-        /** ReviseBomRequest */
+        /**
+         * ReviseBomRequest
+         * @description Validation of a new revision copied from an existing one, with optional component changes.
+         */
         ReviseBomRequest: {
-            new_revision: string;
+            new_revision?: string | null;
             reason: string;
+            /** Format: date-time */
+            effective_from?: string | null;
+            components?: {
+                /** @enum {string} */
+                action: "add" | "update" | "remove";
+                /** Format: uuid */
+                component_item_id: string;
+                quantity_per?: number | null;
+                scrap_percentage?: number | null;
+                yield_percentage?: number | null;
+                is_phantom?: boolean | null;
+                /** @enum {string|null} */
+                issue_method?: "manual" | "backflush" | null;
+                operation_sequence?: number | null;
+            }[] | null;
+        };
+        /**
+         * ReviseQuoteRequest
+         * @description What changes in a quote revision; every omitted field is taken from the revised quote (its lines included).
+         */
+        ReviseQuoteRequest: {
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            valid_until?: string | null;
+            notes?: string | null;
+            custom_text?: string | null;
+            items?: {
+                /** Format: uuid */
+                product_id?: string | null;
+                description?: string;
+                quantity?: number;
+                unit_price?: number;
+                tax_rate?: number;
+                discount_percentage?: number | null;
+            }[];
+        };
+        /** RfqResource */
+        RfqResource: {
+            id: string;
+            rfq_number: string;
+            title: string;
+            status: string;
+            purchase_requisition_id: string | null;
+            issue_date: string | null;
+            response_deadline: string;
+            currency: string;
+            cost_center_id: string | null;
+            awarded_supplier_id: string | null;
+            awarded_quote_id: string | null;
+            purchase_order_id: string | null;
+            notes: string | null;
+            lines?: {
+                id: string;
+                line_number: number;
+                description: string;
+                internal_sku: string | null;
+                quantity: string;
+                uom: string;
+                required_by_date: string | null;
+            }[];
+            suppliers?: {
+                supplier_id: string;
+                status: string;
+                invited_at: string | null;
+                responded_at: string | null;
+            }[];
+            quotes?: components["schemas"]["SupplierQuoteResource"][];
+            created_at: string | null;
         };
         /** RibaPresentation */
         RibaPresentation: {
@@ -29750,6 +36150,28 @@ export interface components {
             [key: string]: unknown;
         };
         /**
+         * RunBillingPlansRequest
+         * @description The billing plan run: every pending item due on or before a date.
+         */
+        RunBillingPlansRequest: {
+            /** Format: date-time */
+            up_to_date: string;
+        };
+        /**
+         * RunDeferredInvoicingRequest
+         * @description The deferred billing run: every dispatched delivery note up to a date, optionally of one customer.
+         */
+        RunDeferredInvoicingRequest: {
+            /** Format: date-time */
+            up_to_date: string;
+            /** Format: uuid */
+            contact_id?: string | null;
+            /** Format: date-time */
+            date?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+        };
+        /**
          * RunDepreciationRequest
          * @description Validation of a depreciation run or simulation.
          */
@@ -29766,7 +36188,10 @@ export interface components {
             units_produced_by_asset_id?: number[] | null;
             auto_post_to_gl?: boolean | null;
         };
-        /** RunMrpRequest */
+        /**
+         * RunMrpRequest
+         * @description Validation of an MRP run: horizon of at most two years, optional items.
+         */
         RunMrpRequest: {
             /** Format: date-time */
             horizon_start_date: string;
@@ -29950,6 +36375,7 @@ export interface components {
             deleted_at: string | null;
             product_charge_type_id: string | null;
             cost_center_id: string | null;
+            deducted_invoice_item_id: string | null;
         };
         /** SalesInvoiceResource */
         SalesInvoiceResource: {
@@ -29963,6 +36389,10 @@ export interface components {
             due_date: string | null;
             currency: string;
             exchange_rate: number;
+            exchange_rate_source: string | null;
+            exchange_rate_date: string | null;
+            payment_term_id: string | null;
+            is_deposit: boolean;
             subtotal: number;
             discount_amount: number;
             total_net: number;
@@ -30089,6 +36519,14 @@ export interface components {
             created_at: string | null;
             updated_at: string | null;
         };
+        /**
+         * SalesOrderWarehouseRequest
+         * @description The warehouse an order is checked against or reserved in (the primary warehouse of the company when omitted).
+         */
+        SalesOrderWarehouseRequest: {
+            /** Format: uuid */
+            warehouse_id?: string | null;
+        };
         /** SalesQuoteItem */
         SalesQuoteItem: {
             id: string;
@@ -30135,6 +36573,45 @@ export interface components {
             items?: components["schemas"]["SalesQuoteItem"][];
             created_at: string | null;
             updated_at: string | null;
+        };
+        /** SalesReturnResource */
+        SalesReturnResource: {
+            id: string;
+            return_number: string;
+            date: string;
+            status: string;
+            contact_id: string;
+            contact?: {
+                id: string;
+                name: string | null;
+            };
+            sales_order_id: string | null;
+            delivery_note_id: string | null;
+            invoice_id: string | null;
+            warehouse_id: string | null;
+            reason: string;
+            notes: string | null;
+            rejection_reason: string | null;
+            credit_note_id: string | null;
+            approved_at: string | null;
+            received_at: string | null;
+            credited_at: string | null;
+            items?: {
+                id: string;
+                delivery_note_item_id: string | null;
+                invoice_item_id: string | null;
+                sales_order_item_id: string | null;
+                product_id: string | null;
+                description: string;
+                quantity: string;
+                quantity_received: string;
+                unit_price: string;
+                tax_rate: string;
+                discount_percentage: string;
+                condition: string | null;
+                restock: boolean;
+            }[];
+            created_at: string | null;
         };
         /** SalesTarget */
         SalesTarget: {
@@ -30306,6 +36783,42 @@ export interface components {
             /** @enum {string} */
             status?: "planning" | "active" | "paused" | "completed";
         };
+        /**
+         * SaveContractObligationRequest
+         * @description Validates an obligation or milestone of a contract (access is decided by module.access).
+         */
+        SaveContractObligationRequest: {
+            title: string;
+            /** @enum {string} */
+            type: "obligation" | "milestone";
+            description?: string | null;
+            /** @enum {string|null} */
+            responsible_party?: "own" | "counterparty" | null;
+            /** Format: uuid */
+            owner_user_id?: string | null;
+            /** Format: date */
+            due_date: string;
+            amount?: number | null;
+            currency?: string | null;
+            remind_days_before?: number | null;
+        };
+        /**
+         * SaveContractPartyRequest
+         * @description Validates a party linked to a contract. A linked party must belong to the active company (a user must be a member of
+         *     it); an external party is just a name (access is decided by module.access).
+         */
+        SaveContractPartyRequest: {
+            /** @enum {string} */
+            party_type: "contact" | "supplier" | "user" | "external";
+            /** Format: uuid */
+            party_id: string | null;
+            name?: string | null;
+            /** @enum {string} */
+            role: "signatory" | "guarantor" | "subcontractor" | "witness" | "beneficiary" | "representative" | "other";
+            /** Format: email */
+            email?: string | null;
+            notes?: string | null;
+        };
         /** SaveCourseRequest */
         SaveCourseRequest: {
             kind?: components["schemas"]["CourseKind"];
@@ -30474,6 +36987,23 @@ export interface components {
             delivered_on?: string | null;
             recipient?: string | null;
         };
+        /**
+         * SaveDepartmentRequest
+         * @description A department of the org chart; every reference must belong to the active company.
+         */
+        SaveDepartmentRequest: {
+            code: string;
+            name: string;
+            /** Format: uuid */
+            parent_id?: string | null;
+            /** Format: uuid */
+            business_unit_id?: string | null;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            /** Format: uuid */
+            manager_employee_id?: string | null;
+            is_active?: boolean;
+        };
         /** SaveDossierRequest */
         SaveDossierRequest: {
             /** Format: uuid */
@@ -30576,6 +37106,21 @@ export interface components {
                 required?: boolean;
                 options?: string[];
             }[] | null;
+        };
+        /**
+         * SaveEscalationRuleRequest
+         * @description An escalation rule: when a pending approval step is reminded, to whom and when it escalates, and what the engine
+         *     decides by itself when the time limit runs out (access is decided by module.access:workflow_design).
+         */
+        SaveEscalationRuleRequest: {
+            name: string;
+            reminder_hours: number;
+            escalation_hours: number;
+            /** @enum {string} */
+            escalate_to_type: "reporting_manager" | "specific_role" | "specific_user";
+            escalate_to_id?: string | null;
+            /** @enum {string|null} */
+            auto_action?: "none" | "auto_approve" | "auto_reject" | null;
         };
         /** SaveFamilyAllowanceRateRequest */
         SaveFamilyAllowanceRateRequest: {
@@ -30683,6 +37228,50 @@ export interface components {
             sequence?: number | null;
             is_active?: boolean | null;
         };
+        /**
+         * SaveLeaveAccrualPolicyRequest
+         * @description An accrual policy of a leave type. source_reference records where the entitlement comes from (contract clause,
+         *     collective agreement article, law): the application does not supply statutory values.
+         */
+        SaveLeaveAccrualPolicyRequest: {
+            /** Format: uuid */
+            leave_type_id: string;
+            code: string;
+            name: string;
+            /** @enum {string|null} */
+            employment_type?: "full_time" | "part_time" | "contractor" | "apprentice" | "seasonal" | null;
+            annual_entitlement_hours: number;
+            /** @enum {string} */
+            accrual_frequency?: "monthly" | "yearly";
+            prorate_by_fte?: boolean;
+            max_balance_hours?: number | null;
+            max_carryover_hours?: number | null;
+            /** Format: date */
+            valid_from: string;
+            /** Format: date */
+            valid_to?: string | null;
+            is_active?: boolean;
+            source_reference?: string | null;
+        };
+        /**
+         * SaveLeaveTypeRequest
+         * @description An absence (leave) type of the company. The yearly entitlement is company data (contract, collective agreement or
+         *     law as the company applies it); nothing is assumed.
+         */
+        SaveLeaveTypeRequest: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            category: "vacation" | "sick" | "maternity" | "paternity" | "parental" | "unpaid" | "rol" | "study" | "bereavement" | "military" | "accident" | "other";
+            is_paid?: boolean;
+            requires_approval?: boolean;
+            requires_attachment?: boolean;
+            annual_entitlement_hours: number;
+            /** @enum {string} */
+            accrual_frequency?: "monthly" | "yearly" | "none";
+            max_carryover_hours?: number;
+            is_active?: boolean;
+        };
         /** SaveLegalParametersRequest */
         SaveLegalParametersRequest: {
             parameters: string[];
@@ -30766,6 +37355,27 @@ export interface components {
                 due_after_days?: number | null;
             }[];
         };
+        /**
+         * SaveOvertimeRuleRequest
+         * @description An overtime rule of the company. Threshold and premium come from the law or the collective agreement the company
+         *     applies; source_reference records which one.
+         */
+        SaveOvertimeRuleRequest: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            basis: "daily" | "weekly";
+            threshold_minutes: number;
+            premium_percent: number;
+            wage_type_code?: string | null;
+            priority?: number;
+            /** Format: date */
+            valid_from?: string | null;
+            /** Format: date */
+            valid_to?: string | null;
+            is_active?: boolean;
+            source_reference?: string | null;
+        };
         /** SavePayrollInputRequest */
         SavePayrollInputRequest: {
             year: number;
@@ -30793,6 +37403,23 @@ export interface components {
             stale_days?: number | null;
             is_active?: boolean | null;
             reprice_open_opportunities?: boolean | null;
+        };
+        /**
+         * SavePositionRequest
+         * @description A position of the org chart; every reference must belong to the active company.
+         */
+        SavePositionRequest: {
+            code: string;
+            title: string;
+            /** Format: uuid */
+            department_id?: string | null;
+            /** Format: uuid */
+            job_grade_id?: string | null;
+            /** Format: uuid */
+            reports_to_position_id?: string | null;
+            headcount_budget?: number;
+            is_critical_role?: boolean;
+            is_active?: boolean;
         };
         /**
          * SavePriceItemRequest
@@ -30852,6 +37479,24 @@ export interface components {
         SaveRecruitingSettingsRequest: {
             retention_days: number;
         };
+        /**
+         * SaveReportDefinitionRequest
+         * @description Validates a saved report definition (access is decided by module.access and the policy of the definition).
+         */
+        SaveReportDefinitionRequest: {
+            name: string;
+            description?: string | null;
+            kpis: ("sales" | "purchases" | "margin" | "receivables-aging" | "payables-aging" | "stock-value" | "project-margin" | "hr-headcount")[];
+            /** @enum {string} */
+            period_preset: "custom" | "month_to_date" | "last_month" | "quarter_to_date" | "year_to_date" | "last_30_days";
+            /** Format: date */
+            from_date?: string | null;
+            /** Format: date */
+            to_date?: string | null;
+            /** @enum {string|null} */
+            compare?: "none" | "previous_period" | "previous_year" | null;
+            is_shared?: boolean | null;
+        };
         /** SaveRoutingRuleRequest */
         SaveRoutingRuleRequest: {
             name: string;
@@ -30876,6 +37521,21 @@ export interface components {
                 set_priority?: "low" | "medium" | "high" | "critical" | null;
                 add_tags?: string[];
             };
+        };
+        /**
+         * SaveSalaryComponentRequest
+         * @description A salary component of the active contract: the payroll wage type code it is paid with and the amount.
+         */
+        SaveSalaryComponentRequest: {
+            wage_type_code: string;
+            description: string;
+            amount: number;
+            /** @enum {string} */
+            frequency?: "monthly" | "annual";
+            /** Format: date */
+            valid_from?: string;
+            /** Format: date */
+            valid_to?: string | null;
         };
         /** SaveSalesTargetRequest */
         SaveSalesTargetRequest: {
@@ -31107,6 +37767,20 @@ export interface components {
             rate: number;
             minimum_charge?: number;
         };
+        /**
+         * SaveTemplateRequest
+         * @description Validates a message template: a code, a channel and a language that are unique together, a single-line subject, and a
+         *     body whose braces are all well-formed placeholders (access is decided by module.access).
+         */
+        SaveTemplateRequest: {
+            code: string;
+            /** @enum {string} */
+            channel: "email" | "whatsapp" | "telegram" | "sms";
+            locale: string;
+            subject?: string | null;
+            body: string;
+            is_active?: boolean | null;
+        };
         /** SaveTimeBadgeRequest */
         SaveTimeBadgeRequest: {
             /** Format: uuid */
@@ -31225,9 +37899,11 @@ export interface components {
                 /** @enum {string|null} */
                 approval_type?: "single" | "and_parallel" | "or_parallel" | "majority" | "supermajority" | "unanimous" | null;
                 /** @enum {string|null} */
-                assignee_type?: "direct_user" | "role" | "reporting_manager" | "matrix_lookup" | "matrix_sequential" | null;
+                assignee_type?: "direct_user" | "role" | "reporting_manager" | "matrix_lookup" | "matrix_sequential" | "user_list" | "user_list_sequential" | null;
                 assignee_id?: string | null;
                 timeout_hours?: number | null;
+                /** Format: uuid */
+                escalation_rule_id?: string | null;
             }[];
             transitions?: {
                 from: string;
@@ -31248,9 +37924,11 @@ export interface components {
             /** @enum {string|null} */
             approval_type?: "single" | "and_parallel" | "or_parallel" | "majority" | "supermajority" | "unanimous" | null;
             /** @enum {string|null} */
-            assignee_type?: "direct_user" | "role" | "reporting_manager" | "matrix_lookup" | "matrix_sequential" | null;
+            assignee_type?: "direct_user" | "role" | "reporting_manager" | "matrix_lookup" | "matrix_sequential" | "user_list" | "user_list_sequential" | null;
             assignee_id?: string | null;
             timeout_hours?: number | null;
+            /** Format: uuid */
+            escalation_rule_id?: string | null;
             ui_metadata?: string[];
         };
         /**
@@ -31316,16 +37994,18 @@ export interface components {
         };
         /**
          * SendDocumentRequest
-         * @description Sends a notice or minutes on a messaging channel, to everybody, to those not reached yet or to a selection.
+         * @description Validates the sending of an invoice or a quote on a channel (access is decided by module.access).
          */
         SendDocumentRequest: {
-            /**
-             * @description Channels a notice can travel on. The letter is a printable PDF that the association hands over or posts.
-             * @enum {string}
-             */
-            channel: "email" | "sms" | "whatsapp" | "telegram";
-            mode: components["schemas"]["DeliveryMode"];
-            member_ids?: string[];
+            /** @enum {string} */
+            document_type: "invoice" | "quote";
+            /** Format: uuid */
+            document_id: string;
+            /** @enum {string} */
+            channel: "email" | "whatsapp" | "telegram" | "sms";
+            recipient?: string | null;
+            message?: string | null;
+            locale?: string | null;
         };
         /**
          * SendEDocumentRequest
@@ -31335,6 +38015,42 @@ export interface components {
             document_reference: string;
             recipient_identifier: string;
             payload_base64: string;
+        };
+        /**
+         * SendMessageRequest
+         * @description Validates the sending of a message built from a template of the company (access is decided by module.access).
+         */
+        SendMessageRequest: {
+            /** @enum {string} */
+            channel: "email" | "whatsapp" | "telegram" | "sms";
+            recipient: string;
+            template_code: string;
+            locale?: string | null;
+            variables?: (string | null)[] | null;
+        };
+        /**
+         * SendSubcontractRequest
+         * @description Validation of components sent to a subcontractor for a subcontracted operation.
+         */
+        SendSubcontractRequest: {
+            /** Format: uuid */
+            production_order_operation_id: string;
+            /** Format: uuid */
+            subcontractor_contact_id: string;
+            /** Format: uuid */
+            subcontract_warehouse_id: string;
+            /** Format: uuid */
+            source_warehouse_id?: string | null;
+            quantity: number;
+            unit_cost?: number | null;
+            /** Format: date-time */
+            posting_date?: string | null;
+            notes?: string | null;
+            components?: {
+                /** Format: uuid */
+                line_id: string;
+                quantity: number;
+            }[] | null;
         };
         /** ServiceAppointment */
         ServiceAppointment: {
@@ -31371,7 +38087,7 @@ export interface components {
             status: string;
             start_date: string;
             end_date: string | null;
-            contract_value: number;
+            contract_value: string;
             currency: string;
             is_locked: boolean;
             created_at: string | null;
@@ -31517,6 +38233,16 @@ export interface components {
             }[];
         };
         /**
+         * SetWorkCenterCalendarRequest
+         * @description Validation of the weekly calendar of a work centre: gross hours per ISO weekday (1 = Monday), each weekday once.
+         */
+        SetWorkCenterCalendarRequest: {
+            days: {
+                weekday: number;
+                available_hours: number;
+            }[];
+        };
+        /**
          * ShiftCategory
          * @description What a shift type stands for in the plan.
          * @enum {string}
@@ -31631,6 +38357,19 @@ export interface components {
                 quantity: number;
                 unit_price: number;
             }[];
+        };
+        /**
+         * StartExecutionRequest
+         * @description Validation of a job card started on an operation: the operator is a member of the company, the machine one of its
+         *     machine centres.
+         */
+        StartExecutionRequest: {
+            /** Format: uuid */
+            production_order_operation_id: string;
+            /** Format: uuid */
+            operator_id?: string | null;
+            /** Format: uuid */
+            machine_id?: string | null;
         };
         /**
          * StartWorkOrderRequest
@@ -31819,6 +38558,7 @@ export interface components {
             sequence_number: number;
             stock_reservation_id: string | null;
             picked_by_user_id: string | null;
+            destination_bin_id: string | null;
         };
         /** StockPickListResource */
         StockPickListResource: {
@@ -31832,6 +38572,9 @@ export interface components {
             warehouse?: components["schemas"]["WarehouseResource"];
             shortages: unknown[] | null;
             completed_at: string | null;
+            pick_wave_id: string | null;
+            delivery_note_id: string | null;
+            shipped_at: string | null;
             lines?: components["schemas"]["StockPickLine"][];
             created_at: string | null;
         };
@@ -31911,6 +38654,24 @@ export interface components {
             }[];
             created_at: string | null;
         };
+        /** StockValuationSnapshot */
+        StockValuationSnapshot: {
+            id: string;
+            tenant_id: string;
+            company_id: string;
+            warehouse_id: string;
+            stock_item_id: string;
+            /** Format: date-time */
+            snapshot_date: string;
+            valuation_method: string;
+            quantity_on_hand: string;
+            unit_cost: string;
+            total_valuation: string;
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
         /**
          * StoreAccountRequest
          * @description Creation of a CRM account. The account references a contact (the party master): either an existing one through
@@ -31937,6 +38698,28 @@ export interface components {
             pec?: string | null;
             sdi_code?: string | null;
             country?: string | null;
+        };
+        /**
+         * StoreAccrualRequest
+         * @description An accrual or deferral (rateo o risconto): type, amount of the whole coverage, coverage dates, cut-off and accounts.
+         */
+        StoreAccrualRequest: {
+            /** @enum {string} */
+            accrual_type: "accrued_revenue" | "accrued_expense" | "prepaid_expense" | "deferred_revenue";
+            description: string;
+            total_amount: number;
+            /** Format: date-time */
+            coverage_start: string;
+            /** Format: date-time */
+            coverage_end: string;
+            /** Format: date-time */
+            cutoff_date: string;
+            /** Format: uuid */
+            income_statement_account_id: string;
+            /** Format: uuid */
+            balance_sheet_account_id: string;
+            /** Format: uuid */
+            cost_center_id?: string | null;
         };
         /**
          * StoreActivityRequest
@@ -32116,7 +38899,12 @@ export interface components {
             /** Format: uuid */
             agenda_item_id?: string | null;
         };
-        /** StoreBankAccountRequest */
+        /**
+         * StoreBankAccountRequest
+         * @description A bank account of the active tenant. The IBAN is checked (ISO 13616) and unique in the tenant; the ledger account,
+         *     when given, must be an account of the tenant chart. On update (PUT/PATCH) every field is optional and the IBAN and
+         *     currency cannot change, because movements were already booked on them.
+         */
         StoreBankAccountRequest: {
             bank_name: string;
             branch_name?: string | null;
@@ -32129,8 +38917,40 @@ export interface components {
             /** Format: uuid */
             gl_account_id?: string | null;
             overdraft_limit?: number | null;
+            credit_line_limit?: number | null;
             opening_balance?: number | null;
             is_default?: boolean | null;
+            is_active?: boolean;
+        };
+        /**
+         * StoreBankChargeRequest
+         * @description A bank fee, or interest earned or charged, on a bank account.
+         */
+        StoreBankChargeRequest: {
+            /** @enum {string} */
+            movement_type: "bank_fee" | "interest_income" | "interest_expense";
+            amount: number;
+            /** Format: date */
+            movement_date: string;
+            description?: string | null;
+            idempotency_key: string;
+        };
+        /**
+         * StoreBillingPlanRequest
+         * @description A billing plan of a sales order of the active company: each item a percentage of the order net or an amount.
+         */
+        StoreBillingPlanRequest: {
+            /** Format: uuid */
+            sales_order_id: string;
+            items: {
+                name: string;
+                percentage?: number | null;
+                amount?: number | null;
+                /** Format: date-time */
+                target_date: string;
+                /** Format: uuid */
+                milestone_id?: string | null;
+            }[];
         };
         /** StoreBookingRequest */
         StoreBookingRequest: {
@@ -32145,6 +38965,38 @@ export interface components {
             /** Format: uuid */
             course_id?: string | null;
             title?: string | null;
+        };
+        /**
+         * StoreCalendarExceptionRequest
+         * @description Validation of a dated capacity exception of a work centre (0 hours for a closure).
+         */
+        StoreCalendarExceptionRequest: {
+            /** Format: date-time */
+            calendar_date: string;
+            available_hours: number;
+            reason?: string | null;
+        };
+        /**
+         * StoreCallOffRequest
+         * @description A call-off order on a framework agreement.
+         */
+        StoreCallOffRequest: {
+            /** Format: date */
+            order_date?: string | null;
+            /** Format: date */
+            expected_delivery_date: string;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            /** Format: uuid */
+            project_id?: string | null;
+            notes?: string | null;
+            lines: {
+                /** Format: uuid */
+                supplier_contract_line_id: string;
+                quantity_ordered: number;
+                /** Format: date */
+                expected_delivery_date?: string | null;
+            }[];
         };
         /**
          * StoreCampaignMemberRequest
@@ -32178,6 +39030,36 @@ export interface components {
             utm_source?: string | null;
             utm_medium?: string | null;
             utm_campaign?: string | null;
+        };
+        /**
+         * StoreCashMovementRequest
+         * @description A receipt or payment of a cash register, in cash or by cheque, against a counter account of the chart.
+         */
+        StoreCashMovementRequest: {
+            /** Format: date */
+            movement_date: string;
+            /** @enum {string} */
+            direction: "in" | "out";
+            /** @enum {string|null} */
+            payment_method?: "cash" | "cheque" | null;
+            amount: number;
+            /** Format: uuid */
+            counter_account_id: string;
+            description: string;
+            reference?: string | null;
+            idempotency_key: string;
+        };
+        /**
+         * StoreCashRegisterRequest
+         * @description A cash register on a ledger account of the tenant chart.
+         */
+        StoreCashRegisterRequest: {
+            code: string;
+            name: string;
+            currency: string;
+            /** Format: uuid */
+            gl_account_id: string;
+            opening_balance?: number | null;
         };
         /** StoreCertificateRequest */
         StoreCertificateRequest: {
@@ -32319,6 +39201,23 @@ export interface components {
             } | null;
         };
         /**
+         * StoreContractLineRequest
+         * @description An item of a framework agreement with its agreed price and validity.
+         */
+        StoreContractLineRequest: {
+            /** Format: uuid */
+            supplier_catalog_id?: string | null;
+            description: string;
+            uom?: string | null;
+            unit_price: number;
+            tax_rate?: number | null;
+            committed_quantity?: number | null;
+            /** Format: date */
+            price_valid_from: string;
+            /** Format: date */
+            price_valid_to?: string | null;
+        };
+        /**
          * StoreContractRequest
          * @description Validates the input of the store contract operation (authorization is decided by module.access).
          */
@@ -32340,6 +39239,50 @@ export interface components {
             notice_period_days?: number | null;
             renewal_term_months?: number | null;
             alert_days_before?: number | null;
+        };
+        /**
+         * StoreDimensionRequest
+         * @description A cost centre or profit centre: code unique in the tenant, name and active flag. On update every field is optional.
+         */
+        StoreDimensionRequest: {
+            code: string;
+            name: string;
+            is_active?: boolean;
+        };
+        /**
+         * StoreDiscountPolicyRequest
+         * @description A discount policy or promotion: header discount, validity, limits, priority, stacking and its rules (by product,
+         *     customer or customer group). On update omitted fields keep their value; `rules`, when given, replace the rules.
+         */
+        StoreDiscountPolicyRequest: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            discount_type: "percentage" | "fixed_amount";
+            value: number;
+            min_order_amount?: number | null;
+            min_quantity?: number | null;
+            /** Format: date-time */
+            valid_from?: string | null;
+            /** Format: date-time */
+            valid_to?: string | null;
+            is_active?: boolean;
+            priority?: number;
+            is_stackable?: boolean;
+            auto_apply?: boolean;
+            /** Format: uuid */
+            contact_id?: string | null;
+            rules?: {
+                /** Format: uuid */
+                product_id?: string | null;
+                /** Format: uuid */
+                customer_group_id?: string | null;
+                /** Format: uuid */
+                contact_id?: string | null;
+                min_threshold?: number | null;
+                discount_percent?: number | null;
+                discount_fixed_amount?: number | null;
+            }[];
         };
         /**
          * StoreDocumentRequest
@@ -32408,6 +39351,75 @@ export interface components {
                 language_id?: number | null;
                 category_id?: number | null;
             } | null;
+        };
+        /**
+         * StoreEmployeeDocumentRequest
+         * @description An upload to the personnel file (PDF, image or office document, at most 20 MB) with its retention date.
+         */
+        StoreEmployeeDocumentRequest: {
+            /**
+             * Format: binary
+             * @description Maximum file size: 20480 kilobytes.
+             */
+            file: string;
+            /** @enum {string} */
+            document_type: "contract" | "amendment" | "id_card" | "work_permit" | "medical_fitness" | "certificate" | "training" | "nda" | "warning" | "payslip" | "other";
+            title: string;
+            /** Format: date */
+            issue_date?: string | null;
+            /** Format: date */
+            expiry_date?: string | null;
+            /** Format: date */
+            retention_until?: string | null;
+            contains_health_data?: boolean;
+            is_confidential?: boolean;
+            visible_to_employee?: boolean;
+        };
+        /**
+         * StoreEmploymentContractRequest
+         * @description A new contract of an employee. The collective agreement and its level are references to the payroll agreement tables
+         *     of the company (or generic rows); amounts are decimal strings or numbers with at most two decimals.
+         */
+        StoreEmploymentContractRequest: {
+            contract_number?: string;
+            /** @enum {string} */
+            contract_type: "permanent" | "fixed_term" | "apprenticeship" | "contractor" | "internship" | "seasonal";
+            /** @enum {string} */
+            employment_type?: "full_time" | "part_time" | "contractor" | "apprentice" | "seasonal";
+            job_title: string;
+            /** Format: uuid */
+            job_grade_id?: string | null;
+            collective_agreement?: string | null;
+            /** Format: uuid */
+            collective_agreement_id?: string | null;
+            /** Format: uuid */
+            collective_agreement_level_id?: string | null;
+            level_code?: string | null;
+            /** Format: date */
+            start_date: string;
+            /** Format: date */
+            end_date?: string | null;
+            /** Format: date */
+            probation_end_date?: string | null;
+            weekly_hours: number;
+            fte_percentage?: number;
+            base_annual_salary: number;
+            hourly_rate?: number;
+            loaded_hourly_cost?: number;
+            currency?: string;
+            terms?: string[] | null;
+            notes?: string | null;
+            salary_components?: {
+                wage_type_code: string;
+                description: string;
+                amount: number;
+                /** @enum {string} */
+                frequency?: "monthly" | "annual";
+                /** Format: date */
+                valid_from?: string;
+                /** Format: date */
+                valid_to?: string | null;
+            }[];
         };
         /** StoreExpenseRequest */
         StoreExpenseRequest: {
@@ -32568,6 +39580,30 @@ export interface components {
             parent_id?: string | null;
             access_roles?: string[] | null;
         };
+        /**
+         * StoreForecastRequest
+         * @description Validation of a demand forecast entry.
+         */
+        StoreForecastRequest: {
+            /** Format: uuid */
+            mfg_item_id: string;
+            /** Format: date-time */
+            forecast_date: string;
+            quantity: number;
+            notes?: string | null;
+        };
+        /**
+         * StoreForecastScenarioRequest
+         * @description A liquidity forecast scenario: delays and growth factor applied to the expected flows.
+         */
+        StoreForecastScenarioRequest: {
+            code: string;
+            name: string;
+            description?: string | null;
+            collection_delay_days?: number;
+            disbursement_acceleration_days?: number;
+            sales_growth_factor?: number;
+        };
         /** StoreFormDocumentRequest */
         StoreFormDocumentRequest: {
             title: string;
@@ -32578,6 +39614,15 @@ export interface components {
              * @description Maximum file size: 10240 kilobytes.
              */
             file?: string | null;
+        };
+        /**
+         * StoreFxRevaluationRequest
+         * @description Date and optional currency of a revaluation of open receivables and payables.
+         */
+        StoreFxRevaluationRequest: {
+            /** Format: date-time */
+            revaluation_date: string;
+            currency?: string | null;
         };
         /**
          * StoreHealthExpenseRequest
@@ -32672,6 +39717,8 @@ export interface components {
             due_date?: string | null;
             currency: string;
             exchange_rate?: number | null;
+            /** Format: uuid */
+            payment_term_id?: string | null;
             /** @enum {string} */
             jurisdiction: "IT" | "CH";
             split_payment?: boolean | null;
@@ -32713,6 +39760,33 @@ export interface components {
             /** @enum {string|null} */
             enasarco_agent_type?: "single_mandate" | "multi_mandate" | null;
         };
+        /**
+         * StoreItemRequest
+         * @description Validation of a new manufacturing item.
+         */
+        StoreItemRequest: {
+            item_code: string;
+            name: string;
+            description?: string | null;
+            /** @enum {string} */
+            item_type: "raw_material" | "subassembly" | "finished_good" | "phantom";
+            /** @enum {string|null} */
+            procurement_type?: "make" | "buy" | "subcontract" | null;
+            /** Format: uuid */
+            stock_item_id?: string | null;
+            /** Format: uuid */
+            product_id?: string | null;
+            /** Format: uuid */
+            default_warehouse_id?: string | null;
+            uom?: string | null;
+            standard_cost?: number | null;
+            safety_stock?: number | null;
+            min_lot_size?: number | null;
+            max_lot_size?: number | null;
+            lot_size_multiple?: number | null;
+            lead_time_days?: number | null;
+            is_active?: boolean | null;
+        };
         /** StoreJobApplicationRequest */
         StoreJobApplicationRequest: {
             /** Format: uuid */
@@ -32733,11 +39807,12 @@ export interface components {
             fiscal_period_id: string;
             /** Format: uuid */
             batch_id?: string | null;
-            entry_number?: string | null;
             /** Format: date-time */
             posting_date: string;
             /** Format: date-time */
             document_date?: string | null;
+            /** Format: date-time */
+            auto_reverse_on?: string | null;
             /** @enum {string|null} */
             ledger_type?: "statutory" | "ifrs" | "management" | null;
             /** @enum {string|null} */
@@ -32762,7 +39837,29 @@ export interface components {
                 partner_type?: "customer" | "supplier" | "employee" | null;
                 /** Format: uuid */
                 partner_id?: string | null;
+                /** Format: uuid */
+                project_id?: string | null;
             }[];
+        };
+        /**
+         * StoreLandedCostRequest
+         * @description A landed cost to allocate on goods receipts.
+         */
+        StoreLandedCostRequest: {
+            /** @enum {string} */
+            cost_type: "freight" | "duty" | "insurance" | "handling" | "other";
+            /** @enum {string} */
+            allocation_method: "value" | "weight" | "quantity";
+            amount: number;
+            currency?: string | null;
+            /** Format: date */
+            cost_date: string;
+            description?: string | null;
+            /** Format: uuid */
+            passive_invoice_id?: string | null;
+            /** Format: uuid */
+            supplier_id?: string | null;
+            purchase_receipt_ids: string[];
         };
         /**
          * StoreLeadRequest
@@ -32920,6 +40017,21 @@ export interface components {
             billing_amount?: number;
             billing_percentage?: number;
         };
+        /**
+         * StoreNonConformanceRequest
+         * @description Validation of a non-conformance raised by hand.
+         */
+        StoreNonConformanceRequest: {
+            /** Format: uuid */
+            production_order_id?: string | null;
+            /** Format: uuid */
+            mfg_item_id?: string | null;
+            /** @enum {string} */
+            severity: "minor" | "major" | "critical";
+            defect_type: string;
+            description: string;
+            quantity?: number | null;
+        };
         /** StoreOpenBankingConsentRequest */
         StoreOpenBankingConsentRequest: {
             iban: string;
@@ -32976,6 +40088,22 @@ export interface components {
                 invoice_id?: string | null;
             }[];
         };
+        /**
+         * StorePaymentProposalRequest
+         * @description The selection criteria of a supplier payment proposal.
+         */
+        StorePaymentProposalRequest: {
+            /** Format: uuid */
+            bank_account_id: string;
+            /** Format: date */
+            execution_date: string;
+            /** Format: date */
+            due_until: string;
+            include_discounts?: boolean;
+            /** @enum {string} */
+            format: "sepa_pain_001_it" | "iso_pain_001_ch";
+            supplier_ids?: string[] | null;
+        };
         /** StorePaymentRequest */
         StorePaymentRequest: {
             amount: number;
@@ -32999,6 +40127,15 @@ export interface components {
                 percent: number;
                 days: number;
             }[] | null;
+        };
+        /**
+         * StorePeriodCloseTaskRequest
+         * @description A task of the close checklist of a period.
+         */
+        StorePeriodCloseTaskRequest: {
+            title: string;
+            description?: string | null;
+            is_blocking?: boolean | null;
         };
         /** StorePosSaleRequest */
         StorePosSaleRequest: {
@@ -33071,6 +40208,25 @@ export interface components {
                 /** Format: date-time */
                 valid_to?: string | null;
             }[] | null;
+        };
+        /**
+         * StoreProcurementApprovalMatrixRequest
+         * @description An approval matrix of purchase orders or requisitions: levels by amount, optionally for one cost centre.
+         */
+        StoreProcurementApprovalMatrixRequest: {
+            /** @enum {string} */
+            target: "purchase_order" | "purchase_requisition";
+            name: string;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            tiers: {
+                tier_level: number;
+                /** @enum {string} */
+                approver_type: "role" | "user";
+                approver_value: string;
+                threshold_min?: number | null;
+                threshold_max?: number | null;
+            }[];
         };
         /** StoreProductBrandRequest */
         StoreProductBrandRequest: {
@@ -33236,15 +40392,19 @@ export interface components {
              */
             file?: string;
         };
-        /** StorePurchaseOrderRequest */
+        /**
+         * StorePurchaseOrderRequest
+         * @description A new purchase order. The number comes from the gapless series of the company; a line without a price takes the
+         *     agreed price of its framework agreement line or the valid supplier price list price.
+         */
         StorePurchaseOrderRequest: {
             /** Format: uuid */
             supplier_id: string;
-            /** Format: date-time */
+            /** Format: date */
             order_date: string;
-            /** Format: date-time */
+            /** Format: date */
             expected_delivery_date: string;
-            po_number?: string | null;
+            po_number?: string;
             /** @enum {string|null} */
             order_type?: "standard" | "blanket_release" | "subcontract" | null;
             currency?: string | null;
@@ -33266,13 +40426,18 @@ export interface components {
             shipping_address?: string[] | null;
             notes?: string | null;
             lines: {
-                description: string;
+                description?: string | null;
                 quantity_ordered: number;
-                unit_price: number;
-                uom: string;
+                unit_price?: number | null;
+                uom?: string | null;
                 tax_rate?: number | null;
                 /** Format: uuid */
                 supplier_catalog_id?: string | null;
+                /** Format: uuid */
+                supplier_contract_line_id?: string | null;
+                unit_weight?: number | null;
+                /** Format: date */
+                expected_delivery_date?: string | null;
             }[];
         };
         /** StorePurchaseRequisitionRequest */
@@ -33302,6 +40467,30 @@ export interface components {
                 /** Format: uuid */
                 suggested_supplier_id?: string | null;
             }[];
+        };
+        /**
+         * StoreQualityPlanRequest
+         * @description Validation of an inspection plan with its characteristics.
+         */
+        StoreQualityPlanRequest: {
+            plan_code: string;
+            name: string;
+            /** @enum {string} */
+            inspection_type: "receipt" | "in_process" | "final";
+            /** Format: uuid */
+            mfg_item_id?: string | null;
+            description?: string | null;
+            acceptance_defect_limit?: number | null;
+            is_active?: boolean | null;
+            characteristics?: {
+                characteristic_name: string;
+                target_value?: number | null;
+                min_tolerance?: number | null;
+                max_tolerance?: number | null;
+                uom?: string | null;
+                inspection_method?: string | null;
+                is_critical?: boolean | null;
+            }[] | null;
         };
         /** StoreQuoteRequest */
         StoreQuoteRequest: {
@@ -33342,6 +40531,73 @@ export interface components {
             valid_from?: string | null;
             /** Format: date-time */
             valid_to?: string | null;
+        };
+        /**
+         * StoreReconciliationRuleRequest
+         * @description A reconciliation rule. At least one condition is required, an incoming rule can only produce internal transfers and
+         *     the account, when given, must be in the chart of accounts of the tenant. On update every field is optional.
+         */
+        StoreReconciliationRuleRequest: {
+            name: string;
+            priority?: number;
+            is_active?: boolean;
+            /** @enum {string|null} */
+            direction?: "credit" | "debit" | null;
+            expected_amount?: number | null;
+            amount_tolerance?: number;
+            min_amount?: number | null;
+            max_amount?: number | null;
+            reference_contains?: string | null;
+            description_contains?: string | null;
+            counterparty_iban?: string | null;
+            counterparty_name_contains?: string | null;
+            /** @enum {string} */
+            category: "tax_payment" | "payroll" | "bank_expense" | "internal_transfer" | "generic_expense";
+            ledger_account_code?: string | null;
+        };
+        /**
+         * StoreRecurringCashItemRequest
+         * @description A recurring cash flow projected by the liquidity forecast.
+         */
+        StoreRecurringCashItemRequest: {
+            name: string;
+            category?: string;
+            /** @enum {string} */
+            direction: "inflow" | "outflow";
+            amount: number;
+            currency: string;
+            /** @enum {string} */
+            frequency: "weekly" | "monthly" | "quarterly" | "yearly";
+            /** Format: date */
+            next_date: string;
+            /** Format: date */
+            end_date?: string | null;
+        };
+        /**
+         * StoreRecurringJournalRequest
+         * @description A recurring journal template: frequency, first due date, optional end and balanced lines.
+         */
+        StoreRecurringJournalRequest: {
+            name: string;
+            description: string;
+            /** @enum {string} */
+            frequency: "monthly" | "quarterly" | "semiannual" | "yearly";
+            /** Format: date-time */
+            start_date: string;
+            /** Format: date-time */
+            end_date?: string | null;
+            reverse_next_day?: boolean | null;
+            lines: {
+                /** Format: uuid */
+                account_id: string;
+                debit_amount?: number | null;
+                credit_amount?: number | null;
+                description?: string | null;
+                /** Format: uuid */
+                cost_center_id?: string | null;
+                /** Format: uuid */
+                profit_center_id?: string | null;
+            }[];
         };
         /**
          * StoreRecurringServiceRequest
@@ -33410,6 +40666,30 @@ export interface components {
             accounting_period_date: string;
             override_completion_percentage?: number | null;
         };
+        /**
+         * StoreRfqRequest
+         * @description A request for quotation to several suppliers, from an approved requisition or a list of items.
+         */
+        StoreRfqRequest: {
+            title: string;
+            /** Format: date */
+            response_deadline: string;
+            currency?: string | null;
+            /** Format: uuid */
+            purchase_requisition_id?: string | null;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            notes?: string | null;
+            supplier_ids: string[];
+            lines?: {
+                description: string;
+                quantity: number;
+                uom?: string | null;
+                internal_sku?: string | null;
+                /** Format: date */
+                required_by_date?: string | null;
+            }[];
+        };
         /** StoreSalRequest */
         StoreSalRequest: {
             /** Format: uuid */
@@ -33443,6 +40723,33 @@ export interface components {
             due_date?: string | null;
             /** @enum {string} */
             status?: "draft" | "confirmed" | "in_production" | "shipped" | "completed" | "cancelled";
+        };
+        /**
+         * StoreSalesReturnRequest
+         * @description A return request: the delivery note or invoice the goods came with, the reason, and the lines returned (each naming
+         *     the line of the source document).
+         */
+        StoreSalesReturnRequest: {
+            /** Format: uuid */
+            delivery_note_id?: string | null;
+            /** Format: uuid */
+            invoice_id?: string | null;
+            /** Format: uuid */
+            warehouse_id?: string | null;
+            /** Format: date-time */
+            date?: string | null;
+            reason: string;
+            notes?: string | null;
+            items: {
+                /** Format: uuid */
+                delivery_note_item_id?: string | null;
+                /** Format: uuid */
+                invoice_item_id?: string | null;
+                quantity: number;
+                /** @enum {string|null} */
+                condition?: "resellable" | "damaged" | null;
+                restock?: boolean | null;
+            }[];
         };
         /** StoreScheduleRequest */
         StoreScheduleRequest: {
@@ -33598,6 +40905,22 @@ export interface components {
                 discount_percentage?: number | null;
             }[];
         };
+        /**
+         * StoreSupplierCatalogRequest
+         * @description A supplier catalogue entry; with `id` in the route it is an update and every field is optional.
+         */
+        StoreSupplierCatalogRequest: {
+            /** Format: uuid */
+            supplier_id: string;
+            supplier_part_number: string;
+            internal_sku?: string | null;
+            name: string;
+            description?: string | null;
+            uom?: string;
+            lead_time_days?: number;
+            minimum_order_quantity?: number;
+            is_active?: boolean;
+        };
         /** StoreSupplierContractRequest */
         StoreSupplierContractRequest: {
             /** Format: uuid */
@@ -33617,6 +40940,22 @@ export interface components {
             payment_terms_code?: string | null;
             incoterms?: string | null;
         };
+        /**
+         * StoreSupplierDocumentRequest
+         * @description A qualification document of a supplier.
+         */
+        StoreSupplierDocumentRequest: {
+            document_type: string;
+            reference?: string | null;
+            /** Format: date */
+            issued_at?: string | null;
+            /** Format: date */
+            expires_at?: string | null;
+            is_mandatory?: boolean;
+            /** Format: uuid */
+            attachment_id?: string | null;
+            notes?: string | null;
+        };
         /** StoreSupplierEvaluationRequest */
         StoreSupplierEvaluationRequest: {
             /** Format: date-time */
@@ -33630,6 +40969,42 @@ export interface components {
             overall_rating: "A" | "B" | "C" | "D";
             is_approved_vendor: boolean;
             comments?: string | null;
+        };
+        /**
+         * StoreSupplierPriceRequest
+         * @description A price (quantity break) of a catalogue entry with its validity.
+         */
+        StoreSupplierPriceRequest: {
+            currency?: string | null;
+            min_quantity?: number | null;
+            unit_price: number;
+            /** Format: date */
+            valid_from: string;
+            /** Format: date */
+            valid_to?: string | null;
+        };
+        /**
+         * StoreSupplierQuoteRequest
+         * @description The quote of an invited supplier on a request for quotation.
+         */
+        StoreSupplierQuoteRequest: {
+            /** Format: uuid */
+            supplier_id: string;
+            quote_reference?: string | null;
+            /** Format: date */
+            quote_date: string;
+            /** Format: date */
+            valid_until?: string | null;
+            lead_time_days?: number | null;
+            notes?: string | null;
+            lines: {
+                /** Format: uuid */
+                rfq_line_id: string;
+                unit_price: number;
+                quantity?: number | null;
+                tax_rate?: number | null;
+                lead_time_days?: number | null;
+            }[];
         };
         /** StoreSupplierRequest */
         StoreSupplierRequest: {
@@ -33793,6 +41168,21 @@ export interface components {
             work_summary?: string | null;
             submit?: boolean;
         };
+        /**
+         * StoreTransferRequest
+         * @description An internal transfer between two bank accounts of the tenant, in the same currency.
+         */
+        StoreTransferRequest: {
+            /** Format: uuid */
+            from_bank_account_id: string;
+            /** Format: uuid */
+            to_bank_account_id: string;
+            amount: number;
+            /** Format: date */
+            transfer_date: string;
+            description?: string | null;
+            idempotency_key: string;
+        };
         /** StoreTranslationRequest */
         StoreTranslationRequest: {
             tenant_id?: string | null;
@@ -33818,6 +41208,9 @@ export interface components {
             pick_sequence?: number | null;
             max_weight_kg?: number | null;
             max_volume_cbm?: number | null;
+            max_quantity?: number | null;
+            /** @enum {string|null} */
+            bin_type?: "storage" | "picking" | "bulk" | "receiving" | "staging" | "shipping" | "quarantine" | "transit" | null;
         };
         /** StoreWarehouseRequest */
         StoreWarehouseRequest: {
@@ -33834,6 +41227,23 @@ export interface components {
             postal_code?: string | null;
             country?: string | null;
             is_active?: boolean | null;
+        };
+        /**
+         * StoreWorkCenterRequest
+         * @description Validation of a new work centre or of changes to one (PUT: every field optional, the code unique in the company).
+         */
+        StoreWorkCenterRequest: {
+            work_center_code: string;
+            name: string;
+            description?: string | null;
+            department_code?: string | null;
+            capacity_hours_per_day?: number;
+            efficiency_rate?: number;
+            availability_rate?: number;
+            hourly_cost_rate?: number;
+            hourly_overhead_rate?: number;
+            /** @enum {string} */
+            status?: "active" | "inactive";
         };
         /** StoreWorkOrderRequest */
         StoreWorkOrderRequest: {
@@ -33923,9 +41333,24 @@ export interface components {
             employee_id: string;
             /** Format: uuid */
             leave_type_id: string;
-            /** Format: date-time */
+            /** Format: date */
             start_date: string;
-            /** Format: date-time */
+            /** Format: date */
+            end_date: string;
+            total_hours: number;
+            reason?: string | null;
+            medical_certificate_ref?: string | null;
+        };
+        /**
+         * SubmitOwnLeaveRequest
+         * @description A leave request an employee submits for themselves: the employee is the one linked to the user.
+         */
+        SubmitOwnLeaveRequest: {
+            /** Format: uuid */
+            leave_type_id: string;
+            /** Format: date */
+            start_date: string;
+            /** Format: date */
             end_date: string;
             total_hours: number;
             reason?: string | null;
@@ -33975,6 +41400,27 @@ export interface components {
          * @enum {string}
          */
         SubscriptionInterval: "monthly" | "quarterly" | "semiannual" | "yearly";
+        /** SupplierCatalogResource */
+        SupplierCatalogResource: {
+            id: string;
+            supplier_id: string;
+            supplier_part_number: string;
+            internal_sku: string | null;
+            name: string;
+            description: string | null;
+            uom: string;
+            lead_time_days: number;
+            minimum_order_quantity: string;
+            is_active: boolean;
+            prices?: {
+                id: string;
+                currency: string;
+                min_quantity: string;
+                unit_price: string;
+                valid_from: string | null;
+                valid_to: string | null;
+            }[];
+        };
         /** SupplierCategoryResource */
         SupplierCategoryResource: {
             id: string;
@@ -33982,6 +41428,21 @@ export interface components {
             name: string;
             description: string | null;
             is_active: boolean;
+        };
+        /** SupplierContractLineResource */
+        SupplierContractLineResource: {
+            id: string;
+            supplier_contract_id: string;
+            supplier_catalog_id: string | null;
+            description: string;
+            uom: string;
+            unit_price: string;
+            tax_rate: string;
+            committed_quantity: string | null;
+            released_quantity: string;
+            remaining_quantity: string | null;
+            price_valid_from: string;
+            price_valid_to: string | null;
         };
         /** SupplierContractResource */
         SupplierContractResource: {
@@ -34009,6 +41470,19 @@ export interface components {
             created_at: string | null;
             /** Format: date-time */
             updated_at: string | null;
+        };
+        /** SupplierDocumentResource */
+        SupplierDocumentResource: {
+            id: string;
+            supplier_id: string;
+            document_type: string;
+            reference: string | null;
+            issued_at: string | null;
+            expires_at: string | null;
+            is_mandatory: boolean;
+            is_expired: boolean;
+            attachment_id: string | null;
+            notes: string | null;
         };
         /** SupplierEvaluation */
         SupplierEvaluation: {
@@ -34056,6 +41530,28 @@ export interface components {
             /** Format: date-time */
             deleted_at: string | null;
         };
+        /** SupplierQuoteResource */
+        SupplierQuoteResource: {
+            id: string;
+            rfq_id: string;
+            supplier_id: string;
+            quote_reference: string | null;
+            quote_date: string;
+            valid_until: string | null;
+            currency: string;
+            lead_time_days: number | null;
+            status: string;
+            total_amount: string;
+            lines?: {
+                id: string;
+                rfq_line_id: string;
+                quantity: string;
+                unit_price: string;
+                tax_rate: string;
+                line_total: string;
+                lead_time_days: number | null;
+            }[];
+        };
         /** SupplierResource */
         SupplierResource: {
             id: string;
@@ -34065,12 +41561,18 @@ export interface components {
             fiscal_code: string | null;
             status: string;
             is_approved_vendor: boolean;
-            rating: string;
+            rating: string | null;
             credit_limit: number;
             currency: string;
             payment_terms_code: string | null;
             incoterms: string | null;
             is_locked: boolean;
+            contact_id: string | null;
+            qualification_status: string;
+            qualified_at: string | null;
+            qualification_review_date: string | null;
+            over_receipt_tolerance_percent: string | null;
+            price_tolerance_percent: string | null;
             category?: components["schemas"]["SupplierCategoryResource"] | null;
             created_at: string | null;
         };
@@ -34390,6 +41892,27 @@ export interface components {
          * @enum {string}
          */
         TimeEventType: "In" | "Out" | "BreakStart" | "BreakEnd";
+        /** TimePeriodClosing */
+        TimePeriodClosing: {
+            id: string;
+            tenant_id: string;
+            year: number;
+            month: number;
+            status: string;
+            /** Format: date-time */
+            closed_at: string | null;
+            closed_by: string | null;
+            /** Format: date-time */
+            reopened_at: string | null;
+            reopened_by: string | null;
+            reopen_reason: string | null;
+            reopen_count: number;
+            summary: unknown[] | null;
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
         /**
          * TimeRecordSource
          * @description The instrument a time record comes from: the law leaves the employer free to choose it.
@@ -34537,7 +42060,7 @@ export interface components {
             employee_id: string;
             course_id: string;
             status: string;
-            assigned_date: string;
+            assigned_date: string | null;
             completed_date: string | null;
             score: number | null;
             cost_amount: number;
@@ -34578,6 +42101,27 @@ export interface components {
             effective_date?: string | null;
             reason?: string | null;
         };
+        /**
+         * TransferOrderRequest
+         * @description A new transfer order (source and destination warehouses, lines) or a receipt of one (lines received, optional
+         *     destination bins; without lines everything in transit is received).
+         */
+        TransferOrderRequest: {
+            /** Format: uuid */
+            source_warehouse_id: string;
+            /** Format: uuid */
+            destination_warehouse_id: string;
+            /** Format: date-time */
+            requested_date?: string | null;
+            notes?: string | null;
+            lines: {
+                /** Format: uuid */
+                stock_item_id: string;
+                /** Format: uuid */
+                lot_id?: string | null;
+                quantity: number;
+            }[];
+        };
         /** TransferStockRequest */
         TransferStockRequest: {
             /** Format: uuid */
@@ -34586,19 +42130,28 @@ export interface components {
             warehouse_id: string;
             quantity: number;
             /** @enum {string} */
-            movement_type: "INTERNAL_TRANSFER" | "PURCHASE_RECEIPT" | "SALES_DELIVERY" | "ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "SCRAP" | "PRODUCTION_CONSUMPTION" | "PRODUCTION_OUTPUT" | "RETURN_CUSTOMER" | "RETURN_SUPPLIER";
+            movement_type?: "INTERNAL_TRANSFER";
             /** Format: uuid */
-            source_bin_id?: string | null;
+            source_bin_id: string;
             /** Format: uuid */
-            destination_bin_id?: string | null;
+            destination_bin_id: string;
             /** Format: uuid */
             stock_lot_id?: string | null;
             /** Format: uuid */
             stock_serial_number_id?: string | null;
-            unit_cost: number;
+            unit_cost?: number | null;
             reference_type?: string | null;
             reference_id?: string | null;
             notes?: string | null;
+        };
+        /**
+         * TransitionContractRequest
+         * @description Validates a lifecycle move of a contract. Terminating needs a reason (access is decided by module.access and the
+         *     contracts.terminate gate).
+         */
+        TransitionContractRequest: {
+            status: components["schemas"]["ContractStatus"];
+            reason?: string | null;
         };
         /** Translation */
         Translation: {
@@ -34623,6 +42176,20 @@ export interface components {
             status: string;
             external_id: string;
             driver: string;
+            created_at: string | null;
+        };
+        /** TreasuryBankMovementResource */
+        TreasuryBankMovementResource: {
+            id: string;
+            movement_type: string;
+            bank_account_id: string;
+            counter_bank_account_id: string | null;
+            amount: string;
+            currency: string;
+            movement_date: string;
+            description: string | null;
+            idempotency_key: string;
+            journal_entry_id: string | null;
             created_at: string | null;
         };
         /** TwoFactorChallengeRequest */
@@ -34661,6 +42228,22 @@ export interface components {
             pec?: string | null;
             sdi_code?: string | null;
             country?: string | null;
+        };
+        /**
+         * UpdateAccountingSettingsRequest
+         * @description Validation of the ledger account codes of manufacturing (null goes back to the module default).
+         */
+        UpdateAccountingSettingsRequest: {
+            raw_material_account_code?: string | null;
+            wip_account_code?: string | null;
+            finished_goods_account_code?: string | null;
+            labor_absorbed_account_code?: string | null;
+            overhead_absorbed_account_code?: string | null;
+            subcontract_accrual_account_code?: string | null;
+            material_variance_account_code?: string | null;
+            labor_variance_account_code?: string | null;
+            overhead_variance_account_code?: string | null;
+            subcontract_variance_account_code?: string | null;
         };
         /**
          * UpdateActivityRequest
@@ -34737,6 +42320,18 @@ export interface components {
                 state_canton?: string | null;
             };
         };
+        /**
+         * UpdateChannelRequest
+         * @description Validates the configuration of a channel. The SMTP server of a company must be a public host (never the local machine,
+         *     a private network or cloud metadata), and a driver accepts only its own credential keys (access is decided by
+         *     module.access).
+         */
+        UpdateChannelRequest: {
+            /** @enum {string} */
+            driver: "twilio" | "local";
+            is_enabled?: boolean | null;
+            credentials?: (string | null)[] | null;
+        };
         /** UpdateContactRequest */
         UpdateContactRequest: {
             /** @enum {string} */
@@ -34778,7 +42373,10 @@ export interface components {
             renewal_term_months?: number | null;
             alert_days_before?: number;
         };
-        /** UpdateCreditLimitRequest */
+        /**
+         * UpdateCreditLimitRequest
+         * @description Credit limit of a customer of the active company; 0 means that no limit is set (exposure is not checked).
+         */
         UpdateCreditLimitRequest: {
             /** Format: uuid */
             customer_id: string;
@@ -34817,6 +42415,25 @@ export interface components {
             title?: string;
             /** @enum {string} */
             status?: "active" | "archived";
+        };
+        /**
+         * UpdateEmploymentContractRequest
+         * @description The descriptive data of the active contract; pay, hours and start change through a new contract.
+         */
+        UpdateEmploymentContractRequest: {
+            job_title?: string;
+            /** Format: date */
+            end_date?: string | null;
+            /** Format: date */
+            probation_end_date?: string | null;
+            collective_agreement?: string | null;
+            /** Format: uuid */
+            collective_agreement_id?: string | null;
+            /** Format: uuid */
+            collective_agreement_level_id?: string | null;
+            level_code?: string | null;
+            terms?: string[] | null;
+            notes?: string | null;
         };
         /** UpdateExpenseRequest */
         UpdateExpenseRequest: {
@@ -34909,6 +42526,77 @@ export interface components {
             /** Format: uuid */
             assigned_technician_id?: string | null;
         };
+        /**
+         * UpdateInvoiceRequest
+         * @description What can still change on a sales document after its creation: the notes, and the due date of a document not yet
+         *     issued (a proforma or a draft). The due date of an issued document is part of its ledger entry and payment schedule,
+         *     so the controller refuses it.
+         */
+        UpdateInvoiceRequest: {
+            notes?: string | null;
+            /** Format: date-time */
+            due_date?: string | null;
+        };
+        /**
+         * UpdateItemRequest
+         * @description Validation of changes to a manufacturing item (code and standard cost breakdown cannot be changed here).
+         */
+        UpdateItemRequest: {
+            name?: string;
+            description?: string | null;
+            /** @enum {string} */
+            item_type?: "raw_material" | "subassembly" | "finished_good" | "phantom";
+            /** @enum {string|null} */
+            procurement_type?: "make" | "buy" | "subcontract" | null;
+            /** Format: uuid */
+            stock_item_id?: string | null;
+            /** Format: uuid */
+            product_id?: string | null;
+            /** Format: uuid */
+            default_warehouse_id?: string | null;
+            uom?: string;
+            standard_cost?: number;
+            safety_stock?: number;
+            min_lot_size?: number;
+            max_lot_size?: number | null;
+            lot_size_multiple?: number | null;
+            lead_time_days?: number;
+            is_active?: boolean;
+        };
+        /**
+         * UpdateLedgerSettingsRequest
+         * @description Default posting accounts by role and four-eyes policy of manual journals. Only the keys sent are changed.
+         */
+        UpdateLedgerSettingsRequest: {
+            posting_accounts?: {
+                /** Format: uuid */
+                sales_revenue?: string | null;
+                /** Format: uuid */
+                purchase_expense?: string | null;
+                /** Format: uuid */
+                output_vat?: string | null;
+                /** Format: uuid */
+                input_vat?: string | null;
+                /** Format: uuid */
+                receivables?: string | null;
+                /** Format: uuid */
+                payables?: string | null;
+                /** Format: uuid */
+                retained_earnings?: string | null;
+                /** Format: uuid */
+                fx_unrealised_gain?: string | null;
+                /** Format: uuid */
+                fx_unrealised_loss?: string | null;
+                /** Format: uuid */
+                fx_realised_gain?: string | null;
+                /** Format: uuid */
+                fx_realised_loss?: string | null;
+                /** Format: uuid */
+                rounding?: string | null;
+            };
+            manual_journal_approval_required?: boolean;
+            manual_journal_approval_threshold?: number | null;
+        };
         /** UpdateMinutesRequest */
         UpdateMinutesRequest: {
             title?: string;
@@ -34956,6 +42644,15 @@ export interface components {
             wage_type_accounts?: string[] | null;
         };
         /**
+         * UpdatePeriodCloseTaskStatusRequest
+         * @description Marks a close task done, waived (with the reason in the note) or open again.
+         */
+        UpdatePeriodCloseTaskStatusRequest: {
+            /** @enum {string} */
+            status: "open" | "done" | "waived";
+            note?: string | null;
+        };
+        /**
          * UpdatePlanRequest
          * @description Changes of a plan that do not alter the price of the billed periods: names, availability, VAT rate of the next
          *     invoices, trial, renewal increase and ledger accounts.
@@ -34971,6 +42668,18 @@ export interface components {
             revenue_account_id?: string | null;
             /** Format: uuid */
             deferred_revenue_account_id?: string | null;
+        };
+        /**
+         * UpdateProcurementSettingsRequest
+         * @description Tolerances of the company for receipts and invoice matching.
+         */
+        UpdateProcurementSettingsRequest: {
+            over_receipt_tolerance_percent?: number;
+            under_receipt_tolerance_percent?: number;
+            price_tolerance_percent?: number;
+            price_tolerance_amount?: number;
+            block_invoice_on_mismatch?: boolean;
+            landed_cost_clearing_account_code?: string;
         };
         /**
          * UpdateProductRequest
@@ -35024,23 +42733,21 @@ export interface components {
             /** @enum {string} */
             billing_method?: "fixed_price" | "time_and_materials" | "time_material" | "cost_plus" | "internal" | "milestone_based" | "percentage_of_completion" | "milestone";
         };
-        /** UpdatePurchaseOrderRequest */
+        /**
+         * UpdatePurchaseOrderRequest
+         * @description Changes to a draft (or rejected) purchase order; the supplier, the number and the agreement cannot change. Given
+         *     lines replace the current ones.
+         */
         UpdatePurchaseOrderRequest: {
-            /** Format: uuid */
             supplier_id?: string;
-            /** Format: date-time */
+            po_number?: string;
+            supplier_contract_id?: string;
+            /** Format: date */
             order_date?: string;
-            /** Format: date-time */
+            /** Format: date */
             expected_delivery_date?: string;
-            po_number?: string | null;
-            /** @enum {string} */
-            order_type?: "standard" | "blanket_release" | "subcontract";
             currency?: string;
-            exchange_rate?: number | null;
-            /** Format: uuid */
-            supplier_contract_id?: string | null;
-            /** Format: uuid */
-            purchase_requisition_id?: string | null;
+            exchange_rate?: number;
             /** Format: uuid */
             project_id?: string | null;
             /** Format: uuid */
@@ -35054,15 +42761,18 @@ export interface components {
             shipping_address?: string[] | null;
             notes?: string | null;
             lines?: {
-                /** Format: uuid */
-                id?: string | null;
-                description?: string;
-                quantity_ordered?: number;
-                unit_price?: number;
-                uom?: string;
+                description?: string | null;
+                quantity_ordered: number;
+                unit_price?: number | null;
+                uom?: string | null;
                 tax_rate?: number | null;
                 /** Format: uuid */
                 supplier_catalog_id?: string | null;
+                /** Format: uuid */
+                supplier_contract_line_id?: string | null;
+                unit_weight?: number | null;
+                /** Format: date */
+                expected_delivery_date?: string | null;
             }[];
         };
         /** UpdatePurchaseRequisitionRequest */
@@ -35236,6 +42946,19 @@ export interface components {
             payment_terms_code?: string | null;
             incoterms?: string | null;
         };
+        /**
+         * UpdateSupplierQualificationRequest
+         * @description New qualification status of a supplier with the next review date.
+         */
+        UpdateSupplierQualificationRequest: {
+            /** @enum {string} */
+            qualification_status: "prospect" | "in_qualification" | "qualified" | "conditional" | "expired" | "disqualified";
+            /** Format: date */
+            review_date?: string | null;
+            over_receipt_tolerance_percent?: number | null;
+            price_tolerance_percent?: number | null;
+            notes?: string | null;
+        };
         /** UpdateSupplierRequest */
         UpdateSupplierRequest: {
             supplier_code?: string;
@@ -35309,6 +43032,20 @@ export interface components {
             declarant_tax_code?: string | null;
             declarant_role_code?: string | null;
         };
+        /**
+         * UpdateWarehouseBinRequest
+         * @description Changes to the master data of a bin: its type, capacities, lock and picking position. Location and barcode are
+         *     identity and do not change here.
+         */
+        UpdateWarehouseBinRequest: {
+            /** @enum {string} */
+            bin_type?: "storage" | "picking" | "bulk" | "receiving" | "staging" | "shipping" | "quarantine" | "transit";
+            max_quantity?: number | null;
+            max_weight_kg?: number | null;
+            max_volume_cbm?: number | null;
+            is_locked?: boolean;
+            pick_sequence?: number | null;
+        };
         /** UpdateWarehouseRequest */
         UpdateWarehouseRequest: {
             code?: string;
@@ -35324,6 +43061,15 @@ export interface components {
             postal_code?: string | null;
             country?: string | null;
             is_active?: boolean;
+        };
+        /**
+         * UpdateWarehouseZoneRequest
+         * @description Renaming a zone or changing its type. A quarantine or transit zone keeps its stock out of orders, picks and sales.
+         */
+        UpdateWarehouseZoneRequest: {
+            name?: string;
+            /** @enum {string} */
+            zone_type?: "receiving" | "storage" | "picking" | "packing" | "shipping" | "quarantine" | "transit";
         };
         /** UploadAssessmentRequest */
         UploadAssessmentRequest: {
@@ -35676,7 +43422,6 @@ export interface components {
             country: string | null;
             is_active: boolean;
             zones?: components["schemas"]["WarehouseZone"][];
-            bins_count?: number;
             created_at: string | null;
             updated_at: string | null;
         };
@@ -35818,6 +43563,12 @@ export interface components {
             /** @enum {string|null} */
             canton?: "AG" | "AI" | "AR" | "BE" | "BL" | "BS" | "FR" | "GE" | "GL" | "GR" | "JU" | "LU" | "NE" | "NW" | "OW" | "SG" | "SH" | "SO" | "SZ" | "TG" | "TI" | "UR" | "VD" | "VS" | "ZG" | "ZH" | null;
         };
+        /**
+         * WmsQueryRequest
+         * @description Query parameters and small bodies of the WMS reports and actions, validated per route: stock valuation at a date,
+         *     KPIs, barcode lookup, ABC classification run, recount and lot recall.
+         */
+        WmsQueryRequest: Record<string, never>;
         /** WorkOrder */
         WorkOrder: {
             id: string;
@@ -35932,8 +43683,10 @@ export interface components {
             current_node_id: string | null;
             status: string;
             locked_fiscal_document: boolean;
-            context_snapshot: unknown[];
-            started_at: string;
+            context_snapshot: {
+                [key: string]: unknown;
+            } | null;
+            started_at: string | null;
             completed_at: string | null;
             created_at: string | null;
             steps?: components["schemas"]["WorkflowInstanceStepResource"][];
@@ -35962,7 +43715,30 @@ export interface components {
             assignee_type: string | null;
             assignee_id: string | null;
             timeout_hours: number | null;
+            escalation_rule_id: string | null;
             ui_metadata: unknown[];
+        };
+        /** WorkflowTaskResource */
+        WorkflowTaskResource: {
+            step_id: string;
+            workflow_instance_id: string;
+            workflow_code: string;
+            workflow_name: string;
+            node_name: string;
+            approvable_type: string;
+            approvable_id: string;
+            approvable_label: string | null;
+            initiated_by: string | null;
+            assigned_user_id: string | null;
+            assigned_role: string | null;
+            via_delegation_from: string | null;
+            tier_level: number;
+            due_at: string | null;
+            is_overdue: boolean;
+            hours_remaining: string | null;
+            escalation_level: number;
+            escalated_at: string | null;
+            created_at: string | null;
         };
         /** WorkflowTransitionResource */
         WorkflowTransitionResource: {
@@ -36670,6 +44446,95 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "accrual.index": {
+        parameters: {
+            query?: {
+                accrual_type?: string;
+                cutoff_date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: components["schemas"]["AccrualResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "accrual.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreAccrualRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Accrual posted";
+                        data: components["schemas"]["AccrualResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "accrual.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: components["schemas"]["AccrualResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "crm.activities.timeline": {
@@ -37647,6 +45512,53 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "integrations.api-keys.rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "API key rotated";
+                        data: {
+                            id: string;
+                            tenant_id: string;
+                            name: string;
+                            prefix: string;
+                            scopes: unknown[];
+                            /** Format: date-time */
+                            expires_at: string | null;
+                            /** Format: date-time */
+                            last_used_at: string | null;
+                            /** Format: date-time */
+                            revoked_at: string | null;
+                            created_by: string | null;
+                            /** Format: date-time */
+                            created_at: string | null;
+                            /** Format: date-time */
+                            updated_at: string | null;
+                            token: string;
+                            replaces: string;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "integrations.api-keys.revoke": {
@@ -39132,7 +47044,12 @@ export interface operations {
     };
     "assistant.logs": {
         parameters: {
-            query?: never;
+            query?: {
+                outcome?: components["schemas"]["AnswerOutcome"] | null;
+                user_id?: string | null;
+                from?: string | null;
+                to?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -39171,6 +47088,7 @@ export interface operations {
                     };
                 };
             };
+            422: components["responses"]["ValidationException"];
         };
     };
     "attachments.index": {
@@ -40443,7 +48361,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreBankAccountRequest"];
+            };
+        };
         responses: {
             /** @description `BankAccountResource` */
             200: {
@@ -40455,6 +48377,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "bank-accounts.destroy": {
@@ -40612,6 +48535,126 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "banking.reconciliation-rules.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Reconciliation rules";
+                        data: components["schemas"]["BankReconciliationRuleResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "banking.reconciliation-rules.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreReconciliationRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Reconciliation rule created";
+                        data: components["schemas"]["BankReconciliationRuleResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "banking.reconciliation-rules.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreReconciliationRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Reconciliation rule updated";
+                        data: components["schemas"]["BankReconciliationRuleResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "banking.reconciliation-rules.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Reconciliation rule deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "banking.statements.index": {
@@ -40866,6 +48909,35 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.barcode.lookup": {
+        parameters: {
+            query?: {
+                warehouse_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        gs1: {
+                            [key: string]: string;
+                        };
+                        matches: string[];
                     };
                 };
             };
@@ -41381,7 +49453,7 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
-    "mfg.boms.index": {
+    "invoicing.billing-plans.index": {
         parameters: {
             query?: never;
             header?: never;
@@ -41395,10 +49467,188 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": unknown;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "invoicing.billing-plans.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreBillingPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description `BillingPlanResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlanResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.billing-plans.run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunBillingPlansRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        invoices: (components["schemas"]["SalesInvoiceResource"] & Record<string, never>)[];
+                        errors: {
+                            billing_plan_id: string;
+                            item_id: string;
+                            message: unknown;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.billing-plans.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `BillingPlanResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlanResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "invoicing.billing-plans.items.invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InvoiceBillingPlanItemRequest"];
+            };
+        };
+        responses: {
+            /** @description `SalesInvoiceResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesInvoiceResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.billing-plans.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `BillingPlanResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlanResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "mfg.boms.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgBomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": {
                         data: components["schemas"]["MfgBomResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
                         meta: {
                             current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
                             total: number;
                         };
                     };
@@ -41420,14 +49670,13 @@ export interface operations {
             };
         };
         responses: {
+            /** @description `MfgBomResource` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Bill of Materials created successfully.";
                         data: components["schemas"]["MfgBomResource"];
                     };
                 };
@@ -41447,6 +49696,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description `MfgBomResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -41460,9 +49710,43 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
-    "mfg.boms.explode": {
+    "mfg.boms.update": {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBomRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgBomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgBomResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.boms.explode": {
+        parameters: {
+            query?: {
+                quantity?: number | null;
+                date?: string | null;
+            };
             header?: never;
             path: {
                 id: string;
@@ -41478,23 +49762,29 @@ export interface operations {
                 content: {
                     "application/json": {
                         bom_id: string;
-                        quantity: number;
-                        exploded_components: {
+                        quantity: string;
+                        data: {
                             component_item_id: string;
                             component_item_code: string;
                             component_name: string;
+                            bom_component_id: string;
+                            parent_item_id: string;
                             level: number;
-                            quantity_per: number;
-                            scrap_percentage: number;
-                            effective_quantity: number;
+                            quantity_per: string;
+                            scrap_percentage: string;
+                            yield_percentage: string;
+                            effective_quantity: string;
                             uom: string;
                             is_phantom: boolean;
-                            is_subassembly: boolean;
+                            has_bom: boolean;
+                            issue_method: string;
+                            operation_sequence: number | null;
                         }[];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "mfg.boms.revise": {
@@ -41512,20 +49802,46 @@ export interface operations {
             };
         };
         responses: {
+            /** @description `MfgBomResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgBomResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.boms.activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgBomResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "BOM revised successfully.";
                         data: components["schemas"]["MfgBomResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
-            422: components["responses"]["ValidationException"];
+            403: components["responses"]["AuthorizationException"];
         };
     };
     "v1.associations.bookings.index": {
@@ -42381,6 +50697,212 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "treasury.cash-registers.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash registers";
+                        data: components["schemas"]["CashRegisterResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "treasury.cash-registers.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreCashRegisterRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash register created";
+                        data: components["schemas"]["CashRegisterResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.cash-registers.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash register";
+                        data: components["schemas"]["CashRegisterResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "treasury.cash-registers.movements.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash movements";
+                        data: components["schemas"]["CashMovementResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "treasury.cash-registers.movements.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreCashMovementRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.cash-registers.close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseCashRegisterRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash register closed";
+                        data: components["schemas"]["CashClosingResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.cash-registers.closings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash closings";
+                        data: components["schemas"]["CashClosingResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "v1.associations.catalogs.index": {
         parameters: {
             query?: never;
@@ -43032,6 +51554,58 @@ export interface operations {
         };
     };
     "v1.childcare.children.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ChildcareResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ChildcareResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.childcare.waiting-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `ChildcareResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ChildcareResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.childcare.children.admit": {
         parameters: {
             query?: never;
             header?: never;
@@ -43921,6 +52495,7 @@ export interface operations {
         parameters: {
             query?: {
                 document_type?: "sale" | "void" | "return" | null;
+                gateway_status?: string | null;
                 from?: string | null;
                 to?: string | null;
                 per_page?: number | null;
@@ -44013,6 +52588,34 @@ export interface operations {
             404: components["responses"]["ModelNotFoundException"];
         };
     };
+    "fiscal-retail.documents.retransmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Commercial document retransmitted";
+                        data: components["schemas"]["CommercialDocument"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
     "fiscal-retail.documents.void": {
         parameters: {
             query?: never;
@@ -44089,16 +52692,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    /** @enum {string} */
-                    document_type: "invoice" | "quote";
-                    /** Format: uuid */
-                    document_id: string;
-                    /** @enum {string} */
-                    channel: "email" | "whatsapp" | "telegram" | "sms";
-                    recipient?: string | null;
-                    message?: string | null;
-                };
+                "application/json": components["schemas"]["SendDocumentRequest"];
             };
         };
         responses: {
@@ -44136,6 +52730,11 @@ export interface operations {
         parameters: {
             query?: {
                 document_id?: string | null;
+                channel?: "email" | "whatsapp" | "telegram" | "sms" | null;
+                status?: "sent" | "simulated" | "failed" | null;
+                message_type?: "document" | "message" | null;
+                from?: string | null;
+                to?: string | null;
                 per_page?: number | null;
             };
             header?: never;
@@ -44166,6 +52765,35 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "communication.deliveries.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Delivery retrieved";
+                        data: components["schemas"]["DeliveryLog"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "communication.channels.index": {
         parameters: {
             query?: never;
@@ -44186,15 +52814,12 @@ export interface operations {
                         message: "Channels retrieved";
                         data: {
                             id: string;
-                            tenant_id: string;
                             channel: string;
                             driver: string;
                             is_enabled: boolean;
-                            /** Format: date-time */
-                            created_at: string | null;
-                            /** Format: date-time */
-                            updated_at: string | null;
                             has_credentials: boolean;
+                            settings: string;
+                            secrets_set: unknown[];
                         }[];
                         meta: string;
                     };
@@ -44214,12 +52839,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
-                    /** @enum {string} */
-                    driver: "twilio" | "local";
-                    is_enabled?: boolean | null;
-                    credentials?: string[] | null;
-                };
+                "application/json": components["schemas"]["UpdateChannelRequest"];
             };
         };
         responses: {
@@ -44232,7 +52852,15 @@ export interface operations {
                         success: boolean;
                         /** @constant */
                         message: "Channel saved";
-                        data: components["schemas"]["CommunicationChannel"];
+                        data: {
+                            id: string;
+                            channel: string;
+                            driver: string;
+                            is_enabled: boolean;
+                            has_credentials: boolean;
+                            settings: string;
+                            secrets_set: unknown[];
+                        };
                         meta: string;
                     };
                 };
@@ -44808,6 +53436,7 @@ export interface operations {
                                 sales_orders: number;
                                 delivery_notes: number;
                                 work_orders: number;
+                                /** @description Contracts of the subscription engine (/sub/contracts), where the legacy subscriptions were migrated */
                                 active_subscriptions: number;
                             };
                             purchases: {
@@ -44902,6 +53531,574 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.documents.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Contract documents";
+                        data: (components["schemas"]["DocumentResource"] & Record<string, never>)[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.documents.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    document_id: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Document attached";
+                        data: components["schemas"]["DocumentResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.documents.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Document detached";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionContractRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Contract status changed";
+                        data: components["schemas"]["ContractResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Contract history";
+                        data: {
+                            id: string;
+                            from_status: string | null;
+                            to_status: string;
+                            reason: string | null;
+                            changed_by: string | null;
+                            created_at: string | null;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.obligations.index": {
+        parameters: {
+            query?: {
+                contract_kind?: "customer" | "supplier" | null;
+                contract_id?: string | null;
+                type?: "obligation" | "milestone" | null;
+                status?: "open" | "completed" | "waived" | null;
+                owner_user_id?: string | null;
+                due_within_days?: number | null;
+                overdue?: boolean | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligations";
+                        data: components["schemas"]["ContractObligationResource"][];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.obligations.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveContractObligationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligation updated";
+                        data: components["schemas"]["ContractObligationResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            /** @description An error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.obligations.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligation deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            /** @description An error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example A closed item stays on record.
+                         */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "contracts.obligations.complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligation completed";
+                        data: components["schemas"]["ContractObligationResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.obligations.waive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obligationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligation waived";
+                        data: components["schemas"]["ContractObligationResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.obligations.contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligations";
+                        data: components["schemas"]["ContractObligationResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.obligations.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveContractObligationRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Obligation added";
+                        data: components["schemas"]["ContractObligationResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description An error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example A terminated contract takes no new obligations.
+                         */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.parties.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Contract parties";
+                        data: {
+                            id: string;
+                            party_type: string;
+                            party_id: string | null;
+                            name: string | null;
+                            role: string;
+                            email: string | null;
+                            notes: string | null;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "contracts.parties.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveContractPartyRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Party linked";
+                        data: {
+                            id: string;
+                            party_type: string;
+                            party_id: string | null;
+                            name: string | null;
+                            role: string;
+                            email: string | null;
+                            notes: string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description An error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example This party already holds this role on the contract.
+                         */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "contracts.parties.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                id: string;
+                partyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Party unlinked";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "contracts.index": {
@@ -46363,6 +55560,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
         };
     };
@@ -46397,6 +55595,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
         };
     };
     "invoicing.customer-ledger.statement": {
@@ -46931,7 +56130,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             id: string;
-                            executed_at: string;
+                            executed_at: string | null;
                             /** @enum {string} */
                             direction: "internal" | "in" | "out";
                             sku: string | null;
@@ -47311,6 +56510,214 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.abc-classification.run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            stock_item_id: string;
+                            sku: string;
+                            name: string;
+                            consumption_value: string;
+                            cumulative_share: string;
+                            /** @constant */
+                            abc_class: "A";
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.cycle-count-plans.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            warehouse_id: string;
+                            name: string;
+                            abc_class: string | null;
+                            interval_days: number;
+                            freezes_stock: boolean;
+                            is_active: boolean;
+                            last_run_at: string | null;
+                            next_run_on: string | null;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.cycle-count-plans.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CycleCountPlanRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        name: string;
+                        abc_class: string | null;
+                        interval_days: number;
+                        freezes_stock: boolean;
+                        is_active: boolean;
+                        last_run_at: string | null;
+                        next_run_on: string | null;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.cycle-count-plans.run-due": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        opened: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.cycle-count-plans.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CycleCountPlanRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        name: string;
+                        abc_class: string | null;
+                        interval_days: number;
+                        freezes_stock: boolean;
+                        is_active: boolean;
+                        last_run_at: string | null;
+                        next_run_on: string | null;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.cycle-count-plans.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.cycle-count-plans.run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `InventoryCountSessionResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryCountSessionResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "dashboard.kpi-summary": {
@@ -47715,6 +57122,33 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "invoicing.debit-notes.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueDebitNoteRequest"];
+            };
+        };
+        responses: {
+            /** @description `SalesInvoiceResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesInvoiceResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.customs.tariff-history": {
@@ -48819,6 +58253,7 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "sales.delivery-notes.invoice": {
@@ -49042,6 +58477,206 @@ export interface operations {
                                 [key: string]: unknown;
                             }[];
                         };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dimension.indexCostCenters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: string;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "dimension.storeCostCenter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDimensionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Created";
+                        data: {
+                            id: string;
+                            code: string;
+                            name: string;
+                            is_active: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dimension.updateCostCenter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDimensionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Updated";
+                        data: {
+                            id: string;
+                            code: string;
+                            name: string;
+                            is_active: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dimension.indexProfitCenters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: string;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "dimension.storeProfitCenter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDimensionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Created";
+                        data: {
+                            id: string;
+                            code: string;
+                            name: string;
+                            is_active: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dimension.updateProfitCenter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDimensionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Updated";
+                        data: {
+                            id: string;
+                            code: string;
+                            name: string;
+                            is_active: boolean;
+                        };
+                        meta: string;
                     };
                 };
             };
@@ -49297,6 +58932,41 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "dms.documents.links.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Links";
+                        data: {
+                            id: string;
+                            linkable_type: string;
+                            linkable_id: string;
+                            label: string;
+                            record_exists: boolean;
+                            created_at: string | null;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "dms.documents.link": {
@@ -49711,6 +59381,18 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
         };
     };
@@ -49744,6 +59426,18 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
         };
     };
@@ -49775,6 +59469,192 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "dms.documents.check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckOutDocumentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Document checked out";
+                        data: components["schemas"]["DocumentResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dms.documents.check-out.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Check-out cancelled";
+                        data: components["schemas"]["DocumentResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "dms.documents.check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": components["schemas"]["CheckInDocumentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Document checked in";
+                        data: components["schemas"]["DocumentResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: null;
+                        /** @constant */
+                        title: "Duplicate version";
+                        /** @constant */
+                        status: 409;
+                        detail: string;
+                        instance: null;
+                        invalid_params: string;
+                    };
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "dms.documents.audit-trail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Audit trail";
+                        data: {
+                            action: string;
+                            actor_user_id: string;
+                            occurred_at: string;
+                            ip_address: string;
+                            details: string;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description Access denied */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -50113,6 +59993,55 @@ export interface operations {
                         /** @constant */
                         message: "Operation successful";
                         data: string;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "document-trust.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Signature verified";
+                        data: {
+                            signature_id: string;
+                            document_type: string;
+                            document_id: string;
+                            driver: string;
+                            format: string;
+                            valid: boolean;
+                            reason: string | null;
+                            content_changed: boolean;
+                            trust_chain_validated: boolean;
+                        } | {
+                            signature_id: string;
+                            document_type: string;
+                            document_id: string;
+                            driver: string;
+                            format: string;
+                            valid: boolean;
+                            /** @constant */
+                            reason: "document_missing";
+                            content_changed: boolean;
+                            trust_chain_validated: boolean;
+                        };
                         meta: string;
                     };
                 };
@@ -51020,7 +60949,12 @@ export interface operations {
     };
     "edocument-networks.transmissions": {
         parameters: {
-            query?: never;
+            query?: {
+                network?: components["schemas"]["Network"] | null;
+                status?: string | null;
+                document_reference?: string | null;
+                per_page?: number | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -51035,8 +60969,42 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         /** @constant */
-                        message: "Operation successful";
+                        message: "Transmissions retrieved";
                         data: components["schemas"]["TransmissionResource"][];
+                        meta: {
+                            total: number;
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "edocument-networks.transmissions.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Transmission retrieved";
+                        data: components["schemas"]["TransmissionResource"];
                         meta: string;
                     };
                 };
@@ -51074,6 +61042,24 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: null;
+                        /** @constant */
+                        title: "Already transmitted";
+                        /** @constant */
+                        status: 409;
+                        /** @constant */
+                        detail: "This exact document was already handed to this network: it is not sent twice.";
+                        instance: null;
+                        invalid_params: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
             503: {
                 headers: {
@@ -51723,6 +61709,108 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "v1.hr.employee-documents.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmployeeDocumentResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.hr.employee-documents.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["StoreEmployeeDocumentRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmployeeDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.employee-documents.download": {
+        parameters: {
+            query?: {
+                inline?: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.hr.employee-documents.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "v1.payroll.employee-profiles.index": {
         parameters: {
             query?: {
@@ -52223,6 +62311,414 @@ export interface operations {
             404: components["responses"]["ModelNotFoundException"];
         };
     };
+    "v1.hr.me.profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            employee_number: string;
+                            full_name: string;
+                            work_email: string;
+                            department_id: string | null;
+                            position_id: string | null;
+                            manager_id: string | null;
+                            employment_status: string;
+                            employment_type: string;
+                            hire_date: string | null;
+                            fte_ratio: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.me.leave-balances": {
+        parameters: {
+            query?: {
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveBalanceResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.me.leave-requests.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveRequestResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.me.leave-requests.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitOwnLeaveRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveRequestResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.me.leave-requests.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveRequestResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.me.training": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            training_records: {
+                                id: string;
+                                course_code: string;
+                                course_title: string;
+                                category: string;
+                                status: string;
+                                assigned_date: string | null;
+                                scheduled_date: string | null;
+                                completed_date: string | null;
+                            }[];
+                            certifications: {
+                                id: string;
+                                code: string;
+                                name: string;
+                                issue_date: string | null;
+                                expiry_date: string | null;
+                                status: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.me.documents.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmployeeDocumentResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.me.documents.download": {
+        parameters: {
+            query?: {
+                inline?: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.contracts.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmploymentContractResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.hr.contracts.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreEmploymentContractRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmploymentContractResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.contracts.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateEmploymentContractRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmploymentContractResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.salary-components.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSalaryComponentRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            contract_id: string;
+                            wage_type_code: string;
+                            description: string;
+                            amount: string;
+                            frequency: string;
+                            valid_from: string;
+                            valid_to: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.salary-components.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSalaryComponentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            contract_id: string;
+                            wage_type_code: string;
+                            description: string;
+                            amount: string;
+                            frequency: string;
+                            valid_from: string;
+                            valid_to: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.salary-components.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "enasarco.parameters": {
         parameters: {
             query?: never;
@@ -52398,6 +62894,216 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.ecos.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.ecos.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEcoRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.ecos.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.ecos.submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "mfg.ecos.approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "mfg.ecos.reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Modules.Manufacturing.Http.Requests.ReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.ecos.implement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgEngineeringChangeOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgEngineeringChangeOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
         };
     };
     "v1.associations.enrolment-forms.index": {
@@ -55716,6 +66422,92 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "procurement.contracts.lines.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `SupplierContractLineResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierContractLineResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.contracts.lines.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreContractLineRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierContractLineResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierContractLineResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.contracts.call-offs.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreCallOffRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.associations.donations.index": {
         parameters: {
             query?: {
@@ -55826,7 +66618,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReasonRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.ReasonRequest"];
             };
         };
         responses: {
@@ -56218,11 +67010,10 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    currency: string;
-                    /** Format: date-time */
-                    period_end_date?: string | null;
-                    spot_rate: number;
-                    company_id?: string;
+                    /** Format: date */
+                    period_end_date: string;
+                    currency?: string | null;
+                    spot_rate?: string;
                 };
             };
         };
@@ -56232,7 +67023,13 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FxRevaluation"];
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "FX revaluation posted";
+                        data: components["schemas"]["FxRevaluationResource"][];
+                        meta: string;
+                    };
                 };
             };
             401: components["responses"]["AuthenticationException"];
@@ -56690,7 +67487,53 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: null;
+                        /** @constant */
+                        title: "Document already flagged";
+                        /** @constant */
+                        status: 409;
+                        /** @constant */
+                        detail: "This document is already flagged as a health expense.";
+                        instance: null;
+                        invalid_params: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "tessera-sanitaria.expenses.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Health expense retrieved";
+                        data: components["schemas"]["HealthExpense"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "tessera-sanitaria.expenses.destroy": {
@@ -56719,6 +67562,41 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "tessera-sanitaria.summary": {
+        parameters: {
+            query: {
+                year: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Health expense summary retrieved";
+                        data: {
+                            year: number;
+                            count: number;
+                            total_amount: string;
+                            opposed_count: number;
+                            by_expense_type: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "tessera-sanitaria.export": {
@@ -58390,6 +69268,56 @@ export interface operations {
             403: components["responses"]["AuthorizationException"];
         };
     };
+    "inventory.counts.recount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        recount_lines: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.counts.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `InventoryCountSessionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryCountSessionResource"];
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
     "invoicing.invoices.index": {
         parameters: {
             query?: never;
@@ -58667,7 +69595,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateInvoiceRequest"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -58685,6 +69617,7 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sales.invoices.destroy": {
@@ -59242,6 +70175,220 @@ export interface operations {
             403: components["responses"]["AuthorizationException"];
         };
     };
+    "mfg.items.index": {
+        parameters: {
+            query?: {
+                active?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgItemResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgItemResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.items.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreItemRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgItemResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgItemResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.items.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgItemResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgItemResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.items.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgItemResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgItemResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.items.cost_rollup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    date?: string | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            mfg_item_id: string;
+                            material: string;
+                            labor: string;
+                            overhead: string;
+                            subcontract: string;
+                            total: string;
+                            components: {
+                                component_item_id: string;
+                                quantity: string;
+                                unit_cost: string;
+                                extended_cost: string;
+                            }[];
+                        } | {
+                            mfg_item_id: string;
+                            material: string;
+                            /** @constant */
+                            labor: "0.0000";
+                            /** @constant */
+                            overhead: "0.0000";
+                            /** @constant */
+                            subcontract: "0.0000";
+                            total: string;
+                            components: string[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.items.where_used": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `MfgBomResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgBomResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
     "general-ledger.journal-book.export": {
         parameters: {
             query: {
@@ -59355,6 +70502,92 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "journalEntry.submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Journal entry submitted for approval";
+                        data: components["schemas"]["JournalEntryResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "journalEntry.approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Journal entry approved and posted";
+                        data: components["schemas"]["JournalEntryResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "journalEntry.reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectJournalEntryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Journal entry rejected";
+                        data: components["schemas"]["JournalEntryResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "journals.index": {
         parameters: {
             query?: {
@@ -59419,9 +70652,9 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Journal entry posted successfully";
-                        data: components["schemas"]["JournalEntryResource"];
+                        /** @enum {string} */
+                        message: "Journal entry saved and waiting for approval" | "Journal entry saved as draft" | "Journal entry posted successfully";
+                        data: components["schemas"]["JournalEntryResource"] & Record<string, never>;
                     };
                 };
             };
@@ -60009,6 +71242,480 @@ export interface operations {
             404: components["responses"]["ModelNotFoundException"];
         };
     };
+    "analytics.kpis.index": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                compare?: "none" | "previous_period" | "previous_year" | null;
+                "kpis[]"?: "sales" | "purchases" | "margin" | "receivables-aging" | "payables-aging" | "stock-value" | "project-margin" | "hr-headcount";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "KPIs retrieved";
+                        data: {
+                            period: {
+                                from: string;
+                                to: string;
+                            };
+                            comparison_period: {
+                                from: string;
+                                to: string;
+                            } | null;
+                            kpis: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "analytics.kpis.export": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                compare?: "none" | "previous_period" | "previous_year" | null;
+                "kpis[]"?: "sales" | "purchases" | "margin" | "receivables-aging" | "payables-aging" | "stock-value" | "project-margin" | "hr-headcount";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Content-Disposition"?: "attachment; filename=\"kpis.csv\"";
+                    "X-Export-Truncated"?: "false";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv; charset=UTF-8": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "analytics.kpis.show": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                compare?: "none" | "previous_period" | "previous_year" | null;
+                "kpis[]"?: "sales" | "purchases" | "margin" | "receivables-aging" | "payables-aging" | "stock-value" | "project-margin" | "hr-headcount";
+            };
+            header?: never;
+            path: {
+                kpi: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "KPI retrieved";
+                        data: unknown;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "analytics.kpis.export-detail": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                compare?: "none" | "previous_period" | "previous_year" | null;
+                "kpis[]"?: "sales" | "purchases" | "margin" | "receivables-aging" | "payables-aging" | "stock-value" | "project-margin" | "hr-headcount";
+            };
+            header?: never;
+            path: {
+                kpi: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Content-Disposition"?: string;
+                    "X-Export-Truncated"?: "true" | "false";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv; charset=UTF-8": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description An error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example You cannot read the data of this indicator.
+                         */
+                        message: string;
+                    };
+                };
+            };
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.workshop.folders.time.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            entries: unknown[];
+                            technicians: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.workshop.folders.time.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `WorkshopResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkshopResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.workshop.folders.time.start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `WorkshopResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkshopResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.workshop.folders.time.bill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `WorkshopResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkshopResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.workshop.time.stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `WorkshopResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkshopResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.workshop.vehicles.history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            folder_number: string;
+                            kind: string;
+                            status: string;
+                            /** Format: date-time */
+                            received_at: string | null;
+                            mileage_in: number | null;
+                            mileage_out: number | null;
+                            complaint: string | null;
+                            currency: string;
+                            net_total: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.landed-costs.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `LandedCostResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LandedCostResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.landed-costs.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreLandedCostRequest"];
+            };
+        };
+        responses: {
+            /** @description `LandedCostResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LandedCostResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.landed-costs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `LandedCostResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LandedCostResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.landed-costs.post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `LandedCostResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LandedCostResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.landed-costs.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `LandedCostResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LandedCostResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "crm.leads.duplicates": {
         parameters: {
             query?: {
@@ -60545,6 +72252,33 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "v1.hr.leave-types.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeaveTypeRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveType"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.hr.leave-balances.index": {
         parameters: {
             query?: {
@@ -60576,7 +72310,14 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @default 0 */
+                    month?: number;
+                };
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -60761,6 +72502,207 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.leave-types.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeaveTypeRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveType"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.leave-accrual-policies.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveAccrualPolicy"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.leave-accrual-policies.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeaveAccrualPolicyRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveAccrualPolicy"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.leave-accrual-policies.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeaveAccrualPolicyRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveAccrualPolicy"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.leave-accrual-policies.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.hr.leave-requests.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["LeaveRequestResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.leave-calendar": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                department_id?: string | null;
+                employee_id?: string | null;
+                user_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            employee_id: string;
+                            employee_name: string;
+                            department_id: string | null;
+                            leave_type_code: string;
+                            leave_type_name: string;
+                            start_date: string;
+                            end_date: string;
+                            total_hours: string;
+                            status: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "ledgerBudget.index": {
@@ -61054,6 +72996,416 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "ledgerReport.trialBalance": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                compare_from?: string | null;
+                compare_to?: string | null;
+                cost_center_id?: string | null;
+                profit_center_id?: string | null;
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            currency: string;
+                            from: string;
+                            to: string;
+                            compare_from: string | null;
+                            compare_to: string | null;
+                            accounts: {
+                                account_id: string;
+                                account_code: string;
+                                account_name: string;
+                                account_type: string;
+                                normal_balance: string;
+                                opening_balance: string;
+                                debit: string;
+                                credit: string;
+                                closing_balance: string;
+                                drill_down: string;
+                                comparison_debit: string;
+                                comparison_credit: string;
+                            }[];
+                            totals: unknown[];
+                            is_balanced: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerReport.accountLedger": {
+        parameters: {
+            query: {
+                account_id: string;
+                from: string;
+                to: string;
+                page?: number | null;
+                per_page?: number | null;
+                cost_center_id?: string | null;
+                profit_center_id?: string | null;
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            account: {
+                                id: string;
+                                account_code: string | null;
+                                name: string;
+                                account_type: string;
+                                normal_balance: string;
+                            };
+                            currency: string;
+                            from: string;
+                            to: string;
+                            opening_balance: string;
+                            closing_balance: string;
+                            total_debit: string;
+                            total_credit: string;
+                            transaction_totals: {
+                                currency: string;
+                                debit: string;
+                                credit: string;
+                            } | null;
+                            lines: {
+                                line_id: string;
+                                journal_entry_id: string;
+                                entry_number: string;
+                                journal_number: number | null;
+                                posting_date: string;
+                                journal_type: string;
+                                status: string;
+                                source_document_type: string;
+                                source_document_id: string;
+                                description: string;
+                                partner_type: string;
+                                partner_id: string;
+                                cost_center_id: string;
+                                profit_center_id: string;
+                                project_id: string;
+                                currency: string;
+                                debit: string;
+                                credit: string;
+                                transaction_currency: string;
+                                transaction_debit: string;
+                                transaction_credit: string;
+                                exchange_rate: string;
+                                running_balance: string;
+                            }[];
+                            meta: {
+                                current_page: number;
+                                last_page: unknown;
+                                per_page: number;
+                                total: number;
+                            };
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerReport.balanceSheet": {
+        parameters: {
+            query: {
+                as_of: string;
+                compare_as_of?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            currency: string;
+                            as_of: string;
+                            compare_as_of: string | null;
+                            sections: {
+                                [key: string]: {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            totals: {
+                                total_assets: string;
+                                total_liabilities: string;
+                                total_equity: string;
+                                result_not_yet_closed: string;
+                                total_equity_with_result: string;
+                                total_liabilities_and_equity: string;
+                            };
+                            comparison_totals: {
+                                total_assets: string;
+                                total_liabilities: string;
+                                total_equity: string;
+                                result_not_yet_closed: string;
+                                total_equity_with_result: string;
+                                total_liabilities_and_equity: string;
+                            } | string | null;
+                            is_balanced: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerReport.incomeStatement": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                compare_from?: string | null;
+                compare_to?: string | null;
+                cost_center_id?: string | null;
+                profit_center_id?: string | null;
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            currency: string;
+                            from: string;
+                            to: string;
+                            compare_from: string | null;
+                            compare_to: string | null;
+                            sections: {
+                                [key: string]: {
+                                    [key: string]: unknown;
+                                };
+                            };
+                            totals: {
+                                total_revenue: string;
+                                total_cogs: string;
+                                gross_profit: string;
+                                total_expenses: string;
+                                net_income: string;
+                            };
+                            comparison_totals: {
+                                total_revenue: string;
+                                total_cogs: string;
+                                gross_profit: string;
+                                total_expenses: string;
+                                net_income: string;
+                            } | string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerReport.dimensions": {
+        parameters: {
+            query: {
+                dimension: "cost_center" | "profit_center" | "project";
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            currency: string;
+                            dimension: string;
+                            from: string;
+                            to: string;
+                            groups: {
+                                dimension_id: string | null;
+                                dimension_code: string;
+                                dimension_name: string;
+                                accounts: {
+                                    account_id: string;
+                                    account_code: string;
+                                    account_name: string;
+                                    account_type: string;
+                                    debit: string;
+                                    credit: string;
+                                    amount: string;
+                                }[];
+                                result: string;
+                            }[];
+                            total: string;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerReport.auditTrail": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                format?: "csv" | "json" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Transfer-Encoding"?: "chunked";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv; charset=UTF-8": string;
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: unknown[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "ledgerSettings.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            posting_accounts: string;
+                            manual_journal_approval_required: boolean;
+                            manual_journal_approval_threshold: string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "ledgerSettings.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateLedgerSettingsRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Ledger settings updated";
+                        data: {
+                            posting_accounts: string;
+                            manual_journal_approval_required: boolean;
+                            manual_journal_approval_threshold: string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.associations.books.show": {
         parameters: {
             query?: never;
@@ -61289,7 +73641,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReasonRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.ReasonRequest"];
             };
         };
         responses: {
@@ -61557,6 +73909,188 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.liquidity.forecast": {
+        parameters: {
+            query?: {
+                horizon_days?: number | null;
+                "scenarios[]"?: string[];
+                currency?: string | null;
+                minimum_balance?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Liquidity forecast";
+                        data: {
+                            as_of: string;
+                            until: string;
+                            currency: string;
+                            opening_cash: string;
+                            minimum_balance: string | null;
+                            scenarios: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.forecast-scenarios.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Forecast scenarios";
+                        data: components["schemas"]["ForecastScenarioResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "treasury.forecast-scenarios.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreForecastScenarioRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Forecast scenario created";
+                        data: components["schemas"]["ForecastScenarioResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.recurring-items.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring cash items";
+                        data: components["schemas"]["RecurringCashItemResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "treasury.recurring-items.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreRecurringCashItemRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring cash item created";
+                        data: components["schemas"]["RecurringCashItemResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.recurring-items.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring cash item deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "lookups.getByCategory": {
@@ -62223,6 +74757,124 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "mfg.kpis": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                work_center_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            from: string;
+                            to: string;
+                            orders: {
+                                completed: number;
+                                average_lead_time_days: string | null;
+                                on_time_percent: string | null;
+                            };
+                            quality: {
+                                good_quantity: string;
+                                scrap_quantity: string;
+                                scrap_rate_percent: string | null;
+                            };
+                            work_centers: {
+                                work_center_id: string;
+                                work_center_code: string;
+                                operating_minutes: string;
+                                run_minutes: string;
+                                downtime_minutes: string;
+                                ideal_minutes: string;
+                                good_units: string;
+                                total_units: string;
+                                available_hours: string;
+                                utilization_percent: string | null;
+                                availability: string | null;
+                                performance: string | null;
+                                quality: string | null;
+                                oee: string | null;
+                            }[];
+                            variances: {
+                                orders_closed: number;
+                                material: string;
+                                labor: string;
+                                overhead: string;
+                                subcontract: string;
+                                total: string;
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.settings.accounting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.settings.accounting.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateAccountingSettingsRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.customs.master-data.index": {
         parameters: {
             query?: never;
@@ -62741,7 +75393,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SendDocumentRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.SendDocumentRequest"];
             };
         };
         responses: {
@@ -64199,6 +76851,111 @@ export interface operations {
             404: components["responses"]["ModelNotFoundException"];
         };
     };
+    "communication.messages.send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Delivery logged";
+                        data: components["schemas"]["DeliveryLog"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            /** @description An error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Error overview.
+                         * @example No active template for this code and channel.
+                         */
+                        message: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        message: string | null;
+                        data: components["schemas"]["DeliveryLog"];
+                    };
+                };
+            };
+        };
+    };
+    "communication.channels.test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    recipient: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Delivery logged";
+                        data: components["schemas"]["DeliveryLog"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        message: string | null;
+                        data: components["schemas"]["DeliveryLog"];
+                    };
+                };
+            };
+        };
+    };
     "subscriptions.metrics": {
         parameters: {
             query?: {
@@ -64419,7 +77176,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SendDocumentRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.SendDocumentRequest"];
             };
         };
         responses: {
@@ -64490,6 +77247,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Paginated set of `MfgMrpRunResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -64497,8 +77255,29 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["MfgMrpRunResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
                         meta: {
                             current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
                             total: number;
                         };
                     };
@@ -64520,20 +77299,44 @@ export interface operations {
             };
         };
         responses: {
+            /** @description `MfgMrpRunResource` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "MRP run executed successfully.";
                         data: components["schemas"]["MfgMrpRunResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.mrp.runs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgMrpRunResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgMrpRunResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "mfg.mrp.planned_orders": {
@@ -64545,18 +77348,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Paginated set of `MfgPlannedOrderResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
+                        data: components["schemas"]["MfgPlannedOrderResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
                             current_page: number;
-                            data: components["schemas"]["MfgMrpPlannedOrder"][];
-                            first_page_url: string | null;
                             from: number | null;
-                            last_page_url: string | null;
                             last_page: number;
                             /** @description Generated paginator links. */
                             links: {
@@ -64564,12 +77372,58 @@ export interface operations {
                                 label: string;
                                 active: boolean;
                             }[];
-                            next_page_url: string | null;
                             /** @description Base path for paginator generated URLs. */
                             path: string | null;
                             /** @description Number of items shown per page. */
                             per_page: number;
-                            prev_page_url: string | null;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.mrp.purchase_suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgPlannedOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgPlannedOrderResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
                             /** @description Number of the last item in the slice. */
                             to: number | null;
                             /** @description Total number of items being paginated. */
@@ -64590,18 +77444,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Paginated set of `MfgShortageResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
+                        data: components["schemas"]["MfgShortageResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
                             current_page: number;
-                            data: components["schemas"]["MfgMrpShortage"][];
-                            first_page_url: string | null;
                             from: number | null;
-                            last_page_url: string | null;
                             last_page: number;
                             /** @description Generated paginator links. */
                             links: {
@@ -64609,12 +77468,10 @@ export interface operations {
                                 label: string;
                                 active: boolean;
                             }[];
-                            next_page_url: string | null;
                             /** @description Base path for paginator generated URLs. */
                             path: string | null;
                             /** @description Number of items shown per page. */
                             per_page: number;
-                            prev_page_url: string | null;
                             /** @description Number of the last item in the slice. */
                             to: number | null;
                             /** @description Total number of items being paginated. */
@@ -64637,17 +77494,143 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description `MfgProductionOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.mrp.planned_orders.procurement_link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkSuggestionConvertedRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgPlannedOrderResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Planned order converted successfully.";
-                        converted_order_id: string;
+                        data: components["schemas"]["MfgPlannedOrderResource"];
                     };
                 };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.mrp.forecasts.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgForecastResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgForecastResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.mrp.forecasts.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreForecastRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgForecastResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgForecastResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.mrp.forecasts.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             401: components["responses"]["AuthenticationException"];
         };
@@ -64994,6 +77977,79 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "openItemFxRevaluation.index": {
+        parameters: {
+            query?: {
+                revaluation_date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            id: string;
+                            revaluation_date: string | null;
+                            side: string;
+                            currency: string;
+                            account_id: string;
+                            closing_rate: string;
+                            open_amount: string;
+                            book_value: string;
+                            revalued_value: string;
+                            difference: string;
+                            open_items: number;
+                            journal_entry_id: string | null;
+                            reversal_date: string | null;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "openItemFxRevaluation.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreFxRevaluationRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Open items revalued";
+                        data: unknown[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "crm.opportunities.stage": {
@@ -65474,6 +78530,93 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "invoicing.invoices.deferred": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueDeferredInvoiceRequest"];
+            };
+        };
+        responses: {
+            /** @description `SalesInvoiceResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesInvoiceResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.invoices.deferred-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunDeferredInvoicingRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        invoices: (components["schemas"]["SalesInvoiceResource"] & Record<string, never>)[];
+                        errors: {
+                            contact_id: string;
+                            delivery_note_ids: string;
+                            message: unknown;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.orders.down-payment-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["IssueDownPaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description `SalesInvoiceResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesInvoiceResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.hr.departments.index": {
         parameters: {
             query?: never;
@@ -65503,14 +78646,9 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": {
-                    parent_id?: string;
-                    business_unit_id?: string;
-                    cost_center_id?: string;
-                    manager_employee_id?: string;
-                };
+                "application/json": components["schemas"]["SaveDepartmentRequest"];
             };
         };
         responses: {
@@ -65525,6 +78663,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.hr.positions.index": {
@@ -65556,12 +78695,9 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": {
-                    department_id?: string;
-                    job_grade_id?: string;
-                };
+                "application/json": components["schemas"]["SavePositionRequest"];
             };
         };
         responses: {
@@ -65576,6 +78712,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.hr.positions.successor": {
@@ -65648,6 +78785,306 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.departments.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveDepartmentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["DepartmentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.positions.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavePositionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PositionResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.sales-orders.reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReserveSalesOrderRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            sales_order_item_id: string;
+                            product_id: string;
+                            stock_item_id: string;
+                            open: string;
+                            already_reserved: string;
+                            reserved: string;
+                            short: string;
+                            reservation_id: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.sales-orders.release-reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        released: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.waves.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            wave_number: string;
+                            warehouse_id: string;
+                            status: string;
+                            staging_bin_id: string | null;
+                            assigned_picker_user_id: string | null;
+                            shortages: unknown[];
+                            released_at: string | null;
+                            completed_at: string | null;
+                            pick_lists: {
+                                id: string;
+                                pick_list_number: string;
+                                status: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.waves.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReleasePickWaveRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        wave_number: string;
+                        warehouse_id: string;
+                        status: string;
+                        staging_bin_id: string | null;
+                        assigned_picker_user_id: string | null;
+                        shortages: unknown[];
+                        released_at: string | null;
+                        completed_at: string | null;
+                        pick_lists: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.waves.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        wave_number: string;
+                        warehouse_id: string;
+                        status: string;
+                        staging_bin_id: string | null;
+                        assigned_picker_user_id: string | null;
+                        shortages: unknown[];
+                        released_at: string | null;
+                        completed_at: string | null;
+                        pick_lists: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.waves.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        wave_number: string;
+                        warehouse_id: string;
+                        status: string;
+                        staging_bin_id: string | null;
+                        assigned_picker_user_id: string | null;
+                        shortages: unknown[];
+                        released_at: string | null;
+                        completed_at: string | null;
+                        pick_lists: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.pick-lists.ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        pick_list_id: string;
+                        /** @constant */
+                        status: "shipped";
+                        delivery_note_id: string;
+                        ddt_number: string;
+                        sales_order_id: string;
+                        lines: {
+                            sales_order_item_id: string | null;
+                            product_id: string | null;
+                            quantity: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "auth.forgot-password": {
@@ -66351,6 +79788,63 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "payment-links.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment link retrieved";
+                        data: components["schemas"]["PaymentLink"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "payment-links.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment link cancelled";
+                        data: components["schemas"]["PaymentLink"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "payment-links.webhook": {
         parameters: {
             query?: never;
@@ -66382,6 +79876,166 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "treasury.payment-proposals.index": {
+        parameters: {
+            query?: {
+                status?: "draft" | "converted" | "rejected" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment proposals";
+                        data: components["schemas"]["PaymentProposalResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.payment-proposals.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StorePaymentProposalRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment proposal prepared";
+                        data: components["schemas"]["PaymentProposalResource"] & Record<string, never>;
+                        meta: {
+                            excluded: {
+                                invoice_id: string;
+                                invoice_number: string;
+                                /** @constant */
+                                reason: "supplier_without_iban";
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.payment-proposals.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment proposal";
+                        data: components["schemas"]["PaymentProposalResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "treasury.payment-proposals.approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment proposal approved";
+                        data: components["schemas"]["PaymentProposalResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "treasury.payment-proposals.reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Payment proposal rejected";
+                        data: components["schemas"]["PaymentProposalResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sales.invoices.reminders.index": {
@@ -67882,6 +81536,77 @@ export interface operations {
             404: components["responses"]["ModelNotFoundException"];
         };
     };
+    "v1.payroll.runs.cost-allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            run_id: string;
+                            year: number;
+                            month: number;
+                            currency: string;
+                            lines: {
+                                employee_id: string;
+                                employee_name: string;
+                                target_type: string;
+                                target_id: string;
+                                hours: string;
+                                amount: string;
+                            }[];
+                            totals: unknown[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.payroll.reports.year-end": {
+        parameters: {
+            query: {
+                year: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            year: number;
+                            employees: unknown[];
+                        };
+                    };
+                    "text/csv; charset=UTF-8": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.payroll.runs.simulate": {
         parameters: {
             query?: never;
@@ -68036,6 +81761,33 @@ export interface operations {
         };
     };
     "v1.payroll.runs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PayrollRecordResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PayrollRecordResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.payroll.runs.approve": {
         parameters: {
             query?: never;
             header?: never;
@@ -68373,6 +82125,185 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "periodClose.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            fiscal_period_id: string;
+                            period_name: string;
+                            status: string;
+                            can_close: boolean;
+                            checks: [
+                                {
+                                    /** @constant */
+                                    code: "no_drafts";
+                                    /** @constant */
+                                    label: "Draft journals not yet posted";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                },
+                                {
+                                    /** @constant */
+                                    code: "no_pending_approvals";
+                                    /** @constant */
+                                    label: "Journals waiting for approval";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                },
+                                {
+                                    /** @constant */
+                                    code: "recurring_journals_posted";
+                                    /** @constant */
+                                    label: "Recurring journals due and not yet posted";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                },
+                                {
+                                    /** @constant */
+                                    code: "automatic_reversals_posted";
+                                    /** @constant */
+                                    label: "Automatic reversals due in the period and not yet posted";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                },
+                                {
+                                    /** @constant */
+                                    code: "entries_balanced";
+                                    /** @constant */
+                                    label: "Posted entries whose lines do not balance";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                },
+                                {
+                                    /** @constant */
+                                    code: "subledgers_reconciled";
+                                    /** @constant */
+                                    label: "Control accounts differing from their open items (customers, suppliers)";
+                                    blocking: boolean;
+                                    passed: boolean;
+                                    count: number;
+                                }
+                            ];
+                            tasks: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "periodClose.storeTask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StorePeriodCloseTaskRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Close task added";
+                        data: {
+                            id: string;
+                            fiscal_period_id: string;
+                            title: string;
+                            description: string | null;
+                            is_blocking: boolean;
+                            status: string;
+                            created_by: string | null;
+                            completed_by: string | null;
+                            completed_at: string | null;
+                            completion_note: string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "periodClose.updateTaskStatus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePeriodCloseTaskStatusRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Close task updated";
+                        data: {
+                            id: string;
+                            fiscal_period_id: string;
+                            title: string;
+                            description: string | null;
+                            is_blocking: boolean;
+                            status: string;
+                            created_by: string | null;
+                            completed_by: string | null;
+                            completed_at: string | null;
+                            completion_note: string | null;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.intrastat.periodicity": {
@@ -69734,14 +83665,9 @@ export interface operations {
                         message: "Price resolved successfully";
                         data: {
                             price: number;
-                            /** @constant */
-                            source: "product";
-                            price_list_id: null;
-                        } | {
-                            price: number;
-                            /** @constant */
-                            source: "price_list";
-                            price_list_id: string;
+                            /** @enum {string} */
+                            source: "product" | "price_list";
+                            price_list_id: string | null;
                         };
                         meta: string;
                     };
@@ -70600,7 +84526,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReasonRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.ReasonRequest"];
             };
         };
         responses: {
@@ -70749,6 +84675,377 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.analytics.spend": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                comments?: string | null;
+                dimension?: "supplier" | "category" | "cost_center" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            key: string | null;
+                            label: string | null;
+                            orders: number;
+                            spend: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.analytics.open-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            purchase_order_id: string;
+                            po_number: string | null;
+                            supplier_id: string;
+                            status: string;
+                            expected_delivery_date: string | null;
+                            currency: string;
+                            open_value: string;
+                            is_overdue: boolean;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.analytics.price-variance": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                comments?: string | null;
+                dimension?: "supplier" | "category" | "cost_center" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            supplier_catalog_id: string;
+                            supplier_id: string;
+                            description: string | null;
+                            quantity: string;
+                            ordered_value: string;
+                            list_value: string;
+                            variance_amount: string;
+                            variance_percent: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.settings.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            over_receipt_tolerance_percent: string;
+                            under_receipt_tolerance_percent: string;
+                            price_tolerance_percent: string;
+                            price_tolerance_amount: string;
+                            block_invoice_on_mismatch: boolean;
+                            landed_cost_clearing_account_code: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.settings.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateProcurementSettingsRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            over_receipt_tolerance_percent: string;
+                            under_receipt_tolerance_percent: string;
+                            price_tolerance_percent: string;
+                            price_tolerance_amount: string;
+                            block_invoice_on_mismatch: boolean;
+                            landed_cost_clearing_account_code: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.approval-matrices.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            name: string;
+                            target: string | number | Record<string, never> | null;
+                            is_active: boolean;
+                            cost_center_id: unknown;
+                            tiers: {
+                                tier_level: number;
+                                approver_type: string;
+                                approver_value: string;
+                                threshold_min: string | null;
+                                threshold_max: string | null;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.approval-matrices.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreProcurementApprovalMatrixRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            name: string;
+                            target: string | number | Record<string, never> | null;
+                            is_active: boolean;
+                            cost_center_id: unknown;
+                            tiers: {
+                                tier_level: number;
+                                approver_type: string;
+                                approver_value: string;
+                                threshold_min: string | null;
+                                threshold_max: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.approval-matrices.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.orders.send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderResource"];
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.receipts.inspection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectGoodsReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseReceiptResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.returns.credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ProcurementDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseReturnResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseReturnResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.three-way-match.approve-variance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ProcurementDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description `ThreeWayMatchLogResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreeWayMatchLogResource"];
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "inventory.products.barcode": {
@@ -71528,54 +85825,29 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
-    "mfg.production_orders.index": {
+    "mfg.production_orders.issues": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        data: components["schemas"]["MfgProductionOrderResource"][];
-                        meta: {
-                            current_page: number;
-                            total: number;
-                        };
-                    };
-                };
+            path: {
+                id: string;
             };
-            401: components["responses"]["AuthenticationException"];
-        };
-    };
-    "mfg.production_orders.store": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateProductionOrderRequest"];
+                "application/json": components["schemas"]["IssueMaterialsRequest"];
             };
         };
         responses: {
+            /** @description Array of `MfgMaterialMovementResource` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Production order planned successfully.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
+                        data: components["schemas"]["MfgMaterialMovementResource"][];
                     };
                 };
             };
@@ -71583,31 +85855,38 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
-    "mfg.production_orders.show": {
+    "mfg.production_orders.confirmations": {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 id: string;
+                operationId: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConfirmOperationRequest"];
+            };
+        };
         responses: {
-            200: {
+            /** @description `MfgOperationConfirmationResource` */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: components["schemas"]["MfgProductionOrderResource"];
+                        data: components["schemas"]["MfgOperationConfirmationResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
-    "mfg.production_orders.release": {
+    "mfg.production_orders.receipts": {
         parameters: {
             query?: never;
             header?: never;
@@ -71616,24 +85895,28 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveOutputRequest"];
+            };
+        };
         responses: {
-            200: {
+            /** @description `MfgMaterialMovementResource` */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Production order released.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
+                        data: components["schemas"]["MfgMaterialMovementResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
-    "mfg.production_orders.start": {
+    "mfg.production_orders.transactions": {
         parameters: {
             query?: never;
             header?: never;
@@ -71650,87 +85933,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Production order started.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
-                    };
-                };
-            };
-            401: components["responses"]["AuthenticationException"];
-        };
-    };
-    "mfg.production_orders.complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        message: "Production order completed.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
-                    };
-                };
-            };
-            401: components["responses"]["AuthenticationException"];
-        };
-    };
-    "mfg.production_orders.close": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        message: "Production order closed.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
-                    };
-                };
-            };
-            401: components["responses"]["AuthenticationException"];
-        };
-    };
-    "mfg.production_orders.cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        message: "Production order cancelled.";
-                        data: components["schemas"]["MfgProductionOrderResource"];
+                        data: {
+                            material_movements: components["schemas"]["MfgMaterialMovementResource"][];
+                            confirmations: components["schemas"]["MfgOperationConfirmationResource"][];
+                        };
                     };
                 };
             };
@@ -71754,27 +85960,305 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        production_order_id: string;
-                        standard_cost_rollup: {
-                            material_cost: number;
-                            labor_cost: number;
-                            machine_cost: number;
-                            overhead_cost: number;
-                            total_standard_cost: number;
-                        };
-                        actual_cost_and_variance: {
-                            actual_material_cost: number;
-                            actual_labor_cost: number;
-                            actual_machine_cost: number;
-                            actual_overhead_cost: number;
-                            actual_total_cost: number;
-                            variance_total: number;
-                            variance_type: string;
+                        data: {
+                            production_order_id: string;
+                            status: string;
+                            currency: string;
+                            target_quantity: string;
+                            received_quantity: string;
+                            scrapped_quantity: string;
+                            standard_unit_cost: string;
+                            elements: {
+                                [key: string]: {
+                                    standard_unit_cost: string;
+                                    standard_for_target: string;
+                                    standard_for_output: string;
+                                    actual: string;
+                                    variance: string;
+                                };
+                            };
+                            totals: {
+                                standard_for_target: string;
+                                standard_for_output: string;
+                                actual: string;
+                                received_value: string;
+                                wip_balance: string;
+                                variance: string;
+                            };
+                            journal_entry_ids: string[];
+                            is_closed: boolean;
                         };
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductionOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.production_orders.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.production_orders.release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.production_orders.close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PostingDateRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.production_orders.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Modules.Manufacturing.Http.Requests.ReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgProductionOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgProductionOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "professionals.cases": {
@@ -74862,11 +89346,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": components["schemas"]["ProcessGoodsReceiptRequest"] & {
-                    receipt_number?: string;
-                };
+                "application/json": components["schemas"]["ProcessGoodsReceiptRequest"];
             };
         };
         responses: {
@@ -75176,11 +89658,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": components["schemas"]["ProcessPurchaseReturnRequest"] & {
-                    return_number?: string;
-                };
+                "application/json": components["schemas"]["ProcessPurchaseReturnRequest"];
             };
         };
         responses: {
@@ -75215,6 +89695,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PurchaseReturnResource"];
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.suggestions.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `PurchaseSuggestionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseSuggestionResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.suggestions.generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `PurchaseSuggestionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseSuggestionResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.suggestions.convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ProcurementDecisionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            [key: string]: components["schemas"]["PurchaseOrderResource"] & Record<string, never>;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.suggestions.dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseSuggestionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseSuggestionResource"];
+                    };
                 };
             };
             401: components["responses"]["AuthenticationException"];
@@ -75450,7 +90056,7 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
-    "mfg.quality.inspections": {
+    "inventory.putaway-rules.index": {
         parameters: {
             query?: never;
             header?: never;
@@ -75465,9 +90071,295 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: components["schemas"]["MfgQualityInspectionResource"][];
+                        data: {
+                            id: string;
+                            warehouse_id: string;
+                            stock_item_id: string | null;
+                            category_id: string | null;
+                            target_zone_id: string | null;
+                            target_bin_id: string | null;
+                            bin_type: string | null;
+                            strategy: string;
+                            priority: number;
+                            is_active: boolean;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.putaway-rules.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutawayRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        stock_item_id: string | null;
+                        category_id: string | null;
+                        target_zone_id: string | null;
+                        target_bin_id: string | null;
+                        bin_type: string | null;
+                        strategy: string;
+                        priority: number;
+                        is_active: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.putaway-rules.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutawayRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        stock_item_id: string | null;
+                        category_id: string | null;
+                        target_zone_id: string | null;
+                        target_bin_id: string | null;
+                        bin_type: string | null;
+                        strategy: string;
+                        priority: number;
+                        is_active: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.putaway-rules.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.putaway.suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutawayRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.putaway.execute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutawayRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockMovementResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockMovementResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.quality.plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgQualityPlanResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["MfgQualityPlanResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
                         meta: {
                             current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.quality.plans.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreQualityPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgQualityPlanResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgQualityPlanResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.quality.inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgQualityInspectionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgQualityInspectionResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
                             total: number;
                         };
                     };
@@ -75489,14 +90381,13 @@ export interface operations {
             };
         };
         responses: {
+            /** @description `MfgQualityInspectionResource` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Quality inspection recorded.";
                         data: components["schemas"]["MfgQualityInspectionResource"];
                     };
                 };
@@ -75514,18 +90405,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Paginated set of `MfgNonConformanceResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
+                        data: components["schemas"]["MfgNonConformanceResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
                             current_page: number;
-                            data: components["schemas"]["MfgQualityNonConformance"][];
-                            first_page_url: string | null;
                             from: number | null;
-                            last_page_url: string | null;
                             last_page: number;
                             /** @description Generated paginator links. */
                             links: {
@@ -75533,12 +90429,10 @@ export interface operations {
                                 label: string;
                                 active: boolean;
                             }[];
-                            next_page_url: string | null;
                             /** @description Base path for paginator generated URLs. */
                             path: string | null;
                             /** @description Number of items shown per page. */
                             per_page: number;
-                            prev_page_url: string | null;
                             /** @description Number of the last item in the slice. */
                             to: number | null;
                             /** @description Total number of items being paginated. */
@@ -75548,6 +90442,64 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.quality.non_conformances.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreNonConformanceRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgNonConformanceResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgNonConformanceResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.quality.non_conformances.resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveNonConformanceRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgNonConformanceResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgNonConformanceResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sales.quotes.index": {
@@ -75737,6 +90689,7 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sales.quotes.invoice": {
@@ -75778,7 +90731,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConvertToDeliveryNoteRequest"];
+            };
+        };
         responses: {
             201: {
                 headers: {
@@ -75797,6 +90754,7 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sales.quotes.signature": {
@@ -75952,6 +90910,69 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.quotes.expire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Quotes past their validity date expired";
+                        data: {
+                            /** @constant */
+                            expired: 0;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.quotes.revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReviseQuoteRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Quote revision created";
+                        data: components["schemas"]["QuoteResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
             422: components["responses"]["ValidationException"];
         };
@@ -76625,6 +91646,207 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "recurringJournal.index": {
+        parameters: {
+            query?: {
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: components["schemas"]["RecurringJournalResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "recurringJournal.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreRecurringJournalRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring journal saved";
+                        data: components["schemas"]["RecurringJournalResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "recurringJournal.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: components["schemas"]["RecurringJournalResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "recurringJournal.changeStatus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRecurringJournalStatusRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring journal status changed";
+                        data: components["schemas"]["RecurringJournalResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "recurringJournal.run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LedgerAsOfRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Recurring journal run posted";
+                        data: components["schemas"]["JournalEntryResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "recurringJournal.runScheduled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LedgerAsOfRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Scheduled journals processed";
+                        data: {
+                            as_of: string;
+                            recurring: {
+                                posted: string[];
+                                failed: {
+                                    recurring_journal_id: string;
+                                    message: string;
+                                }[];
+                            };
+                            reversals: {
+                                reversed: string[];
+                                failed: {
+                                    journal_entry_id: string;
+                                    message: string;
+                                }[];
+                            };
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.workshop.recurring-services.index": {
@@ -77490,6 +92712,411 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "inventory.reorder-rules.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            warehouse_id: string;
+                            stock_item_id: string;
+                            min_stock_level: string;
+                            reorder_point: string;
+                            max_stock_level: string;
+                            economic_order_quantity: string;
+                            lead_time_days: number;
+                            preferred_supplier_id: string | null;
+                            auto_trigger_requisition: boolean;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.reorder-rules.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        stock_item_id: string;
+                        min_stock_level: string;
+                        reorder_point: string;
+                        max_stock_level: string;
+                        economic_order_quantity: string;
+                        lead_time_days: number;
+                        preferred_supplier_id: string | null;
+                        auto_trigger_requisition: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.reorder-rules.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        stock_item_id: string;
+                        min_stock_level: string;
+                        reorder_point: string;
+                        max_stock_level: string;
+                        economic_order_quantity: string;
+                        lead_time_days: number;
+                        preferred_supplier_id: string | null;
+                        auto_trigger_requisition: boolean;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.reorder-rules.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.replenishment.suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: ({
+                            rule_id: string;
+                            stock_item_id: string;
+                            sku: string;
+                            warehouse_id: string;
+                            available: string;
+                            min_stock_level: string;
+                            reorder_point: string;
+                            max_stock_level: string;
+                            economic_order_quantity: string;
+                            needs_replenishment: boolean;
+                            suggested_quantity: string;
+                            preferred_supplier_id: string | null;
+                            lead_time_days: number;
+                        } | null)[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.replenishment.hand-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        created: number;
+                        data: {
+                            id: string;
+                            source: string;
+                            source_id: string;
+                            quantity: string;
+                            supplier_id: string | null;
+                            status: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "analytics.report-definitions.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Report definitions retrieved";
+                        data: components["schemas"]["ReportDefinitionResource"][];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "analytics.report-definitions.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveReportDefinitionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Report definition saved";
+                        data: components["schemas"]["ReportDefinitionResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "analytics.report-definitions.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: components["schemas"]["ReportDefinitionResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "analytics.report-definitions.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveReportDefinitionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Report definition updated";
+                        data: components["schemas"]["ReportDefinitionResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "analytics.report-definitions.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Report definition deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "analytics.report-definitions.run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Report calculated";
+                        data: {
+                            period: {
+                                from: string;
+                                to: string;
+                            };
+                            comparison_period: {
+                                from: string;
+                                to: string;
+                            } | null;
+                            kpis: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "analytics.report-definitions.export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv; charset=UTF-8": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
     "exports.csv": {
         parameters: {
             query?: never;
@@ -77538,6 +93165,348 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    "v1.hospitality.reservations.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hospitality.reservations.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HospitalityResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hospitality.reservations.availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hospitality.reservations.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hospitality.reservations.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hospitality.reservations.seat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hospitality.reservations.status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HospitalityResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["HospitalityResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.practice.retainers.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `PracticeResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PracticeResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.practice.retainers.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PracticeResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PracticeResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.practice.retainers.balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            client_id: string;
+                            received: string;
+                            applied: string;
+                            available: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.practice.retainers.apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PracticeResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PracticeResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.practice.retainers.void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PracticeResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PracticeResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.practice.fee-notes.retainers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            net_payable: string;
+                            retainers_applied: string;
+                            outstanding: string;
+                            applications: {
+                                retainer_id: string;
+                                amount: string;
+                                applied_on: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "dms.retention.index": {
@@ -77785,6 +93754,311 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "procurement.rfqs.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `RfqResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["RfqResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.rfqs.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreRfqRequest"];
+            };
+        };
+        responses: {
+            /** @description `RfqResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RfqResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.rfqs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `RfqResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RfqResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.rfqs.issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `RfqResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RfqResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.rfqs.quotes.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierQuoteResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierQuoteResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.rfqs.comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            rfq_id: string;
+                            lines: {
+                                rfq_line_id: string;
+                                description: string;
+                                quantity: string;
+                                offers: {
+                                    quote_id: string;
+                                    supplier_id: string;
+                                    unit_price: string;
+                                    line_total: string;
+                                    lead_time_days: number | null;
+                                }[];
+                                best_unit_price: string | null;
+                            }[];
+                            quotes: {
+                                quote_id: string;
+                                supplier_id: string;
+                                supplier_name: string | null;
+                                supplier_rating: string | null;
+                                total_amount: string;
+                                lead_time_days: number | null;
+                                valid_until: string | null;
+                                lines_quoted: number;
+                                covers_all_lines: boolean;
+                                status: string;
+                            }[];
+                            recommended_quote_id: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.rfqs.award": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AwardRfqRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderResource"] & Record<string, never>;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.rfqs.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `RfqResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["RfqResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "treasury.riba.index": {
+        parameters: {
+            query?: {
+                status?: string | null;
+                bank_account_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Ri.Ba. batches";
+                        data: {
+                            id: string;
+                            batch_reference: string | null;
+                            bank_account_id: string | null;
+                            status: string;
+                            execution_date: string;
+                            total_amount: string;
+                            currency: string;
+                            item_count: number;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "treasury.riba.store": {
         parameters: {
             query?: never;
@@ -77972,6 +94246,151 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.riba.portfolio": {
+        parameters: {
+            query?: {
+                bank_account_id?: string | null;
+                due_from?: string | null;
+                due_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Ri.Ba. portfolio";
+                        data: {
+                            by_status: string;
+                            open_receipts: {
+                                id: string;
+                                payment_batch_id: string;
+                                invoice_id: string;
+                                receipt_number: number;
+                                debtor_name: string;
+                                due_date: string;
+                                amount: string;
+                                status: string;
+                                overdue: boolean;
+                            }[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.routings.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgRoutingResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["MfgRoutingResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.routings.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoutingRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgRoutingResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgRoutingResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.routings.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgRoutingResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgRoutingResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "inventory.safety-sheets.index": {
@@ -78601,6 +95020,76 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "sales.kpis": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Sales indicators computed";
+                        data: {
+                            period: {
+                                from: string;
+                                to: string;
+                            };
+                            order_backlog: {
+                                open_orders: number;
+                                /** @constant */
+                                open_lines: 0;
+                                open_net_value: string;
+                            };
+                            fill_rate: {
+                                orders: number;
+                                lines: number;
+                                lines_fully_delivered: number;
+                                line_fill_rate: string | null;
+                                quantity_ordered: string;
+                                quantity_delivered: string;
+                                quantity_fill_rate: string | null;
+                            };
+                            quote_conversion: {
+                                quotes: number;
+                                /** @constant */
+                                accepted: 0;
+                                /** @constant */
+                                rejected: 0;
+                                /** @constant */
+                                expired: 0;
+                                /** @constant */
+                                open: 0;
+                                converted_to_order: number;
+                                quoted_net_value: string;
+                                accepted_net_value: string;
+                                conversion_rate: string | null;
+                                order_conversion_rate: string | null;
+                            };
+                            returns: {
+                                opened: number;
+                                credited: number;
+                            };
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "invoicing.orders.index": {
         parameters: {
             query?: never;
@@ -78692,6 +95181,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
         };
     };
     "invoicing.orders.reserve": {
@@ -78892,6 +95382,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "sales.orders.delivery-notes.store": {
@@ -78990,6 +95481,203 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "sales.orders.confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @enum {string} */
+                        message: "The order is on credit hold" | "Order confirmed";
+                        data: components["schemas"]["App.Http.Resources.SalesOrderResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "sales.orders.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelSalesOrderRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Order cancelled";
+                        data: components["schemas"]["App.Http.Resources.SalesOrderResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.orders.availability": {
+        parameters: {
+            query?: {
+                warehouse_id?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Order availability computed";
+                        data: {
+                            sales_order_id: string;
+                            warehouse_id: string | null;
+                            fully_available: boolean;
+                            lines: {
+                                sales_order_item_id: string;
+                                product_id: string | null;
+                                description: string;
+                                stock_relevant: boolean;
+                                quantity_ordered: string;
+                                quantity_delivered: string;
+                                quantity_open: string;
+                                quantity_reserved: string;
+                                quantity_available: string;
+                                quantity_promisable: string;
+                                shortage: string;
+                                fully_available: boolean;
+                            }[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.orders.reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SalesOrderWarehouseRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Order stock reserved";
+                        data: components["schemas"]["App.Http.Resources.SalesOrderResource"];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.backorders.index": {
+        parameters: {
+            query?: {
+                contact_id?: string | null;
+                product_id?: string | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Backorders retrieved successfully";
+                        data: {
+                            sales_order_item_id: string;
+                            sales_order_id: string;
+                            order_number: string;
+                            order_date: string;
+                            order_status: string;
+                            contact_id: string;
+                            product_id: string | null;
+                            description: string;
+                            quantity_ordered: string;
+                            quantity_delivered: string;
+                            quantity_open: string;
+                            quantity_reserved: string;
+                            open_net_value: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "sales.order-lines.index": {
         parameters: {
             query?: {
@@ -79011,7 +95699,7 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         /** @constant */
-                        message: "sales.messages.order_lines_list";
+                        message: "Order lines retrieved successfully";
                         data: {
                             id: string;
                             sales_order_id: string;
@@ -79038,6 +95726,209 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.pricing.price": {
+        parameters: {
+            query: {
+                product_id: string;
+                contact_id?: string | null;
+                quantity?: number | null;
+                date?: string | null;
+                price_list_id?: string | null;
+                discount_policy_id?: string | null;
+                order_amount?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Price determined";
+                        data: {
+                            list_price: string;
+                            price_source: string;
+                            price_list_id: string | null;
+                            unit_price: string;
+                            discount_percentage: string;
+                            fixed_discount_per_unit: string;
+                            net_unit_price: string;
+                            applied_discounts: {
+                                discount_policy_id: string;
+                                code: string | null;
+                                name: string | null;
+                                priority: number;
+                                percentage: string;
+                                fixed_amount_per_unit: string;
+                                explicit: boolean;
+                            }[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.discount-policies.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Discount policies retrieved successfully";
+                        data: (components["schemas"]["DiscountPolicyResource"] & Record<string, never>)[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.discount-policies.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDiscountPolicyRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Discount policy created";
+                        data: components["schemas"]["DiscountPolicyResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.discount-policies.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Discount policy retrieved successfully";
+                        data: components["schemas"]["DiscountPolicyResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.discount-policies.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreDiscountPolicyRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Discount policy updated";
+                        data: components["schemas"]["DiscountPolicyResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.discount-policies.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Discount policy deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "invoicing.quotes.index": {
@@ -79234,6 +96125,355 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "invoicing.invoices.installments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        invoice_id: string;
+                        currency: string;
+                        installments: unknown[][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "invoicing.reports.sales-register": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                document_type?: "TD01" | "TD02" | "TD03" | "TD04" | "TD05" | "TD06" | "TD16" | "TD17" | "TD18" | "TD19" | "TD20" | "TD21" | "TD22" | "TD23" | "TD24" | "TD25" | "TD26" | "TD27" | "TD28" | "TD29" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        from: string;
+                        to: string;
+                        documents: {
+                            invoice_id: string;
+                            invoice_number: string;
+                            date: string;
+                            /** @enum {string} */
+                            document_type: "TD01" | "TD02" | "TD03" | "TD04" | "TD05" | "TD06" | "TD16" | "TD17" | "TD18" | "TD19" | "TD20" | "TD21" | "TD22" | "TD23" | "TD24" | "TD25" | "TD26" | "TD27" | "TD28" | "TD29";
+                            customer_id: string;
+                            customer_name: string | null;
+                            customer_vat_number: string | null;
+                            currency: string;
+                            exchange_rate: string;
+                            total_net: string;
+                            total_tax: string;
+                            total_gross: string;
+                            journal_entry_id: string;
+                            vat: unknown[];
+                        }[];
+                        totals: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "invoicing.reports.receivables-aging": {
+        parameters: {
+            query?: {
+                as_of?: string | null;
+                customer_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        as_of: string;
+                        customers: unknown[];
+                        totals: unknown[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.returns.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Returns retrieved successfully";
+                        data: (components["schemas"]["SalesReturnResource"] & Record<string, never>)[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.returns.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSalesReturnRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return requested";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.returns.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return retrieved successfully";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "sales.returns.approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return approved";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "sales.returns.reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectSalesReturnRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return rejected";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.returns.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return cancelled";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "sales.returns.receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReceiveSalesReturnRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return received";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "sales.returns.credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Return credited";
+                        data: components["schemas"]["SalesReturnResource"] & Record<string, never>;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "sdi.channel.show": {
@@ -81423,7 +98663,7 @@ export interface operations {
                             status: string;
                             description: string | null;
                             location: string | null;
-                            occurred_at: string;
+                            occurred_at: string | null;
                             source: string;
                         }[];
                     };
@@ -81467,7 +98707,7 @@ export interface operations {
                             status: string;
                             description: string | null;
                             location: string | null;
-                            occurred_at: string;
+                            occurred_at: string | null;
                             source: string;
                         }[];
                     };
@@ -81545,7 +98785,7 @@ export interface operations {
                             status: string;
                             description: string | null;
                             location: string | null;
-                            occurred_at: string;
+                            occurred_at: string | null;
                             source: string;
                         }[];
                     };
@@ -81589,7 +98829,7 @@ export interface operations {
                             status: string;
                             description: string | null;
                             location: string | null;
-                            occurred_at: string;
+                            occurred_at: string | null;
                             source: string;
                         }[];
                     };
@@ -81597,6 +98837,54 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "mfg.shop_floor.executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgShopFloorExecutionResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgShopFloorExecutionResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
         };
     };
     "mfg.shop_floor.record_execution": {
@@ -81608,23 +98896,23 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RecordShopFloorExecutionRequest"];
+                "application/json": components["schemas"]["StartExecutionRequest"];
             };
         };
         responses: {
+            /** @description `MfgShopFloorExecutionResource` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Shop floor execution recorded.";
                         data: components["schemas"]["MfgShopFloorExecutionResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
         };
     };
@@ -81637,21 +98925,25 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteExecutionRequest"];
+            };
+        };
         responses: {
+            /** @description `MfgShopFloorExecutionResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Shop floor execution completed.";
                         data: components["schemas"]["MfgShopFloorExecutionResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "mfg.shop_floor.record_downtime": {
@@ -81663,21 +98955,25 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordDowntimeRequest"];
+            };
+        };
         responses: {
+            /** @description `MfgShopFloorExecutionResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        message: "Machine downtime recorded.";
                         data: components["schemas"]["MfgShopFloorExecutionResource"];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.payroll.short-time.cases.index": {
@@ -82075,6 +99371,193 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.sites.diary.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.construction-trades.sites.diary.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.diary.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.sites.documents.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.construction-trades.sites.documents.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.site-documents.expiring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            construction_site_id: string;
+                            subcontractor_id: string | null;
+                            kind: string;
+                            title: string;
+                            subcontractor_name: string | null;
+                            expires_on: string | null;
+                            expired: boolean;
+                            days_left: number;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.site-documents.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "v1.associations.sport.compensations.index": {
@@ -83309,7 +100792,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReasonRequest"];
+                "application/json": components["schemas"]["Modules.Associations.Http.Requests.ReasonRequest"];
             };
         };
         responses: {
@@ -83970,7 +101453,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        strategy: "fifo" | "fefo";
+                        strategy: "fifo" | "fefo" | "lifo";
                         quants: {
                             quant_id: string;
                             warehouse_bin_id: string;
@@ -83983,6 +101466,136 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.lots.recall-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        lot_id: string;
+                        lot_number: string;
+                        quarantined: boolean;
+                        affected_lots: {
+                            lot_id: string;
+                            lot_number: string;
+                            stock_item_id: string;
+                            sku: string | null;
+                            expiration_date: string | null;
+                            is_quarantined: boolean;
+                            on_hand: unknown;
+                            stock: {
+                                warehouse_id: string;
+                                warehouse_bin_id: string;
+                                bin_barcode: string;
+                                on_hand: string;
+                                reserved: string;
+                            }[];
+                            deliveries: unknown[];
+                            issues: {
+                                movement_id: string;
+                                movement_type: string;
+                                quantity: string;
+                                document_type: string | null;
+                                document_id: string | null;
+                                executed_at: string | null;
+                            }[];
+                        }[];
+                        customers: {
+                            contact_id: string;
+                            delivery_notes: unknown[];
+                        }[];
+                        totals: {
+                            lots: number;
+                            on_hand: string;
+                            delivered: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.lots.recall": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WmsQueryRequest"] & {
+                    /** @default true */
+                    quarantine?: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        lot_id: string;
+                        lot_number: string;
+                        quarantined: boolean;
+                        affected_lots: {
+                            lot_id: string;
+                            lot_number: string;
+                            stock_item_id: string;
+                            sku: string | null;
+                            expiration_date: string | null;
+                            is_quarantined: boolean;
+                            on_hand: unknown;
+                            stock: {
+                                warehouse_id: string;
+                                warehouse_bin_id: string;
+                                bin_barcode: string;
+                                on_hand: string;
+                                reserved: string;
+                            }[];
+                            deliveries: unknown[];
+                            issues: {
+                                movement_id: string;
+                                movement_type: string;
+                                quantity: string;
+                                document_type: string | null;
+                                document_id: string | null;
+                                executed_at: string | null;
+                            }[];
+                        }[];
+                        customers: {
+                            contact_id: string;
+                            delivery_notes: unknown[];
+                        }[];
+                        totals: {
+                            lots: number;
+                            on_hand: string;
+                            delivered: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
             422: components["responses"]["ValidationException"];
         };
     };
@@ -84507,6 +102120,36 @@ export interface operations {
     "inventory.valuation.summary": {
         parameters: {
             query?: {
+                warehouse_id?: string | null;
+                valuation_method?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        valuation_method: string;
+                        warehouse_id: string | null;
+                        total_valuation: string;
+                        items_count: string;
+                        items: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.valuation.at-date": {
+        parameters: {
+            query?: {
                 warehouse_id?: string;
                 valuation_method?: string;
             };
@@ -84522,21 +102165,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        valuation_method: string | unknown[] | null;
-                        warehouse_id: string | unknown[] | null;
-                        /** @constant */
-                        total_valuation: 0;
-                        items_count: number;
+                        as_of: string;
+                        warehouse_id: unknown;
+                        total_value: string;
+                        warehouses: {
+                            warehouse_id: string;
+                            warehouse_code: string;
+                            total_value: string;
+                        }[];
                         items: {
-                            item_id: string;
+                            stock_item_id: string;
                             sku: string;
                             name: string;
-                            valuation: number;
+                            warehouse_id: string;
+                            quantity: string;
+                            unit_cost: string;
+                            value: string;
+                            valuation_method: unknown;
+                            /** @enum {string} */
+                            cost_source: "current_moving_average" | "movements" | "fifo_layers" | "fifo_layers_and_moving_average" | "standard_cost";
                         }[];
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "inventory.valuation.snapshot": {
@@ -84553,8 +102206,6 @@ export interface operations {
                     stock_item_id: string;
                     /** Format: uuid */
                     warehouse_id: string;
-                    /** @enum {string|null} */
-                    valuation_method?: "FIFO" | "AVCO" | "STANDARD" | null;
                 };
             };
         };
@@ -84564,7 +102215,432 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": components["schemas"]["StockValuationSnapshot"];
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.kpis": {
+        parameters: {
+            query?: {
+                warehouse_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        from: string;
+                        to: string;
+                        warehouse_id: unknown;
+                        period_days: unknown;
+                        stock_value_start: string;
+                        stock_value_end: string;
+                        average_stock_value: string;
+                        consumption_value: string;
+                        inventory_turnover: string | null;
+                        coverage_days: string | null;
+                        dead_stock: {
+                            days: number;
+                            items_count: number;
+                            value: string;
+                            items: {
+                                stock_item_id: string;
+                                sku: string;
+                                name: string;
+                                quantity: string;
+                                value: string;
+                                last_consumed_at: string | null;
+                            }[];
+                        };
+                        accuracy: {
+                            counted_lines: number;
+                            exact_lines: number;
+                            accuracy_percent: string | null;
+                            absolute_difference_value: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.production_orders.subcontract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendSubcontractRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgSubcontractOrderResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgSubcontractOrderResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.subcontract_orders.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgSubcontractOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["MfgSubcontractOrderResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.subcontract_orders.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgSubcontractOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgSubcontractOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.subcontract_orders.receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveSubcontractRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgSubcontractOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgSubcontractOrderResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.subcontract_orders.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgSubcontractOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgSubcontractOrderResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.construction-trades.subcontractors.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.construction-trades.subcontractors.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.subcontractors.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.sites.subcontracts.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.construction-trades.sites.subcontracts.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.subcontracts.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            totals: {
+                                contract_amount: string;
+                                certified_amount: string;
+                                remaining_amount: string;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.construction-trades.subcontracts.certifications.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.construction-trades.subcontracts.status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `TradesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TradesResource"];
+                    };
                 };
             };
             401: components["responses"]["AuthenticationException"];
@@ -85928,6 +104004,244 @@ export interface operations {
             403: components["responses"]["AuthorizationException"];
         };
     };
+    "procurement.catalogs.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `SupplierCatalogResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["SupplierCatalogResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.catalogs.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierCatalogRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierCatalogResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierCatalogResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.catalogs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `SupplierCatalogResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierCatalogResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.catalogs.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierCatalogRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierCatalogResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierCatalogResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.catalogs.prices.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierPriceRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            currency: string;
+                            min_quantity: string;
+                            unit_price: string;
+                            valid_from: string | null;
+                            valid_to: string | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.catalogs.price": {
+        parameters: {
+            query?: {
+                quantity?: number | null;
+                date?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            currency: string;
+                            min_quantity: string;
+                            unit_price: string;
+                            valid_from: string | null;
+                            valid_to: string | null;
+                        } | null;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.offers": {
+        parameters: {
+            query: {
+                sku: string;
+                quantity?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: ({
+                            supplier_id: string;
+                            supplier_catalog_id: string;
+                            unit_price: string;
+                            currency: string;
+                            lead_time_days: number;
+                            min_quantity: string;
+                        } | null)[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "procurement.contracts.index": {
         parameters: {
             query?: {
@@ -86462,6 +104776,245 @@ export interface operations {
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.suppliers.qualification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSupplierQualificationRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.suppliers.documents.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `SupplierDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierDocumentResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.suppliers.documents.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierDocumentResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.supplier-documents.expiring": {
+        parameters: {
+            query?: {
+                days?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `SupplierDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierDocumentResource"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.supplier-documents.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "procurement.supplier-qualifications.expire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            expired: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "procurement.suppliers.performance": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                comments?: string | null;
+                dimension?: "supplier" | "category" | "cost_center" | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            on_time_delivery_rate: string | null;
+                            quality_acceptance_rate: string | null;
+                            price_competitiveness_score: string | null;
+                            overall_score: string | null;
+                            /** @enum {string|null} */
+                            overall_rating: "A" | "B" | "C" | "D" | null;
+                            receipt_lines: number;
+                            order_lines: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "procurement.suppliers.evaluations.compute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ProcurementPeriodRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            supplier_id: string;
+                            evaluation_period_start: string;
+                            evaluation_period_end: string;
+                            on_time_delivery_rate: string;
+                            quality_acceptance_rate: string;
+                            price_competitiveness_score: string;
+                            overall_rating: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
             422: components["responses"]["ValidationException"];
         };
     };
@@ -87402,6 +105955,234 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "communication.templates.index": {
+        parameters: {
+            query?: {
+                code?: string;
+                channel?: string;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Templates retrieved";
+                        data: {
+                            id: string;
+                            code: string;
+                            channel: string;
+                            locale: string;
+                            subject: string | null;
+                            body: string;
+                            is_active: boolean;
+                            placeholders: unknown[];
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "communication.templates.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTemplateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Template created";
+                        data: {
+                            id: string;
+                            code: string;
+                            channel: string;
+                            locale: string;
+                            subject: string | null;
+                            body: string;
+                            is_active: boolean;
+                            placeholders: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "communication.templates.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Operation successful";
+                        data: {
+                            id: string;
+                            code: string;
+                            channel: string;
+                            locale: string;
+                            subject: string | null;
+                            body: string;
+                            is_active: boolean;
+                            placeholders: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "communication.templates.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTemplateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Template updated";
+                        data: {
+                            id: string;
+                            code: string;
+                            channel: string;
+                            locale: string;
+                            subject: string | null;
+                            body: string;
+                            is_active: boolean;
+                            placeholders: unknown[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "communication.templates.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Template deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "communication.templates.preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    variables?: (string | null)[] | null;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Template rendered";
+                        data: {
+                            subject: string | null;
+                            body: string;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "admin.tenant-access-requests.index": {
@@ -88355,6 +107136,16 @@ export interface operations {
                         title: "Already Clocked In";
                         /** @constant */
                         status: 409;
+                        /** @constant */
+                        detail: "You have an open shift. Please clock out before starting a new one.";
+                        instance: null;
+                        invalid_params: string;
+                    } | {
+                        type: null;
+                        /** @constant */
+                        title: "Already Clocked In";
+                        /** @constant */
+                        status: 409;
                         detail: string;
                         instance: null;
                         invalid_params: string;
@@ -89272,6 +108063,300 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "inventory.transfer-orders.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            transfer_number: string;
+                            source_warehouse_id: string;
+                            destination_warehouse_id: string;
+                            transit_bin_id: string | null;
+                            status: string;
+                            requested_date: string | null;
+                            shipped_at: string | null;
+                            received_at: string | null;
+                            notes: string | null;
+                            lines: {
+                                id: string;
+                                stock_item_id: string;
+                                lot_id: string | null;
+                                quantity: string;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                                quantity_in_transit: string;
+                                shipped_lots: {
+                                    lot_id: string | null;
+                                    quantity_shipped: string;
+                                    quantity_received: string;
+                                }[];
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.transfer-orders.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferOrderRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        transfer_number: string;
+                        source_warehouse_id: string;
+                        destination_warehouse_id: string;
+                        transit_bin_id: string | null;
+                        status: string;
+                        requested_date: string | null;
+                        shipped_at: string | null;
+                        received_at: string | null;
+                        notes: string | null;
+                        lines: {
+                            id: string;
+                            stock_item_id: string;
+                            lot_id: string | null;
+                            quantity: string;
+                            quantity_shipped: string;
+                            quantity_received: string;
+                            quantity_in_transit: string;
+                            shipped_lots: {
+                                lot_id: string | null;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.transfer-orders.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        transfer_number: string;
+                        source_warehouse_id: string;
+                        destination_warehouse_id: string;
+                        transit_bin_id: string | null;
+                        status: string;
+                        requested_date: string | null;
+                        shipped_at: string | null;
+                        received_at: string | null;
+                        notes: string | null;
+                        lines: {
+                            id: string;
+                            stock_item_id: string;
+                            lot_id: string | null;
+                            quantity: string;
+                            quantity_shipped: string;
+                            quantity_received: string;
+                            quantity_in_transit: string;
+                            shipped_lots: {
+                                lot_id: string | null;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "inventory.transfer-orders.ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        transfer_number: string;
+                        source_warehouse_id: string;
+                        destination_warehouse_id: string;
+                        transit_bin_id: string | null;
+                        status: string;
+                        requested_date: string | null;
+                        shipped_at: string | null;
+                        received_at: string | null;
+                        notes: string | null;
+                        lines: {
+                            id: string;
+                            stock_item_id: string;
+                            lot_id: string | null;
+                            quantity: string;
+                            quantity_shipped: string;
+                            quantity_received: string;
+                            quantity_in_transit: string;
+                            shipped_lots: {
+                                lot_id: string | null;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.transfer-orders.receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferOrderRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        transfer_number: string;
+                        source_warehouse_id: string;
+                        destination_warehouse_id: string;
+                        transit_bin_id: string | null;
+                        status: string;
+                        requested_date: string | null;
+                        shipped_at: string | null;
+                        received_at: string | null;
+                        notes: string | null;
+                        lines: {
+                            id: string;
+                            stock_item_id: string;
+                            lot_id: string | null;
+                            quantity: string;
+                            quantity_shipped: string;
+                            quantity_received: string;
+                            quantity_in_transit: string;
+                            shipped_lots: {
+                                lot_id: string | null;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.transfer-orders.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        transfer_number: string;
+                        source_warehouse_id: string;
+                        destination_warehouse_id: string;
+                        transit_bin_id: string | null;
+                        status: string;
+                        requested_date: string | null;
+                        shipped_at: string | null;
+                        received_at: string | null;
+                        notes: string | null;
+                        lines: {
+                            id: string;
+                            stock_item_id: string;
+                            lot_id: string | null;
+                            quantity: string;
+                            quantity_shipped: string;
+                            quantity_received: string;
+                            quantity_in_transit: string;
+                            shipped_lots: {
+                                lot_id: string | null;
+                                quantity_shipped: string;
+                                quantity_received: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
     "translations.index": {
         parameters: {
             query?: never;
@@ -89482,6 +108567,285 @@ export interface operations {
                         };
                         meta: string;
                     };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.balances": {
+        parameters: {
+            query?: {
+                date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Bank balances";
+                        data: {
+                            bank_account_id: string;
+                            bank_name: string;
+                            iban: string;
+                            currency: string;
+                            date: string;
+                            book_balance: string | null;
+                            statement_balance: string | null;
+                            statement_date: string | null;
+                            snapshot_balance: string | null;
+                            current_balance: string;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.bank-accounts.balances": {
+        parameters: {
+            query?: {
+                from_date?: string | null;
+                to_date?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Bank account balance history";
+                        data: {
+                            bank_account_id: string | unknown;
+                            currency: string | unknown;
+                            from_date: string | unknown;
+                            to_date: string | unknown;
+                            at_end: {
+                                bank_account_id: string;
+                                bank_name: string;
+                                iban: string;
+                                currency: string;
+                                date: string;
+                                book_balance: string | null;
+                                statement_balance: string | null;
+                                statement_date: string | null;
+                                snapshot_balance: string | null;
+                                current_balance: string;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.positions.cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Cash position";
+                        data: {
+                            as_of: string;
+                            bank_accounts: {
+                                id: string;
+                                bank_name: string;
+                                iban: string;
+                                currency: string;
+                                current_balance: string;
+                                available_balance: string;
+                                overdraft_limit: string;
+                            }[];
+                            cash_registers: {
+                                id: string;
+                                code: string;
+                                currency: string;
+                                current_balance: string;
+                            }[];
+                            totals: {
+                                currency: string;
+                                bank: string;
+                                cash: string;
+                                total: string;
+                            }[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "treasury.kpis": {
+        parameters: {
+            query?: {
+                as_of_date?: string | null;
+                period_days?: number | null;
+                currency?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Treasury KPIs";
+                        data: {
+                            as_of: string;
+                            period_from: string;
+                            period_days: number;
+                            currency: string;
+                            sales: string;
+                            purchases: string;
+                            open_receivables: string;
+                            overdue_receivables: string;
+                            open_payables: string;
+                            overdue_payables: string;
+                            cash: string;
+                            net_liquidity: string;
+                            quick_ratio: string | null;
+                            dso_days: string | null;
+                            dpo_days: string | null;
+                            dio_days: null;
+                            cash_conversion_cycle_days: string | null;
+                            includes_inventory: boolean;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.bank-accounts.charges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreBankChargeRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.movements.index": {
+        parameters: {
+            query?: {
+                movement_type?: "transfer" | "bank_fee" | "interest_income" | "interest_expense" | null;
+                bank_account_id?: string | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Treasury bank movements";
+                        data: components["schemas"]["TreasuryBankMovementResource"][];
+                        meta: {
+                            total: number;
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "treasury.transfers.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreTransferRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
             401: components["responses"]["AuthenticationException"];
@@ -91315,10 +110679,176 @@ export interface operations {
                         code: string;
                         barcode: string;
                         pick_sequence: number | null;
+                        bin_type: string;
+                        max_quantity: string | null;
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.warehouses.zones.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            warehouse_id: string;
+                            code: string;
+                            name: string;
+                            zone_type: string;
+                            bins_count: number;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.warehouses.bins.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: string;
+                            warehouse_id: string;
+                            zone_id: string;
+                            zone_code: string;
+                            zone_type: string;
+                            aisle_code: string;
+                            rack_code: string;
+                            code: string;
+                            barcode: string;
+                            bin_type: string;
+                            pick_sequence: number | null;
+                            is_locked: boolean;
+                            max_quantity: string | null;
+                            max_weight_kg: string | null;
+                            max_volume_cbm: string | null;
+                            occupancy: {
+                                quantity: string;
+                                weight_kg: string;
+                                volume_m3: string;
+                                items: number;
+                            };
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "inventory.zones.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateWarehouseZoneRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        code: string;
+                        name: string;
+                        zone_type: string;
+                        bins_count: number;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "inventory.bins.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateWarehouseBinRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        warehouse_id: string;
+                        zone_id: string;
+                        zone_code: string;
+                        zone_type: string;
+                        aisle_code: string;
+                        rack_code: string;
+                        code: string;
+                        barcode: string;
+                        bin_type: string;
+                        pick_sequence: number | null;
+                        is_locked: boolean;
+                        max_quantity: string | null;
+                        max_weight_kg: string | null;
+                        max_volume_cbm: string | null;
+                        occupancy: {
+                            quantity: string;
+                            weight_kg: string;
+                            volume_m3: string;
+                            items: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
             422: components["responses"]["ValidationException"];
         };
     };
@@ -91828,6 +111358,239 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "mfg.work_centers.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `MfgWorkCenterResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["MfgWorkCenterResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.work_centers.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreWorkCenterRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgWorkCenterResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgWorkCenterResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.work_centers.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `MfgWorkCenterResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgWorkCenterResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "mfg.work_centers.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreWorkCenterRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgWorkCenterResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgWorkCenterResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.work_centers.calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetWorkCenterCalendarRequest"];
+            };
+        };
+        responses: {
+            /** @description `MfgWorkCenterResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MfgWorkCenterResource"] & Record<string, never>;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.work_centers.exceptions.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreCalendarExceptionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            date: string;
+                            gross_hours: string;
+                            available_hours: string;
+                            load_hours: string;
+                            utilization_percent: string | null;
+                            is_exception: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "mfg.work_centers.capacity": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                work_center_id?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            date: string;
+                            gross_hours: string;
+                            available_hours: string;
+                            load_hours: string;
+                            utilization_percent: string | null;
+                            is_exception: string;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "v1.construction-trades.work-cycles.index": {
         parameters: {
             query?: {
@@ -92116,11 +111879,9 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": components["schemas"]["Modules.ServiceManagement.Http.Requests.StoreWorkOrderRequest"] & {
-                    items?: string;
-                };
+                "application/json": components["schemas"]["Modules.ServiceManagement.Http.Requests.StoreWorkOrderRequest"];
             };
         };
         responses: {
@@ -92178,9 +111939,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    technician_id?: string;
-                };
+                "application/json": components["schemas"]["DispatchWorkOrderRequest"];
             };
         };
         responses: {
@@ -92198,6 +111957,7 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.esm.work-orders.schedule": {
@@ -92278,13 +112038,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    completion_notes?: string;
-                    resolution_summary?: string;
-                    customer_signature_url?: string;
-                    signed_by_customer_name?: string;
-                    signed_at?: string;
-                };
+                "application/json": components["schemas"]["CompleteWorkOrderRequest"];
             };
         };
         responses: {
@@ -92302,6 +112056,77 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.esm.work-orders.parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The work order ID */
+                workOrder: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsumeWorkOrderPartRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Part consumed successfully";
+                        data: components["schemas"]["Modules.ServiceManagement.Http.Resources.WorkOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.esm.work-orders.invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The work order ID */
+                workOrder: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceWorkOrderRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        message: "Invoice drafted from work order";
+                        data: {
+                            invoice_id: string;
+                            invoice_number: string;
+                            total_gross: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "workflows.decisions.my-pending": {
@@ -92350,6 +112175,18 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
         };
     };
@@ -92828,6 +112665,353 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
         };
     };
+    "workflows.escalation-rules.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Escalation rules retrieved";
+                        data: {
+                            id: string;
+                            name: string;
+                            reminder_hours: number;
+                            escalation_hours: number;
+                            escalate_to_type: string;
+                            escalate_to_id: string | null;
+                            auto_action: string;
+                        }[];
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "workflows.escalation-rules.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveEscalationRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Escalation rule created";
+                        data: {
+                            id: string;
+                            name: string;
+                            reminder_hours: number;
+                            escalation_hours: number;
+                            escalate_to_type: string;
+                            escalate_to_id: string | null;
+                            auto_action: string;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "workflows.escalation-rules.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveEscalationRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Escalation rule updated";
+                        data: {
+                            id: string;
+                            name: string;
+                            reminder_hours: number;
+                            escalation_hours: number;
+                            escalate_to_type: string;
+                            escalate_to_id: string | null;
+                            auto_action: string;
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "workflows.escalation-rules.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Escalation rule deleted";
+                        data: null;
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
+        };
+    };
+    "workflows.inbox.my-tasks": {
+        parameters: {
+            query?: {
+                state?: "overdue" | "delegated" | "escalated" | null;
+                definition_code?: string | null;
+                approvable_type?: string | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Tasks retrieved";
+                        data: components["schemas"]["WorkflowTaskResource"][];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                            summary: {
+                                pending: number;
+                                overdue: number;
+                                delegated: number;
+                                escalated: number;
+                            };
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "workflows.inbox.my-history": {
+        parameters: {
+            query?: {
+                decision?: "approved" | "rejected" | null;
+                from?: string | null;
+                to?: string | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "History retrieved";
+                        data: {
+                            decision_id: string;
+                            decision: string;
+                            comment: string | null;
+                            decided_at: string | null;
+                            on_behalf_of: string | null;
+                            step_id: string;
+                            workflow_instance_id: string;
+                            workflow_code: string;
+                            instance_status: string;
+                            approvable_type: string;
+                            approvable_id: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "workflows.inbox.my-requests": {
+        parameters: {
+            query?: {
+                status?: "pending" | "in_progress" | "approved" | "rejected" | "cancelled" | "expired" | null;
+                per_page?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Requests retrieved";
+                        data: components["schemas"]["WorkflowInstanceResource"][];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "workflows.inbox.sla-report": {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "SLA report retrieved";
+                        data: {
+                            period: {
+                                from: string;
+                                to: string;
+                            };
+                            totals: {
+                                steps: number;
+                                decided_on_time: number;
+                                decided_late: number;
+                                timed_out: number;
+                                pending_overdue: number;
+                                pending_on_track: number;
+                                escalated: number;
+                                breached: number;
+                                breach_rate_percent: string | null;
+                                avg_hours_to_decide: string | null;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            by_definition: ({
+                                steps: number;
+                                decided_on_time: number;
+                                decided_late: number;
+                                timed_out: number;
+                                pending_overdue: number;
+                                pending_on_track: number;
+                                escalated: number;
+                                breached: number;
+                                breach_rate_percent: string | null;
+                                avg_hours_to_decide: string | null;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                        };
+                        meta: string;
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "workflows.instances.index": {
         parameters: {
             query?: {
@@ -92876,6 +113060,18 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
             422: components["responses"]["ValidationException"];
         };
     };
@@ -92933,6 +113129,18 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "workflows.instances.audit-trail": {
@@ -92957,6 +113165,269 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "workflows.instances.audit-trail.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        success: boolean;
+                        /** @constant */
+                        message: "Audit trail verified";
+                        data: {
+                            is_intact: boolean;
+                            entries: number;
+                            verified: number;
+                            legacy_unverifiable: number;
+                            first_broken_sequence: null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.hr.time.overtime": {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                department_id?: string | null;
+                employee_id?: string | null;
+                user_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            employee_id: string;
+                            from: string;
+                            to: string;
+                            days: {
+                                date: string;
+                                worked_minutes: string;
+                                overtime: unknown[];
+                            }[];
+                            weeks: {
+                                week: string;
+                                worked_minutes: string;
+                                daily_overtime_minutes: string;
+                                overtime: unknown[];
+                            }[];
+                            totals: unknown[];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.overtime-rules.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["OvertimeRule"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.overtime-rules.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveOvertimeRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["OvertimeRule"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.overtime-rules.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveOvertimeRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["OvertimeRule"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.overtime-rules.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.hr.time-closings.index": {
+        parameters: {
+            query?: {
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TimePeriodClosing"][];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+        };
+    };
+    "v1.hr.time-closings.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseTimePeriodRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TimePeriodClosing"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hr.time-closings.reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TimePeriodClosing"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "workspace.connections.index": {
@@ -93114,7 +113585,9 @@ export interface operations {
     "workspace.items": {
         parameters: {
             query?: {
-                kind?: string;
+                kind?: "calendar_event" | "email" | null;
+                contact_id?: string | null;
+                per_page?: number | null;
             };
             header?: never;
             path?: never;
@@ -93130,13 +113603,19 @@ export interface operations {
                     "application/json": {
                         success: boolean;
                         /** @constant */
-                        message: "Operation successful";
+                        message: "Items retrieved";
                         data: components["schemas"]["WorkspaceItemResource"][];
-                        meta: string;
+                        meta: {
+                            total: number;
+                            current_page: number;
+                            last_page: number;
+                            per_page: number;
+                        };
                     };
                 };
             };
             401: components["responses"]["AuthenticationException"];
+            422: components["responses"]["ValidationException"];
         };
     };
 }

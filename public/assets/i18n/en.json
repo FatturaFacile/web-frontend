@@ -1011,5 +1011,95 @@
   "TOOLS.TARGET_MARGIN": "Target margin (%)",
   "TOOLS.MARGIN_AMOUNT": "Margin",
   "TOOLS.MARGIN_PERCENT": "Margin %",
-  "TOOLS.MARKUP_PERCENT": "Markup %"
+  "TOOLS.MARKUP_PERCENT": "Markup %",
+  "CUSTOMS": {
+    "TITLE": "Customs & Cross-Border Logistics",
+    "SUBTITLE": "Customs dossiers, e-dec/Passar declarations, eVV assessment decisions and freight tariffs",
+    "TABS": {
+      "DOSSIERS": "Customs Dossiers",
+      "DECLARATIONS": "Customs Declarations",
+      "ASSESSMENTS": "Assessment Decisions (eVV)",
+      "GRIDS_SHIPMENTS": "Tariff Grids & Shipments"
+    },
+    "ACTIONS": {
+      "NEW_DOSSIER": "New Dossier",
+      "PROFITABILITY": "Profitability",
+      "INVOICE": "Invoice Dossier",
+      "NEW_DECLARATION": "New Declaration",
+      "VALIDATE": "Validate",
+      "SUBMIT": "Submit to Customs",
+      "RETRIEVE_EVV": "Retrieve eVV",
+      "NEW_GRID": "New Grid",
+      "ACCEPT": "Accept",
+      "REFUSE": "Refuse"
+    },
+    "STATUS": {
+      "OPEN": "Open",
+      "QUOTED": "Quoted",
+      "IN_TRANSIT": "In Transit",
+      "DELIVERED": "Delivered",
+      "INVOICED": "Invoiced",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    },
+    "COLS": {
+      "DOSSIER_NUMBER": "Dossier No.",
+      "DIRECTION": "Direction",
+      "SERVICE_TYPE": "Service Type",
+      "ROUTE": "Route",
+      "WEIGHT_VOL": "Weight / Vol",
+      "STATUS": "Status",
+      "DECLARATION_NR": "Declaration No.",
+      "MRN": "MRN",
+      "TYPE": "Type",
+      "STATISTICAL_VALUE": "Statistical Value",
+      "TOTAL_MASS": "Total Mass",
+      "VERSION": "Version",
+      "DOC_TYPE": "Doc Type",
+      "DOC_DATE": "Doc Date",
+      "DUTY_AMOUNT": "Duty",
+      "VAT_AMOUNT": "Customs VAT",
+      "SIGNATURE": "Signature",
+      "NAME": "Name",
+      "CURRENCY": "Currency",
+      "ACTIVE": "Active",
+      "REQUEST_NR": "Request No.",
+      "CUSTOMER": "Customer"
+    },
+    "FORM": {
+      "CUSTOMER": "Customer",
+      "CUSTOMER_PLACEHOLDER": "UUID or code of customer",
+      "DIRECTION": "Direction",
+      "SERVICE_TYPE": "Service Type",
+      "ORIGIN_COUNTRY": "Origin Country",
+      "DESTINATION_COUNTRY": "Destination Country",
+      "GROSS_WEIGHT": "Gross Weight (kg)",
+      "VOLUME": "Volume (m³)",
+      "PACKAGES": "Packages",
+      "NOTES": "Notes",
+      "DECLARATION_TYPE": "Declaration Type",
+      "CUSTOMS_OFFICE": "Customs Office",
+      "TRADER_DECL_NR": "Trader Declaration No.",
+      "TRADER_REF": "Internal Reference",
+      "DISPATCH_COUNTRY": "Dispatch Country"
+    },
+    "MODAL": {
+      "CREATE_DOSSIER_TITLE": "New Customs Dossier",
+      "CREATE_DECLARATION_TITLE": "New Customs Declaration",
+      "PROFITABILITY_TITLE": "Dossier Profitability"
+    },
+    "PROFIT": {
+      "REVENUE": "Total Revenue",
+      "DIRECT_COSTS": "Direct Costs",
+      "INDIRECT_COSTS": "Indirect Costs",
+      "CONTRIBUTION_MARGIN": "Contribution Margin",
+      "MARGIN_PERCENT": "Margin %"
+    },
+    "TARIFF_GRIDS": "Freight Tariff Grids",
+    "SHIPMENT_REQUESTS": "Portal Shipment Requests",
+    "SEARCH_DOSSIERS_PLACEHOLDER": "Search dossiers by number or customer...",
+    "SEARCH_DECLARATIONS_PLACEHOLDER": "Search declarations by number or MRN...",
+    "SEARCH_ASSESSMENTS_PLACEHOLDER": "Search eVV decisions by MRN...",
+    "FILTER_STATUS": "Filter by status"
+  }
 }

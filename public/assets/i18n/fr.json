@@ -955,5 +955,95 @@
   "WELCOME.GO_ORDERS": "Accéder à l'historique des commandes",
   "WELCOME.QUICK_ACCESS": "Accès Rapide",
   "WELCOME.SUBTITLE": "Votre plateforme de gestion simplifiée des factures et des commandes",
-  "WELCOME.TITLE": "Bienvenue sur Fattura Facile"
+  "WELCOME.TITLE": "Bienvenue sur Fattura Facile",
+  "CUSTOMS": {
+    "TITLE": "Douane et logistique transfrontalière",
+    "SUBTITLE": "Dossiers douaniers, déclarations e-dec/Passar, décisions de taxation eVV et tarifs",
+    "TABS": {
+      "DOSSIERS": "Dossiers douaniers",
+      "DECLARATIONS": "Déclarations en douane",
+      "ASSESSMENTS": "Décisions de taxation (eVV)",
+      "GRIDS_SHIPMENTS": "Grilles & Expéditions"
+    },
+    "ACTIONS": {
+      "NEW_DOSSIER": "Nouveau dossier",
+      "PROFITABILITY": "Rentabilité",
+      "INVOICE": "Facturer le dossier",
+      "NEW_DECLARATION": "Nouvelle déclaration",
+      "VALIDATE": "Valider",
+      "SUBMIT": "Transmettre à la douane",
+      "RETRIEVE_EVV": "Récupérer eVV",
+      "NEW_GRID": "Nouvelle grille",
+      "ACCEPT": "Accepter",
+      "REFUSE": "Refuser"
+    },
+    "STATUS": {
+      "OPEN": "Ouvert",
+      "QUOTED": "Chiffré",
+      "IN_TRANSIT": "En transit",
+      "DELIVERED": "Livré",
+      "INVOICED": "Facturé",
+      "CLOSED": "Fermé",
+      "CANCELLED": "Annulé"
+    },
+    "COLS": {
+      "DOSSIER_NUMBER": "N° de dossier",
+      "DIRECTION": "Sens",
+      "SERVICE_TYPE": "Type de service",
+      "ROUTE": "Trajet",
+      "WEIGHT_VOL": "Poids / Vol",
+      "STATUS": "Statut",
+      "DECLARATION_NR": "N° déclaration",
+      "MRN": "MRN",
+      "TYPE": "Type",
+      "STATISTICAL_VALUE": "Valeur statistique",
+      "TOTAL_MASS": "Masse totale",
+      "VERSION": "Version",
+      "DOC_TYPE": "Type doc",
+      "DOC_DATE": "Date doc",
+      "DUTY_AMOUNT": "Droits de douane",
+      "VAT_AMOUNT": "TVA douanière",
+      "SIGNATURE": "Signature",
+      "NAME": "Nom",
+      "CURRENCY": "Devise",
+      "ACTIVE": "Actif",
+      "REQUEST_NR": "N° demande",
+      "CUSTOMER": "Client"
+    },
+    "FORM": {
+      "CUSTOMER": "Client",
+      "CUSTOMER_PLACEHOLDER": "UUID ou code client",
+      "DIRECTION": "Sens",
+      "SERVICE_TYPE": "Type de service",
+      "ORIGIN_COUNTRY": "Pays d'origine",
+      "DESTINATION_COUNTRY": "Pays de destination",
+      "GROSS_WEIGHT": "Poids brut (kg)",
+      "VOLUME": "Volume (m³)",
+      "PACKAGES": "Colis",
+      "NOTES": "Remarques",
+      "DECLARATION_TYPE": "Type de déclaration",
+      "CUSTOMS_OFFICE": "Bureau de douane",
+      "TRADER_DECL_NR": "N° déclaration opérateur",
+      "TRADER_REF": "Référence interne",
+      "DISPATCH_COUNTRY": "Pays d'expédition"
+    },
+    "MODAL": {
+      "CREATE_DOSSIER_TITLE": "Nouveau dossier douanier",
+      "CREATE_DECLARATION_TITLE": "Nouvelle déclaration en douane",
+      "PROFITABILITY_TITLE": "Rentabilité du dossier"
+    },
+    "PROFIT": {
+      "REVENUE": "Revenu total",
+      "DIRECT_COSTS": "Coûts directs",
+      "INDIRECT_COSTS": "Coûts indirects",
+      "CONTRIBUTION_MARGIN": "Marge de contribution",
+      "MARGIN_PERCENT": "Marge %"
+    },
+    "TARIFF_GRIDS": "Grilles tarifaires de fret",
+    "SHIPMENT_REQUESTS": "Demandes d'expédition du portail",
+    "SEARCH_DOSSIERS_PLACEHOLDER": "Rechercher des dossiers par numéro ou client...",
+    "SEARCH_DECLARATIONS_PLACEHOLDER": "Rechercher des déclarations par numéro ou MRN...",
+    "SEARCH_ASSESSMENTS_PLACEHOLDER": "Rechercher des décisions eVV par MRN...",
+    "FILTER_STATUS": "Filtrer par statut"
+  }
 }
