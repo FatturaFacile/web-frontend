@@ -1,6 +1,6 @@
 # Production image: Angular build (environment.production.ts -> https://api.fatturafacile.eu) served by nginx.
 # Published on release by .github/workflows/deploy.yml as ghcr.io/fatturafacile/web-frontend and docker.io/fatturafacile/web.
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 WORKDIR /src
 RUN corepack enable
