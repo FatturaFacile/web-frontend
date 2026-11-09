@@ -1,0 +1,459 @@
+<app-page-header
+  [title]="'STS.TITLE' | translate"
+  [subtitle]="'STS.SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    <nz-select
+      [ngModel]="selectedYear()"
+      (ngModelChange)="changeYear($event)"
+      style="width: 110px"
+    >
+      <nz-option [nzValue]="2026" nzLabel="2026"></nz-option>
+      <nz-option [nzValue]="2025" nzLabel="2025"></nz-option>
+      <nz-option [nzValue]="2024" nzLabel="2024"></nz-option>
+    </nz-select>
+
+    <button nz-button nzType="primary" (click)="openFlagModal()">
+      <span nz-icon nzType="plus"></span>
+      {{ 'STS.NEW_EXPENSE_FLAG' | translate }}
+    </button>
+  </div>
+</app-page-header>
+
+<!-- STATS SUMMARY -->
+<div class="stats-grid">
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="(totalExpensesAmount() | money)"
+      [nzTitle]="'STS.TOTAL_AMOUNT' | translate"
+      [nzPrefix]="totalIcon"
+    ></nz-statistic>
+    <ng-template #totalIcon><span nz-icon nzType="dollar"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="(totalTraceableAmount() | money)"
+      [nzTitle]="'STS.TRACEABLE_AMOUNT' | translate"
+      [nzPrefix]="traceableIcon"
+    ></nz-statistic>
+    <ng-template #traceableIcon><span nz-icon nzType="wallet" class="text-success"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalOpposedCount()"
+      [nzTitle]="'STS.OPPOSED_COUNT' | translate"
+      [nzPrefix]="opposedIcon"
+    ></nz-statistic>
+    <ng-template #opposedIcon><span nz-icon nzType="warning" class="text-warning"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalTransmittedCount()"
+      [nzTitle]="'STS.TRANSMITTED_COUNT' | translate"
+      [nzPrefix]="transmittedIcon"
+    ></nz-statistic>
+    <ng-template #transmittedIcon><span nz-icon nzType="check-circle" class="text-primary"></span></ng-template>
+  </nz-card>
+</div>
+
+<nz-card class="main-card">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 0: EXPENSES LIST -->
+    <nz-tab [nzTitle]="'STS.TAB_EXPENSES' | translate">
+      <div class="tab-toolbar">
+        <div class="toolbar-info">
+          <span>{{ 'STS.EXPENSES_SUBTITLE' | translate }}</span>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadExpenses()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'STS.REFRESH' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="openFlagModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'STS.FLAG_DOCUMENT' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #expensesTable
+        [nzData]="expenses()"
+        [nzLoading]="expensesLoading()"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'STS.DOCUMENT' | translate }}</th>
+            <th>{{ 'STS.PAYMENT_DATE' | translate }}</th>
+            <th>{{ 'STS.EXPENSE_TYPE' | translate }}</th>
+            <th nzAlign="right">{{ 'STS.AMOUNT' | translate }}</th>
+            <th>{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</th>
+            <th nzAlign="center">{{ 'STS.TRACEABLE' | translate }}</th>
+            <th nzAlign="center">{{ 'STS.OPPOSITION' | translate }}</th>
+            <th>{{ 'STS.STATUS' | translate }}</th>
+            <th nzAlign="center">{{ 'STS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of expensesTable.data; track item.id) {
+            <tr>
+              <td>
+                <strong>{{ item.document_number || item.document_id }}</strong>
+                <div class="doc-sub">{{ item.document_type | uppercase }}</div>
+              </td>
+              <td>{{ item.payment_date | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <nz-tag [nzColor]="getExpenseTypeColor(item.expense_type)">
+                  {{ getExpenseTypeName(item.expense_type) }}
+                </nz-tag>
+              </td>
+              <td nzAlign="right">
+                <strong>{{ item.amount | money }}</strong>
+              </td>
+              <td>
+                <code>{{ item.patient_fiscal_code || '-' }}</code>
+              </td>
+              <td nzAlign="center">
+                @if (item.payment_traceable) {
+                  <nz-tag nzColor="success">{{ 'STS.YES' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="default">{{ 'STS.NO' | translate }}</nz-tag>
+                }
+              </td>
+              <td nzAlign="center">
+                @if (item.patient_opposition) {
+                  <nz-tag nzColor="magenta">{{ 'STS.OPPOSED' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="default">{{ 'STS.NONE' | translate }}</nz-tag>
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="getTransmissionStatusColor(item.transmission_status)">
+                  {{ (item.transmission_status || 'pending') | uppercase }}
+                </nz-tag>
+              </td>
+              <td nzAlign="center">
+                <nz-space>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="openExpenseDrawer(item)"
+                  >
+                    <span nz-icon nzType="eye"></span>
+                    {{ 'STS.DETAILS' | translate }}
+                  </button>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzDanger
+                    nzSize="small"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'STS.CONFIRM_REMOVE_FLAG' | translate"
+                    (nzOnConfirm)="removeExpenseFlag(item.id)"
+                  >
+                    <span nz-icon nzType="delete"></span>
+                    {{ 'STS.REMOVE' | translate }}
+                  </button>
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 1: ANNUAL SUMMARY -->
+    <nz-tab [nzTitle]="'STS.TAB_SUMMARY' | translate">
+      <div class="tab-toolbar">
+        <div class="toolbar-info">
+          <span>{{ 'STS.SUMMARY_SUBTITLE' | translate }} - <strong>{{ selectedYear() }}</strong></span>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadSummary()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'STS.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (summary(); as s) {
+        <div class="summary-cards-grid">
+          <nz-card class="sum-card" [nzTitle]="'STS.TOTAL_EXPENSES' | translate">
+            <div class="sum-val">{{ s.total_expenses }}</div>
+            <div class="sum-desc">{{ 'STS.REGISTERED_RECORDS' | translate }}</div>
+          </nz-card>
+          <nz-card class="sum-card" [nzTitle]="'STS.TOTAL_AMOUNT' | translate">
+            <div class="sum-val text-primary">{{ s.total_amount | money }}</div>
+            <div class="sum-desc">{{ 'STS.GROSS_HEALTH_EXPENSES' | translate }}</div>
+          </nz-card>
+          <nz-card class="sum-card" [nzTitle]="'STS.TRACEABLE_AMOUNT' | translate">
+            <div class="sum-val text-success">{{ s.total_traceable_amount | money }}</div>
+            <div class="sum-desc">{{ 'STS.DEDUCTIBLE_730' | translate }}</div>
+          </nz-card>
+          <nz-card class="sum-card" [nzTitle]="'STS.OPPOSED' | translate">
+            <div class="sum-val text-warning">{{ s.total_opposed }}</div>
+            <div class="sum-desc">{{ 'STS.EXCLUDED_FROM_730' | translate }}</div>
+          </nz-card>
+        </div>
+
+        <nz-card class="sub-card" [nzTitle]="'STS.TRANSMISSION_STATUS_BREAKDOWN' | translate">
+          <nz-descriptions [nzColumn]="2" nzBordered>
+            <nz-descriptions-item [nzTitle]="'STS.STATUS_TRANSMITTED' | translate">
+              <nz-tag nzColor="success">{{ s.total_transmitted }}</nz-tag>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'STS.STATUS_PENDING' | translate">
+              <nz-tag nzColor="warning">{{ s.total_pending }}</nz-tag>
+            </nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+      }
+    </nz-tab>
+
+    <!-- TAB 2: EXPORT -->
+    <nz-tab [nzTitle]="'STS.TAB_EXPORT' | translate">
+      <nz-card class="sub-card" [nzTitle]="'STS.EXPORT_DATA_TITLE' | translate">
+        <form nz-form [formGroup]="exportForm" nzLayout="inline" (ngSubmit)="exportExpenses()">
+          <nz-form-item>
+            <nz-form-label>{{ 'STS.EXPORT_FORMAT' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="format" style="width: 140px">
+                <nz-option nzValue="json" nzLabel="JSON (Sogei Payload)"></nz-option>
+                <nz-option nzValue="csv" nzLabel="CSV (Ministero Salute)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-control>
+              <button nz-button nzType="primary" [nzLoading]="exportLoading()">
+                <span nz-icon nzType="download"></span>
+                {{ 'STS.GENERATE_EXPORT' | translate }}
+              </button>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+
+        @if (exportedContent(); as content) {
+          <div class="export-result">
+            <h4>{{ 'STS.EXPORT_PREVIEW' | translate }}</h4>
+            <pre>{{ content }}</pre>
+          </div>
+        }
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: SETTINGS -->
+    <nz-tab [nzTitle]="'STS.TAB_SETTINGS' | translate">
+      <nz-card class="sub-card" [nzTitle]="'STS.SETTINGS_TITLE' | translate">
+        <form nz-form [formGroup]="settingsForm" nzLayout="vertical" (ngSubmit)="saveSettings()">
+          <nz-form-item>
+            <nz-form-label>{{ 'STS.ENABLE_STS' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch formControlName="is_enabled"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+
+          <div class="form-row-2">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'STS.SUBJECT_TYPE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="subject_type">
+                  <nz-option nzValue="professional" [nzLabel]="'STS.TYPE_PROFESSIONAL' | translate"></nz-option>
+                  <nz-option nzValue="structure" [nzLabel]="'STS.TYPE_STRUCTURE' | translate"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>{{ 'STS.OWNER_FISCAL_CODE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="owner_fiscal_code" placeholder="RSSMRA80A01H501Z" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <div class="form-row-3">
+            <nz-form-item>
+              <nz-form-label>{{ 'STS.REGION_CODE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="region_code" placeholder="030 (Lombardia)" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>{{ 'STS.ASL_CODE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="asl_code" placeholder="201 (Milano)" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>{{ 'STS.SSA_CODE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="ssa_code" placeholder="Codice Struttura" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <nz-form-item>
+            <nz-form-control>
+              <button nz-button nzType="primary" (click)="saveSettings()">
+                <span nz-icon nzType="check"></span>
+                {{ 'STS.SAVE_SETTINGS' | translate }}
+              </button>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- FLAG EXPENSE MODAL -->
+<nz-modal
+  [(nzVisible)]="flagModalVisible"
+  [nzTitle]="'STS.FLAG_EXPENSE_TITLE' | translate"
+  (nzOnCancel)="flagModalVisible.set(false)"
+  (nzOnOk)="submitFlagExpense()"
+  nzWidth="650px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="flagForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.DOCUMENT_TYPE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="document_type">
+              <nz-option nzValue="invoice" [nzLabel]="'STS.DOC_INVOICE' | translate"></nz-option>
+              <nz-option nzValue="commercial_document" [nzLabel]="'STS.DOC_COMMERCIAL' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.DOCUMENT_ID' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="document_id" placeholder="UUID documento o fattura" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.EXPENSE_TYPE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="expense_type">
+              <nz-option nzValue="SV" nzLabel="SV - Visita Medica / Generica"></nz-option>
+              <nz-option nzValue="SP" nzLabel="SP - Prestazione Specialistica"></nz-option>
+              <nz-option nzValue="AD" nzLabel="AD - Dispositivo Medico CE"></nz-option>
+              <nz-option nzValue="FC" nzLabel="FC - Farmaco da Banco / Omeopatico"></nz-option>
+              <nz-option nzValue="FV" nzLabel="FV - Farmaco Veterinario"></nz-option>
+              <nz-option nzValue="TK" nzLabel="TK - Ticket Sanitario"></nz-option>
+              <nz-option nzValue="PI" nzLabel="PI - Protesi & Integrativa"></nz-option>
+              <nz-option nzValue="SR" nzLabel="SR - Ricovero Ospedaliero"></nz-option>
+              <nz-option nzValue="CT" nzLabel="CT - Cure Termali"></nz-option>
+              <nz-option nzValue="IC" nzLabel="IC - Intervento Chirurgico"></nz-option>
+              <nz-option nzValue="AA" nzLabel="AA - Altra Spesa"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.PAYMENT_DATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="payment_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.AMOUNT' | translate }} (€)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="amount" [nzMin]="0.01" [nzStep]="1" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="patient_fiscal_code" placeholder="VRDLGI85C10H501K" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'STS.TRACEABLE_PAYMENT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch formControlName="payment_traceable"></nz-switch>
+            <span class="switch-hint">{{ 'STS.TRACEABLE_HINT' | translate }}</span>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'STS.PATIENT_OPPOSITION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch formControlName="patient_opposition"></nz-switch>
+            <span class="switch-hint">{{ 'STS.OPPOSITION_HINT' | translate }}</span>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- EXPENSE DETAILS DRAWER -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="550"
+  [nzTitle]="'STS.EXPENSE_DETAILS' | translate"
+  (nzOnClose)="closeExpenseDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedExpense(); as e) {
+      <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+        <nz-descriptions-item [nzTitle]="'STS.FLAG_ID' | translate">
+          <code>{{ e.id }}</code>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.DOCUMENT' | translate">
+          <strong>{{ e.document_number || e.document_id }}</strong> ({{ e.document_type | uppercase }})
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.EXPENSE_TYPE' | translate">
+          <nz-tag [nzColor]="getExpenseTypeColor(e.expense_type)">
+            {{ getExpenseTypeName(e.expense_type) }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.AMOUNT' | translate">
+          <strong>{{ e.amount | money }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.PAYMENT_DATE' | translate">
+          {{ e.payment_date | date: 'dd/MM/yyyy' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.PATIENT_FISCAL_CODE' | translate">
+          <code>{{ e.patient_fiscal_code || '-' }}</code>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.TRACEABLE' | translate">
+          <nz-tag [nzColor]="e.payment_traceable ? 'success' : 'default'">
+            {{ (e.payment_traceable ? 'STS.YES' : 'STS.NO') | translate }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.OPPOSITION' | translate">
+          <nz-tag [nzColor]="e.patient_opposition ? 'magenta' : 'default'">
+            {{ (e.patient_opposition ? 'STS.OPPOSED' : 'STS.NONE') | translate }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'STS.STATUS' | translate">
+          <nz-tag [nzColor]="getTransmissionStatusColor(e.transmission_status)">
+            {{ (e.transmission_status || 'pending') | uppercase }}
+          </nz-tag>
+        </nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </ng-container>
+</nz-drawer>

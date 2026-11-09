@@ -157,6 +157,13 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'tessera-sanitaria',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.TESSERA_SANITARIA', title: 'Sistema Tessera Sanitaria (STS)' },
+    loadChildren: () =>
+      import('./features/tessera-sanitaria/tessera-sanitaria.routes').then((m) => m.TESSERA_SANITARIA_ROUTES),
+  },
+  {
     path: 'visitors',
     canActivate: [authGuard],
     data: { breadcrumb: 'NAV.VISITORS', title: 'Visitatori & Kiosk Reception' },

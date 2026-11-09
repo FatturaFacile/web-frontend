@@ -59,3 +59,4 @@ export * from './api/practice-api.service';
 export * from './api/appointment-api.service';
 export * from './api/communication-api.service';
 export * from './api/visitors-api.service';
+export * from './api/tessera-sanitaria-api.service';
