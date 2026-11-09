@@ -179,7 +179,6 @@ export class SidebarComponent {
           key: 'NAV.PEOPLE',
           icon: 'fa-solid fa-people-group',
           children: [
-            { key: 'NAV.TIME_ATTENDANCE', route: '/time-attendance', icon: 'fa-solid fa-clock' },
             { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
             { key: 'NAV.HR_ORGANIZATION', route: '/hr/organization', icon: 'fa-solid fa-sitemap', module: 'hr' },
             { key: 'NAV.HR_LEAVE', route: '/hr/leave', icon: 'fa-solid fa-umbrella-beach', module: 'hr' },
