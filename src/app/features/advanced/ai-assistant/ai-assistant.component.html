@@ -1,0 +1,370 @@
+<div class="ai-assistant-container">
+  <div class="page-header">
+    <div class="header-title">
+      <h1>{{ 'ASSISTANT.TITLE' | translate }}</h1>
+      <p class="subtitle">{{ 'ASSISTANT.SUBTITLE' | translate }}</p>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <nz-alert
+      nzType="error"
+      [nzMessage]="errorMessage()!"
+      nzShowIcon
+      nzCloseable
+      class="mb-4"
+      (nzOnClose)="errorMessage.set(null)"
+    />
+  }
+
+  <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="activeTabIndex.set($event)">
+    <!-- TAB 1: COPILOT / CHAT QUERY -->
+    <nz-tab [nzTitle]="'ASSISTANT.TABS.COPILOT' | translate">
+      <div class="copilot-layout">
+        <!-- Question Input Card -->
+        <nz-card [nzTitle]="'ASSISTANT.ASK_CARD_TITLE' | translate" class="mb-4 prompt-card">
+          <form [formGroup]="askForm" (ngSubmit)="onAskSubmit()">
+            <div class="prompt-box">
+              <label for="assistant-question-input" class="sr-only">
+                {{ 'ASSISTANT.INPUT_LABEL' | translate }}
+              </label>
+              <textarea
+                id="assistant-question-input"
+                nz-input
+                formControlName="question"
+                [placeholder]="'ASSISTANT.INPUT_PLACEHOLDER' | translate"
+                rows="3"
+                class="prompt-textarea"
+                (keydown)="onTextareaKeydown($event)"
+              ></textarea>
+
+              <div class="prompt-actions">
+                <span class="hint-text">{{ 'ASSISTANT.ENTER_HINT' | translate }}</span>
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="submit"
+                  [nzLoading]="isAsking()"
+                  [disabled]="askForm.invalid"
+                >
+                  <i class="fa-solid fa-paper-plane mr-2"></i>
+                  {{ 'ASSISTANT.SUBMIT_BUTTON' | translate }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Suggested Questions Pills from Catalogue -->
+          @if (catalogue().length > 0) {
+            <div class="suggested-prompts">
+              <span class="suggested-label">{{ 'ASSISTANT.SUGGESTIONS_LABEL' | translate }}:</span>
+              <div class="prompt-chips">
+                @for (entry of catalogue().slice(0, 5); track entry.key) {
+                  <button
+                    type="button"
+                    class="prompt-chip"
+                    (click)="askCatalogueQuestion(entry)"
+                  >
+                    <i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i>
+                    {{ entry.description }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </nz-card>
+
+        <!-- Result / Answer Section -->
+        @if (isAsking()) {
+          <div class="loading-state">
+            <nz-spin nzSimple [nzTip]="'ASSISTANT.ANALYZING' | translate" nzSize="large"></nz-spin>
+          </div>
+        } @else if (currentAnswer(); as answer) {
+          <nz-card [nzTitle]="'ASSISTANT.ANSWER_TITLE' | translate" class="answer-card mb-4">
+            <div class="answer-header">
+              <div class="outcome-badge">
+                <nz-tag [nzColor]="getOutcomeColor(answer.outcome)">
+                  {{ ('ASSISTANT.OUTCOMES.' + answer.outcome) | translate }}
+                </nz-tag>
+                @if (answer.query) {
+                  <span class="query-key-text"><code>{{ answer.query }}</code></span>
+                }
+              </div>
+
+              @if (answer.rows && answer.rows.length > 0) {
+                <button
+                  nz-button
+                  nzType="default"
+                  type="button"
+                  (click)="exportAnswerCsv()"
+                  [title]="'ASSISTANT.EXPORT_CSV' | translate"
+                >
+                  <i class="fa-solid fa-file-csv mr-1"></i>
+                  {{ 'ASSISTANT.EXPORT_CSV' | translate }}
+                </button>
+              }
+            </div>
+
+            @if (answer.description) {
+              <p class="answer-description">{{ answer.description }}</p>
+            }
+
+            @switch (answer.outcome) {
+              @case ('answered') {
+                @if (answer.rows && answer.rows.length > 0) {
+                  <div class="results-table-wrapper">
+                    <nz-table
+                      #dynamicTable
+                      [nzData]="answer.rows"
+                      [nzPageSize]="10"
+                      nzBordered
+                      nzSize="middle"
+                    >
+                      <thead>
+                        <tr>
+                          @for (col of answerColumns(); track col) {
+                            <th>{{ col }}</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of dynamicTable.data; track $index) {
+                          <tr>
+                            @for (col of answerColumns(); track col) {
+                              <td>{{ row[col] }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </nz-table>
+                  </div>
+                } @else {
+                  <nz-alert
+                    nzType="info"
+                    [nzMessage]="'ASSISTANT.NO_ROWS_RETURNED' | translate"
+                    nzShowIcon
+                  />
+                }
+              }
+
+              @case ('unmatched') {
+                <nz-alert
+                  nzType="warning"
+                  [nzMessage]="'ASSISTANT.UNMATCHED_MESSAGE' | translate"
+                  [nzDescription]="'ASSISTANT.UNMATCHED_DESCRIPTION' | translate"
+                  nzShowIcon
+                />
+              }
+
+              @case ('forbidden') {
+                <nz-alert
+                  nzType="error"
+                  [nzMessage]="'ASSISTANT.FORBIDDEN_MESSAGE' | translate"
+                  [nzDescription]="'ASSISTANT.FORBIDDEN_DESCRIPTION' | translate"
+                  nzShowIcon
+                />
+              }
+
+              @case ('failed') {
+                <nz-alert
+                  nzType="error"
+                  [nzMessage]="'ASSISTANT.FAILED_MESSAGE' | translate"
+                  nzShowIcon
+                />
+              }
+            }
+          </nz-card>
+        }
+      </div>
+    </nz-tab>
+
+    <!-- TAB 2: QUERY CATALOGUE EXPLORER -->
+    <nz-tab [nzTitle]="'ASSISTANT.TABS.CATALOGUE' | translate">
+      <nz-card [nzTitle]="'ASSISTANT.CATALOGUE_TITLE' | translate">
+        <div class="catalogue-toolbar mb-4">
+          <input
+            nz-input
+            type="text"
+            [placeholder]="'ASSISTANT.SEARCH_CATALOGUE' | translate"
+            [value]="catalogueSearch()"
+            (input)="onCatalogueSearchChange($event)"
+            class="search-input"
+          />
+        </div>
+
+        <nz-table
+          #catalogueTable
+          [nzData]="filteredCatalogue()"
+          [nzPageSize]="10"
+          nzBordered
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="30%">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
+              <th nzWidth="50%">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
+              <th nzWidth="20%">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of catalogueTable.data; track item.key) {
+              <tr>
+                <td><code>{{ item.key }}</code></td>
+                <td>{{ item.description }}</td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="primary"
+                    nzSize="small"
+                    type="button"
+                    (click)="askCatalogueQuestion(item)"
+                  >
+                    <i class="fa-solid fa-play mr-1"></i>
+                    {{ 'ASSISTANT.ASK_THIS' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: AUDIT & QUESTION LOGS -->
+    <nz-tab [nzTitle]="'ASSISTANT.TABS.LOGS' | translate">
+      <nz-card [nzTitle]="'ASSISTANT.LOGS_TITLE' | translate">
+        <form [formGroup]="logFilterForm" class="logs-filter-bar mb-4">
+          <div class="filter-field">
+            <label for="log-outcome-select" class="filter-label">
+              {{ 'ASSISTANT.FILTER_OUTCOME' | translate }}:
+            </label>
+            <nz-select
+              id="log-outcome-select"
+              formControlName="outcome"
+              (ngModelChange)="loadLogs()"
+              class="w-48"
+            >
+              <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
+              <nz-option nzValue="answered" [nzLabel]="'ASSISTANT.OUTCOMES.answered' | translate"></nz-option>
+              <nz-option nzValue="unmatched" [nzLabel]="'ASSISTANT.OUTCOMES.unmatched' | translate"></nz-option>
+              <nz-option nzValue="forbidden" [nzLabel]="'ASSISTANT.OUTCOMES.forbidden' | translate"></nz-option>
+              <nz-option nzValue="failed" [nzLabel]="'ASSISTANT.OUTCOMES.failed' | translate"></nz-option>
+            </nz-select>
+          </div>
+
+          <button
+            nz-button
+            nzType="default"
+            type="button"
+            (click)="loadLogs()"
+          >
+            <i class="fa-solid fa-rotate mr-1"></i>
+            {{ 'COMMON.REFRESH' | translate }}
+          </button>
+        </form>
+
+        <nz-table
+          #logsTable
+          [nzData]="logs()"
+          [nzPageSize]="10"
+          nzBordered
+          nzSize="middle"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="15%">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
+              <th nzWidth="35%">{{ 'ASSISTANT.QUESTION' | translate }}</th>
+              <th nzWidth="15%">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
+              <th nzWidth="15%">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
+              <th nzWidth="10%">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
+              <th nzWidth="10%">{{ 'COMMON.DETAILS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of logsTable.data; track log.id) {
+              <tr>
+                <td>{{ log.created_at }}</td>
+                <td class="font-medium">{{ log.question }}</td>
+                <td><code>{{ log.resolver }}</code></td>
+                <td>
+                  <nz-tag [nzColor]="getOutcomeColor(log.outcome)">
+                    {{ log.outcome }}
+                  </nz-tag>
+                </td>
+                <td>{{ log.row_count }}</td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="link"
+                    type="button"
+                    (click)="openLogDrawer(log)"
+                  >
+                    <i class="fa-solid fa-eye mr-1"></i>
+                    {{ 'COMMON.VIEW' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+
+  <!-- Log Detail Drawer -->
+  <nz-drawer
+    [nzVisible]="isLogDrawerVisible()"
+    [nzTitle]="'ASSISTANT.LOG_DETAIL_TITLE' | translate"
+    [nzWidth]="480"
+    (nzOnClose)="closeLogDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      @if (selectedLog(); as log) {
+        <div class="log-detail-content">
+          <div class="detail-group">
+            <span class="detail-label">{{ 'ASSISTANT.QUESTION' | translate }}:</span>
+            <p class="detail-value text-base font-semibold">{{ log.question }}</p>
+          </div>
+
+          <div class="detail-group">
+            <span class="detail-label">{{ 'ASSISTANT.LOG_DATE' | translate }}:</span>
+            <p class="detail-value">{{ log.created_at }}</p>
+          </div>
+
+          <div class="detail-group">
+            <span class="detail-label">{{ 'ASSISTANT.OUTCOME' | translate }}:</span>
+            <div>
+              <nz-tag [nzColor]="getOutcomeColor(log.outcome)">
+                {{ log.outcome }}
+              </nz-tag>
+            </div>
+          </div>
+
+          <div class="detail-group">
+            <span class="detail-label">{{ 'ASSISTANT.RESOLVER' | translate }}:</span>
+            <p class="detail-value"><code>{{ log.resolver }}</code></p>
+          </div>
+
+          @if (log.query_key) {
+            <div class="detail-group">
+              <span class="detail-label">{{ 'ASSISTANT.QUERY_KEY' | translate }}:</span>
+              <p class="detail-value"><code>{{ log.query_key }}</code></p>
+            </div>
+          }
+
+          <div class="detail-group">
+            <span class="detail-label">{{ 'ASSISTANT.ROW_COUNT' | translate }}:</span>
+            <p class="detail-value">{{ log.row_count }}</p>
+          </div>
+
+          @if (log.role) {
+            <div class="detail-group">
+              <span class="detail-label">{{ 'ASSISTANT.USER_ROLE' | translate }}:</span>
+              <p class="detail-value">{{ log.role }}</p>
+            </div>
+          }
+        </div>
+      }
+    </ng-container>
+  </nz-drawer>
+</div>

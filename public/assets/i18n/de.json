@@ -2654,5 +2654,49 @@
     "VEHICLE_DELETED_SUCCESS": "Fahrzeug erfolgreich gelöscht",
     "VEHICLE_DELETE_FAILED": "Fehler beim Löschen des Fahrzeugs",
     "BOOKING_DETAILS": "Mietvertragsdetails"
+  },
+  "ASSISTANT": {
+    "TITLE": "KI-Unternehmensassistent & Daten-Copilot",
+    "SUBTITLE": "Geschäftsdaten in natürlicher Sprache abfragen, Katalog erkunden und Prüfprotokolle einsehen",
+    "ASK_CARD_TITLE": "Was möchten Sie den Assistenten fragen?",
+    "INPUT_LABEL": "Frage an den Assistenten",
+    "INPUT_PLACEHOLDER": "Z. B. Wer sind die Top 5 Kunden nach Umsatz? Zeige Artikel unter Mindestbestand...",
+    "ENTER_HINT": "Eingabetaste drücken oder auf Frage senden klicken",
+    "SUBMIT_BUTTON": "Frage senden",
+    "SUGGESTIONS_LABEL": "Empfohlene Fragen aus dem Katalog",
+    "ANALYZING": "Abfrage wird analysiert...",
+    "ANSWER_TITLE": "Abfrageergebnis",
+    "NO_ROWS_RETURNED": "Die Abfrage hat keine Datensätze zurückgegeben.",
+    "UNMATCHED_MESSAGE": "Frage nicht zugeordnet",
+    "UNMATCHED_DESCRIPTION": "Der Assistent konnte keine passende Katalogabfrage finden. Bitte umformulieren oder den Katalog durchsuchen.",
+    "FORBIDDEN_MESSAGE": "Zugriff verweigert",
+    "FORBIDDEN_DESCRIPTION": "Ihre Benutzerrolle verfügt nicht über die erforderlichen Berechtigungen für diese vertraulichen Daten.",
+    "FAILED_MESSAGE": "Verarbeitung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "EXPORT_CSV": "CSV exportieren",
+    "CATALOGUE_TITLE": "Verfügbarer Abfragekatalog",
+    "SEARCH_CATALOGUE": "Katalog durchsuchen...",
+    "QUERY_KEY": "Abfrageschlüssel",
+    "DESCRIPTION": "Beschreibung",
+    "ASK_THIS": "Ausführen",
+    "LOGS_TITLE": "Frageprotokoll & Audit-Trail",
+    "FILTER_OUTCOME": "Nach Ergebnis filtern",
+    "LOG_DATE": "Datum/Uhrzeit",
+    "QUESTION": "Frage",
+    "RESOLVER": "Resolver",
+    "OUTCOME": "Ergebnis",
+    "ROW_COUNT": "Zeilen",
+    "LOG_DETAIL_TITLE": "Details der Assistentenanfrage",
+    "USER_ROLE": "Benutzerrolle",
+    "TABS": {
+      "COPILOT": "KI-Copilot",
+      "CATALOGUE": "Abfragekatalog",
+      "LOGS": "Audit & Protokoll"
+    },
+    "OUTCOMES": {
+      "answered": "Beantwortet",
+      "unmatched": "Nicht zugeordnet",
+      "forbidden": "Nicht autorisiert",
+      "failed": "Fehlgeschlagen"
+    }
   }
 }

@@ -2654,5 +2654,49 @@
     "VEHICLE_DELETED_SUCCESS": "Véhicule supprimé avec succès",
     "VEHICLE_DELETE_FAILED": "Échec de la suppression du véhicule",
     "BOOKING_DETAILS": "Détails du Contrat de Location"
+  },
+  "ASSISTANT": {
+    "TITLE": "Assistant d'Entreprise IA & Copilote de Données",
+    "SUBTITLE": "Interrogez vos données en langage naturel, explorez le catalogue de requêtes et consultez les journaux d'audit",
+    "ASK_CARD_TITLE": "Que souhaitez-vous demander à l'Assistant ?",
+    "INPUT_LABEL": "Question pour l'assistant",
+    "INPUT_PLACEHOLDER": "Ex. Quels sont les 5 premiers clients par chiffre d'affaires ? Afficher les articles sous le seuil...",
+    "ENTER_HINT": "Appuyez sur Entrée ou cliquez sur Envoyer la Question",
+    "SUBMIT_BUTTON": "Envoyer la Question",
+    "SUGGESTIONS_LABEL": "Questions suggérées du catalogue",
+    "ANALYZING": "Analyse en cours...",
+    "ANSWER_TITLE": "Résultat de la Requête",
+    "NO_ROWS_RETURNED": "La requête n'a renvoyé aucun enregistrement.",
+    "UNMATCHED_MESSAGE": "Question non reconnue",
+    "UNMATCHED_DESCRIPTION": "L'assistant n'a pas trouvé de requête correspondante dans le catalogue. Veuillez reformuler ou consulter le catalogue.",
+    "FORBIDDEN_MESSAGE": "Accès refusé",
+    "FORBIDDEN_DESCRIPTION": "Votre rôle utilisateur ne dispose pas des autorisations nécessaires pour accéder à ces données confidentielles.",
+    "FAILED_MESSAGE": "Échec du traitement. Veuillez réessayer ultérieurement.",
+    "EXPORT_CSV": "Exporter CSV",
+    "CATALOGUE_TITLE": "Catalogue des Requêtes Disponibles",
+    "SEARCH_CATALOGUE": "Rechercher dans le catalogue...",
+    "QUERY_KEY": "Clé de Requête",
+    "DESCRIPTION": "Description",
+    "ASK_THIS": "Exécuter",
+    "LOGS_TITLE": "Historique des Questions & Journal d'Audit",
+    "FILTER_OUTCOME": "Filtrer par résultat",
+    "LOG_DATE": "Date/Heure",
+    "QUESTION": "Question",
+    "RESOLVER": "Résolveur",
+    "OUTCOME": "Résultat",
+    "ROW_COUNT": "Lignes",
+    "LOG_DETAIL_TITLE": "Détails de la Demande",
+    "USER_ROLE": "Rôle Utilisateur",
+    "TABS": {
+      "COPILOT": "Copilote IA",
+      "CATALOGUE": "Catalogue de Requêtes",
+      "LOGS": "Audit & Historique"
+    },
+    "OUTCOMES": {
+      "answered": "Réponse fournie",
+      "unmatched": "Non reconnue",
+      "forbidden": "Non autorisée",
+      "failed": "Échouée"
+    }
   }
 }
