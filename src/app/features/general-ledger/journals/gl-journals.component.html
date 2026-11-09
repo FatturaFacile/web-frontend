@@ -1,0 +1,142 @@
+<nz-card>
+  <div class="toolbar" style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center">
+    <label for="gl-journal-status">{{ 'GL.STATUS' | translate }}</label>
+    <nz-select
+      id="gl-journal-status"
+      style="min-width: 220px"
+      nzAllowClear
+      [ngModel]="statusFilter()"
+      (ngModelChange)="setStatus($event)"
+      [nzPlaceHolder]="'GL.ALL_STATUSES' | translate"
+    >
+      @for (status of statuses; track status) {
+        <nz-option [nzValue]="status" [nzLabel]="'GL.JOURNAL_STATUS_' + status.toUpperCase() | translate" />
+      }
+    </nz-select>
+  </div>
+
+  <nz-table
+    #table
+    nzSize="middle"
+    [nzData]="items()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    (nzPageIndexChange)="setPage($event)"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="40px"></th>
+        <th>{{ 'GL.COL_ENTRY' | translate }}</th>
+        <th>{{ 'GL.COL_DATE' | translate }}</th>
+        <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th>{{ 'GL.STATUS' | translate }}</th>
+        <th nzAlign="right">{{ 'GL.COL_TOTAL' | translate }}</th>
+        <th>{{ 'GL.COL_AUTO_REVERSE' | translate }}</th>
+        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of table.data; track entry.id) {
+        <tr>
+          <td [nzExpand]="expanded().has(entry.id)" (nzExpandChange)="toggle(entry, $event)"></td>
+          <td>{{ entry.entry_number }}</td>
+          <td>{{ entry.posting_date }}</td>
+          <td>
+            {{ entry.description }}
+            @if (entry.status === 'rejected' && entry.rejection_reason) {
+              <div class="rejection">{{ 'GL.REJECTION_REASON' | translate }}: {{ entry.rejection_reason }}</div>
+            }
+          </td>
+          <td>
+            <nz-tag [nzColor]="statusColor(entry.status)">{{
+              'GL.JOURNAL_STATUS_' + entry.status.toUpperCase() | translate
+            }}</nz-tag>
+          </td>
+          <td nzAlign="right">{{ entry.total_amount | money: currency() }}</td>
+          <td>{{ entry.auto_reverse_on ?? '' }}</td>
+          <td>
+            @if (canWrite) {
+              @switch (entry.status) {
+                @case ('draft') {
+                  <button nz-button nzSize="small" type="button" (click)="submit(entry)">
+                    {{ 'GL.ACTION_SUBMIT' | translate }}
+                  </button>
+                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="post(entry)">
+                    {{ 'GL.ACTION_POST' | translate }}
+                  </button>
+                }
+                @case ('pending_approval') {
+                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(entry)">
+                    {{ 'GL.ACTION_APPROVE' | translate }}
+                  </button>
+                  <button nz-button nzSize="small" nzDanger type="button" (click)="openReject(entry)">
+                    {{ 'GL.ACTION_REJECT' | translate }}
+                  </button>
+                }
+                @case ('posted') {
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'GL.CONFIRM_REVERSE' | translate"
+                    (nzOnConfirm)="reverse(entry)"
+                  >
+                    {{ 'GL.ACTION_REVERSE' | translate }}
+                  </button>
+                }
+              }
+            }
+          </td>
+        </tr>
+        <tr [nzExpand]="expanded().has(entry.id)">
+          <nz-table #lines nzSize="small" [nzData]="linesOf(entry) ?? []" [nzShowPagination]="false" [nzFrontPagination]="false">
+            <thead>
+              <tr>
+                <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
+                <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+                <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }}</th>
+                <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }}</th>
+                <th>{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of lines.data; track line.id) {
+                <tr>
+                  <td>{{ lookups.accountLabel(line.account_id) }}</td>
+                  <td>{{ line.description }}</td>
+                  <td nzAlign="right">{{ line.functional_debit ?? line.debit_amount | money: currency() }}</td>
+                  <td nzAlign="right">{{ line.functional_credit ?? line.credit_amount | money: currency() }}</td>
+                  <td>
+                    @if (line.currency !== currency()) {
+                      {{ line.debit_amount | money: line.currency }} / {{ line.credit_amount | money: line.currency }}
+                      ({{ line.exchange_rate }})
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="rejectTarget() !== null"
+  [nzTitle]="'GL.REJECT_TITLE' | translate"
+  [nzOkText]="'GL.ACTION_REJECT' | translate"
+  [nzOkDanger]="true"
+  [nzOkDisabled]="!rejectReason.trim()"
+  (nzOnOk)="confirmReject()"
+  (nzOnCancel)="rejectTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="gl-reject-reason">{{ 'GL.REJECTION_REASON' | translate }}</label>
+    <textarea id="gl-reject-reason" nz-input rows="3" [(ngModel)]="rejectReason" maxlength="500"></textarea>
+  </ng-container>
+</nz-modal>

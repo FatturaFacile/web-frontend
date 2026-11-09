@@ -1,0 +1,174 @@
+<nz-card>
+  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
+    <label for="bd-year">{{ 'GL.FISCAL_YEAR' | translate }}</label>
+    <nz-select
+      id="bd-year"
+      style="min-width: 200px"
+      nzAllowClear
+      [ngModel]="yearId()"
+      (ngModelChange)="selectYear($event)"
+      [nzPlaceHolder]="'GL.ALL_YEARS' | translate"
+    >
+      @for (year of years(); track year.id) {
+        <nz-option [nzValue]="year.id" [nzLabel]="year.year_code" />
+      }
+    </nz-select>
+    <span style="flex: 1"></span>
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" [disabled]="!yearId()" (click)="openCreate()">{{ 'GL.BUDGET_NEW' | translate }}</button>
+    }
+  </div>
+
+  <nz-table #table nzSize="middle" [nzData]="budgets()" [nzLoading]="loading()" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ 'GL.COL_NAME' | translate }}</th>
+        <th>{{ 'GL.BUDGET_VERSION' | translate }}</th>
+        <th>{{ 'GL.STATUS' | translate }}</th>
+        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (budget of table.data; track budget.id) {
+        <tr>
+          <td>{{ budget.name }}</td>
+          <td>v{{ budget.version }}</td>
+          <td>
+            <nz-tag [nzColor]="budget.status === 'approved' ? 'green' : 'default'">{{ budget.status }}</nz-tag>
+          </td>
+          <td>
+            <button nz-button nzSize="small" type="button" (click)="open(budget)">{{ 'GL.OPEN' | translate }}</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+@if (selected(); as budget) {
+  <nz-card [nzTitle]="budget.name + ' v' + budget.version" style="margin-top: 16px">
+    <div style="display: flex; gap: 12px; margin-bottom: 16px">
+      @if (canWrite) {
+        @if (isDraft()) {
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveLines()">{{ 'GL.SAVE' | translate }}</button>
+          <button nz-button type="button" (click)="approve()">{{ 'GL.ACTION_APPROVE' | translate }}</button>
+        } @else {
+          <button nz-button type="button" (click)="newVersion()">{{ 'GL.BUDGET_NEW_VERSION' | translate }}</button>
+        }
+      }
+    </div>
+    <nz-tabs>
+      <nz-tab [nzTitle]="'GL.BUDGET_LINES' | translate">
+        @for (line of lines.controls; track $index) {
+          <div [formGroup]="line" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
+            <nz-select formControlName="account_id" nzShowSearch style="flex: 3" [attr.aria-label]="'GL.COL_ACCOUNT' | translate" [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate" [nzDisabled]="!isDraft()">
+              @for (account of lookups.accounts(); track account.id) {
+                <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+              }
+            </nz-select>
+            <nz-select formControlName="cost_center_id" nzAllowClear style="flex: 2" [attr.aria-label]="'GL.COST_CENTER' | translate" [nzPlaceHolder]="'GL.COST_CENTER' | translate" [nzDisabled]="!isDraft()">
+              @for (center of lookups.costCenters(); track center.id) {
+                <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
+              }
+            </nz-select>
+            <nz-input-number formControlName="period_number" [nzMin]="1" [nzMax]="14" [attr.aria-label]="'GL.PERIOD' | translate" style="width: 90px" />
+            <nz-input-number formControlName="amount" [nzPrecision]="2" [attr.aria-label]="'GL.COL_AMOUNT' | translate" style="flex: 1" />
+            @if (isDraft()) {
+              <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)">&times;</button>
+            }
+          </div>
+        }
+        @if (isDraft()) {
+          <button nz-button type="button" (click)="addLine()">{{ 'GL.ADD_LINE' | translate }}</button>
+        }
+      </nz-tab>
+      <nz-tab [nzTitle]="'GL.BUDGET_VARIANCE' | translate">
+        @if (variance(); as report) {
+          <nz-table nzSize="small" [nzData]="report.rows" [nzShowPagination]="false">
+            <thead>
+              <tr>
+                @for (column of columns(report.rows); track column) {
+                  <th>{{ column }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of report.rows; track $index) {
+                <tr>
+                  @for (column of columns(report.rows); track column) {
+                    <td>{{ row[column] }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+          <p>
+            <strong>
+              {{ 'GL.BUDGET' | translate }}: {{ report.totals.budget | money: currency() }} -
+              {{ 'GL.ACTUAL' | translate }}: {{ report.totals.actual | money: currency() }} -
+              {{ 'GL.COL_VARIANCE' | translate }}: {{ report.totals.variance | money: currency() }}
+            </strong>
+          </p>
+        }
+      </nz-tab>
+      <nz-tab [nzTitle]="'GL.BUDGET_FORECAST' | translate">
+        @if (forecast(); as report) {
+          <p>
+            <nz-tag>{{ report.method }}</nz-tag>
+          </p>
+          <nz-table nzSize="small" [nzData]="report.rows" [nzShowPagination]="false">
+            <thead>
+              <tr>
+                @for (column of columns(report.rows); track column) {
+                  <th>{{ column }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of report.rows; track $index) {
+                <tr>
+                  @for (column of columns(report.rows); track column) {
+                    <td>{{ row[column] }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+          <p>
+            <strong>
+              {{ 'GL.FORECAST_ACTUAL' | translate }}: {{ report.totals.actual_to_date | money: currency() }} -
+              {{ 'GL.FORECAST_REMAINING' | translate }}: {{ report.totals.forecast_remaining | money: currency() }} -
+              {{ 'GL.FORECAST_FULL_YEAR' | translate }}: {{ report.totals.full_year_forecast | money: currency() }} -
+              {{ 'GL.BUDGET' | translate }}: {{ report.totals.full_year_budget | money: currency() }}
+            </strong>
+          </p>
+        }
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+}
+
+<nz-modal
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'GL.BUDGET_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="create()"
+  (nzOnCancel)="modalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="bd-name">{{ 'GL.COL_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <input id="bd-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="bd-notes">{{ 'GL.NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea id="bd-notes" nz-input rows="3" formControlName="notes"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

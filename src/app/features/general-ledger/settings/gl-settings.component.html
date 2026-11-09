@@ -1,0 +1,61 @@
+<form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
+  <nz-card [nzTitle]="'GL.SETTINGS_POSTING_ACCOUNTS' | translate" [nzLoading]="loading()">
+    <p>{{ 'GL.SETTINGS_POSTING_HINT' | translate }}</p>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 16px" />
+    }
+    <div formGroupName="posting_accounts" class="settings-grid">
+      @for (role of roles; track role) {
+        <nz-form-item>
+          <nz-form-label [nzFor]="'role-' + role">{{ roleLabelKey(role) | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select
+              [id]="'role-' + role"
+              [formControlName]="role"
+              nzShowSearch
+              nzAllowClear
+              [nzPlaceHolder]="'GL.SETTINGS_NO_ACCOUNT' | translate"
+            >
+              @for (account of lookups.accounts(); track account.id) {
+                <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+              }
+            </nz-select>
+            @if (sourceOf(role); as source) {
+              <nz-tag>{{ source }}</nz-tag>
+            }
+          </nz-form-control>
+        </nz-form-item>
+      }
+    </div>
+  </nz-card>
+
+  <nz-card [nzTitle]="'GL.SETTINGS_FOUR_EYES' | translate" style="margin-top: 16px">
+    <p>{{ 'GL.SETTINGS_FOUR_EYES_HINT' | translate }}</p>
+    <nz-form-item>
+      <nz-form-label nzFor="approval-required">{{ 'GL.SETTINGS_APPROVAL_REQUIRED' | translate }}</nz-form-label>
+      <nz-form-control>
+        <nz-switch id="approval-required" formControlName="manual_journal_approval_required" />
+      </nz-form-control>
+    </nz-form-item>
+    @if (form.controls.manual_journal_approval_required.value) {
+      <nz-form-item>
+        <nz-form-label nzFor="approval-threshold">{{ 'GL.SETTINGS_APPROVAL_THRESHOLD' | translate }}</nz-form-label>
+        <nz-form-control [nzExtra]="'GL.SETTINGS_APPROVAL_THRESHOLD_HINT' | translate">
+          <nz-input-number
+            id="approval-threshold"
+            formControlName="manual_journal_approval_threshold"
+            [nzMin]="0"
+            [nzStep]="100"
+            [nzPrecision]="2"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    }
+  </nz-card>
+
+  @if (canWrite) {
+    <div style="margin-top: 16px">
+      <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'GL.SAVE' | translate }}</button>
+    </div>
+  }
+</form>

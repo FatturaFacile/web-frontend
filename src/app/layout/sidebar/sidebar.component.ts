@@ -129,6 +129,12 @@ export class SidebarComponent {
           module: 'ledger',
         },
         {
+          key: 'NAV.GENERAL_LEDGER',
+          icon: 'fa-solid fa-book',
+          route: '/general-ledger',
+          module: 'ledger',
+        },
+        {
           key: 'NAV.PEOPLE',
           icon: 'fa-solid fa-people-group',
           children: [
