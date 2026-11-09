@@ -1,0 +1,160 @@
+export interface HospitalityRoom {
+  id: string;
+  name: string;
+  sort_order?: number | null;
+  width?: number | null;
+  height?: number | null;
+  tables_count?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HospitalityRoomRequest {
+  name: string;
+  sort_order?: number;
+  width?: number;
+  height?: number;
+}
+
+export type HospitalityTableShape = 'rect' | 'round';
+export type HospitalityTableStatus = 'free' | 'occupied' | 'reserved' | 'billing';
+
+export interface HospitalityTable {
+  id: string;
+  room_id: string;
+  room_name?: string | null;
+  name: string;
+  seats: number;
+  shape: HospitalityTableShape;
+  pos_x?: number | null;
+  pos_y?: number | null;
+  width?: number | null;
+  height?: number | null;
+  is_active: boolean;
+  status?: HospitalityTableStatus;
+  current_order_id?: string | null;
+}
+
+export interface HospitalityTableRequest {
+  name: string;
+  seats: number;
+  shape?: HospitalityTableShape;
+  pos_x?: number;
+  pos_y?: number;
+  width?: number;
+  height?: number;
+  is_active?: boolean;
+}
+
+export type HospitalityOrderStatus = 'open' | 'fired' | 'billed' | 'paid' | 'cancelled';
+export type HospitalityItemStatus = 'pending' | 'fired' | 'preparing' | 'ready' | 'served' | 'voided';
+
+export interface HospitalityOrderItem {
+  id: string;
+  order_id: string;
+  product_id?: string | null;
+  name: string;
+  quantity: number;
+  unit_price: string;
+  subtotal: string;
+  course: number;
+  status: HospitalityItemStatus;
+  notes?: string | null;
+}
+
+export interface HospitalityOrder {
+  id: string;
+  order_number: string;
+  table_id: string;
+  table_name?: string | null;
+  room_name?: string | null;
+  covers: number;
+  status: HospitalityOrderStatus;
+  currency: string;
+  total_amount: string;
+  notes?: string | null;
+  items?: HospitalityOrderItem[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HospitalityOrderRequest {
+  table_id: string;
+  covers: number;
+  notes?: string;
+}
+
+export interface HospitalityItemPayload {
+  product_id?: string;
+  name: string;
+  quantity: number;
+  unit_price: string;
+  course?: number;
+  notes?: string;
+}
+
+export interface HospitalityItemsRequest {
+  items: HospitalityItemPayload[];
+}
+
+export interface HospitalityFireRequest {
+  course?: number;
+}
+
+export interface HospitalityMoveRequest {
+  table_id: string;
+}
+
+export interface HospitalityVoidRequest {
+  reason?: string;
+}
+
+export interface HospitalityPaymentRequest {
+  pos_session_id?: string;
+  payment_method: string;
+  cash_amount?: number;
+  cash_tendered?: number;
+  contact_id?: string;
+}
+
+export type KitchenTicketStatus = 'queued' | 'preparing' | 'ready' | 'served';
+
+export interface HospitalityKitchenTicket {
+  id: string;
+  order_id: string;
+  order_number: string;
+  table_name: string;
+  course: number;
+  status: KitchenTicketStatus;
+  items: { name: string; quantity: number; notes?: string }[];
+  created_at: string;
+}
+
+export type ReservationStatus = 'confirmed' | 'seated' | 'cancelled' | 'no_show';
+
+export interface HospitalityReservation {
+  id: string;
+  table_id?: string | null;
+  table_name?: string | null;
+  guest_name: string;
+  guest_phone?: string | null;
+  guest_email?: string | null;
+  party_size: number;
+  starts_at: string;
+  duration_minutes: number;
+  status: ReservationStatus;
+  notes?: string | null;
+  created_at?: string;
+}
+
+export interface HospitalityReservationRequest {
+  table_id?: string;
+  contact_id?: string;
+  guest_name: string;
+  guest_phone?: string;
+  guest_email?: string;
+  party_size: number;
+  starts_at: string;
+  duration_minutes: number;
+  notes?: string;
+}

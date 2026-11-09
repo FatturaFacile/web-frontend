@@ -248,6 +248,12 @@ export class SidebarComponent {
           module: 'manufacturing',
         },
         {
+          key: 'NAV.HOSPITALITY',
+          icon: 'fa-solid fa-utensils',
+          route: '/hospitality',
+          module: 'hospitality',
+        },
+        {
           key: 'NAV.RETAIL',
           icon: 'fa-solid fa-cash-register',
           route: '/retail',
