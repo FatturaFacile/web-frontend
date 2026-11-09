@@ -84,6 +84,12 @@ export class SidebarComponent {
           children: [
             { key: 'NAV.CLIENTS', route: '/crm/clients', icon: 'fa-solid fa-address-book', module: 'crm' },
             { key: 'NAV.SUPPLIERS', route: '/crm/suppliers', icon: 'fa-solid fa-truck-field', module: 'crm' },
+            { key: 'NAV.CRMX_ACTIVITIES', route: '/crm/engagement/activities', icon: 'fa-solid fa-list-check', module: 'crm' },
+            { key: 'NAV.CRMX_ACCOUNTS', route: '/crm/engagement/accounts', icon: 'fa-solid fa-building', module: 'crm' },
+            { key: 'NAV.CRMX_SEGMENTS', route: '/crm/engagement/segments', icon: 'fa-solid fa-filter', module: 'crm' },
+            { key: 'NAV.CRMX_CAMPAIGNS', route: '/crm/engagement/campaigns', icon: 'fa-solid fa-bullhorn', module: 'crm' },
+            { key: 'NAV.CRMX_SCORING', route: '/crm/engagement/scoring', icon: 'fa-solid fa-star-half-stroke', module: 'crm' },
+            { key: 'NAV.CRMX_REPORTS', route: '/crm/engagement/reports', icon: 'fa-solid fa-chart-pie', module: 'crm' },
           ],
         },
         {
