@@ -33,9 +33,22 @@
         @if (config().canWrite || config().rowActions) {
           <td>
             @for (action of config().rowActions; track action.labelKey) {
-              <button nz-button nzSize="small" type="button" (click)="action.run(row)">
-                {{ action.labelKey | translate }}
-              </button>
+              @if ((!action.visible || action.visible(row)) && (!action.writeOnly || config().canWrite)) {
+                @if (action.input; as prompt) {
+                  <app-reason-button
+                    [labelKey]="action.labelKey"
+                    [fieldLabelKey]="prompt.labelKey"
+                    [kind]="prompt.kind"
+                    [options]="prompt.options?.() ?? []"
+                    [optional]="prompt.optional ?? false"
+                    (confirmed)="runAction(action, row, $event)"
+                  />
+                } @else {
+                  <button nz-button nzSize="small" type="button" (click)="runAction(action, row)">
+                    {{ action.labelKey | translate }}
+                  </button>
+                }
+              }
             }
             @if (config().canWrite && !isReadonly(row)) {
               @if (config().update) {

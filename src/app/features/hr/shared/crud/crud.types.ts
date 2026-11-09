@@ -30,6 +30,18 @@ export interface CrudField {
   defaultValue?: string | boolean;
 }
 
+export interface CrudRowAction<T> {
+  labelKey: string;
+  /** Receives the typed value when `input` is set (reason or decimal). */
+  run: (row: T, value?: string) => void | Observable<unknown>;
+  /** Hides the action for some rows (e.g. already completed). */
+  visible?: (row: T) => boolean;
+  /** Asks for a value before running: `reason` (mandatory text) or `decimal` (optional number). */
+  input?: { labelKey: string; kind: 'reason' | 'decimal' | 'date' | 'select'; optional?: boolean; options?: () => CrudOption[] };
+  /** Needs write permission (default true when the config is writable only). */
+  writeOnly?: boolean;
+}
+
 export interface CrudConfig<T extends { id: string }> {
   titleKey: string;
   fields: CrudField[];
@@ -44,5 +56,5 @@ export interface CrudConfig<T extends { id: string }> {
   /** Write actions are hidden when false (permission). */
   canWrite: boolean;
   /** Extra buttons per row (e.g. open a detail drawer). */
-  rowActions?: { labelKey: string; run: (row: T) => void }[];
+  rowActions?: CrudRowAction<T>[];
 }
