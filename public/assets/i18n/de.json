@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Kundendienst & Einsätze",
   "NAV.FLEET": "Flottenplanung",
   "NAV.HR": "Lohnabrechnung & HR IT-CH",
+  "NAV.HR_SHIFTS": "Schichtplanung",
   "NAV.HR_RECRUITING": "Rekrutierung",
   "NAV.HR_TALENT": "Talente und Weiterbildung",
   "NAV.HR_PAYROLL": "Lohnabrechnung",
@@ -3208,5 +3209,51 @@
     "onboarding": "Laufendes Onboarding",
     "tasks": "Aufgaben",
     "completeTask": "Erledigt"
+  },
+  "hrmShift": {
+    "title": "Schichtplanung",
+    "subtitle": "Übersicht, Schichtarten, Sequenzen, Ausnahmen und Personalbedarf",
+    "board": "Übersicht",
+    "place": "Schicht eintragen",
+    "types": "Schichtarten",
+    "sequences": "Sequenzen",
+    "assignments": "Sequenzzuweisungen",
+    "exceptions": "Ausnahmen",
+    "staffing": "Personalbedarf",
+    "generate": "Entwürfe erzeugen",
+    "generated": "Entwürfe erzeugt",
+    "publish": "Veröffentlichen",
+    "published": "Schichten veröffentlicht",
+    "myShifts": "Meine Schichten",
+    "absencePlan": "Abwesenheitsplan",
+    "shifts": "Schichten",
+    "shiftType": "Schichtart",
+    "sequence": "Sequenz",
+    "startTime": "Beginn (HH:MM)",
+    "endTime": "Ende (HH:MM)",
+    "breakMinutes": "Pause (Minuten)",
+    "paidAbsence": "Bezahlte Abwesenheit",
+    "pattern": "Muster",
+    "steps": "Schritte (Schichtcodes durch Komma getrennt, \"-\" für frei)",
+    "skipHolidays": "Feiertage überspringen",
+    "offsetDays": "Versatztage",
+    "dayKind": "Tagesart",
+    "requiredCount": "Benötigte Anzahl",
+    "category": {
+      "working": "Arbeit",
+      "absence": "Abwesenheit",
+      "on_call": "Pikett"
+    },
+    "patternValue": {
+      "rotation": "Rotation",
+      "weekly_without_sunday": "Wöchentlich ohne Sonntag",
+      "weekly_without_weekend": "Wöchentlich ohne Wochenende",
+      "manual": "Manuell"
+    },
+    "dayKindValue": {
+      "weekday": "Werktag",
+      "weekend": "Wochenende",
+      "holiday": "Feiertag"
+    }
   }
 }

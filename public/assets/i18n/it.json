@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Assistenza & Interventi",
   "NAV.FLEET": "Planning Flotta",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_SHIFTS": "Pianificazione turni",
   "NAV.HR_RECRUITING": "Selezione del personale",
   "NAV.HR_TALENT": "Talenti e formazione",
   "NAV.HR_PAYROLL": "Payroll",
@@ -3264,5 +3265,51 @@
     "onboarding": "Onboarding in corso",
     "tasks": "Attività",
     "completeTask": "Completa"
+  },
+  "hrmShift": {
+    "title": "Pianificazione turni",
+    "subtitle": "Tabellone, tipi di turno, sequenze, eccezioni e fabbisogni",
+    "board": "Tabellone",
+    "place": "Inserisci turno",
+    "types": "Tipi di turno",
+    "sequences": "Sequenze",
+    "assignments": "Assegnazione sequenze",
+    "exceptions": "Eccezioni",
+    "staffing": "Fabbisogni di personale",
+    "generate": "Genera bozze",
+    "generated": "Bozze generate",
+    "publish": "Pubblica",
+    "published": "Turni pubblicati",
+    "myShifts": "I miei turni",
+    "absencePlan": "Piano assenze",
+    "shifts": "Turni",
+    "shiftType": "Tipo di turno",
+    "sequence": "Sequenza",
+    "startTime": "Inizio (HH:MM)",
+    "endTime": "Fine (HH:MM)",
+    "breakMinutes": "Pausa (minuti)",
+    "paidAbsence": "Assenza retribuita",
+    "pattern": "Schema",
+    "steps": "Passi (codici turno separati da virgola, \"-\" per riposo)",
+    "skipHolidays": "Salta i festivi",
+    "offsetDays": "Giorni di sfasamento",
+    "dayKind": "Tipo di giorno",
+    "requiredCount": "Persone richieste",
+    "category": {
+      "working": "Lavoro",
+      "absence": "Assenza",
+      "on_call": "Reperibilità"
+    },
+    "patternValue": {
+      "rotation": "Rotazione",
+      "weekly_without_sunday": "Settimanale senza domenica",
+      "weekly_without_weekend": "Settimanale senza weekend",
+      "manual": "Manuale"
+    },
+    "dayKindValue": {
+      "weekday": "Feriale",
+      "weekend": "Weekend",
+      "holiday": "Festivo"
+    }
   }
 }
