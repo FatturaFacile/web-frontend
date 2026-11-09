@@ -36,6 +36,7 @@ Last updated: 2026-11-09
 | **18** | **Final Polish & Dashboards** | 15 | 15 | Executive Dashboard KPIs, Cash Flow & Tax Deadlines, Global Search, Accessibility & WCAG AA audits, Full test suite | 3 | **Done** | Covered `/v1/dashboard/kpi-summary`, `/v1/dashboard/cash-flow-forecast`, `/v1/dashboard/tax-deadlines`, 77/77 test suites passing (444 unit tests) |
 | **19** | **Customs & Logistics (/customs)** | 66 | 66 | Customs Dossiers, Declarations, Assessment Decisions (eVV), Tariff Grids, Shipments, Profitability | 10 | **Done** | Covered /customs/dossiers, /customs/declarations, /customs/assessment-decisions, /customs/tariff-grids, /customs/shipment-requests |
 | **20** | **Approval Workflows (/workflows)** | 23 | 23 | Tasks Inbox, Running Instances, Process Definitions, Out-of-Office Delegations, Escalation Rules, SLA Metrics, SHA-256 Audit Trail | 12 | **Done** | Covered /workflows/my-tasks, /workflows/my-pending, /workflows/steps/{id}/decide, /workflows/instances, /workflows/definitions, /workflows/delegations, /workflows/escalation-rules, /workflows/sla-report |
+| **21** | **Document Management (/dms)** | 37 | 37 | Document Explorer, Folders Hierarchy, SHA-256 Versioning, Legal Hold, OCR Extractions, Linked ERP Entities, Retention Policies | 11 | **Done** | Covered /dms/documents, /dms/folders, /dms/tags, /dms/retention-policies, /dms/documents/{id}/versions, /dms/documents/{id}/check-out, /dms/documents/{id}/legal-hold, /dms/documents/{id}/links, /dms/documents/{id}/extractions, /dms/ai-settings |
 
 ---
 
@@ -62,4 +63,4 @@ Last updated: 2026-11-09
 
 ---
 
-### Overall Status: 20 ERP MODULES FULLY IMPLEMENTED & TESTED (467/467 tests passing, ng build passing)
+### Overall Status: 21 ERP MODULES FULLY IMPLEMENTED & TESTED (478/478 tests passing, ng build passing)
