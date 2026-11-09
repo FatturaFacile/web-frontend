@@ -1,0 +1,392 @@
+<app-page-header
+  [title]="'APPOINTMENTS.TITLE' | translate"
+  [subtitle]="'APPOINTMENTS.SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <span nz-icon nzType="plus"></span>
+      {{ 'APPOINTMENTS.NEW_APPOINTMENT' | translate }}
+    </button>
+  </div>
+</app-page-header>
+
+<!-- STATS SUMMARY -->
+<div class="stats-grid">
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalUpcoming()"
+      [nzTitle]="'APPOINTMENTS.UPCOMING' | translate"
+      [nzPrefix]="upcomingIcon"
+    ></nz-statistic>
+    <ng-template #upcomingIcon><span nz-icon nzType="clock-circle"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalCompleted()"
+      [nzTitle]="'APPOINTMENTS.COMPLETED' | translate"
+      [nzPrefix]="doneIcon"
+    ></nz-statistic>
+    <ng-template #doneIcon><span nz-icon nzType="check-circle"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalCancelled()"
+      [nzTitle]="'APPOINTMENTS.CANCELLED' | translate"
+      [nzPrefix]="cancelIcon"
+    ></nz-statistic>
+    <ng-template #cancelIcon><span nz-icon nzType="close-circle"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="appointments().length"
+      [nzTitle]="'APPOINTMENTS.TOTAL' | translate"
+      [nzPrefix]="totalIcon"
+    ></nz-statistic>
+    <ng-template #totalIcon><span nz-icon nzType="calendar"></span></ng-template>
+  </nz-card>
+</div>
+
+<nz-card class="main-card">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 0: CALENDAR -->
+    <nz-tab [nzTitle]="'APPOINTMENTS.TAB_CALENDAR' | translate">
+      <div class="tab-toolbar">
+        <button nz-button (click)="loadCalendar()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'APPOINTMENTS.REFRESH' | translate }}
+        </button>
+      </div>
+
+      <div class="calendar-wrapper">
+        <nz-calendar
+          [ngModel]="selectedCalendarDate()"
+          (ngModelChange)="selectedCalendarDate.set($event)"
+        >
+          <ul *nzDateCell="let date" class="events">
+            @for (item of getEventsForDate(date); track item.id) {
+              <li>
+                <nz-tag nzColor="blue" class="cal-event-tag">
+                  {{ item.title }}
+                </nz-tag>
+              </li>
+            }
+          </ul>
+        </nz-calendar>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 1: LIST VIEW -->
+    <nz-tab [nzTitle]="'APPOINTMENTS.TAB_LIST' | translate">
+      <div class="tab-toolbar">
+        <div class="filters">
+          <input
+            nz-input
+            type="date"
+            [ngModel]="filterDate()"
+            (ngModelChange)="filterDate.set($event); loadAppointments()"
+            style="width: 150px"
+          />
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadAppointments()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'APPOINTMENTS.REFRESH' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="openCreateModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'APPOINTMENTS.NEW_APPOINTMENT' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #appTable
+        [nzData]="appointments()"
+        [nzLoading]="appointmentsLoading()"
+        nzSize="middle"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'APPOINTMENTS.TITLE_COL' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.CONTACT' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.STARTS_AT' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.ENDS_AT' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.STATUS' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.ADDRESS' | translate }}</th>
+            <th>{{ 'APPOINTMENTS.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (app of appTable.data; track app.id) {
+            <tr>
+              <td>
+                <button nz-button nzType="link" (click)="openAppointmentDrawer(app)">
+                  {{ app.title }}
+                </button>
+                @if (app.appointment_number) {
+                  <span class="app-num">#{{ app.appointment_number }}</span>
+                }
+              </td>
+              <td>{{ app.contact?.name || app.contact_id || '-' }}</td>
+              <td>{{ app.starts_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ app.ends_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <nz-tag [nzColor]="getStatusBadgeColor(app)">
+                  {{ getStatusLabel(app) }}
+                </nz-tag>
+              </td>
+              <td>{{ app.address || '-' }}</td>
+              <td>
+                <nz-space>
+                  <button *nzSpaceItem nz-button nzSize="small" (click)="openAppointmentDrawer(app)">
+                    <span nz-icon nzType="eye"></span>
+                  </button>
+                  @if (!app.cancelled_at && !app.service_report_id) {
+                    <button *nzSpaceItem nz-button nzSize="small" (click)="convertToServiceReport(app)">
+                      <span nz-icon nzType="form"></span>
+                      {{ 'APPOINTMENTS.REPORT' | translate }}
+                    </button>
+                    <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="openCancelModal(app)">
+                      {{ 'APPOINTMENTS.CANCEL' | translate }}
+                    </button>
+                  }
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzSize="small"
+                    nzType="text"
+                    nzDanger
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'APPOINTMENTS.CONFIRM_DELETE' | translate"
+                    (nzOnConfirm)="deleteAppointment(app)"
+                  >
+                    <span nz-icon nzType="delete"></span>
+                  </button>
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 2: CONFLICT CHECKER -->
+    <nz-tab [nzTitle]="'APPOINTMENTS.TAB_CONFLICTS' | translate">
+      <nz-card [nzTitle]="'APPOINTMENTS.CHECK_AVAILABILITY' | translate" class="sub-card">
+        <form nz-form [formGroup]="conflictForm" (ngSubmit)="runConflictCheck()" nzLayout="vertical">
+          <div class="form-row-3">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'APPOINTMENTS.TECHNICIAN_USER_ID' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+                <input nz-input formControlName="user_id" placeholder="UUID Tecnico / Risorsa" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'APPOINTMENTS.STARTS_AT' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+                <input nz-input type="datetime-local" formControlName="starts_at" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'APPOINTMENTS.ENDS_AT' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+                <input nz-input type="datetime-local" formControlName="ends_at" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <button nz-button nzType="primary" [nzLoading]="conflictChecking()" (click)="runConflictCheck()">
+            <span nz-icon nzType="search"></span>
+            {{ 'APPOINTMENTS.VERIFY_CONFLICTS' | translate }}
+          </button>
+        </form>
+
+        @if (conflictResult(); as res) {
+          <div class="conflict-result">
+            @if (res.has_conflicts) {
+              <nz-alert
+                nzType="error"
+                [nzMessage]="'APPOINTMENTS.CONFLICTS_FOUND' | translate"
+                [nzDescription]="'APPOINTMENTS.CONFLICTS_FOUND_DESC' | translate"
+                nzShowIcon
+              ></nz-alert>
+            } @else {
+              <nz-alert
+                nzType="success"
+                [nzMessage]="'APPOINTMENTS.NO_CONFLICTS' | translate"
+                [nzDescription]="'APPOINTMENTS.NO_CONFLICTS_DESC' | translate"
+                nzShowIcon
+              ></nz-alert>
+            }
+          </div>
+        }
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- APPOINTMENT DETAILS DRAWER -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="580"
+  [nzTitle]="'APPOINTMENTS.DETAILS' | translate"
+  (nzOnClose)="closeAppointmentDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedAppointment(); as app) {
+      <nz-descriptions nzBordered [nzColumn]="1" nzSize="small" style="margin-bottom: 16px">
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.TITLE_COL' | translate">
+          <strong>{{ app.title }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.STATUS' | translate">
+          <nz-tag [nzColor]="getStatusBadgeColor(app)">
+            {{ getStatusLabel(app) }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.STARTS_AT' | translate">
+          {{ app.starts_at | date: 'dd/MM/yyyy HH:mm' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.ENDS_AT' | translate">
+          {{ app.ends_at | date: 'dd/MM/yyyy HH:mm' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.CONTACT' | translate">
+          {{ app.contact?.name || app.contact_id || '-' }}
+          @if (app.contact?.phone) {
+            <span>({{ app.contact?.phone }})</span>
+          }
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'APPOINTMENTS.ADDRESS' | translate">
+          {{ app.address || '-' }}
+        </nz-descriptions-item>
+        @if (app.service_report_id) {
+          <nz-descriptions-item [nzTitle]="'APPOINTMENTS.REPORT' | translate">
+            <span nz-icon nzType="check-circle" style="color: #52c41a"></span>
+            #{{ app.service_report_id }}
+          </nz-descriptions-item>
+        }
+        @if (app.cancellation_reason) {
+          <nz-descriptions-item [nzTitle]="'APPOINTMENTS.CANCELLATION_REASON' | translate">
+            <span class="text-danger">{{ app.cancellation_reason }}</span>
+          </nz-descriptions-item>
+        }
+      </nz-descriptions>
+
+      @if (app.description) {
+        <div class="desc-box">
+          <h4>{{ 'APPOINTMENTS.DESCRIPTION' | translate }}</h4>
+          <p>{{ app.description }}</p>
+        </div>
+      }
+
+      @if (app.attendees && app.attendees.length > 0) {
+        <h4>{{ 'APPOINTMENTS.ATTENDEES' | translate }}</h4>
+        <nz-table
+          #attTable
+          [nzData]="app.attendees"
+          nzSize="small"
+          [nzShowPagination]="false"
+          [nzBordered]="true"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'APPOINTMENTS.USER' | translate }}</th>
+              <th>{{ 'APPOINTMENTS.ROLE' | translate }}</th>
+              <th>{{ 'APPOINTMENTS.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (att of attTable.data; track att.id || att.user_id) {
+              <tr>
+                <td>{{ att.user?.name || att.user_id }}</td>
+                <td>{{ att.role || 'technician' }}</td>
+                <td>{{ att.status || 'pending' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+
+      <div class="drawer-actions">
+        @if (!app.cancelled_at && !app.service_report_id) {
+          <button nz-button nzType="primary" (click)="convertToServiceReport(app)">
+            <span nz-icon nzType="form"></span>
+            {{ 'APPOINTMENTS.CONVERT_TO_REPORT' | translate }}
+          </button>
+          <button nz-button nzDanger (click)="openCancelModal(app)">
+            {{ 'APPOINTMENTS.CANCEL' | translate }}
+          </button>
+        }
+      </div>
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- MODAL: NEW APPOINTMENT -->
+<nz-modal
+  [(nzVisible)]="appointmentModalVisible"
+  [nzTitle]="'APPOINTMENTS.NEW_APPOINTMENT' | translate"
+  (nzOnCancel)="appointmentModalVisible.set(false)"
+  (nzOnOk)="saveAppointment()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="appointmentForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'APPOINTMENTS.TITLE_COL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+          <input nz-input formControlName="title" placeholder="Es. Sopralluogo impianto elettrico" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'APPOINTMENTS.STARTS_AT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+            <input nz-input type="datetime-local" formControlName="starts_at" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'APPOINTMENTS.ENDS_AT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+            <input nz-input type="datetime-local" formControlName="ends_at" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ 'APPOINTMENTS.CONTACT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="contact_id" placeholder="ID o codice cliente" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'APPOINTMENTS.ADDRESS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="address" placeholder="Via Roma 10, Milano" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'APPOINTMENTS.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CANCEL APPOINTMENT -->
+<nz-modal
+  [(nzVisible)]="cancelModalVisible"
+  [nzTitle]="'APPOINTMENTS.CANCEL_APPOINTMENT' | translate"
+  (nzOnCancel)="cancelModalVisible.set(false)"
+  (nzOnOk)="saveCancel()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="cancelForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'APPOINTMENTS.CANCELLATION_REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+          <textarea nz-input formControlName="reason" rows="3" placeholder="Es. Richiesta spostamento data dal cliente"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
