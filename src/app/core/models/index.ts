@@ -48,3 +48,4 @@ export * from './workspace.model';
 export * from './general-ledger.model';
 export * from './treasury-ops.model';
 export * from './eam-ops.model';
+export * from './project-control.model';
