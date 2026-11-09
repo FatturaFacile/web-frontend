@@ -51,6 +51,8 @@ import {
   ClockCircleOutline,
   CalculatorOutline,
   StopOutline,
+  WalletOutline,
+  CheckSquareOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -106,4 +108,6 @@ export const icons = [
   ClockCircleOutline,
   CalculatorOutline,
   StopOutline,
+  WalletOutline,
+  CheckSquareOutline,
 ];

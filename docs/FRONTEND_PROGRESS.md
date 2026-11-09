@@ -43,6 +43,7 @@ Last updated: 2026-11-09
 | **25** | **Childcare & Early Childhood Education (/childcare)** | 41 | 41 | Children Registry, Groups & Sections, Daily Attendance Register, Daily Log Diary, Fee Plans & Monthly Billing, Document Requirements & Digital Signature | 12 | **Done** | Covered /childcare/children, /groups, /attendances/check-in/check-out/absence/register, /notes, /daily-report, /fee-plans, /billing/runs, /bills, /document-requirements, /childcare-family |
 | **26** | **Construction Trades & Cantieri Edili (/construction & /construction-trades)** | 37 | 37 | Sites, Progress Billings (SAL), Tender Bids, Bill of Quantities & Measurements, Site Diary, Safety Documents (POS/DURC), Subcontracts & Certifications | 9 | **Done** | Covered /construction/sites, /sal, /construction-trades/bids, /positions, /measurements, /billings, /site-costs, /budget-control, /sites/{id}/diary, /sites/{id}/documents, /subcontractors, /subcontracts |
 | **27** | **Hospitality & POS Comande (/hospitality)** | 20 | 20 | Dining Rooms & Tables Layout, Table Orders, Kitchen Display System (KDS), Course Firing, Pre-Bill Printing, Order Payment, Reservations & Seating | 16 | **Done** | Covered /hospitality/rooms, /hospitality/rooms/{id}/tables, /hospitality/orders, /hospitality/orders/{id}/items, /hospitality/orders/{id}/fire, /hospitality/orders/{id}/bill, /hospitality/orders/{id}/pay, /hospitality/orders/{id}/move, /hospitality/kitchen-tickets, /hospitality/reservations, /hospitality/reservations/{id}/seat |
+| **28** | **Practice Management & Studi Professionali (/practice & /professionals)** | 16 | 16 | Legal/Fiscal Cases, Unbilled Activity Control & Time Logs, Fee Notes from Activities, Client Trust Retainers & Balances, Period Closings & Checklists | 14 | **Done** | Covered /professionals/cases, /professionals/time-logs, /professionals/fee-notes, /practice/activity-control, /practice/fee-notes/from-activities, /practice/fee-notes/{id}/activities, /practice/closing-overview, /practice/closings, /practice/closings/{id}/checklist, /practice/closings/{id}/close, /practice/closings/{id}/reopen, /practice/retainers, /practice/retainers/balances, /practice/retainers/{id}/apply, /practice/retainers/{id}/void, /practice/fee-notes/{id}/retainers |
 
 ---
 
@@ -75,7 +76,8 @@ Last updated: 2026-11-09
 25. `[DONE]` **Module 25: Childcare & Early Childhood Education (`/childcare`)**
 26. `[DONE]` **Module 26: Construction Trades & Cantieri Edili (`/construction`)**
 27. `[DONE]` **Module 27: Hospitality & POS Comande (`/hospitality`)**
+28. `[DONE]` **Module 28: Practice Management & Studi Professionali (`/practice` & `/professionals`)**
 
 ---
 
-### Overall Status: 27 ERP MODULES FULLY IMPLEMENTED & TESTED (549/549 tests passing, ng build passing)
+### Overall Status: 28 ERP MODULES FULLY IMPLEMENTED & TESTED (561/561 tests passing, ng build passing)

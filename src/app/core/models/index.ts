@@ -33,3 +33,4 @@ export * from './associations.model';
 export * from './workshop.model';
 export * from './childcare.model';
 export * from './hospitality.model';
+export * from './practice.model';
