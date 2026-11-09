@@ -42,6 +42,7 @@ Last updated: 2026-11-09
 | **24** | **Automotive Workshop & Job Cards (/automotive/workshop)** | 18 | 18 | Repair Orders, Job Lines & Spare Parts, Mechanic Time Tracking & Billing, Vehicle History, Vehicle Stock & Sales, Scheduled Maintenance | 13 | **Done** | Covered /workshop/folders, /workshop/folders/{id}/lines, /workshop/folders/{id}/status, quote/DDT/invoice conversions, /time-entries, /vehicle-stock, /recurring-services |
 | **25** | **Childcare & Early Childhood Education (/childcare)** | 41 | 41 | Children Registry, Groups & Sections, Daily Attendance Register, Daily Log Diary, Fee Plans & Monthly Billing, Document Requirements & Digital Signature | 12 | **Done** | Covered /childcare/children, /groups, /attendances/check-in/check-out/absence/register, /notes, /daily-report, /fee-plans, /billing/runs, /bills, /document-requirements, /childcare-family |
 | **26** | **Construction Trades & Cantieri Edili (/construction & /construction-trades)** | 37 | 37 | Sites, Progress Billings (SAL), Tender Bids, Bill of Quantities & Measurements, Site Diary, Safety Documents (POS/DURC), Subcontracts & Certifications | 9 | **Done** | Covered /construction/sites, /sal, /construction-trades/bids, /positions, /measurements, /billings, /site-costs, /budget-control, /sites/{id}/diary, /sites/{id}/documents, /subcontractors, /subcontracts |
+| **27** | **Hospitality & POS Comande (/hospitality)** | 20 | 20 | Dining Rooms & Tables Layout, Table Orders, Kitchen Display System (KDS), Course Firing, Pre-Bill Printing, Order Payment, Reservations & Seating | 16 | **Done** | Covered /hospitality/rooms, /hospitality/rooms/{id}/tables, /hospitality/orders, /hospitality/orders/{id}/items, /hospitality/orders/{id}/fire, /hospitality/orders/{id}/bill, /hospitality/orders/{id}/pay, /hospitality/orders/{id}/move, /hospitality/kitchen-tickets, /hospitality/reservations, /hospitality/reservations/{id}/seat |
 
 ---
 
@@ -73,7 +74,8 @@ Last updated: 2026-11-09
 24. `[DONE]` **Module 24: Automotive Workshop & Job Cards (`/automotive/workshop`)**
 25. `[DONE]` **Module 25: Childcare & Early Childhood Education (`/childcare`)**
 26. `[DONE]` **Module 26: Construction Trades & Cantieri Edili (`/construction`)**
+27. `[DONE]` **Module 27: Hospitality & POS Comande (`/hospitality`)**
 
 ---
 
-### Overall Status: 26 ERP MODULES FULLY IMPLEMENTED & TESTED (533/533 tests passing, ng build passing)
+### Overall Status: 27 ERP MODULES FULLY IMPLEMENTED & TESTED (549/549 tests passing, ng build passing)

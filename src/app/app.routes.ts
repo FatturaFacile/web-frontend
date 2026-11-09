@@ -220,6 +220,13 @@ export const routes: Routes = [
       import('./features/manufacturing/manufacturing.routes').then((m) => m.MANUFACTURING_ROUTES),
   },
   {
+    path: 'hospitality',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Ristorazione & Hospitality', title: 'Hospitality & Comande' },
+    loadChildren: () =>
+      import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
+  },
+  {
     path: 'retail',
     canActivate: [authGuard],
     data: { breadcrumb: 'Vendita al Banco & POS', title: 'POS' },
