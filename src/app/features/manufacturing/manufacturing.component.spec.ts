@@ -32,9 +32,9 @@ describe('ManufacturingComponent', () => {
     order_number: 'PO-2026-001',
     mfg_item_id: 'item-1',
     status: 'planned',
-    target_quantity: 10,
-    completed_quantity: 0,
-    scrapped_quantity: 0,
+    target_quantity: '10.0000',
+    completed_quantity: '0.0000',
+    scrapped_quantity: '0.0000',
     uom: 'PZ',
     planned_start_date: '2026-04-01T08:00:00Z',
     planned_end_date: '2026-04-05T17:00:00Z',
@@ -47,7 +47,7 @@ describe('ManufacturingComponent', () => {
     name: 'Distinta Base 1',
     revision: 'A',
     status: 'draft',
-    base_quantity: 1,
+    base_quantity: '1.0000',
     uom: 'PZ',
   };
 
@@ -69,8 +69,8 @@ describe('ManufacturingComponent', () => {
     mrp_run_id: 'mrp-1',
     mfg_item_id: 'item-1',
     order_type: 'make',
-    quantity: 10,
-    net_requirement: 10,
+    quantity: '10.0000',
+    net_requirement: '10.0000',
     bom_level: 1,
     uom: 'PZ',
     start_date: '2026-04-01',
@@ -87,11 +87,11 @@ describe('ManufacturingComponent', () => {
     mrp_run_id: 'mrp-1',
     mfg_item_id: 'item-comp-1',
     required_date: '2026-04-05',
-    gross_requirement: 20,
-    available_inventory: 5,
-    scheduled_receipts: 0,
-    safety_stock: 5,
-    net_shortage: 20,
+    gross_requirement: '20.0000',
+    available_inventory: '5.0000',
+    scheduled_receipts: '0.0000',
+    safety_stock: '5.0000',
+    net_shortage: '20.0000',
     recommended_action: 'Emetti Ordine Acquisto',
   };
 
@@ -99,7 +99,7 @@ describe('ManufacturingComponent', () => {
     id: 'wc-1',
     work_center_code: 'WC-01',
     name: 'Linea Assemblaggio',
-    capacity_hours_per_day: 8,
+    capacity_hours_per_day: '8.00',
     status: 'active',
   };
 
@@ -197,6 +197,32 @@ describe('ManufacturingComponent', () => {
 
     component.closeOrder(mockOrder);
     expect(apiService.closeProductionOrder).toHaveBeenCalledWith('po-1');
+  });
+
+  it('cancels a production order only with a reason', () => {
+    component.cancelOrder(mockOrder);
+    expect(component.cancellingOrder()).toEqual(mockOrder);
+
+    component.confirmCancelOrder();
+    expect(apiService.cancelProductionOrder).not.toHaveBeenCalled();
+
+    component.cancelReason.set('Customer withdrew the order');
+    component.confirmCancelOrder();
+    expect(apiService.cancelProductionOrder).toHaveBeenCalledWith('po-1', 'Customer withdrew the order');
+    expect(component.cancellingOrder()).toBeNull();
+  });
+
+  it('looks up the active BOMs of the typed item for the order form', () => {
+    component.openCreateOrderModal();
+    component.onOrderItemChange('not-a-uuid');
+    expect(apiService.getBoms).toHaveBeenCalledTimes(1); // only the initial list load
+
+    const itemId = '9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc';
+    (apiService.getBoms as ReturnType<typeof vi.fn>).mockReturnValueOnce(of({ data: [], meta: { total: 0 } }));
+    component.onOrderItemChange(itemId);
+    expect(apiService.getBoms).toHaveBeenLastCalledWith({ mfg_item_id: itemId, status: 'active', per_page: 50 });
+    expect(component.orderBomsChecked()).toBe(true);
+    expect(component.orderBoms()).toEqual([]);
   });
 
   it('creates and activates a BOM', () => {

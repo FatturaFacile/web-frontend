@@ -54,7 +54,7 @@
           <nz-icon nzType="save" /> {{ 'SC.CREDIT.SAVE_LIMIT' | translate }}
         </button>
       </div>
-      <p class="note">{{ 'SC.CREDIT.RELEASE_HINT' | translate }}</p>
+      <p class="note">{{ 'SC.CREDIT.RELEASE_HINT_LIST' | translate }}</p>
     } @else {
       <p class="note">{{ 'SC.CREDIT.FORBIDDEN' | translate }}</p>
     }
@@ -62,6 +62,52 @@
     <p>{{ 'SC.COMMON.LOADING' | translate }}</p>
   }
 </nz-card>
+
+@if (heldOrders().length) {
+  <nz-card class="section" [nzTitle]="'SC.CREDIT.HELD_ORDERS' | translate">
+    <nz-table [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
+          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th class="num">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+          <th>{{ 'SC.CREDIT.HOLD_REASON' | translate }}</th>
+          <th>{{ 'SC.COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of heldOrders(); track o.id) {
+          <tr>
+            <td>{{ o.order_number }}</td>
+            <td>{{ o.date }}</td>
+            <td class="num">{{ o.total_gross | money: o.currency }}</td>
+            <td>{{ o.credit_hold_reason || '-' }}</td>
+            <td>
+              @if (canManage() && holdIdOf(o)) {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'SC.ORDERS.RELEASE_CONFIRM' | translate"
+                  [nzLoading]="releasingId() === o.id"
+                  (nzOnConfirm)="releaseHold(o)"
+                >
+                  <nz-icon nzType="unlock" /> {{ 'SC.ORDERS.RELEASE_HOLD' | translate }}
+                </button>
+              } @else if (!canManage()) {
+                <small>{{ 'SC.ORDERS.RELEASE_FORBIDDEN' | translate }}</small>
+              } @else {
+                <small>{{ 'SC.CREDIT.HOLD_ID_MISSING' | translate }}</small>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+}
 
 @if (aging().length) {
   <nz-card class="section" [nzTitle]="'SC.CREDIT.AGING' | translate">

@@ -7,16 +7,15 @@
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="entry_number">{{
-          "accounting.form.entryNumber" | translate
+        <nz-form-label nzRequired nzFor="fiscal_period_id">{{
+          "accounting.form.fiscalPeriod" | translate
         }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.entryNumberRequired' | translate">
-          <input
-            nz-input
-            id="entry_number"
-            formControlName="entry_number"
-            [placeholder]="'accounting.form.entryNumberPlaceholder' | translate"
-          />
+        <nz-form-control [nzErrorTip]="'accounting.form.fiscalPeriodRequired' | translate">
+          <nz-select id="fiscal_period_id" formControlName="fiscal_period_id">
+            @for (period of openPeriods(); track period.id) {
+              <nz-option [nzValue]="period.id" [nzLabel]="period.name" />
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
@@ -42,6 +41,34 @@
           />
         </nz-form-control>
       </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <!-- nz-checkbox renders its own input inside the label -->
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-checkbox formControlName="save_as_draft">{{ "accounting.form.saveAsDraft" | translate }}</label>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (form.controls.save_as_draft.value) {
+        <nz-form-item>
+          <nz-form-label nzFor="auto_reverse_on">{{ "accounting.form.autoReverseOn" | translate }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="isAutoReverseInvalid() ? 'error' : ''"
+            [nzErrorTip]="'accounting.errors.autoReverseAfterPosting' | translate"
+            [nzExtra]="'accounting.form.autoReverseHint' | translate"
+          >
+            <nz-date-picker
+              id="auto_reverse_on"
+              formControlName="auto_reverse_on"
+              nzFormat="yyyy-MM-dd"
+              nzAllowClear
+              [nzDisabledDate]="disableReverseDate"
+              style="width: 100%"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      }
 
       <!-- Dynamic Lines Section -->
       <div class="lines-header">

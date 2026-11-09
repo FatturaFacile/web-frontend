@@ -4,6 +4,7 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  CancelProductionOrderPayload,
   CreateBomPayload,
   CreateProductionOrderPayload,
   CreateWorkCenterPayload,
@@ -17,7 +18,6 @@ import {
   PaginatedResponse,
   QueryFilterParams,
   RunMrpPayload,
-  TrackProductionStagePayload,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
@@ -58,8 +58,13 @@ export class ManufacturingApiService {
     return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/close`, {});
   }
 
-  cancelProductionOrder(id: string): Observable<ApiResponse<MfgProductionOrderResource>> {
-    return this.http.post<ApiResponse<MfgProductionOrderResource>>(`${this.base}/production-orders/${id}/cancel`, {});
+  /** Cancels an order that moved nothing; the reason is mandatory. */
+  cancelProductionOrder(id: string, reason: string): Observable<ApiResponse<MfgProductionOrderResource>> {
+    const payload: CancelProductionOrderPayload = { reason };
+    return this.http.post<ApiResponse<MfgProductionOrderResource>>(
+      `${this.base}/production-orders/${id}/cancel`,
+      payload,
+    );
   }
 
   // --- Bills of Materials (BOMs) ---
@@ -74,10 +79,12 @@ export class ManufacturingApiService {
     return this.http.get<ApiResponse<MfgBomResource>>(`${this.base}/boms/${id}`);
   }
 
+  /** Creates a DRAFT revision: it counts for production orders only after `activateBom` (managers only). */
   createBom(payload: CreateBomPayload): Observable<ApiResponse<MfgBomResource>> {
     return this.http.post<ApiResponse<MfgBomResource>>(`${this.base}/boms`, payload);
   }
 
+  /** Releases a draft revision. Manufacturing managers (owner, admin, production) only: 403 otherwise. */
   activateBom(id: string): Observable<ApiResponse<MfgBomResource>> {
     return this.http.post<ApiResponse<MfgBomResource>>(`${this.base}/boms/${id}/activate`, {});
   }
@@ -88,10 +95,6 @@ export class ManufacturingApiService {
 
   explodeBom(id: string): Observable<ApiResponse<unknown>> {
     return this.http.get<ApiResponse<unknown>>(`${this.base}/boms/${id}/explode`);
-  }
-
-  getBillsOfMaterials(params?: QueryFilterParams): Observable<PaginatedResponse<MfgBomResource>> {
-    return this.getBoms(params);
   }
 
   // --- MRP (Material Requirements Planning) ---
@@ -146,11 +149,5 @@ export class ManufacturingApiService {
 
   createRouting(payload: unknown): Observable<ApiResponse<MfgRoutingResource>> {
     return this.http.post<ApiResponse<MfgRoutingResource>>(`${this.base}/routings`, payload);
-  }
-
-  // --- Legacy Compatibility ---
-
-  trackStage(stageId: string, payload: TrackProductionStagePayload): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.base}/stages/${stageId}/track`, payload);
   }
 }

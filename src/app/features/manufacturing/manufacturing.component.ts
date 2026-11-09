@@ -18,6 +18,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  AuthStore,
   BomType,
   CreateBomPayload,
   CreateProductionOrderPayload,
@@ -32,11 +33,18 @@ import {
   MfgWorkCenterResource,
   MrpRunType,
   RunMrpPayload,
+  TranslateService,
 } from '@core';
 import {
   MoneyPipe,
   PageHeaderComponent,
+  TranslatePipe,
 } from '@shared';
+import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
+
+/** Roles that may activate a BOM revision (the API answers 403 to anyone else). */
+const BOM_MANAGER_ROLES: readonly string[] = ['owner', 'admin', 'production'];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Component({
   selector: 'app-manufacturing',
@@ -63,6 +71,7 @@ import {
     NzFormModule,
     NzDividerModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   templateUrl: './manufacturing.component.html',
 })
@@ -71,6 +80,10 @@ export class ManufacturingComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
+  private readonly authStore = inject(AuthStore);
+  private readonly translate = inject(TranslateService);
+
+  protected readonly canActivateBom = computed(() => hasAnyRole(this.authStore.activeRoles(), BOM_MANAGER_ROLES));
 
   readonly selectedTab = signal<number>(0);
 
@@ -129,8 +142,18 @@ export class ManufacturingComponent implements OnInit {
     target_quantity: [1, [Validators.required, Validators.min(0.001)]],
     planned_start_date: [new Date(), [Validators.required]],
     planned_end_date: [new Date(Date.now() + 7 * 86400000), [Validators.required]],
+    bom_id: [''],
     notes: [''],
   });
+
+  /** Active BOM revisions of the item typed in the order form (empty list: the API will refuse the order). */
+  readonly orderBoms = signal<MfgBomResource[]>([]);
+  readonly orderBomsChecked = signal(false);
+
+  /** Order waiting for the cancellation reason (opens the cancel modal). */
+  readonly cancellingOrder = signal<MfgProductionOrderResource | null>(null);
+  readonly cancelReason = signal('');
+  readonly isCancellingOrder = signal(false);
 
   readonly isCreateBomModalVisible = signal(false);
   readonly isSubmittingBom = signal(false);
@@ -226,9 +249,30 @@ export class ManufacturingComponent implements OnInit {
       target_quantity: 1,
       planned_start_date: new Date(),
       planned_end_date: new Date(Date.now() + 7 * 86400000),
+      bom_id: '',
       notes: '',
     });
+    this.orderBoms.set([]);
+    this.orderBomsChecked.set(false);
     this.isCreateOrderModalVisible.set(true);
+  }
+
+  /** Looks up the active BOM revisions of the item, so the order is not sent against a draft or missing BOM. */
+  onOrderItemChange(itemId: string): void {
+    this.orderForm.patchValue({ bom_id: '' });
+    this.orderBoms.set([]);
+    this.orderBomsChecked.set(false);
+    if (!UUID.test(itemId.trim())) {
+      return;
+    }
+    const filters: Record<string, string | number> = { mfg_item_id: itemId.trim(), status: 'active', per_page: 50 };
+    this.api.getBoms(filters).subscribe({
+      next: (res) => {
+        this.orderBoms.set((res?.data || []).filter((bom) => bom.status === 'active'));
+        this.orderBomsChecked.set(true);
+      },
+      error: () => this.orderBomsChecked.set(false),
+    });
   }
 
   submitCreateOrder(): void {
@@ -253,6 +297,7 @@ export class ManufacturingComponent implements OnInit {
         val.planned_end_date instanceof Date
           ? val.planned_end_date.toISOString()
           : String(val.planned_end_date),
+      bom_id: val.bom_id || null,
       notes: val.notes || null,
     };
 
@@ -263,8 +308,9 @@ export class ManufacturingComponent implements OnInit {
         this.isCreateOrderModalVisible.set(false);
         this.loadOrders(1);
       },
-      error: () => {
-        this.message.error('Errore durante la creazione dell’ordine di produzione');
+      error: (err) => {
+        // 422 carries the reason (no released BOM revision on the start date, item bought not made, ...)
+        this.message.error(apiErrorText(err) || 'Errore durante la creazione dell’ordine di produzione');
         this.isSubmittingOrder.set(false);
       },
     });
@@ -340,19 +386,27 @@ export class ManufacturingComponent implements OnInit {
   }
 
   cancelOrder(order: MfgProductionOrderResource): void {
-    this.modal.confirm({
-      nzTitle: `Annullare l'ordine ${order.order_number}?`,
-      nzContent: 'Questa azione annulla l’ordine pianificato.',
-      nzOkDanger: true,
-      nzOkText: 'Annulla Ordine',
-      nzOnOk: () => {
-        this.api.cancelProductionOrder(order.id).subscribe({
-          next: () => {
-            this.message.success('Ordine annullato');
-            this.loadOrders(this.ordersPage());
-          },
-          error: () => this.message.error('Errore durante l’annullamento dell’ordine'),
-        });
+    this.cancelReason.set('');
+    this.cancellingOrder.set(order);
+  }
+
+  confirmCancelOrder(): void {
+    const order = this.cancellingOrder();
+    const reason = this.cancelReason().trim();
+    if (!order || !reason) {
+      return;
+    }
+    this.isCancellingOrder.set(true);
+    this.api.cancelProductionOrder(order.id, reason).subscribe({
+      next: () => {
+        this.isCancellingOrder.set(false);
+        this.cancellingOrder.set(null);
+        this.message.success('Ordine annullato');
+        this.loadOrders(this.ordersPage());
+      },
+      error: (err) => {
+        this.isCancellingOrder.set(false);
+        this.message.error(apiErrorText(err) || 'Errore durante l’annullamento dell’ordine');
       },
     });
   }
@@ -452,7 +506,7 @@ export class ManufacturingComponent implements OnInit {
 
     this.api.createBom(payload).subscribe({
       next: () => {
-        this.message.success('Distinta base creata con successo');
+        this.message.success(this.translate.instant('MFG.BOM_CREATED_DRAFT'));
         this.isSubmittingBom.set(false);
         this.isCreateBomModalVisible.set(false);
         this.loadBoms(1);
@@ -475,7 +529,12 @@ export class ManufacturingComponent implements OnInit {
             this.message.success('Distinta base attivata');
             this.loadBoms(this.bomsPage());
           },
-          error: () => this.message.error('Errore durante l’attivazione della distinta base'),
+          error: (err) =>
+            this.message.error(
+              err?.status === 403
+                ? this.translate.instant('MFG.BOM_ACTIVATE_FORBIDDEN')
+                : apiErrorText(err) || 'Errore durante l’attivazione della distinta base',
+            ),
         });
       },
     });

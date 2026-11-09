@@ -15,11 +15,14 @@ import {
   StockLevelItem,
   StockMovementItem,
   StockQuantItem,
-  StockValuationSummary,
+  StockValuationAtDate,
+  StockValuationMethod,
+  StockValuationSnapshot,
   StoreInventoryAdjustmentPayload,
   StorePriceListPayload,
   StoreWarehousePayload,
   TransferStockPayload,
+  WarehouseBinItem,
   WarehouseItem,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -57,6 +60,10 @@ export class InventoryApiService {
     return this.http.get<ApiResponse<WarehouseItem[]>>(`${this.base}/inventory/warehouses`, {
       params: params ? toHttpParams(params) : undefined,
     });
+  }
+
+  getWarehouseBins(warehouseId: string): Observable<{ data: WarehouseBinItem[] }> {
+    return this.http.get<{ data: WarehouseBinItem[] }>(`${this.base}/inventory/warehouses/${warehouseId}/bins`);
   }
 
   getWarehouse(id: string): Observable<ApiResponse<WarehouseItem>> {
@@ -130,7 +137,12 @@ export class InventoryApiService {
   }
 
   // Stock Adjustments
-  getAdjustments(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<InventoryAdjustmentItem>> {
+  getAdjustments(params?: {
+    warehouse_id?: string;
+    status?: string;
+    page?: number;
+    per_page?: number;
+  }): Observable<PaginatedResponse<InventoryAdjustmentItem>> {
     return this.http.get<PaginatedResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -192,22 +204,21 @@ export class InventoryApiService {
   }
 
   // Valuation
-  getValuationSummary(warehouseId?: string, valuationMethod = 'FIFO'): Observable<ApiResponse<StockValuationSummary>> {
-    return this.http.get<ApiResponse<StockValuationSummary>>(`${this.base}/inventory/valuation/summary`, {
-      params: toHttpParams({
-        warehouse_id: warehouseId,
-        valuation_method: valuationMethod,
-      }),
+  /** Stock value at the end of `date` (YYYY-MM-DD, not in the future). The body is not wrapped in `data`. */
+  getValuationAtDate(
+    date: string,
+    warehouseId?: string,
+    valuationMethod?: StockValuationMethod,
+  ): Observable<StockValuationAtDate> {
+    return this.http.get<StockValuationAtDate>(`${this.base}/inventory/valuation/at-date`, {
+      params: toHttpParams({ date, warehouse_id: warehouseId, valuation_method: valuationMethod }),
     });
   }
 
-  captureValuationSnapshot(
-    warehouseId?: string,
-    valuationMethod = 'FIFO',
-  ): Observable<ApiResponse<{ snapshot_id: string }>> {
-    return this.http.post<ApiResponse<{ snapshot_id: string }>>(`${this.base}/inventory/valuation/snapshot`, {
+  captureValuationSnapshot(stockItemId: string, warehouseId: string): Observable<ApiResponse<StockValuationSnapshot>> {
+    return this.http.post<ApiResponse<StockValuationSnapshot>>(`${this.base}/inventory/valuation/snapshot`, {
+      stock_item_id: stockItemId,
       warehouse_id: warehouseId,
-      valuation_method: valuationMethod,
     });
   }
 }

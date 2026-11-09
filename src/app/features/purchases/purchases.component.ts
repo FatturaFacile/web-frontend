@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
+  FormArray,
   FormsModule,
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -8,6 +9,8 @@ import {
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -19,32 +22,72 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
-import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
   CreatePurchaseOrderPayload,
   ExecuteThreeWayMatchPayload,
   GoodsReceipt,
-  GoodsReceiptInspectionStatus,
+  InspectGoodsReceiptPayload,
   ProcessGoodsReceiptPayload,
   ProcurementApiService,
+  ProcurementSupplier,
   PurchaseOrder,
   PurchaseOrderStatus,
   SupplierInvoice,
   ThreeWayMatchLog,
-  ThreeWayMatchStatus,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { apiErrorText } from '../sales/cycle/shared/sales-api-helpers';
+
+/** Approval states of a supplier invoice in which it cannot be paid (the API refuses the payment too). */
+const PAYMENT_BLOCKING_APPROVALS: readonly string[] = ['pending', 'in_approval', 'rejected', 'match_blocked'];
+/** Match results that leave a variance to approve. */
+const OPEN_MATCH_VARIANCES: readonly string[] = [
+  'price_variance',
+  'quantity_variance',
+  'discrepancy',
+  'escalated_to_workflow',
+];
+
+/** A decision that needs a free-text reason before it is sent (reject an order, approve a match variance). */
+interface ReasonRequest {
+  kind: 'rejectOrder' | 'approveVariance';
+  id: string;
+  title: string;
+}
+
+/** Local calendar day as YYYY-MM-DD. */
+function toIsoDay(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function receiptLineGroup(fb: NonNullableFormBuilder, lineId: string) {
+  return fb.group({
+    purchase_order_line_id: fb.control(lineId),
+    quantity_received: fb.control<number | null>(null, [Validators.min(0)]),
+    lot_number: fb.control(''),
+  });
+}
+
+function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: number) {
+  return fb.group({
+    purchase_receipt_line_id: fb.control(lineId),
+    quantity_released: fb.control(quantity, [Validators.required, Validators.min(0)]),
+    notes: fb.control(''),
+  });
+}
 
 @Component({
   selector: 'app-purchases',
   imports: [
     FormsModule,
     ReactiveFormsModule,
-        DatePipe,
+    DatePipe,
     MoneyPipe,
     NzCardModule,
     NzTableModule,
@@ -55,6 +98,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzInputModule,
     NzInputNumberModule,
     NzSelectModule,
+    NzDatePickerModule,
     NzFormModule,
     NzModalModule,
     NzIconModule,
@@ -75,8 +119,20 @@ export class PurchasesComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
 
-  // Active Tab
   readonly activeTabIndex = signal<number>(0);
+
+  /** Statuses offered by the order filter, in lifecycle order. */
+  protected readonly orderStatuses: readonly PurchaseOrderStatus[] = [
+    'draft',
+    'pending_approval',
+    'approved',
+    'sent',
+    'partially_received',
+    'received',
+    'closed',
+    'rejected',
+    'cancelled',
+  ];
 
   // --- Purchase Orders State ---
   readonly loading = signal(false);
@@ -85,9 +141,13 @@ export class PurchasesComponent implements OnInit {
   readonly total = signal(0);
   readonly pageIndex = signal(1);
   readonly pageSize = signal(10);
-  readonly searchTerm = signal('');
   readonly selectedStatus = signal<PurchaseOrderStatus | undefined>(undefined);
+  readonly selectedSupplier = signal<string | undefined>(undefined);
   readonly createModalVisible = signal(false);
+  readonly suppliers = signal<ProcurementSupplier[]>([]);
+  readonly supplierNames = computed(
+    () => new Map(this.suppliers().map((supplier) => [supplier.id, supplier.company_name])),
+  );
 
   // --- Goods Receipts State ---
   readonly goodsReceipts = signal<GoodsReceipt[]>([]);
@@ -106,46 +166,42 @@ export class PurchasesComponent implements OnInit {
   readonly supplierInvoices = signal<SupplierInvoice[]>([]);
   readonly loadingInvoices = signal(false);
   readonly importSdiModalVisible = signal(false);
+  readonly selectedXmlFile = signal<File | null>(null);
 
-  // KPIs
-  readonly totalChfDisplay = computed(() => {
-    const sum = this.orders()
-      .filter((o) => o.currency === 'CHF')
-      .reduce((acc, o) => acc + (o.total || 0), 0);
-    return `CHF ${sum.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  });
+  // --- Reason dialog (reject an order, approve a match variance) ---
+  readonly reasonRequest = signal<ReasonRequest | null>(null);
+  readonly reasonText = signal('');
 
-  readonly totalEurDisplay = computed(() => {
-    const sum = this.orders()
-      .filter((o) => o.currency === 'EUR')
-      .reduce((acc, o) => acc + (o.total || 0), 0);
-    return `€ ${sum.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  });
+  // KPIs: counts only, the amounts are decimal strings and are shown per row
+  readonly pendingApprovalCount = computed(() => this.orders().filter((o) => o.status === 'pending_approval').length);
+  readonly openMatchVarianceCount = computed(
+    () => this.threeWayMatches().filter((m) => OPEN_MATCH_VARIANCES.includes(m.match_status)).length,
+  );
+  readonly blockedInvoiceCount = computed(
+    () => this.supplierInvoices().filter((i) => i.approval_status === 'match_blocked').length,
+  );
 
   // Forms
   readonly orderForm = this.fb.group({
-    supplier_name: this.fb.control('', [Validators.required]),
-    channel: this.fb.control<'SDI' | 'QR-Bill' | 'Standard'>('QR-Bill', [Validators.required]),
-    currency: this.fb.control<'CHF' | 'EUR'>('CHF', [Validators.required]),
+    supplier_id: this.fb.control('', [Validators.required]),
+    currency: this.fb.control<'CHF' | 'EUR'>('EUR', [Validators.required]),
+    expected_delivery_date: this.fb.control<Date | null>(null, [Validators.required]),
     item_description: this.fb.control('', [Validators.required]),
-    quantity: this.fb.control(1, [Validators.required, Validators.min(1)]),
+    quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
     unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    tax_rate: this.fb.control(22, [Validators.required]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0)]),
   });
 
   readonly receiptForm = this.fb.group({
     supplier_delivery_note_ref: this.fb.control('', [Validators.required]),
-    received_date: this.fb.control(new Date().toISOString().slice(0, 10), [Validators.required]),
+    received_date: this.fb.control(toIsoDay(new Date()), [Validators.required]),
     inspection_required: this.fb.control(false),
-    inspection_status: this.fb.control<GoodsReceiptInspectionStatus>('passed'),
-    quantity_received: this.fb.control(1, [Validators.required, Validators.min(1)]),
-    lot_number: this.fb.control(''),
     notes: this.fb.control(''),
+    lines: this.fb.array<ReturnType<typeof receiptLineGroup>>([]),
   });
 
   readonly inspectForm = this.fb.group({
-    inspection_status: this.fb.control<GoodsReceiptInspectionStatus>('passed', [Validators.required]),
-    notes: this.fb.control(''),
+    lines: this.fb.array<ReturnType<typeof inspectLineGroup>>([]),
   });
 
   readonly matchForm = this.fb.group({
@@ -155,11 +211,16 @@ export class PurchasesComponent implements OnInit {
     invoice_total_amount: this.fb.control(0, [Validators.required, Validators.min(0.01)]),
   });
 
-  readonly sdiImportForm = this.fb.group({
-    xml_content: this.fb.control('', [Validators.required]),
-  });
+  get receiptLines(): FormArray {
+    return this.receiptForm.controls.lines;
+  }
+
+  get inspectLines(): FormArray {
+    return this.inspectForm.controls.lines;
+  }
 
   ngOnInit(): void {
+    this.loadSuppliers();
     this.loadOrders();
     this.loadGoodsReceipts();
     this.loadThreeWayMatches();
@@ -168,14 +229,21 @@ export class PurchasesComponent implements OnInit {
 
   // --- Purchase Orders Methods ---
 
+  loadSuppliers(): void {
+    this.procurementApi.getSuppliers({ per_page: 100 }).subscribe({
+      next: (res) => this.suppliers.set(res.data || []),
+      error: () => this.suppliers.set([]),
+    });
+  }
+
   loadOrders(): void {
     this.loading.set(true);
     this.procurementApi
       .getPurchaseOrders({
         page: this.pageIndex(),
         per_page: this.pageSize(),
-        search: this.searchTerm() || undefined,
         status: this.selectedStatus(),
+        supplier_id: this.selectedSupplier(),
       })
       .subscribe({
         next: (res) => {
@@ -197,9 +265,8 @@ export class PurchasesComponent implements OnInit {
     this.loadOrders();
   }
 
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchTerm.set(value);
+  onSupplierChange(supplierId: string | undefined): void {
+    this.selectedSupplier.set(supplierId);
     this.pageIndex.set(1);
     this.loadOrders();
   }
@@ -210,68 +277,75 @@ export class PurchasesComponent implements OnInit {
     this.loadOrders();
   }
 
-  submitApproval(order: PurchaseOrder): void {
-    this.procurementApi.submitApproval(order.id).subscribe({
+  supplierName(order: PurchaseOrder): string {
+    return order.supplier?.company_name || this.supplierNames().get(order.supplier_id) || order.supplier_id;
+  }
+
+  /** Runs an order action and refreshes the list; 403/409/422 show the reason given by the API. */
+  private runOrderAction(request$: ReturnType<ProcurementApiService['sendPurchaseOrder']>, successKey: string, order: PurchaseOrder): void {
+    request$.subscribe({
       next: () => {
-        this.message.success(this.translate.instant('purchases.messages.submitted', { number: order.order_number }));
+        this.message.success(this.translate.instant(successKey, { number: order.po_number }));
         this.loadOrders();
       },
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
     });
+  }
+
+  submitApproval(order: PurchaseOrder): void {
+    this.runOrderAction(this.procurementApi.submitApproval(order.id), 'purchases.messages.submitted', order);
   }
 
   approve(order: PurchaseOrder): void {
-    this.procurementApi.approvePurchaseOrder(order.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('purchases.messages.approved', { number: order.order_number }));
-        this.loadOrders();
-      },
-    });
+    this.runOrderAction(this.procurementApi.approvePurchaseOrder(order.id), 'purchases.messages.approved', order);
   }
 
   reject(order: PurchaseOrder): void {
-    this.procurementApi.rejectPurchaseOrder(order.id, this.translate.instant('purchases.rejectReason')).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('purchases.messages.rejected', { number: order.order_number }));
-        this.loadOrders();
-      },
-    });
+    this.askReason({ kind: 'rejectOrder', id: order.id, title: order.po_number });
   }
 
   sendToSupplier(order: PurchaseOrder): void {
-    this.procurementApi.sendPurchaseOrder(order.id).subscribe({
-      next: () => {
-        this.message.success(`Ordine ${order.order_number} inviato al fornitore`);
-        this.loadOrders();
-      },
-    });
+    this.runOrderAction(this.procurementApi.sendPurchaseOrder(order.id), 'purchases.messages.sent', order);
+  }
+
+  closeOrder(order: PurchaseOrder): void {
+    this.runOrderAction(this.procurementApi.closePurchaseOrder(order.id), 'purchases.messages.closed', order);
+  }
+
+  reopenOrder(order: PurchaseOrder): void {
+    this.runOrderAction(this.procurementApi.reopenPurchaseOrder(order.id), 'purchases.messages.reopened', order);
   }
 
   cancelOrder(order: PurchaseOrder): void {
     this.modal.confirm({
-      nzTitle: `Annullare l'ordine ${order.order_number}?`,
+      nzTitle: `Annullare l'ordine ${order.po_number}?`,
       nzOkText: 'Annulla Ordine',
       nzOkDanger: true,
       nzCancelText: 'Chiudi',
       nzOnOk: () => {
-        this.procurementApi.cancelPurchaseOrder(order.id).subscribe({
-          next: () => {
-            this.message.success(`Ordine ${order.order_number} annullato`);
-            this.loadOrders();
-          },
-        });
+        this.runOrderAction(this.procurementApi.cancelPurchaseOrder(order.id), 'purchases.messages.cancelled', order);
       },
     });
   }
 
+  /** Whether goods can still be received against the order. */
+  canReceive(order: PurchaseOrder): boolean {
+    return order.status === 'sent' || order.status === 'partially_received';
+  }
+
+  canCancel(order: PurchaseOrder): boolean {
+    return ['draft', 'pending_approval', 'approved', 'sent'].includes(order.status);
+  }
+
   openCreateModal(): void {
     this.orderForm.reset({
-      supplier_name: '',
-      channel: this.authStore.activeJurisdiction() === 'CH' ? 'QR-Bill' : 'SDI',
-      currency: this.authStore.activeCurrency(),
+      supplier_id: '',
+      currency: this.authStore.activeCurrency() === 'CHF' ? 'CHF' : 'EUR',
+      expected_delivery_date: null,
       item_description: '',
       quantity: 1,
       unit_price: 0,
-      tax_rate: 22,
+      tax_rate: this.authStore.activeJurisdiction() === 'CH' ? 8.1 : 22,
     });
     this.createModalVisible.set(true);
   }
@@ -285,15 +359,14 @@ export class PurchasesComponent implements OnInit {
     this.saving.set(true);
     const formVal = this.orderForm.getRawValue();
     const payload: CreatePurchaseOrderPayload = {
-      supplier_id: 'sup-' + Date.now(),
-      supplier_name: formVal.supplier_name,
-      channel: formVal.channel,
+      supplier_id: formVal.supplier_id,
       currency: formVal.currency,
-      issue_date: new Date().toISOString().slice(0, 10),
-      items: [
+      order_date: toIsoDay(new Date()),
+      expected_delivery_date: toIsoDay(formVal.expected_delivery_date ?? new Date()),
+      lines: [
         {
           description: formVal.item_description,
-          quantity: formVal.quantity,
+          quantity_ordered: formVal.quantity,
           unit_price: formVal.unit_price,
           tax_rate: formVal.tax_rate,
         },
@@ -307,8 +380,9 @@ export class PurchasesComponent implements OnInit {
         this.message.success(this.translate.instant('purchases.messages.created'));
         this.loadOrders();
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
+        this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic'));
       },
     });
   }
@@ -329,84 +403,111 @@ export class PurchasesComponent implements OnInit {
     });
   }
 
+  /** Loads the order with its lines, then opens the receipt form with one row per line. */
   openGoodsReceiptModal(order: PurchaseOrder): void {
-    this.selectedOrderForReceipt.set(order);
-    this.receiptForm.reset({
-      supplier_delivery_note_ref: '',
-      received_date: new Date().toISOString().slice(0, 10),
-      inspection_required: false,
-      inspection_status: 'passed',
-      quantity_received: order.items?.[0]?.quantity || 1,
-      lot_number: '',
-      notes: '',
+    this.procurementApi.getPurchaseOrder(order.id).subscribe({
+      next: (res) => {
+        const detail = res.data;
+        this.selectedOrderForReceipt.set(detail);
+        this.receiptForm.reset({
+          supplier_delivery_note_ref: '',
+          received_date: toIsoDay(new Date()),
+          inspection_required: false,
+          notes: '',
+        });
+        this.receiptLines.clear();
+        for (const line of (detail.lines ?? []).filter((l) => !l.is_closed)) {
+          this.receiptLines.push(receiptLineGroup(this.fb, line.id));
+        }
+        this.goodsReceiptModalVisible.set(true);
+      },
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
     });
-    this.goodsReceiptModalVisible.set(true);
   }
 
+  /** Lines of the order being received, in the same order as the form rows. */
+  readonly receiptOrderLines = computed(() => (this.selectedOrderForReceipt()?.lines ?? []).filter((l) => !l.is_closed));
+
   submitGoodsReceipt(): void {
-    if (this.receiptForm.invalid) {
+    const order = this.selectedOrderForReceipt();
+    if (this.receiptForm.invalid || !order) {
       this.receiptForm.markAllAsTouched();
       return;
     }
 
-    const order = this.selectedOrderForReceipt();
-    if (!order) return;
-
     const formVal = this.receiptForm.getRawValue();
-    const lineId = order.items?.[0]?.id || 'line-1';
+    const lines = formVal.lines
+      .filter((line) => (line.quantity_received ?? 0) > 0)
+      .map((line) => ({
+        purchase_order_line_id: line.purchase_order_line_id,
+        quantity_received: line.quantity_received as number,
+        lot_number: line.lot_number || undefined,
+      }));
+    if (lines.length === 0) {
+      this.message.warning(this.translate.instant('PURCHASES.RECEIPT_NO_QUANTITY'));
+      return;
+    }
 
     const payload: ProcessGoodsReceiptPayload = {
       supplier_delivery_note_ref: formVal.supplier_delivery_note_ref,
       received_date: formVal.received_date,
       inspection_required: formVal.inspection_required,
-      inspection_status: formVal.inspection_status,
       notes: formVal.notes || undefined,
-      lines: [
-        {
-          purchase_order_line_id: lineId,
-          quantity_received: formVal.quantity_received,
-          quantity_accepted: formVal.quantity_received,
-          lot_number: formVal.lot_number || undefined,
-        },
-      ],
+      lines,
     };
 
+    this.saving.set(true);
     this.procurementApi.processGoodsReceipt(order.id, payload).subscribe({
       next: (res) => {
+        this.saving.set(false);
         this.goodsReceiptModalVisible.set(false);
         this.message.success(`Bolla di ricezione ${res.data.receipt_number || 'creata'} registrata con successo`);
         this.loadOrders();
         this.loadGoodsReceipts();
       },
-      error: () => {
-        this.message.error('Errore durante la registrazione della ricezione merce');
+      error: (err) => {
+        this.saving.set(false);
+        this.message.error(apiErrorText(err) || 'Errore durante la registrazione della ricezione merce');
       },
     });
   }
 
+  /** Inspection is recorded per line: the quantity released to stock. */
   openInspectModal(receipt: GoodsReceipt): void {
-    this.selectedReceipt.set(receipt);
-    this.inspectForm.reset({
-      inspection_status: receipt.inspection_status || 'passed',
-      notes: receipt.notes || '',
+    this.procurementApi.getGoodsReceipt(receipt.id).subscribe({
+      next: (res) => {
+        const detail = res.data;
+        this.selectedReceipt.set(detail);
+        this.inspectLines.clear();
+        for (const line of detail.lines ?? []) {
+          this.inspectLines.push(inspectLineGroup(this.fb, line.id, Number(line.quantity_accepted)));
+        }
+        this.inspectModalVisible.set(true);
+      },
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
     });
-    this.inspectModalVisible.set(true);
   }
 
   submitInspection(): void {
     const receipt = this.selectedReceipt();
-    if (!receipt) return;
+    if (!receipt || this.inspectForm.invalid) {
+      return;
+    }
 
-    const val = this.inspectForm.getRawValue();
-    this.procurementApi.inspectGoodsReceipt(receipt.id, val.inspection_status, val.notes).subscribe({
+    const payload: InspectGoodsReceiptPayload = {
+      results: this.inspectForm.getRawValue().lines.map((line) => ({
+        purchase_receipt_line_id: line.purchase_receipt_line_id,
+        quantity_released: line.quantity_released,
+        notes: line.notes || undefined,
+      })),
+    };
+    this.procurementApi.inspectGoodsReceipt(receipt.id, payload).subscribe({
       next: () => {
         this.inspectModalVisible.set(false);
         this.message.success('Ispezione aggiornata con successo');
         this.loadGoodsReceipts();
       },
-      error: () => {
-        this.message.error('Errore durante l\'aggiornamento dell\'ispezione');
-      },
+      error: (err) => this.message.error(apiErrorText(err) || 'Errore durante l\'aggiornamento dell\'ispezione'),
     });
   }
 
@@ -446,30 +547,62 @@ export class PurchasesComponent implements OnInit {
     this.procurementApi.executeThreeWayMatch(payload).subscribe({
       next: (res) => {
         this.executeMatchModalVisible.set(false);
-        this.message.success(`3-Way Match completato: stato ${res.data.status}`);
+        this.message.success(`3-Way Match completato: stato ${res.data.match_status}`);
         this.loadThreeWayMatches();
+        this.loadSupplierInvoices();
       },
-      error: () => {
-        this.message.error('Errore durante l\'esecuzione del 3-Way Match');
-      },
+      error: (err) => this.message.error(apiErrorText(err) || 'Errore durante l\'esecuzione del 3-Way Match'),
     });
   }
 
+  hasOpenVariance(match: ThreeWayMatchLog): boolean {
+    return OPEN_MATCH_VARIANCES.includes(match.match_status);
+  }
+
   approveVariance(match: ThreeWayMatchLog): void {
-    this.modal.confirm({
-      nzTitle: `Approvare la discrepanza per il match ${match.id}?`,
-      nzContent: `Scostamento prezzo: ${match.price_variance}, scostamento quantità: ${match.quantity_variance}`,
-      nzOkText: 'Approva Discrepanza',
-      nzCancelText: 'Annulla',
-      nzOnOk: () => {
-        this.procurementApi.approveThreeWayMatchVariance(match.id, 'Approvato manualmente da responsabile AP').subscribe({
-          next: () => {
-            this.message.success('Discrepanza approvata con successo');
-            this.loadThreeWayMatches();
-          },
-        });
+    this.askReason({ kind: 'approveVariance', id: match.id, title: match.id });
+  }
+
+  // --- Reason dialog ---
+
+  private askReason(request: ReasonRequest): void {
+    this.reasonText.set('');
+    this.reasonRequest.set(request);
+  }
+
+  confirmReason(): void {
+    const request = this.reasonRequest();
+    const reason = this.reasonText().trim();
+    if (!request || !reason) {
+      return;
+    }
+
+    this.saving.set(true);
+    const done = (successKey: string, reload: () => void) => ({
+      next: () => {
+        this.saving.set(false);
+        this.reasonRequest.set(null);
+        this.message.success(this.translate.instant(successKey, { number: request.title }));
+        reload();
+      },
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic'));
       },
     });
+
+    if (request.kind === 'rejectOrder') {
+      this.procurementApi
+        .rejectPurchaseOrder(request.id, reason)
+        .subscribe(done('purchases.messages.rejected', () => this.loadOrders()));
+    } else {
+      this.procurementApi.approveThreeWayMatchVariance(request.id, { reason }).subscribe(
+        done('purchases.messages.varianceApproved', () => {
+          this.loadThreeWayMatches();
+          this.loadSupplierInvoices();
+        }),
+      );
+    }
   }
 
   // --- Supplier Invoices (AP) Methods ---
@@ -488,6 +621,28 @@ export class PurchasesComponent implements OnInit {
     });
   }
 
+  invoiceSupplierName(invoice: SupplierInvoice): string {
+    return (invoice.supplier_id && this.supplierNames().get(invoice.supplier_id)) || invoice.supplier_id || '-';
+  }
+
+  isPaymentBlocked(invoice: SupplierInvoice): boolean {
+    return PAYMENT_BLOCKING_APPROVALS.includes(invoice.approval_status ?? '');
+  }
+
+  canSubmitInvoiceApproval(invoice: SupplierInvoice): boolean {
+    return invoice.payment_status !== 'paid' && ['not_required', 'rejected', ''].includes(invoice.approval_status ?? '');
+  }
+
+  submitInvoiceApproval(invoice: SupplierInvoice): void {
+    this.procurementApi.submitSupplierInvoiceApproval(invoice.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PURCHASES.INVOICE_SUBMITTED', { number: invoice.invoice_number }));
+        this.loadSupplierInvoices();
+      },
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
+    });
+  }
+
   markInvoicePaid(invoice: SupplierInvoice): void {
     this.modal.confirm({
       nzTitle: `Segnare la fattura fornitore ${invoice.invoice_number} come pagata?`,
@@ -499,31 +654,42 @@ export class PurchasesComponent implements OnInit {
             this.message.success(`Fattura ${invoice.invoice_number} contrassegnata come pagata`);
             this.loadSupplierInvoices();
           },
+          error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
         });
       },
     });
   }
 
   openImportSdiModal(): void {
-    this.sdiImportForm.reset({ xml_content: '' });
+    this.selectedXmlFile.set(null);
     this.importSdiModalVisible.set(true);
   }
 
+  onXmlFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedXmlFile.set(input.files?.item(0) ?? null);
+  }
+
   submitImportSdi(): void {
-    if (this.sdiImportForm.invalid) {
-      this.sdiImportForm.markAllAsTouched();
+    const file = this.selectedXmlFile();
+    if (!file) {
       return;
     }
 
-    const xml = this.sdiImportForm.getRawValue().xml_content;
-    this.procurementApi.importPassiveInvoiceSdi(xml).subscribe({
+    this.saving.set(true);
+    this.procurementApi.receivePassiveInvoiceXml(file).subscribe({
       next: (res) => {
+        this.saving.set(false);
         this.importSdiModalVisible.set(false);
-        this.message.success(res.data.message || 'FatturaPA SDI importata con successo');
+        const duplicates = (res.data || []).filter((entry) => entry.duplicate).length;
+        this.message.success(
+          this.translate.instant('PURCHASES.IMPORT_DONE', { count: (res.data || []).length - duplicates, duplicates }),
+        );
         this.loadSupplierInvoices();
       },
-      error: () => {
-        this.message.error('Errore durante l\'importazione del file XML SDI');
+      error: (err) => {
+        this.saving.set(false);
+        this.message.error(apiErrorText(err) || 'Errore durante l\'importazione del file XML SDI');
       },
     });
   }
@@ -536,8 +702,8 @@ export class PurchasesComponent implements OnInit {
         return 'success';
       case 'pending_approval':
         return 'warning';
-      case 'ordered':
       case 'sent':
+      case 'partially_received':
         return 'blue';
       case 'rejected':
       case 'cancelled':
@@ -548,10 +714,10 @@ export class PurchasesComponent implements OnInit {
   }
 
   statusLabel(status: PurchaseOrderStatus): string {
-    return this.translate.instant('purchases.statuses.' + status) || status;
+    return this.translate.instant('purchases.statuses.' + status);
   }
 
-  inspectionColor(status: GoodsReceiptInspectionStatus): string {
+  inspectionColor(status: string | null): string {
     switch (status) {
       case 'passed':
         return 'success';
@@ -564,17 +730,32 @@ export class PurchasesComponent implements OnInit {
     }
   }
 
-  matchStatusColor(status: ThreeWayMatchStatus): string {
+  matchStatusColor(status: string): string {
+    if (status === 'matched') {
+      return 'success';
+    }
+    if (status === 'rejected') {
+      return 'error';
+    }
+    return OPEN_MATCH_VARIANCES.includes(status) ? 'warning' : 'default';
+  }
+
+  approvalColor(status: string | null | undefined): string {
     switch (status) {
-      case 'matched':
+      case 'approved':
         return 'success';
-      case 'discrepancy':
-      case 'escalated_to_workflow':
-        return 'warning';
+      case 'pending':
+      case 'in_approval':
+        return 'processing';
       case 'rejected':
+      case 'match_blocked':
         return 'error';
       default:
         return 'default';
     }
+  }
+
+  approvalLabel(status: string | null | undefined): string {
+    return this.translate.instant('PURCHASES.APPROVAL.' + (status || 'not_required'));
   }
 }

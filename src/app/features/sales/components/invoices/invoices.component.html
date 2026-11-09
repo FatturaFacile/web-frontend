@@ -100,6 +100,9 @@
     </button>
     <nz-dropdown-menu #menu="nzDropdownMenu">
       <ul nz-menu>
+        <li nz-menu-item tabindex="0" (click)="showDetails(inv)" (keydown.enter)="showDetails(inv)">
+          <nz-icon nzType="eye" /> {{ "SALES.INVOICES.ACTIONS.DETAILS" | translate }}
+        </li>
         <li nz-menu-item tabindex="0" (click)="openPdf(inv)" (keydown.enter)="openPdf(inv)">
           <nz-icon nzType="file-pdf" /> {{ "SALES.INVOICES.ACTIONS.DOWNLOAD_PDF" | translate }}
         </li>
@@ -186,6 +189,8 @@
   (openChange)="drawerOpen.set($event)"
   (saved)="facade.reload()"
 />
+
+<app-invoice-detail-modal [open]="detailOpen()" [invoice]="detailInvoice()" (openChange)="detailOpen.set($event)" />
 
 <!-- Swiss QR-Bill Modal -->
 <nz-modal

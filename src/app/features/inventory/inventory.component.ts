@@ -3,6 +3,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -28,14 +29,23 @@ import {
   ProductItem,
   StockLevelItem,
   StockMovementItem,
-  StockValuationSummary,
+  StockValuationAtDate,
+  StockValuationMethod,
   StoreInventoryAdjustmentPayload,
   TransferStockPayload,
   TranslateService,
+  WarehouseBinItem,
   WarehouseItem,
   applyServerErrors,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+
+/** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
+function toIsoDay(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
 
 @Component({
   selector: 'app-inventory',
@@ -46,6 +56,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     DecimalPipe,
     MoneyPipe,
     NzCardModule,
+    NzDatePickerModule,
     NzTabsModule,
     NzTableModule,
     NzTagModule,
@@ -115,14 +126,15 @@ export class InventoryComponent implements OnInit {
   readonly movementTypeFilter = signal<string | undefined>(undefined);
   readonly transferModalVisible = signal(false);
 
+  /** Bins of the warehouse picked in the open transfer or adjustment modal. */
+  readonly bins = signal<WarehouseBinItem[]>([]);
+
   readonly transferForm = this.fb.group({
     stock_item_id: this.fb.control('', [Validators.required]),
     warehouse_id: this.fb.control('', [Validators.required]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
-    movement_type: this.fb.control('INTERNAL_TRANSFER', [Validators.required]),
-    unit_cost: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    source_bin_id: this.fb.control<string | null>(null),
-    destination_bin_id: this.fb.control<string | null>(null),
+    source_bin_id: this.fb.control('', [Validators.required]),
+    destination_bin_id: this.fb.control('', [Validators.required]),
     notes: this.fb.control(''),
   });
 
@@ -132,6 +144,14 @@ export class InventoryComponent implements OnInit {
   readonly adjustmentsPage = signal(1);
   readonly adjustmentsPageSize = signal(10);
   readonly adjustmentModalVisible = signal(false);
+  readonly adjustmentStatusFilter = signal<string | undefined>(undefined);
+  /** Adjustment waiting for the rejection reason (opens the reject modal). */
+  readonly rejectingAdjustment = signal<InventoryAdjustmentItem | null>(null);
+  readonly rejectionReason = signal('');
+  /** Only owners and admins approve or reject: the API also refuses the adjustment creator. */
+  readonly canApproveAdjustments = computed(() =>
+    this.authStore.activeRoles().some((role) => ['owner', 'admin'].includes(role.toLowerCase())),
+  );
 
   readonly adjustmentForm = this.fb.group({
     warehouse_id: this.fb.control('', [Validators.required]),
@@ -139,6 +159,7 @@ export class InventoryComponent implements OnInit {
       'cycle_count_variance',
       [Validators.required],
     ),
+    warehouse_bin_id: this.fb.control('', [Validators.required]),
     stock_item_id: this.fb.control('', [Validators.required]),
     quantity_delta: this.fb.control(1, [Validators.required]),
     unit_cost: this.fb.control(0, [Validators.required, Validators.min(0)]),
@@ -162,7 +183,10 @@ export class InventoryComponent implements OnInit {
   });
 
   // 6. Valuation
-  readonly valuation = signal<StockValuationSummary | null>(null);
+  readonly valuation = signal<StockValuationAtDate | null>(null);
+  readonly valuationDate = signal(toIsoDay(new Date()));
+  readonly valuationDateValue = computed(() => new Date(`${this.valuationDate()}T00:00:00`));
+  readonly valuationMethod = signal<StockValuationMethod | undefined>(undefined);
 
   ngOnInit(): void {
     this.loadWarehouses();
@@ -221,6 +245,45 @@ export class InventoryComponent implements OnInit {
     this.loadStockLevels();
   }
 
+  /** Loads the bins of a warehouse into the transfer and adjustment selects. */
+  loadBins(warehouseId: string): void {
+    this.bins.set([]);
+    if (!warehouseId) {
+      return;
+    }
+    this.inventoryApi.getWarehouseBins(warehouseId).subscribe({
+      next: (res) => this.bins.set(res.data || []),
+      error: () => this.bins.set([]),
+    });
+  }
+
+  onTransferWarehouseChange(warehouseId: string): void {
+    this.transferForm.patchValue({ source_bin_id: '', destination_bin_id: '' });
+    this.loadBins(warehouseId);
+  }
+
+  onAdjustmentWarehouseChange(warehouseId: string): void {
+    this.adjustmentForm.patchValue({ warehouse_bin_id: '' });
+    this.loadBins(warehouseId);
+  }
+
+  /**
+   * Direction of a movement: the quantity is always positive, so the sign comes from `signed_quantity` when the API
+   * sends it, else from the bins (only a source bin: stock leaves; only a destination: stock enters).
+   */
+  movementSign(movement: StockMovementItem): 'in' | 'out' | 'move' | 'none' {
+    if (movement.signed_quantity !== undefined && movement.signed_quantity !== null) {
+      return movement.signed_quantity > 0 ? 'in' : movement.signed_quantity < 0 ? 'out' : 'none';
+    }
+    if (movement.source_bin_id && movement.destination_bin_id) {
+      return 'move';
+    }
+    if (movement.destination_bin_id) {
+      return 'in';
+    }
+    return movement.source_bin_id ? 'out' : 'none';
+  }
+
   // Movements
   loadMovements(): void {
     this.loading.set(true);
@@ -258,12 +321,11 @@ export class InventoryComponent implements OnInit {
       stock_item_id: firstProduct,
       warehouse_id: firstWh,
       quantity: 1,
-      movement_type: 'INTERNAL_TRANSFER',
-      unit_cost: 0,
-      source_bin_id: null,
-      destination_bin_id: null,
+      source_bin_id: '',
+      destination_bin_id: '',
       notes: '',
     });
+    this.loadBins(firstWh);
     this.transferModalVisible.set(true);
   }
 
@@ -279,10 +341,9 @@ export class InventoryComponent implements OnInit {
       stock_item_id: formVal.stock_item_id,
       warehouse_id: formVal.warehouse_id,
       quantity: Number(formVal.quantity),
-      movement_type: formVal.movement_type,
-      unit_cost: Number(formVal.unit_cost),
-      source_bin_id: formVal.source_bin_id || undefined,
-      destination_bin_id: formVal.destination_bin_id || undefined,
+      movement_type: 'INTERNAL_TRANSFER',
+      source_bin_id: formVal.source_bin_id,
+      destination_bin_id: formVal.destination_bin_id,
       notes: formVal.notes || undefined,
     };
 
@@ -306,6 +367,7 @@ export class InventoryComponent implements OnInit {
     this.loading.set(true);
     this.inventoryApi
       .getAdjustments({
+        status: this.adjustmentStatusFilter(),
         page: this.adjustmentsPage(),
         per_page: this.adjustmentsPageSize(),
       })
@@ -335,11 +397,13 @@ export class InventoryComponent implements OnInit {
     this.adjustmentForm.reset({
       warehouse_id: firstWh,
       reason: 'cycle_count_variance',
+      warehouse_bin_id: '',
       stock_item_id: firstProduct,
       quantity_delta: 1,
       unit_cost: 0,
       notes: '',
     });
+    this.loadBins(firstWh);
     this.adjustmentModalVisible.set(true);
   }
 
@@ -358,6 +422,7 @@ export class InventoryComponent implements OnInit {
       lines: [
         {
           stock_item_id: formVal.stock_item_id,
+          warehouse_bin_id: formVal.warehouse_bin_id,
           quantity_delta: Number(formVal.quantity_delta),
           unit_cost: Number(formVal.unit_cost),
         },
@@ -381,26 +446,47 @@ export class InventoryComponent implements OnInit {
   approveAdjustment(id: string): void {
     this.inventoryApi.approveAdjustment(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('inventory.messages.approved') || 'Adjustment approved');
+        this.message.success(this.translate.instant('inventory.messages.approved'));
         this.loadAdjustments();
         this.loadStockLevels();
       },
-      error: () => {
-        this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed');
+      error: (err) => {
+        this.message.error(this.adjustmentErrorText(err));
       },
     });
   }
 
-  rejectAdjustment(id: string): void {
-    this.inventoryApi.rejectAdjustment(id, 'Rejected by operator').subscribe({
+  openRejectAdjustment(adjustment: InventoryAdjustmentItem): void {
+    this.rejectionReason.set('');
+    this.rejectingAdjustment.set(adjustment);
+  }
+
+  confirmRejectAdjustment(): void {
+    const adjustment = this.rejectingAdjustment();
+    const reason = this.rejectionReason().trim();
+    if (!adjustment || !reason) {
+      return;
+    }
+    this.saving.set(true);
+    this.inventoryApi.rejectAdjustment(adjustment.id, reason).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('inventory.messages.rejected') || 'Adjustment rejected');
+        this.saving.set(false);
+        this.rejectingAdjustment.set(null);
+        this.message.success(this.translate.instant('inventory.messages.rejected'));
         this.loadAdjustments();
       },
-      error: () => {
-        this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed');
+      error: (err) => {
+        this.saving.set(false);
+        this.message.error(this.adjustmentErrorText(err));
       },
     });
+  }
+
+  /** 403 covers a non-manager, a read-only role and the creator approving their own adjustment. */
+  private adjustmentErrorText(err: { status?: number }): string {
+    return this.translate.instant(
+      err?.status === 403 ? 'inventory.messages.adjustment_forbidden' : 'common.errors.generic',
+    );
   }
 
   // Counts
@@ -487,28 +573,37 @@ export class InventoryComponent implements OnInit {
   // Valuation
   loadValuation(): void {
     this.loading.set(true);
-    this.inventoryApi.getValuationSummary(this.selectedWarehouseFilter(), 'FIFO').subscribe({
-      next: (res) => {
-        this.valuation.set(res.data || null);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.valuation.set(null);
-        this.loading.set(false);
-      },
-    });
+    this.inventoryApi
+      .getValuationAtDate(this.valuationDate(), this.selectedWarehouseFilter(), this.valuationMethod())
+      .subscribe({
+        next: (res) => {
+          this.valuation.set(res);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.valuation.set(null);
+          this.loading.set(false);
+        },
+      });
   }
 
-  captureSnapshot(): void {
+  onValuationDateChange(date: Date | null): void {
+    this.valuationDate.set(toIsoDay(date ?? new Date()));
+    this.loadValuation();
+  }
+
+  readonly disableFutureDates = (current: Date): boolean => current.getTime() > Date.now();
+
+  captureSnapshot(stockItemId: string, warehouseId: string): void {
     this.saving.set(true);
-    this.inventoryApi.captureValuationSnapshot(this.selectedWarehouseFilter(), 'FIFO').subscribe({
+    this.inventoryApi.captureValuationSnapshot(stockItemId, warehouseId).subscribe({
       next: () => {
         this.saving.set(false);
-        this.message.success(this.translate.instant('inventory.messages.snapshot_taken') || 'Valuation snapshot captured');
+        this.message.success(this.translate.instant('inventory.messages.snapshot_taken'));
       },
       error: () => {
         this.saving.set(false);
-        this.message.error(this.translate.instant('common.errors.generic') || 'Snapshot capture failed');
+        this.message.error(this.translate.instant('common.errors.generic'));
       },
     });
   }

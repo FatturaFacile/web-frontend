@@ -40,9 +40,9 @@ describe('ManufacturingApiService', () => {
       order_number: 'PO-2026-001',
       mfg_item_id: 'item-1',
       status: 'planned',
-      target_quantity: 100,
-      completed_quantity: 0,
-      scrapped_quantity: 0,
+      target_quantity: '100.0000',
+      completed_quantity: '0.0000',
+      scrapped_quantity: '0.0000',
       uom: 'PZ',
       planned_start_date: '2026-04-01T08:00:00Z',
       planned_end_date: '2026-04-05T17:00:00Z',
@@ -110,7 +110,7 @@ describe('ManufacturingApiService', () => {
     const req = httpMock.expectOne(`${baseUrl}/production-orders`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
-    req.flush({ data: { id: 'po-new', order_number: 'PO-2026-002', ...payload, completed_quantity: 0, scrapped_quantity: 0, uom: 'PZ', status: 'planned' } });
+    req.flush({ data: { id: 'po-new', order_number: 'PO-2026-002', ...payload, completed_quantity: '0.0000', scrapped_quantity: '0.0000', uom: 'PZ', status: 'planned' } });
   });
 
   it('fetches and creates bills of materials (BOMs)', () => {
@@ -148,6 +148,16 @@ describe('ManufacturingApiService', () => {
     const actReq = httpMock.expectOne(`${baseUrl}/boms/bom-1/activate`);
     expect(actReq.request.method).toBe('POST');
     actReq.flush({ data: { id: 'bom-1', status: 'active' } });
+  });
+
+  it('cancels a production order with the mandatory reason', () => {
+    service.cancelProductionOrder('po-1', 'Duplicated order').subscribe((res) => {
+      expect(res.data.status).toBe('cancelled');
+    });
+    const req = httpMock.expectOne(`${baseUrl}/production-orders/po-1/cancel`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ reason: 'Duplicated order' });
+    req.flush({ data: { id: 'po-1', status: 'cancelled' } });
   });
 
   it('triggers MRP run and converts planned orders', () => {
