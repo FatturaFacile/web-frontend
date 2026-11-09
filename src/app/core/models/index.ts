@@ -45,3 +45,4 @@ export * from './ecommerce-integrations.model';
 export * from './assistant.model';
 export * from './loyalty.model';
 export * from './workspace.model';
+export * from './analytics.model';
