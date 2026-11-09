@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from '@core';
+import { authGuard, guestGuard } from '@core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -303,11 +303,10 @@ export const routes: Routes = [
       import('./features/retail/retail.routes').then((m) => m.RETAIL_ROUTES),
   },
   {
+    // The old clock screen called the deprecated /time-attendance/* endpoints: working time now lives in /hr/time.
     path: 'time-attendance',
-    canActivate: [authGuard],
-    data: { breadcrumb: 'Presenze & Cartellino', title: 'Presenze & Cartellino' },
-    loadChildren: () =>
-      import('./features/time-attendance/time-attendance.routes').then((m) => m.TIME_ATTENDANCE_ROUTES),
+    pathMatch: 'full',
+    redirectTo: 'hr/time',
   },
   {
     path: 'hr',

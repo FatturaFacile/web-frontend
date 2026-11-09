@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
@@ -29,6 +30,7 @@ import {
 import { TranslatePipe } from '@shared';
 import {
   applyServerErrors,
+  CatalogApiService,
   ClientApiService,
   contactDisplayName,
   I18nService,
@@ -48,6 +50,13 @@ type ItemGroup = FormGroup<{
   tax_rate: FormControl<number>;
   discount_percentage: FormControl<number>;
 }>;
+
+/** Whether a 422 carries a validation error on the `exchange_rate` field. */
+function hasExchangeRateError(err: unknown): boolean {
+  return (
+    err instanceof HttpErrorResponse && err.status === 422 && !!(err.error as { errors?: Record<string, unknown> })?.errors?.['exchange_rate']
+  );
+}
 
 /** Local-date `yyyy-MM-dd` (avoids UTC shifts of toISOString). */
 function toIsoDate(d: Date): string {
@@ -77,6 +86,7 @@ export class InvoiceFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly invoiceApi = inject(InvoiceApiService);
   private readonly clientApi = inject(ClientApiService);
+  private readonly catalogApi = inject(CatalogApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
@@ -105,14 +115,23 @@ export class InvoiceFormDrawerComponent {
   readonly form = this.fb.group({
     contact_id: this.fb.control('', Validators.required),
     invoice_type: this.fb.control<InvoiceType>('standard', Validators.required),
-    invoice_number: this.fb.control('', Validators.required),
     date: new FormControl<Date | null>(null, Validators.required),
     due_date: new FormControl<Date | null>(null),
+    payment_term_id: this.fb.control(''),
     currency: this.fb.control('CHF', Validators.required),
     jurisdiction: this.fb.control<Jurisdiction>('CH', Validators.required),
     notes: this.fb.control(''),
     items: this.fb.array<ItemGroup>([]),
   });
+
+  /** Payment terms of the catalog: the server derives the due date and the installments from the chosen one. */
+  protected readonly paymentTerms = toSignal(
+    this.catalogApi.getPaymentTerms().pipe(
+      map((res) => res.data),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
 
   protected readonly contactSearch = signal('');
   private readonly fetchedContacts = toSignal(
@@ -173,7 +192,7 @@ export class InvoiceFormDrawerComponent {
     this.form.reset({
       contact_id: tpl?.contact?.id ?? tpl?.contact_id ?? '',
       invoice_type: tpl?.invoice_type ?? 'standard',
-      invoice_number: '',
+      payment_term_id: tpl?.payment_term_id ?? '',
       currency,
       jurisdiction: tpl?.jurisdiction ?? (currency === 'EUR' ? 'IT' : 'CH'),
       notes: tpl?.notes ?? '',
@@ -227,10 +246,10 @@ export class InvoiceFormDrawerComponent {
     const payload: CreateInvoicePayload = {
       contact_id: v.contact_id,
       invoice_type: v.invoice_type,
-      invoice_number: v.invoice_number,
       date: toIsoDate(v.date),
       due_date: v.due_date ? toIsoDate(v.due_date) : null,
       currency: v.currency,
+      payment_term_id: v.payment_term_id || null,
       jurisdiction: v.jurisdiction,
       notes: v.notes.trim() || null,
       items: v.items,
@@ -246,7 +265,18 @@ export class InvoiceFormDrawerComponent {
       error: (err: unknown) => {
         this.saving.set(false);
         // Laravel keys the invoice date as `date`, matching the control name.
-        applyServerErrors(this.form, err).forEach((m) => this.message.error(m));
+        const unmapped = applyServerErrors(this.form, err);
+        if (hasExchangeRateError(err)) {
+          // No rate of the currency for the invoice date: say so instead of the bare server text.
+          this.message.error(
+            this.i18n.translate('SALES.INVOICES.ERRORS.NO_EXCHANGE_RATE', {
+              currency: v.currency,
+              date: toIsoDate(v.date as Date),
+            }),
+          );
+          return;
+        }
+        unmapped.forEach((m) => this.message.error(m));
       },
     });
   }

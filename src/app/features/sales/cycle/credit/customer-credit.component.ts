@@ -4,6 +4,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -13,13 +14,21 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
   BillingApiService,
+  CoreOrder,
   CustomerAging,
   CustomerCreditProfile,
   CustomerLedgerEntry,
   I18nService,
+  SalesCycleApiService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
-import { apiErrorText, CREDIT_MANAGER_ROLES, hasAnyRole, isForbidden } from '../shared/sales-api-helpers';
+import {
+  apiErrorText,
+  CREDIT_MANAGER_ROLES,
+  creditHoldIdOf,
+  hasAnyRole,
+  isForbidden,
+} from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
@@ -34,6 +43,7 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
     NzCardModule,
     NzIconModule,
     NzInputModule,
+    NzPopconfirmModule,
     NzSelectModule,
     NzStatisticModule,
     NzTableModule,
@@ -47,6 +57,7 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
 })
 export class CustomerCreditComponent implements OnInit {
   private readonly api = inject(BillingApiService);
+  private readonly ordersApi = inject(SalesCycleApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   private readonly authStore = inject(AuthStore);
@@ -62,6 +73,9 @@ export class CustomerCreditComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly forbidden = signal(false);
+  /** Orders of the customer parked by the credit check. */
+  protected readonly heldOrders = signal<CoreOrder[]>([]);
+  protected readonly releasingId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.lookups.load();
@@ -72,10 +86,12 @@ export class CustomerCreditComponent implements OnInit {
     this.profile.set(null);
     this.statement.set([]);
     this.aging.set([]);
+    this.heldOrders.set([]);
     this.forbidden.set(false);
     if (!customerId) {
       return;
     }
+    this.loadHeldOrders(customerId);
     this.loading.set(true);
     this.api.getCustomerCredit(customerId).subscribe({
       next: (res) => {
@@ -95,6 +111,41 @@ export class CustomerCreditComponent implements OnInit {
     this.api.getCustomerAging(customerId).subscribe({
       next: (res) => this.aging.set(Object.entries(res.data ?? ({} as CustomerAging))),
       error: () => this.aging.set([]),
+    });
+  }
+
+  private loadHeldOrders(customerId: string): void {
+    this.ordersApi.getOrders({ status: 'on_hold', contact_id: customerId, per_page: 50 }).subscribe({
+      next: (res) => this.heldOrders.set(res.data ?? []),
+      error: () => this.heldOrders.set([]),
+    });
+  }
+
+  /** Id of the hold of an order on hold; without it the order cannot be released from here. */
+  protected holdIdOf(order: CoreOrder): string | null {
+    return creditHoldIdOf(order);
+  }
+
+  /** Releases the credit hold of an order (same endpoint as the order detail): managers only, 403 otherwise. */
+  protected releaseHold(order: CoreOrder): void {
+    const holdId = this.holdIdOf(order);
+    if (!holdId || !this.customerId) {
+      return;
+    }
+    const customerId = this.customerId;
+    this.releasingId.set(order.id);
+    this.api.releaseCreditHold(holdId).subscribe({
+      next: () => {
+        this.releasingId.set(null);
+        this.message.success(this.i18n.translate('SC.ORDERS.HOLD_RELEASED'));
+        this.load(customerId);
+      },
+      error: (err: unknown) => {
+        this.releasingId.set(null);
+        this.message.error(
+          isForbidden(err) ? this.i18n.translate('SC.CREDIT.FORBIDDEN') : apiErrorText(err),
+        );
+      },
     });
   }
 

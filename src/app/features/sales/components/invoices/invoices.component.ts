@@ -39,6 +39,7 @@ import {
   TranslatePipe,
 } from '@shared';
 import { InvoiceFacade } from '../../services/invoice.facade';
+import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
 
 const STATUS: Record<InvoiceStatus, { key: string; color: string }> = {
@@ -88,6 +89,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     PageHeaderComponent,
     TranslatePipe,
     InvoiceFormDrawerComponent,
+    InvoiceDetailModalComponent,
   ],
   templateUrl: './invoices.component.html',
   styleUrl: './invoices.component.scss',
@@ -103,6 +105,8 @@ export class InvoicesComponent {
   protected readonly drawerOpen = signal(false);
   protected readonly template = signal<InvoiceDetailResource | null>(null);
   protected readonly busyId = signal<string | null>(null);
+  protected readonly detailOpen = signal(false);
+  protected readonly detailInvoice = signal<InvoiceDetailResource | null>(null);
 
   // Swiss QR-Bill Modal
   readonly qrModalVisible = signal(false);
@@ -242,6 +246,14 @@ export class InvoicesComponent {
     this.run(inv, this.api.get(inv.id), null, (res) => {
       this.template.set({ ...inv, ...res.data });
       this.drawerOpen.set(true);
+    });
+  }
+
+  /** Read-only detail: payment term and, for a foreign-currency invoice, the rate the server applied. */
+  protected showDetails(inv: InvoiceResource): void {
+    this.run(inv, this.api.get(inv.id), null, (res) => {
+      this.detailInvoice.set({ ...inv, ...res.data });
+      this.detailOpen.set(true);
     });
   }
 

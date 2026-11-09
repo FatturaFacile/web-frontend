@@ -1,5 +1,5 @@
 import { inject, Pipe, PipeTransform } from '@angular/core';
-import { I18nService } from '@core';
+import { I18nService } from '@core/i18n/i18n.service';
 
 @Pipe({
   name: 'translate',

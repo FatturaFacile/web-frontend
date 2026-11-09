@@ -24,6 +24,11 @@ export interface InvoiceResource {
   contact_id?: string;
   contact?: ContactResource | null;
   client?: ContactResource | null;
+  payment_term_id?: string | null;
+  /** Rate against the accounting currency, fixed by the server on the invoice date (read-only). */
+  exchange_rate?: number | null;
+  exchange_rate_source?: string | null;
+  exchange_rate_date?: string | null;
 }
 
 export interface InvoiceItemResource {
@@ -49,15 +54,17 @@ export interface InvoiceLineItemPayload {
   discount_percentage?: number | null;
 }
 
-/** Body of `POST /sales/invoices`. */
+/**
+ * Body of `POST /sales/invoices`. The invoice number is assigned by the server: it is never sent. The exchange rate
+ * is looked up by the server for the invoice date (422 on `exchange_rate` when there is none).
+ */
 export interface CreateInvoicePayload {
   contact_id: string;
   invoice_type: InvoiceType;
-  invoice_number: string;
   date: string;
   due_date?: string | null;
   currency: string;
-  exchange_rate?: number | null;
+  payment_term_id?: string | null;
   jurisdiction: Jurisdiction;
   split_payment?: boolean | null;
   reverse_charge?: boolean | null;

@@ -161,7 +161,8 @@ describe('InventoryApiService', () => {
         warehouse_id: 'wh-1',
         quantity: 10,
         movement_type: 'INTERNAL_TRANSFER',
-        unit_cost: 12.5,
+        source_bin_id: 'bin-a',
+        destination_bin_id: 'bin-b',
       };
 
       service.transferStock(payload).subscribe((res) => {
@@ -223,28 +224,57 @@ describe('InventoryApiService', () => {
   });
 
   describe('Valuation', () => {
-    it('retrieves valuation summary', () => {
-      service.getValuationSummary('wh-1', 'FIFO').subscribe((res) => {
-        expect(res.data.total_valuation).toBe(5000);
+    it('retrieves the valuation at a date (body not wrapped in data)', () => {
+      service.getValuationAtDate('2026-11-01', 'wh-1', 'fifo').subscribe((res) => {
+        expect(res.total_value).toBe('5000.0000');
       });
 
       const req = httpTesting.expectOne(
         (r) =>
-          r.url === `${baseUrl}/inventory/valuation/summary` &&
+          r.url === `${baseUrl}/inventory/valuation/at-date` &&
+          r.params.get('date') === '2026-11-01' &&
           r.params.get('warehouse_id') === 'wh-1' &&
-          r.params.get('valuation_method') === 'FIFO',
+          r.params.get('valuation_method') === 'fifo',
       );
       expect(req.request.method).toBe('GET');
       req.flush({
-        success: true,
-        data: {
-          valuation_method: 'FIFO',
-          warehouse_id: 'wh-1',
-          total_valuation: 5000,
-          items_count: 10,
-          items: [],
-        },
+        as_of: '2026-11-01T23:59:59Z',
+        warehouse_id: 'wh-1',
+        total_value: '5000.0000',
+        warehouses: [],
+        items: [],
       });
+    });
+
+    it('captures a valuation snapshot of one item in one warehouse', () => {
+      service.captureValuationSnapshot('item-1', 'wh-1').subscribe((res) => {
+        expect(res.data.id).toBe('snap-1');
+      });
+
+      const req = httpTesting.expectOne(`${baseUrl}/inventory/valuation/snapshot`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ stock_item_id: 'item-1', warehouse_id: 'wh-1' });
+      req.flush({ success: true, data: { id: 'snap-1' } });
+    });
+
+    it('lists the bins of a warehouse', () => {
+      service.getWarehouseBins('wh-1').subscribe((res) => {
+        expect(res.data[0].code).toBe('A-01');
+      });
+
+      const req = httpTesting.expectOne(`${baseUrl}/inventory/warehouses/wh-1/bins`);
+      expect(req.request.method).toBe('GET');
+      req.flush({ data: [{ id: 'bin-1', code: 'A-01' }] });
+    });
+
+    it('filters adjustments by status', () => {
+      service.getAdjustments({ status: 'pending_approval', page: 2 }).subscribe();
+
+      const req = httpTesting.expectOne(
+        (r) => r.url === `${baseUrl}/inventory/adjustments` && r.params.get('status') === 'pending_approval',
+      );
+      expect(req.request.params.get('page')).toBe('2');
+      req.flush({ success: true, data: [] });
     });
   });
 });

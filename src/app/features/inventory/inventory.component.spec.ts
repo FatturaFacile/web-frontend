@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
@@ -13,7 +15,7 @@ import {
   ProductItem,
   StockLevelItem,
   StockMovementItem,
-  StockValuationSummary,
+  StockValuationAtDate,
   TranslateService,
   WarehouseItem,
 } from '@core';
@@ -94,17 +96,22 @@ describe('InventoryComponent', () => {
     },
   ];
 
-  const mockValuation: StockValuationSummary = {
-    valuation_method: 'FIFO',
+  const mockValuation: StockValuationAtDate = {
+    as_of: '2026-11-09T23:59:59Z',
     warehouse_id: 'wh-1',
-    total_valuation: 7500,
-    items_count: 1,
+    total_value: '7500.0000',
+    warehouses: [{ warehouse_id: 'wh-1', warehouse_code: 'WH-MI', total_value: '7500.0000' }],
     items: [
       {
-        item_id: 'prod-1',
+        stock_item_id: 'prod-1',
         sku: 'SKU-001',
         name: 'Widget A',
-        valuation: 7500,
+        warehouse_id: 'wh-1',
+        quantity: '50.0000',
+        unit_cost: '150.0000',
+        value: '7500.0000',
+        valuation_method: 'fifo',
+        cost_source: 'fifo_layers',
       },
     ],
   };
@@ -198,16 +205,19 @@ describe('InventoryComponent', () => {
         data: { ...mockCounts[0], status: 'reconciled' },
       }),
     ),
-    getValuationSummary: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: mockValuation,
-      }),
-    ),
+    getValuationAtDate: vi.fn().mockReturnValue(of(mockValuation)),
     captureValuationSnapshot: vi.fn().mockReturnValue(
       of({
         success: true,
-        data: { snapshot_id: 'snap-1' },
+        data: { id: 'snap-1' },
+      }),
+    ),
+    getWarehouseBins: vi.fn().mockReturnValue(
+      of({
+        data: [
+          { id: 'bin-a', code: 'A-01', is_locked: false },
+          { id: 'bin-b', code: 'B-01', is_locked: false },
+        ],
       }),
     ),
   };
@@ -226,6 +236,7 @@ describe('InventoryComponent', () => {
   const mockAuthStore = {
     activeJurisdiction: vi.fn().mockReturnValue('IT'),
     activeCurrency: vi.fn().mockReturnValue('EUR'),
+    activeRoles: vi.fn().mockReturnValue(['owner']),
   };
 
   beforeEach(async () => {
@@ -235,6 +246,8 @@ describe('InventoryComponent', () => {
       imports: [InventoryComponent],
       providers: [
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: InventoryApiService, useValue: mockInventoryApi },
         { provide: AuthStore, useValue: mockAuthStore },
         { provide: TranslateService, useValue: mockTranslate },
@@ -277,26 +290,36 @@ describe('InventoryComponent', () => {
     component.openTransferModal();
     expect(component.transferModalVisible()).toBe(true);
 
-    component.transferForm.patchValue({
-      stock_item_id: 'prod-1',
-      warehouse_id: 'wh-1',
-      quantity: 5,
-      movement_type: 'INTERNAL_TRANSFER',
-      unit_cost: 12,
-    });
+    expect(mockInventoryApi.getWarehouseBins).toHaveBeenCalledWith('wh-1');
+    expect(component.bins().length).toBe(2);
 
+    component.transferForm.patchValue({ stock_item_id: 'prod-1', warehouse_id: 'wh-1', quantity: 5 });
+
+    // both bins are required: without them nothing is sent
+    component.submitTransfer();
+    expect(mockInventoryApi.transferStock).not.toHaveBeenCalled();
+
+    component.transferForm.patchValue({ source_bin_id: 'bin-a', destination_bin_id: 'bin-b' });
     component.submitTransfer();
     expect(mockInventoryApi.transferStock).toHaveBeenCalledWith({
       stock_item_id: 'prod-1',
       warehouse_id: 'wh-1',
       quantity: 5,
       movement_type: 'INTERNAL_TRANSFER',
-      unit_cost: 12,
-      source_bin_id: undefined,
-      destination_bin_id: undefined,
+      source_bin_id: 'bin-a',
+      destination_bin_id: 'bin-b',
       notes: undefined,
     });
     expect(component.transferModalVisible()).toBe(false);
+  });
+
+  it('derives the movement direction from signed_quantity or from the bins', () => {
+    const base = { id: 'm', movement_type: 'X', quantity: 4, unit_cost: 1 };
+    expect(component.movementSign({ ...base, signed_quantity: -4 })).toBe('out');
+    expect(component.movementSign({ ...base, signed_quantity: 4 })).toBe('in');
+    expect(component.movementSign({ ...base, source_bin_id: 'a' })).toBe('out');
+    expect(component.movementSign({ ...base, destination_bin_id: 'b' })).toBe('in');
+    expect(component.movementSign({ ...base, source_bin_id: 'a', destination_bin_id: 'b' })).toBe('move');
   });
 
   it('loads adjustments, approves and creates new adjustment', () => {
@@ -314,6 +337,7 @@ describe('InventoryComponent', () => {
     component.adjustmentForm.patchValue({
       warehouse_id: 'wh-1',
       reason: 'scrap',
+      warehouse_bin_id: 'bin-a',
       stock_item_id: 'prod-1',
       quantity_delta: -3,
       unit_cost: 15,
@@ -327,12 +351,27 @@ describe('InventoryComponent', () => {
       lines: [
         {
           stock_item_id: 'prod-1',
+          warehouse_bin_id: 'bin-a',
           quantity_delta: -3,
           unit_cost: 15,
         },
       ],
     });
     expect(component.adjustmentModalVisible()).toBe(false);
+  });
+
+  it('rejects an adjustment only with a reason and only for owners/admins', () => {
+    fixture.detectChanges();
+    expect(component.canApproveAdjustments()).toBe(true);
+
+    component.openRejectAdjustment(mockAdjustments[0]);
+    component.confirmRejectAdjustment();
+    expect(mockInventoryApi.rejectAdjustment).not.toHaveBeenCalled();
+
+    component.rejectionReason.set('Counted twice');
+    component.confirmRejectAdjustment();
+    expect(mockInventoryApi.rejectAdjustment).toHaveBeenCalledWith('adj-1', 'Counted twice');
+    expect(component.rejectingAdjustment()).toBeNull();
   });
 
   it('loads count sessions, reconciles and schedules new count', () => {
@@ -366,11 +405,14 @@ describe('InventoryComponent', () => {
   it('loads valuation and captures snapshot', () => {
     fixture.detectChanges();
     component.onTabChange(4);
-    expect(mockInventoryApi.getValuationSummary).toHaveBeenCalled();
+    expect(mockInventoryApi.getValuationAtDate).toHaveBeenCalledWith(component.valuationDate(), undefined, undefined);
     expect(component.valuation()).toEqual(mockValuation);
 
-    component.captureSnapshot();
-    expect(mockInventoryApi.captureValuationSnapshot).toHaveBeenCalled();
+    component.onValuationDateChange(new Date(2026, 10, 1));
+    expect(mockInventoryApi.getValuationAtDate).toHaveBeenLastCalledWith('2026-11-01', undefined, undefined);
+
+    component.captureSnapshot('prod-1', 'wh-1');
+    expect(mockInventoryApi.captureValuationSnapshot).toHaveBeenCalledWith('prod-1', 'wh-1');
   });
 
   it('filters products on search in catalog tab', () => {

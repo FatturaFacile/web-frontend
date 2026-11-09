@@ -29,15 +29,20 @@
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label nzRequired nzFor="invoice_number">{{
-            "SALES.INVOICES.FORM.NUMBER" | translate
+          <nz-form-label nzFor="payment_term_id">{{
+            "SALES.INVOICES.FORM.PAYMENT_TERM" | translate
           }}</nz-form-label>
-          <nz-form-control
-            nzHasFeedback
-            [nzValidateStatus]="form.controls.invoice_number"
-            [nzErrorTip]="errorTip('invoice_number')"
-          >
-            <input nz-input id="invoice_number" formControlName="invoice_number" />
+          <nz-form-control [nzErrorTip]="errorTip('payment_term_id')">
+            <nz-select
+              id="payment_term_id"
+              formControlName="payment_term_id"
+              nzAllowClear
+              [nzPlaceHolder]="'SALES.INVOICES.FORM.PAYMENT_TERM_PLACEHOLDER' | translate"
+            >
+              @for (t of paymentTerms(); track t.id) {
+                <nz-option [nzValue]="t.id" [nzLabel]="t.code + ' - ' + t.name" />
+              }
+            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
@@ -215,6 +220,8 @@
           <strong>{{ totals().gross | currency: currency() : "symbol" : "1.2-2" }}</strong>
         </dd>
       </dl>
+
+      <p class="hint">{{ "SALES.INVOICES.FORM.SERVER_ASSIGNED_HINT" | translate }}</p>
 
       <div class="actions">
         <button nz-button type="button" (click)="open.set(false)">

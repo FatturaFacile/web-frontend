@@ -140,28 +140,40 @@ export interface StockMovementItem {
   created_at?: string | null;
   updated_at?: string | null;
   product?: { id: string; name: string; sku: string } | null;
+  item?: { id: string; name: string; sku: string } | null;
   warehouse?: { id: string; name: string; code?: string } | null;
+  source_bin?: { id: string; code: string } | null;
+  destination_bin?: { id: string; code: string } | null;
 }
 
+/** A bin of a warehouse as listed by `GET /inventory/warehouses/{id}/bins`. */
+export interface WarehouseBinItem {
+  id: string;
+  warehouse_id: string;
+  zone_id: string;
+  zone_code: string;
+  zone_type: string;
+  aisle_code: string;
+  rack_code: string;
+  code: string;
+  barcode: string;
+  bin_type: string;
+  pick_sequence: number | null;
+  is_locked: boolean;
+  max_quantity: string | null;
+  max_weight_kg: string | null;
+  max_volume_cbm: string | null;
+  occupancy: { quantity: string; weight_kg: string; volume_m3: string; items: number };
+}
+
+/** Relocation between two bins of one warehouse: the only movement the manual endpoint accepts (unit_cost is ignored). */
 export interface TransferStockPayload {
   stock_item_id: string;
   warehouse_id: string;
   quantity: number;
-  movement_type:
-    | 'INTERNAL_TRANSFER'
-    | 'PURCHASE_RECEIPT'
-    | 'SALES_DELIVERY'
-    | 'ADJUSTMENT_IN'
-    | 'ADJUSTMENT_OUT'
-    | 'SCRAP'
-    | 'PRODUCTION_CONSUMPTION'
-    | 'PRODUCTION_OUTPUT'
-    | 'RETURN_CUSTOMER'
-    | 'RETURN_SUPPLIER'
-    | string;
-  unit_cost: number;
-  source_bin_id?: string | null;
-  destination_bin_id?: string | null;
+  movement_type?: 'INTERNAL_TRANSFER';
+  source_bin_id: string;
+  destination_bin_id: string;
   stock_lot_id?: string | null;
   stock_serial_number_id?: string | null;
   reference_type?: string | null;
@@ -176,6 +188,7 @@ export interface InventoryAdjustmentItem {
   reason: string;
   status: 'draft' | 'pending_approval' | 'approved' | 'rejected' | string;
   net_valuation_change?: number;
+  rejection_reason?: string | null;
   is_locked?: boolean;
   created_by?: string;
   approved_by?: string | null;
@@ -246,19 +259,46 @@ export interface CreateInventoryCountPayload {
   effective_at?: string | null;
 }
 
+export type StockValuationCostSource =
+  | 'current_moving_average'
+  | 'movements'
+  | 'fifo_layers'
+  | 'fifo_layers_and_moving_average'
+  | 'standard_cost';
+
 export interface StockValuationItem {
-  item_id: string;
+  stock_item_id: string;
   sku: string;
   name: string;
-  valuation: number;
+  warehouse_id: string;
+  quantity: string;
+  unit_cost: string;
+  value: string;
+  valuation_method: string | null;
+  cost_source: StockValuationCostSource;
 }
 
-export interface StockValuationSummary {
-  valuation_method: string | null;
+/** Stock value at the end of a day (`GET /inventory/valuation/at-date`, the body is not wrapped in `data`). */
+export interface StockValuationAtDate {
+  as_of: string;
   warehouse_id: string | null;
-  total_valuation: number;
-  items_count: number;
+  total_value: string;
+  warehouses: { warehouse_id: string; warehouse_code: string; total_value: string }[];
   items: StockValuationItem[];
+}
+
+export type StockValuationMethod = 'fifo' | 'moving_average' | 'standard_cost';
+
+/** Result of `POST /inventory/valuation/snapshot`. */
+export interface StockValuationSnapshot {
+  id: string;
+  warehouse_id: string;
+  stock_item_id: string;
+  snapshot_date: string;
+  valuation_method: string;
+  quantity_on_hand: string;
+  unit_cost: string;
+  total_valuation: string;
 }
 
 export interface StockQuantItem {

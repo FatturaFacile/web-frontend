@@ -95,6 +95,9 @@
           </td>
         </tr>
         <tr [nzExpand]="expanded().has(entry.id)">
+          @if (detail()[entry.id]?.auto_reverse_on ?? entry.auto_reverse_on; as reverseOn) {
+            <p class="auto-reverse">{{ 'GL.COL_AUTO_REVERSE' | translate }}: <strong>{{ reverseOn }}</strong></p>
+          }
           <nz-table #lines nzSize="small" [nzData]="linesOf(entry) ?? []" [nzShowPagination]="false" [nzFrontPagination]="false">
             <thead>
               <tr>

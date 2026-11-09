@@ -41,10 +41,10 @@ describe('ProcurementApiService', () => {
   it('creates purchase order successfully', () => {
     const payload: CreatePurchaseOrderPayload = {
       supplier_id: 'sup-1',
-      supplier_name: 'Vendor SRL',
       currency: 'EUR',
-      issue_date: '2026-11-09',
-      items: [{ description: 'Raw materials', quantity: 10, unit_price: 50 }],
+      order_date: '2026-11-09',
+      expected_delivery_date: '2026-11-30',
+      lines: [{ description: 'Raw materials', quantity_ordered: 10, unit_price: 50 }],
     };
 
     service.createPurchaseOrder(payload).subscribe((res) => {
@@ -124,21 +124,21 @@ describe('ProcurementApiService', () => {
     };
 
     service.executeThreeWayMatch(payload).subscribe((res) => {
-      expect(res.data.status).toBe('matched');
+      expect(res.data.match_status).toBe('matched');
     });
 
     const reqMatch = httpTesting.expectOne(`${baseUrl}/three-way-match/execute`);
     expect(reqMatch.request.method).toBe('POST');
     expect(reqMatch.request.body).toEqual(payload);
-    reqMatch.flush({ success: true, message: 'Matched', data: { id: 'twm-1', status: 'matched' } });
+    reqMatch.flush({ success: true, message: 'Matched', data: { id: 'twm-1', match_status: 'matched' } });
 
-    service.approveThreeWayMatchVariance('twm-1', 'Variance tolerated within 1%').subscribe((res) => {
+    service.approveThreeWayMatchVariance('twm-1', { reason: 'Variance tolerated within 1%' }).subscribe((res) => {
       expect(res.data.id).toBe('twm-1');
     });
 
     const reqVar = httpTesting.expectOne(`${baseUrl}/three-way-match/twm-1/approve-variance`);
     expect(reqVar.request.method).toBe('POST');
-    expect(reqVar.request.body).toEqual({ notes: 'Variance tolerated within 1%' });
+    expect(reqVar.request.body).toEqual({ reason: 'Variance tolerated within 1%' });
     reqVar.flush({ success: true, message: 'Variance approved', data: { id: 'twm-1' } });
   });
 
@@ -159,12 +159,47 @@ describe('ProcurementApiService', () => {
     expect(reqPaid.request.method).toBe('POST');
     reqPaid.flush({ success: true, message: 'Marked paid', data: { id: 'si-1' } });
 
-    service.importPassiveInvoiceSdi('<xml/>').subscribe((res) => {
-      expect(res.data.invoice_id).toBe('si-imported');
+    const file = new File(['<xml/>'], 'IT001.xml', { type: 'text/xml' });
+    service.receivePassiveInvoiceXml(file).subscribe((res) => {
+      expect(res.data[0].duplicate).toBe(false);
     });
 
-    const reqSdi = httpTesting.expectOne(`${purchasesUrl}/passive-invoices/import-sdi`);
+    const reqSdi = httpTesting.expectOne(`${purchasesUrl}/passive-invoices/receive-xml`);
     expect(reqSdi.request.method).toBe('POST');
-    reqSdi.flush({ success: true, message: 'Imported', data: { invoice_id: 'si-imported', message: 'Success' } });
+    expect(reqSdi.request.body instanceof FormData).toBe(true);
+    expect((reqSdi.request.body as FormData).get('file')).toBeInstanceOf(File);
+    reqSdi.flush({ success: true, message: 'Imported', data: [{ duplicate: false, invoice: { id: 'si-imported' } }] });
+  });
+
+  it('submits a supplier invoice to approval and reads its approval state', () => {
+    service.submitSupplierInvoiceApproval('si-1', 'cc-1').subscribe((res) => {
+      expect(res.data.approval_status).toBe('in_approval');
+    });
+    const reqSubmit = httpTesting.expectOne(`${baseUrl}/supplier-invoices/si-1/submit-approval`);
+    expect(reqSubmit.request.method).toBe('POST');
+    expect(reqSubmit.request.body).toEqual({ cost_center_id: 'cc-1' });
+    reqSubmit.flush({ success: true, message: 'OK', data: { invoice_id: 'si-1', approval_status: 'in_approval', steps: [] } });
+
+    service.getSupplierInvoiceApproval('si-1').subscribe((res) => {
+      expect(res.data.approval_status).toBe('match_blocked');
+    });
+    const reqGet = httpTesting.expectOne(`${baseUrl}/supplier-invoices/si-1/approval`);
+    expect(reqGet.request.method).toBe('GET');
+    reqGet.flush({ success: true, message: 'OK', data: { invoice_id: 'si-1', approval_status: 'match_blocked', steps: [] } });
+  });
+
+  it('records the inspection per receipt line and lists suppliers', () => {
+    service.inspectGoodsReceipt('grn-1', { results: [{ purchase_receipt_line_id: 'l-1', quantity_released: 8 }] }).subscribe();
+    const reqInspect = httpTesting.expectOne(`${baseUrl}/goods-receipts/grn-1/inspection`);
+    expect(reqInspect.request.method).toBe('POST');
+    expect(reqInspect.request.body).toEqual({ results: [{ purchase_receipt_line_id: 'l-1', quantity_released: 8 }] });
+    reqInspect.flush({ success: true, message: 'OK', data: { id: 'grn-1' } });
+
+    service.getSuppliers({ per_page: 100 }).subscribe((res) => {
+      expect(res.data[0].company_name).toBe('Acme');
+    });
+    const reqSuppliers = httpTesting.expectOne((r) => r.url === `${baseUrl}/suppliers` && r.params.get('per_page') === '100');
+    expect(reqSuppliers.request.method).toBe('GET');
+    reqSuppliers.flush({ data: [{ id: 'sup-1', company_name: 'Acme' }], meta: { total: 1 } });
   });
 });

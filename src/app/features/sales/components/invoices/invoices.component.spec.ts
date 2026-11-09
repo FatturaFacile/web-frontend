@@ -193,6 +193,14 @@ describe('InvoicesComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('opens the read-only detail of an invoice', () => {
+    component['showDetails'](mockInvoiceIT);
+
+    expect(apiMock.get).toHaveBeenCalledWith('inv-it-1');
+    expect(component['detailOpen']()).toBe(true);
+    expect(component['detailInvoice']()?.id).toBe('inv-it-1');
+  });
+
   it('loads Swiss QR-bill and opens QR modal', () => {
     component.viewQrBill(mockInvoiceCH);
 

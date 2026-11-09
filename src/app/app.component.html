@@ -26,7 +26,10 @@
   </nz-layout>
 }
 
-<app-two-factor-setup-modal
-  [isVisible]="authStore.twoFactorSetupRequired()"
-  (completed)="onGlobal2FASetupCompleted()"
-/>
+<!-- The modal (QR code, steps) is only needed when the account must set up two-factor authentication: load it on demand. -->
+@defer (when authStore.twoFactorSetupRequired()) {
+  <app-two-factor-setup-modal
+    [isVisible]="authStore.twoFactorSetupRequired()"
+    (completed)="onGlobal2FASetupCompleted()"
+  />
+}

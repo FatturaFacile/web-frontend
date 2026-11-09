@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 interface BreadcrumbItem {
   label: string;
