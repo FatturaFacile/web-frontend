@@ -1,15 +1,18 @@
 export type BomStatus = 'draft' | 'active' | 'superseded' | 'archived' | string;
 export type BomType = 'standard' | 'phantom' | 'engineering';
 
+/** Decimals (quantities, percentages, rates) arrive from the API as strings. */
 export interface MfgBomComponent {
   id?: string;
   component_item_id: string;
+  component_item_code?: string | null;
   item_code?: string;
   item_name?: string;
-  quantity_per: number;
+  quantity_per: string;
+  uom?: string;
   sequence?: number | null;
-  scrap_percentage?: number | null;
-  yield_percentage?: number | null;
+  scrap_percentage?: string | null;
+  yield_percentage?: string | null;
   is_phantom?: boolean | null;
   issue_method?: 'manual' | 'backflush' | null;
   operation_sequence?: number | null;
@@ -27,12 +30,14 @@ export interface MfgBomResource {
   version?: number;
   bom_type?: BomType;
   status: BomStatus;
-  base_quantity: number;
+  base_quantity: string;
   uom: string;
   effective_from?: string | null;
   effective_to?: string | null;
   approved_by?: string | null;
   approved_at?: string | null;
+  supersedes_bom_id?: string | null;
+  engineering_change_order_id?: string | null;
   notes?: string | null;
   components?: MfgBomComponent[];
   created_at?: string;
@@ -74,8 +79,9 @@ export type ProductionOrderStatus =
 export interface MfgProductionOrderLine {
   id?: string;
   mfg_item_id: string;
-  required_quantity: number;
-  issued_quantity: number;
+  required_quantity: string;
+  issued_quantity: string;
+  open_quantity?: string;
   uom?: string;
   notes?: string | null;
 }
@@ -104,21 +110,26 @@ export interface MfgProductionOrderResource {
   warehouse_id?: string | null;
   receipt_warehouse_id?: string | null;
   status: ProductionOrderStatus;
-  target_quantity: number;
-  completed_quantity: number;
-  scrapped_quantity: number;
+  target_quantity: string;
+  completed_quantity: string;
+  scrapped_quantity: string;
   uom: string;
   planned_start_date: string;
   planned_end_date: string;
   actual_start_date?: string | null;
   actual_end_date?: string | null;
-  standard_cost_total?: number;
-  actual_cost_total?: number;
-  variance_total?: number;
+  standard_cost_total?: string;
+  actual_cost_total?: string;
+  variance_total?: string;
   notes?: string | null;
   lines?: MfgProductionOrderLine[];
   operations?: MfgProductionOrderOperation[];
   created_at?: string;
+}
+
+/** `POST /manufacturing/production-orders/{id}/cancel` needs the reason. */
+export interface CancelProductionOrderPayload {
+  reason: string;
 }
 
 export interface CreateProductionOrderPayload {
@@ -145,8 +156,8 @@ export interface MfgPlannedOrderResource {
   item_code?: string;
   item_name?: string;
   order_type: 'make' | 'buy' | string;
-  quantity: number;
-  net_requirement: number;
+  quantity: string;
+  net_requirement: string;
   bom_level: number;
   uom: string;
   start_date: string;
@@ -165,11 +176,11 @@ export interface MfgShortageResource {
   item_code?: string;
   item_name?: string;
   required_date: string;
-  gross_requirement: number;
-  available_inventory: number;
-  scheduled_receipts: number;
-  safety_stock: number;
-  net_shortage: number;
+  gross_requirement: string;
+  available_inventory: string;
+  scheduled_receipts: string;
+  safety_stock: string;
+  net_shortage: string;
   recommended_action: string;
 }
 
@@ -203,12 +214,12 @@ export interface MfgWorkCenterResource {
   name: string;
   description?: string | null;
   department_code?: string | null;
-  capacity_hours_per_day: number;
-  efficiency_rate?: number;
-  availability_rate?: number;
-  hourly_cost_rate?: number;
-  hourly_overhead_rate?: number;
-  status: 'active' | 'inactive' | 'maintenance' | string;
+  capacity_hours_per_day: string;
+  efficiency_rate?: string;
+  availability_rate?: string;
+  hourly_cost_rate?: string;
+  hourly_overhead_rate?: string;
+  status: 'active' | 'inactive' | string;
   created_at?: string;
 }
 
@@ -239,12 +250,19 @@ export interface MfgRoutingResource {
   effective_to?: string | null;
   notes?: string | null;
   operations?: {
-    id?: string;
-    operation_sequence: number;
+    id: string;
+    sequence: number;
+    operation_code: string;
+    name: string;
     work_center_id: string;
-    description: string;
-    setup_time_minutes?: number;
-    run_time_minutes?: number;
+    machine_center_id?: string | null;
+    setup_time_minutes: string;
+    run_time_minutes_per_unit: string;
+    labor_time_minutes_per_unit: string;
+    is_subcontracted: boolean;
+    subcontractor_contact_id?: string | null;
+    subcontract_unit_cost?: string;
+    quality_plan_id?: string | null;
   }[];
   created_at?: string;
 }
@@ -262,7 +280,3 @@ export type ProductionOrder = MfgProductionOrderResource | {
 };
 
 export type BillOfMaterial = MfgBomResource;
-export interface TrackProductionStagePayload {
-  actual_hours: number;
-  status: 'pending' | 'running' | 'done';
-}
