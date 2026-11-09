@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Kundendienst & Einsätze",
   "NAV.FLEET": "Flottenplanung",
   "NAV.HR": "Lohnabrechnung & HR IT-CH",
+  "NAV.HR_PAYROLL_DATA": "Lohndaten der Mitarbeiter",
   "NAV.HR_SHIFTS": "Schichtplanung",
   "NAV.HR_RECRUITING": "Rekrutierung",
   "NAV.HR_TALENT": "Talente und Weiterbildung",
@@ -3254,6 +3255,49 @@
       "weekday": "Werktag",
       "weekend": "Wochenende",
       "holiday": "Feiertag"
+    }
+  },
+  "hrmPayData": {
+    "title": "Lohndaten der Mitarbeiter",
+    "subtitle": "Monatliche Erfassungen, Absenzen, Kinder und Lohnstammdaten (vertrauliche Daten)",
+    "filterEmployee": "Nach Mitarbeiter filtern",
+    "inputs": "Variable Erfassungen",
+    "absences": "Absenzen",
+    "children": "Kinder",
+    "profiles": "Lohnstammdaten",
+    "quantity": "Menge",
+    "rate": "Ansatz",
+    "percent": "Prozent",
+    "dateOfBirth": "Geburtsdatum",
+    "inEducation": "In Ausbildung",
+    "educationEnd": "Ende der Ausbildung",
+    "allowanceEligible": "Zulagenberechtigt",
+    "iban": "IBAN",
+    "ssn": "Sozialversicherungsnummer",
+    "street": "Strasse",
+    "postalCode": "PLZ",
+    "city": "Ort",
+    "payType": "Lohnart",
+    "hourlyWage": "Stundenlohn",
+    "holidayWeeks": "Ferienwochen",
+    "withholdingCode": "Quellensteuercode",
+    "withholdingRate": "Quellensteuersatz (%)",
+    "italianTaxCode": "Italienische Steuernummer",
+    "agreementCode": "GAV-Code",
+    "contractLevel": "Stufe",
+    "payTypeValue": {
+      "monthly": "Monatlich",
+      "hourly": "Stündlich"
+    },
+    "absenceType": {
+      "Sickness": "Krankheit",
+      "Accident": "Unfall",
+      "Maternity": "Mutterschaft",
+      "Paternity": "Vaterschaft",
+      "Military": "Militär",
+      "Vacation": "Ferien",
+      "Unpaid": "Unbezahlt",
+      "Other": "Sonstiges"
     }
   }
 }

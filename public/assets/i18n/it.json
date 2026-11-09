@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Assistenza & Interventi",
   "NAV.FLEET": "Planning Flotta",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_PAYROLL_DATA": "Dati payroll dipendenti",
   "NAV.HR_SHIFTS": "Pianificazione turni",
   "NAV.HR_RECRUITING": "Selezione del personale",
   "NAV.HR_TALENT": "Talenti e formazione",
@@ -3310,6 +3311,49 @@
       "weekday": "Feriale",
       "weekend": "Weekend",
       "holiday": "Festivo"
+    }
+  },
+  "hrmPayData": {
+    "title": "Dati payroll dipendenti",
+    "subtitle": "Variazioni mensili, assenze, figli e anagrafica retributiva (dati riservati)",
+    "filterEmployee": "Filtra per dipendente",
+    "inputs": "Variazioni",
+    "absences": "Assenze",
+    "children": "Figli",
+    "profiles": "Anagrafica retributiva",
+    "quantity": "Quantità",
+    "rate": "Tariffa",
+    "percent": "Percentuale",
+    "dateOfBirth": "Data di nascita",
+    "inEducation": "In formazione",
+    "educationEnd": "Fine formazione",
+    "allowanceEligible": "Diritto agli assegni",
+    "iban": "IBAN",
+    "ssn": "N. previdenziale",
+    "street": "Via",
+    "postalCode": "CAP",
+    "city": "Città",
+    "payType": "Tipo di retribuzione",
+    "hourlyWage": "Paga oraria",
+    "holidayWeeks": "Settimane di ferie",
+    "withholdingCode": "Codice imposta alla fonte",
+    "withholdingRate": "Aliquota imposta alla fonte (%)",
+    "italianTaxCode": "Codice fiscale",
+    "agreementCode": "Codice CCNL",
+    "contractLevel": "Livello",
+    "payTypeValue": {
+      "monthly": "Mensile",
+      "hourly": "Orario"
+    },
+    "absenceType": {
+      "Sickness": "Malattia",
+      "Accident": "Infortunio",
+      "Maternity": "Maternità",
+      "Paternity": "Paternità",
+      "Military": "Servizio militare",
+      "Vacation": "Ferie",
+      "Unpaid": "Non retribuita",
+      "Other": "Altro"
     }
   }
 }

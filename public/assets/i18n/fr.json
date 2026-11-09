@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Assistance & Interventions",
   "NAV.FLEET": "Planning flotte",
   "NAV.HR": "Paie & RH IT-CH",
+  "NAV.HR_PAYROLL_DATA": "Données de paie des employés",
   "NAV.HR_SHIFTS": "Planification des horaires",
   "NAV.HR_RECRUITING": "Recrutement",
   "NAV.HR_TALENT": "Talents et formation",
@@ -3254,6 +3255,49 @@
       "weekday": "Jour ouvré",
       "weekend": "Week-end",
       "holiday": "Jour férié"
+    }
+  },
+  "hrmPayData": {
+    "title": "Données de paie des employés",
+    "subtitle": "Saisies mensuelles, absences, enfants et profils de paie (données sensibles)",
+    "filterEmployee": "Filtrer par employé",
+    "inputs": "Saisies variables",
+    "absences": "Absences",
+    "children": "Enfants",
+    "profiles": "Profils de paie",
+    "quantity": "Quantité",
+    "rate": "Taux",
+    "percent": "Pourcentage",
+    "dateOfBirth": "Date de naissance",
+    "inEducation": "En formation",
+    "educationEnd": "Fin de formation",
+    "allowanceEligible": "Droit aux allocations",
+    "iban": "IBAN",
+    "ssn": "N° de sécurité sociale",
+    "street": "Rue",
+    "postalCode": "Code postal",
+    "city": "Ville",
+    "payType": "Type de rémunération",
+    "hourlyWage": "Salaire horaire",
+    "holidayWeeks": "Semaines de vacances",
+    "withholdingCode": "Code d’impôt à la source",
+    "withholdingRate": "Taux d’impôt à la source (%)",
+    "italianTaxCode": "Code fiscal italien",
+    "agreementCode": "Code de convention",
+    "contractLevel": "Niveau",
+    "payTypeValue": {
+      "monthly": "Mensuel",
+      "hourly": "Horaire"
+    },
+    "absenceType": {
+      "Sickness": "Maladie",
+      "Accident": "Accident",
+      "Maternity": "Maternité",
+      "Paternity": "Paternité",
+      "Military": "Service militaire",
+      "Vacation": "Vacances",
+      "Unpaid": "Non rémunérée",
+      "Other": "Autre"
     }
   }
 }
