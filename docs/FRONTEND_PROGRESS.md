@@ -35,6 +35,7 @@ Last updated: 2026-11-09
 | **17** | **Verticals & Minor Modules** | 65 | 40 | Retail/POS telematic documents & daily corrispettivi, Automotive tire hotel check-in/out, Construction SAL progress billings, Fleet Rent bookings & check-in, Legal cases & time logs | 13 | **Done** | Covered `/v1/fiscal-retail/commercial-documents`, `/v1/fiscal-retail/corrispettivi`, `/v1/automotive/tire-hotel`, `/v1/construction/sal`, `/v1/rent/bookings`, `/v1/professionals/time-logs` |
 | **18** | **Final Polish & Dashboards** | 15 | 15 | Executive Dashboard KPIs, Cash Flow & Tax Deadlines, Global Search, Accessibility & WCAG AA audits, Full test suite | 3 | **Done** | Covered `/v1/dashboard/kpi-summary`, `/v1/dashboard/cash-flow-forecast`, `/v1/dashboard/tax-deadlines`, 77/77 test suites passing (444 unit tests) |
 | **19** | **Customs & Logistics (/customs)** | 66 | 66 | Customs Dossiers, Declarations, Assessment Decisions (eVV), Tariff Grids, Shipments, Profitability | 10 | **Done** | Covered /customs/dossiers, /customs/declarations, /customs/assessment-decisions, /customs/tariff-grids, /customs/shipment-requests |
+| **20** | **Approval Workflows (/workflows)** | 23 | 23 | Tasks Inbox, Running Instances, Process Definitions, Out-of-Office Delegations, Escalation Rules, SLA Metrics, SHA-256 Audit Trail | 12 | **Done** | Covered /workflows/my-tasks, /workflows/my-pending, /workflows/steps/{id}/decide, /workflows/instances, /workflows/definitions, /workflows/delegations, /workflows/escalation-rules, /workflows/sla-report |
 
 ---
 
@@ -61,4 +62,4 @@ Last updated: 2026-11-09
 
 ---
 
-### Overall Status: 19 ERP MODULES FULLY IMPLEMENTED & TESTED (455/455 tests passing, ng build passing)
+### Overall Status: 20 ERP MODULES FULLY IMPLEMENTED & TESTED (467/467 tests passing, ng build passing)

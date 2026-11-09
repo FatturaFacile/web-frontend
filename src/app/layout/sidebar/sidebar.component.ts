@@ -171,6 +171,12 @@ export class SidebarComponent {
             },
           ],
         },
+        {
+          key: 'NAV.WORKFLOWS',
+          icon: 'fa-solid fa-diagram-project',
+          route: '/workflows',
+          module: 'workflow',
+        },
       ],
     },
     {

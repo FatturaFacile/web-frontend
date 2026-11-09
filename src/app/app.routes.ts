@@ -122,6 +122,13 @@ export const routes: Routes = [
       import('./features/customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
   },
   {
+    path: 'workflows',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Processi & Approvazioni', title: 'Workflow & Approvazioni' },
+    loadChildren: () =>
+      import('./features/workflows/workflows.routes').then((m) => m.WORKFLOW_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },
