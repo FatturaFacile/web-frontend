@@ -177,6 +177,12 @@ export class SidebarComponent {
           route: '/workflows',
           module: 'workflow',
         },
+        {
+          key: 'NAV.DMS',
+          icon: 'fa-solid fa-folder-tree',
+          route: '/dms',
+          module: 'documents',
+        },
       ],
     },
     {

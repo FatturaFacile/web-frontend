@@ -129,6 +129,13 @@ export const routes: Routes = [
       import('./features/workflows/workflows.routes').then((m) => m.WORKFLOW_ROUTES),
   },
   {
+    path: 'dms',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Gestione Documentale (DMS)', title: 'DMS & Archivio' },
+    loadChildren: () =>
+      import('./features/dms/dms.routes').then((m) => m.DMS_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },
