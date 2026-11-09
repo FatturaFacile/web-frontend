@@ -41,6 +41,7 @@ Last updated: 2026-11-09
 | **23** | **Associations & Third Sector (/associations)** | 216 | 216 | Members Register, Fees & Collections, Sports Courses, Donations & 5x1000, RUNTS Volunteers, Expense Reimbursements, General Meetings | 12 | **Done** | Covered /associations/members, /associations/fee-assignments, /associations/courses, /associations/donations, /associations/five-per-mille, /associations/volunteers, /associations/reimbursements, /associations/meetings |
 | **24** | **Automotive Workshop & Job Cards (/automotive/workshop)** | 18 | 18 | Repair Orders, Job Lines & Spare Parts, Mechanic Time Tracking & Billing, Vehicle History, Vehicle Stock & Sales, Scheduled Maintenance | 13 | **Done** | Covered /workshop/folders, /workshop/folders/{id}/lines, /workshop/folders/{id}/status, quote/DDT/invoice conversions, /time-entries, /vehicle-stock, /recurring-services |
 | **25** | **Childcare & Early Childhood Education (/childcare)** | 41 | 41 | Children Registry, Groups & Sections, Daily Attendance Register, Daily Log Diary, Fee Plans & Monthly Billing, Document Requirements & Digital Signature | 12 | **Done** | Covered /childcare/children, /groups, /attendances/check-in/check-out/absence/register, /notes, /daily-report, /fee-plans, /billing/runs, /bills, /document-requirements, /childcare-family |
+| **26** | **Construction Trades & Cantieri Edili (/construction & /construction-trades)** | 37 | 37 | Sites, Progress Billings (SAL), Tender Bids, Bill of Quantities & Measurements, Site Diary, Safety Documents (POS/DURC), Subcontracts & Certifications | 9 | **Done** | Covered /construction/sites, /sal, /construction-trades/bids, /positions, /measurements, /billings, /site-costs, /budget-control, /sites/{id}/diary, /sites/{id}/documents, /subcontractors, /subcontracts |
 
 ---
 
@@ -71,7 +72,8 @@ Last updated: 2026-11-09
 23. `[DONE]` **Module 23: Third Sector & Non-Profit Associations (`/associations`)**
 24. `[DONE]` **Module 24: Automotive Workshop & Job Cards (`/automotive/workshop`)**
 25. `[DONE]` **Module 25: Childcare & Early Childhood Education (`/childcare`)**
+26. `[DONE]` **Module 26: Construction Trades & Cantieri Edili (`/construction`)**
 
 ---
 
-### Overall Status: 25 ERP MODULES FULLY IMPLEMENTED & TESTED (526/526 tests passing, ng build passing)
+### Overall Status: 26 ERP MODULES FULLY IMPLEMENTED & TESTED (533/533 tests passing, ng build passing)
