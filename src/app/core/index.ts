@@ -68,3 +68,4 @@ export * from './api/assistant-api.service';
 export * from './api/loyalty-api.service';
 export * from './api/workspace-api.service';
 export * from './api/general-ledger-api.service';
+export * from './api/treasury-ops-api.service';

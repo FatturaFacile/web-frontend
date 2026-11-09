@@ -46,3 +46,4 @@ export * from './assistant.model';
 export * from './loyalty.model';
 export * from './workspace.model';
 export * from './general-ledger.model';
+export * from './treasury-ops.model';
