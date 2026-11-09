@@ -4,18 +4,22 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  ApproveThreeWayVariancePayload,
   CreatePurchaseOrderPayload,
   CreateRequisitionPayload,
   ExecuteThreeWayMatchPayload,
   GoodsReceipt,
-  GoodsReceiptInspectionStatus,
+  InspectGoodsReceiptPayload,
   PaginatedResponse,
   ProcessGoodsReceiptPayload,
+  ProcurementSupplier,
   PurchaseOrder,
   PurchaseOrderFilterParams,
+  ReceivedPassiveInvoice,
   Requisition,
   RequisitionFilterParams,
   SupplierInvoice,
+  SupplierInvoiceApproval,
   ThreeWayMatchLog,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -25,6 +29,14 @@ export class ProcurementApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/procurement`;
   private readonly purchasesUrl = `${environment.apiBaseUrl}/purchases`;
+
+  // --- Suppliers ---
+
+  getSuppliers(filters?: { category_id?: string; sort?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<ProcurementSupplier>> {
+    return this.http.get<PaginatedResponse<ProcurementSupplier>>(`${this.baseUrl}/suppliers`, {
+      params: filters ? toHttpParams(filters) : undefined,
+    });
+  }
 
   // --- Purchase Orders ---
 
@@ -72,26 +84,28 @@ export class ProcurementApiService {
 
   // --- Goods Receipt & Inspection ---
 
-  getGoodsReceipts(filters?: { page?: number; per_page?: number; search?: string }): Observable<PaginatedResponse<GoodsReceipt>> {
+  getGoodsReceipts(filters?: { page?: number; per_page?: number; purchase_order_id?: string }): Observable<PaginatedResponse<GoodsReceipt>> {
     return this.http.get<PaginatedResponse<GoodsReceipt>>(`${this.baseUrl}/goods-receipts`, {
       params: filters ? toHttpParams(filters) : undefined,
     });
+  }
+
+  getGoodsReceipt(id: string): Observable<ApiResponse<GoodsReceipt>> {
+    return this.http.get<ApiResponse<GoodsReceipt>>(`${this.baseUrl}/goods-receipts/${id}`);
   }
 
   processGoodsReceipt(orderId: string, payload: ProcessGoodsReceiptPayload): Observable<ApiResponse<GoodsReceipt>> {
     return this.http.post<ApiResponse<GoodsReceipt>>(`${this.baseUrl}/purchase-orders/${orderId}/goods-receipt`, payload);
   }
 
-  inspectGoodsReceipt(id: string, status: GoodsReceiptInspectionStatus, notes?: string): Observable<ApiResponse<GoodsReceipt>> {
-    return this.http.post<ApiResponse<GoodsReceipt>>(`${this.baseUrl}/goods-receipts/${id}/inspection`, {
-      inspection_status: status,
-      notes,
-    });
+  /** Records the quantity released to stock for each line of a receipt that needs inspection. */
+  inspectGoodsReceipt(id: string, payload: InspectGoodsReceiptPayload): Observable<ApiResponse<GoodsReceipt>> {
+    return this.http.post<ApiResponse<GoodsReceipt>>(`${this.baseUrl}/goods-receipts/${id}/inspection`, payload);
   }
 
   // --- Three-Way Matching ---
 
-  getThreeWayMatches(filters?: { page?: number; per_page?: number; status?: string }): Observable<PaginatedResponse<ThreeWayMatchLog>> {
+  getThreeWayMatches(filters?: { page?: number; per_page?: number; match_status?: string }): Observable<PaginatedResponse<ThreeWayMatchLog>> {
     return this.http.get<PaginatedResponse<ThreeWayMatchLog>>(`${this.baseUrl}/three-way-match`, {
       params: filters ? toHttpParams(filters) : undefined,
     });
@@ -101,13 +115,19 @@ export class ProcurementApiService {
     return this.http.post<ApiResponse<ThreeWayMatchLog>>(`${this.baseUrl}/three-way-match/execute`, payload);
   }
 
-  approveThreeWayMatchVariance(id: string, notes?: string): Observable<ApiResponse<ThreeWayMatchLog>> {
-    return this.http.post<ApiResponse<ThreeWayMatchLog>>(`${this.baseUrl}/three-way-match/${id}/approve-variance`, { notes });
+  approveThreeWayMatchVariance(id: string, payload: ApproveThreeWayVariancePayload): Observable<ApiResponse<ThreeWayMatchLog>> {
+    return this.http.post<ApiResponse<ThreeWayMatchLog>>(`${this.baseUrl}/three-way-match/${id}/approve-variance`, payload);
   }
 
   // --- AP Supplier Invoices ---
 
-  getSupplierInvoices(filters?: { page?: number; per_page?: number; search?: string }): Observable<PaginatedResponse<SupplierInvoice>> {
+  getSupplierInvoices(filters?: {
+    page?: number;
+    per_page?: number;
+    supplier_id?: string;
+    document_type?: string;
+    payment_status?: string;
+  }): Observable<PaginatedResponse<SupplierInvoice>> {
     return this.http.get<PaginatedResponse<SupplierInvoice>>(`${this.purchasesUrl}/supplier-invoices`, {
       params: filters ? toHttpParams(filters) : undefined,
     });
@@ -117,10 +137,23 @@ export class ProcurementApiService {
     return this.http.post<ApiResponse<SupplierInvoice>>(`${this.purchasesUrl}/supplier-invoices/${id}/mark-paid`, {});
   }
 
-  importPassiveInvoiceSdi(xmlContent: string): Observable<ApiResponse<{ invoice_id: string; message: string }>> {
-    return this.http.post<ApiResponse<{ invoice_id: string; message: string }>>(`${this.purchasesUrl}/passive-invoices/import-sdi`, {
-      xml_content: xmlContent,
-    });
+  /** Uploads a FatturaPA XML received from SDI (multipart, field `file`, max 10 MB) and registers its documents. */
+  receivePassiveInvoiceXml(file: File): Observable<ApiResponse<ReceivedPassiveInvoice[]>> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    return this.http.post<ApiResponse<ReceivedPassiveInvoice[]>>(`${this.purchasesUrl}/passive-invoices/receive-xml`, body);
+  }
+
+  /** Submits a received invoice to the approval workflow (the cost center is optional). */
+  submitSupplierInvoiceApproval(id: string, costCenterId?: string): Observable<ApiResponse<SupplierInvoiceApproval>> {
+    return this.http.post<ApiResponse<SupplierInvoiceApproval>>(
+      `${this.baseUrl}/supplier-invoices/${id}/submit-approval`,
+      costCenterId ? { cost_center_id: costCenterId } : {},
+    );
+  }
+
+  getSupplierInvoiceApproval(id: string): Observable<ApiResponse<SupplierInvoiceApproval>> {
+    return this.http.get<ApiResponse<SupplierInvoiceApproval>>(`${this.baseUrl}/supplier-invoices/${id}/approval`);
   }
 
   scanPassiveInvoiceQrBill(payload: { qr_text: string }): Observable<ApiResponse<SupplierInvoice>> {
