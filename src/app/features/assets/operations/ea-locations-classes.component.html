@@ -1,0 +1,177 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'EA.LOCATIONS' | translate">
+      @if (canWrite) {
+        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
+      }
+      <nz-table #locationTable nzSize="middle" [nzData]="locations()" [nzPageSize]="20">
+        <thead>
+          <tr>
+            <th>{{ 'EA.CODE' | translate }}</th>
+            <th>{{ 'EA.NAME' | translate }}</th>
+            <th>{{ 'EA.LOCATION_TYPE' | translate }}</th>
+            <th>{{ 'EA.CITY' | translate }}</th>
+            <th>{{ 'EA.STATUS' | translate }}</th>
+            <th>{{ 'EA.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (location of locationTable.data; track location.id) {
+            <tr>
+              <td>{{ location.code }}</td>
+              <td>{{ location.name }}</td>
+              <td>{{ location.location_type ? ('EA.LOCATION_TYPE_' + location.location_type.toUpperCase() | translate) : '' }}</td>
+              <td>{{ location.city }}</td>
+              <td>
+                <nz-tag [nzColor]="location.is_active ? 'green' : 'default'">{{ (location.is_active ? 'EA.ACTIVE' : 'EA.INACTIVE') | translate }}</nz-tag>
+              </td>
+              <td>
+                @if (canWrite) {
+                  <button nz-button nzSize="small" type="button" (click)="openLocation(location)">{{ 'EA.EDIT' | translate }}</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'EA.CLASSES' | translate">
+      @if (canWrite) {
+        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
+      }
+      <nz-table #classTable nzSize="middle" [nzData]="classes()" [nzPageSize]="20">
+        <thead>
+          <tr>
+            <th>{{ 'EA.CODE' | translate }}</th>
+            <th>{{ 'EA.NAME' | translate }}</th>
+            <th>{{ 'EA.CRITICALITY' | translate }}</th>
+            <th nzAlign="right">{{ 'EA.MAINTENANCE_INTERVAL' | translate }}</th>
+            <th>{{ 'EA.REQUIRES_CALIBRATION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (assetClass of classTable.data; track assetClass.id) {
+            <tr>
+              <td>{{ assetClass.code }}</td>
+              <td>{{ assetClass.name }}</td>
+              <td>{{ assetClass.criticality ? ('EA.CRITICALITY_' + assetClass.criticality.toUpperCase() | translate) : '' }}</td>
+              <td nzAlign="right">{{ assetClass.default_maintenance_interval_days }}</td>
+              <td>{{ (assetClass.requires_calibration ? 'EA.YES' : 'EA.NO') | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="modal() === 'location'"
+  [nzTitle]="'EA.LOCATION_FORM' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveLocation()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="locationForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lo-code">{{ 'EA.CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="locationForm.controls.code.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
+          <input id="lo-code" nz-input formControlName="code" maxlength="50" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lo-name">{{ 'EA.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="locationForm.controls.name.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
+          <input id="lo-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lo-parent">{{ 'EA.PARENT_LOCATION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="lo-parent" formControlName="parent_id" nzAllowClear nzShowSearch>
+            @for (location of locations(); track location.id) {
+              <nz-option [nzValue]="location.id" [nzLabel]="location.code + ' ' + location.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lo-type">{{ 'EA.LOCATION_TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="lo-type" formControlName="location_type" nzAllowClear>
+            @for (type of locationTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'EA.LOCATION_TYPE_' + type.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lo-address">{{ 'EA.ADDRESS' | translate }}</nz-form-label>
+        <nz-form-control><input id="lo-address" nz-input formControlName="address" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lo-city">{{ 'EA.CITY' | translate }}</nz-form-label>
+        <nz-form-control><input id="lo-city" nz-input formControlName="city" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lo-active">{{ 'EA.ACTIVE' | translate }}</nz-form-label>
+        <nz-form-control><nz-switch id="lo-active" formControlName="is_active" /></nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modal() === 'class'"
+  [nzTitle]="'EA.CLASS_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveClass()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="classForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cl-code">{{ 'EA.CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="classForm.controls.code.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
+          <input id="cl-code" nz-input formControlName="code" maxlength="50" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cl-name">{{ 'EA.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="classForm.controls.name.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
+          <input id="cl-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cl-criticality">{{ 'EA.CRITICALITY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="cl-criticality" formControlName="criticality" nzAllowClear>
+            @for (criticality of criticalities; track criticality) {
+              <nz-option [nzValue]="criticality" [nzLabel]="'EA.CRITICALITY_' + criticality.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cl-interval">{{ 'EA.MAINTENANCE_INTERVAL' | translate }}</nz-form-label>
+        <nz-form-control><nz-input-number id="cl-interval" formControlName="default_maintenance_interval_days" [nzMin]="1" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cl-custodian">{{ 'EA.REQUIRES_CUSTODIAN' | translate }}</nz-form-label>
+        <nz-form-control><nz-switch id="cl-custodian" formControlName="requires_custodian" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cl-calibration">{{ 'EA.REQUIRES_CALIBRATION' | translate }}</nz-form-label>
+        <nz-form-control><nz-switch id="cl-calibration" formControlName="requires_calibration" /></nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
