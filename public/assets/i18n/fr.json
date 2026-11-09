@@ -3320,5 +3320,9 @@
   "SUBX.REVENUE.RECOGNIZED": "Revenus reconnus",
   "SUBX.REVENUE.FORECAST": "Prévision de facturation",
   "SUBX.REVENUE.MONTHS": "Mois",
-  "SUBX.REVENUE.REFRESH": "Actualiser"
+  "SUBX.REVENUE.REFRESH": "Actualiser",
+  "CRMX.PIPELINE.CREATE_QUOTE": "Créer un devis",
+  "CRMX.PIPELINE.CREATE_PROJECT": "Créer un projet",
+  "CRMX.PIPELINE.QUOTE_CREATED": "Devis créé à partir de l'opportunité",
+  "CRMX.PIPELINE.PROJECT_CREATED": "Projet créé à partir de l'opportunité"
 }

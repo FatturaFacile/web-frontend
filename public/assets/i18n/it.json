@@ -3376,5 +3376,9 @@
   "SUBX.REVENUE.RECOGNIZED": "Ricavi riconosciuti",
   "SUBX.REVENUE.FORECAST": "Previsione di fatturazione",
   "SUBX.REVENUE.MONTHS": "Mesi",
-  "SUBX.REVENUE.REFRESH": "Aggiorna"
+  "SUBX.REVENUE.REFRESH": "Aggiorna",
+  "CRMX.PIPELINE.CREATE_QUOTE": "Crea preventivo",
+  "CRMX.PIPELINE.CREATE_PROJECT": "Crea progetto",
+  "CRMX.PIPELINE.QUOTE_CREATED": "Preventivo creato dall'opportunità",
+  "CRMX.PIPELINE.PROJECT_CREATED": "Progetto creato dall'opportunità"
 }
