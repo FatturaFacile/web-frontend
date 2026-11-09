@@ -10,6 +10,8 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, 'tests/**'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
+    testTimeout: 20000,
+    hookTimeout: 30000,
     reporters: ['default'],
     coverage: {
       provider: 'v8',

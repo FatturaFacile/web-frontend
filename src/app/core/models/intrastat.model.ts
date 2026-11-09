@@ -1,0 +1,172 @@
+export type IntrastatFlow = 'sales' | 'purchases';
+export type IntrastatModel = 'INTRA-1' | 'INTRA-2';
+export type IntrastatPeriodicity = 'M' | 'T';
+export type IntrastatStatus = 'draft' | 'validated' | 'submitted';
+
+export interface IntrastatSectionSummary {
+  section: number;
+  count: number;
+  total_eur: number;
+}
+
+export interface IntrastatSourceDocument {
+  type: 'invoice' | 'passive_invoice';
+  id: string;
+  number?: string | null;
+  date?: string | null;
+}
+
+export interface IntrastatDeclarationLine {
+  id: string;
+  line_number: number;
+  section: number;
+  partner_country_code?: string | null;
+  partner_vat_number?: string | null;
+  amount_eur?: number | null;
+  amount_currency?: number | null;
+  transaction_nature_a?: string | null;
+  transaction_nature_b?: string | null;
+  cn8_code?: string | null;
+  net_mass_kg?: number | null;
+  supplementary_units?: number | null;
+  statistical_value_eur?: number | null;
+  delivery_terms?: string | null;
+  transport_mode?: string | null;
+  goods_country_code?: string | null;
+  origin_country_code?: string | null;
+  province_code?: string | null;
+  invoice_number?: string | null;
+  invoice_date?: string | null;
+  service_code?: string | null;
+  supply_mode?: string | null;
+  payment_method?: string | null;
+  payment_country_code?: string | null;
+  source_documents?: IntrastatSourceDocument[];
+}
+
+export interface IntrastatDeclaration {
+  id: string;
+  flow: IntrastatFlow;
+  model: IntrastatModel;
+  year: number;
+  periodicity: IntrastatPeriodicity;
+  period: number;
+  reference_number: number;
+  content_code: number;
+  special_case_code: number;
+  obligated_vat_number?: string | null;
+  delegate_vat_number?: string | null;
+  includes_statistical_data: boolean;
+  has_annual_flows_above_20_million: boolean;
+  status: IntrastatStatus;
+  validated_at?: string | null;
+  submitted_at?: string | null;
+  protocol_number?: string | null;
+  notes?: string | null;
+  last_export_file_name?: string | null;
+  last_exported_at?: string | null;
+  sections?: IntrastatSectionSummary[];
+  lines?: IntrastatDeclarationLine[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntrastatDeclarationRequest {
+  flow: IntrastatFlow;
+  year: number;
+  periodicity: IntrastatPeriodicity;
+  period: number;
+  reference_number?: number | null;
+  content_code?: number;
+  special_case_code?: number;
+  obligated_vat_number?: string | null;
+  delegate_vat_number?: string | null;
+  includes_statistical_data?: boolean;
+  has_annual_flows_above_20_million?: boolean;
+  notes?: string | null;
+}
+
+export interface IntrastatGenerateRequest extends IntrastatDeclarationRequest {
+  unclassified_as?: 'goods' | 'services' | null;
+  defaults?: {
+    transaction_nature_a?: string | null;
+    transaction_nature_b?: string | null;
+    delivery_terms?: string | null;
+    transport_mode?: string | null;
+    province_code?: string | null;
+    payment_country_code?: string | null;
+    service_code?: string | null;
+  };
+}
+
+export interface IntrastatLineRequest {
+  section: number;
+  partner_country_code?: string | null;
+  partner_vat_number?: string | null;
+  amount_eur?: number | null;
+  amount_currency?: number | null;
+  transaction_nature_a?: string | null;
+  transaction_nature_b?: string | null;
+  cn8_code?: string | null;
+  net_mass_kg?: number | null;
+  supplementary_units?: number | null;
+  statistical_value_eur?: number | null;
+  delivery_terms?: string | null;
+  transport_mode?: string | null;
+  goods_country_code?: string | null;
+  origin_country_code?: string | null;
+  province_code?: string | null;
+  invoice_number?: string | null;
+  invoice_date?: string | null;
+  service_code?: string | null;
+  supply_mode?: string | null;
+  payment_method?: string | null;
+  payment_country_code?: string | null;
+}
+
+export interface IntrastatSubmitRequest {
+  protocol_number: string;
+}
+
+export interface IntrastatExportRequest {
+  declaration_id: string;
+  format?: 'scdata' | 'edi' | 'json';
+}
+
+export interface IntrastatProductProfile {
+  product_id: string;
+  product_name?: string;
+  cn8_code: string;
+  cpa_code?: string | null;
+  origin_country_code?: string | null;
+  unit_of_measure?: string | null;
+}
+
+export interface IntrastatProductProfileRequest {
+  cn8_code: string;
+  cpa_code?: string | null;
+  origin_country_code?: string | null;
+  unit_of_measure?: string | null;
+}
+
+export interface IntrastatValidationProblem {
+  line_number?: number;
+  field: string;
+  message: string;
+}
+
+export interface IntrastatValidationResponse {
+  is_valid: boolean;
+  problems?: IntrastatValidationProblem[];
+}
+
+export interface IntrastatPeriodicityThresholds {
+  year: number;
+  quarter?: number;
+  advised_periodicity: IntrastatPeriodicity;
+  sales_goods_amount: number;
+  sales_services_amount: number;
+  purchases_goods_amount: number;
+  purchases_services_amount: number;
+  notes?: string[];
+}

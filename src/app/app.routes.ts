@@ -157,6 +157,13 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'intrastat',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.INTRASTAT', title: 'Elenchi Intrastat UE' },
+    loadChildren: () =>
+      import('./features/intrastat/intrastat.routes').then((m) => m.INTRASTAT_ROUTES),
+  },
+  {
     path: 'tessera-sanitaria',
     canActivate: [authGuard],
     data: { breadcrumb: 'NAV.TESSERA_SANITARIA', title: 'Sistema Tessera Sanitaria (STS)' },

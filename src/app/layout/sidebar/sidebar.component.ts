@@ -153,6 +153,11 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.INTRASTAT',
+          icon: 'fa-solid fa-earth-europe',
+          route: '/intrastat',
+        },
+        {
           key: 'NAV.TESSERA_SANITARIA',
           icon: 'fa-solid fa-file-medical',
           route: '/tessera-sanitaria',

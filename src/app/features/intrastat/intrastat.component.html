@@ -1,0 +1,683 @@
+<app-page-header
+  [title]="'INTRASTAT.TITLE' | translate"
+  [subtitle]="'INTRASTAT.SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    <nz-select
+      [ngModel]="selectedYear()"
+      (ngModelChange)="selectedYear.set($event); loadDeclarations(); loadPeriodicity()"
+      style="width: 110px"
+    >
+      <nz-option [nzValue]="2026" nzLabel="2026"></nz-option>
+      <nz-option [nzValue]="2025" nzLabel="2025"></nz-option>
+      <nz-option [nzValue]="2024" nzLabel="2024"></nz-option>
+    </nz-select>
+
+    <button nz-button (click)="selectedTabIndex.set(1)">
+      <span nz-icon nzType="sync"></span>
+      {{ 'INTRASTAT.AUTO_GENERATE' | translate }}
+    </button>
+    <button nz-button nzType="primary" (click)="openCreateModal()">
+      <span nz-icon nzType="plus"></span>
+      {{ 'INTRASTAT.NEW_DECLARATION' | translate }}
+    </button>
+  </div>
+</app-page-header>
+
+<!-- STATS SUMMARY -->
+<div class="stats-grid">
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="(totalSalesEur() | money)"
+      [nzTitle]="'INTRASTAT.TOTAL_SALES_EUR' | translate"
+      [nzPrefix]="salesIcon"
+    ></nz-statistic>
+    <ng-template #salesIcon><span nz-icon nzType="dollar" class="text-primary"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="(totalPurchasesEur() | money)"
+      [nzTitle]="'INTRASTAT.TOTAL_PURCHASES_EUR' | translate"
+      [nzPrefix]="purchasesIcon"
+    ></nz-statistic>
+    <ng-template #purchasesIcon><span nz-icon nzType="shopping-cart" class="text-warning"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalDraftCount()"
+      [nzTitle]="'INTRASTAT.DRAFTS' | translate"
+      [nzPrefix]="draftIcon"
+    ></nz-statistic>
+    <ng-template #draftIcon><span nz-icon nzType="form"></span></ng-template>
+  </nz-card>
+  <nz-card class="stat-card">
+    <nz-statistic
+      [nzValue]="totalSubmittedCount()"
+      [nzTitle]="'INTRASTAT.SUBMITTED' | translate"
+      [nzPrefix]="submittedIcon"
+    ></nz-statistic>
+    <ng-template #submittedIcon><span nz-icon nzType="check-circle" class="text-success"></span></ng-template>
+  </nz-card>
+</div>
+
+<nz-card class="main-card">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 0: DECLARATIONS LIST -->
+    <nz-tab [nzTitle]="'INTRASTAT.TAB_DECLARATIONS' | translate">
+      <div class="tab-toolbar">
+        <div class="filters">
+          <nz-select
+            [ngModel]="filterFlow()"
+            (ngModelChange)="filterFlow.set($event); loadDeclarations()"
+            style="width: 160px"
+          >
+            <nz-option nzValue="" [nzLabel]="'INTRASTAT.ALL_FLOWS' | translate"></nz-option>
+            <nz-option nzValue="sales" [nzLabel]="'INTRASTAT.FLOW_SALES' | translate"></nz-option>
+            <nz-option nzValue="purchases" [nzLabel]="'INTRASTAT.FLOW_PURCHASES' | translate"></nz-option>
+          </nz-select>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadDeclarations()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'INTRASTAT.REFRESH' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="openCreateModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'INTRASTAT.NEW_DECLARATION' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #declarationsTable
+        [nzData]="declarations()"
+        [nzLoading]="declarationsLoading()"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'INTRASTAT.MODEL' | translate }}</th>
+            <th>{{ 'INTRASTAT.FLOW' | translate }}</th>
+            <th>{{ 'INTRASTAT.PERIOD' | translate }}</th>
+            <th>{{ 'INTRASTAT.REF_NUMBER' | translate }}</th>
+            <th>{{ 'INTRASTAT.STATUS' | translate }}</th>
+            <th>{{ 'INTRASTAT.PROTOCOL' | translate }}</th>
+            <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of declarationsTable.data; track item.id) {
+            <tr>
+              <td>
+                <nz-tag nzColor="blue"><strong>{{ item.model }}</strong></nz-tag>
+              </td>
+              <td>
+                <nz-tag [nzColor]="getFlowColor(item.flow)">
+                  {{ (item.flow === 'sales' ? 'INTRASTAT.SALES' : 'INTRASTAT.PURCHASES') | translate }}
+                </nz-tag>
+              </td>
+              <td>
+                <strong>{{ item.year }}</strong> / {{ item.periodicity }}{{ item.period }}
+              </td>
+              <td>#{{ item.reference_number }}</td>
+              <td>
+                <nz-tag [nzColor]="getStatusBadgeColor(item.status)">
+                  {{ item.status | uppercase }}
+                </nz-tag>
+              </td>
+              <td><code>{{ item.protocol_number || '-' }}</code></td>
+              <td nzAlign="center">
+                <nz-space>
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="openDeclarationDrawer(item)"
+                  >
+                    <span nz-icon nzType="eye"></span>
+                    {{ 'INTRASTAT.LINES_DETAILS' | translate }}
+                  </button>
+
+                  @if (item.status === 'draft') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzSize="small"
+                      (click)="validateDeclaration(item)"
+                    >
+                      <span nz-icon nzType="check"></span>
+                      {{ 'INTRASTAT.VALIDATE' | translate }}
+                    </button>
+                  }
+
+                  @if (item.status === 'validated') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzSize="small"
+                      (click)="openSubmitModal(item)"
+                    >
+                      <span nz-icon nzType="send"></span>
+                      {{ 'INTRASTAT.MARK_SUBMITTED' | translate }}
+                    </button>
+                  }
+
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    (click)="exportScdata(item)"
+                  >
+                    <span nz-icon nzType="download"></span>
+                    {{ 'INTRASTAT.EXPORT_SCDATA' | translate }}
+                  </button>
+
+                  @if (item.status === 'draft') {
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="link"
+                      nzDanger
+                      nzSize="small"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE' | translate"
+                      (nzOnConfirm)="deleteDeclaration(item.id)"
+                    >
+                      <span nz-icon nzType="delete"></span>
+                      {{ 'INTRASTAT.DELETE' | translate }}
+                    </button>
+                  }
+                </nz-space>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 1: AUTO GENERATE FROM INVOICES -->
+    <nz-tab [nzTitle]="'INTRASTAT.TAB_GENERATE' | translate">
+      <nz-card class="sub-card" [nzTitle]="'INTRASTAT.GENERATE_TITLE' | translate">
+        <p class="section-desc">{{ 'INTRASTAT.GENERATE_DESC' | translate }}</p>
+
+        <form nz-form [formGroup]="generateForm" nzLayout="vertical" (ngSubmit)="executeAutoGenerate()">
+          <div class="form-row-2">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'INTRASTAT.FLOW' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="flow">
+                  <nz-option nzValue="sales" [nzLabel]="'INTRASTAT.FLOW_SALES' | translate"></nz-option>
+                  <nz-option nzValue="purchases" [nzLabel]="'INTRASTAT.FLOW_PURCHASES' | translate"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'INTRASTAT.YEAR' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-input-number formControlName="year" [nzMin]="2022" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <div class="form-row-2">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'INTRASTAT.PERIODICITY' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="periodicity">
+                  <nz-option nzValue="M" [nzLabel]="'INTRASTAT.PERIODICITY_MONTHLY' | translate"></nz-option>
+                  <nz-option nzValue="T" [nzLabel]="'INTRASTAT.PERIODICITY_QUARTERLY' | translate"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'INTRASTAT.PERIOD_NUM' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-input-number formControlName="period" [nzMin]="1" [nzMax]="12" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <div class="form-row-2">
+            <nz-form-item>
+              <nz-form-label>{{ 'INTRASTAT.DEFAULT_DELIVERY_TERMS' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="delivery_terms">
+                  <nz-option nzValue="C" nzLabel="C - Cost & Freight / CIF / CIP / CPT"></nz-option>
+                  <nz-option nzValue="D" nzLabel="D - Delivered DAP / DPU / DDP"></nz-option>
+                  <nz-option nzValue="F" nzLabel="F - Free Carrier FCA / FOB"></nz-option>
+                  <nz-option nzValue="E" nzLabel="E - Ex Works"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>{{ 'INTRASTAT.DEFAULT_TRANSPORT_MODE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="transport_mode">
+                  <nz-option nzValue="3" nzLabel="3 - Trasporto Stradale"></nz-option>
+                  <nz-option nzValue="1" nzLabel="1 - Trasporto Marittimo"></nz-option>
+                  <nz-option nzValue="4" nzLabel="4 - Trasporto Aereo"></nz-option>
+                  <nz-option nzValue="2" nzLabel="2 - Trasporto Ferroviario"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <nz-form-item>
+            <nz-form-control>
+              <button nz-button nzType="primary" [nzLoading]="generateLoading()">
+                <span nz-icon nzType="sync"></span>
+                {{ 'INTRASTAT.RUN_AUTO_GENERATE' | translate }}
+              </button>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 2: PERIODICITY & THRESHOLDS -->
+    <nz-tab [nzTitle]="'INTRASTAT.TAB_PERIODICITY' | translate">
+      <div class="tab-toolbar">
+        <div class="toolbar-info">
+          <span>{{ 'INTRASTAT.PERIODICITY_SUBTITLE' | translate }}</span>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadPeriodicity()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'INTRASTAT.REFRESH' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (periodicity(); as p) {
+        <nz-alert
+          [nzType]="p.advised_periodicity === 'M' ? 'warning' : 'info'"
+          [nzMessage]="(p.advised_periodicity === 'M' ? 'INTRASTAT.ADVISED_MONTHLY_MSG' : 'INTRASTAT.ADVISED_QUARTERLY_MSG') | translate"
+          [nzDescription]="'INTRASTAT.THRESHOLDS_RULE_NOTE' | translate"
+          nzShowIcon
+          style="margin-bottom: 20px"
+        ></nz-alert>
+
+        <div class="thresholds-grid">
+          <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.SALES_GOODS' | translate">
+            <div class="thresh-amount">{{ p.sales_goods_amount | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+          </nz-card>
+          <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.SALES_SERVICES' | translate">
+            <div class="thresh-amount">{{ p.sales_services_amount | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+          </nz-card>
+          <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.PURCHASES_GOODS' | translate">
+            <div class="thresh-amount">{{ p.purchases_goods_amount | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 350.000</div>
+          </nz-card>
+          <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.PURCHASES_SERVICES' | translate">
+            <div class="thresh-amount">{{ p.purchases_services_amount | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+          </nz-card>
+        </div>
+      }
+    </nz-tab>
+
+    <!-- TAB 3: PRODUCT PROFILES -->
+    <nz-tab [nzTitle]="'INTRASTAT.TAB_PRODUCTS' | translate">
+      <div class="tab-toolbar">
+        <div class="toolbar-info">
+          <span>{{ 'INTRASTAT.PRODUCT_PROFILES_SUBTITLE' | translate }}</span>
+        </div>
+        <div class="actions">
+          <button nz-button (click)="loadProductProfiles()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'INTRASTAT.REFRESH' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="openCreateProfileModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'INTRASTAT.NEW_PRODUCT_PROFILE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #profilesTable
+        [nzData]="productProfiles()"
+        [nzLoading]="productProfilesLoading()"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'INTRASTAT.PRODUCT_ID' | translate }}</th>
+            <th>{{ 'INTRASTAT.PRODUCT_NAME' | translate }}</th>
+            <th>{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
+            <th>{{ 'INTRASTAT.CPA_CODE' | translate }}</th>
+            <th>{{ 'INTRASTAT.ORIGIN_COUNTRY' | translate }}</th>
+            <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of profilesTable.data; track item.product_id) {
+            <tr>
+              <td><code>{{ item.product_id }}</code></td>
+              <td><strong>{{ item.product_name || '-' }}</strong></td>
+              <td><nz-tag nzColor="blue">{{ item.cn8_code }}</nz-tag></td>
+              <td>{{ item.cpa_code || '-' }}</td>
+              <td>{{ item.origin_country_code || '-' }}</td>
+              <td nzAlign="center">
+                <button
+                  nz-button
+                  nzType="link"
+                  nzDanger
+                  nzSize="small"
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE_PROFILE' | translate"
+                  (nzOnConfirm)="deleteProductProfile(item.product_id)"
+                >
+                  <span nz-icon nzType="delete"></span>
+                  {{ 'INTRASTAT.DELETE' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- CREATE DECLARATION MODAL -->
+<nz-modal
+  [(nzVisible)]="createModalVisible"
+  [nzTitle]="'INTRASTAT.NEW_DECLARATION' | translate"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateDeclaration()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="createForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.FLOW' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="flow">
+              <nz-option nzValue="sales" [nzLabel]="'INTRASTAT.FLOW_SALES' | translate"></nz-option>
+              <nz-option nzValue="purchases" [nzLabel]="'INTRASTAT.FLOW_PURCHASES' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.YEAR' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="year" [nzMin]="2022" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.PERIODICITY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="periodicity">
+              <nz-option nzValue="M" [nzLabel]="'INTRASTAT.PERIODICITY_MONTHLY' | translate"></nz-option>
+              <nz-option nzValue="T" [nzLabel]="'INTRASTAT.PERIODICITY_QUARTERLY' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.PERIOD_NUM' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="period" [nzMin]="1" [nzMax]="12" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.STATISTICAL_DATA' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch formControlName="includes_statistical_data"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="notes" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- SUBMIT MODAL -->
+<nz-modal
+  [(nzVisible)]="submitModalVisible"
+  [nzTitle]="'INTRASTAT.MARK_SUBMITTED' | translate"
+  (nzOnCancel)="submitModalVisible.set(false)"
+  (nzOnOk)="confirmSubmit()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="submitForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INTRASTAT.CUSTOMS_PROTOCOL_NUMBER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="protocol_number" placeholder="Es. PROT-2026-004512" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- EXPORT RESULT MODAL -->
+<nz-modal
+  [(nzVisible)]="exportModalVisible"
+  [nzTitle]="'INTRASTAT.EXPORT_COMPLETED' | translate"
+  (nzOnCancel)="exportModalVisible.set(false)"
+  (nzOnOk)="exportModalVisible.set(false)"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    @if (exportResult(); as res) {
+      <nz-alert
+        nzType="success"
+        [nzMessage]="'INTRASTAT.FILE_GENERATED' | translate"
+        [nzDescription]="res.file_name"
+        nzShowIcon
+      ></nz-alert>
+      <div class="export-preview-box">
+        <pre>{{ res.content || res.file_name }}</pre>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- DECLARATION LINES DRAWER -->
+<nz-drawer
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="750"
+  [nzTitle]="'INTRASTAT.DECLARATION_LINES' | translate"
+  (nzOnClose)="closeDeclarationDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selectedDeclaration(); as d) {
+      <div class="drawer-header-summary">
+        <div><strong>{{ d.model }}</strong> - {{ d.year }} / {{ d.periodicity }}{{ d.period }}</div>
+        <div>
+          <button nz-button nzType="primary" nzSize="small" (click)="openAddLineModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ 'INTRASTAT.ADD_ROW' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table
+        #linesTable
+        [nzData]="d.lines || []"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ 'INTRASTAT.SECTION' | translate }}</th>
+            <th>{{ 'INTRASTAT.COUNTRY' | translate }}</th>
+            <th>{{ 'INTRASTAT.VAT_NUMBER' | translate }}</th>
+            <th>{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
+            <th nzAlign="right">{{ 'INTRASTAT.AMOUNT_EUR' | translate }}</th>
+            <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of linesTable.data; track line.id) {
+            <tr>
+              <td>{{ line.line_number }}</td>
+              <td><nz-tag>Sec. {{ line.section }}</nz-tag></td>
+              <td><strong>{{ line.partner_country_code }}</strong></td>
+              <td><code>{{ line.partner_vat_number || '-' }}</code></td>
+              <td>{{ line.cn8_code || '-' }}</td>
+              <td nzAlign="right">{{ line.amount_eur | money }}</td>
+              <td nzAlign="center">
+                <button
+                  nz-button
+                  nzType="link"
+                  nzDanger
+                  nzSize="small"
+                  (click)="deleteLine(line.id)"
+                >
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- ADD LINE MODAL -->
+<nz-modal
+  [(nzVisible)]="lineModalVisible"
+  [nzTitle]="'INTRASTAT.ADD_LINE_TITLE' | translate"
+  (nzOnCancel)="lineModalVisible.set(false)"
+  (nzOnOk)="saveLine()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="lineForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.SECTION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="section">
+              <nz-option [nzValue]="1" nzLabel="Sezione 1 - Beni"></nz-option>
+              <nz-option [nzValue]="2" nzLabel="Sezione 2 - Rettifiche Beni"></nz-option>
+              <nz-option [nzValue]="3" nzLabel="Sezione 3 - Servizi"></nz-option>
+              <nz-option [nzValue]="4" nzLabel="Sezione 4 - Rettifiche Servizi"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.COUNTRY_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="partner_country_code" placeholder="DE, FR, ES..." />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.PARTNER_VAT' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="partner_vat_number" placeholder="123456789" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.AMOUNT_EUR' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="amount_eur" [nzMin]="1" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.CN8_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="cn8_code" placeholder="84212100" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.NET_MASS_KG' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="net_mass_kg" [nzMin]="0" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- CREATE PRODUCT PROFILE MODAL -->
+<nz-modal
+  [(nzVisible)]="profileModalVisible"
+  [nzTitle]="'INTRASTAT.NEW_PRODUCT_PROFILE' | translate"
+  (nzOnCancel)="profileModalVisible.set(false)"
+  (nzOnOk)="saveProductProfile()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="profileForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INTRASTAT.PRODUCT_ID' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="product_id" placeholder="UUID o codice articolo" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'INTRASTAT.CN8_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="cn8_code" placeholder="84212100" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.CPA_CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="cpa_code" placeholder="282912" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.ORIGIN_COUNTRY' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="origin_country_code" placeholder="IT" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'INTRASTAT.UNIT_OF_MEASURE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="unit_of_measure" placeholder="kg" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
