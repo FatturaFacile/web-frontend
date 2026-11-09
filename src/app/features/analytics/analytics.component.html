@@ -1,0 +1,555 @@
+<div class="analytics-container">
+  <app-page-header
+    [title]="'ANALYTICS.PAGE_TITLE' | translate"
+    [subtitle]="'ANALYTICS.PAGE_SUBTITLE' | translate"
+  >
+    <div actions class="header-actions">
+      <button nz-button nzType="default" (click)="exportKpisCsv()">
+        <i class="fa-solid fa-file-csv me-2"></i>
+        {{ 'ANALYTICS.EXPORT_KPIS' | translate }}
+      </button>
+      <button nz-button nzType="primary" (click)="openCreateReportModal()">
+        <i class="fa-solid fa-plus me-2"></i>
+        {{ 'ANALYTICS.NEW_REPORT' | translate }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <nz-tabs [(nzSelectedIndex)]="selectedTab">
+    <!-- TAB 0: Executive KPIs -->
+    <nz-tab [nzTitle]="'ANALYTICS.TAB_KPIS' | translate">
+      <div class="tab-content">
+        <div class="toolbar-card">
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <label class="fw-bold">{{ 'ANALYTICS.PERIOD' | translate }}:</label>
+            <nz-select
+              [ngModel]="selectedPeriodPreset()"
+              (ngModelChange)="onPeriodChange($event)"
+              style="width: 180px"
+            >
+              <nz-option nzValue="month_to_date" [nzLabel]="'ANALYTICS.PERIOD_MTD' | translate"></nz-option>
+              <nz-option nzValue="last_month" [nzLabel]="'ANALYTICS.PERIOD_LAST_MONTH' | translate"></nz-option>
+              <nz-option nzValue="quarter_to_date" [nzLabel]="'ANALYTICS.PERIOD_QTD' | translate"></nz-option>
+              <nz-option nzValue="year_to_date" [nzLabel]="'ANALYTICS.PERIOD_YTD' | translate"></nz-option>
+              <nz-option nzValue="last_30_days" [nzLabel]="'ANALYTICS.PERIOD_LAST_30' | translate"></nz-option>
+            </nz-select>
+
+            <label class="fw-bold ms-3">{{ 'ANALYTICS.COMPARE_WITH' | translate }}:</label>
+            <nz-select
+              [ngModel]="selectedCompare()"
+              (ngModelChange)="onCompareChange($event)"
+              style="width: 180px"
+            >
+              <nz-option nzValue="none" [nzLabel]="'ANALYTICS.COMPARE_NONE' | translate"></nz-option>
+              <nz-option nzValue="previous_period" [nzLabel]="'ANALYTICS.COMPARE_PREV_PERIOD' | translate"></nz-option>
+              <nz-option nzValue="previous_year" [nzLabel]="'ANALYTICS.COMPARE_PREV_YEAR' | translate"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadKpis()" [nzLoading]="isLoading()">
+              <i class="fa-solid fa-rotate me-1"></i>
+              {{ 'COMMON.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        @if (isLoading()) {
+          <div class="text-center py-5">
+            <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
+          </div>
+        } @else if (kpiReport(); as report) {
+          <div class="kpi-grid">
+            @for (kpi of report.kpis; track kpi.key) {
+              <nz-card class="kpi-card" [class.kpi-unavailable]="!kpi.available">
+                <div class="kpi-header">
+                  <span class="kpi-label">{{ kpi.label }}</span>
+                  <nz-tag [nzColor]="kpi.kind === 'snapshot' ? 'cyan' : 'blue'">
+                    {{ kpi.kind === 'snapshot' ? ('ANALYTICS.SNAPSHOT' | translate) : ('ANALYTICS.PERIODIC' | translate) }}
+                  </nz-tag>
+                </div>
+
+                @if (!kpi.available) {
+                  <div class="kpi-forbidden">
+                    <i class="fa-solid fa-lock text-muted me-1"></i>
+                    <span>{{ 'ANALYTICS.NO_PERMISSION' | translate }}</span>
+                  </div>
+                } @else {
+                  <div class="kpi-value-row">
+                    <span class="kpi-main-val">
+                      @if (kpi.unit === 'currency') {
+                        {{ kpi.value | currency: 'EUR':'symbol':'1.2-2' }}
+                      } @else if (kpi.unit === 'percent') {
+                        {{ (kpi.value || 0) + '%' }}
+                      } @else {
+                        {{ kpi.value ?? '-' }}
+                      }
+                    </span>
+                  </div>
+
+                  @if (kpi.change !== null && kpi.change !== undefined) {
+                    <div class="kpi-variance" [class.positive]="(kpi.change ?? 0) >= 0" [class.negative]="(kpi.change ?? 0) < 0">
+                      <i class="fa-solid" [class.fa-arrow-trend-up]="(kpi.change ?? 0) >= 0" [class.fa-arrow-trend-down]="(kpi.change ?? 0) < 0"></i>
+                      <span class="ms-1">
+                        {{ kpi.change_percent ? (kpi.change_percent + '%') : kpi.change }}
+                      </span>
+                      <span class="variance-sub text-muted ms-1">vs {{ selectedCompare() }}</span>
+                    </div>
+                  }
+                }
+              </nz-card>
+            }
+          </div>
+        }
+      </div>
+    </nz-tab>
+
+    <!-- TAB 1: Due Calendar (Scadenzario Cash Flow) -->
+    <nz-tab [nzTitle]="'ANALYTICS.TAB_DUE_CALENDAR' | translate">
+      <div class="tab-content">
+        <!-- Summary Stats -->
+        <div class="summary-cards">
+          <nz-card class="stat-card inflow-card">
+            <span class="stat-title">{{ 'ANALYTICS.TOTAL_INFLOW' | translate }}</span>
+            <span class="stat-value text-success">
+              {{ dueCalendarSummary().totalInflow | currency: 'EUR':'symbol':'1.2-2' }}
+            </span>
+          </nz-card>
+          <nz-card class="stat-card outflow-card">
+            <span class="stat-title">{{ 'ANALYTICS.TOTAL_OUTFLOW' | translate }}</span>
+            <span class="stat-value text-danger">
+              {{ dueCalendarSummary().totalOutflow | currency: 'EUR':'symbol':'1.2-2' }}
+            </span>
+          </nz-card>
+          <nz-card class="stat-card liquidity-card">
+            <span class="stat-title">{{ 'ANALYTICS.NET_LIQUIDITY' | translate }}</span>
+            <span class="stat-value" [class.text-primary]="dueCalendarSummary().netLiquidity >= 0" [class.text-warning]="dueCalendarSummary().netLiquidity < 0">
+              {{ dueCalendarSummary().netLiquidity | currency: 'EUR':'symbol':'1.2-2' }}
+            </span>
+          </nz-card>
+          <nz-card class="stat-card overdue-card">
+            <span class="stat-title">{{ 'ANALYTICS.OVERDUE_ITEMS' | translate }}</span>
+            <span class="stat-value text-danger">
+              {{ dueCalendarSummary().overdueCount }}
+            </span>
+          </nz-card>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="toolbar-card my-3">
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <label class="fw-bold">{{ 'ANALYTICS.DIRECTION' | translate }}:</label>
+            <nz-select
+              [ngModel]="filterDirection()"
+              (ngModelChange)="filterDirection.set($event)"
+              style="width: 140px"
+            >
+              <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
+              <nz-option nzValue="inflow" [nzLabel]="'ANALYTICS.INFLOW' | translate"></nz-option>
+              <nz-option nzValue="outflow" [nzLabel]="'ANALYTICS.OUTFLOW' | translate"></nz-option>
+            </nz-select>
+
+            <label class="ms-3">
+              <input
+                type="checkbox"
+                [checked]="filterOverdueOnly()"
+                (change)="filterOverdueOnly.set(!filterOverdueOnly())"
+                class="me-1 form-check-input"
+              />
+              {{ 'ANALYTICS.OVERDUE_ONLY' | translate }}
+            </label>
+
+            <button nz-button nzType="default" (click)="loadDueCalendar()">
+              <i class="fa-solid fa-rotate me-1"></i>
+              {{ 'COMMON.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <nz-card>
+          <nz-table
+            #dueTable
+            [nzData]="filteredDueEntries()"
+            [nzPageSize]="10"
+            nzShowSizeChanger
+          >
+            <thead>
+              <tr>
+                <th>{{ 'ANALYTICS.DUE_DATE' | translate }}</th>
+                <th>{{ 'ANALYTICS.DIRECTION' | translate }}</th>
+                <th>{{ 'ANALYTICS.CONTACT' | translate }}</th>
+                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th class="text-end">{{ 'COMMON.AMOUNT' | translate }}</th>
+                <th>{{ 'COMMON.STATUS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of dueTable.data; track entry.id) {
+                <tr>
+                  <td>{{ entry.date | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    @if (entry.direction === 'inflow') {
+                      <nz-tag nzColor="green">
+                        <i class="fa-solid fa-arrow-down me-1"></i>{{ 'ANALYTICS.INFLOW' | translate }}
+                      </nz-tag>
+                    } @else {
+                      <nz-tag nzColor="volcano">
+                        <i class="fa-solid fa-arrow-up me-1"></i>{{ 'ANALYTICS.OUTFLOW' | translate }}
+                      </nz-tag>
+                    }
+                  </td>
+                  <td>{{ entry.contact_name || '-' }}</td>
+                  <td>{{ entry.description }}</td>
+                  <td class="text-end fw-bold">
+                    {{ entry.amount | currency: entry.currency || 'EUR':'symbol':'1.2-2' }}
+                  </td>
+                  <td>
+                    @if (entry.is_overdue) {
+                      <nz-tag nzColor="red">{{ 'ANALYTICS.OVERDUE' | translate }}</nz-tag>
+                    } @else {
+                      <nz-tag nzColor="default">{{ 'ANALYTICS.ON_SCHEDULE' | translate }}</nz-tag>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 2: Revenue Comparison & Dimension Breakdowns -->
+    <nz-tab [nzTitle]="'ANALYTICS.TAB_REVENUE' | translate">
+      <div class="tab-content">
+        <div class="row g-3">
+          <!-- Monthly YoY Comparison Table -->
+          <div class="col-12 col-xl-7">
+            <nz-card [nzTitle]="'ANALYTICS.YOY_TITLE' | translate">
+              @if (revenueComparison(); as comp) {
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <span class="fw-bold">{{ 'ANALYTICS.TOTAL_REVENUE' | translate }}:</span>
+                    <span class="ms-2 fs-5 text-primary fw-bold">
+                      {{ comp.total_revenue | currency: 'EUR':'symbol':'1.0-0' }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-muted">{{ 'ANALYTICS.VARIANCE' | translate }}:</span>
+                    <span
+                      class="ms-2 fw-bold"
+                      [class.text-success]="comp.overall_variance_percent >= 0"
+                      [class.text-danger]="comp.overall_variance_percent < 0"
+                    >
+                      {{ comp.overall_variance_percent > 0 ? '+' : '' }}{{ comp.overall_variance_percent }}%
+                    </span>
+                  </div>
+                </div>
+
+                <nz-table
+                  #compTable
+                  [nzData]="comp.months"
+                  [nzShowPagination]="false"
+                  nzSize="small"
+                >
+                  <thead>
+                    <tr>
+                      <th>{{ 'ANALYTICS.MONTH' | translate }}</th>
+                      <th class="text-end">{{ comp.year }}</th>
+                      <th class="text-end">{{ comp.year - 1 }}</th>
+                      <th class="text-end">{{ 'ANALYTICS.VARIANCE' | translate }}</th>
+                      <th class="text-end">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (m of compTable.data; track m.month) {
+                      <tr>
+                        <td>{{ m.month_name || ('ANALYTICS.MONTH_' + m.month | translate) }}</td>
+                        <td class="text-end fw-semibold">
+                          {{ m.revenue | currency: 'EUR':'symbol':'1.0-0' }}
+                        </td>
+                        <td class="text-end text-muted">
+                          {{ m.previous_year_revenue | currency: 'EUR':'symbol':'1.0-0' }}
+                        </td>
+                        <td class="text-end" [class.text-success]="m.variance >= 0" [class.text-danger]="m.variance < 0">
+                          {{ m.variance | currency: 'EUR':'symbol':'1.0-0' }}
+                        </td>
+                        <td class="text-end fw-bold" [class.text-success]="m.variance_percent >= 0" [class.text-danger]="m.variance_percent < 0">
+                          {{ m.variance_percent > 0 ? '+' : '' }}{{ m.variance_percent }}%
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </nz-table>
+              }
+            </nz-card>
+          </div>
+
+          <!-- Dimensional Breakdown -->
+          <div class="col-12 col-xl-5">
+            <nz-card [nzTitle]="'ANALYTICS.BREAKDOWN_TITLE' | translate">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <label class="fw-bold">{{ 'ANALYTICS.DIMENSION' | translate }}:</label>
+                <nz-select
+                  [ngModel]="selectedDimension()"
+                  (ngModelChange)="onDimensionChange($event)"
+                  style="width: 200px"
+                >
+                  <nz-option nzValue="category" [nzLabel]="'ANALYTICS.DIM_CATEGORY' | translate"></nz-option>
+                  <nz-option nzValue="customer" [nzLabel]="'ANALYTICS.DIM_CUSTOMER' | translate"></nz-option>
+                  <nz-option nzValue="region" [nzLabel]="'ANALYTICS.DIM_REGION' | translate"></nz-option>
+                  <nz-option nzValue="payment_method" [nzLabel]="'ANALYTICS.DIM_PAYMENT' | translate"></nz-option>
+                </nz-select>
+              </div>
+
+              <nz-table
+                #breakTable
+                [nzData]="breakdownEntries()"
+                [nzShowPagination]="false"
+                nzSize="small"
+              >
+                <thead>
+                  <tr>
+                    <th>{{ 'COMMON.NAME' | translate }}</th>
+                    <th class="text-end">{{ 'COMMON.AMOUNT' | translate }}</th>
+                    <th class="text-end">{{ 'COMMON.SHARE' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of breakTable.data; track item.key) {
+                    <tr>
+                      <td class="fw-semibold">{{ item.label }}</td>
+                      <td class="text-end">{{ item.amount | currency: 'EUR':'symbol':'1.2-2' }}</td>
+                      <td class="text-end">
+                        <span class="badge bg-light text-dark border">{{ item.percentage }}%</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </nz-table>
+            </nz-card>
+          </div>
+        </div>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 3: Custom Reports & BI Feed -->
+    <nz-tab [nzTitle]="'ANALYTICS.TAB_CUSTOM_REPORTS' | translate">
+      <div class="tab-content">
+        <nz-card [nzTitle]="'ANALYTICS.SAVED_REPORTS' | translate">
+          <nz-table
+            #reportTable
+            [nzData]="reportDefinitions()"
+            [nzPageSize]="10"
+          >
+            <thead>
+              <tr>
+                <th>{{ 'COMMON.NAME' | translate }}</th>
+                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th>{{ 'ANALYTICS.KPIS' | translate }}</th>
+                <th>{{ 'ANALYTICS.PERIOD' | translate }}</th>
+                <th>{{ 'ANALYTICS.SHARED' | translate }}</th>
+                <th class="text-end">{{ 'COMMON.ACTIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rep of reportTable.data; track rep.id) {
+                <tr>
+                  <td class="fw-bold">{{ rep.name }}</td>
+                  <td class="text-muted">{{ rep.description || '-' }}</td>
+                  <td>
+                    @for (k of rep.kpis; track k) {
+                      <nz-tag nzColor="blue">{{ k }}</nz-tag>
+                    }
+                  </td>
+                  <td>
+                    <nz-tag>{{ rep.period_preset }}</nz-tag>
+                  </td>
+                  <td>
+                    @if (rep.is_shared) {
+                      <nz-tag nzColor="green">{{ 'COMMON.YES' | translate }}</nz-tag>
+                    } @else {
+                      <nz-tag nzColor="default">{{ 'COMMON.NO' | translate }}</nz-tag>
+                    }
+                  </td>
+                  <td class="text-end">
+                    <button
+                      nz-button
+                      nzType="primary"
+                      nzSize="small"
+                      class="me-1"
+                      (click)="runReport(rep)"
+                      [nzLoading]="isActionLoading()"
+                    >
+                      <i class="fa-solid fa-play me-1"></i>
+                      {{ 'ANALYTICS.RUN' | translate }}
+                    </button>
+                    <button
+                      nz-button
+                      nzType="default"
+                      nzSize="small"
+                      class="me-1"
+                      (click)="exportReportCsv(rep)"
+                    >
+                      <i class="fa-solid fa-download"></i>
+                    </button>
+                    <button
+                      nz-button
+                      nzType="text"
+                      nzSize="small"
+                      (click)="openEditReportModal(rep)"
+                    >
+                      <i class="fa-solid fa-pencil"></i>
+                    </button>
+                    <button
+                      nz-button
+                      nzType="text"
+                      nzDanger
+                      nzSize="small"
+                      (click)="deleteReportDefinition(rep)"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+
+        @if (selectedReportResult(); as res) {
+          <nz-card [nzTitle]="'ANALYTICS.EXECUTION_RESULT' | translate" class="mt-4">
+            <div class="kpi-grid">
+              @for (k of res.kpis; track k.key) {
+                <nz-card class="kpi-card">
+                  <span class="kpi-label">{{ k.label }}</span>
+                  <div class="kpi-main-val">
+                    {{ k.value ?? '-' }}
+                  </div>
+                </nz-card>
+              }
+            </div>
+          </nz-card>
+        }
+
+        <!-- BI External Reporting Feed -->
+        <nz-card [nzTitle]="'ANALYTICS.BI_FEED_TITLE' | translate" class="mt-4">
+          <p class="text-muted">
+            {{ 'ANALYTICS.BI_FEED_DESC' | translate }}
+          </p>
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <label class="fw-bold">{{ 'ANALYTICS.BI_DATASET' | translate }}:</label>
+            <nz-select
+              [ngModel]="biFeedDataset()"
+              (ngModelChange)="onBiDatasetChange($event)"
+              style="width: 200px"
+            >
+              <nz-option nzValue="invoices" nzLabel="Invoices (Vendite)"></nz-option>
+              <nz-option nzValue="expenses" nzLabel="Expenses (Spese)"></nz-option>
+              <nz-option nzValue="clients" nzLabel="Clients (Anagrafiche)"></nz-option>
+              <nz-option nzValue="payments" nzLabel="Payments (Incassi)"></nz-option>
+            </nz-select>
+            <button nz-button nzType="default" (click)="loadBiFeed()">
+              <i class="fa-solid fa-rotate me-1"></i>
+              {{ 'COMMON.REFRESH' | translate }}
+            </button>
+          </div>
+
+          <nz-table
+            #feedTable
+            [nzData]="biFeedData()"
+            [nzPageSize]="5"
+            nzSize="small"
+          >
+            <thead>
+              <tr>
+                @for (col of biFeedColumns(); track col) {
+                  <th>{{ col }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of feedTable.data; track $index) {
+                <tr>
+                  @for (col of biFeedColumns(); track col) {
+                    <td>{{ row[col] }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+      </div>
+    </nz-tab>
+  </nz-tabs>
+
+  <!-- Create / Edit Report Modal -->
+  <nz-modal
+    [nzVisible]="isReportModalVisible()"
+    [nzTitle]="(editingReportId() ? 'ANALYTICS.EDIT_REPORT' : 'ANALYTICS.NEW_REPORT') | translate"
+    (nzOnCancel)="closeReportModal()"
+    (nzOnOk)="saveReportDefinition()"
+    [nzOkLoading]="isActionLoading()"
+  >
+    <ng-container *nzModalContent>
+      <form [formGroup]="reportForm" nz-form nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="name" placeholder="es. Board Pack Mensile" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="description" rows="2"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ANALYTICS.KPIS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="kpis" nzMode="multiple">
+              @for (kpi of availableKpis; track kpi.value) {
+                <nz-option [nzValue]="kpi.value" [nzLabel]="kpi.label"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ANALYTICS.PERIOD' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="period_preset">
+              <nz-option nzValue="month_to_date" [nzLabel]="'ANALYTICS.PERIOD_MTD' | translate"></nz-option>
+              <nz-option nzValue="last_month" [nzLabel]="'ANALYTICS.PERIOD_LAST_MONTH' | translate"></nz-option>
+              <nz-option nzValue="quarter_to_date" [nzLabel]="'ANALYTICS.PERIOD_QTD' | translate"></nz-option>
+              <nz-option nzValue="year_to_date" [nzLabel]="'ANALYTICS.PERIOD_YTD' | translate"></nz-option>
+              <nz-option nzValue="last_30_days" [nzLabel]="'ANALYTICS.PERIOD_LAST_30' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'ANALYTICS.COMPARE_WITH' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="compare">
+              <nz-option nzValue="none" [nzLabel]="'ANALYTICS.COMPARE_NONE' | translate"></nz-option>
+              <nz-option nzValue="previous_period" [nzLabel]="'ANALYTICS.COMPARE_PREV_PERIOD' | translate"></nz-option>
+              <nz-option nzValue="previous_year" [nzLabel]="'ANALYTICS.COMPARE_PREV_YEAR' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control>
+            <label>
+              <input type="checkbox" formControlName="is_shared" class="form-check-input me-2" />
+              {{ 'ANALYTICS.SHARE_WITH_TEAM' | translate }}
+            </label>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>
