@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
-import { AutomotiveApiService } from './automotive-api.service';
 import { AutomotiveVehicle, TireCheckInPayload } from '../models';
+import { AutomotiveApiService } from './automotive-api.service';
 
 describe('AutomotiveApiService', () => {
   let service: AutomotiveApiService;
@@ -30,7 +30,7 @@ describe('AutomotiveApiService', () => {
   it('fetches vehicles and tire hotel records', () => {
     const mockVehicle: AutomotiveVehicle = {
       id: 'v-1',
-      plate: 'AA123BB',
+      license_plate: 'AA123BB',
       make: 'Fiat',
       model: '500',
       year: 2022,
@@ -38,7 +38,7 @@ describe('AutomotiveApiService', () => {
 
     service.getVehicles().subscribe((res) => {
       expect(res.data.length).toBe(1);
-      expect(res.data[0].plate).toBe('AA123BB');
+      expect(res.data[0].license_plate).toBe('AA123BB');
     });
 
     const vReq = httpMock.expectOne(`${base}/vehicles`);
@@ -58,45 +58,87 @@ describe('AutomotiveApiService', () => {
         vehiclePlate: 'AA123BB',
         vehicleModel: 'Fiat 500',
         season: 'WINTER',
-        storageLocation: 'RACK-A1',
       },
     ]);
   });
 
-  it('handles check-in, check-out and reminder for tire hotel', () => {
-    const checkInPayload: TireCheckInPayload = {
+  it('registers, gets, updates, and deletes an automotive vehicle', () => {
+    const newVehicle: Partial<AutomotiveVehicle> = {
+      license_plate: 'MI999ZZ',
+      make: 'Alfa Romeo',
+      model: 'Giulia',
+      year: 2024,
+    };
+
+    const returnedVehicle: AutomotiveVehicle = {
+      id: 'v-2',
+      license_plate: 'MI999ZZ',
+      make: 'Alfa Romeo',
+      model: 'Giulia',
+      year: 2024,
+    };
+
+    service.registerVehicle(newVehicle).subscribe((res) => {
+      expect(res.data.id).toBe('v-2');
+    });
+
+    const postReq = httpMock.expectOne(`${base}/vehicles`);
+    expect(postReq.request.method).toBe('POST');
+    postReq.flush({ success: true, data: returnedVehicle });
+
+    service.getVehicle('v-2').subscribe((res) => {
+      expect(res.data.make).toBe('Alfa Romeo');
+    });
+
+    const getReq = httpMock.expectOne(`${base}/vehicles/v-2`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush({ success: true, data: returnedVehicle });
+
+    service.updateVehicle('v-2', { model: 'Giulia Veloce' }).subscribe((res) => {
+      expect(res.data.model).toBe('Giulia Veloce');
+    });
+
+    const putReq = httpMock.expectOne(`${base}/vehicles/v-2`);
+    expect(putReq.request.method).toBe('PUT');
+    putReq.flush({ success: true, data: { ...returnedVehicle, model: 'Giulia Veloce' } });
+
+    service.deleteVehicle('v-2').subscribe((res) => {
+      expect(res.success).toBe(true);
+    });
+
+    const delReq = httpMock.expectOne(`${base}/vehicles/v-2`);
+    expect(delReq.request.method).toBe('DELETE');
+    delReq.flush({ success: true });
+  });
+
+  it('checks in tires and sends reminder', () => {
+    const payload: TireCheckInPayload = {
       vehicle_id: 'v-1',
+      customer_id: 'cust-1',
       season: 'WINTER',
       brand: 'Michelin',
       model: 'Alpin 6',
-      size: '205/55 R16',
-      dot: '4223',
-      storage_location: 'RACK-B2',
-      tread_depth_fl: 7.5,
-      tread_depth_fr: 7.5,
-      tread_depth_rl: 7.0,
-      tread_depth_rr: 7.0,
+      dot: '4022',
+      tread_depth_mm: { front_left: 6, front_right: 6, rear_left: 5, rear_right: 5 },
+      has_rims: true,
+      rim_type: 'Alloy',
+      rack_location: 'A-12-3',
     };
 
-    service.checkInTires(checkInPayload).subscribe((res) => {
+    service.checkInTires(payload).subscribe((res) => {
       expect(res).toBeTruthy();
     });
-    const inReq = httpMock.expectOne(`${base}/tire-hotel/check-in`);
-    expect(inReq.request.method).toBe('POST');
-    inReq.flush({ success: true });
 
-    service.checkOutTires('tire-1').subscribe((res) => {
-      expect(res).toBeTruthy();
-    });
-    const outReq = httpMock.expectOne(`${base}/tire-hotel/tire-1/check-out`);
-    expect(outReq.request.method).toBe('POST');
-    outReq.flush({ success: true });
+    const ciReq = httpMock.expectOne(`${base}/tire-hotel/check-in`);
+    expect(ciReq.request.method).toBe('POST');
+    ciReq.flush({ success: true });
 
     service.sendReminder('tire-1').subscribe((res) => {
       expect(res).toBeTruthy();
     });
-    const remReq = httpMock.expectOne(`${base}/tire-hotel/tire-1/reminder`);
-    expect(remReq.request.method).toBe('POST');
-    remReq.flush({ success: true });
+
+    const rReq = httpMock.expectOne(`${base}/tire-hotel/tire-1/reminder`);
+    expect(rReq.request.method).toBe('POST');
+    rReq.flush({ success: true });
   });
 });

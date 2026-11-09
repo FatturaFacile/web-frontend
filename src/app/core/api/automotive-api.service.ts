@@ -18,6 +18,22 @@ export class AutomotiveApiService {
     return this.http.get<ApiResponse<AutomotiveVehicle[]>>(`${this.base}/vehicles`);
   }
 
+  getVehicle(id: string): Observable<ApiResponse<AutomotiveVehicle>> {
+    return this.http.get<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles/${id}`);
+  }
+
+  registerVehicle(payload: Partial<AutomotiveVehicle>): Observable<ApiResponse<AutomotiveVehicle>> {
+    return this.http.post<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles`, payload);
+  }
+
+  updateVehicle(id: string, payload: Partial<AutomotiveVehicle>): Observable<ApiResponse<AutomotiveVehicle>> {
+    return this.http.put<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles/${id}`, payload);
+  }
+
+  deleteVehicle(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.base}/vehicles/${id}`);
+  }
+
   getTireHotelRecords(): Observable<TireRecord[]> {
     return this.http.get<TireRecord[]>(`${this.base}/tire-hotel`);
   }
