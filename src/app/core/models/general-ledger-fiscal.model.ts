@@ -42,7 +42,7 @@ export interface PayrollSettings {
   wage_type_accounts: unknown[] | null;
 }
 
-export type PayrollSettingsPayload = Partial<Omit<PayrollSettings, 'id'>>;
+export type LedgerPayrollSettingsPayload = Partial<Omit<PayrollSettings, 'id'>>;
 
 export interface PayrollPosting {
   id: string;
