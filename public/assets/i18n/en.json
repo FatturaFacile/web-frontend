@@ -546,6 +546,7 @@
   "NAV.FIELD_SERVICE": "Field Service & Maintenance",
   "NAV.FLEET": "Fleet Planning",
   "NAV.HR": "Payroll & HR IT-CH",
+  "NAV.HR_PAYROLL_DATA": "Employee payroll data",
   "NAV.HR_SHIFTS": "Shift planning",
   "NAV.HR_RECRUITING": "Recruiting",
   "NAV.HR_TALENT": "Talent and training",
@@ -3310,6 +3311,49 @@
       "weekday": "Weekday",
       "weekend": "Weekend",
       "holiday": "Holiday"
+    }
+  },
+  "hrmPayData": {
+    "title": "Employee payroll data",
+    "subtitle": "Monthly inputs, absences, children and payroll profiles (sensitive data)",
+    "filterEmployee": "Filter by employee",
+    "inputs": "Variable inputs",
+    "absences": "Absences",
+    "children": "Children",
+    "profiles": "Payroll profiles",
+    "quantity": "Quantity",
+    "rate": "Rate",
+    "percent": "Percent",
+    "dateOfBirth": "Date of birth",
+    "inEducation": "In education",
+    "educationEnd": "Education end",
+    "allowanceEligible": "Allowance eligible",
+    "iban": "IBAN",
+    "ssn": "Social security number",
+    "street": "Street",
+    "postalCode": "Postal code",
+    "city": "City",
+    "payType": "Pay type",
+    "hourlyWage": "Hourly wage",
+    "holidayWeeks": "Holiday weeks",
+    "withholdingCode": "Withholding tax code",
+    "withholdingRate": "Withholding tax rate (%)",
+    "italianTaxCode": "Italian tax code",
+    "agreementCode": "Agreement code",
+    "contractLevel": "Contract level",
+    "payTypeValue": {
+      "monthly": "Monthly",
+      "hourly": "Hourly"
+    },
+    "absenceType": {
+      "Sickness": "Sickness",
+      "Accident": "Accident",
+      "Maternity": "Maternity",
+      "Paternity": "Paternity",
+      "Military": "Military",
+      "Vacation": "Vacation",
+      "Unpaid": "Unpaid",
+      "Other": "Other"
     }
   }
 }
