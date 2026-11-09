@@ -50,3 +50,4 @@ export * from './state/list-facade';
 export * from './api/customs-api.service';
 export * from './api/workflow-api.service';
 export * from './api/dms-api.service';
+export * from './api/contract-register-api.service';
