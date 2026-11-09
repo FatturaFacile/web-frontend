@@ -129,6 +129,12 @@ export class SidebarComponent {
           module: 'treasury',
         },
         {
+          key: 'NAV.ASSET_OPERATIONS',
+          icon: 'fa-solid fa-screwdriver-wrench',
+          route: '/assets/operations',
+          module: 'assets',
+        },
+        {
           key: 'NAV.ACCOUNTING',
           icon: 'fa-solid fa-landmark',
           route: '/accounting',
