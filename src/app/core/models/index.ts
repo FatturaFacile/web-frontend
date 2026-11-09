@@ -45,3 +45,8 @@ export * from './ecommerce-integrations.model';
 export * from './assistant.model';
 export * from './loyalty.model';
 export * from './workspace.model';
+export * from './sales-cycle.model';
+export * from './billing.model';
+export * from './crm-engagement.model';
+export * from './catalog.model';
+export * from './subscription-billing.model';
