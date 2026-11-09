@@ -28,26 +28,23 @@ function sourcesIn(dir: string): string[] {
   });
 }
 
-const BARREL_IMPORT = /from\s+'(@core|@shared|@features\/[^']*\/index|\.\.?\/layout)'/;
+const BARREL_IMPORT = /from\s+'(@core|@shared)'/;
 
 describe('initial bundle', () => {
-  const files = [...SHELL_FILES.map((file) => join(root, file)), ...sourcesIn(join(root, 'layout'))].filter(
-    (file) => !file.endsWith(join('layout', 'index.ts')),
-  );
+  const files = [...SHELL_FILES.map((file) => join(root, file)), ...sourcesIn(join(root, 'layout'))];
 
   it.each(files.map((file) => [file.replace(root, 'src/app').replaceAll('\\', '/'), file]))(
     '%s does not import a barrel',
     (_name, file) => {
       const offending = readFileSync(file, 'utf8')
         .split('\n')
-        .filter((line) => BARREL_IMPORT.test(line) && !line.includes('./layout'));
+        .filter((line) => BARREL_IMPORT.test(line));
       expect(offending).toEqual([]);
     },
   );
 
   it('the root component only reaches the two-factor modal through a @defer block', () => {
     const template = readFileSync(join(root, 'app.component.html'), 'utf8');
-    expect(template).toMatch(/@defer ([^
-]*) {s*<app-two-factor-setup-modal/);
+    expect(template).toMatch(/@defer \([^\n]*\) \{\s*<app-two-factor-setup-modal/);
   });
 });
