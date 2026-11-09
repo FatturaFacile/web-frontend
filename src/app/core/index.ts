@@ -67,3 +67,4 @@ export * from './api/ecommerce-integrations-api.service';
 export * from './api/assistant-api.service';
 export * from './api/loyalty-api.service';
 export * from './api/workspace-api.service';
+export * from './api/general-ledger-api.service';
