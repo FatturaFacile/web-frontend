@@ -27,8 +27,8 @@ export interface CoreDocumentLine {
   discount_percentage?: string | number | null;
   line_total?: string | null;
   sales_order_item_id?: string | null;
-  delivered_quantity?: string | null;
-  invoiced_quantity?: string | null;
+  quantity_delivered?: string | null;
+  quantity_invoiced?: string | null;
 }
 
 export interface CoreQuote {
@@ -116,7 +116,10 @@ export interface CoreOrder {
   total_net?: string | null;
   total_tax?: string | null;
   total_gross?: string | null;
-  credit_hold_id?: string | null;
+  credit_status?: 'pending_check' | 'approved' | 'on_hold' | 'rejected' | 'warning' | string | null;
+  credit_hold_reason?: string | null;
+  /** Credit holds, present only when the endpoint loads them. */
+  holds?: { id: string; status: string; hold_reason?: string | null }[];
   items?: CoreDocumentLine[];
 }
 
@@ -131,32 +134,69 @@ export interface CoreOrderPayload {
 }
 
 export interface OrderAvailabilityLine {
-  sales_order_item_id?: string;
+  sales_order_item_id: string;
   product_id?: string | null;
-  description?: string;
-  quantity_open?: string;
-  available?: string;
-  reserved?: string;
-  shortfall?: string;
-  can_promise?: boolean;
-  [key: string]: unknown;
+  description: string;
+  stock_relevant: boolean;
+  quantity_ordered: string;
+  quantity_delivered: string;
+  quantity_open: string;
+  quantity_reserved: string;
+  quantity_available: string;
+  quantity_promisable: string;
+  shortage: string;
+  fully_available: boolean;
+}
+
+export interface OrderAvailability {
+  sales_order_id: string;
+  warehouse_id?: string | null;
+  fully_available: boolean;
+  lines: OrderAvailabilityLine[];
 }
 
 export interface BackorderLine {
-  id?: string;
-  sales_order_id?: string;
-  order_number?: string;
-  contact_id?: string;
+  sales_order_item_id: string;
+  sales_order_id: string;
+  order_number: string;
+  order_date: string;
+  order_status: string;
+  contact_id: string;
   product_id?: string | null;
-  description?: string;
-  quantity?: string;
-  delivered_quantity?: string;
-  open_quantity?: string;
-  [key: string]: unknown;
+  description: string;
+  quantity_ordered: string;
+  quantity_delivered: string;
+  quantity_open: string;
+  quantity_reserved: string;
+  open_net_value: string;
 }
 
-export type SalesKpis = Record<string, unknown>;
-
+export interface SalesKpis {
+  period: { from: string; to: string };
+  order_backlog: { open_orders: number; open_lines: number; open_net_value: string };
+  fill_rate: {
+    orders: number;
+    lines: number;
+    lines_fully_delivered: number;
+    line_fill_rate: string | null;
+    quantity_ordered: string;
+    quantity_delivered: string;
+    quantity_fill_rate: string | null;
+  };
+  quote_conversion: {
+    quotes: number;
+    accepted: number;
+    rejected: number;
+    expired: number;
+    open: number;
+    converted_to_order: number;
+    quoted_net_value: string;
+    accepted_net_value: string;
+    conversion_rate: string | null;
+    order_conversion_rate: string | null;
+  };
+  returns: { opened: number; credited: number };
+}
 export type TransportBy = 'sender' | 'recipient' | 'carrier';
 
 export interface CoreDeliveryNote {

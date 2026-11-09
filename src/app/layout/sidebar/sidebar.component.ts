@@ -95,6 +95,13 @@ export class SidebarComponent {
             { key: 'NAV.ORDERS', route: '/sales/orders', icon: 'fa-solid fa-cart-shopping', module: 'invoicing' },
             { key: 'NAV.SDI', route: '/sales/sdi', icon: 'fa-solid fa-receipt', module: 'invoicing' },
             { key: 'NAV.QR_BILL', route: '/sales/qr-bill', icon: 'fa-solid fa-qrcode', module: 'invoicing' },
+            { key: 'NAV.SC_OVERVIEW', route: '/sales/cycle/overview', icon: 'fa-solid fa-chart-line', module: 'invoicing' },
+            { key: 'NAV.SC_QUOTES', route: '/sales/cycle/quotes', icon: 'fa-solid fa-file-signature', module: 'invoicing' },
+            { key: 'NAV.SC_ORDERS', route: '/sales/cycle/orders', icon: 'fa-solid fa-clipboard-list', module: 'invoicing' },
+            { key: 'NAV.SC_DDT', route: '/sales/cycle/delivery-notes', icon: 'fa-solid fa-truck-ramp-box', module: 'invoicing' },
+            { key: 'NAV.SC_RETURNS', route: '/sales/cycle/returns', icon: 'fa-solid fa-rotate-left', module: 'invoicing' },
+            { key: 'NAV.SC_PRICING', route: '/sales/cycle/pricing', icon: 'fa-solid fa-tags', module: 'invoicing' },
+            { key: 'NAV.SC_CREDIT', route: '/sales/cycle/credit', icon: 'fa-solid fa-scale-balanced', module: 'invoicing' },
           ],
         },
         {

@@ -1,0 +1,59 @@
+<app-page-header [title]="'SC.OVERVIEW.TITLE' | translate" [subtitle]="'SC.OVERVIEW.SUBTITLE' | translate" />
+
+<nz-card [nzTitle]="'SC.OVERVIEW.KPIS' | translate">
+  <div class="toolbar">
+    <label for="kpi-from">{{ 'SC.OVERVIEW.FROM' | translate }}</label>
+    <input nz-input id="kpi-from" type="date" class="search" [(ngModel)]="from" />
+    <label for="kpi-to">{{ 'SC.OVERVIEW.TO' | translate }}</label>
+    <input nz-input id="kpi-to" type="date" class="search" [(ngModel)]="to" />
+    <button nz-button type="button" [nzLoading]="loadingKpis()" (click)="loadKpis()">
+      <nz-icon nzType="reload" /> {{ 'SC.COMMON.REFRESH' | translate }}
+    </button>
+  </div>
+
+  @if (kpis(); as k) {
+    <div class="stat-grid">
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.OPEN_ORDERS' | translate" [nzValue]="k.order_backlog.open_orders" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.OPEN_LINES' | translate" [nzValue]="k.order_backlog.open_lines" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.OPEN_VALUE' | translate" [nzValue]="k.order_backlog.open_net_value | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.LINE_FILL_RATE' | translate" [nzValue]="rate(k.fill_rate.line_fill_rate)" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.QUANTITY_FILL_RATE' | translate" [nzValue]="rate(k.fill_rate.quantity_fill_rate)" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.QUOTES' | translate" [nzValue]="k.quote_conversion.quotes" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.QUOTE_CONVERSION' | translate" [nzValue]="rate(k.quote_conversion.conversion_rate)" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.QUOTE_TO_ORDER' | translate" [nzValue]="rate(k.quote_conversion.order_conversion_rate)" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.ACCEPTED_VALUE' | translate" [nzValue]="k.quote_conversion.accepted_net_value | money: currency()" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.RETURNS_OPENED' | translate" [nzValue]="k.returns.opened" />
+      <nz-statistic [nzTitle]="'SC.OVERVIEW.RETURNS_CREDITED' | translate" [nzValue]="k.returns.credited" />
+    </div>
+  }
+</nz-card>
+
+<nz-card class="section" [nzTitle]="'SC.OVERVIEW.BACKORDERS' | translate">
+  <div class="toolbar">
+    <nz-select
+      class="filter-select"
+      nzShowSearch
+      nzAllowClear
+      [nzPlaceHolder]="'SC.COMMON.CUSTOMER' | translate"
+      [attr.aria-label]="'SC.COMMON.CUSTOMER' | translate"
+      [ngModel]="facade.filterParams().contact_id"
+      (ngModelChange)="facade.setFilter({ contact_id: $event ?? undefined })"
+    >
+      @for (c of lookups.contacts(); track c.id) {
+        <nz-option [nzValue]="c.id" [nzLabel]="lookups.contactLabel(c)"></nz-option>
+      }
+    </nz-select>
+  </div>
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    (paramsChange)="onParamsChange($event)"
+  />
+  <ng-template #orderTpl let-b><code>{{ b.order_number }}</code></ng-template>
+  <ng-template #customerTpl let-b>{{ lookups.contactName(b.contact_id) }}</ng-template>
+  <ng-template #valueTpl let-b>{{ b.open_net_value | money: currency() }}</ng-template>
+</nz-card>
