@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PermissionsService, ResourceApiService, ResourceRow } from '@core';
+import { PermissionsService, ResourceApiService, ResourceRow, unwrapResponse } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -173,7 +173,7 @@ export class ResourcePanelComponent implements OnInit {
 
   protected run(action: ResourceAction, row: ResourceRow | null = null): void {
     if (action.fields && action.fields.length > 0) {
-      this.form.set({ action, row });
+      this.form.set({ action, row: row ?? (action.prefill ? this.reportRecord() : null) });
       return;
     }
     const execute = () => this.execute(action, row, action.body ?? {});
@@ -188,6 +188,11 @@ export class ResourcePanelComponent implements OnInit {
       return;
     }
     execute();
+  }
+
+  private reportRecord(): ResourceRow | null {
+    const data = unwrapResponse(this.report());
+    return typeof data === 'object' && data !== null && !Array.isArray(data) ? (data as ResourceRow) : null;
   }
 
   protected view(row: ResourceRow): void {
