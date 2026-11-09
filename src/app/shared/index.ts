@@ -4,3 +4,7 @@ export * from './pipes/money.pipe';
 export * from './pipes/translate.pipe';
 export * from './directives/autofocus.directive';
 export * from './components/base-table';
+export * from './ui/resource-panel/resource-panel.component';
+export * from './ui/resource-panel/resource-panel.types';
+export * from './ui/resource-panel/resource-page.component';
+export * from './ui/resource-panel/resource-config.helpers';

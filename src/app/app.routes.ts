@@ -101,6 +101,13 @@ export const routes: Routes = [
       import('./features/purchases/purchases.routes').then((m) => m.PURCHASES_ROUTES),
   },
   {
+    path: 'procurement',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Approvvigionamento', title: 'Approvvigionamento' },
+    loadChildren: () =>
+      import('./features/procurement/procurement.routes').then((m) => m.PROCUREMENT_ROUTES),
+  },
+  {
     path: 'treasury',
     canActivate: [authGuard],
     data: { breadcrumb: 'Tesoreria & Banche', title: 'Tesoreria' },
