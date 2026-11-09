@@ -46,7 +46,7 @@ export interface CreateSalesQuotePayload {
   valid_until?: string | null;
   currency?: string | null;
   notes?: string | null;
-  items: Array<{
+  items: {
     product_id?: string | null;
     description: string;
     quantity: number;
@@ -54,7 +54,7 @@ export interface CreateSalesQuotePayload {
     tax_rate?: number | null;
     discount_percentage?: number | null;
     uom?: string | null;
-  }>;
+  }[];
 }
 
 export interface SalesOrderItem {
@@ -106,14 +106,14 @@ export interface CreateSalesOrderPayload {
   due_date?: string | null;
   notes?: string | null;
   status?: string;
-  items: Array<{
+  items: {
     product_id?: string | null;
     description: string;
     quantity: number;
     unit_price: number;
     tax_rate: number;
     discount_percentage?: number | null;
-  }>;
+  }[];
 }
 
 export interface DeliveryNoteItem {
@@ -165,10 +165,10 @@ export interface CreateDeliveryNotePayload {
   carrier_name?: string | null;
   carrier_license_plate?: string | null;
   notes?: string | null;
-  items: Array<{
+  items: {
     sales_order_item_id: string;
     quantity: number;
     batch_number?: string | null;
     serial_number?: string | null;
-  }>;
+  }[];
 }

@@ -315,10 +315,10 @@
               <td><nz-tag nzColor="blue">{{ pr.country || 'IT/CH' }}</nz-tag></td>
               <td>{{ pr.employees_count || '-' }}</td>
               <td class="text-right font-semibold">
-                {{ pr.total_gross != null ? (pr.total_gross | money: 'EUR') : '-' }}
+                {{ pr.total_gross !== null && pr.total_gross !== undefined ? (pr.total_gross | money: 'EUR') : '-' }}
               </td>
               <td class="text-right font-bold text-green-600">
-                {{ pr.total_net != null ? (pr.total_net | money: 'EUR') : '-' }}
+                {{ pr.total_net !== null && pr.total_net !== undefined ? (pr.total_net | money: 'EUR') : '-' }}
               </td>
               <td>
                 <nz-tag [nzColor]="pr.status === 'paid' ? 'success' : 'processing'">

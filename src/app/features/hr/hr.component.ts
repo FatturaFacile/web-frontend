@@ -19,15 +19,12 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   EmployeeResource,
-  EmploymentStatus,
   EmploymentType,
   FrontierWorkerResource,
   HireEmployeePayload,
   HrApiService,
   LeaveRequestResource,
-  LeaveStatus,
   PayrollRunResource,
-  PromoteEmployeePayload,
   SubmitLeaveRequestPayload,
   SubmitTimesheetPayload,
   TerminateEmployeePayload,

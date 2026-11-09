@@ -48,7 +48,7 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
 
   it('triggers twoFactorSetupRequired when 403 problem is two-factor-setup-required', () => {
     http.get('/api/v1/crm/contacts').subscribe({
-      error: () => {},
+      error: () => undefined,
     });
 
     const req = httpTesting.expectOne('/api/v1/crm/contacts');
@@ -70,7 +70,7 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
 
   it('displays warning on 409 conflict with detail', () => {
     http.put('/api/v1/crm/leads/1', {}).subscribe({
-      error: () => {},
+      error: () => undefined,
     });
 
     const req = httpTesting.expectOne('/api/v1/crm/leads/1');
@@ -90,7 +90,7 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
 
   it('displays warning on 429 too many requests', () => {
     http.get('/api/v1/search').subscribe({
-      error: () => {},
+      error: () => undefined,
     });
 
     const req = httpTesting.expectOne('/api/v1/search');
@@ -114,7 +114,7 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
     expect(authStore.isAuthenticated()).toBe(true);
 
     http.get('/api/v1/documents').subscribe({
-      error: () => {},
+      error: () => undefined,
     });
 
     const req = httpTesting.expectOne('/api/v1/documents');

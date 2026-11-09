@@ -105,7 +105,7 @@
     <!-- TAB 2: CORRISPETTIVI GIORNALIERI -->
     <nz-tab nzTitle="Corrispettivi Giornalieri RT">
       <div class="flex items-center gap-4 mb-4">
-        <label class="font-medium">Data Chiusura:</label>
+        <span class="font-medium">Data Chiusura:</span>
         <nz-date-picker
           [ngModel]="selectedDate()"
           (ngModelChange)="selectedDate.set($event); loadDailyCorrispettivi()"

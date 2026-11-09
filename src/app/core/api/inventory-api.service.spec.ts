@@ -7,7 +7,6 @@ import { InventoryApiService } from './inventory-api.service';
 import {
   CreateProductPayload,
   StoreInventoryAdjustmentPayload,
-  StorePriceListPayload,
   StoreWarehousePayload,
   TransferStockPayload,
 } from '../models';

@@ -43,12 +43,12 @@ export interface LoginResult {
     default_currency?: string;
     role: string | null;
   } | null;
-  available_tenants?: Array<{
+  available_tenants?: {
     id: string;
     name: string;
     country: string;
     role: string | null;
-  }>;
+  }[];
   two_factor_required?: boolean;
   challenge_token?: string;
   expires_in?: number;

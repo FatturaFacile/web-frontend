@@ -30,12 +30,12 @@ export interface UserProfile {
     readonly country?: string;
     readonly role: string | null;
   } | null;
-  readonly tenants?: ReadonlyArray<{
+  readonly tenants?: readonly {
     readonly id: string;
     readonly name: string;
     readonly country?: string;
     readonly role: string | null;
-  }>;
+  }[];
 }
 
 export interface AuthState {

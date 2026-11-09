@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
 import { AutomotiveApiService } from './automotive-api.service';
-import { AutomotiveVehicle, TireCheckInPayload, TireRecord } from '../models';
+import { AutomotiveVehicle, TireCheckInPayload } from '../models';
 
 describe('AutomotiveApiService', () => {
   let service: AutomotiveApiService;

@@ -145,22 +145,22 @@
             </div>
           </li>
           <li nz-menu-divider></li>
-          <li nz-menu-item (click)="router.navigate(['/settings/security'])">
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security'])" (keydown.enter)="router.navigate(['/settings/security'])">
             <i class="fa-solid fa-shield-halved fa-icon-spaced"></i>
             Sicurezza & Sessioni
           </li>
           @if (permissions.canWrite('system')) {
-            <li nz-menu-item (click)="router.navigate(['/settings/security/two-factor'])">
+            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security/two-factor'])" (keydown.enter)="router.navigate(['/settings/security/two-factor'])">
               <i class="fa-solid fa-key fa-icon-spaced"></i>
               Policy 2FA Aziendale
             </li>
           }
-          <li nz-menu-item (click)="router.navigate(['/settings/tenant'])">
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/tenant'])" (keydown.enter)="router.navigate(['/settings/tenant'])">
             <i class="fa-solid fa-sliders fa-icon-spaced"></i>
             {{ "HEADER.PREFERENCES" | translate }}
           </li>
           <li nz-menu-divider></li>
-          <li nz-menu-item (click)="logout()" class="logout-item">
+          <li nz-menu-item tabindex="0" (click)="logout()" (keydown.enter)="logout()" class="logout-item">
             <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
             {{ "HEADER.LOGOUT" | translate }}
           </li>

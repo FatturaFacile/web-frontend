@@ -173,7 +173,7 @@ export class InventoryApiService {
 
   recordCount(
     id: string,
-    counts: Array<{ line_id: string; counted_quantity: number }>,
+    counts: { line_id: string; counted_quantity: number }[],
   ): Observable<ApiResponse<InventoryCountSessionItem>> {
     return this.http.post<ApiResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts/${id}/record-count`, {
       counts,

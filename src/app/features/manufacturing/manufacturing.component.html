@@ -129,7 +129,7 @@
                 </nz-tag>
               </td>
               <td class="text-right">
-                @if (o.actual_cost_total != null) {
+                @if (o.actual_cost_total !== null && o.actual_cost_total !== undefined) {
                   <span>{{ o.actual_cost_total | money: 'EUR' }}</span>
                 } @else {
                   <span class="text-muted">-</span>
@@ -431,7 +431,7 @@
               <td>{{ w.name }}</td>
               <td>{{ w.department_code || '-' }}</td>
               <td class="text-right font-semibold">{{ w.capacity_hours_per_day }} h</td>
-              <td class="text-right">{{ w.hourly_cost_rate != null ? (w.hourly_cost_rate | money: 'EUR') : '-' }}</td>
+              <td class="text-right">{{ w.hourly_cost_rate !== null && w.hourly_cost_rate !== undefined ? (w.hourly_cost_rate | money: 'EUR') : '-' }}</td>
               <td><nz-tag [nzColor]="w.status === 'active' ? 'success' : 'default'">{{ w.status | uppercase }}</nz-tag></td>
             </tr>
           }

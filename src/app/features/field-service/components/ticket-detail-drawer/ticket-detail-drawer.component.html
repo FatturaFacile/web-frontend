@@ -227,7 +227,9 @@
 
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <nz-radio-group formControlName="visibility">
+                  <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                   <label nz-radio nzValue="public">Risposta Pubblica</label>
+                  <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                   <label nz-radio nzValue="internal">Nota Interna</label>
                 </nz-radio-group>
 
@@ -286,7 +288,7 @@
 >
   <ng-container *nzModalContent>
     <div style="margin-bottom: 12px;">
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Nuovo Stato:</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">Nuovo Stato:</span>
       <nz-select [ngModel]="targetStatus()" (ngModelChange)="targetStatus.set($event)" style="width: 100%;">
         <nz-option nzValue="new" nzLabel="Nuovo (new)"></nz-option>
         <nz-option nzValue="open" nzLabel="Aperto (open)"></nz-option>
@@ -297,7 +299,7 @@
       </nz-select>
     </div>
     <div>
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Nota di transizione (opzionale):</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">Nota di transizione (opzionale):</span>
       <textarea
         nz-input
         rows="3"
@@ -318,7 +320,7 @@
 >
   <ng-container *nzModalContent>
     <div style="margin-bottom: 12px;">
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">ID Utente / Agente (UUID):</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">ID Utente / Agente (UUID):</span>
       <input
         nz-input
         [ngModel]="assignedUserId()"
@@ -327,7 +329,7 @@
       />
     </div>
     <div>
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">ID Team di Assistenza (opzionale):</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">ID Team di Assistenza (opzionale):</span>
       <input
         nz-input
         [ngModel]="assignedTeamId()"
@@ -347,7 +349,7 @@
 >
   <ng-container *nzModalContent>
     <div style="margin-bottom: 12px;">
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Note di risoluzione:</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">Note di risoluzione:</span>
       <textarea
         nz-input
         rows="3"
@@ -357,7 +359,7 @@
       ></textarea>
     </div>
     <div>
-      <label style="display: block; margin-bottom: 4px; font-weight: 500;">Causa principale (Root Cause):</label>
+      <span style="display: block; margin-bottom: 4px; font-weight: 500;">Causa principale (Root Cause):</span>
       <textarea
         nz-input
         rows="2"

@@ -71,7 +71,7 @@
         <tr>
           <td>
             <div class="asset-info">
-              <a class="asset-title" (click)="openDetail(a)">{{ a.name }}</a>
+              <button type="button" class="asset-title" (click)="openDetail(a)">{{ a.name }}</button>
               <span class="asset-sub">{{ a.asset_number || 'N/A' }} @if (a.serial_number) { &bull; SN: {{ a.serial_number }} }</span>
             </div>
           </td>

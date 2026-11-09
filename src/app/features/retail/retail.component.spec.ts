@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalRef } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
@@ -15,8 +16,8 @@ import { RetailComponent } from './retail.component';
 describe('RetailComponent', () => {
   let component: RetailComponent;
   let fixture: ComponentFixture<RetailComponent>;
-  let apiService: any;
-  let messageService: any;
+  let apiService: Partial<RetailApiService>;
+  let messageService: Partial<NzMessageService>;
 
   const mockDoc: CommercialDocumentResource = {
     id: 'doc-1',
@@ -67,9 +68,9 @@ describe('RetailComponent', () => {
 
     fixture = TestBed.createComponent(RetailComponent);
     component = fixture.componentInstance;
-    vi.spyOn((component as any).modal, 'confirm').mockImplementation((config: any) => {
+    vi.spyOn((component as unknown as { modal: { confirm: (opts: { nzOnOk?: () => void }) => NzModalRef } }).modal, 'confirm').mockImplementation(config => {
       if (config.nzOnOk) config.nzOnOk();
-      return {} as any;
+      return {} as NzModalRef;
     });
     fixture.detectChanges();
   });

@@ -4,7 +4,6 @@ import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
 import { ConstructionApiService } from './construction-api.service';
 import {
-  ConstructionProgressBilling,
   ConstructionProgressBillingPayload,
   ConstructionSite,
 } from '../models';

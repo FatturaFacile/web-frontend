@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalRef } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
@@ -181,9 +182,9 @@ describe('InvoicesComponent', () => {
 
     fixture = TestBed.createComponent(InvoicesComponent);
     component = fixture.componentInstance;
-    vi.spyOn((component as any).modal, 'confirm').mockImplementation((config: any) => {
+    vi.spyOn((component as unknown as { modal: { confirm: (opts: { nzOnOk?: () => void }) => NzModalRef } }).modal, 'confirm').mockImplementation(config => {
       config.nzOnOk?.();
-      return {} as any;
+      return {} as NzModalRef;
     });
     fixture.detectChanges();
   });
@@ -193,7 +194,7 @@ describe('InvoicesComponent', () => {
   });
 
   it('loads Swiss QR-bill and opens QR modal', () => {
-    (component as any).viewQrBill(mockInvoiceCH);
+    component.viewQrBill(mockInvoiceCH);
 
     expect(apiMock.getQrBill).toHaveBeenCalledWith('inv-ch-1');
     expect(component.qrModalVisible()).toBe(true);
@@ -201,7 +202,7 @@ describe('InvoicesComponent', () => {
   });
 
   it('loads SDI logs and opens modal', () => {
-    (component as any).viewSdiLogs(mockInvoiceIT);
+    component.viewSdiLogs(mockInvoiceIT);
 
     expect(apiMock.getSdiLogs).toHaveBeenCalledWith('inv-it-1');
     expect(component.sdiLogsModalVisible()).toBe(true);
@@ -209,7 +210,7 @@ describe('InvoicesComponent', () => {
   });
 
   it('fetches installments and opens installments modal', () => {
-    (component as any).viewInstallments(mockInvoiceIT);
+    component.viewInstallments(mockInvoiceIT);
 
     expect(apiMock.getInstallments).toHaveBeenCalledWith('inv-it-1');
     expect(component.installmentsModalVisible()).toBe(true);
@@ -217,7 +218,7 @@ describe('InvoicesComponent', () => {
   });
 
   it('pre-fills and opens credit note modal for an invoice', () => {
-    (component as any).openCreditNoteModal(mockInvoiceIT);
+    component.openCreditNoteModal(mockInvoiceIT);
 
     expect(component.creditNoteModalVisible()).toBe(true);
     expect(component.creditNoteForm.get('original_invoice_id')?.value).toBe('inv-it-1');
@@ -225,8 +226,8 @@ describe('InvoicesComponent', () => {
   });
 
   it('submits credit note form successfully', () => {
-    (component as any).openCreditNoteModal(mockInvoiceIT);
-    (component as any).submitCreditNote();
+    component.openCreditNoteModal(mockInvoiceIT);
+    component.submitCreditNote();
 
     expect(apiMock.createCreditNote).toHaveBeenCalled();
     expect(component.creditNoteModalVisible()).toBe(false);
@@ -235,14 +236,14 @@ describe('InvoicesComponent', () => {
   });
 
   it('executes bulk SDI transmission for Italian invoices', () => {
-    (component as any).sendBulkSdi();
+    component.sendBulkSdi();
 
     expect(apiMock.sendSdiBulk).toHaveBeenCalledWith(['inv-it-1']);
     expect(messageMock.success).toHaveBeenCalled();
   });
 
   it('generates FatturaPA XML for Italian invoice', () => {
-    (component as any).generateSdiXml(mockInvoiceIT);
+    component.generateSdiXml(mockInvoiceIT);
 
     expect(apiMock.generateSdiXml).toHaveBeenCalledWith('inv-it-1');
     expect(messageMock.success).toHaveBeenCalled();
