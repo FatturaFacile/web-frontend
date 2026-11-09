@@ -194,6 +194,7 @@
           <span nz-icon nzType="plus"></span> Nuova Distinta Base
         </button>
       </div>
+      <p class="text-muted">{{ 'MFG.BOM_DRAFT_HINT' | translate }}</p>
 
       <nz-table
         #bomsTable
@@ -239,7 +240,14 @@
                   Esplodi
                 </button>
                 @if (b.status === 'draft') {
-                  <button nz-button nzType="link" nzSize="small" (click)="activateBom(b)">
+                  <button
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    [disabled]="!canActivateBom()"
+                    [attr.title]="canActivateBom() ? null : ('MFG.BOM_ACTIVATE_FORBIDDEN' | translate)"
+                    (click)="activateBom(b)"
+                  >
                     Attiva
                   </button>
                 }
@@ -497,8 +505,27 @@
       <nz-form-item>
         <nz-form-label nzRequired>ID Articolo da Produrre (UUID)</nz-form-label>
         <nz-form-control nzErrorTip="Inserire l'ID dell'articolo">
-          <input nz-input formControlName="mfg_item_id" placeholder="Es. 9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc" />
+          <input
+            nz-input
+            formControlName="mfg_item_id"
+            placeholder="Es. 9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc"
+            (input)="onOrderItemChange($any($event.target).value)"
+          />
         </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'MFG.ORDER_BOM' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="bom_id" nzAllowClear [nzPlaceHolder]="'MFG.ORDER_BOM_AUTO' | translate">
+            @for (b of orderBoms(); track b.id) {
+              <nz-option [nzValue]="b.id" [nzLabel]="b.bom_number + ' - Rev. ' + b.revision"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+        @if (orderBomsChecked() && orderBoms().length === 0) {
+          <p class="text-muted" role="alert">{{ 'MFG.ORDER_NO_ACTIVE_BOM' | translate }}</p>
+        }
       </nz-form-item>
 
       <nz-form-item>
@@ -534,6 +561,37 @@
         </nz-form-control>
       </nz-form-item>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ANNULLA ORDINE DI PRODUZIONE -->
+<nz-modal
+  [nzVisible]="cancellingOrder() !== null"
+  [nzTitle]="'MFG.CANCEL_TITLE' | translate"
+  [nzOkText]="'MFG.CANCEL_CONFIRM' | translate"
+  [nzOkLoading]="isCancellingOrder()"
+  [nzOkDisabled]="!cancelReason().trim()"
+  [nzOkDanger]="true"
+  (nzOnCancel)="cancellingOrder.set(null)"
+  (nzOnOk)="confirmCancelOrder()"
+>
+  <ng-container *nzModalContent>
+    <p>
+      <strong>{{ cancellingOrder()?.order_number }}</strong> - {{ 'MFG.CANCEL_HINT' | translate }}
+    </p>
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="cancel-reason">{{ 'MFG.CANCEL_REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea
+          nz-input
+          id="cancel-reason"
+          rows="3"
+          maxlength="500"
+          [ngModel]="cancelReason()"
+          (ngModelChange)="cancelReason.set($event)"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
   </ng-container>
 </nz-modal>
 
