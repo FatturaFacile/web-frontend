@@ -29,24 +29,37 @@ describe('PurchasesComponent', () => {
 
   const mockOrder: PurchaseOrder = {
     id: 'po-1',
-    order_number: 'PO-2026-0001',
+    po_number: 'PO-2026-0001',
     supplier_id: 'sup-1',
-    supplier_name: 'Acme Supplies',
-    channel: 'Standard',
-    status: 'draft',
-    issue_date: '2026-11-09',
+    status: 'sent',
+    order_type: 'standard',
+    order_date: '2026-11-09',
+    expected_delivery_date: '2026-11-30',
     currency: 'EUR',
-    subtotal: 1000,
-    tax_amount: 220,
-    total: 1220,
-    items: [
+    exchange_rate: '1.000000',
+    net_amount: '1000.00',
+    tax_amount: '220.00',
+    total_amount: '1220.00',
+    is_budget_encumbered: false,
+    budget_committed_amount: '0.00',
+    is_locked: false,
+    supplier: { id: 'sup-1', supplier_code: 'SUP-1', company_name: 'Acme Supplies' },
+    lines: [
       {
         id: 'line-1',
+        line_number: 1,
         description: 'Material X',
-        quantity: 10,
-        unit_price: 100,
-        tax_rate: 22,
-        total: 1000,
+        quantity_ordered: '10.0000',
+        quantity_received: '0.0000',
+        quantity_returned: '0.0000',
+        quantity_invoiced: '0.0000',
+        uom: 'PZ',
+        unit_price: '100.0000',
+        tax_rate: '22.00',
+        line_net_amount: '1000.00',
+        line_tax_amount: '220.00',
+        line_total_amount: '1220.00',
+        is_closed: false,
       },
     ],
   };
@@ -57,13 +70,18 @@ describe('PurchasesComponent', () => {
     purchase_order_id: 'po-1',
     supplier_delivery_note_ref: 'DDT-991',
     received_date: '2026-11-09',
-    inspection_status: 'passed',
+    inspection_status: 'pending',
     inspection_required: true,
     lines: [
       {
+        id: 'grn-line-1',
         purchase_order_line_id: 'line-1',
-        quantity_received: 10,
-        quantity_accepted: 10,
+        quantity_received: '10.0000',
+        quantity_accepted: '10.0000',
+        quantity_rejected: '0.0000',
+        quantity_released: '0.0000',
+        quantity_returned: '0.0000',
+        inspection_status: 'pending',
       },
     ],
   };
@@ -71,50 +89,64 @@ describe('PurchasesComponent', () => {
   const mockMatch: ThreeWayMatchLog = {
     id: 'twm-1',
     purchase_order_id: 'po-1',
-    supplier_id: 'sup-1',
-    status: 'discrepancy',
-    price_variance: 50,
-    quantity_variance: 0,
+    purchase_receipt_id: 'grn-1',
+    passive_invoice_id: 'si-1',
+    match_status: 'price_variance',
+    po_total_amount: 1220,
+    grn_total_amount: 1220,
+    invoice_total_amount: 1270,
+    variance_amount: 50,
+    variance_percentage: 4.1,
+    evaluated_at: '2026-11-09T10:00:00Z',
   };
 
   const mockInvoice: SupplierInvoice = {
     id: 'si-1',
     invoice_number: 'FAT-2026-88',
     supplier_id: 'sup-1',
-    supplier_name: 'Acme Supplies',
-    issue_date: '2026-11-09',
+    date: '2026-11-09',
     due_date: '2026-12-09',
     currency: 'EUR',
-    subtotal: 1050,
-    tax_amount: 231,
-    total: 1281,
-    status: 'pending_approval',
+    total_amount: '1281.00',
+    payment_status: 'unpaid',
+    approval_status: 'not_required',
   };
 
   beforeEach(() => {
     procurementApiMock = {
+      getSuppliers: vi
+        .fn()
+        .mockReturnValue(of({ data: [{ id: 'sup-1', supplier_code: 'SUP-1', company_name: 'Acme Supplies' }] })),
       getPurchaseOrders: vi.fn().mockReturnValue(of({ data: [mockOrder], meta: { total: 1 } })),
+      getPurchaseOrder: vi.fn().mockReturnValue(of({ data: mockOrder })),
       createPurchaseOrder: vi.fn().mockReturnValue(of({ data: mockOrder })),
       submitApproval: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'pending_approval' } })),
       approvePurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'approved' } })),
       rejectPurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'rejected' } })),
       sendPurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'sent' } })),
       cancelPurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'cancelled' } })),
+      closePurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'closed' } })),
+      reopenPurchaseOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'received' } })),
       getGoodsReceipts: vi.fn().mockReturnValue(of({ data: [mockReceipt], meta: { total: 1 } })),
+      getGoodsReceipt: vi.fn().mockReturnValue(of({ data: mockReceipt })),
       processGoodsReceipt: vi.fn().mockReturnValue(of({ data: mockReceipt })),
       inspectGoodsReceipt: vi.fn().mockReturnValue(of({ data: mockReceipt })),
       getThreeWayMatches: vi.fn().mockReturnValue(of({ data: [mockMatch], meta: { total: 1 } })),
       executeThreeWayMatch: vi.fn().mockReturnValue(of({ data: mockMatch })),
-      approveThreeWayMatchVariance: vi.fn().mockReturnValue(of({ data: { ...mockMatch, status: 'matched' } })),
+      approveThreeWayMatchVariance: vi.fn().mockReturnValue(of({ data: { ...mockMatch, match_status: 'matched' } })),
       getSupplierInvoices: vi.fn().mockReturnValue(of({ data: [mockInvoice], meta: { total: 1 } })),
-      markSupplierInvoicePaid: vi.fn().mockReturnValue(of({ data: { ...mockInvoice, status: 'paid' } })),
-      importPassiveInvoiceSdi: vi.fn().mockReturnValue(of({ data: { invoice_id: 'si-1', message: 'Import OK' } })),
+      markSupplierInvoicePaid: vi.fn().mockReturnValue(of({ data: { ...mockInvoice, payment_status: 'paid' } })),
+      submitSupplierInvoiceApproval: vi.fn().mockReturnValue(of({ data: { invoice_id: 'si-1', approval_status: 'pending' } })),
+      receivePassiveInvoiceXml: vi
+        .fn()
+        .mockReturnValue(of({ data: [{ duplicate: false, invoice: mockInvoice }, { duplicate: true, invoice: mockInvoice }] })),
     };
 
     messageMock = {
       success: vi.fn(),
       error: vi.fn(),
       info: vi.fn(),
+      warning: vi.fn(),
     };
 
     authStoreMock = {
@@ -148,12 +180,32 @@ describe('PurchasesComponent', () => {
 
   it('creates the component and loads initial procurement data', () => {
     expect(component).toBeTruthy();
+    expect(procurementApiMock.getSuppliers).toHaveBeenCalled();
     expect(procurementApiMock.getPurchaseOrders).toHaveBeenCalled();
     expect(procurementApiMock.getGoodsReceipts).toHaveBeenCalled();
     expect(procurementApiMock.getThreeWayMatches).toHaveBeenCalled();
     expect(procurementApiMock.getSupplierInvoices).toHaveBeenCalled();
     expect(component.orders()).toHaveLength(1);
     expect(component.goodsReceipts()).toHaveLength(1);
+    expect(component.supplierName(mockOrder)).toBe('Acme Supplies');
+  });
+
+  it('filters orders by the current statuses and supplier', () => {
+    component.onStatusChange('partially_received');
+    component.onSupplierChange('sup-1');
+    expect(procurementApiMock.getPurchaseOrders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'partially_received', supplier_id: 'sup-1' }),
+    );
+    expect(component['orderStatuses']).toContain('sent');
+    expect(component['orderStatuses']).not.toContain('ordered' as never);
+  });
+
+  it('offers the actions that match the order status', () => {
+    expect(component.canReceive({ ...mockOrder, status: 'sent' })).toBe(true);
+    expect(component.canReceive({ ...mockOrder, status: 'partially_received' })).toBe(true);
+    expect(component.canReceive({ ...mockOrder, status: 'approved' })).toBe(false);
+    expect(component.canReceive({ ...mockOrder, status: 'received' })).toBe(false);
+    expect(component.canCancel({ ...mockOrder, status: 'received' })).toBe(false);
   });
 
   it('submits purchase order for approval', () => {
@@ -162,30 +214,42 @@ describe('PurchasesComponent', () => {
     expect(messageMock.success).toHaveBeenCalled();
   });
 
-  it('approves and rejects purchase order', () => {
+  it('approves a purchase order and rejects it only with a reason', () => {
     component.approve(mockOrder);
     expect(procurementApiMock.approvePurchaseOrder).toHaveBeenCalledWith('po-1');
 
     component.reject(mockOrder);
-    expect(procurementApiMock.rejectPurchaseOrder).toHaveBeenCalledWith('po-1', expect.any(String));
+    component.confirmReason();
+    expect(procurementApiMock.rejectPurchaseOrder).not.toHaveBeenCalled();
+
+    component.reasonText.set('Price above budget');
+    component.confirmReason();
+    expect(procurementApiMock.rejectPurchaseOrder).toHaveBeenCalledWith('po-1', 'Price above budget');
+    expect(component.reasonRequest()).toBeNull();
   });
 
-  it('sends order to supplier and cancels order', () => {
+  it('sends, cancels, closes and reopens an order', () => {
     component.sendToSupplier(mockOrder);
     expect(procurementApiMock.sendPurchaseOrder).toHaveBeenCalledWith('po-1');
 
     component.cancelOrder(mockOrder);
     expect(procurementApiMock.cancelPurchaseOrder).toHaveBeenCalledWith('po-1');
+
+    component.closeOrder({ ...mockOrder, status: 'received' });
+    expect(procurementApiMock.closePurchaseOrder).toHaveBeenCalledWith('po-1');
+
+    component.reopenOrder({ ...mockOrder, status: 'closed' });
+    expect(procurementApiMock.reopenPurchaseOrder).toHaveBeenCalledWith('po-1');
   });
 
-  it('creates a new purchase order through modal form', () => {
+  it('creates a purchase order for a supplier of the catalog', () => {
     component.openCreateModal();
     expect(component.createModalVisible()).toBe(true);
 
     component.orderForm.patchValue({
-      supplier_name: 'Test Vendor',
-      channel: 'Standard',
+      supplier_id: 'sup-1',
       currency: 'EUR',
+      expected_delivery_date: new Date(2026, 11, 15),
       item_description: 'Widget A',
       quantity: 5,
       unit_price: 20,
@@ -193,45 +257,54 @@ describe('PurchasesComponent', () => {
     });
 
     component.submitCreateOrder();
-    expect(procurementApiMock.createPurchaseOrder).toHaveBeenCalled();
+    expect(procurementApiMock.createPurchaseOrder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        supplier_id: 'sup-1',
+        expected_delivery_date: '2026-12-15',
+        lines: [{ description: 'Widget A', quantity_ordered: 5, unit_price: 20, tax_rate: 22 }],
+      }),
+    );
     expect(component.createModalVisible()).toBe(false);
   });
 
-  it('registers goods receipt for an approved purchase order', () => {
+  it('registers a goods receipt line by line for a sent purchase order', () => {
     component.openGoodsReceiptModal(mockOrder);
+    expect(procurementApiMock.getPurchaseOrder).toHaveBeenCalledWith('po-1');
     expect(component.goodsReceiptModalVisible()).toBe(true);
-    expect(component.selectedOrderForReceipt()).toEqual(mockOrder);
+    expect(component.receiptLines.length).toBe(1);
 
-    component.receiptForm.patchValue({
-      supplier_delivery_note_ref: 'DDT-1234',
-      quantity_received: 10,
-    });
-
+    component.receiptForm.patchValue({ supplier_delivery_note_ref: 'DDT-1234' });
     component.submitGoodsReceipt();
-    expect(procurementApiMock.processGoodsReceipt).toHaveBeenCalledWith('po-1', expect.objectContaining({
-      supplier_delivery_note_ref: 'DDT-1234',
-    }));
+    expect(procurementApiMock.processGoodsReceipt).not.toHaveBeenCalled();
+    expect(messageMock.warning).toHaveBeenCalled();
+
+    component.receiptLines.at(0).patchValue({ quantity_received: 10, lot_number: 'L1' });
+    component.submitGoodsReceipt();
+    expect(procurementApiMock.processGoodsReceipt).toHaveBeenCalledWith(
+      'po-1',
+      expect.objectContaining({
+        supplier_delivery_note_ref: 'DDT-1234',
+        lines: [{ purchase_order_line_id: 'line-1', quantity_received: 10, lot_number: 'L1' }],
+      }),
+    );
     expect(component.goodsReceiptModalVisible()).toBe(false);
   });
 
-  it('updates inspection status for a goods receipt', () => {
+  it('records the released quantity of each receipt line', () => {
     component.openInspectModal(mockReceipt);
     expect(component.inspectModalVisible()).toBe(true);
+    expect(component.inspectLines.at(0).value.quantity_released).toBe(10);
 
-    component.inspectForm.patchValue({
-      inspection_status: 'passed',
-      notes: 'Passed all lab checks',
-    });
-
+    component.inspectLines.at(0).patchValue({ quantity_released: 8, notes: 'Two units damaged' });
     component.submitInspection();
-    expect(procurementApiMock.inspectGoodsReceipt).toHaveBeenCalledWith('grn-1', 'passed', 'Passed all lab checks');
+    expect(procurementApiMock.inspectGoodsReceipt).toHaveBeenCalledWith('grn-1', {
+      results: [{ purchase_receipt_line_id: 'grn-line-1', quantity_released: 8, notes: 'Two units damaged' }],
+    });
     expect(component.inspectModalVisible()).toBe(false);
   });
 
-  it('executes 3-way match and approves variance', () => {
+  it('executes 3-way match and approves the variance with a reason', () => {
     component.openExecuteMatchModal();
-    expect(component.executeMatchModalVisible()).toBe(true);
-
     component.matchForm.patchValue({
       purchase_order_id: 'po-1',
       purchase_receipt_id: 'grn-1',
@@ -243,23 +316,37 @@ describe('PurchasesComponent', () => {
     expect(procurementApiMock.executeThreeWayMatch).toHaveBeenCalled();
     expect(component.executeMatchModalVisible()).toBe(false);
 
+    expect(component.hasOpenVariance(mockMatch)).toBe(true);
     component.approveVariance(mockMatch);
-    expect(procurementApiMock.approveThreeWayMatchVariance).toHaveBeenCalledWith('twm-1', expect.any(String));
+    component.reasonText.set('Within agreed tolerance');
+    component.confirmReason();
+    expect(procurementApiMock.approveThreeWayMatchVariance).toHaveBeenCalledWith('twm-1', {
+      reason: 'Within agreed tolerance',
+    });
   });
 
-  it('marks supplier invoice as paid and imports passive SDI xml', () => {
+  it('keeps the payment of a blocked supplier invoice closed and offers the approval flow', () => {
+    const blocked: SupplierInvoice = { ...mockInvoice, approval_status: 'match_blocked' };
+    expect(component.isPaymentBlocked(blocked)).toBe(true);
+    expect(component.canSubmitInvoiceApproval(blocked)).toBe(false);
+    expect(component.isPaymentBlocked(mockInvoice)).toBe(false);
+    expect(component.canSubmitInvoiceApproval(mockInvoice)).toBe(true);
+
+    component.submitInvoiceApproval(mockInvoice);
+    expect(procurementApiMock.submitSupplierInvoiceApproval).toHaveBeenCalledWith('si-1');
+  });
+
+  it('marks supplier invoice as paid and uploads a received XML file', () => {
     component.markInvoicePaid(mockInvoice);
     expect(procurementApiMock.markSupplierInvoicePaid).toHaveBeenCalledWith('si-1');
 
     component.openImportSdiModal();
     expect(component.importSdiModalVisible()).toBe(true);
 
-    component.sdiImportForm.patchValue({
-      xml_content: '<FatturaElettronica></FatturaElettronica>',
-    });
-
+    const file = new File(['<FatturaElettronica></FatturaElettronica>'], 'IT123.xml', { type: 'text/xml' });
+    component.selectedXmlFile.set(file);
     component.submitImportSdi();
-    expect(procurementApiMock.importPassiveInvoiceSdi).toHaveBeenCalledWith('<FatturaElettronica></FatturaElettronica>');
+    expect(procurementApiMock.receivePassiveInvoiceXml).toHaveBeenCalledWith(file);
     expect(component.importSdiModalVisible()).toBe(false);
   });
 });
