@@ -43,6 +43,11 @@ export const HR_ROUTES: Routes = [
     loadComponent: () => import('./time/time.component').then((m) => m.TimeComponent),
   },
   {
+    path: 'payroll',
+    data: { breadcrumb: 'NAV.HR_PAYROLL', title: 'NAV.HR_PAYROLL' },
+    loadComponent: () => import('./payroll/payroll.component').then((m) => m.PayrollComponent),
+  },
+  {
     path: 'self-service',
     data: { breadcrumb: 'NAV.HR_SELF_SERVICE', title: 'NAV.HR_SELF_SERVICE' },
     loadComponent: () =>

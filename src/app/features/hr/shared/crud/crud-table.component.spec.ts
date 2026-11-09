@@ -101,6 +101,6 @@ describe('CrudTableComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('button[nz-popconfirm]').length).toBe(0);
-    expect(fixture.nativeElement.textContent).not.toContain('hrmCommon.add');
+    expect(fixture.nativeElement.textContent).not.toContain('Add');
   });
 });
