@@ -70,6 +70,12 @@
   "ACCOUNTING.COL_DESC": "Kontobezeichnung",
   "ACCOUNTING.COL_STD": "Rechnungslegungsstandard",
   "ACCOUNTING.COL_TAX": "MWST-/Steuerzuordnung",
+  "accounting.errors.autoReverseAfterPosting": "Das Stornodatum muss nach dem Buchungsdatum liegen.",
+  "accounting.form.autoReverseHint": "Optional, nach dem Buchungsdatum: An diesem Datum wird die Buchung automatisch storniert (nützlich für Abgrenzungen).",
+  "accounting.form.autoReverseOn": "Automatische Stornierung am",
+  "accounting.form.fiscalPeriod": "Geschäftsperiode",
+  "accounting.form.fiscalPeriodRequired": "Wählen Sie eine offene Geschäftsperiode",
+  "accounting.form.saveAsDraft": "Als Entwurf speichern (später zur Freigabe einreichen oder buchen)",
   "ACCOUNTING.SUBTITLE": "Italienischer EWG-Kontenrahmen und Schweizer KMU-Kontenplan, periodische MWST-Abrechnung und ESTV/AFC-Meldung",
   "ACCOUNTING.TITLE": "Finanzbuchhaltung & Dual-Ledger Besteuerung",
   "alerts": {

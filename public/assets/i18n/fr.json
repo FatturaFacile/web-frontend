@@ -70,6 +70,12 @@
   "ACCOUNTING.COL_DESC": "Description du compte",
   "ACCOUNTING.COL_STD": "Norme comptable",
   "ACCOUNTING.COL_TAX": "Affectation fiscale TVA",
+  "accounting.errors.autoReverseAfterPosting": "La date de contrepassation doit être postérieure à la date de comptabilisation.",
+  "accounting.form.autoReverseHint": "Facultatif, après la date de comptabilisation : à cette date l'écriture est contrepassée automatiquement (utile pour les charges à payer et produits constatés d'avance).",
+  "accounting.form.autoReverseOn": "Contrepassation automatique le",
+  "accounting.form.fiscalPeriod": "Période fiscale",
+  "accounting.form.fiscalPeriodRequired": "Choisissez une période fiscale ouverte",
+  "accounting.form.saveAsDraft": "Enregistrer en brouillon (à soumettre à l'approbation ou à comptabiliser plus tard)",
   "ACCOUNTING.SUBTITLE": "Plan comptable italien CEE et suisse PME, déclarations périodiques de TVA et rapports AFC / ESTV",
   "ACCOUNTING.TITLE": "Comptabilité générale & Double-registre fiscal",
   "alerts": {

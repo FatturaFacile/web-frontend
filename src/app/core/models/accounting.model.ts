@@ -40,6 +40,8 @@ export interface JournalEntryResource {
   fiscal_period_id: string;
   posting_date: string;
   document_date?: string | null;
+  /** Date (YYYY-MM-DD) on which the journal is reversed automatically, when set. */
+  auto_reverse_on?: string | null;
   ledger_type: LedgerType;
   journal_type: JournalType;
   description: string;
@@ -54,8 +56,9 @@ export interface CreateJournalEntryPayload {
   fiscal_period_id?: string;
   posting_date?: string;
   date?: string;
-  entry_number?: string;
   document_date?: string | null;
+  /** Reverses the journal automatically on this date (YYYY-MM-DD, after the posting date). */
+  auto_reverse_on?: string | null;
   ledger_type?: LedgerType;
   journal_type?: JournalType;
   description: string;

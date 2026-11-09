@@ -1,4 +1,6 @@
 import { Component, inject, model, output, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of } from 'rxjs';
 import {
   FormArray,
   FormGroup,
@@ -12,10 +14,19 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AccountingApiService, CreateLedgerEntryPayload, TranslateService } from '@core';
 import { TranslatePipe } from '@shared';
+
+/** Local calendar day as YYYY-MM-DD (no UTC shift). */
+export function toIsoDay(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
 
 @Component({
   selector: 'app-ledger-entry-form-drawer',
@@ -27,7 +38,9 @@ import { TranslatePipe } from '@shared';
     NzInputNumberModule,
     NzDatePickerModule,
     NzButtonModule,
+    NzCheckboxModule,
     NzIconModule,
+    NzSelectModule,
     TranslatePipe,
   ],
   templateUrl: './ledger-entry-form-drawer.component.html',
@@ -44,18 +57,41 @@ export class LedgerEntryFormDrawerComponent {
 
   protected readonly isSaving = signal(false);
 
-  protected readonly form = this.fb.group({
-    entry_number: this.fb.control<string>(
-      `GL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      [Validators.required],
+  /** Open fiscal periods: the API wants the period of the posting date (the entry number is assigned by the server). */
+  protected readonly openPeriods = toSignal(
+    this.api.getFiscalPeriods().pipe(
+      map((res) => (res.data ?? []).filter((period) => period.status === 'open')),
+      catchError(() => of([])),
     ),
+    { initialValue: [] },
+  );
+
+  protected readonly form = this.fb.group({
+    fiscal_period_id: this.fb.control<string>('', [Validators.required]),
     date: this.fb.control<Date | string>(new Date(), [Validators.required]),
     description: this.fb.control<string>('', [Validators.required]),
+    /** A draft waits for submit/approval; only a draft can be given an automatic reversal date. */
+    save_as_draft: this.fb.control<boolean>(true),
+    auto_reverse_on: this.fb.control<Date | null>(null),
     lines: this.fb.array([
       this.createLine('1010-Cassa', 100, 0),
       this.createLine('2010-Fornitori', 0, 100),
     ]),
   });
+
+  /** Date of the entry as a Date (the picker can hold a string after a reset). */
+  private postingDate(): Date {
+    const value = this.form.controls.date.value;
+    return value instanceof Date ? value : new Date(value);
+  }
+
+  /** The reversal must fall after the posting date (the API answers 422 otherwise). */
+  protected isAutoReverseInvalid(): boolean {
+    const reverseOn = this.form.controls.auto_reverse_on.value;
+    return !!reverseOn && toIsoDay(reverseOn) <= toIsoDay(this.postingDate());
+  }
+
+  protected disableReverseDate = (current: Date): boolean => toIsoDay(current) <= toIsoDay(this.postingDate());
 
   get linesArray(): FormArray {
     return this.form.get('lines') as FormArray;
@@ -105,10 +141,14 @@ export class LedgerEntryFormDrawerComponent {
       return;
     }
 
+    if (this.form.controls.save_as_draft.value && this.isAutoReverseInvalid()) {
+      this.message.error(this.translate.instant('accounting.errors.autoReverseAfterPosting'));
+      return;
+    }
+
     this.isSaving.set(true);
     const val = this.form.getRawValue();
-    const dateStr =
-      val.date instanceof Date ? val.date.toISOString().split('T')[0] : String(val.date);
+    const dateStr = val.date instanceof Date ? toIsoDay(val.date) : String(val.date);
 
     const rawLines = val.lines as {
       account_id: string;
@@ -117,9 +157,11 @@ export class LedgerEntryFormDrawerComponent {
       description?: string;
     }[];
     const payload: CreateLedgerEntryPayload = {
-      entry_number: val.entry_number,
-      date: dateStr,
+      fiscal_period_id: val.fiscal_period_id,
+      posting_date: dateStr,
       description: val.description,
+      status: val.save_as_draft ? 'draft' : 'posted',
+      auto_reverse_on: val.save_as_draft && val.auto_reverse_on ? toIsoDay(val.auto_reverse_on) : null,
       lines: rawLines.map((l) => ({
         account_id: l.account_id,
         debit: Number(l.debit) || 0,

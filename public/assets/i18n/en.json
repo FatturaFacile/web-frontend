@@ -70,6 +70,12 @@
   "ACCOUNTING.COL_DESC": "Account Description",
   "ACCOUNTING.COL_STD": "Accounting Standard",
   "ACCOUNTING.COL_TAX": "Tax / VAT Mapping",
+  "accounting.errors.autoReverseAfterPosting": "The reversal date must be after the posting date.",
+  "accounting.form.autoReverseHint": "Optional, after the posting date: on that date the journal is reversed automatically (useful for accruals and deferrals).",
+  "accounting.form.autoReverseOn": "Automatic reversal on",
+  "accounting.form.fiscalPeriod": "Fiscal period",
+  "accounting.form.fiscalPeriodRequired": "Choose an open fiscal period",
+  "accounting.form.saveAsDraft": "Save as a draft (to submit for approval or post later)",
   "ACCOUNTING.SUBTITLE": "Italian EEC and Swiss KMU/SME chart of accounts, periodic VAT returns, and FTA/ESTV reporting",
   "ACCOUNTING.TITLE": "General & Dual-Ledger Tax Accounting",
   "alerts": {

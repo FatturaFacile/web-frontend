@@ -70,6 +70,12 @@
   "ACCOUNTING.COL_DESC": "Descrizione Conto",
   "ACCOUNTING.COL_STD": "Standard Contabile",
   "ACCOUNTING.COL_TAX": "Mappatura IVA Fiscale",
+  "accounting.errors.autoReverseAfterPosting": "La data di storno deve essere successiva alla data di registrazione.",
+  "accounting.form.autoReverseHint": "Facoltativo, dopo la data di registrazione: alla data indicata la scrittura viene stornata in automatico (utile per ratei e risconti).",
+  "accounting.form.autoReverseOn": "Storno automatico il",
+  "accounting.form.fiscalPeriod": "Periodo fiscale",
+  "accounting.form.fiscalPeriodRequired": "Scegli un periodo fiscale aperto",
+  "accounting.form.saveAsDraft": "Salva come bozza (da inviare in approvazione o registrare dopo)",
   "ACCOUNTING.SUBTITLE": "Piano dei conti italiano CEE e svizzero KMU / PME, liquidazione IVA periodica, Esterometro e rendiconto AFC / ESTV",
   "ACCOUNTING.TITLE": "Contabilità Generale & Fiscale Dual-Ledger",
   "alerts": {
