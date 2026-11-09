@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { beforeEach, describe, expect, it, vi, type Mocked } from 'vitest';
 import { of } from 'rxjs';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -16,9 +16,9 @@ import {
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
   let fixture: ComponentFixture<AnalyticsComponent>;
-  let analyticsApiSpy: jasmine.SpyObj<AnalyticsApiService>;
-  let messageSpy: jasmine.SpyObj<NzMessageService>;
-  let modalSpy: jasmine.SpyObj<NzModalService>;
+  let analyticsApiSpy: Mocked<AnalyticsApiService>;
+  let messageSpy: Mocked<NzMessageService>;
+  let modalSpy: Mocked<NzModalService>;
 
   const mockKpiReport: AnalyticsKpiReport = {
     period: { from: '2026-11-01', to: '2026-11-30' },
@@ -111,41 +111,27 @@ describe('AnalyticsComponent', () => {
   ];
 
   beforeEach(async () => {
-    analyticsApiSpy = jasmine.createSpyObj('AnalyticsApiService', [
-      'getKpis',
-      'exportKpisCsv',
-      'getDueCalendar',
-      'getRevenueComparison',
-      'getBreakdown',
-      'getReportDefinitions',
-      'createReportDefinition',
-      'updateReportDefinition',
-      'deleteReportDefinition',
-      'runReportDefinition',
-      'exportReportDefinition',
-      'getReportingFeed',
-    ]);
+    analyticsApiSpy = { getKpis: vi.fn(), exportKpisCsv: vi.fn(), getDueCalendar: vi.fn(), getRevenueComparison: vi.fn(), getBreakdown: vi.fn(), getReportDefinitions: vi.fn(), createReportDefinition: vi.fn(), updateReportDefinition: vi.fn(), deleteReportDefinition: vi.fn(), runReportDefinition: vi.fn(), exportReportDefinition: vi.fn(), getReportingFeed: vi.fn() } as unknown as Mocked<AnalyticsApiService>;
 
-    analyticsApiSpy.getKpis.and.returnValue(of({ data: mockKpiReport }));
-    analyticsApiSpy.exportKpisCsv.and.returnValue(of(new Blob(['csv'], { type: 'text/csv' })));
-    analyticsApiSpy.getDueCalendar.and.returnValue(of({ data: mockDueEntries }));
-    analyticsApiSpy.getRevenueComparison.and.returnValue(of({ data: mockRevenueComp }));
-    analyticsApiSpy.getBreakdown.and.returnValue(of({ data: mockBreakdown }));
-    analyticsApiSpy.getReportDefinitions.and.returnValue(of({ data: mockReportDefs }));
-    analyticsApiSpy.createReportDefinition.and.returnValue(of({ data: mockReportDefs[0] }));
-    analyticsApiSpy.updateReportDefinition.and.returnValue(of({ data: mockReportDefs[0] }));
-    analyticsApiSpy.deleteReportDefinition.and.returnValue(of({ data: undefined }));
-    analyticsApiSpy.runReportDefinition.and.returnValue(of({ data: mockKpiReport }));
-    analyticsApiSpy.exportReportDefinition.and.returnValue(of(new Blob(['csv'], { type: 'text/csv' })));
-    analyticsApiSpy.getReportingFeed.and.returnValue(of({ data: [{ id: 1, amount: 100 }] }));
+    analyticsApiSpy.getKpis.mockReturnValue(of({ success: true, message: '', data: mockKpiReport }));
+    analyticsApiSpy.exportKpisCsv.mockReturnValue(of(new Blob(['csv'], { type: 'text/csv' })));
+    analyticsApiSpy.getDueCalendar.mockReturnValue(of({ success: true, message: '', data: mockDueEntries }));
+    analyticsApiSpy.getRevenueComparison.mockReturnValue(of({ success: true, message: '', data: mockRevenueComp }));
+    analyticsApiSpy.getBreakdown.mockReturnValue(of({ success: true, message: '', data: mockBreakdown }));
+    analyticsApiSpy.getReportDefinitions.mockReturnValue(of({ success: true, message: '', data: mockReportDefs }));
+    analyticsApiSpy.createReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
+    analyticsApiSpy.updateReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
+    analyticsApiSpy.deleteReportDefinition.mockReturnValue(of({ success: true, message: '', data: undefined }));
+    analyticsApiSpy.runReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockKpiReport }));
+    analyticsApiSpy.exportReportDefinition.mockReturnValue(of(new Blob(['csv'], { type: 'text/csv' })));
+    analyticsApiSpy.getReportingFeed.mockReturnValue(of({ success: true, message: '', data: [{ id: 1, amount: 100 }] }));
 
-    messageSpy = jasmine.createSpyObj('NzMessageService', ['success', 'error', 'info', 'warning']);
-    modalSpy = jasmine.createSpyObj('NzModalService', ['confirm']);
+    messageSpy = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() } as unknown as Mocked<NzMessageService>;
+    modalSpy = { confirm: vi.fn() } as unknown as Mocked<NzModalService>;
 
     await TestBed.configureTestingModule({
       imports: [AnalyticsComponent],
       providers: [
-        provideNoopAnimations(),
         { provide: AnalyticsApiService, useValue: analyticsApiSpy },
         { provide: NzMessageService, useValue: messageSpy },
         { provide: NzModalService, useValue: modalSpy },
@@ -206,7 +192,7 @@ describe('AnalyticsComponent', () => {
   });
 
   it('should trigger KPI export CSV', () => {
-    spyOn<any>(component, 'downloadBlob').and.stub();
+    vi.spyOn(component as unknown as { downloadBlob: () => void }, 'downloadBlob').mockImplementation(() => undefined);
     component.exportKpisCsv();
     expect(analyticsApiSpy.exportKpisCsv).toHaveBeenCalled();
     expect(messageSpy.success).toHaveBeenCalledWith('KPI export completed');
@@ -221,7 +207,7 @@ describe('AnalyticsComponent', () => {
   it('should handle custom report modal open, create, and edit', () => {
     // Open create
     component.openCreateReportModal();
-    expect(component.isReportModalVisible()).toBeTrue();
+    expect(component.isReportModalVisible()).toBe(true);
     expect(component.editingReportId()).toBeNull();
 
     // Fill form and save create
@@ -235,11 +221,11 @@ describe('AnalyticsComponent', () => {
     });
     component.saveReportDefinition();
     expect(analyticsApiSpy.createReportDefinition).toHaveBeenCalled();
-    expect(component.isReportModalVisible()).toBeFalse();
+    expect(component.isReportModalVisible()).toBe(false);
 
     // Open edit
     component.openEditReportModal(mockReportDefs[0]);
-    expect(component.isReportModalVisible()).toBeTrue();
+    expect(component.isReportModalVisible()).toBe(true);
     expect(component.editingReportId()).toBe('rep-1');
     expect(component.reportForm.value.name).toBe('Monthly Overview');
 
@@ -256,7 +242,7 @@ describe('AnalyticsComponent', () => {
   });
 
   it('should export custom report CSV', () => {
-    spyOn<any>(component, 'downloadBlob').and.stub();
+    vi.spyOn(component as unknown as { downloadBlob: () => void }, 'downloadBlob').mockImplementation(() => undefined);
     component.exportReportCsv(mockReportDefs[0]);
     expect(analyticsApiSpy.exportReportDefinition).toHaveBeenCalledWith('rep-1');
     expect(messageSpy.success).toHaveBeenCalledWith('Export completed');

@@ -212,7 +212,7 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.dueEntries.set(res.data || []);
       },
-      error: () => {},
+      error: () => undefined, // the error interceptor already notifies the user,
     });
   }
 
@@ -221,7 +221,7 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.revenueComparison.set(res.data);
       },
-      error: () => {},
+      error: () => undefined, // the error interceptor already notifies the user,
     });
   }
 
@@ -230,7 +230,7 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.breakdownEntries.set(res.data || []);
       },
-      error: () => {},
+      error: () => undefined, // the error interceptor already notifies the user,
     });
   }
 
@@ -244,7 +244,7 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.reportDefinitions.set(res.data || []);
       },
-      error: () => {},
+      error: () => undefined, // the error interceptor already notifies the user,
     });
   }
 
@@ -369,13 +369,21 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.biFeedData.set(res.data || []);
       },
-      error: () => {},
+      error: () => undefined, // the error interceptor already notifies the user,
     });
   }
 
   onBiDatasetChange(dataset: string): void {
     this.biFeedDataset.set(dataset);
     this.loadBiFeed();
+  }
+
+  /**
+   * Whether a KPI change is a loss. The server sends decimals as strings, so the sign is read from the text
+   * and no floating point comparison is made.
+   */
+  isLoss(change: string | number | null | undefined): boolean {
+    return String(change ?? '').trim().startsWith('-');
   }
 
   private downloadBlob(blob: Blob, filename: string): void {
