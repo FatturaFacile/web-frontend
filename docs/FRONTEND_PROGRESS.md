@@ -2,6 +2,21 @@
 
 Last updated: 2026-11-09
 
+## Measured API coverage (source of truth)
+
+The matrix below was written by hand and overstates the state. The real figure is measured against `web-api/docs/api/openapi.json` with `node scripts/api-coverage.mjs ../web-api/docs/api/openapi.json src/app [full]` (an endpoint counts as covered when its path appears in a non-spec .ts file under `src/app`; non-deprecated operations only; template-built URLs are not seen).
+
+| Date | Covered | Total | % |
+|---|---|---|---|
+| 2026-11-09 (before this pass) | 821 | 2135 | 38% |
+| 2026-11-09 (after: sales/CRM, inventory/procurement/manufacturing, ledger/treasury/assets/projects, HR/payroll) | 1605 | 2135 | 75% |
+
+Still uncovered (530): associations 201 (+ association-area 19, association-public 4), esm 79, customs 35, payroll 30, hr 14, analytics 14, construction-trades 13, childcare 12 (+ childcare-family 9), retail 10, settings 9, field-service 7, portal 6, webhooks 5, service-reports 5, dashboard 5, construction 5, admin 5, fiscal-retail 4, hospitality 3, and a few single endpoints.
+
+Pages in the inventory, procurement, purchases and manufacturing areas run on a config-driven panel (`shared/ui/resource-panel`, page configs in `features/*/*.page.ts`) rather than bespoke typed components; many list responses are `any` in the OpenAPI, so their columns are inferred. The older `inventory`, `purchases` and `manufacturing` components were not adapted to the new backend rules (BOM draft/activate, `signed_quantity`, bin-to-bin transfers).
+
+---
+
 ## Architectural Conventions
 - **Angular:** v22 Standalone Components (strictly no `standalone: true`, default `ChangeDetectionStrategy.OnPush`, inject() dependency injection, signals & computed for local/shared reactive state).
 - **Styling & UI:** `ng-zorro-antd` v22, responsive layouts with `nz-layout`, `nz-table` (server-side pagination `nzFrontPagination=false`), `nz-form`, `nz-modal`, `nz-drawer`, `nz-dropdown`, `nz-tabs`.
@@ -96,4 +111,4 @@ Last updated: 2026-11-09
 
 ---
 
-### Overall Status: 40 ERP MODULES FULLY IMPLEMENTED & TESTED (730/730 tests passing, ng build passing)
+### Overall Status: 75% of the API surface is covered (1605/2135 endpoints, measured). The per-module "Done" marks above predate the backend extensions of November 2026 and are not a completeness claim. Build and tests: ng build passes (initial bundle 2.20 MB, over the 2.00 MB budget: warning), 1298 tests in core/features/layout/shared pass.
