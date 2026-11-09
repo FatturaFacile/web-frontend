@@ -1,4 +1,7 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -96,6 +99,9 @@ describe('ProjectsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProjectsComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         provideNzIcons(icons),
         { provide: ProjectApiService, useValue: mockProjectApi },
         { provide: AuthStore, useValue: mockAuthStore },

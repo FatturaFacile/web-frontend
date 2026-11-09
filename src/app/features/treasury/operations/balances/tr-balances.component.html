@@ -1,0 +1,227 @@
+<app-gl-error-alert [error]="error()" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'TR.BALANCES' | translate">
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+        <label for="tr-balance-date">{{ 'TR.AS_OF' | translate }}</label>
+        <input id="tr-balance-date" nz-input type="date" style="width: 160px" [(ngModel)]="balanceDate" (ngModelChange)="loadBalances()" />
+      </div>
+      <nz-table #balanceTable nzSize="middle" [nzData]="balances()" [nzLoading]="loading()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.BOOK_BALANCE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.STATEMENT_BALANCE' | translate }}</th>
+            <th>{{ 'TR.STATEMENT_DATE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of balanceTable.data; track row.bank_account_id) {
+            <tr>
+              <td>{{ row.bank_name }} <small>{{ row.iban }}</small></td>
+              <td nzAlign="right">{{ row.book_balance | money: row.currency }}</td>
+              <td nzAlign="right">{{ row.statement_balance | money: row.currency }}</td>
+              <td>{{ row.statement_date ?? '' }}</td>
+              <td nzAlign="right">{{ row.current_balance | money: row.currency }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.MOVEMENTS' | translate">
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+        <nz-select
+          style="min-width: 220px"
+          nzAllowClear
+          [attr.aria-label]="'TR.MOVEMENT_TYPE' | translate"
+          [nzPlaceHolder]="'TR.MOVEMENT_TYPE' | translate"
+          [(ngModel)]="movementTypeFilter"
+          (ngModelChange)="loadMovements()"
+        >
+          @for (type of movementTypes; track type) {
+            <nz-option [nzValue]="type" [nzLabel]="'TR.MOVEMENT_' + type.toUpperCase() | translate" />
+          }
+        </nz-select>
+        <span style="flex: 1"></span>
+        @if (canWrite) {
+          <button nz-button nzType="primary" type="button" (click)="openModal('transfer')">{{ 'TR.TRANSFER_NEW' | translate }}</button>
+          <button nz-button type="button" (click)="openModal('charge')">{{ 'TR.CHARGE_NEW' | translate }}</button>
+        }
+      </div>
+      <nz-table #movementTable nzSize="middle" [nzData]="movements()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.DATE' | translate }}</th>
+            <th>{{ 'TR.MOVEMENT_TYPE' | translate }}</th>
+            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+            <th>{{ 'TR.COUNTER_ACCOUNT' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+            <th>{{ 'TR.DESCRIPTION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movementTable.data; track movement.id) {
+            <tr>
+              <td>{{ movement.movement_date }}</td>
+              <td>{{ 'TR.MOVEMENT_' + movement.movement_type.toUpperCase() | translate }}</td>
+              <td>{{ banks.label(movement.bank_account_id) }}</td>
+              <td>{{ movement.counter_bank_account_id ? banks.label(movement.counter_bank_account_id) : '' }}</td>
+              <td nzAlign="right">{{ movement.amount | money: movement.currency }}</td>
+              <td>{{ movement.description }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.FX_REVALUATION' | translate">
+      <p>{{ 'TR.FX_HINT' | translate }}</p>
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+        <label for="tr-fx-date">{{ 'TR.PERIOD_END_DATE' | translate }}</label>
+        <input id="tr-fx-date" nz-input type="date" style="width: 160px" [(ngModel)]="fxPeriodEnd" />
+        <label for="tr-fx-currency">{{ 'TR.CURRENCY' | translate }}</label>
+        <input id="tr-fx-currency" nz-input style="width: 90px" maxlength="3" [(ngModel)]="fxCurrency" />
+        @if (canWrite) {
+          <button nz-button nzType="primary" type="button" [disabled]="!fxPeriodEnd" (click)="revalue()">{{ 'TR.FX_RUN' | translate }}</button>
+        }
+      </div>
+      <nz-table #fxTable nzSize="small" [nzData]="revaluations()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+            <th>{{ 'TR.CURRENCY' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.FX_CLOSING_RATE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.FX_FOREIGN_AMOUNT' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.FX_BOOK_VALUE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.FX_MARKET_VALUE' | translate }}</th>
+            <th nzAlign="right">{{ 'TR.FX_GAIN_LOSS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of fxTable.data; track row.id) {
+            <tr>
+              <td>{{ row.bank_account_id ? banks.label(row.bank_account_id) : '' }}</td>
+              <td>{{ row.currency }}</td>
+              <td nzAlign="right">{{ row.closing_rate }}</td>
+              <td nzAlign="right">{{ row.foreign_amount | money: row.currency }}</td>
+              <td nzAlign="right">{{ row.book_value_base }}</td>
+              <td nzAlign="right">{{ row.revalued_market_base }}</td>
+              <td nzAlign="right">{{ row.unrealized_gain_loss }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="modal() === 'transfer'"
+  [nzTitle]="'TR.TRANSFER_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveTransfer()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="transferForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tf-from">{{ 'TR.FROM_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="transferForm.controls.from_bank_account_id.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-select id="tf-from" formControlName="from_bank_account_id">
+            @for (account of banks.bankAccounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.bank_name + ' ' + account.iban" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tf-to">{{ 'TR.TO_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="transferForm.controls.to_bank_account_id.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-select id="tf-to" formControlName="to_bank_account_id">
+            @for (account of banks.bankAccounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.bank_name + ' ' + account.iban" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tf-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="transferForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-input-number id="tf-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="tf-date">{{ 'TR.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="transferForm.controls.transfer_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="tf-date" nz-input type="date" formControlName="transfer_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="tf-description">{{ 'TR.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="tf-description" nz-input formControlName="description" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modal() === 'charge'"
+  [nzTitle]="'TR.CHARGE_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveCharge()"
+  (nzOnCancel)="modal.set(null)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="chargeForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ch-account">{{ 'TR.BANK_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'TR.REQUIRED' | translate">
+          <nz-select id="ch-account" formControlName="bank_account_id">
+            @for (account of banks.bankAccounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.bank_name + ' ' + account.iban" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ch-type">{{ 'TR.MOVEMENT_TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ch-type" formControlName="movement_type">
+            @for (type of chargeTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'TR.MOVEMENT_' + type.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ch-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="chargeForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-input-number id="ch-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ch-date">{{ 'TR.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'TR.REQUIRED' | translate">
+          <input id="ch-date" nz-input type="date" formControlName="movement_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="ch-description">{{ 'TR.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="ch-description" nz-input formControlName="description" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

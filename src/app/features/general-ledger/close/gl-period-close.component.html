@@ -1,0 +1,113 @@
+<nz-card>
+  <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+    <label for="gl-close-period">{{ 'GL.PERIOD' | translate }}</label>
+    <nz-select
+      id="gl-close-period"
+      style="min-width: 260px"
+      nzShowSearch
+      [ngModel]="periodId()"
+      (ngModelChange)="selectPeriod($event)"
+      [nzPlaceHolder]="'GL.SELECT_PERIOD' | translate"
+    >
+      @for (period of periods(); track period.id) {
+        <nz-option [nzValue]="period.id" [nzLabel]="period.period_name + ' (' + period.status + ')'" />
+      }
+    </nz-select>
+  </div>
+
+  @if (blockingMessage(); as blocking) {
+    <nz-alert nzType="warning" nzShowIcon style="margin-bottom: 16px" [nzMessage]="'GL.CLOSE_BLOCKED' | translate" [nzDescription]="blocking" />
+  }
+
+  @if (checklist(); as list) {
+    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+      <strong>{{ list.period_name }}</strong>
+      <nz-tag [nzColor]="list.status === 'closed' ? 'default' : 'green'">{{ list.status }}</nz-tag>
+      <nz-tag [nzColor]="list.can_close ? 'green' : 'red'">
+        {{ (list.can_close ? 'GL.CAN_CLOSE' : 'GL.CANNOT_CLOSE') | translate }}
+      </nz-tag>
+      <span style="flex: 1"></span>
+      @if (canWrite) {
+        @if (isClosed()) {
+          <button nz-button type="button" (click)="reopenPeriod()">{{ 'GL.ACTION_REOPEN' | translate }}</button>
+        } @else {
+          <button nz-button nzType="primary" type="button" (click)="closePeriod()">{{ 'GL.ACTION_CLOSE_PERIOD' | translate }}</button>
+        }
+      }
+    </div>
+
+    <h4>{{ 'GL.CHECKS' | translate }}</h4>
+    <nz-table nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()">
+      <thead>
+        <tr>
+          <th>{{ 'GL.CHECK' | translate }}</th>
+          <th>{{ 'GL.BLOCKING' | translate }}</th>
+          <th>{{ 'GL.STATUS' | translate }}</th>
+          <th nzAlign="right">{{ 'GL.COUNT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (check of list.checks; track check.code) {
+          <tr>
+            <td>{{ check.label }}</td>
+            <td>{{ (check.blocking ? 'GL.YES' : 'GL.NO') | translate }}</td>
+            <td>
+              <nz-tag [nzColor]="check.passed ? 'green' : check.blocking ? 'red' : 'gold'">
+                {{ (check.passed ? 'GL.CHECK_PASSED' : 'GL.CHECK_OPEN') | translate }}
+              </nz-tag>
+            </td>
+            <td nzAlign="right">{{ check.count }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+
+    <h4 style="margin-top: 24px">{{ 'GL.CLOSE_TASKS' | translate }}</h4>
+    @if (canWrite && !isClosed()) {
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px">
+        <input nz-input style="max-width: 360px" maxlength="255" [attr.aria-label]="'GL.TASK_TITLE' | translate" [placeholder]="'GL.TASK_TITLE' | translate" [(ngModel)]="newTitle" />
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label nz-checkbox [(ngModel)]="newBlocking">{{ 'GL.BLOCKING' | translate }}</label>
+        <button nz-button type="button" [disabled]="!newTitle.trim()" (click)="addTask()">{{ 'GL.ADD_TASK' | translate }}</button>
+      </div>
+    }
+    @if (list.tasks.length === 0) {
+      <nz-empty [nzNotFoundContent]="'GL.NO_TASKS' | translate" />
+    } @else {
+      <nz-table nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'GL.TASK_TITLE' | translate }}</th>
+            <th>{{ 'GL.BLOCKING' | translate }}</th>
+            <th>{{ 'GL.STATUS' | translate }}</th>
+            <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (task of list.tasks; track task.id) {
+            <tr>
+              <td>{{ task.title }}</td>
+              <td>{{ (task.is_blocking ? 'GL.YES' : 'GL.NO') | translate }}</td>
+              <td>{{ 'GL.TASK_STATUS_' + task.status.toUpperCase() | translate }}</td>
+              <td>
+                @if (canWrite && !isClosed()) {
+                  @if (task.status !== 'done') {
+                    <button nz-button nzSize="small" type="button" (click)="setTaskStatus(task, 'done')">{{ 'GL.TASK_DONE' | translate }}</button>
+                  }
+                  @if (task.status !== 'waived') {
+                    <button nz-button nzSize="small" type="button" (click)="setTaskStatus(task, 'waived')">{{ 'GL.TASK_WAIVE' | translate }}</button>
+                  }
+                  @if (task.status !== 'open') {
+                    <button nz-button nzSize="small" type="button" (click)="setTaskStatus(task, 'open')">{{ 'GL.TASK_REOPEN' | translate }}</button>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  } @else {
+    <nz-empty [nzNotFoundContent]="'GL.SELECT_PERIOD' | translate" />
+  }
+</nz-card>

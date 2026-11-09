@@ -324,6 +324,13 @@ export const routes: Routes = [
       import('./features/accounting/accounting.routes').then((m) => m.ACCOUNTING_ROUTES),
   },
   {
+    path: 'general-ledger',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'NAV.GENERAL_LEDGER', title: 'NAV.GENERAL_LEDGER' },
+    loadChildren: () =>
+      import('./features/general-ledger/general-ledger.routes').then((m) => m.GENERAL_LEDGER_ROUTES),
+  },
+  {
     path: 'alerts',
     canActivate: [authGuard],
     data: { breadcrumb: 'Centro Avvisi', title: 'Centro Avvisi' },

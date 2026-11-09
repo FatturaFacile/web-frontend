@@ -1,0 +1,140 @@
+<nz-card>
+  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center">
+    <label for="gl-accrual-type">{{ 'GL.ACCRUAL_TYPE' | translate }}</label>
+    <nz-select
+      id="gl-accrual-type"
+      style="min-width: 220px"
+      nzAllowClear
+      [ngModel]="typeFilter()"
+      (ngModelChange)="setType($event)"
+      [nzPlaceHolder]="'GL.ALL_TYPES' | translate"
+    >
+      @for (type of types; track type) {
+        <nz-option [nzValue]="type" [nzLabel]="'GL.ACCRUAL_' + type.toUpperCase() | translate" />
+      }
+    </nz-select>
+    <span style="flex: 1"></span>
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.ACCRUAL_NEW' | translate }}</button>
+    }
+  </div>
+
+  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ 'GL.ACCRUAL_TYPE' | translate }}</th>
+        <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th>{{ 'GL.COVERAGE' | translate }}</th>
+        <th>{{ 'GL.CUTOFF_DATE' | translate }}</th>
+        <th nzAlign="right">{{ 'GL.ACCRUAL_TOTAL' | translate }}</th>
+        <th nzAlign="right">{{ 'GL.ACCRUAL_AMOUNT' | translate }}</th>
+        <th>{{ 'GL.ACCRUAL_DAYS' | translate }}</th>
+        <th>{{ 'GL.REVERSAL_DATE' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of table.data; track item.id) {
+        <tr>
+          <td>{{ 'GL.ACCRUAL_' + item.accrual_type.toUpperCase() | translate }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.coverage_start }} / {{ item.coverage_end }}</td>
+          <td>{{ item.cutoff_date }}</td>
+          <td nzAlign="right">{{ item.total_amount | money: currency() }}</td>
+          <td nzAlign="right">{{ item.amount | money: currency() }}</td>
+          <td>{{ item.accrued_days }} / {{ item.coverage_days }}</td>
+          <td>{{ item.reversal_date ?? '' }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'GL.ACCRUAL_NEW' | translate"
+  nzWidth="720px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  (nzOnCancel)="modalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <app-gl-error-alert [error]="error()" />
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-type">{{ 'GL.ACCRUAL_TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-type" formControlName="accrual_type">
+            @for (type of types; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'GL.ACCRUAL_' + type.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-description">{{ 'GL.COL_DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <input id="ac-description" nz-input formControlName="description" maxlength="500" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-total">{{ 'GL.ACCRUAL_TOTAL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.total_amount.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <nz-input-number id="ac-total" formControlName="total_amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+        </nz-form-control>
+      </nz-form-item>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-start">{{ 'GL.COVERAGE_START' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="ac-start" nz-input type="date" formControlName="coverage_start" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-end">{{ 'GL.COVERAGE_END' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="ac-end" nz-input type="date" formControlName="coverage_end" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-cutoff">{{ 'GL.CUTOFF_DATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="ac-cutoff" nz-input type="date" formControlName="cutoff_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-is">{{ 'GL.INCOME_STATEMENT_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-is" formControlName="income_statement_account_id" nzShowSearch>
+            @for (account of lookups.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-bs">{{ 'GL.BALANCE_SHEET_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-bs" formControlName="balance_sheet_account_id" nzShowSearch>
+            @for (account of lookups.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="ac-cc">{{ 'GL.COST_CENTER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-cc" formControlName="cost_center_id" nzAllowClear>
+            @for (center of lookups.costCenters(); track center.id) {
+              <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

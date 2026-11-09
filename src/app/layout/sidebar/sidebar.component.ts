@@ -149,9 +149,27 @@ export class SidebarComponent {
           module: 'treasury',
         },
         {
+          key: 'NAV.TREASURY_OPERATIONS',
+          icon: 'fa-solid fa-money-bill-transfer',
+          route: '/treasury/operations',
+          module: 'treasury',
+        },
+        {
+          key: 'NAV.ASSET_OPERATIONS',
+          icon: 'fa-solid fa-screwdriver-wrench',
+          route: '/assets/operations',
+          module: 'assets',
+        },
+        {
           key: 'NAV.ACCOUNTING',
           icon: 'fa-solid fa-landmark',
           route: '/accounting',
+          module: 'ledger',
+        },
+        {
+          key: 'NAV.GENERAL_LEDGER',
+          icon: 'fa-solid fa-book',
+          route: '/general-ledger',
           module: 'ledger',
         },
         {
