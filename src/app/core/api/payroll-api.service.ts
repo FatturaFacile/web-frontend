@@ -34,6 +34,10 @@ export type PayrollExportName =
 export class PayrollApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/payroll`;
+  private readonly settingsUrls: Record<'swiss' | 'italian', string> = {
+    swiss: `${this.base}/settings/swiss`,
+    italian: `${this.base}/settings/italian`,
+  };
   private readonly exportUrls: Record<PayrollExportName, string> = {
     f24: `${this.base}/exports/f24`,
     uniemens: `${this.base}/exports/uniemens`,
@@ -196,11 +200,11 @@ export class PayrollApiService {
   }
 
   getSettings(country: 'swiss' | 'italian'): Observable<ApiResponse<PayrollSettingsRecord>> {
-    return this.http.get<ApiResponse<PayrollSettingsRecord>>(`${this.base}/settings/${country}`);
+    return this.http.get<ApiResponse<PayrollSettingsRecord>>(this.settingsUrls[country]);
   }
 
   saveSettings(country: 'swiss' | 'italian', payload: PayrollSettingsPayload): Observable<ApiResponse<PayrollSettingsRecord>> {
-    return this.http.put<ApiResponse<PayrollSettingsRecord>>(`${this.base}/settings/${country}`, payload);
+    return this.http.put<ApiResponse<PayrollSettingsRecord>>(this.settingsUrls[country], payload);
   }
 
   // --- CSV exports ---
