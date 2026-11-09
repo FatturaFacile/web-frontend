@@ -133,6 +133,9 @@
               </td>
               <td>{{ e.hire_date | date: 'dd/MM/yyyy' }}</td>
               <td class="text-center">
+                <button nz-button nzType="link" nzSize="small" (click)="openEmployeeFile(e)">
+                  {{ 'hrmEmp.openFile' | translate }}
+                </button>
                 @if (e.employment_status === 'probation') {
                   <button nz-button nzType="link" nzSize="small" (click)="completeProbation(e)">
                     Conferma Prova
@@ -212,6 +215,12 @@
                   <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectLeave(l)">
                     Rifiuta
                   </button>
+                } @else if (l.status === 'approved') {
+                  <app-reason-button
+                    labelKey="hrmLeave.cancelRequest"
+                    [danger]="true"
+                    (confirmed)="cancelLeave(l, $event)"
+                  />
                 } @else {
                   <span class="text-muted text-xs">Definito</span>
                 }
