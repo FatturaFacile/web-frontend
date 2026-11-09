@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-export type CrudFieldType = 'text' | 'textarea' | 'decimal' | 'integer' | 'date' | 'select' | 'boolean';
+export type CrudFieldType = 'text' | 'textarea' | 'decimal' | 'integer' | 'date' | 'datetime' | 'select' | 'boolean';
 
 export interface CrudOption {
   value: string;
@@ -36,7 +36,9 @@ export interface CrudConfig<T extends { id: string }> {
   list: () => Observable<T[]>;
   create?: (payload: Record<string, unknown>) => Observable<unknown>;
   update?: (id: string, payload: Record<string, unknown>) => Observable<unknown>;
-  remove?: (id: string) => Observable<unknown>;
+  remove?: (id: string, reason?: string) => Observable<unknown>;
+  /** Delete asks for a mandatory reason (audited resources) instead of a plain confirmation. */
+  removeWithReason?: boolean;
   /** Hides edit/delete for a row (e.g. generic read-only records). */
   isReadonly?: (row: T) => boolean;
   /** Write actions are hidden when false (permission). */

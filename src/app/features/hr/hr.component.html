@@ -215,6 +215,12 @@
                   <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectLeave(l)">
                     Rifiuta
                   </button>
+                } @else if (l.status === 'approved') {
+                  <app-reason-button
+                    labelKey="hrmLeave.cancelRequest"
+                    [danger]="true"
+                    (confirmed)="cancelLeave(l, $event)"
+                  />
                 } @else {
                   <span class="text-muted text-xs">Definito</span>
                 }

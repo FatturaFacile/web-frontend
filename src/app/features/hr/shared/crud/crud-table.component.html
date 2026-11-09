@@ -43,7 +43,9 @@
                   {{ 'hrmCommon.edit' | translate }}
                 </button>
               }
-              @if (config().remove) {
+              @if (config().remove && config().removeWithReason) {
+                <app-reason-button labelKey="hrmCommon.delete" [danger]="true" (confirmed)="remove(row, $event)" />
+              } @else if (config().remove) {
                 <button
                   nz-button
                   nzSize="small"
@@ -99,6 +101,9 @@
                 }
                 @case ('textarea') {
                   <textarea nz-input rows="3" [id]="'crud-' + field.key" [formControlName]="field.key"></textarea>
+                }
+                @case ('datetime') {
+                  <input nz-input type="datetime-local" [id]="'crud-' + field.key" [formControlName]="field.key" />
                 }
                 @case ('date') {
                   <input nz-input type="date" [id]="'crud-' + field.key" [formControlName]="field.key" />

@@ -135,6 +135,8 @@ export class SidebarComponent {
             { key: 'NAV.TIME_ATTENDANCE', route: '/time-attendance', icon: 'fa-solid fa-clock' },
             { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
             { key: 'NAV.HR_ORGANIZATION', route: '/hr/organization', icon: 'fa-solid fa-sitemap', module: 'hr' },
+            { key: 'NAV.HR_LEAVE', route: '/hr/leave', icon: 'fa-solid fa-umbrella-beach', module: 'hr' },
+            { key: 'NAV.HR_TIME', route: '/hr/time', icon: 'fa-solid fa-stopwatch', module: 'hr' },
             { key: 'NAV.HR_CCNL', route: '/hr/collective-agreements', icon: 'fa-solid fa-file-contract', module: 'payroll' },
             { key: 'NAV.HR_SELF_SERVICE', route: '/hr/self-service', icon: 'fa-solid fa-id-card' },
             { key: 'NAV.EXPENSES', route: '/purchases/expenses', icon: 'fa-solid fa-wallet', module: 'procurement' },
