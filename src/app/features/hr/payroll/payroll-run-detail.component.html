@@ -1,0 +1,121 @@
+@if (loading()) {
+  <nz-skeleton [nzActive]="true" />
+} @else if (run(); as r) {
+  <div class="flex justify-between items-start mb-3 gap-2 flex-wrap">
+    <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 2 }" class="flex-1">
+      <nz-descriptions-item [nzTitle]="'hrmCommon.year' | translate">{{ r.year }} / {{ r.month }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hrmCommon.statusCol' | translate">
+        <app-payroll-run-status-tag [status]="r.status" />
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hrmPayroll.paymentDate' | translate">{{ r.payment_date | date: 'mediumDate' }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hrmPayroll.calculatedAt' | translate">{{ r.calculated_at | date: 'medium' }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hrmPayroll.approvedAt' | translate">{{ r.approved_at | date: 'medium' }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hrmPayroll.finalizedAt' | translate">{{ r.finalized_at | date: 'medium' }}</nz-descriptions-item>
+      @if (r.reopen_reason) {
+        <nz-descriptions-item [nzTitle]="'hrmPayroll.reopenReason' | translate" [nzSpan]="2">{{ r.reopen_reason }}</nz-descriptions-item>
+      }
+    </nz-descriptions>
+    <div class="flex gap-2 flex-wrap">
+      @if (canWrite() && canApprove()) {
+        <button nz-button nzType="primary" type="button" [nzLoading]="busy()" (click)="approve()">
+          {{ 'hrmPayroll.approve' | translate }}
+        </button>
+      }
+      @if (canWrite() && canFinalize()) {
+        <button nz-button nzType="primary" type="button" [nzLoading]="busy()" (click)="askFinalize()">
+          {{ 'hrmPayroll.finalize' | translate }}
+        </button>
+      }
+      @if (canWrite() && canReopen()) {
+        <app-reason-button labelKey="hrmPayroll.reopen" [danger]="true" [loading]="busy()" (confirmed)="reopen($event)" />
+      }
+      <button nz-button type="button" (click)="downloadLabourBook()">{{ 'hrmPayroll.labourBook' | translate }}</button>
+    </div>
+  </div>
+
+  <nz-tabs (nzSelectedIndexChange)="$event === 2 && loadAllocation()">
+    <nz-tab [nzTitle]="'hrmPayroll.payslips' | translate">
+      <nz-table #slips [nzData]="r.payslips ?? []" [nzFrontPagination]="false" nzSize="small">
+        <thead>
+          <tr>
+            <th>{{ 'hrmCommon.employee' | translate }}</th>
+            <th>{{ 'hrmPayroll.gross' | translate }}</th>
+            <th>{{ 'hrmPayroll.deductions' | translate }}</th>
+            <th>{{ 'hrmPayroll.net' | translate }}</th>
+            <th>{{ 'hrmPayroll.employerContributions' | translate }}</th>
+            <th>{{ 'hrmCommon.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (slip of slips.data; track slip.id) {
+            <tr>
+              <td>
+                {{ slip.employee_name }}
+                @if (slip.warnings) {
+                  <div class="text-xs" role="note">{{ slip.warnings }}</div>
+                }
+              </td>
+              <td>{{ slip.gross_salary | money: r.currency }}</td>
+              <td>{{ slip.employee_deductions | money: r.currency }}</td>
+              <td>{{ slip.net_salary | money: r.currency }}</td>
+              <td>{{ slip.employer_contributions | money: r.currency }}</td>
+              <td>
+                <button nz-button nzSize="small" type="button" (click)="downloadPayslip(slip.id, slip.employee_name)">
+                  PDF
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+    <nz-tab [nzTitle]="'hrmPayroll.history' | translate">
+      <nz-table #events [nzData]="r.events ?? []" [nzFrontPagination]="false" nzSize="small">
+        <thead>
+          <tr>
+            <th>{{ 'hrmCommon.date' | translate }}</th>
+            <th>{{ 'hrmTime.action' | translate }}</th>
+            <th>{{ 'hrmTime.actor' | translate }}</th>
+            <th>{{ 'hrmCommon.reason' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of events.data; track event.id) {
+            <tr>
+              <td>{{ event.occurred_at | date: 'medium' }}</td>
+              <td>{{ event.action }}</td>
+              <td>{{ event.actor_name }}</td>
+              <td>{{ event.reason }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+    <nz-tab [nzTitle]="'hrmPayroll.costAllocation' | translate">
+      @if (allocation(); as a) {
+        <nz-table #lines [nzData]="a.lines" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'hrmCommon.employee' | translate }}</th>
+              <th>{{ 'hrmPayroll.target' | translate }}</th>
+              <th>{{ 'hrmCommon.hours' | translate }}</th>
+              <th>{{ 'hrmEmp.amount' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of lines.data; track $index) {
+              <tr>
+                <td>{{ line.employee_name }}</td>
+                <td>{{ line.target_type }}: {{ line.target_id }}</td>
+                <td>{{ line.hours }}</td>
+                <td>{{ line.amount | money: a.currency }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      } @else {
+        <nz-skeleton [nzActive]="true" />
+      }
+    </nz-tab>
+  </nz-tabs>
+}
