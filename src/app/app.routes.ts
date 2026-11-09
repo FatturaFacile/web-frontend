@@ -115,6 +115,13 @@ export const routes: Routes = [
       import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
   },
   {
+    path: 'customs',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Dogana IT-CH', title: 'Dogana & Spedizioni IT-CH' },
+    loadChildren: () =>
+      import('./features/customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
+  },
+  {
     path: 'field-service',
     canActivate: [authGuard],
     data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },

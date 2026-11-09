@@ -21,7 +21,7 @@ export const INVENTORY_ROUTES: Routes = [
   {
     path: 'customs',
     data: { breadcrumb: 'Dogana IT-CH', title: 'Dogana IT-CH' },
-    loadComponent: () =>
-      import('./inventory.component').then((m) => m.InventoryComponent),
+    loadChildren: () =>
+      import('../customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
   },
 ];

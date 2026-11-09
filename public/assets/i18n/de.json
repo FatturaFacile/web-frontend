@@ -955,5 +955,95 @@
   "WELCOME.GO_ORDERS": "Zum Auftragsverlauf",
   "WELCOME.QUICK_ACCESS": "Schnellzugriff",
   "WELCOME.SUBTITLE": "Ihre Plattform für einfache Rechnungs- und Auftragsverwaltung",
-  "WELCOME.TITLE": "Willkommen bei Fattura Facile"
+  "WELCOME.TITLE": "Willkommen bei Fattura Facile",
+  "CUSTOMS": {
+    "TITLE": "Zoll & Grenzüberschreitende Logistik",
+    "SUBTITLE": "Zolldossiers, e-dec/Passar-Deklarationen, eVV-Veranlagungsverfügungen und Tarife",
+    "TABS": {
+      "DOSSIERS": "Zolldossiers",
+      "DECLARATIONS": "Zolldeklarationen",
+      "ASSESSMENTS": "Veranlagungsverfügungen (eVV)",
+      "GRIDS_SHIPMENTS": "Tarifgitter & Sendungen"
+    },
+    "ACTIONS": {
+      "NEW_DOSSIER": "Neues Dossier",
+      "PROFITABILITY": "Rentabilität",
+      "INVOICE": "Dossier fakturieren",
+      "NEW_DECLARATION": "Neue Deklaration",
+      "VALIDATE": "Validieren",
+      "SUBMIT": "An Zoll übermitteln",
+      "RETRIEVE_EVV": "eVV abrufen",
+      "NEW_GRID": "Neues Tarifgitter",
+      "ACCEPT": "Annehmen",
+      "REFUSE": "Ablehnen"
+    },
+    "STATUS": {
+      "OPEN": "Offen",
+      "QUOTED": "Offert",
+      "IN_TRANSIT": "Im Transit",
+      "DELIVERED": "Geliefert",
+      "INVOICED": "Fakturiert",
+      "CLOSED": "Geschlossen",
+      "CANCELLED": "Storniert"
+    },
+    "COLS": {
+      "DOSSIER_NUMBER": "Dossier-Nr.",
+      "DIRECTION": "Richtung",
+      "SERVICE_TYPE": "Dienstleistungstyp",
+      "ROUTE": "Strecke",
+      "WEIGHT_VOL": "Gewicht / Vol",
+      "STATUS": "Status",
+      "DECLARATION_NR": "Deklarations-Nr.",
+      "MRN": "MRN",
+      "TYPE": "Typ",
+      "STATISTICAL_VALUE": "Statistischer Wert",
+      "TOTAL_MASS": "Gesamtmasse",
+      "VERSION": "Version",
+      "DOC_TYPE": "Dokumenttyp",
+      "DOC_DATE": "Belegdatum",
+      "DUTY_AMOUNT": "Zollabgabe",
+      "VAT_AMOUNT": "Einfuhrsteuer",
+      "SIGNATURE": "Signatur",
+      "NAME": "Name",
+      "CURRENCY": "Währung",
+      "ACTIVE": "Aktiv",
+      "REQUEST_NR": "Anfrage-Nr.",
+      "CUSTOMER": "Kunde"
+    },
+    "FORM": {
+      "CUSTOMER": "Kunde",
+      "CUSTOMER_PLACEHOLDER": "UUID oder Kundencode",
+      "DIRECTION": "Richtung",
+      "SERVICE_TYPE": "Dienstleistungstyp",
+      "ORIGIN_COUNTRY": "Herkunftsland",
+      "DESTINATION_COUNTRY": "Bestimmungsland",
+      "GROSS_WEIGHT": "Bruttogewicht (kg)",
+      "VOLUME": "Volumen (m³)",
+      "PACKAGES": "Packstücke",
+      "NOTES": "Notizen",
+      "DECLARATION_TYPE": "Deklarationstyp",
+      "CUSTOMS_OFFICE": "Zollstelle",
+      "TRADER_DECL_NR": "Händler-Deklarations-Nr.",
+      "TRADER_REF": "Interne Referenz",
+      "DISPATCH_COUNTRY": "Versandland"
+    },
+    "MODAL": {
+      "CREATE_DOSSIER_TITLE": "Neues Zolldossier",
+      "CREATE_DECLARATION_TITLE": "Neue Zolldeklaration",
+      "PROFITABILITY_TITLE": "Dossier-Rentabilität"
+    },
+    "PROFIT": {
+      "REVENUE": "Gesamtertrag",
+      "DIRECT_COSTS": "Direkte Kosten",
+      "INDIRECT_COSTS": "Indirekte Kosten",
+      "CONTRIBUTION_MARGIN": "Deckungsbeitrag",
+      "MARGIN_PERCENT": "Marge %"
+    },
+    "TARIFF_GRIDS": "Frachttarifgitter",
+    "SHIPMENT_REQUESTS": "Portal-Sendungsanfragen",
+    "SEARCH_DOSSIERS_PLACEHOLDER": "Dossiers nach Nummer oder Kunde suchen...",
+    "SEARCH_DECLARATIONS_PLACEHOLDER": "Deklarationen nach Nummer oder MRN suchen...",
+    "SEARCH_ASSESSMENTS_PLACEHOLDER": "eVV-Verfügungen nach MRN suchen...",
+    "FILTER_STATUS": "Nach Status filtern"
+  }
 }

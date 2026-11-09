@@ -1011,5 +1011,95 @@
   "TOOLS.TARGET_MARGIN": "Margine desiderato (%)",
   "TOOLS.MARGIN_AMOUNT": "Margine",
   "TOOLS.MARGIN_PERCENT": "Margine %",
-  "TOOLS.MARKUP_PERCENT": "Ricarico %"
+  "TOOLS.MARKUP_PERCENT": "Ricarico %",
+  "CUSTOMS": {
+    "TITLE": "Dogana & Spedizioni IT-CH",
+    "SUBTITLE": "Gestione pratiche doganali, dichiarazioni e-dec/Passar, decisioni d'imposizione eVV e tariffe",
+    "TABS": {
+      "DOSSIERS": "Pratiche Doganali",
+      "DECLARATIONS": "Dichiarazioni Doganali",
+      "ASSESSMENTS": "Decisioni d'Imposizione (eVV)",
+      "GRIDS_SHIPMENTS": "Griglie & Richieste Spedizione"
+    },
+    "ACTIONS": {
+      "NEW_DOSSIER": "Nuova Pratica",
+      "PROFITABILITY": "Redditività",
+      "INVOICE": "Fattura Pratica",
+      "NEW_DECLARATION": "Nuova Dichiarazione",
+      "VALIDATE": "Valida",
+      "SUBMIT": "Invia a Dogana",
+      "RETRIEVE_EVV": "Recupera eVV",
+      "NEW_GRID": "Nuova Griglia",
+      "ACCEPT": "Accetta",
+      "REFUSE": "Rifiuta"
+    },
+    "STATUS": {
+      "OPEN": "Aperta",
+      "QUOTED": "Quotata",
+      "IN_TRANSIT": "In Transito",
+      "DELIVERED": "Consegnata",
+      "INVOICED": "Fatturata",
+      "CLOSED": "Chiusa",
+      "CANCELLED": "Annullata"
+    },
+    "COLS": {
+      "DOSSIER_NUMBER": "Numero Pratica",
+      "DIRECTION": "Direzione",
+      "SERVICE_TYPE": "Tipo Servizio",
+      "ROUTE": "Tratta",
+      "WEIGHT_VOL": "Peso / Vol",
+      "STATUS": "Stato",
+      "DECLARATION_NR": "Nr. Dichiarazione",
+      "MRN": "MRN",
+      "TYPE": "Tipo",
+      "STATISTICAL_VALUE": "Valore Statistico",
+      "TOTAL_MASS": "Massa Totale",
+      "VERSION": "Versione",
+      "DOC_TYPE": "Tipo Doc",
+      "DOC_DATE": "Data Doc",
+      "DUTY_AMOUNT": "Dazio",
+      "VAT_AMOUNT": "IVA Doganale",
+      "SIGNATURE": "Firma Digitale",
+      "NAME": "Nome",
+      "CURRENCY": "Valuta",
+      "ACTIVE": "Attivo",
+      "REQUEST_NR": "Richiesta",
+      "CUSTOMER": "Cliente"
+    },
+    "FORM": {
+      "CUSTOMER": "Cliente / Mandante",
+      "CUSTOMER_PLACEHOLDER": "UUID o codice del cliente",
+      "DIRECTION": "Direzione",
+      "SERVICE_TYPE": "Tipo Servizio",
+      "ORIGIN_COUNTRY": "Paese Origine",
+      "DESTINATION_COUNTRY": "Paese Destinazione",
+      "GROSS_WEIGHT": "Peso Lordo (kg)",
+      "VOLUME": "Volume (m³)",
+      "PACKAGES": "Colli",
+      "NOTES": "Note",
+      "DECLARATION_TYPE": "Tipo Dichiarazione",
+      "CUSTOMS_OFFICE": "Ufficio Doganale",
+      "TRADER_DECL_NR": "Nr. Dichiarazione Operatore",
+      "TRADER_REF": "Riferimento Interno",
+      "DISPATCH_COUNTRY": "Paese Spedizione"
+    },
+    "MODAL": {
+      "CREATE_DOSSIER_TITLE": "Nuova Pratica Doganale",
+      "CREATE_DECLARATION_TITLE": "Nuova Dichiarazione Doganale",
+      "PROFITABILITY_TITLE": "Redditività Pratica Doganale"
+    },
+    "PROFIT": {
+      "REVENUE": "Ricavi Totali",
+      "DIRECT_COSTS": "Costi Diretti (Trasporto / Dazi)",
+      "INDIRECT_COSTS": "Costi Indiretti",
+      "CONTRIBUTION_MARGIN": "Margine di Contribuzione",
+      "MARGIN_PERCENT": "Margine %"
+    },
+    "TARIFF_GRIDS": "Griglie Tariffarie di Spedizione",
+    "SHIPMENT_REQUESTS": "Richieste Spedizione dal Portale",
+    "SEARCH_DOSSIERS_PLACEHOLDER": "Cerca pratiche per numero o cliente...",
+    "SEARCH_DECLARATIONS_PLACEHOLDER": "Cerca dichiarazioni per numero o MRN...",
+    "SEARCH_ASSESSMENTS_PLACEHOLDER": "Cerca decisioni eVV per MRN...",
+    "FILTER_STATUS": "Filtra per stato"
+  }
 }
