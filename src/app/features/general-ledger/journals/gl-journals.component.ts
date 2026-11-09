@@ -54,7 +54,8 @@ export class GlJournalsComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   protected readonly lookups = inject(GlLookupStore);
-  protected readonly currency = inject(AuthStore).activeCurrency;
+  private readonly authStore = inject(AuthStore);
+  protected readonly currency = this.authStore.activeCurrency;
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
   protected readonly statuses: ExtendedJournalStatus[] = ['draft', 'pending_approval', 'rejected', 'posted', 'reversed'];
@@ -73,6 +74,12 @@ export class GlJournalsComponent implements OnInit {
   ngOnInit(): void {
     this.lookups.load();
     this.load();
+  }
+
+  /** The approver must differ from author and submitter: the button is hidden for them (the server answers 403 anyway). */
+  protected canApprove(entry: GlJournalEntry): boolean {
+    const userId = this.authStore.user()?.id ?? null;
+    return userId === null || (entry.created_by !== userId && entry.submitted_by !== userId);
   }
 
   protected statusColor(status: ExtendedJournalStatus): string {

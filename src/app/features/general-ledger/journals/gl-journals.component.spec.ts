@@ -60,7 +60,7 @@ describe('GlJournalsComponent', () => {
         provideRouter([]),
         { provide: GeneralLedgerApiService, useValue: api },
         { provide: AccountingApiService, useValue: accountingApi },
-        { provide: AuthStore, useValue: { activeCurrency: () => 'EUR' } },
+        { provide: AuthStore, useValue: { activeCurrency: () => 'EUR', user: () => ({ id: 'me' }) } },
         { provide: PermissionsService, useValue: { canWrite: () => true } },
         { provide: NzMessageService, useValue: { success: vi.fn() } },
       ],
@@ -121,5 +121,13 @@ describe('GlJournalsComponent', () => {
     component.post(journal('draft'));
     expect(api.submitJournal).toHaveBeenCalledWith('j1');
     expect(accountingApi.postJournal).toHaveBeenCalledWith('j1');
+  });
+
+  it('does not offer the approval to the author or the submitter', async () => {
+    const fixture = await create('pending_approval');
+    const component = fixture.componentInstance as unknown as { canApprove(e: GlJournalEntry): boolean };
+    expect(component.canApprove({ ...journal('pending_approval'), created_by: 'me' })).toBe(false);
+    expect(component.canApprove({ ...journal('pending_approval'), submitted_by: 'me' })).toBe(false);
+    expect(component.canApprove(journal('pending_approval'))).toBe(true);
   });
 });

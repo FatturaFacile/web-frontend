@@ -123,6 +123,12 @@ export class SidebarComponent {
           module: 'treasury',
         },
         {
+          key: 'NAV.TREASURY_OPERATIONS',
+          icon: 'fa-solid fa-money-bill-transfer',
+          route: '/treasury/operations',
+          module: 'treasury',
+        },
+        {
           key: 'NAV.ACCOUNTING',
           icon: 'fa-solid fa-landmark',
           route: '/accounting',

@@ -69,9 +69,11 @@
                   </button>
                 }
                 @case ('pending_approval') {
-                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(entry)">
-                    {{ 'GL.ACTION_APPROVE' | translate }}
-                  </button>
+                  @if (canApprove(entry)) {
+                    <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(entry)">
+                      {{ 'GL.ACTION_APPROVE' | translate }}
+                    </button>
+                  }
                   <button nz-button nzSize="small" nzDanger type="button" (click)="openReject(entry)">
                     {{ 'GL.ACTION_REJECT' | translate }}
                   </button>
