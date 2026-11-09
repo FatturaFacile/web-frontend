@@ -45,6 +45,12 @@ import {
   CloseCircleOutline,
   RedoOutline,
   UserAddOutline,
+  FolderOpenOutline,
+  CarOutline,
+  PauseCircleOutline,
+  ClockCircleOutline,
+  CalculatorOutline,
+  StopOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -94,4 +100,10 @@ export const icons = [
   CloseCircleOutline,
   RedoOutline,
   UserAddOutline,
+  FolderOpenOutline,
+  CarOutline,
+  PauseCircleOutline,
+  ClockCircleOutline,
+  CalculatorOutline,
+  StopOutline,
 ];
