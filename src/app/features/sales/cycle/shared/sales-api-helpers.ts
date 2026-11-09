@@ -1,4 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { CoreOrder } from '@core';
+
+/**
+ * The credit hold that can be released for an order: `credit_hold_id` when the API sends it, else the active entry of
+ * `holds`; null when the order exposes none (the release then goes through the credit page).
+ */
+export function creditHoldIdOf(order: Pick<CoreOrder, 'credit_hold_id' | 'holds'>): string | null {
+  return order.credit_hold_id ?? order.holds?.find((hold) => hold.status === 'active')?.id ?? null;
+}
 
 /** Best human readable text of an API error (RFC 7807 detail, `message` or the first 422 field error). */
 export function apiErrorText(err: unknown): string {

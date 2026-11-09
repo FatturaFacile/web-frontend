@@ -100,6 +100,12 @@ export type OrderInventoryStatus =
   | 'not_required'
   | 'released';
 
+export interface CoreOrderHold {
+  id: string;
+  status: 'active' | 'released' | string;
+  hold_reason?: string | null;
+}
+
 export interface CoreOrder {
   id: string;
   order_number: string;
@@ -118,8 +124,10 @@ export interface CoreOrder {
   total_gross?: string | null;
   credit_status?: 'pending_check' | 'approved' | 'on_hold' | 'rejected' | 'warning' | string | null;
   credit_hold_reason?: string | null;
-  /** Credit holds, present only when the endpoint loads them. */
-  holds?: { id: string; status: string; hold_reason?: string | null }[];
+  /** Id of the credit hold that parks the order (`GET /sales/orders` and `/sales/orders/{id}`), when it has one. */
+  credit_hold_id?: string | null;
+  /** Credit holds of the order, present only when the endpoint loads them. */
+  holds?: CoreOrderHold[];
   items?: CoreDocumentLine[];
 }
 
