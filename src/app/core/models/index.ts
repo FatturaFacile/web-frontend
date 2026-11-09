@@ -37,3 +37,4 @@ export * from './practice.model';
 export * from './appointment.model';
 export * from './communication.model';
 export * from './visitors.model';
+export * from './tessera-sanitaria.model';

@@ -153,6 +153,11 @@ export class SidebarComponent {
           ],
         },
         {
+          key: 'NAV.TESSERA_SANITARIA',
+          icon: 'fa-solid fa-file-medical',
+          route: '/tessera-sanitaria',
+        },
+        {
           key: 'NAV.VISITORS',
           icon: 'fa-solid fa-id-badge',
           route: '/visitors',
