@@ -47,6 +47,7 @@ describe('initial bundle', () => {
 
   it('the root component only reaches the two-factor modal through a @defer block', () => {
     const template = readFileSync(join(root, 'app.component.html'), 'utf8');
-    expect(template).toMatch(/@defer\s*\([^)]*\)\s*\{[^}]*<app-two-factor-setup-modal/s);
+    expect(template).toMatch(/@defer ([^
+]*) {s*<app-two-factor-setup-modal/);
   });
 });
