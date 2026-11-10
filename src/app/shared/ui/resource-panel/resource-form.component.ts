@@ -107,6 +107,12 @@ export class ResourceFormComponent implements OnInit {
     return (field.options ?? []).map((value) => ({ value, label: this.labels.value(value) }));
   }
 
+  protected onFile(control: AbstractControl | null, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    control?.setValue(input.files?.item(0) ?? '');
+    control?.markAsDirty();
+  }
+
   protected errorOf(control: AbstractControl | null): string {
     if (!control || !(control.dirty || control.touched) || !control.errors) {
       return '';

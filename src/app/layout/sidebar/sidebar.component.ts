@@ -299,8 +299,20 @@ export class SidebarComponent {
         {
           key: 'NAV.ASSOCIATIONS',
           icon: 'fa-solid fa-hands-holding-child',
-          route: '/associations',
           module: 'associations',
+          children: [
+            { key: 'NAV.ASSOC_OVERVIEW', route: '/associations', icon: 'fa-solid fa-hands-holding-child', module: 'associations' },
+            { key: 'NAV.ASSOC_MEMBERSHIPS', route: '/associations/memberships', icon: 'fa-solid fa-id-card', module: 'associations' },
+            { key: 'NAV.ASSOC_COURSES', route: '/associations/courses', icon: 'fa-solid fa-calendar-days', module: 'associations' },
+            { key: 'NAV.ASSOC_ENROLMENT', route: '/associations/enrolment', icon: 'fa-solid fa-file-pen', module: 'associations' },
+            { key: 'NAV.ASSOC_COMPLIANCE', route: '/associations/compliance', icon: 'fa-solid fa-notes-medical', module: 'associations' },
+            { key: 'NAV.ASSOC_VOLUNTEERS', route: '/associations/volunteers', icon: 'fa-solid fa-people-carry-box', module: 'associations' },
+            { key: 'NAV.ASSOC_ACCESS', route: '/associations/access', icon: 'fa-solid fa-door-open', module: 'associations' },
+            { key: 'NAV.ASSOC_FEES', route: '/associations/fees', icon: 'fa-solid fa-receipt', module: 'associations' },
+            { key: 'NAV.ASSOC_SPORT', route: '/associations/sport', icon: 'fa-solid fa-medal', module: 'associations' },
+            { key: 'NAV.ASSOC_FUNDRAISING', route: '/associations/fundraising', icon: 'fa-solid fa-hand-holding-heart', module: 'associations' },
+            { key: 'NAV.ASSOC_SETTINGS', route: '/associations/settings', icon: 'fa-solid fa-sliders', module: 'associations' },
+          ],
         },
         {
           key: 'NAV.CHILDCARE',

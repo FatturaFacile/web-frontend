@@ -44,7 +44,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.endsWith('/auth/resend-reset-password-email') ||
           req.url.endsWith('/auth/validate-reset-token') ||
           req.url.endsWith('/auth/reset-password') ||
-          req.url.includes('/sanctum/');
+          req.url.includes('/sanctum/') ||
+          // Member area and public enrolment have their own token: a 401 there must not end the staff session.
+          req.url.includes('/association-area/') ||
+          req.url.includes('/association-public/');
 
         const body: ProblemDetails | null =
           typeof err.error === 'object' && err.error !== null

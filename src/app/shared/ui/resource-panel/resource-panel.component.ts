@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { PermissionsService, ResourceApiService, ResourceRow, unwrapResponse } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
@@ -31,6 +32,7 @@ interface ActiveForm {
   selector: 'app-resource-panel',
   imports: [
     FormsModule,
+    RouterLink,
     NzButtonModule,
     NzDrawerModule,
     NzEmptyModule,
@@ -57,6 +59,8 @@ export class ResourcePanelComponent implements OnInit {
   protected readonly labels = inject(ResourceLabelsService);
 
   readonly config = input.required<ResourcePanelConfig>();
+  /** Values of path placeholders fixed by the host page (for example the `{id}` of a detail page). */
+  readonly context = input<Record<string, unknown>>({});
 
   protected readonly rows = signal<ResourceRow[]>([]);
   protected readonly total = signal<number | null>(null);
@@ -77,7 +81,7 @@ export class ResourcePanelComponent implements OnInit {
   protected readonly isReport = computed(() => this.config().list.report === true);
   protected readonly scopeSources = computed(() => {
     const scope = this.scopeField();
-    return scope ? { [scope.key]: this.scopeValue() } : {};
+    return { ...this.context(), ...(scope ? { [scope.key]: this.scopeValue() } : {}) };
   });
   protected readonly ready = computed(() => isPathResolvable(this.config().list.path, this.scopeSources()));
   protected readonly visibleToolbar = computed(() =>
@@ -238,6 +242,10 @@ export class ResourcePanelComponent implements OnInit {
 
   protected cellValue(row: ResourceRow, column: ResourceColumn): unknown {
     return getByPath(row, column.key);
+  }
+
+  protected linkOf(row: ResourceRow): string {
+    return resolvePath(this.config().rowLink?.route ?? '', row);
   }
 
   protected rowKey(index: number, row: ResourceRow): string {
