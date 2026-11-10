@@ -33,7 +33,7 @@
           <nz-select class="rf-select" nzAllowClear nzShowSearch [nzOptions]="options(field)" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
         @default {
-          <input nz-input [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.inputmode]="field.type === 'decimal' ? 'decimal' : null" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+          <input nz-input [id]="'rf-' + field.key" [type]="field.secret ? 'password' : 'text'" [attr.autocomplete]="field.secret ? 'new-password' : null" [formControl]="group.get(field.key)" [attr.inputmode]="field.type === 'decimal' ? 'decimal' : null" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
       }
     </nz-form-control>

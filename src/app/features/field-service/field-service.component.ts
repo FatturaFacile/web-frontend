@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -23,6 +23,7 @@ import {
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { TicketCreateDrawerComponent } from './components/ticket-create-drawer/ticket-create-drawer.component';
+import { TicketBulkModalComponent } from './components/ticket-bulk-modal/ticket-bulk-modal.component';
 import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/ticket-detail-drawer.component';
 
 @Component({
@@ -44,6 +45,7 @@ import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/t
     TranslatePipe,
     TicketCreateDrawerComponent,
     TicketDetailDrawerComponent,
+    TicketBulkModalComponent,
   ],
   templateUrl: './field-service.component.html',
 })
@@ -69,7 +71,36 @@ export class FieldServiceComponent implements OnInit {
   readonly detailDrawerOpen = signal(false);
   readonly selectedTicketId = signal<string | null>(null);
 
+  // Bulk selection
+  readonly bulkOpen = signal(false);
+  readonly selectedIds = signal<ReadonlySet<string>>(new Set());
+  readonly selectedIdList = computed(() => [...this.selectedIds()]);
+  readonly allSelected = computed(
+    () => this.tickets().length > 0 && this.tickets().every((ticket) => this.selectedIds().has(ticket.id)),
+  );
+
   ngOnInit(): void {
+    this.loadTickets();
+  }
+
+  toggleOne(id: string, checked: boolean): void {
+    this.selectedIds.update((current) => {
+      const next = new Set(current);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  toggleAll(checked: boolean): void {
+    this.selectedIds.set(checked ? new Set(this.tickets().map((ticket) => ticket.id)) : new Set());
+  }
+
+  onBulkDone(): void {
+    this.selectedIds.set(new Set());
     this.loadTickets();
   }
 
