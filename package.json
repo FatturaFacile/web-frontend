@@ -18,6 +18,8 @@
     "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "e2e": "playwright test",
+    "api:coverage": "node scripts/api-coverage.mjs ../web-api/docs/api/openapi.json src/app",
+    "api:contract": "node scripts/api-contract-check.mjs ../web-api/docs/api/openapi.json src/app",
     "api:generate": "openapi-typescript ../web-api/docs/api/openapi.json -o src/app/core/api/generated/schema.d.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
