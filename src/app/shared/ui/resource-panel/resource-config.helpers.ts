@@ -25,6 +25,13 @@ export const rf = {
   uuid: make('uuid'),
   bool: make('switch'),
   tags: make('tags'),
+  file: make('file'),
+  multiselect: (key: string, options: readonly string[], extra: FieldOptions = {}): ResourceField => ({
+    key,
+    type: 'multiselect',
+    options,
+    ...extra,
+  }),
   json: make('json'),
   select: (key: string, options: readonly string[], extra: FieldOptions = {}): ResourceField => ({
     key,

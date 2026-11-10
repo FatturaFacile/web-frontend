@@ -74,6 +74,8 @@ export class ResourcePanelComponent implements OnInit {
   protected readonly scopeField = computed(() => this.config().list.scope ?? null);
   protected readonly scopeOptions = signal<ResourceOption[]>([]);
   protected readonly filterLookups = signal<Record<string, ResourceOption[]>>({});
+  /** A panel without a list endpoint (an empty `list.path`): only its toolbar actions are offered. */
+  protected readonly toolbarOnly = computed(() => this.config().list.path === '');
   protected readonly isReport = computed(() => this.config().list.report === true);
   protected readonly scopeSources = computed(() => {
     const scope = this.scopeField();
@@ -137,6 +139,9 @@ export class ResourcePanelComponent implements OnInit {
 
   protected load(): void {
     const list = this.config().list;
+    if (this.toolbarOnly()) {
+      return;
+    }
     if (!this.ready()) {
       this.rows.set([]);
       this.report.set(null);

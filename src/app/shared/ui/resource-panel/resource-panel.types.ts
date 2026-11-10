@@ -18,6 +18,8 @@ export type ResourceFieldType =
   | 'lookup'
   | 'switch'
   | 'tags'
+  | 'multiselect'
+  | 'file'
   | 'json'
   | 'lines'
   | 'uuid';
