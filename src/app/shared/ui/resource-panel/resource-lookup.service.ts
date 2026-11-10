@@ -23,6 +23,8 @@ const LOOKUPS: Record<ResourceLookupName, LookupDefinition> = {
   mfgItems: { path: '/manufacturing/items', labelKeys: ['item_code', 'name'], filters: { per_page: 200 } },
   bins: { path: '/inventory/warehouses/{dep}/bins', labelKeys: ['zone_code', 'code'] },
   zones: { path: '/inventory/warehouses/{dep}/zones', labelKeys: ['code', 'name'] },
+  constructionSites: { path: '/construction/sites', labelKeys: ['code', 'name'], filters: { per_page: 200 } },
+  hospitalityRooms: { path: '/hospitality/rooms', labelKeys: ['name'] },
 };
 
 /** Cached remote option lists for the select fields of the resource forms. */

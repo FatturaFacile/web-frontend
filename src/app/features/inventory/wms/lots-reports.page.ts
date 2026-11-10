@@ -100,6 +100,17 @@ export const STOCK_REPORTS_PAGE: ResourcePageConfig = {
       },
     },
     {
+      id: 'valuation-summary',
+      titleKey: 'RES.P.valuation_summary',
+      module: 'inventory',
+      list: {
+        path: '/inventory/valuation/summary',
+        report: true,
+        filters: [rf.lookup('warehouse_id', 'warehouses'), rf.text('valuation_method')],
+        columns: [],
+      },
+    },
+    {
       id: 'kpis',
       titleKey: 'RES.P.stock_kpis',
       module: 'inventory',

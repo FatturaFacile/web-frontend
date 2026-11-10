@@ -96,7 +96,8 @@ export interface PaymentLink {
   id: string;
   invoice_id: string;
   url: string;
-  status: 'active' | 'paid' | 'expired' | 'cancelled' | string;
+  /** The API reports `open`, `paid`, `review`, `cancelled` and `failed`. */
+  status: 'open' | 'active' | 'paid' | 'review' | 'expired' | 'cancelled' | 'failed' | string;
   amount?: number | string;
   currency?: string;
   expires_at?: string | null;

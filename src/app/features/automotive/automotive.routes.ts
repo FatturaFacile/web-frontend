@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { ResourcePageComponent } from '@shared';
+import { AUTOMOTIVE_INSPECTIONS_PAGE } from './inspections.page';
 
 export const AUTOMOTIVE_ROUTES: Routes = [
   {
@@ -11,6 +13,11 @@ export const AUTOMOTIVE_ROUTES: Routes = [
     data: { breadcrumb: 'Hotel Pneumatici', title: 'Hotel Pneumatici' },
     loadComponent: () =>
       import('./tire-hotel.component').then((m) => m.TireHotelComponent),
+  },
+  {
+    path: 'inspections',
+    data: { breadcrumb: 'RES.PAGE.AUTOMOTIVE_INSPECTIONS', title: 'RES.PAGE.AUTOMOTIVE_INSPECTIONS', page: AUTOMOTIVE_INSPECTIONS_PAGE },
+    component: ResourcePageComponent,
   },
   {
     path: 'workshop',

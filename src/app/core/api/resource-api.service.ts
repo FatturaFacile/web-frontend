@@ -42,6 +42,18 @@ export function unwrapResponse(raw: unknown): unknown {
   return isRecord(raw) && 'data' in raw ? raw['data'] : raw;
 }
 
+/** A body holding a `File` is sent as multipart form data, anything else as JSON. */
+function toRequestBody(body?: object): object | undefined {
+  if (!body || !Object.values(body).some((value) => value instanceof Blob)) {
+    return body;
+  }
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    formData.append(key, value instanceof Blob ? value : String(value));
+  }
+  return formData;
+}
+
 /**
  * Untyped gateway used by the declarative resource panels (WMS, procurement, manufacturing):
  * paths are relative to the API base URL (`/inventory/waves`).
@@ -60,7 +72,7 @@ export class ResourceApiService {
   request(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<unknown> {
     const url = `${this.base}${path}`;
     const params = filters ? toHttpParams(filters) : undefined;
-    return this.http.request<unknown>(method, url, { body, params }).pipe(map(unwrapResponse));
+    return this.http.request<unknown>(method, url, { body: toRequestBody(body), params }).pipe(map(unwrapResponse));
   }
 
   blob(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<Blob> {

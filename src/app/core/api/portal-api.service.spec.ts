@@ -296,4 +296,58 @@ describe('PortalApiService', () => {
     const req9 = httpMock.expectOne('/api/v1/portal/customs/token-123/shipment-requests');
     req9.flush({ data: mockDossier });
   });
+
+  it('lists the stock movements of the customer page by page', () => {
+    service.getStockMovements('token-123', 2).subscribe((res) => {
+      expect(res.data[0].quantity).toBe('12.500');
+      expect(res.meta.total).toBe(31);
+    });
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/portal/stock-movements/token-123');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('page')).toBe('2');
+    req.flush({
+      data: [{ id: 'm1', executed_at: '2026-03-01T10:00:00Z', direction: 'in', sku: 'A1', name: 'Bolt', lot_number: null, quantity: '12.500' }],
+      meta: { current_page: 2, last_page: 2, total: 31 },
+    });
+  });
+
+  it('downloads attachments as blobs, through the generic and the helpdesk routes', () => {
+    service.downloadAttachment('token-123', 'att-1').subscribe((blob) => expect(blob.size).toBe(3));
+    const generic = httpMock.expectOne('/api/v1/portal/attachments/token-123/att-1');
+    expect(generic.request.responseType).toBe('blob');
+    generic.flush(new Blob(['pdf']));
+
+    service.downloadHelpdeskAttachment('token-123', 'tkt-1', 'att-2').subscribe((blob) => expect(blob.size).toBe(3));
+    const helpdesk = httpMock.expectOne('/api/v1/portal/helpdesk/token-123/tickets/tkt-1/attachments/att-2');
+    expect(helpdesk.request.responseType).toBe('blob');
+    helpdesk.flush(new Blob(['png']));
+  });
+
+  it('lists portal tickets and replies with multipart attachments', () => {
+    service.getPortalTickets('token-123').subscribe((res) => {
+      expect(res.meta.per_page).toBe(20);
+    });
+    const list = httpMock.expectOne((r) => r.url === '/api/v1/portal/tickets/token-123');
+    expect(list.request.params.get('page')).toBe('1');
+    list.flush({ success: true, message: '', data: [], meta: { current_page: 1, per_page: 20, total: 0 } });
+
+    const file = new File(['x'], 'photo.png', { type: 'image/png' });
+    service.replyPortalTicket('token-123', 'tkt-1', { message: 'Thanks', author_name: 'Mario', attachments: [file] }).subscribe();
+    const reply = httpMock.expectOne('/api/v1/portal/tickets/token-123/reply/tkt-1');
+    expect(reply.request.method).toBe('POST');
+    const form = reply.request.body as FormData;
+    expect(form.get('message')).toBe('Thanks');
+    expect(form.get('author_name')).toBe('Mario');
+    expect((form.getAll('attachments[]')[0] as File).name).toBe('photo.png');
+    reply.flush({ success: true, message: '', data: { id: 'msg-1' } });
+  });
+
+  it('opens a payslip link with the date of birth and receives the PDF', () => {
+    service.openPayslipLink('slip-token', { birth_date: '1985-04-12' }).subscribe((blob) => expect(blob.size).toBe(3));
+    const req = httpMock.expectOne('/api/v1/portal/payslips/slip-token');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ birth_date: '1985-04-12' });
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['pdf']));
+  });
 });

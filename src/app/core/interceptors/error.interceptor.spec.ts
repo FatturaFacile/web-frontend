@@ -68,6 +68,20 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
     );
   });
 
+  it('keeps the session when the family portal refuses a guardian token', () => {
+    const logout = vi.spyOn(authStore, 'logout');
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    http.get('/api/v1/childcare-family/children').subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/v1/childcare-family/children')
+      .flush({ title: 'Unauthenticated', status: 401 }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(logout).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(messageService.warning).not.toHaveBeenCalled();
+  });
+
   it('displays warning on 409 conflict with detail', () => {
     http.put('/api/v1/crm/leads/1', {}).subscribe({
       error: () => undefined,

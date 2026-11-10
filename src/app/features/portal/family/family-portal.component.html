@@ -1,0 +1,219 @@
+<app-page-header [title]="'FAMILY_PORTAL.TITLE' | translate" [subtitle]="'FAMILY_PORTAL.SUBTITLE' | translate" />
+
+@if (!connected()) {
+  <nz-card [nzTitle]="'FAMILY_PORTAL.CONNECT_TITLE' | translate">
+    <form nz-form nzLayout="vertical" [formGroup]="tokenForm" (ngSubmit)="connect()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="family-token">{{ 'FAMILY_PORTAL.TOKEN_LABEL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'FAMILY_PORTAL.TOKEN_REQUIRED' | translate" [nzExtra]="'FAMILY_PORTAL.TOKEN_HINT' | translate">
+          <input nz-input id="family-token" type="password" autocomplete="off" formControlName="token" />
+        </nz-form-control>
+      </nz-form-item>
+      @if (connectError()) {
+        <nz-alert nzType="error" nzShowIcon [nzMessage]="'FAMILY_PORTAL.INVALID_TOKEN' | translate" class="mb-3" />
+      }
+      <button nz-button nzType="primary" type="submit" [nzLoading]="loading()">{{ 'FAMILY_PORTAL.CONNECT' | translate }}</button>
+    </form>
+  </nz-card>
+} @else {
+  <div class="family-toolbar">
+    <button nz-button type="button" (click)="disconnect()">{{ 'FAMILY_PORTAL.DISCONNECT' | translate }}</button>
+  </div>
+
+  <nz-tabs>
+    <nz-tab [nzTitle]="'FAMILY_PORTAL.TAB_CHILDREN' | translate">
+      <nz-card>
+        <form nz-form nzLayout="inline" [formGroup]="viewForm" (ngSubmit)="loadChildView()">
+          <nz-form-item>
+            <nz-form-label nzFor="family-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="family-child" formControlName="child_id" class="family-select">
+                @for (child of children(); track child.id) {
+                  <nz-option [nzValue]="child.id" [nzLabel]="child.first_name + ' ' + child.last_name" />
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="family-month">{{ 'FAMILY_PORTAL.MONTH' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="family-month" type="month" formControlName="month" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="family-date">{{ 'FAMILY_PORTAL.DATE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="family-date" type="date" formControlName="date" />
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="primary" type="submit">{{ 'FAMILY_PORTAL.SHOW' | translate }}</button>
+        </form>
+      </nz-card>
+
+      <nz-card [nzTitle]="'FAMILY_PORTAL.ATTENDANCE' | translate" class="mt-3">
+        <nz-table #attTable [nzData]="attendance()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
+              <th>{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
+              <th>{{ 'FAMILY_PORTAL.ABSENCE_REASON' | translate }}</th>
+              <th>{{ 'FAMILY_PORTAL.CHECK_IN' | translate }}</th>
+              <th>{{ 'FAMILY_PORTAL.CHECK_OUT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (day of attTable.data; track day.date) {
+              <tr>
+                <td>{{ day.date }}</td>
+                <td><nz-tag>{{ day.status }}</nz-tag></td>
+                <td>{{ day.absence_reason ?? '' }}</td>
+                <td>{{ day.check_in_at | date: 'shortTime' }}</td>
+                <td>{{ day.check_out_at | date: 'shortTime' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+
+      <nz-card [nzTitle]="'FAMILY_PORTAL.DAILY_REPORT' | translate" class="mt-3">
+        @if (dailyReport(); as report) {
+          <p>
+            <nz-tag>{{ report.status ?? '-' }}</nz-tag>
+            {{ 'FAMILY_PORTAL.CHECK_IN' | translate }}: {{ report.check_in_at | date: 'shortTime' }}
+            · {{ 'FAMILY_PORTAL.CHECK_OUT' | translate }}: {{ report.check_out_at | date: 'shortTime' }}
+          </p>
+          <p>{{ 'FAMILY_PORTAL.PICKED_UP_BY' | translate }}: {{ report.picked_up_by ?? '-' }}</p>
+          <p>{{ 'FAMILY_PORTAL.MEALS' | translate }}: {{ mealsOf(report) || '-' }}</p>
+          @for (note of report.notes; track $index) {
+            <p><strong>{{ note.category }}</strong>: {{ note.body }}</p>
+          }
+        } @else {
+          <p>{{ 'FAMILY_PORTAL.NO_DATA' | translate }}</p>
+        }
+      </nz-card>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'FAMILY_PORTAL.TAB_INVOICES' | translate">
+      <nz-table #invTable [nzData]="invoices()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'FAMILY_PORTAL.INVOICE_NUMBER' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.TOTAL' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.PAYMENT_STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (invoice of invTable.data; track invoice.id) {
+            <tr>
+              <td>{{ invoice.invoice_number }}</td>
+              <td>{{ invoice.date }}</td>
+              <td>{{ invoice.total_gross | money: invoice.currency }}</td>
+              <td><nz-tag>{{ invoice.payment_status }}</nz-tag></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'FAMILY_PORTAL.TAB_DOCUMENTS' | translate">
+      <nz-table #docTable [nzData]="documents()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'FAMILY_PORTAL.DOCUMENT' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.CHILD' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.SIGNED_AT' | translate }}</th>
+            <th>{{ 'FAMILY_PORTAL.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (document of docTable.data; track document.id) {
+            <tr>
+              <td>{{ document.title }}</td>
+              <td>{{ childName(document.child_id) }}</td>
+              <td><nz-tag>{{ document.status }}</nz-tag></td>
+              <td>{{ document.signed_at | date: 'short' }}</td>
+              <td>
+                @if (document.has_file) {
+                  <button nz-button nzSize="small" type="button" (click)="download(document)">
+                    <span nz-icon nzType="download"></span>{{ 'FAMILY_PORTAL.DOWNLOAD' | translate }}
+                  </button>
+                }
+                @if (canSign(document)) {
+                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="openSign(document)">
+                    {{ 'FAMILY_PORTAL.SIGN' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'FAMILY_PORTAL.TAB_MESSAGES' | translate">
+      <nz-card>
+        <form nz-form nzLayout="vertical" [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="family-msg-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="family-msg-child" formControlName="child_id" class="family-select">
+                @for (child of children(); track child.id) {
+                  <nz-option [nzValue]="child.id" [nzLabel]="child.first_name + ' ' + child.last_name" />
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="family-msg-body">{{ 'FAMILY_PORTAL.NEW_MESSAGE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'FAMILY_PORTAL.MESSAGE_REQUIRED' | translate">
+              <textarea nz-input id="family-msg-body" rows="3" maxlength="5000" formControlName="body"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="primary" type="submit">{{ 'FAMILY_PORTAL.SEND' | translate }}</button>
+        </form>
+      </nz-card>
+
+      <div class="mt-3">
+        @for (item of messages(); track item.id) {
+          <nz-card nzSize="small" class="mb-2">
+            <p>
+              <nz-tag [nzColor]="item.direction === 'to_family' ? 'blue' : 'green'">
+                {{ (item.direction === 'to_family' ? 'FAMILY_PORTAL.FROM_KINDERGARTEN' : 'FAMILY_PORTAL.FROM_FAMILY') | translate }}
+              </nz-tag>
+              {{ childName(item.child_id) }} · {{ item.created_at | date: 'short' }}
+            </p>
+            <p>{{ item.body }}</p>
+          </nz-card>
+        }
+      </div>
+    </nz-tab>
+  </nz-tabs>
+}
+
+<nz-modal
+  [nzVisible]="signingDocument() !== null"
+  [nzTitle]="'FAMILY_PORTAL.SIGN_TITLE' | translate"
+  [nzOkText]="'FAMILY_PORTAL.SIGN' | translate"
+  [nzCancelText]="'FAMILY_PORTAL.CANCEL' | translate"
+  (nzOnOk)="submitSign()"
+  (nzOnCancel)="signingDocument.set(null)"
+>
+  <ng-container *nzModalContent>
+    @if (signingDocument(); as document) {
+      <p>{{ document.title }}</p>
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="signForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="family-signed-name">{{ 'FAMILY_PORTAL.SIGNED_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'FAMILY_PORTAL.SIGNED_NAME_INVALID' | translate">
+          <input nz-input id="family-signed-name" formControlName="signed_name" />
+        </nz-form-control>
+      </nz-form-item>
+      <!-- nz-checkbox renders its own input inside the label -->
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label nz-checkbox formControlName="accept">{{ 'FAMILY_PORTAL.ACCEPT_TERMS' | translate }}</label>
+    </form>
+  </ng-container>
+</nz-modal>

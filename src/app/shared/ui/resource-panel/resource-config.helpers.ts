@@ -26,6 +26,7 @@ export const rf = {
   bool: make('switch'),
   tags: make('tags'),
   json: make('json'),
+  file: make('file'),
   select: (key: string, options: readonly string[], extra: FieldOptions = {}): ResourceField => ({
     key,
     type: 'select',

@@ -70,6 +70,17 @@ describe('ResourceApiService', () => {
     expect(out).toEqual({ id: 'w1' });
   });
 
+  it('sends a body holding a file as multipart form data', () => {
+    const file = new File(['a;b'], 'positions.csv', { type: 'text/csv' });
+    service.request('POST', '/construction-trades/price-lists/pl1/import', { file, mode: 'update' }).subscribe();
+    const req = httpMock.expectOne(`${base}/construction-trades/price-lists/pl1/import`);
+    expect(req.request.body).toBeInstanceOf(FormData);
+    const form = req.request.body as FormData;
+    expect((form.get('file') as File).name).toBe('positions.csv');
+    expect(form.get('mode')).toBe('update');
+    req.flush({ data: { created: 1, updated: 0, errors: [] } });
+  });
+
   it('supports PATCH, PUT and DELETE verbs', () => {
     for (const method of ['PATCH', 'PUT', 'DELETE'] as const) {
       service.request(method, '/inventory/bins/1', method === 'DELETE' ? undefined : { is_locked: true }).subscribe();
