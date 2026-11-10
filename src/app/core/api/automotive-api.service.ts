@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   AutomotiveVehicle,
+  AutomotiveVehiclePage,
   TireCheckInPayload,
   TireCheckInResult,
   TireHotelRecord,
@@ -15,8 +16,8 @@ export class AutomotiveApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/automotive`;
 
-  getVehicles(): Observable<ApiResponse<AutomotiveVehicle[]>> {
-    return this.http.get<ApiResponse<AutomotiveVehicle[]>>(`${this.base}/vehicles`);
+  getVehicles(): Observable<ApiResponse<AutomotiveVehiclePage>> {
+    return this.http.get<ApiResponse<AutomotiveVehiclePage>>(`${this.base}/vehicles`);
   }
 
   getVehicle(id: string): Observable<ApiResponse<AutomotiveVehicle>> {
