@@ -36,6 +36,7 @@ import {
   CrmSegmentPayload,
   CrmSegmentUpdatePayload,
   LeadResource,
+  LeadScoreExplanation,
   LeadScoringRule,
   LeadScoringRulePayload,
   MergeContactsPayload,
@@ -147,6 +148,11 @@ export class CrmApiService {
 
   deleteLead(id: string): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(`${this.base}/leads/${id}`);
+  }
+
+  /** Explains the stored score of a lead and shows it under the model in force now. */
+  getLeadScore(id: string): Observable<LeadScoreExplanation> {
+    return this.http.get<LeadScoreExplanation>(`${this.base}/leads/${id}/score`);
   }
 
   qualifyLead(id: string): Observable<ApiResponse<LeadResource>> {

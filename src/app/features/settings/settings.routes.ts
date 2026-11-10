@@ -54,6 +54,20 @@ export const SETTINGS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'admin/access-requests',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'NAV.ADMIN_ACCESS_REQUESTS', title: 'NAV.ADMIN_ACCESS_REQUESTS' },
+    loadComponent: () =>
+      import('./pages/access-requests/access-requests.component').then((m) => m.AccessRequestsComponent),
+  },
+  {
+    path: 'lookups',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'NAV.LOOKUP_TRANSLATIONS', title: 'NAV.LOOKUP_TRANSLATIONS' },
+    loadComponent: () =>
+      import('./pages/lookup-translations/lookup-translations.component').then((m) => m.LookupTranslationsComponent),
+  },
+  {
     path: 'privacy',
     data: { breadcrumb: 'Privacy (GDPR / nLPD)', title: 'Privacy Center (GDPR & Swiss nLPD)' },
     loadComponent: () =>

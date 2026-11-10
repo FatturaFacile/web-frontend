@@ -3,13 +3,12 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   applyServerErrors,
-  HrLeaveApiService,
   HrSelfServiceApiService,
   I18nService,
   isValidationError,
-  LeaveTypeResource,
   SelfServiceLeaveBalance,
   SelfServiceLeaveRequest,
+  SelfServiceLeaveType,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -41,14 +40,13 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 })
 export class SsLeaveComponent implements OnInit {
   private readonly api = inject(HrSelfServiceApiService);
-  private readonly leaveApi = inject(HrLeaveApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
   protected readonly balances = signal<SelfServiceLeaveBalance[]>([]);
   protected readonly requests = signal<SelfServiceLeaveRequest[]>([]);
-  protected readonly leaveTypes = signal<LeaveTypeResource[]>([]);
+  protected readonly leaveTypes = signal<SelfServiceLeaveType[]>([]);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly formOpen = signal(false);
@@ -68,7 +66,8 @@ export class SsLeaveComponent implements OnInit {
   protected readonly cancelReason = this.fb.control('', Validators.required);
 
   ngOnInit(): void {
-    this.leaveApi.getLeaveTypes().subscribe({
+    // The portal endpoint needs no HR role: the employee only labels own balances and requests.
+    this.api.getLeaveTypes().subscribe({
       next: (res) => this.leaveTypes.set(res.data.filter((type) => type.is_active)),
       error: () => this.leaveTypes.set([]),
     });

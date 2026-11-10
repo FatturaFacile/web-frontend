@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from '@core/auth/auth.guard';
+import { authGuard, guestGuard, moduleGuard } from '@core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -328,6 +328,12 @@ export const routes: Routes = [
     data: { breadcrumb: 'Payroll & HR IT-CH', title: 'HR & Payroll' },
     loadChildren: () =>
       import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+  },
+  {
+    path: 'exports',
+    canActivate: [authGuard, moduleGuard('exports', 'read')],
+    data: { breadcrumb: 'NAV.EXPORTS', title: 'NAV.EXPORTS' },
+    loadComponent: () => import('./features/exports/exports.component').then((m) => m.ExportsComponent),
   },
   {
     path: 'accounting',

@@ -9,6 +9,9 @@ import {
   FamilyAllowanceRateRecord,
   PaginatedResponse,
   PayrollCostAllocation,
+  PaymentBatchAllocation,
+  PayrollPaymentBatch,
+  PayslipDeliveryResult,
   PayrollRecordFilterParams,
   PayrollRunRecord,
   PayrollSettingsPayload,
@@ -88,6 +91,16 @@ export class PayrollApiService {
   /** On an approved run it revokes the approval (back to `Calculated`). The reason is recorded. */
   reopenRun(id: string, reason: string): Observable<ApiResponse<PayrollRunRecord>> {
     return this.http.post<ApiResponse<PayrollRunRecord>>(`${this.base}/runs/${id}/reopen`, { reason });
+  }
+
+  /** Tells the employees that their payslips are ready (an employee without e-mail or birth date is skipped). */
+  deliverPayslips(id: string): Observable<ApiResponse<PayslipDeliveryResult>> {
+    return this.http.post<ApiResponse<PayslipDeliveryResult>>(`${this.base}/runs/${id}/deliver-payslips`, {});
+  }
+
+  /** Creates the payment files of a run, one per bank account allocation. */
+  createPaymentBatches(id: string, allocations: PaymentBatchAllocation[]): Observable<ApiResponse<PayrollPaymentBatch[]>> {
+    return this.http.post<ApiResponse<PayrollPaymentBatch[]>>(`${this.base}/runs/${id}/payment-batches`, { allocations });
   }
 
   getCostAllocation(id: string): Observable<ApiResponse<PayrollCostAllocation>> {

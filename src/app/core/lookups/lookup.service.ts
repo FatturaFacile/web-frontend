@@ -106,7 +106,7 @@ export class LookupService {
 
     await firstValueFrom(
       this.http.post(
-        `${this.apiUrl}/translations`,
+        `${environment.apiBaseUrl}/lookups/translations`,
         {
           ...payload,
           tenant_id: tenantId,

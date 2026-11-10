@@ -4,6 +4,8 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  CrossBorderEmployee,
+  WithholdingTaxParameters,
   EmployeeResource,
   FrontierWorkerResource,
   HireEmployeePayload,
@@ -95,6 +97,16 @@ export class HrApiService {
 
   approveTimesheet(id: string): Observable<ApiResponse<TimesheetResource>> {
     return this.http.post<ApiResponse<TimesheetResource>>(`${this.hrBase}/timesheets/${id}/approve`, {});
+  }
+
+  /** Cross-border commuters (Frontalieri IT-CH) of the company, with the data of their user. */
+  getCrossBorderEmployees(): Observable<ApiResponse<CrossBorderEmployee[]>> {
+    return this.http.get<ApiResponse<CrossBorderEmployee[]>>(`${this.hrBase}/frontalieri`);
+  }
+
+  /** Cross-border withholding parameters of the company jurisdiction (Swiss or Italian shape). */
+  getWithholdingTaxParameters(): Observable<ApiResponse<WithholdingTaxParameters>> {
+    return this.http.get<ApiResponse<WithholdingTaxParameters>>(`${this.hrBase}/withholding-taxes`);
   }
 
   // --- Payroll Runs & Frontier Workers ---
