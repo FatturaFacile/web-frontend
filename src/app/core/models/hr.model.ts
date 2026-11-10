@@ -149,3 +149,27 @@ export type Employee = EmployeeResource | {
   pension?: string;
   status?: string;
 };
+
+export interface CrossBorderEmployee {
+  id: string;
+  user_id: string;
+  is_cross_border_commuter: boolean;
+  job_title: string | null;
+  department: string | null;
+  hire_date: string | null;
+  termination_date: string | null;
+  name: string;
+  email: string;
+}
+
+/** Swiss companies get the canton block, Italian ones the INPS/INAIL block. */
+export type WithholdingTaxParameters = Record<string, string>;
+
+export type PositionReadinessLevel = 'ready_now' | 'ready_1_2_years' | 'developing';
+
+export interface PayrollForecast {
+  period_code: string;
+  active_headcount: number;
+  estimated_payroll_outflow: number;
+  accrual_amount: number;
+}

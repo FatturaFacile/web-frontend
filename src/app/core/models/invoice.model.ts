@@ -154,3 +154,18 @@ export interface InvoiceInstallment {
   amount: number;
   status: 'unpaid' | 'paid' | 'overdue' | string;
 }
+
+export type DocumentEmailType = 'invoice' | 'quote' | 'order' | 'delivery_note' | 'work_order';
+
+/** One e-mail sent for a document (`GET /documents/{type}/{id}/emails`). */
+export interface DocumentEmailRecord {
+  id: string;
+  recipient: string;
+  subject: string | null;
+  message: string | null;
+  status: string;
+  error: string | null;
+  sent_at: string | null;
+  attachment_name: string | null;
+  created_at?: string | null;
+}

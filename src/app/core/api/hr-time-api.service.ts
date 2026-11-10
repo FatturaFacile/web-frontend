@@ -5,6 +5,19 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   CreateTimeEventPayload,
+  MealBookingPayload,
+  MealBookingQuery,
+  NightWorkBalance,
+  PunchImportPayload,
+  PunchImportResult,
+  ScheduleGroupMemberPayload,
+  ScheduleGroupPayload,
+  ScheduleGroupRecord,
+  ScheduleGroupRulesPayload,
+  TimeBadgePayload,
+  TimePayrollView,
+  TimePresenceRow,
+  TimeTransferResult,
   DailyTimeRecordPayload,
   OvertimeRulePayload,
   OvertimeRuleResource,
@@ -117,5 +130,62 @@ export class HrTimeApiService {
 
   reopenMonth(id: string, reason: string): Observable<ApiResponse<TimeClosingResource>> {
     return this.http.post<ApiResponse<TimeClosingResource>>(`${this.base}/time-closings/${id}/reopen`, { reason });
+  }
+
+  /** Transfers a closed (or approved) period to the payroll variable inputs. */
+  transferToPayroll(year: number, month: number): Observable<ApiResponse<TimeTransferResult>> {
+    return this.http.post<ApiResponse<TimeTransferResult>>(`${this.base}/time-closings/${year}/${month}/transfer-to-payroll`, {});
+  }
+
+  // --- Schedule groups and badges ---
+
+  getScheduleGroups(): Observable<ApiResponse<ScheduleGroupRecord[]>> {
+    return this.http.get<ApiResponse<ScheduleGroupRecord[]>>(`${this.base}/schedule-groups`);
+  }
+
+  createScheduleGroup(payload: ScheduleGroupPayload): Observable<ApiResponse<ScheduleGroupRecord>> {
+    return this.http.post<ApiResponse<ScheduleGroupRecord>>(`${this.base}/schedule-groups`, payload);
+  }
+
+  /** Adds a version of the rules (rounding, tolerances, allowances) valid from a date. */
+  addScheduleGroupRules(id: string, payload: ScheduleGroupRulesPayload): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.base}/schedule-groups/${id}/rules`, payload);
+  }
+
+  addScheduleGroupMember(id: string, payload: ScheduleGroupMemberPayload): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.base}/schedule-groups/${id}/members`, payload);
+  }
+
+  registerBadge(payload: TimeBadgePayload): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.base}/time-badges`, payload);
+  }
+
+  // --- Presence, payroll view, punches, meals, night work ---
+
+  getPresence(): Observable<ApiResponse<TimePresenceRow[]>> {
+    return this.http.get<ApiResponse<TimePresenceRow[]>>(`${this.base}/time/presence`);
+  }
+
+  getPayrollView(params: { employee_id?: string | null; from: string; to: string }): Observable<ApiResponse<TimePayrollView>> {
+    return this.http.get<ApiResponse<TimePayrollView>>(`${this.base}/time/payroll-view`, { params: toHttpParams(params) });
+  }
+
+  importPunches(payload: PunchImportPayload): Observable<ApiResponse<PunchImportResult>> {
+    return this.http.post<ApiResponse<PunchImportResult>>(`${this.base}/time/punches/import`, payload);
+  }
+
+  getMealBookings(params: MealBookingQuery): Observable<ApiResponse<Record<string, unknown>[]>> {
+    return this.http.get<ApiResponse<Record<string, unknown>[]>>(`${this.base}/time/meal-bookings`, { params: toHttpParams(params) });
+  }
+
+  bookMeal(payload: MealBookingPayload): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.base}/time/meal-bookings`, payload);
+  }
+
+  /** With `user_id` the balance of that user is first re-evaluated (the call writes the row). */
+  getNightWorkBalances(params?: { year?: number; user_id?: string }): Observable<ApiResponse<NightWorkBalance[]>> {
+    return this.http.get<ApiResponse<NightWorkBalance[]>>(`${this.base}/time/night-work-balances`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 }

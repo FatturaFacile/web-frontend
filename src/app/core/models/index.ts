@@ -64,3 +64,7 @@ export * from './treasury-ops.model';
 export * from './eam-ops.model';
 export * from './project-control.model';
 export * from './general-ledger-fiscal.model';
+export * from './payroll-compliance.model';
+export * from './short-time.model';
+export * from './hr-time-extras.model';
+export * from './tenant-admin.model';
