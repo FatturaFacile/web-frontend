@@ -15,13 +15,13 @@ export const SETTINGS_ROUTES: Routes = [
   },
   {
     path: 'profile',
-    data: { breadcrumb: 'PROFILE.TITLE' },
+    data: { breadcrumb: 'PROFILE.TITLE', titleKey: 'PROFILE.TITLE' },
     loadComponent: () =>
       import('./pages/profile/profile-settings.component').then((m) => m.ProfileSettingsComponent),
   },
   {
     path: 'security',
-    data: { breadcrumb: 'SECURITY.TITLE' },
+    data: { breadcrumb: 'SECURITY.TITLE', titleKey: 'SECURITY.TITLE' },
     loadComponent: () =>
       import('./pages/security/security-settings.component').then(
         (m) => m.SecuritySettingsComponent
@@ -30,7 +30,7 @@ export const SETTINGS_ROUTES: Routes = [
   {
     path: 'security/two-factor',
     canActivate: [moduleGuard('system', 'read')],
-    data: { breadcrumb: 'TENANT_SECURITY.BREADCRUMB' },
+    data: { breadcrumb: 'TENANT_SECURITY.BREADCRUMB', titleKey: 'TENANT_SECURITY.TITLE' },
     loadComponent: () =>
       import('./pages/tenant-security/tenant-security-policy.component').then(
         (m) => m.TenantSecurityPolicyComponent
