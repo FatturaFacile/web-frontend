@@ -109,3 +109,21 @@ describe('OrderMapper', () => {
     });
   });
 });
+
+describe('OrderMapper.fromSalesOrder', () => {
+  it('maps a sales order of the API converting decimal strings for display', () => {
+    const order = OrderMapper.fromSalesOrder({
+      id: 'so-1',
+      order_number: 'SO-2026-001',
+      date: '2026-05-15',
+      created_at: null,
+      total_gross: '350.50',
+      items: [{ id: 'it-1', description: 'Consulting', quantity: '2.0000', unit_price: '150.00' }],
+    });
+
+    expect(order.referenceNumber).toBe('SO-2026-001');
+    expect(order.createdAt).toEqual(new Date('2026-05-15'));
+    expect(order.totalAmount).toBe(350.5);
+    expect(order.items[0]).toEqual({ id: 'it-1', productName: 'Consulting', quantity: 2, unitPrice: 150 });
+  });
+});
