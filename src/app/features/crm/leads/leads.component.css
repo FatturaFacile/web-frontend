@@ -1,0 +1,66 @@
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-bar .search-box {
+  flex: 1;
+  min-width: 250px;
+}
+.filter-bar .select-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.filter-bar .select-filters .filter-select {
+  width: 140px;
+}
+
+.lead-info {
+  display: flex;
+  flex-direction: column;
+}
+.lead-info .lead-name {
+  font-weight: 600;
+}
+.lead-info .lead-sub {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+.form-row .form-col {
+  flex: 1;
+}
+
+.drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.score-summary {
+  margin-bottom: 16px;
+}
+.score-summary h4 {
+  margin-bottom: 8px;
+}
+.score-summary .score-badge {
+  font-size: 16px;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.score-date {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/*# sourceMappingURL=leads.component.css.map */

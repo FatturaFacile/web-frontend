@@ -1,0 +1,99 @@
+.document-trust-container {
+  padding: 16px;
+}
+.document-trust-container .header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.document-trust-container .main-card {
+  margin-top: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+.document-trust-container .networks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.document-trust-container .networks-grid .network-card {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.document-trust-container .networks-grid .network-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.document-trust-container .networks-grid .network-card .network-info {
+  margin-bottom: 12px;
+}
+.document-trust-container .networks-grid .network-card .network-info p {
+  margin-bottom: 6px;
+}
+.document-trust-container .networks-grid .network-card .network-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.document-trust-container .filters-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.document-trust-container .filters-bar .filter-control {
+  min-width: 160px;
+}
+.document-trust-container .filters-bar .filter-input {
+  flex: 1;
+  min-width: 200px;
+}
+.document-trust-container .lookup-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.document-trust-container .lookup-bar .lookup-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.document-trust-container .lookup-bar .lookup-inputs .lookup-input {
+  min-width: 320px;
+}
+.document-trust-container .settings-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .document-trust-container .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.document-trust-container .settings-layout .settings-card {
+  border-radius: 8px;
+}
+.document-trust-container .verification-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.document-trust-container .verification-box .verify-descriptions {
+  margin-top: 12px;
+}
+.document-trust-container .sha256-full {
+  word-break: break-all;
+  font-size: 11px;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: block;
+}
+
+/*# sourceMappingURL=document-trust.component.css.map */

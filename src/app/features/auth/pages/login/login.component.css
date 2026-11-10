@@ -54,4 +54,41 @@
   color: inherit;
 }
 
+.register-link {
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+.challenge-section {
+  text-align: center;
+}
+
+.challenge-header {
+  margin-bottom: 20px;
+}
+.challenge-header .challenge-icon {
+  font-size: 36px;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+.challenge-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.challenge-header .challenge-subtitle {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+.challenge-toggle-row {
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+.cancel-challenge-btn {
+  margin-top: 10px;
+}
+
 /*# sourceMappingURL=login.component.css.map */

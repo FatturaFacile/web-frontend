@@ -1,0 +1,85 @@
+.workspace-page-content {
+  padding: 1.5rem;
+}
+.workspace-page-content .providers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.workspace-page-content .providers-grid .provider-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.workspace-page-content .providers-grid .provider-card .provider-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.workspace-page-content .providers-grid .provider-card .provider-header .provider-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.workspace-page-content .providers-grid .provider-card .provider-header .provider-icon.google-icon {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+.workspace-page-content .providers-grid .provider-card .provider-header .provider-icon.ms-icon {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+.workspace-page-content .providers-grid .provider-card .provider-header .provider-info .provider-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
+}
+.workspace-page-content .providers-grid .provider-card .provider-header .provider-info .provider-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 1rem;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .status-indicator {
+  margin-bottom: 1rem;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .status-help {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .connection-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .connection-meta .meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .connection-meta .meta-row .meta-label {
+  color: #6b7280;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .connection-meta .meta-row .meta-val {
+  font-weight: 500;
+  color: #1f2937;
+}
+.workspace-page-content .providers-grid .provider-card .connection-status .provider-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/*# sourceMappingURL=workspace.component.css.map */

@@ -1,0 +1,53 @@
+.login-box {
+  max-width: 560px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 16px;
+}
+
+.section-hint {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.password-requirements {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.strength {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.strength span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-light);
+}
+
+.strength span.on {
+  background: #0d9488;
+}
+
+.strength-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.alternate {
+  text-align: center;
+  margin: 16px 0 0;
+}
+
+/*# sourceMappingURL=register.component.css.map */
