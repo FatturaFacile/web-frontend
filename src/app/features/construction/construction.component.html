@@ -105,8 +105,8 @@
       <nz-card>
         <div class="filter-toolbar">
           <div class="filter-inputs">
-            <ng-template #searchPrefix><span nz-icon nzType="search"></span></ng-template>
-            <nz-input-group [nzPrefix]="searchPrefix" class="search-input">
+            <nz-input-wrapper class="search-input">
+              <nz-icon nzInputPrefix nzType="search" />
               <input
                 type="text"
                 nz-input
@@ -114,7 +114,7 @@
                 [ngModel]="filterBidSearch()"
                 (ngModelChange)="filterBidSearch.set($event); loadBids()"
               />
-            </nz-input-group>
+            </nz-input-wrapper>
 
             <nz-select
               class="status-select"
