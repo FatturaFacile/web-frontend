@@ -1,17 +1,12 @@
-<app-page-header
-  title="Policy di Sicurezza 2FA del Tenant"
-  subtitle="Configura i requisiti di autenticazione a due fattori per tutti i collaboratori dell'azienda"
-></app-page-header>
+<app-page-header [title]="'TENANT_SECURITY.TITLE' | translate" [subtitle]="'TENANT_SECURITY.SUBTITLE' | translate" />
 
 <div class="tenant-security-container">
   <!-- POLICY TOGGLE CARD -->
-  <nz-card nzTitle="Requisito Obbligatorio 2FA" [nzLoading]="isLoading()" class="policy-card">
+  <nz-card [nzTitle]="'TENANT_SECURITY.POLICY_CARD' | translate" [nzLoading]="isLoading()" class="policy-card">
     <div class="policy-toggle-wrapper">
       <div class="policy-info">
-        <h3>Richiedi 2FA per tutti i membri</h3>
-        <p class="policy-desc">
-          Quando questa opzione è attiva, qualsiasi collaboratore o amministratore del tenant che non ha ancora configurato l'autenticazione a due fattori sarà bloccato al login o alle API con richiesta obbligatoria di configurazione prima di poter operare.
-        </p>
+        <h3 id="require-two-factor-label">{{ 'TENANT_SECURITY.REQUIRE_ALL' | translate }}</h3>
+        <p class="policy-desc">{{ 'TENANT_SECURITY.REQUIRE_DESC' | translate }}</p>
       </div>
       <div class="policy-control">
         <nz-switch
@@ -19,8 +14,9 @@
           (ngModelChange)="onPolicyToggle($event)"
           [nzLoading]="isUpdatingPolicy()"
           [disabled]="!permissions.canWrite('system')"
-          nzCheckedChildren="ATTIVO"
-          nzUnCheckedChildren="FACOLTATIVO"
+          [nzCheckedChildren]="'TENANT_SECURITY.SWITCH_ON' | translate"
+          [nzUnCheckedChildren]="'TENANT_SECURITY.SWITCH_OFF' | translate"
+          aria-labelledby="require-two-factor-label"
         ></nz-switch>
       </div>
     </div>
@@ -28,14 +24,14 @@
 
   <!-- MEMBERS 2FA STATUS TABLE -->
   <nz-card
-    nzTitle="Stato 2FA dei Membri del Tenant"
+    [nzTitle]="'TENANT_SECURITY.MEMBERS_CARD' | translate"
     [nzLoading]="isLoading()"
     [nzExtra]="extraRefreshTpl"
     class="members-card"
   >
     <ng-template #extraRefreshTpl>
       <button nz-button nzType="default" (click)="loadPolicy()">
-        <i nz-icon nzType="reload"></i> Aggiorna
+        <i nz-icon nzType="reload"></i> {{ 'COMMON.REFRESH' | translate }}
       </button>
     </ng-template>
 
@@ -48,11 +44,11 @@
     >
       <thead>
         <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Ruolo</th>
-          <th>Stato 2FA</th>
-          <th nzAlign="right">Azioni</th>
+          <th>{{ 'TENANT_SECURITY.COL_NAME' | translate }}</th>
+          <th>{{ 'TENANT_SECURITY.COL_EMAIL' | translate }}</th>
+          <th>{{ 'TENANT_SECURITY.COL_ROLE' | translate }}</th>
+          <th>{{ 'TENANT_SECURITY.COL_STATUS' | translate }}</th>
+          <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -63,13 +59,13 @@
             </td>
             <td>{{ member.email }}</td>
             <td>
-              <nz-tag nzColor="blue">{{ member.role || 'Membro' }}</nz-tag>
+              <nz-tag nzColor="blue">{{ member.role || ('TENANT_SECURITY.ROLE_MEMBER' | translate) }}</nz-tag>
             </td>
             <td>
               @if (member.two_factor_enabled) {
-                <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> Configurato</nz-tag>
+                <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> {{ 'TENANT_SECURITY.CONFIGURED' | translate }}</nz-tag>
               } @else {
-                <nz-tag nzColor="warning"><i nz-icon nzType="exclamation-circle"></i> Non attivo</nz-tag>
+                <nz-tag nzColor="warning"><i nz-icon nzType="exclamation-circle"></i> {{ 'TENANT_SECURITY.NOT_ACTIVE' | translate }}</nz-tag>
               }
             </td>
             <td nzAlign="right">
@@ -81,7 +77,7 @@
                   nzSize="small"
                   (click)="resetUser2FA(member)"
                 >
-                  <i nz-icon nzType="undo"></i> Reimposta 2FA
+                  <i nz-icon nzType="undo"></i> {{ 'TENANT_SECURITY.RESET' | translate }}
                 </button>
               } @else {
                 <span class="text-muted">-</span>

@@ -123,22 +123,22 @@
         <div class="challenge-section">
           <div class="challenge-header">
             <nz-icon nzType="safety-certificate" class="challenge-icon" />
-            <h2>Verifica a due fattori</h2>
-            <p class="challenge-subtitle">
-              Inserisci il codice temporaneo generato dall'app di autenticazione per completare l'accesso.
-            </p>
+            <h2>{{ 'TWO_FACTOR.CHALLENGE_TITLE' | translate }}</h2>
+            <p class="challenge-subtitle">{{ 'TWO_FACTOR.CHALLENGE_SUBTITLE' | translate }}</p>
           </div>
 
           <form nz-form nzLayout="vertical" [formGroup]="challengeForm" (ngSubmit)="onChallengeSubmit()">
             @if (!useRecoveryCode()) {
               <nz-form-item>
-                <nz-form-label nzRequired>Codice App Authenticator</nz-form-label>
-                <nz-form-control nzErrorTip="Inserisci il codice OTP">
+                <nz-form-label nzRequired nzFor="challenge-code">{{ 'TWO_FACTOR.APP_CODE' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="'TWO_FACTOR.CODE_REQUIRED' | translate">
                   <nz-input-wrapper>
                     <nz-icon nzInputPrefix nzType="mobile" />
                     <input
                       nz-input
+                      id="challenge-code"
                       type="text"
+                      inputmode="numeric"
                       formControlName="code"
                       placeholder="123456"
                       maxlength="16"
@@ -150,15 +150,17 @@
               </nz-form-item>
             } @else {
               <nz-form-item>
-                <nz-form-label nzRequired>Codice di Recupero</nz-form-label>
-                <nz-form-control nzErrorTip="Inserisci uno dei tuoi codici di recupero">
+                <nz-form-label nzRequired nzFor="challenge-recovery-code">{{ 'TWO_FACTOR.RECOVERY_CODE' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="'TWO_FACTOR.RECOVERY_CODE_REQUIRED' | translate">
                   <nz-input-wrapper>
                     <nz-icon nzInputPrefix nzType="key" />
                     <input
                       nz-input
+                      id="challenge-recovery-code"
                       type="text"
                       formControlName="recoveryCode"
-                      placeholder="Codice di recupero"
+                      autocomplete="off"
+                      [placeholder]="'TWO_FACTOR.RECOVERY_CODE' | translate"
                       maxlength="32"
                       nzSize="large"
                     />
@@ -174,7 +176,7 @@
                 type="button"
                 (click)="useRecoveryCode.set(!useRecoveryCode())"
               >
-                {{ useRecoveryCode() ? 'Usa il codice dell\'app di autenticazione' : 'Non hai accesso all\'app? Usa un codice di recupero' }}
+                {{ (useRecoveryCode() ? 'TWO_FACTOR.USE_APP_CODE' : 'TWO_FACTOR.USE_RECOVERY_CODE') | translate }}
               </button>
             </div>
 
@@ -186,7 +188,7 @@
               type="submit"
               [nzLoading]="isSubmitting()"
             >
-              Conferma e Accedi
+              {{ 'TWO_FACTOR.CHALLENGE_SUBMIT' | translate }}
             </button>
 
             <button
@@ -197,7 +199,7 @@
               class="cancel-challenge-btn"
               (click)="cancelChallenge()"
             >
-              Torna al login
+              {{ 'AUTH.BACK_TO_LOGIN' | translate }}
             </button>
           </form>
         </div>

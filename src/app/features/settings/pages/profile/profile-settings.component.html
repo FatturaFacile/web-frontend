@@ -1,0 +1,158 @@
+<app-page-header [title]="'PROFILE.TITLE' | translate" [subtitle]="'PROFILE.SUBTITLE' | translate" />
+
+<div class="profile-container">
+  <nz-card [nzTitle]="'PROFILE.PASSWORD_SECTION' | translate" class="section-card">
+    <p class="section-hint">{{ 'PROFILE.PASSWORD_HINT' | translate }}</p>
+
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="onSubmit()" class="password-form">
+      <div aria-live="polite">
+        @if (isLocked()) {
+          <nz-alert class="form-alert" nzType="warning" nzShowIcon [nzMessage]="'PROFILE.PASSWORD_LOCKED' | translate" />
+        }
+        @if (errorMessage(); as message) {
+          <nz-alert class="form-alert" nzType="error" nzShowIcon [nzMessage]="message" />
+        }
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="current_password">{{ 'PROFILE.CURRENT_PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError">
+          <nz-input-wrapper>
+            <input
+              nz-input
+              id="current_password"
+              formControlName="current_password"
+              autocomplete="current-password"
+              [type]="isVisible('current') ? 'text' : 'password'"
+            />
+            <button
+              nzInputSuffix
+              type="button"
+              class="toggle"
+              [attr.aria-label]="(isVisible('current') ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate"
+              [attr.aria-pressed]="isVisible('current')"
+              (click)="toggleVisible('current')"
+            >
+              <nz-icon [nzType]="isVisible('current') ? 'eye-invisible' : 'eye'" />
+            </button>
+          </nz-input-wrapper>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="password">{{ 'AUTH.NEW_PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError">
+          <nz-input-wrapper>
+            <input
+              nz-input
+              id="password"
+              formControlName="password"
+              autocomplete="new-password"
+              aria-describedby="password-requirements"
+              [type]="isVisible('password') ? 'text' : 'password'"
+            />
+            <button
+              nzInputSuffix
+              type="button"
+              class="toggle"
+              [attr.aria-label]="(isVisible('password') ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate"
+              [attr.aria-pressed]="isVisible('password')"
+              (click)="toggleVisible('password')"
+            >
+              <nz-icon [nzType]="isVisible('password') ? 'eye-invisible' : 'eye'" />
+            </button>
+          </nz-input-wrapper>
+          <small id="password-requirements" class="password-requirements">{{
+            'AUTH.PASSWORD_REQUIREMENTS' | translate
+          }}</small>
+          <div class="strength" aria-hidden="true">
+            @for (level of strengthLevels; track level) {
+              <span [class.on]="strength() >= level"></span>
+            }
+          </div>
+          @if (strength() > 0) {
+            <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
+          }
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="password_confirmation">{{
+          'AUTH.PASSWORD_CONFIRMATION' | translate
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="confirmationError">
+          <nz-input-wrapper>
+            <input
+              nz-input
+              id="password_confirmation"
+              formControlName="password_confirmation"
+              autocomplete="new-password"
+              [type]="isVisible('confirmation') ? 'text' : 'password'"
+            />
+            <button
+              nzInputSuffix
+              type="button"
+              class="toggle"
+              [attr.aria-label]="(isVisible('confirmation') ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate"
+              [attr.aria-pressed]="isVisible('confirmation')"
+              (click)="toggleVisible('confirmation')"
+            >
+              <nz-icon [nzType]="isVisible('confirmation') ? 'eye-invisible' : 'eye'" />
+            </button>
+          </nz-input-wrapper>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (twoFactorEnabled()) {
+        <p class="section-hint">{{ 'PROFILE.TWO_FACTOR_HINT' | translate }}</p>
+        @if (useRecoveryCode()) {
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="recovery_code">{{ 'PROFILE.RECOVERY_CODE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError">
+              <input nz-input id="recovery_code" formControlName="recovery_code" autocomplete="off" />
+            </nz-form-control>
+          </nz-form-item>
+        } @else {
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="code">{{ 'PROFILE.TWO_FACTOR_CODE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError">
+              <input
+                nz-input
+                id="code"
+                formControlName="code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="16"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        }
+        <button nz-button nzType="link" type="button" class="factor-switch" (click)="toggleRecoveryCode()">
+          {{ (useRecoveryCode() ? 'PROFILE.USE_APP_CODE' : 'PROFILE.USE_RECOVERY_CODE') | translate }}
+        </button>
+      }
+
+      <button nz-button nzType="primary" type="submit" [nzLoading]="isSubmitting()">
+        {{ 'PROFILE.PASSWORD_SUBMIT' | translate }}
+      </button>
+    </form>
+  </nz-card>
+</div>
+
+<ng-template #fieldError let-control>
+  @if (control.hasError('serverError')) {
+    {{ control.getError('serverError') }}
+  } @else {
+    {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+  }
+</ng-template>
+
+<ng-template #confirmationError let-control>
+  @if (control.hasError('mismatch')) {
+    {{ 'AUTH.PASSWORD_MISMATCH' | translate }}
+  } @else if (control.hasError('serverError')) {
+    {{ control.getError('serverError') }}
+  } @else {
+    {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+  }
+</ng-template>

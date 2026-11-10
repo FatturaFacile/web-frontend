@@ -18,13 +18,13 @@ const walk = (dir) => {
 walk(srcDir);
 /** Resolves `${environment.apiBaseUrl}` and `${this.someUrl}` fields so composed URLs become plain paths. */
 const resolveFile = (text) => {
-  let out = text.replace(/\$\{environment\.apiBaseUrl\}/g, '').replace(/\$\{this\.apiUrl\}/g, '');
+  let out = text.replace(/\$\{environment\.apiBaseUrl}/g, '').replace(/\$\{this\.apiUrl}/g, '');
   const fields = {};
   for (let pass = 0; pass < 3; pass++) {
     for (const m of out.matchAll(/(?:readonly|private|protected|public)\s+(?:readonly\s+)?(\w+)\s*=\s*[`'"]([^`'"]*)[`'"]/g)) {
       fields[m[1]] = m[2];
     }
-    out = out.replace(/\$\{this\.(\w+)\}/g, (all, name) => (name in fields ? fields[name] : all));
+    out = out.replace(/\$\{this\.(\w+)}/g, (all, name) => (name in fields ? fields[name] : all));
   }
   return out;
 };
@@ -33,7 +33,7 @@ const source = files.map((f) => resolveFile(readFileSync(f, 'utf8'))).join('\n')
 const toRegex = (path) => {
   const rel = path.replace(/^(\/api)?\/v1/, '');
   const escaped = rel
-    .split(/\{[^}]+\}/)
+    .split(/\{[^}]+}/)
     .map((part) => part.replace(/[.*+?^$()|[\]\\]/g, '\\$&'))
     .join('[^\'"`/]*');
   return new RegExp(escaped + '(?![\\w-])');

@@ -41,5 +41,6 @@
 - Use the path aliases declared in `tsconfig.json` (`@core`, `@domain`, `@data-access`, `@shared`, `@features`, and `@env`) instead of long relative imports. Vitest repeats these aliases in `vitest.config.ts`; keep both configurations aligned when changing them.
 - Components use standalone imports and feature-local SCSS/HTML files; global theme styles are configured in `angular.json`. Follow the existing Angular template and component style in the target feature.
 - Tests use Vitest with Angular `TestBed` and jsdom (`vitest.config.ts`, `src/test-setup.ts`). Test files live alongside their code and use the `.spec.ts` suffix. Pure mapper tests do not need Angular TestBed.
+- Never write passwords, secrets or tokens in specs as fixed strings, not even in part: GitGuardian reports them on the pull request. Use `TEST_PASSWORD` from `src/testing/credentials.ts`, generated at runtime, and derive other values from it or generate them at runtime.
 - Feature routes and the root route table carry page title and breadcrumb data consumed by the application shell. Preserve that metadata when adding or changing navigable pages.
 - The documented cross-border business rules and showcase behavior are described in `README.md`; use it together with the relevant feature/domain code when modifying those flows.

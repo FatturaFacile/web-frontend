@@ -15,10 +15,11 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthApiService,
   AuthStore,
+  I18nService,
   TwoFactorStatus,
   UserSession,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 @Component({
@@ -37,6 +38,7 @@ import { TwoFactorSetupModalComponent } from '../../../auth/components/two-facto
     NzInputModule,
     NzIconModule,
     PageHeaderComponent,
+    TranslatePipe,
     TwoFactorSetupModalComponent,
   ],
   templateUrl: './security-settings.component.html',
@@ -48,6 +50,7 @@ export class SecuritySettingsComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly i18n = inject(I18nService);
 
   protected readonly twoFactorStatus = signal<TwoFactorStatus | null>(null);
   protected readonly sessions = signal<UserSession[]>([]);
@@ -129,12 +132,12 @@ export class SecuritySettingsComponent implements OnInit {
         next: (res) => {
           this.twoFactorStatus.set(res.data);
           this.showDisableModal.set(false);
-          this.message.success('Autenticazione a due fattori disattivata.');
+          this.message.success(this.i18n.translate('SECURITY.DISABLED_SUCCESS'));
         },
         error: (err: unknown) => {
           const body = (err as { error?: { message?: string; detail?: string } })?.error;
           this.message.error(
-            body?.detail || body?.message || 'Password o codice non valido. Impossibile disattivare 2FA.'
+            body?.detail || body?.message || this.i18n.translate('SECURITY.DISABLE_FAILED')
           );
         },
       });
@@ -158,12 +161,12 @@ export class SecuritySettingsComponent implements OnInit {
         this.newRecoveryCodes.set(res.data.recovery_codes || []);
         this.showCodesDialog.set(true);
         this.loadTwoFactorStatus();
-        this.message.success('Nuovi codici di recupero generati con successo.');
+        this.message.success(this.i18n.translate('SECURITY.CODES_REGENERATED'));
       },
       error: (err: unknown) => {
         const body = (err as { error?: { message?: string; detail?: string } })?.error;
         this.message.error(
-          body?.detail || body?.message || 'Password non valida. Impossibile generare i codici.'
+          body?.detail || body?.message || this.i18n.translate('SECURITY.REGENERATE_FAILED')
         );
       },
     });
@@ -188,7 +191,10 @@ export class SecuritySettingsComponent implements OnInit {
         this.isRevokingOthers.set(false);
         this.showRevokeOthersModal.set(false);
         this.message.success(
-          `Revocate con successo ${res.data.sessions} sessioni e ${res.data.tokens} token.`
+          this.i18n.translate('SECURITY.REVOKED_OTHERS', {
+            sessions: res.data.sessions,
+            tokens: res.data.tokens,
+          })
         );
         this.loadSessions();
       },
@@ -196,7 +202,7 @@ export class SecuritySettingsComponent implements OnInit {
         this.isRevokingOthers.set(false);
         const body = (err as { error?: { message?: string; detail?: string } })?.error;
         this.message.error(
-          body?.detail || body?.message || 'Password non valida. Impossibile revocare le sessioni.'
+          body?.detail || body?.message || this.i18n.translate('SECURITY.REVOKE_OTHERS_FAILED')
         );
       },
     });
@@ -204,13 +210,16 @@ export class SecuritySettingsComponent implements OnInit {
 
   revokeSingleSession(session: UserSession): void {
     this.modal.confirm({
-      nzTitle: 'Revocare questa sessione?',
-      nzContent: `Vuoi terminare la sessione ${session.kind === 'session' ? 'web' : 'API token'}?`,
-      nzOkText: 'Revoca',
+      nzTitle: this.i18n.translate('SECURITY.REVOKE_ONE_TITLE'),
+      nzContent: this.i18n.translate(
+        session.kind === 'session' ? 'SECURITY.REVOKE_ONE_SESSION' : 'SECURITY.REVOKE_ONE_TOKEN'
+      ),
+      nzOkText: this.i18n.translate('SECURITY.REVOKE'),
+      nzCancelText: this.i18n.translate('COMMON.CANCEL'),
       nzOkDanger: true,
       nzOnOk: () => {
         return this.authApi.revokeSession(session.kind, session.id).toPromise().then(() => {
-          this.message.success('Sessione revocata.');
+          this.message.success(this.i18n.translate('SECURITY.SESSION_REVOKED'));
           this.loadSessions();
         });
       },
