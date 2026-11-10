@@ -1998,7 +1998,7 @@
     "ITEM_ADDED": "Item added to order",
     "COURSE_FIRED": "Course sent to kitchen",
     "ITEM_VOIDED": "Item voided",
-    "PRE_BILL_PRINTED": "Pre-bill printed",
+    "PRE_BILL_PRINTED": "Remaining to pay",
     "PAYMENT_RECORDED": "Payment recorded successfully",
     "ORDER_MOVED": "Order moved to table",
     "TICKET_UPDATED": "Kitchen ticket status updated",
