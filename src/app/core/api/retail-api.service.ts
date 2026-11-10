@@ -8,7 +8,7 @@ import {
   DailyCorrispettivoResource,
   PaginatedResponse,
   QueryFilterParams,
-  RetailSession,
+  RetailPosSessionPage,
   StoreCommercialDocumentPayload,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -40,8 +40,9 @@ export class RetailApiService {
     return this.http.get<ApiResponse<DailyCorrispettivoResource>>(`${this.base}/corrispettivi/daily/${date}`);
   }
 
-  // Backward compatible
-  getSessions(): Observable<ApiResponse<RetailSession[]>> {
-    return this.http.get<ApiResponse<RetailSession[]>>(`${environment.apiBaseUrl}/retail/sessions`);
+  getPosSessions(params?: QueryFilterParams): Observable<ApiResponse<RetailPosSessionPage>> {
+    return this.http.get<ApiResponse<RetailPosSessionPage>>(`${environment.apiBaseUrl}/retail/pos/sessions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 }
