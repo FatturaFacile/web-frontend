@@ -42,6 +42,31 @@ export function unwrapResponse(raw: unknown): unknown {
   return isRecord(raw) && 'data' in raw ? raw['data'] : raw;
 }
 
+/** True when the body carries a file and must travel as multipart form data. */
+export function hasFileValue(body: object | undefined): boolean {
+  return !!body && Object.values(body).some((value) => value instanceof Blob);
+}
+
+/** Multipart encoding of a body: booleans as `1`/`0`, arrays as `key[]`, files as they are. */
+export function toFormData(body: object): FormData {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => data.append(`${key}[]`, String(item)));
+    } else if (value instanceof Blob) {
+      data.append(key, value);
+    } else if (typeof value === 'boolean') {
+      data.append(key, value ? '1' : '0');
+    } else {
+      data.append(key, String(value));
+    }
+  }
+  return data;
+}
+
 /**
  * Untyped gateway used by the declarative resource panels (WMS, procurement, manufacturing):
  * paths are relative to the API base URL (`/inventory/waves`).
@@ -60,7 +85,8 @@ export class ResourceApiService {
   request(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<unknown> {
     const url = `${this.base}${path}`;
     const params = filters ? toHttpParams(filters) : undefined;
-    return this.http.request<unknown>(method, url, { body, params }).pipe(map(unwrapResponse));
+    const payload = body && hasFileValue(body) ? toFormData(body) : body;
+    return this.http.request<unknown>(method, url, { body: payload, params }).pipe(map(unwrapResponse));
   }
 
   blob(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<Blob> {

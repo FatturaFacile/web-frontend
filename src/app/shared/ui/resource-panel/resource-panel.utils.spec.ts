@@ -72,6 +72,14 @@ describe('resource panel utils', () => {
     expect(initialFormValue([rf.tags('sales_order_ids')])).toEqual({ sales_order_ids: [] });
   });
 
+  it('keeps files and multiselect values in the request body', () => {
+    const file = new File(['x'], 'a.csv');
+    const fields = [rf.file('file'), rf.multiselect('legal_bases', ['consent', 'contract'])];
+    expect(initialFormValue(fields)).toEqual({ file: '', legal_bases: [] });
+    expect(buildRequestBody(fields, { file, legal_bases: ['consent'] })).toEqual({ file, legal_bases: ['consent'] });
+    expect(buildRequestBody(fields, { file: '', legal_bases: [] })).toEqual({});
+  });
+
   it('helpers build actions and visibility predicates', () => {
     const action = act('POST', 'RES.ACTION.CANCEL', '/x/{id}/cancel', { confirm: true, danger: true });
     expect(action.method).toBe('POST');

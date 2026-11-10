@@ -81,6 +81,21 @@ describe('ResourcePanelComponent', () => {
     http.expectOne((r) => r.url === `${base}/inventory/waves`).flush({ data: [], meta: { total: 0 } });
   });
 
+  it('does not call any list endpoint for a toolbar-only panel and still runs its actions', () => {
+    const toolbarOnly: ResourcePanelConfig = {
+      id: 'imports',
+      titleKey: 'RES.P.imports',
+      module: 'associations',
+      list: { path: '', columns: [] },
+      toolbar: [act('GET', 'RES.A.view_import', '/associations/registry-imports/{id}', { fields: [req(rf.uuid('id'))] })],
+    };
+    fixture.componentRef.setInput('config', toolbarOnly);
+    fixture.detectChanges();
+    http.expectNone(() => true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('RES.A.view_import');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('RES.TOOLBAR_ONLY');
+  });
+
   it('opens the detail of a row through the detail path', () => {
     flushList();
     const panel = fixture.componentInstance as unknown as { view: (r: unknown) => void };
