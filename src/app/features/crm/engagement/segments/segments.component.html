@@ -91,7 +91,7 @@
     <div class="two-cols">
       <div>
         <label for="seg-entity">{{ 'CRMX.SEGMENTS.ENTITY' | translate }}</label>
-        <nz-select nzId="seg-entity" class="field" [(ngModel)]="entity">
+        <nz-select nzId="seg-entity" class="field" [(ngModel)]="entity" [nzDisabled]="!!editing()" (ngModelChange)="onEntityChange()">
           <nz-option nzValue="contacts" [nzLabel]="'CRMX.SEGMENTS.ENTITY_contacts' | translate"></nz-option>
           <nz-option nzValue="leads" [nzLabel]="'CRMX.SEGMENTS.ENTITY_leads' | translate"></nz-option>
         </nz-select>
@@ -104,9 +104,30 @@
     <h4 class="section">{{ 'CRMX.SEGMENTS.FILTERS' | translate }}</h4>
     @for (f of filters; track $index; let i = $index) {
       <div class="filter-row">
-        <input nz-input [attr.aria-label]="'CRMX.SEGMENTS.FIELD' | translate" [placeholder]="'CRMX.SEGMENTS.FIELD' | translate" [(ngModel)]="f.field" />
-        <input nz-input [attr.aria-label]="'CRMX.SEGMENTS.OPERATOR' | translate" [placeholder]="'CRMX.SEGMENTS.OPERATOR' | translate" [(ngModel)]="f.operator" />
-        <input nz-input [attr.aria-label]="'CRMX.SEGMENTS.VALUE' | translate" [placeholder]="'CRMX.SEGMENTS.VALUE' | translate" [(ngModel)]="f.value" />
+        <nz-select [attr.aria-label]="'CRMX.SEGMENTS.FIELD' | translate" [nzPlaceHolder]="'CRMX.SEGMENTS.FIELD' | translate" [(ngModel)]="f.field">
+          @for (option of fieldOptions(); track option) {
+            <nz-option [nzValue]="option" [nzLabel]="option === consentField ? ('CRMX.SEGMENTS.CONSENT' | translate) : option"></nz-option>
+          }
+        </nz-select>
+        @if (isConsent(f)) {
+          <nz-select [attr.aria-label]="'CRMX.SEGMENTS.CHANNEL' | translate" [(ngModel)]="f.channel">
+            @for (c of channels; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
+            }
+          </nz-select>
+          <nz-select [attr.aria-label]="'CRMX.SEGMENTS.PURPOSE' | translate" [(ngModel)]="f.purpose">
+            @for (p of purposes; track p) {
+              <nz-option [nzValue]="p" [nzLabel]="p"></nz-option>
+            }
+          </nz-select>
+        } @else {
+          <nz-select [attr.aria-label]="'CRMX.SEGMENTS.OPERATOR' | translate" [(ngModel)]="f.operator">
+            @for (op of operators; track op) {
+              <nz-option [nzValue]="op" [nzLabel]="'CRMX.SEGMENTS.OP_' + op | translate"></nz-option>
+            }
+          </nz-select>
+          <input nz-input [disabled]="!needsValue(f)" [attr.aria-label]="'CRMX.SEGMENTS.VALUE' | translate" [placeholder]="'CRMX.SEGMENTS.VALUE' | translate" [(ngModel)]="f.value" />
+        }
         <button nz-button nzType="text" nzDanger type="button" [disabled]="filters.length <= 1" [attr.aria-label]="'COMMON.DELETE' | translate" (click)="removeFilter(i)">
           <nz-icon nzType="delete" />
         </button>

@@ -200,9 +200,9 @@ export class LeadsComponent implements OnInit {
   }
 
   recalculateScore(lead: LeadResource): void {
-    this.crmApi.scoreLead(lead.id).subscribe({
-      next: (res) => {
-        this.message.success(`Score updated to ${res.data.score}`);
+    this.crmApi.recalculateLeadScores(lead.id).subscribe({
+      next: () => {
+        this.message.success('Score recalculated');
         this.loadLeads();
       },
       error: () => undefined,

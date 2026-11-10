@@ -34,6 +34,7 @@ import {
   CrmReportParams,
   CrmSegment,
   CrmSegmentPayload,
+  CrmSegmentUpdatePayload,
   LeadResource,
   LeadScoringRule,
   LeadScoringRulePayload,
@@ -45,6 +46,7 @@ import {
   QueryFilterParams,
   StoreConsentPayload,
   StoreLeadPayload,
+  OpportunityStageExtras,
   StoreOpportunityPayload,
   UpdateContactPayload,
   UpdateLeadPayload,
@@ -159,16 +161,6 @@ export class CrmApiService {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/leads/${id}/convert`, payload ?? {});
   }
 
-  scoreLead(id: string): Observable<ApiResponse<LeadResource>> {
-    return this.http.post<ApiResponse<LeadResource>>(`${this.base}/leads/${id}/score`, {});
-  }
-
-  getLeadDuplicates(id?: string): Observable<ApiResponse<unknown>> {
-    return this.http.get<ApiResponse<unknown>>(`${this.base}/leads/duplicates`, {
-      params: id ? toHttpParams({ id }) : undefined,
-    });
-  }
-
   // --- Opportunities & Pipeline ---
   getOpportunities(params?: CrmOpportunityFilterParams): Observable<PaginatedResponse<OpportunityResource>> {
     return this.http.get<PaginatedResponse<OpportunityResource>>(`${this.base}/opportunities`, {
@@ -184,17 +176,19 @@ export class CrmApiService {
     return this.http.post<ApiResponse<OpportunityResource>>(`${this.base}/opportunities`, payload);
   }
 
-  updateOpportunity(id: string, payload: Partial<StoreOpportunityPayload>): Observable<ApiResponse<OpportunityResource>> {
-    return this.http.put<ApiResponse<OpportunityResource>>(`${this.base}/opportunities/${id}`, payload);
-  }
-
   deleteOpportunity(id: string): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(`${this.base}/opportunities/${id}`);
   }
 
-  updateOpportunityStage(id: string, stageCode: string): Observable<ApiResponse<OpportunityResource>> {
-    return this.http.put<ApiResponse<OpportunityResource>>(`${this.base}/opportunities/${id}/stage`, {
-      stage_code: stageCode,
+  /** The API moves an opportunity with POST `/stage` (`target_stage_code`); there is no generic update. */
+  updateOpportunityStage(
+    id: string,
+    stageCode: string,
+    extra?: OpportunityStageExtras,
+  ): Observable<ApiResponse<OpportunityResource>> {
+    return this.http.post<ApiResponse<OpportunityResource>>(`${this.base}/opportunities/${id}/stage`, {
+      target_stage_code: stageCode,
+      ...extra,
     });
   }
 
@@ -318,7 +312,7 @@ export class CrmApiService {
     return this.http.post<ApiResponse<CrmSegment>>(`${this.base}/segments`, payload);
   }
 
-  updateSegment(id: string, payload: CrmSegmentPayload): Observable<ApiResponse<CrmSegment>> {
+  updateSegment(id: string, payload: CrmSegmentUpdatePayload): Observable<ApiResponse<CrmSegment>> {
     return this.http.put<ApiResponse<CrmSegment>>(`${this.base}/segments/${id}`, payload);
   }
 
@@ -343,8 +337,8 @@ export class CrmApiService {
     return this.http.delete<ApiResponse<unknown>>(`${this.base}/lead-scoring-rules/${id}`);
   }
 
-  recalculateLeadScores(leadId?: string): Observable<ApiResponse<unknown>> {
-    return this.http.post<ApiResponse<unknown>>(
+  recalculateLeadScores(leadId?: string): Observable<{ recalculated: number }> {
+    return this.http.post<{ recalculated: number }>(
       `${this.base}/lead-scoring-rules/recalculate`,
       leadId ? { lead_id: leadId } : {},
     );
