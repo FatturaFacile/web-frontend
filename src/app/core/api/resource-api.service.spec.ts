@@ -70,6 +70,18 @@ describe('ResourceApiService', () => {
     expect(out).toEqual({ id: 'w1' });
   });
 
+  it('sends a body holding a file as multipart form data', () => {
+    const file = new File(['pdf'], 'contract.pdf', { type: 'application/pdf' });
+    service.request('POST', '/associations/members/m1/documents', { title: 'Statute', visible_to_member: true, file }).subscribe();
+    const req = httpMock.expectOne(`${base}/associations/members/m1/documents`);
+    const body = req.request.body as FormData;
+    expect(body).toBeInstanceOf(FormData);
+    expect(body.get('title')).toBe('Statute');
+    expect(body.get('visible_to_member')).toBe('1');
+    expect((body.get('file') as File).name).toBe('contract.pdf');
+    req.flush({ data: {} });
+  });
+
   it('supports PATCH, PUT and DELETE verbs', () => {
     for (const method of ['PATCH', 'PUT', 'DELETE'] as const) {
       service.request(method, '/inventory/bins/1', method === 'DELETE' ? undefined : { is_locked: true }).subscribe();

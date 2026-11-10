@@ -26,6 +26,9 @@
         @case ('tags') {
           <nz-select nzMode="tags" class="rf-select" [formControl]="group.get(field.key)" [nzTokenSeparators]="[',']" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
+        @case ('file') {
+          <input class="rf-file" type="file" [id]="'rf-' + field.key" (change)="onFile(group.get(field.key), $event)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+        }
         @case ('select') {
           <nz-select class="rf-select" nzAllowClear [nzOptions]="options(field)" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }

@@ -108,6 +108,19 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
     );
   });
 
+  it('keeps the staff session on a 401 of the member area and the public enrolment', () => {
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    authStore.login();
+
+    for (const url of ['/api/v1/association-area/me', '/api/v1/association-public/enrolment/abc']) {
+      http.get(url).subscribe({ error: () => undefined });
+      httpTesting.expectOne(url).flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    }
+
+    expect(authStore.isAuthenticated()).toBe(true);
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
   it('logs out and redirects to /login on 401 on protected endpoint', () => {
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
     authStore.login();

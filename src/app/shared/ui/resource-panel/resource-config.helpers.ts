@@ -23,6 +23,7 @@ export const rf = {
   date: make('date'),
   datetime: make('datetime'),
   uuid: make('uuid'),
+  file: make('file'),
   bool: make('switch'),
   tags: make('tags'),
   json: make('json'),

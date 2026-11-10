@@ -42,6 +42,21 @@ export function unwrapResponse(raw: unknown): unknown {
   return isRecord(raw) && 'data' in raw ? raw['data'] : raw;
 }
 
+/** Sends a body holding a file as multipart form data (booleans as 1/0, as Laravel expects). */
+export function toRequestBody(body?: object): object | FormData | undefined {
+  if (!body || !Object.values(body).some((value) => value instanceof Blob)) {
+    return body;
+  }
+  const form = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    form.append(key, value instanceof Blob ? value : typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
+  }
+  return form;
+}
+
 /**
  * Untyped gateway used by the declarative resource panels (WMS, procurement, manufacturing):
  * paths are relative to the API base URL (`/inventory/waves`).
@@ -60,7 +75,7 @@ export class ResourceApiService {
   request(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<unknown> {
     const url = `${this.base}${path}`;
     const params = filters ? toHttpParams(filters) : undefined;
-    return this.http.request<unknown>(method, url, { body, params }).pipe(map(unwrapResponse));
+    return this.http.request<unknown>(method, url, { body: toRequestBody(body), params }).pipe(map(unwrapResponse));
   }
 
   blob(method: ResourceHttpMethod, path: string, body?: object, filters?: object): Observable<Blob> {
