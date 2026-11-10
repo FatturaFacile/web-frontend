@@ -10,7 +10,9 @@ import {
   EmployeeLifecycleEventResource,
   EmploymentContractResource,
   NewContractPayload,
+  PayrollForecast,
   PositionPayload,
+  PositionReadinessLevel,
   PositionResource,
   SalaryComponentPayload,
   SalaryComponentResource,
@@ -130,6 +132,22 @@ export class HrEmployeeApiService {
 
   updatePosition(id: string, payload: PositionPayload): Observable<ApiResponse<PositionResource>> {
     return this.http.put<ApiResponse<PositionResource>>(`${this.base}/positions/${id}`, payload);
+  }
+
+  /** Assigns the successor of a position with the readiness level (the employee must belong to the company). */
+  assignPositionSuccessor(
+    positionId: string,
+    payload: { successor_employee_id: string; readiness_level?: PositionReadinessLevel },
+  ): Observable<ApiResponse<PositionResource>> {
+    return this.http.patch<ApiResponse<PositionResource>>(`${this.base}/positions/${positionId}/successor`, payload);
+  }
+
+  /** Generates the cost and payroll forecast of a month (`YYYY-MM`, the current month when omitted). */
+  generatePayrollForecast(periodCode?: string): Observable<ApiResponse<PayrollForecast>> {
+    return this.http.post<ApiResponse<PayrollForecast>>(
+      `${this.base}/payroll-forecast`,
+      periodCode ? { period_code: periodCode } : {},
+    );
   }
 
   getOrgChart(): Observable<ApiResponse<Record<string, unknown>[]>> {

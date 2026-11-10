@@ -218,3 +218,19 @@ export interface StoreConsentPayload {
   source?: string;
   evidence?: string | null;
 }
+
+/** The stored score of a lead next to the score under the model in force now (`GET /crm/leads/{id}/score`). */
+export interface LeadScoreExplanation {
+  lead_id: string;
+  score: number;
+  rating: string;
+  model: string | null;
+  breakdown: string | LeadScoreBreakdownItem[];
+  calculated_at: string | null;
+  current: {
+    score: number;
+    rating: 'hot' | 'warm' | 'cold';
+    model: 'default' | 'tenant_rules';
+    breakdown: LeadScoreBreakdownItem[];
+  };
+}

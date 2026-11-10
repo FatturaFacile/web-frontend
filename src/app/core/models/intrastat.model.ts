@@ -170,3 +170,20 @@ export interface IntrastatPeriodicityThresholds {
   purchases_services_amount: number;
   notes?: string[];
 }
+
+/** Code lists of the INTRA lists (`GET /intrastat/codes`): the server owns the values. */
+export interface IntrastatCodeList {
+  member_states: Record<string, { vat_lengths: number[] }>;
+  transaction_natures: Record<string, string[]>;
+  not_reported_transaction_natures: string[];
+  triangular_nature_letters: Record<string, string>;
+  /** Table C: code => label. */
+  transport_modes: Record<string, string>;
+  /** Table D: group letter => Incoterms of the group. */
+  delivery_term_groups: Record<string, string[]>;
+  supply_modes: Record<string, string>;
+  payment_methods: Record<string, string>;
+  content_codes: Record<string, string>;
+  special_case_codes: Record<string, string>;
+  simplified_combined_nomenclature_code: string;
+}

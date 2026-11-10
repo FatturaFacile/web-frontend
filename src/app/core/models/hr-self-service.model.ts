@@ -149,3 +149,16 @@ export interface LeaveTypePayload {
   max_carryover_hours?: string;
   is_active?: boolean;
 }
+
+/** Absence type as the employee portal sees it (`GET /hr/me/leave-types`). */
+export interface SelfServiceLeaveType {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  is_paid: boolean;
+  requires_approval: boolean;
+  requires_attachment: boolean;
+  is_active: boolean;
+  translations: unknown[] | null;
+}
