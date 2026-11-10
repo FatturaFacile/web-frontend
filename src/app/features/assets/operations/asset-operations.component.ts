@@ -10,7 +10,7 @@ import { EaRegisterComponent } from './ea-register.component';
   imports: [NzTabsModule, PageHeaderComponent, TranslatePipe, EaMaintenanceComponent, EaLocationsClassesComponent, EaRegisterComponent],
   template: `
     <app-page-header [title]="'EA.TITLE' | translate" [subtitle]="'EA.SUBTITLE' | translate" />
-    <nz-tabs nzLazy>
+    <nz-tabs>
       <nz-tab [nzTitle]="'EA.MAINTENANCE' | translate"><app-ea-maintenance /></nz-tab>
       <nz-tab [nzTitle]="'EA.LOCATIONS_CLASSES' | translate"><app-ea-locations-classes /></nz-tab>
       <nz-tab [nzTitle]="'EA.REPORTS' | translate"><app-ea-register /></nz-tab>

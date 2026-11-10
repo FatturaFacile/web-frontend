@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -106,7 +107,7 @@ export class TenantSecurityPolicyComponent implements OnInit {
       nzCancelText: this.i18n.translate('COMMON.CANCEL'),
       nzOkDanger: true,
       nzOnOk: () => {
-        return this.settingsApi.resetUserTwoFactor(member.id).toPromise().then(() => {
+        return firstValueFrom(this.settingsApi.resetUserTwoFactor(member.id)).then(() => {
           this.message.success(this.i18n.translate('TENANT_SECURITY.RESET_DONE', { name: member.name }));
           this.loadPolicy();
         });

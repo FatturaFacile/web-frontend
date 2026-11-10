@@ -105,7 +105,8 @@
       <nz-card>
         <div class="filter-toolbar">
           <div class="filter-inputs">
-            <nz-input-group nzPrefixIcon="search" class="search-input">
+            <ng-template #searchPrefix><span nz-icon nzType="search"></span></ng-template>
+            <nz-input-group [nzPrefix]="searchPrefix" class="search-input">
               <input
                 type="text"
                 nz-input

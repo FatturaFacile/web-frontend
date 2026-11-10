@@ -42,6 +42,8 @@ exclude:
       - src/app/core/state/list-facade.ts
       - src/app/data-access/mappers/time-attendance.mapper.ts
       - src/app/shared/components/base-table/table-state.service.ts
+      # Test doubles: the spies are read by the component under test through the provider, not by the spec itself.
+      - src/app/features/hr/self-service/self-service.component.spec.ts
 
   # The brand logo is an SVG: NgOptimizedImage does not optimise vector images (no srcset, no resize).
   - name: ES6PreferShortImport

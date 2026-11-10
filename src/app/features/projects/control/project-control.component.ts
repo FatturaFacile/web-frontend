@@ -29,7 +29,7 @@ import { PcMilestonesComponent } from './pc-milestones.component';
     <app-page-header [title]="'PRJ.CONTROL_TITLE' | translate" [subtitle]="'PRJ.CONTROL_SUBTITLE' | translate" />
     <p><a routerLink="/projects">{{ 'PRJ.BACK_TO_PROJECTS' | translate }}</a></p>
     @if (projectId(); as id) {
-      <nz-tabs nzLazy>
+      <nz-tabs>
         <nz-tab [nzTitle]="'PRJ.TAB_BUDGET' | translate"><app-pc-budget [projectId]="id" /></nz-tab>
         <nz-tab [nzTitle]="'PRJ.TAB_MILESTONES' | translate"><app-pc-milestones [projectId]="id" /></nz-tab>
         <nz-tab [nzTitle]="'PRJ.TAB_CHANGE_ORDERS' | translate"><app-pc-change-orders [projectId]="id" /></nz-tab>

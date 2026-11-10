@@ -262,7 +262,7 @@ export class ResourcePanelComponent implements OnInit {
   private request(action: ResourceAction, row: ResourceRow | null, body: Record<string, unknown>): Observable<unknown> {
     const scope = this.scopeSources();
     const path = resolvePath(action.path, row, scope, body, rowIdAliases(action.path, row));
-    const pathOnly = [...action.path.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).filter((key) => !row?.[key] && !scope[key]);
+    const pathOnly = [...action.path.matchAll(/\{(\w+)}/g)].map((m) => m[1]).filter((key) => !row?.[key] && !scope[key]);
     body = Object.fromEntries(Object.entries(body).filter(([key]) => !pathOnly.includes(key)));
     if (action.download) {
       return new Observable((subscriber) => {

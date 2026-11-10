@@ -107,7 +107,6 @@ export class WorkshopComponent implements OnInit {
   readonly recurringModalVisible = signal<boolean>(false);
 
   // --- TAB 2: TIME ENTRIES & TIMBRATURE ---
-  readonly activeTimerFolderId = signal<string>('');
   readonly timerLoading = signal<boolean>(false);
 
   // --- TAB 3: VEHICLE STOCK ---
