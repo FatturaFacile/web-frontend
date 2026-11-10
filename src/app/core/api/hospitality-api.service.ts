@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import {
   ApiResponse,
+  HospitalityBill,
   HospitalityFireRequest,
   HospitalityItemsRequest,
   HospitalityKitchenTicket,
@@ -15,6 +16,7 @@ import {
   HospitalityReservation,
   HospitalityReservationRequest,
   HospitalityRoom,
+  HospitalityRoomPlan,
   HospitalityRoomRequest,
   HospitalityTable,
   HospitalityTableRequest,
@@ -37,8 +39,34 @@ export class HospitalityApiService {
     return this.http.post<ApiResponse<HospitalityRoom>>(`${this.base}/rooms`, payload);
   }
 
+  getRoomPlan(roomId: string): Observable<ApiResponse<HospitalityRoomPlan>> {
+    return this.http.get<ApiResponse<HospitalityRoomPlan>>(`${this.base}/rooms/${roomId}/plan`);
+  }
+
+  /** Tables of a room, read from its plan (the API has no table list); `current_order_id` is the open order. */
   getRoomTables(roomId: string): Observable<ApiResponse<HospitalityTable[]>> {
-    return this.http.get<ApiResponse<HospitalityTable[]>>(`${this.base}/rooms/${roomId}/tables`);
+    return this.getRoomPlan(roomId).pipe(
+      map((res) => ({
+        ...res,
+        data: (res.data?.tables ?? []).map(
+          (t): HospitalityTable => ({
+            id: t.id,
+            room_id: roomId,
+            room_name: res.data.room?.name ?? null,
+            name: t.name,
+            seats: t.seats,
+            shape: t.shape as HospitalityTable['shape'],
+            pos_x: t.pos_x,
+            pos_y: t.pos_y,
+            width: t.width,
+            height: t.height,
+            is_active: true,
+            status: t.status,
+            current_order_id: t.order_id,
+          }),
+        ),
+      })),
+    );
   }
 
   createTable(roomId: string, payload: HospitalityTableRequest): Observable<ApiResponse<HospitalityTable>> {
@@ -46,8 +74,24 @@ export class HospitalityApiService {
   }
 
   // --- ORDERS & POS COMANDE ---
-  getOrders(): Observable<ApiResponse<HospitalityOrder[]>> {
-    return this.http.get<ApiResponse<HospitalityOrder[]>>(`${this.base}/orders`);
+  /**
+   * Open orders: the API has no order list, so they are collected from the plan of every room
+   * (tables with an open order) and loaded one by one. Closed orders cannot be listed.
+   */
+  getOpenOrders(): Observable<ApiResponse<HospitalityOrder[]>> {
+    return this.getRooms().pipe(
+      switchMap((rooms) =>
+        rooms.data?.length ? forkJoin(rooms.data.map((room) => this.getRoomPlan(room.id))) : of([]),
+      ),
+      map((plans) =>
+        plans
+          .flatMap((plan) => plan.data?.tables ?? [])
+          .map((table) => table.order_id)
+          .filter((id): id is string => !!id),
+      ),
+      switchMap((ids) => (ids.length ? forkJoin(ids.map((id) => this.getOrder(id))) : of([]))),
+      map((orders) => ({ success: true, message: '', data: orders.map((order) => order.data) })),
+    );
   }
 
   getOrder(id: string): Observable<ApiResponse<HospitalityOrder>> {
@@ -105,11 +149,9 @@ export class HospitalityApiService {
     );
   }
 
-  printBill(orderId: string): Observable<ApiResponse<{ bill_printed: boolean; total_amount: string }>> {
-    return this.http.post<ApiResponse<{ bill_printed: boolean; total_amount: string }>>(
-      `${this.base}/orders/${orderId}/bill`,
-      {},
-    );
+  /** What is left to pay of the order, line by line (the pre-bill). */
+  getBill(orderId: string): Observable<ApiResponse<HospitalityBill>> {
+    return this.http.get<ApiResponse<HospitalityBill>>(`${this.base}/orders/${orderId}/bill`);
   }
 
   payOrder(

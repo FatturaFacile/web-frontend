@@ -135,6 +135,16 @@ export interface StoreOpportunityPayload {
   discount_percentage?: number | null;
 }
 
+/** Optional fields of `POST /crm/opportunities/{id}/stage`. */
+export interface OpportunityStageExtras {
+  amount?: number | null;
+  probability?: number | null;
+  forecast_category?: 'pipeline' | 'best_case' | 'commit' | 'closed' | 'omitted' | null;
+  win_loss_reason?: string | null;
+  competitor?: string | null;
+  actual_close_date?: string | null;
+}
+
 export interface PipelineStageResource {
   id: string;
   code: string;

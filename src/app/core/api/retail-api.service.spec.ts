@@ -96,4 +96,16 @@ describe('RetailApiService', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ data: mockDaily });
   });
+
+  it('lists POS sessions from /retail/pos/sessions', () => {
+    service.getPosSessions({ page: 1 }).subscribe((res) => {
+      expect(res.data.data[0].id).toBe('ses-1');
+    });
+
+    const req = httpMock.expectOne(
+      (r) => r.url === `${environment.apiBaseUrl}/retail/pos/sessions` && r.params.get('page') === '1',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true, message: '', data: { current_page: 1, data: [{ id: 'ses-1' }], last_page: 1, per_page: 15, total: 1 } });
+  });
 });

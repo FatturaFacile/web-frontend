@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   ApiResponse,
   ChildcareActivity,
   ChildcareActivityRequest,
   ChildcareAdmitRequest,
   ChildcareAttendance,
+  ChildcareAttendanceCorrection,
   ChildcareBill,
   ChildcareBillingRunRequest,
   ChildcareCheckInRequest,
@@ -27,6 +28,7 @@ import {
   ChildcareReferencePersonRequest,
   ChildcareRequirement,
   ChildcareRequirementRequest,
+  ChildcareStaffHours,
   ChildcareStaffShift,
   ChildcareStaffShiftRequest,
   PaginatedResponse,
@@ -76,10 +78,13 @@ export class ChildcareApiService {
     return this.http.post<ApiResponse<ChildcareGroup>>(`${this.base}/groups`, payload);
   }
 
+  /** Reference persons come with the child resource (`reference_persons`): the API has no dedicated list. */
   getReferencePersons(childId: string): Observable<ApiResponse<ChildcareReferencePerson[]>> {
-    return this.http.get<ApiResponse<ChildcareReferencePerson[]>>(
-      `${this.base}/children/${childId}/reference-persons`,
-    );
+    return this.http
+      .get<ApiResponse<ChildcareChild & { reference_persons?: ChildcareReferencePerson[] }>>(
+        `${this.base}/children/${childId}`,
+      )
+      .pipe(map((res) => ({ ...res, data: res.data?.reference_persons ?? [] })));
   }
 
   addReferencePerson(
@@ -119,9 +124,12 @@ export class ChildcareApiService {
     id: string,
     payload: ChildcareCorrectionRequest,
   ): Observable<ApiResponse<ChildcareAttendance>> {
-    return this.http.post<ApiResponse<ChildcareAttendance>>(
+    return this.http.put<ApiResponse<ChildcareAttendance>>(`${this.base}/attendances/${id}`, payload);
+  }
+
+  getAttendanceCorrections(id: string): Observable<ApiResponse<ChildcareAttendanceCorrection[]>> {
+    return this.http.get<ApiResponse<ChildcareAttendanceCorrection[]>>(
       `${this.base}/attendances/${id}/corrections`,
-      payload,
     );
   }
 
@@ -158,9 +166,10 @@ export class ChildcareApiService {
     return this.http.post<ApiResponse<ChildcareActivity>>(`${this.base}/activities`, payload);
   }
 
-  getStaffShifts(params?: { date?: string; group_id?: string }): Observable<ApiResponse<ChildcareStaffShift[]>> {
-    return this.http.get<ApiResponse<ChildcareStaffShift[]>>(`${this.base}/staff-shifts`, {
-      params: params ? toHttpParams(params) : undefined,
+  /** Minutes worked per staff member in a month (the API has no list of single shifts). */
+  getStaffHours(params: { month: string; group_id?: string }): Observable<ApiResponse<ChildcareStaffHours[]>> {
+    return this.http.get<ApiResponse<ChildcareStaffHours[]>>(`${this.base}/staff-hours`, {
+      params: toHttpParams(params),
     });
   }
 

@@ -106,13 +106,13 @@ describe('HospitalityComponent', () => {
     getRoomTables: vi.fn().mockReturnValue(of({ data: mockTables })),
     createRoom: vi.fn().mockReturnValue(of({ data: mockRooms[0] })),
     createTable: vi.fn().mockReturnValue(of({ data: mockTables[0] })),
-    getOrders: vi.fn().mockReturnValue(of({ data: mockOrders })),
+    getOpenOrders: vi.fn().mockReturnValue(of({ data: mockOrders })),
     getOrder: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     createOrder: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     addOrderItems: vi.fn().mockReturnValue(of({ data: mockOrders[0].items })),
     fireOrderCourse: vi.fn().mockReturnValue(of({ data: { success: true } })),
     voidOrderItem: vi.fn().mockReturnValue(of({ data: { success: true } })),
-    printBill: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
+    getBill: vi.fn().mockReturnValue(of({ data: { order_id: 'ord-1', lines: [], remaining_gross: '96.00' } })),
     payOrder: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     moveOrderTable: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     getKitchenTickets: vi.fn().mockReturnValue(of({ data: mockTickets })),
@@ -157,7 +157,7 @@ describe('HospitalityComponent', () => {
     expect(component).toBeTruthy();
     expect(apiSpy.getRooms).toHaveBeenCalled();
     expect(apiSpy.getRoomTables).toHaveBeenCalledWith('r-1');
-    expect(apiSpy.getOrders).toHaveBeenCalled();
+    expect(apiSpy.getOpenOrders).toHaveBeenCalled();
     expect(apiSpy.getKitchenTickets).toHaveBeenCalled();
     expect(apiSpy.getReservations).toHaveBeenCalled();
 
@@ -275,7 +275,7 @@ describe('HospitalityComponent', () => {
 
   it('should print pre-bill and pay order', () => {
     component.printPreBill(mockOrders[0]);
-    expect(apiSpy.printBill).toHaveBeenCalledWith('ord-1');
+    expect(apiSpy.getBill).toHaveBeenCalledWith('ord-1');
 
     component.openPayModal(mockOrders[0]);
     expect(component.payModalVisible()).toBe(true);

@@ -27,7 +27,7 @@ describe('AutomotiveApiService', () => {
     httpMock.verify();
   });
 
-  it('fetches vehicles and tire hotel records', () => {
+  it('fetches vehicles and the seasonal switch plan', () => {
     const mockVehicle: AutomotiveVehicle = {
       id: 'v-1',
       license_plate: 'AA123BB',
@@ -45,21 +45,17 @@ describe('AutomotiveApiService', () => {
     expect(vReq.request.method).toBe('GET');
     vReq.flush({ data: [mockVehicle] });
 
-    service.getTireHotelRecords().subscribe((records) => {
-      expect(records.length).toBe(1);
+    service.getSeasonalSwitchPlan().subscribe((res) => {
+      expect(res.data.length).toBe(1);
+      expect(res.data[0].warehouse_shelf_location).toBe('A-12-3');
     });
 
-    const tReq = httpMock.expectOne(`${base}/tire-hotel`);
+    const tReq = httpMock.expectOne(`${base}/tire-hotel/seasonal-switch-plan`);
     expect(tReq.request.method).toBe('GET');
-    tReq.flush([
-      {
-        id: 'tire-1',
-        customerName: 'Mario Rossi',
-        vehiclePlate: 'AA123BB',
-        vehicleModel: 'Fiat 500',
-        season: 'WINTER',
-      },
-    ]);
+    tReq.flush({
+      success: true,
+      data: [{ id: 'tire-1', vehicle_id: 'v-1', season: 'winter', warehouse_shelf_location: 'A-12-3' }],
+    });
   });
 
   it('registers, gets, updates, and deletes an automotive vehicle', () => {
@@ -111,34 +107,36 @@ describe('AutomotiveApiService', () => {
     delReq.flush({ success: true });
   });
 
-  it('checks in tires and sends reminder', () => {
+  it('checks in and checks out tires', () => {
     const payload: TireCheckInPayload = {
       vehicle_id: 'v-1',
-      customer_id: 'cust-1',
-      season: 'WINTER',
+      season: 'winter',
       brand: 'Michelin',
       model: 'Alpin 6',
+      size: '205/55 R16',
       dot: '4022',
-      tread_depth_mm: { front_left: 6, front_right: 6, rear_left: 5, rear_right: 5 },
-      has_rims: true,
-      rim_type: 'Alloy',
-      rack_location: 'A-12-3',
+      front_left_tread_mm: 6,
+      front_right_tread_mm: 6,
+      rear_left_tread_mm: 5,
+      rear_right_tread_mm: 5,
+      warehouse_shelf_location: 'A-12-3',
     };
 
     service.checkInTires(payload).subscribe((res) => {
-      expect(res).toBeTruthy();
+      expect(res.data.id).toBe('tire-1');
     });
 
     const ciReq = httpMock.expectOne(`${base}/tire-hotel/check-in`);
     expect(ciReq.request.method).toBe('POST');
-    ciReq.flush({ success: true });
+    expect(ciReq.request.body).toEqual(payload);
+    ciReq.flush({ success: true, data: { id: 'tire-1', status: 'stored' } });
 
-    service.sendReminder('tire-1').subscribe((res) => {
-      expect(res).toBeTruthy();
+    service.checkOutTires('tire-1').subscribe((res) => {
+      expect(res.success).toBe(true);
     });
 
-    const rReq = httpMock.expectOne(`${base}/tire-hotel/tire-1/reminder`);
-    expect(rReq.request.method).toBe('POST');
-    rReq.flush({ success: true });
+    const coReq = httpMock.expectOne(`${base}/tire-hotel/tire-1/check-out`);
+    expect(coReq.request.method).toBe('POST');
+    coReq.flush({ success: true, data: null });
   });
 });

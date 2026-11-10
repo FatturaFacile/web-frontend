@@ -79,6 +79,59 @@ describe('HospitalityApiService', () => {
     req.flush({ data: [mockRoom] });
   });
 
+  it('should read the tables of a room from its plan', () => {
+    service.getRoomTables('room-1').subscribe((res) => {
+      expect(res.data.length).toBe(2);
+      expect(res.data[0]).toEqual(
+        expect.objectContaining({ id: 'tbl-1', room_id: 'room-1', status: 'occupied', current_order_id: 'ord-1' }),
+      );
+      expect(res.data[1].current_order_id).toBeNull();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/rooms/room-1/plan`);
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      data: {
+        room: { id: 'room-1', name: 'Sala Principale', width: 1000, height: 600 },
+        tables: [
+          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rect', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
+          { id: 'tbl-2', name: 'T2', seats: 2, shape: 'round', pos_x: 90, pos_y: 0, width: 60, height: 60, status: 'free', order_id: null, covers: null },
+        ],
+      },
+    });
+  });
+
+  it('should collect open orders from the room plans', () => {
+    service.getOpenOrders().subscribe((res) => {
+      expect(res.data.length).toBe(1);
+      expect(res.data[0].id).toBe('ord-1');
+    });
+
+    httpTesting.expectOne(`${baseUrl}/rooms`).flush({ data: [mockRoom] });
+    httpTesting.expectOne(`${baseUrl}/rooms/room-1/plan`).flush({
+      data: {
+        room: { id: 'room-1', name: 'Sala Principale', width: 1000, height: 600 },
+        tables: [
+          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rect', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
+          { id: 'tbl-2', name: 'T2', seats: 2, shape: 'round', pos_x: 90, pos_y: 0, width: 60, height: 60, status: 'free', order_id: null, covers: null },
+        ],
+      },
+    });
+    const orderReq = httpTesting.expectOne(`${baseUrl}/orders/ord-1`);
+    expect(orderReq.request.method).toBe('GET');
+    orderReq.flush({ data: mockOrder });
+  });
+
+  it('should read the bill of an order with GET', () => {
+    service.getBill('ord-1').subscribe((res) => {
+      expect(res.data.remaining_gross).toBe('96.00');
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/orders/ord-1/bill`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { order_id: 'ord-1', lines: [], remaining_gross: '96.00' } });
+  });
+
   it('should create order and add items', () => {
     service
       .createOrder({ table_id: 'tbl-4', covers: 4 })

@@ -83,6 +83,17 @@ describe('SubscriptionApiService', () => {
     reqCreate.flush({ success: true, data: { id: 'plan-2', ...createPayload } });
   });
 
+  it('deactivates a plan with PUT is_active=false (plans cannot be deleted)', () => {
+    service.deactivatePlan('plan-1').subscribe((res) => {
+      expect(res.data.id).toBe('plan-1');
+    });
+
+    const req = httpMock.expectOne(`${baseUrl}/subscriptions/plans/plan-1`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ is_active: false });
+    req.flush({ success: true, data: { id: 'plan-1', is_active: false } });
+  });
+
   it('manages subscription contracts lifecycle via /sub/contracts successor', () => {
     const mockContracts: SubscriptionContractResource[] = [
       {

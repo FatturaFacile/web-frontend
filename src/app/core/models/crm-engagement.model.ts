@@ -125,12 +125,33 @@ export interface CrmActivityTimelineParams {
 
 export type CrmSegmentEntity = 'contacts' | 'leads';
 
+export const CRM_SEGMENT_OPERATORS = ['eq', 'neq', 'contains', 'starts_with', 'in', 'gte', 'lte', 'is_null', 'not_null'] as const;
+export type CrmSegmentOperator = (typeof CRM_SEGMENT_OPERATORS)[number];
+
+/** Filterable columns per entity (mirrors the API whitelist; `consent` is a special condition). */
+export const CRM_SEGMENT_FIELDS: Record<CrmSegmentEntity, readonly string[]> = {
+  contacts: ['type', 'country', 'company_name', 'first_name', 'last_name', 'email', 'phone', 'vat_number', 'fiscal_code', 'document_language', 'created_at'],
+  leads: ['status', 'rating', 'score', 'country', 'company_name', 'title', 'email', 'phone', 'estimated_budget', 'campaign_id', 'assigned_user_id', 'created_at'],
+};
+
+export const CRM_CONSENT_CHANNELS = ['email', 'sms', 'phone', 'post'] as const;
+export const CRM_CONSENT_PURPOSES = ['marketing', 'newsletter', 'profiling'] as const;
+
+/** One segment condition: a field comparison, or `{ field: 'consent', channel, purpose }`. */
+export interface CrmSegmentFilter {
+  field?: string;
+  operator?: string;
+  value?: string | null;
+  channel?: string;
+  purpose?: string;
+}
+
 export interface CrmSegment {
   id: string;
   name: string;
   description?: string | null;
   entity: CrmSegmentEntity;
-  filters: unknown;
+  filters: CrmSegmentFilter[];
   is_active?: boolean | null;
   members_count?: number | null;
 }
@@ -139,9 +160,12 @@ export interface CrmSegmentPayload {
   name: string;
   description?: string | null;
   entity: CrmSegmentEntity;
-  filters: unknown;
+  filters: CrmSegmentFilter[];
   is_active?: boolean | null;
 }
+
+/** The entity of a segment cannot change once created: the API refuses it on update. */
+export type CrmSegmentUpdatePayload = Omit<CrmSegmentPayload, 'entity'>;
 
 export type LeadScoringRuleType = 'field' | 'activity';
 

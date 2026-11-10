@@ -44,13 +44,27 @@ export interface DailyCorrispettivoResource {
   status: 'open' | 'transmitted' | 'closed' | string;
 }
 
-// Backward-compatible alias
-export interface RetailSession {
-  id?: string;
-  pos: string;
-  cashier: string;
-  regime: string;
-  total: string;
-  device: string;
+/** POS cash session (`GET /retail/pos/sessions`); amounts are decimal strings. */
+export interface RetailPosSession {
+  id: string;
+  tenant_id: string | null;
+  pos_terminal_id: string;
+  user_id: string;
+  opened_at: string;
+  closed_at: string | null;
+  opening_float: string;
+  closing_cash: string | null;
+  total_sales: string;
   status: string;
+  expected_cash: string | null;
+  cash_difference: string | null;
+}
+
+/** Laravel paginator nested in the success envelope, as returned by the POS session list. */
+export interface RetailPosSessionPage {
+  current_page: number;
+  data: RetailPosSession[];
+  last_page: number;
+  per_page: number;
+  total: number;
 }

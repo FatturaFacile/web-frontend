@@ -12,14 +12,32 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { CrmApiService, CrmSegment, CrmSegmentEntity, I18nService, PermissionsService } from '@core';
+import {
+  CRM_CONSENT_CHANNELS,
+  CRM_CONSENT_PURPOSES,
+  CRM_SEGMENT_FIELDS,
+  CRM_SEGMENT_OPERATORS,
+  CrmApiService,
+  CrmSegment,
+  CrmSegmentEntity,
+  CrmSegmentFilter,
+  I18nService,
+  PermissionsService,
+} from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+
+const CONSENT_FIELD = 'consent';
+const NO_VALUE_OPERATORS: readonly string[] = ['is_null', 'not_null'];
 
 interface FilterDraft {
   field: string;
   operator: string;
   value: string;
+  channel: string;
+  purpose: string;
 }
+
+const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', channel: 'email', purpose: 'marketing' });
 
 /** Segments: saved filters on contacts or leads, used to target campaigns. */
 @Component({
@@ -62,6 +80,10 @@ export class SegmentsComponent {
   protected entity: CrmSegmentEntity = 'contacts';
   protected isActive = true;
   protected filters: FilterDraft[] = [];
+  protected readonly consentField = CONSENT_FIELD;
+  protected readonly operators = CRM_SEGMENT_OPERATORS;
+  protected readonly channels = CRM_CONSENT_CHANNELS;
+  protected readonly purposes = CRM_CONSENT_PURPOSES;
 
   constructor() {
     this.load();
@@ -84,11 +106,14 @@ export class SegmentsComponent {
     this.description = segment?.description ?? '';
     this.entity = segment?.entity ?? 'contacts';
     this.isActive = segment?.is_active ?? true;
-    const stored = Array.isArray(segment?.filters) ? (segment?.filters as unknown[][]) : [];
+    const stored = Array.isArray(segment?.filters) ? segment.filters : [];
     this.filters = stored.map((f) => ({
-      field: String(f[0] ?? ''),
-      operator: String(f[1] ?? ''),
-      value: String(f[2] ?? ''),
+      ...emptyFilter(),
+      field: f.field ?? '',
+      operator: f.operator ?? 'eq',
+      value: f.value == null ? '' : String(f.value),
+      channel: f.channel ?? 'email',
+      purpose: f.purpose ?? 'marketing',
     }));
     if (!this.filters.length) {
       this.addFilter();
@@ -97,28 +122,62 @@ export class SegmentsComponent {
   }
 
   protected addFilter(): void {
-    this.filters = [...this.filters, { field: '', operator: '=', value: '' }];
+    this.filters = [...this.filters, emptyFilter()];
   }
 
   protected removeFilter(index: number): void {
     this.filters = this.filters.filter((_, i) => i !== index);
   }
 
+  /** Fields offered for the entity of the segment, plus the consent condition. */
+  protected fieldOptions(): readonly string[] {
+    return [...CRM_SEGMENT_FIELDS[this.entity], CONSENT_FIELD];
+  }
+
+  protected isConsent(filter: FilterDraft): boolean {
+    return filter.field === CONSENT_FIELD;
+  }
+
+  protected needsValue(filter: FilterDraft): boolean {
+    return !NO_VALUE_OPERATORS.includes(filter.operator);
+  }
+
+  /** Changing the entity drops the conditions on fields it does not have. */
+  protected onEntityChange(): void {
+    const allowed = this.fieldOptions();
+    this.filters = this.filters.map((f) => (f.field && !allowed.includes(f.field) ? { ...f, field: '' } : f));
+  }
+
   protected valid(): boolean {
-    return this.name.trim().length > 0 && this.filters.some((f) => f.field.trim() && f.operator.trim());
+    return this.name.trim().length > 0 && this.filters.some((f) => f.field.trim().length > 0);
+  }
+
+  /** The API wants objects `{ field, operator, value }` (or `{ field: 'consent', channel, purpose }`). */
+  protected buildFilters(): CrmSegmentFilter[] {
+    return this.filters
+      .filter((f) => f.field)
+      .map((f): CrmSegmentFilter => {
+        if (this.isConsent(f)) {
+          return { field: CONSENT_FIELD, channel: f.channel, purpose: f.purpose };
+        }
+        return this.needsValue(f)
+          ? { field: f.field, operator: f.operator, value: f.value }
+          : { field: f.field, operator: f.operator };
+      });
   }
 
   protected save(): void {
-    const payload = {
+    const base = {
       name: this.name.trim(),
       description: this.description || null,
-      entity: this.entity,
-      filters: this.filters.filter((f) => f.field.trim()).map((f) => [f.field.trim(), f.operator.trim(), f.value]),
+      filters: this.buildFilters(),
       is_active: this.isActive,
     };
     const current = this.editing();
     this.saving.set(true);
-    const request = current ? this.api.updateSegment(current.id, payload) : this.api.createSegment(payload);
+    const request = current
+      ? this.api.updateSegment(current.id, base)
+      : this.api.createSegment({ ...base, entity: this.entity });
     request.subscribe({
       next: () => {
         this.saving.set(false);

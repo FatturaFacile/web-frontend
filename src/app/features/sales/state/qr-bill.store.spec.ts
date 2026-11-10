@@ -9,7 +9,6 @@ describe('QrBillStore', () => {
   let store: InstanceType<typeof QrBillStore>;
   let mockRepository: {
     getBills: ReturnType<typeof vi.fn>;
-    createBill: ReturnType<typeof vi.fn>;
   };
 
   const mockBills: QrBill[] = [
@@ -44,7 +43,6 @@ describe('QrBillStore', () => {
   beforeEach(() => {
     mockRepository = {
       getBills: vi.fn().mockReturnValue(of(mockBills)),
-      createBill: vi.fn(),
     };
 
     TestBed.configureTestingModule({
