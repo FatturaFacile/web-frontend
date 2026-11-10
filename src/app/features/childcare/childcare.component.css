@@ -1,0 +1,69 @@
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.childcare-container {
+  padding: 16px 0;
+}
+
+.filter-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.filter-toolbar .filter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filter-toolbar .filter-inputs .search-input {
+  width: 260px;
+}
+.filter-toolbar .filter-inputs .status-select {
+  width: 180px;
+}
+
+.text-danger {
+  color: #ff4d4f;
+  font-size: 12px;
+}
+
+.billing-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.drawer-section {
+  margin-top: 24px;
+}
+.drawer-section .drawer-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.drawer-section .drawer-section-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.drawer-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.modal-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/*# sourceMappingURL=childcare.component.css.map */

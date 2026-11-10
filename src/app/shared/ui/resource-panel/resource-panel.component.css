@@ -1,0 +1,27 @@
+.rp-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rp-filter {
+  min-width: 180px;
+  width: 200px;
+}
+
+.rp-spacer {
+  flex: 1 1 auto;
+}
+
+.rp-actions-col {
+  white-space: nowrap;
+}
+
+.rp-hint {
+  color: rgba(0, 0, 0, 0.55);
+  margin: 8px 0;
+}
+
+/*# sourceMappingURL=resource-panel.component.css.map */

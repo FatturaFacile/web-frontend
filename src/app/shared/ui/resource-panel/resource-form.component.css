@@ -1,0 +1,46 @@
+.rf-number,
+.rf-select {
+  width: 100%;
+}
+
+.rf-lines {
+  border: 1px solid var(--ant-color-border, #d9d9d9);
+  border-radius: 6px;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+}
+.rf-lines legend {
+  font-weight: 500;
+  padding: 0 6px;
+  width: auto;
+}
+
+.rf-line {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rf-line-field {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+.rf-line-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.rf-error {
+  color: var(--ant-color-error, #cf1322);
+}
+
+.rf-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/*# sourceMappingURL=resource-form.component.css.map */
