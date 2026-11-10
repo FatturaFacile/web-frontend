@@ -91,6 +91,12 @@ export interface ResourceListConfig {
   manual?: boolean;
 }
 
+/** Link of every row to a detail route (`{id}` is replaced with the id of the row). */
+export interface ResourceRowLink {
+  labelKey: string;
+  route: string;
+}
+
 export interface ResourcePanelConfig {
   id: string;
   titleKey: string;
@@ -100,6 +106,7 @@ export interface ResourcePanelConfig {
   create?: ResourceAction;
   /** GET opened in the detail drawer. */
   detailPath?: string;
+  rowLink?: ResourceRowLink;
   rowActions?: readonly ResourceAction[];
   toolbar?: readonly ResourceAction[];
 }

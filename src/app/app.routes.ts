@@ -409,6 +409,20 @@ export const routes: Routes = [
     loadChildren: () => import('./features/docs/docs.routes').then((m) => m.DOCS_ROUTES),
   },
   {
+    path: 'association-area',
+    data: { title: 'Area soci' },
+    loadComponent: () =>
+      import('./features/association-area/association-area.component').then((m) => m.AssociationAreaComponent),
+  },
+  {
+    path: 'association-enrolment/:token',
+    data: { title: 'Iscrizione online' },
+    loadComponent: () =>
+      import('./features/association-enrolment/association-enrolment.component').then(
+        (m) => m.AssociationEnrolmentComponent,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },
