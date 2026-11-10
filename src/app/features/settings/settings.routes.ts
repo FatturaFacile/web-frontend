@@ -30,4 +30,12 @@ export const SETTINGS_ROUTES: Routes = [
         (m) => m.TenantSecurityPolicyComponent
       ),
   },
+  {
+    path: 'privacy',
+    data: { breadcrumb: 'Privacy (GDPR / nLPD)', title: 'Privacy Center (GDPR & Swiss nLPD)' },
+    loadComponent: () =>
+      import('./pages/privacy/privacy-center.component').then(
+        (m) => m.PrivacyCenterComponent
+      ),
+  },
 ];

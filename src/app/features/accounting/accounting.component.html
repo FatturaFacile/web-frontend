@@ -107,11 +107,16 @@
 
     <!-- TAB 3: LIQUIDAZIONI IVA E IMPOSTE -->
     <nz-tab [nzTitle]="'accounting.vatSettlement' | translate">
-      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #666;">Liquidazioni periodiche IVA (mensili o trimestrali), modello F24 e comunicazione LIPE.</span>
-        <button nz-button nzType="primary" (click)="openCalcVatModal()">
-          <nz-icon nzType="calculator" /> Calcola Liquidazione IVA
-        </button>
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="color: #666;">Liquidazioni periodiche IVA (mensili, trimestrali o semestrali SSS), F24, LIPE, XML ESTV eCH-0217 e Riconciliazione Annuale LIVA Art. 72.</span>
+        <div style="display: flex; gap: 8px;">
+          <button nz-button nzType="default" (click)="loadVatAnnualReconciliation()">
+            Riconciliazione Annuale IVA (Art. 72 LIVA)
+          </button>
+          <button nz-button nzType="primary" (click)="openCalcVatModal()">
+            <nz-icon nzType="calculator" /> Calcola Liquidazione IVA
+          </button>
+        </div>
       </div>
 
       <app-base-table
@@ -135,8 +140,17 @@
               Segna Pagata (F24)
             </button>
           }
+          <button nz-button nzSize="small" nzType="default" (click)="downloadSwissEstvXml(vs)">
+            ESTV XML (eCH-0217)
+          </button>
         </div>
       </ng-template>
+
+      @if (vatAnnualReconciliation(); as recon) {
+        <nz-card nzTitle="Riconciliazione Annuale IVA Svizzera (Art. 72 LIVA - Umsatzabstimmung / Vorsteuerabstimmung)" style="margin-top: 16px;">
+          <pre style="max-height: 220px; overflow: auto; font-size: 12px;">{{ recon | json }}</pre>
+        </nz-card>
+      }
     </nz-tab>
 
     <!-- TAB 4: PERIODI FISCALI (FISCAL PERIODS) -->

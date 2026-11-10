@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, JsonPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -22,6 +22,7 @@ import {
   CalculateTaxSettlementPayload,
   ChartOfAccount,
   FiscalPeriodResource,
+  GeneralLedgerFiscalApiService,
   IntrastatDeclarationResource,
   JournalEntryResource,
   TaxSettlementResource,
@@ -44,6 +45,7 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
+    JsonPipe,
     MoneyPipe,
     NzTagModule,
     NzCardModule,
@@ -70,6 +72,7 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
 })
 export class AccountingComponent implements OnInit {
   private readonly api = inject(AccountingApiService);
+  private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly modal = inject(NzModalService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -82,6 +85,7 @@ export class AccountingComponent implements OnInit {
   protected readonly ledgerEntries = signal<JournalEntryResource[]>([]);
   protected readonly chartOfAccounts = signal<ChartOfAccount[]>([]);
   protected readonly vatSettlements = signal<TaxSettlementResource[]>([]);
+  protected readonly vatAnnualReconciliation = signal<Record<string, unknown> | null>(null);
   protected readonly fiscalPeriods = signal<FiscalPeriodResource[]>([]);
   protected readonly intrastatDeclarations = signal<IntrastatDeclarationResource[]>([]);
   protected readonly trialBalance = signal<TrialBalanceReport | null>(null);
@@ -419,6 +423,30 @@ export class AccountingComponent implements OnInit {
         this.message.success('Pagamento IVA registrato (modello F24 / debito estinto)');
         this.loadVatSettlements();
       },
+    });
+  }
+
+  downloadSwissEstvXml(settlement: TaxSettlementResource): void {
+    this.fiscalApi.downloadSwissEstvXml(settlement.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `estv-vat-${settlement.year}-${settlement.period}.xml`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.message.error('Errore durante il download XML ESTV eCH-0217'),
+    });
+  }
+
+  loadVatAnnualReconciliation(year = new Date().getFullYear()): void {
+    this.fiscalApi.getVatAnnualReconciliation(year).subscribe({
+      next: (res) => {
+        this.vatAnnualReconciliation.set(res.data);
+        this.message.success(`Riconciliazione annuale IVA ${year} (Art. 72 LIVA) calcolata`);
+      },
+      error: () => this.message.error('Errore nel calcolo della riconciliazione annuale IVA'),
     });
   }
 

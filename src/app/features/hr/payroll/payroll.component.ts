@@ -1,9 +1,12 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { PayrollApiService, PermissionsService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig } from '../shared/crud/crud.types';
@@ -14,16 +17,29 @@ import { PayrollSettingsComponent } from './payroll-settings.component';
 
 type Row = { id: string } & Record<string, unknown>;
 
+interface SwissPermitAlertRow {
+  employee_id: string;
+  employee_name: string;
+  permit_type: string;
+  valid_until: string | null;
+  days_remaining: number | null;
+  severity: string;
+  message: string;
+}
+
 const KINDS = ['Earning', 'NonCash', 'Expense', 'Deduction', 'Employer', 'Information'];
 const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ'];
 
-/** Payroll workbench: runs, payslips and certificates, wage types, family allowances, settings and exports. */
+/** Payroll workbench: runs, payslips and certificates, wage types, family allowances, settings, permit alerts and exports. */
 @Component({
   selector: 'app-hr-payroll',
   imports: [
     NzAlertModule,
+    NzButtonModule,
     NzCardModule,
+    NzTableModule,
     NzTabsModule,
+    NzTagModule,
     PageHeaderComponent,
     TranslatePipe,
     CrudTableComponent,
@@ -54,6 +70,39 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
         <nz-tab [nzTitle]="'hrmPayroll.settingsItalian' | translate">
           <app-payroll-settings country="italian" [canWrite]="canWrite()" />
         </nz-tab>
+        <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
+          <div style="margin-bottom: 12px;">
+            <button nz-button type="button" (click)="loadPermitAlerts()">Aggiorna Scadenze Permessi</button>
+          </div>
+          <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
+            <thead>
+              <tr>
+                <th>Dipendente</th>
+                <th>Permesso</th>
+                <th>Scadenza</th>
+                <th>Giorni Residui</th>
+                <th>Stato</th>
+                <th>Messaggio</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (alert of permTable.data; track alert.employee_id) {
+                <tr>
+                  <td>{{ alert.employee_name }}</td>
+                  <td><code>{{ alert.permit_type }}</code></td>
+                  <td>{{ alert.valid_until || '-' }}</td>
+                  <td>{{ alert.days_remaining ?? '-' }}</td>
+                  <td>
+                    <nz-tag [nzColor]="alert.severity === 'critical' ? 'red' : alert.severity === 'warning' ? 'orange' : 'green'">
+                      {{ alert.severity }}
+                    </nz-tag>
+                  </td>
+                  <td>{{ alert.message }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-tab>
         <nz-tab [nzTitle]="'hrmPayroll.exports' | translate">
           <app-payroll-exports />
         </nz-tab>
@@ -62,11 +111,23 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
     </nz-card>
   `,
 })
-export class PayrollComponent {
+export class PayrollComponent implements OnInit {
   private readonly api = inject(PayrollApiService);
   private readonly permissions = inject(PermissionsService);
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('payroll'));
+  protected readonly permitAlerts = signal<SwissPermitAlertRow[]>([]);
+
+  ngOnInit(): void {
+    this.loadPermitAlerts();
+  }
+
+  protected loadPermitAlerts(): void {
+    this.api.getPermitAlerts().subscribe({
+      next: (res) => this.permitAlerts.set((res.data['alerts'] as SwissPermitAlertRow[] | undefined) ?? []),
+      error: () => this.permitAlerts.set([]),
+    });
+  }
 
   protected readonly wageTypesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmPayroll.wageTypes',

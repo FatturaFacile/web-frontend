@@ -9,7 +9,14 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { applyServerErrors, GeneralLedgerApiService, GlFiscalYear, I18nService, PermissionsService } from '@core';
+import {
+  applyServerErrors,
+  GeneralLedgerApiService,
+  GeneralLedgerFiscalApiService,
+  GlFiscalYear,
+  I18nService,
+  PermissionsService,
+} from '@core';
 import { TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dates';
@@ -34,6 +41,7 @@ import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dat
 })
 export class GlFiscalYearsComponent implements OnInit {
   private readonly api = inject(GeneralLedgerApiService);
+  private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
@@ -43,6 +51,16 @@ export class GlFiscalYearsComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
+  protected readonly reopenModalOpen = signal(false);
+  protected readonly agmModalOpen = signal(false);
+  protected readonly anhangModalOpen = signal(false);
+  protected readonly selectedYear = signal<GlFiscalYear | null>(null);
+  protected readonly anhangData = signal<Record<string, unknown> | null>(null);
+  protected reopenReason = '';
+  protected agmResolutionRef = '';
+  protected anhangFteBand = 'up_to_50';
+  protected anhangPledgedAssets = '0.00';
+  protected anhangLeasingCommitments = '0.00';
   protected readonly error = signal<unknown>(null);
   protected expandedYears: Record<string, boolean> = {};
   protected auditFrom = currentYearStart();
@@ -123,5 +141,83 @@ export class GlFiscalYearsComponent implements OnInit {
     this.api.exportAuditTrail({ from: this.auditFrom, to: this.auditTo, format: 'csv' }).subscribe({
       next: (blob) => downloadBlob(blob, `audit-trail-${this.auditFrom}-${this.auditTo}.csv`),
     });
+  }
+
+  protected openReopenModal(year: GlFiscalYear): void {
+    this.selectedYear.set(year);
+    this.reopenReason = '';
+    this.reopenModalOpen.set(true);
+  }
+
+  protected confirmReopenYear(): void {
+    const year = this.selectedYear();
+    if (!year || !this.reopenReason.trim()) {
+      return;
+    }
+    this.error.set(null);
+    this.api.reopenFiscalYear(year.id, this.reopenReason.trim()).subscribe({
+      next: () => {
+        this.reopenModalOpen.set(false);
+        this.message.success(`Esercizio ${year.year_code} riaperto per rettifiche pre-AGM`);
+        this.load();
+      },
+      error: (err: unknown) => this.error.set(err),
+    });
+  }
+
+  protected openAgmModal(year: GlFiscalYear): void {
+    this.selectedYear.set(year);
+    this.agmResolutionRef = '';
+    this.agmModalOpen.set(true);
+  }
+
+  protected confirmAgmApproval(): void {
+    const year = this.selectedYear();
+    if (!year) {
+      return;
+    }
+    this.error.set(null);
+    this.api.approveFiscalYearAtAgm(year.id, this.agmResolutionRef.trim() || undefined).subscribe({
+      next: () => {
+        this.agmModalOpen.set(false);
+        this.message.success(`Bilancio ${year.year_code} approvato dall'Assemblea Generale (CO Art. 958c)`);
+        this.load();
+      },
+      error: (err: unknown) => this.error.set(err),
+    });
+  }
+
+  protected openAnhangModal(year: GlFiscalYear): void {
+    this.selectedYear.set(year);
+    this.fiscalApi.getSwissAnhang(year.id).subscribe({
+      next: (res) => {
+        this.anhangData.set(res.data);
+        this.anhangFteBand = String(res.data['fte_band'] ?? 'up_to_50');
+        this.anhangPledgedAssets = String(res.data['pledged_assets_amount'] ?? '0.00');
+        this.anhangLeasingCommitments = String(res.data['leasing_commitments_amount'] ?? '0.00');
+        this.anhangModalOpen.set(true);
+      },
+      error: (err: unknown) => this.error.set(err),
+    });
+  }
+
+  protected saveSwissAnhang(): void {
+    const year = this.selectedYear();
+    if (!year) {
+      return;
+    }
+    this.fiscalApi
+      .updateSwissAnhang(year.id, {
+        fte_band: this.anhangFteBand,
+        pledged_assets_amount: this.anhangPledgedAssets,
+        leasing_commitments_amount: this.anhangLeasingCommitments,
+      })
+      .subscribe({
+        next: () => {
+          this.anhangModalOpen.set(false);
+          this.message.success('Nota Integrativa Svizzera (Anhang CO Art. 959c) salvata');
+        },
+        error: (err: unknown) => this.error.set(err),
+      });
   }
 }
