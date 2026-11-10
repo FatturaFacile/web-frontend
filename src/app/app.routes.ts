@@ -233,6 +233,13 @@ export const routes: Routes = [
       import('./features/field-service/field-service.routes').then((m) => m.FIELD_SERVICE_ROUTES),
   },
   {
+    path: 'helpdesk',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Helpdesk & ITSM', title: 'Helpdesk' },
+    loadChildren: () =>
+      import('./features/helpdesk/helpdesk.routes').then((m) => m.HELPDESK_ROUTES),
+  },
+  {
     path: 'projects',
     canActivate: [authGuard],
     data: { breadcrumb: 'Progetti & Commesse', title: 'Progetti' },

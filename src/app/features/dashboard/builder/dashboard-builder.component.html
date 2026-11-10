@@ -1,0 +1,105 @@
+<app-page-header
+  [title]="'DASHBOARD_BUILDER.TITLE' | translate"
+  [subtitle]="'DASHBOARD_BUILDER.SUBTITLE' | translate"
+>
+  <a header-actions nz-button routerLink="/dashboard">{{ 'DASHBOARD_BUILDER.BACK' | translate }}</a>
+</app-page-header>
+
+<nz-card [nzLoading]="loading()">
+  <div class="db-toolbar">
+    <input
+      nz-input
+      class="db-name"
+      maxlength="100"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event); dirty.set(true)"
+      [placeholder]="'DASHBOARD_BUILDER.LAYOUT_NAME' | translate"
+      [attr.aria-label]="'DASHBOARD_BUILDER.LAYOUT_NAME' | translate"
+    />
+    @if (layout(); as current) {
+      <nz-tag [nzColor]="current.is_customized ? 'blue' : 'default'">
+        {{ (current.is_customized ? 'DASHBOARD_BUILDER.CUSTOMIZED' : 'DASHBOARD_BUILDER.FACTORY') | translate }}
+      </nz-tag>
+    }
+    <span class="db-spacer"></span>
+    <nz-select
+      class="db-select"
+      nzShowSearch
+      nzAllowClear
+      [ngModel]="widgetToAdd()"
+      (ngModelChange)="widgetToAdd.set($event)"
+      [nzPlaceHolder]="'DASHBOARD_BUILDER.PICK_WIDGET' | translate"
+      [attr.aria-label]="'DASHBOARD_BUILDER.PICK_WIDGET' | translate"
+    >
+      @for (widget of availableToAdd(); track widget.id) {
+        <nz-option [nzValue]="widget.id" [nzLabel]="widget.title" />
+      }
+    </nz-select>
+    <button nz-button type="button" [disabled]="!widgetToAdd()" (click)="add()">
+      {{ 'DASHBOARD_BUILDER.ADD' | translate }}
+    </button>
+  </div>
+
+  @if (placements().length === 0) {
+    <nz-empty [nzNotFoundContent]="'DASHBOARD_BUILDER.EMPTY' | translate" />
+  } @else {
+    <nz-table nzSize="small" [nzData]="placements()" [nzShowPagination]="false" [nzScroll]="{ x: 'max-content' }">
+      <thead>
+        <tr>
+          <th>{{ 'DASHBOARD_BUILDER.WIDGET' | translate }}</th>
+          <th>X</th>
+          <th>Y</th>
+          <th>{{ 'DASHBOARD_BUILDER.WIDTH' | translate }}</th>
+          <th>{{ 'DASHBOARD_BUILDER.HEIGHT' | translate }}</th>
+          <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of placements(); track item.widget_id; let i = $index; let first = $first; let last = $last) {
+          <tr>
+            <td>
+              <strong>{{ title(item.widget_id) }}</strong>
+            </td>
+            <td>
+              <nz-input-number [ngModel]="item.x" [nzMin]="0" (ngModelChange)="setNumber(i, 'x', $event)" aria-label="X" />
+            </td>
+            <td>
+              <nz-input-number [ngModel]="item.y" [nzMin]="0" (ngModelChange)="setNumber(i, 'y', $event)" aria-label="Y" />
+            </td>
+            <td>
+              <nz-input-number [ngModel]="item.w" [nzMin]="1" (ngModelChange)="setNumber(i, 'w', $event)" [attr.aria-label]="'DASHBOARD_BUILDER.WIDTH' | translate" />
+            </td>
+            <td>
+              <nz-input-number [ngModel]="item.h" [nzMin]="1" (ngModelChange)="setNumber(i, 'h', $event)" [attr.aria-label]="'DASHBOARD_BUILDER.HEIGHT' | translate" />
+            </td>
+            <td>
+              <button nz-button nzType="link" nzSize="small" type="button" [disabled]="first" (click)="move(i, -1)">
+                {{ 'DASHBOARD_BUILDER.UP' | translate }}
+              </button>
+              <button nz-button nzType="link" nzSize="small" type="button" [disabled]="last" (click)="move(i, 1)">
+                {{ 'DASHBOARD_BUILDER.DOWN' | translate }}
+              </button>
+              <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="remove(i)">
+                {{ 'DASHBOARD_BUILDER.REMOVE' | translate }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+
+  <div class="db-toolbar">
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!dirty()" (click)="save()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+    <button nz-button nzDanger type="button" (click)="reset()">{{ 'DASHBOARD_BUILDER.RESET' | translate }}</button>
+    <button nz-button type="button" [nzLoading]="previewLoading()" (click)="loadPreview()">
+      {{ 'DASHBOARD_BUILDER.PREVIEW' | translate }}
+    </button>
+  </div>
+
+  @if (preview() !== null) {
+    <pre class="db-preview" tabindex="0" [attr.aria-label]="'DASHBOARD_BUILDER.PREVIEW' | translate">{{ preview() | json }}</pre>
+  }
+</nz-card>

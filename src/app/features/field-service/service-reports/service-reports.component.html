@@ -1,0 +1,160 @@
+<app-page-header
+  [title]="'SERVICE_REPORTS.TITLE' | translate"
+  [subtitle]="'SERVICE_REPORTS.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <div class="sr-filters">
+    <input
+      nz-input
+      class="sr-filter"
+      [ngModel]="status()"
+      (ngModelChange)="status.set($event)"
+      (keyup.enter)="applyFilters()"
+      [placeholder]="'SERVICE_REPORTS.FILTER_STATUS' | translate"
+      [attr.aria-label]="'SERVICE_REPORTS.FILTER_STATUS' | translate"
+    />
+    <input
+      nz-input
+      class="sr-filter"
+      type="date"
+      [ngModel]="fromDate()"
+      (ngModelChange)="fromDate.set($event)"
+      [attr.aria-label]="'SERVICE_REPORTS.FROM' | translate"
+    />
+    <input
+      nz-input
+      class="sr-filter"
+      type="date"
+      [ngModel]="toDate()"
+      (ngModelChange)="toDate.set($event)"
+      [attr.aria-label]="'SERVICE_REPORTS.TO' | translate"
+    />
+    <button nz-button type="button" (click)="applyFilters()">{{ 'SERVICE_REPORTS.APPLY' | translate }}</button>
+    <span class="sr-spacer"></span>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" [disabled]="!canConsolidate()" (click)="consolidate()">
+        {{ 'SERVICE_REPORTS.CONSOLIDATED_INVOICE' | translate }}
+      </button>
+    }
+  </div>
+
+  <nz-table
+    #table
+    nzSize="middle"
+    nzShowSizeChanger
+    [nzData]="reports()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzScroll]="{ x: 'max-content' }"
+    (nzQueryParams)="onQueryParams($event)"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="48px"></th>
+        <th>{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
+        <th>{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
+        <th>{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
+        <th>{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
+        <th>{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
+        <th>{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
+        <th>{{ 'COMMON.STATUS' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (report of table.data; track report.id) {
+        <tr>
+          <td>
+            @if (canWrite() && report.is_signed && !report.is_invoiced) {
+              <input
+                type="checkbox"
+                [checked]="selectedIds().has(report.id)"
+                (change)="toggle(report.id, $any($event.target).checked)"
+                [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
+              />
+            }
+          </td>
+          <td>
+            <strong>{{ report.report_number }}</strong>
+          </td>
+          <td>{{ report.report_date }}</td>
+          <td>{{ report.contact?.name }}</td>
+          <td>{{ report.technician?.name }}</td>
+          <td>{{ report.total_hours }}</td>
+          <td>{{ report.total_gross | money }}</td>
+          <td>
+            @if (report.status?.label) {
+              <nz-tag>{{ report.status?.label }}</nz-tag>
+            }
+            @if (report.is_signed) {
+              <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
+            }
+            @if (report.is_invoiced) {
+              <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
+            }
+          </td>
+          <td>
+            <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
+              {{ 'SERVICE_REPORTS.PDF' | translate }}
+            </button>
+            @if (canWrite()) {
+              @if (!report.is_signed) {
+                <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
+                  {{ 'SERVICE_REPORTS.SIGN' | translate }}
+                </button>
+              }
+              @if (!report.is_invoiced) {
+                <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
+                  {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
+                </button>
+              }
+              @if (report.is_signed && !report.is_invoiced) {
+                <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
+                  {{ 'SERVICE_REPORTS.INVOICE' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<app-signature-dialog
+  [(open)]="signOpen"
+  titleKey="SERVICE_REPORTS.SIGN_TITLE"
+  [withContact]="true"
+  [saving]="saving()"
+  (confirmed)="sign($event)"
+/>
+
+<nz-modal
+  [nzVisible]="photoTarget() !== null"
+  [nzTitle]="'SERVICE_REPORTS.ADD_PHOTO' | translate"
+  [nzFooter]="photoFooter"
+  (nzOnCancel)="photoTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label class="sr-label" for="sr-photo">{{ 'SERVICE_REPORTS.PHOTO_FILE' | translate }}</label>
+    <input id="sr-photo" type="file" accept="image/*,application/pdf" (change)="onPhotoPicked($event)" />
+    <label class="sr-label" for="sr-stage">{{ 'SERVICE_REPORTS.PHOTO_STAGE' | translate }}</label>
+    <nz-select id="sr-stage" class="sr-select" [ngModel]="photoStage()" (ngModelChange)="photoStage.set($event)">
+      @for (stage of stages; track stage) {
+        <nz-option [nzValue]="stage" [nzLabel]="'SERVICE_REPORTS.STAGE_' + stage | translate" />
+      }
+    </nz-select>
+    <label class="sr-label" for="sr-caption">{{ 'SERVICE_REPORTS.PHOTO_CAPTION' | translate }}</label>
+    <input id="sr-caption" nz-input maxlength="255" [ngModel]="photoCaption()" (ngModelChange)="photoCaption.set($event)" />
+  </ng-container>
+  <ng-template #photoFooter>
+    <button nz-button type="button" (click)="photoTarget.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!photoFile()" (click)="uploadPhoto()">
+      {{ 'SERVICE_REPORTS.UPLOAD' | translate }}
+    </button>
+  </ng-template>
+</nz-modal>

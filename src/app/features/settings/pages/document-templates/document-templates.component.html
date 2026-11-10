@@ -1,0 +1,101 @@
+<app-page-header
+  [title]="'DOCUMENT_TEMPLATES.TITLE' | translate"
+  [subtitle]="'DOCUMENT_TEMPLATES.SUBTITLE' | translate"
+/>
+
+@if (quota(); as q) {
+  <nz-card class="dt-quota" [nzTitle]="'DOCUMENT_TEMPLATES.QUOTA_TITLE' | translate">
+    @if (q.enabled) {
+      <div class="dt-quota-grid">
+        <nz-statistic [nzValue]="q.used" [nzTitle]="'DOCUMENT_TEMPLATES.QUOTA_USED' | translate" />
+        <nz-statistic [nzValue]="q.limit ?? '-'" [nzTitle]="'DOCUMENT_TEMPLATES.QUOTA_LIMIT' | translate" />
+        <nz-statistic [nzValue]="q.remaining ?? '-'" [nzTitle]="'DOCUMENT_TEMPLATES.QUOTA_REMAINING' | translate" />
+      </div>
+    } @else {
+      <p>{{ 'DOCUMENT_TEMPLATES.QUOTA_DISABLED' | translate }}</p>
+    }
+  </nz-card>
+}
+
+<nz-card>
+  <nz-table #table nzSize="middle" [nzData]="rows()" [nzLoading]="loading()" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ 'DOCUMENT_TEMPLATES.TYPE' | translate }}</th>
+        <th>{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</th>
+        <th>{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</th>
+        <th>{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</th>
+        <th>{{ 'COMMON.STATUS' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.data; track row.type) {
+        <tr>
+          <td>
+            <strong>{{ 'DOCUMENT_TEMPLATES.TYPE_' + row.type | translate }}</strong>
+          </td>
+          <td>{{ row.template?.primary_color }}</td>
+          <td>{{ row.template?.secondary_color }}</td>
+          <td>{{ row.template?.footer_text }}</td>
+          <td>
+            @if (row.template) {
+              <nz-tag nzColor="blue">{{ 'DOCUMENT_TEMPLATES.CUSTOM' | translate }}</nz-tag>
+            } @else {
+              <nz-tag>{{ 'DOCUMENT_TEMPLATES.STANDARD' | translate }}</nz-tag>
+            }
+          </td>
+          <td>
+            @if (canWrite()) {
+              <button nz-button nzType="link" nzSize="small" type="button" (click)="edit(row)">
+                {{ 'RES.ACTION.EDIT' | translate }}
+              </button>
+              @if (row.template) {
+                <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="reset(row)">
+                  {{ 'DOCUMENT_TEMPLATES.RESET' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="editing() !== null"
+  [nzTitle]="editing() ? ('DOCUMENT_TEMPLATES.TYPE_' + editing() | translate) : ''"
+  [nzFooter]="footer"
+  (nzOnCancel)="editing.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label class="dt-label" for="dt-primary">{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</label>
+    <div class="dt-color">
+      <input nz-input id="dt-primary" maxlength="7" placeholder="#112233" [ngModel]="primaryColor()" (ngModelChange)="primaryColor.set($event)" />
+    </div>
+    <label class="dt-label" for="dt-secondary">{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</label>
+    <div class="dt-color">
+      <input nz-input id="dt-secondary" maxlength="7" placeholder="#445566" [ngModel]="secondaryColor()" (ngModelChange)="secondaryColor.set($event)" />
+    </div>
+    @if (!colorsValid()) {
+      <p role="alert" class="ant-form-item-explain-error">{{ 'DOCUMENT_TEMPLATES.COLOR_INVALID' | translate }}</p>
+    }
+    <label class="dt-label" for="dt-footer">{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</label>
+    <textarea nz-input id="dt-footer" rows="3" maxlength="500" [ngModel]="footerText()" (ngModelChange)="footerText.set($event)"></textarea>
+    <label class="dt-label" for="dt-logo">{{ 'DOCUMENT_TEMPLATES.LOGO' | translate }}</label>
+    <input id="dt-logo" type="file" accept="image/png,image/jpeg" (change)="onLogoPicked($event)" />
+    @if (logoError()) {
+      <p role="alert" class="ant-form-item-explain-error">{{ 'DOCUMENT_TEMPLATES.LOGO_INVALID' | translate }}</p>
+    }
+    @if (logoPreview(); as preview) {
+      <img class="dt-logo" [src]="preview" [alt]="'DOCUMENT_TEMPLATES.LOGO' | translate" />
+    }
+  </ng-container>
+  <ng-template #footer>
+    <button nz-button type="button" (click)="editing.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!colorsValid()" (click)="save()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </ng-template>
+</nz-modal>

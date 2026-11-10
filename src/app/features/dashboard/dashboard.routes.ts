@@ -7,4 +7,10 @@ export const DASHBOARD_ROUTES: Routes = [
     loadComponent: () =>
       import('./dashboard.component').then((m) => m.DashboardComponent),
   },
+  {
+    path: 'customize',
+    data: { breadcrumb: 'DASHBOARD_BUILDER.TITLE', titleKey: 'DASHBOARD_BUILDER.TITLE' },
+    loadComponent: () =>
+      import('./builder/dashboard-builder.component').then((m) => m.DashboardBuilderComponent),
+  },
 ];
