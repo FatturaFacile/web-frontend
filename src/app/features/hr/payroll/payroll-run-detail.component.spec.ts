@@ -58,6 +58,7 @@ describe('PayrollRunDetailComponent', () => {
     fixture.detectChanges();
   }
 
+  /** The texts come from the API; without a dictionary a button shows its translation key. */
   function buttons(): string {
     return Array.from(fixture.nativeElement.querySelectorAll('button')).map((b) => (b as HTMLElement).textContent).join('|');
   }
@@ -73,24 +74,24 @@ describe('PayrollRunDetailComponent', () => {
     setup('Calculated');
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(buttons()).toContain('Approve');
-    expect(buttons()).not.toContain('Finalize');
+    expect(buttons()).toContain('hrmPayroll.approve');
+    expect(buttons()).not.toContain('hrmPayroll.finalize');
   });
 
   it('offers finalize and reopen only on an approved run', async () => {
     setup('Approved');
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(buttons()).toContain('Finalize');
-    expect(buttons()).toContain('Reopen');
-    expect(buttons()).not.toContain('Approve');
+    expect(buttons()).toContain('hrmPayroll.finalize');
+    expect(buttons()).toContain('hrmPayroll.reopen');
+    expect(buttons()).not.toContain('hrmPayroll.approve');
   });
 
   it('hides every transition without write permission', async () => {
     setup('Calculated', false);
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(buttons()).not.toContain('Approve');
+    expect(buttons()).not.toContain('hrmPayroll.approve');
   });
 
   it('approves and reloads the run, showing the server error on 409', async () => {
