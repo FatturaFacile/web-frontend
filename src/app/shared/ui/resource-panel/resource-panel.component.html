@@ -120,6 +120,9 @@
               @if (config().detailPath) {
                 <button nz-button nzSize="small" nzType="link" type="button" (click)="view(row)">{{ 'RES.ACTION.VIEW' | translate }}</button>
               }
+              @if (config().rowLink; as link) {
+                <a nz-button nzSize="small" nzType="link" [routerLink]="linkOf(row)">{{ link.labelKey | translate }}</a>
+              }
               @for (action of rowActions(row); track action.key) {
                 <button nz-button nzSize="small" nzType="link" type="button" [nzDanger]="action.danger === true" (click)="run(action, row)">
                   {{ action.labelKey | translate }}

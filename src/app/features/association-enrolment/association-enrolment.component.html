@@ -1,0 +1,188 @@
+<main class="enrol">
+  @switch (state()) {
+    @case ('loading') {
+      <nz-spin />
+    }
+    @case ('notFound') {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="'ASSOC_ENROL.NOT_FOUND' | translate" />
+    }
+    @default {
+      @if (definition(); as form) {
+        <h1>{{ form.title }}</h1>
+        <p class="enrol-association">{{ form.association }}</p>
+        @if (form.description) {
+          <p>{{ form.description }}</p>
+        }
+
+        @if (trackingCode(); as code) {
+          <nz-alert nzType="success" nzShowIcon [nzMessage]="'ASSOC_ENROL.RECEIVED' | translate" [nzDescription]="('ASSOC_ENROL.TRACKING_CODE' | translate) + ': ' + code" />
+        } @else if (!form.is_open) {
+          <nz-alert nzType="warning" nzShowIcon [nzMessage]="'ASSOC_ENROL.CLOSED' | translate" />
+        } @else {
+          <form nz-form nzLayout="vertical" [formGroup]="person" (ngSubmit)="submit()" novalidate>
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="enrol-first-name">{{ 'ASSOC_ENROL.FIRST_NAME' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.first_name.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                <input nz-input id="enrol-first-name" formControlName="first_name" autocomplete="given-name" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="enrol-last-name">{{ 'ASSOC_ENROL.LAST_NAME' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.last_name.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                <input nz-input id="enrol-last-name" formControlName="last_name" autocomplete="family-name" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="enrol-email">{{ 'ASSOC_ENROL.EMAIL' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.email.errors?.['serverError'] ?? ('ASSOC_ENROL.INVALID_EMAIL' | translate)">
+                <input nz-input id="enrol-email" type="email" formControlName="email" autocomplete="email" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="enrol-phone">{{ 'ASSOC_ENROL.PHONE' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.phone.errors?.['serverError']">
+                <input nz-input id="enrol-phone" type="tel" formControlName="phone" autocomplete="tel" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="enrol-birth-date">{{ 'ASSOC_ENROL.BIRTH_DATE' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.birth_date.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                <input nz-input id="enrol-birth-date" type="date" formControlName="birth_date" autocomplete="bday" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="enrol-birth-place">{{ 'ASSOC_ENROL.BIRTH_PLACE' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input id="enrol-birth-place" formControlName="birth_place" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="enrol-gender">{{ 'ASSOC_ENROL.GENDER' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input id="enrol-gender" formControlName="gender" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="enrol-tax-code">{{ 'ASSOC_ENROL.TAX_CODE' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="person.controls.tax_code.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                <input nz-input id="enrol-tax-code" formControlName="tax_code" />
+              </nz-form-control>
+            </nz-form-item>
+
+            @if (isMinor()) {
+              <fieldset class="enrol-group">
+                <legend>{{ 'ASSOC_ENROL.GUARDIAN' | translate }}</legend>
+                <nz-form-item>
+                  <nz-form-label nzRequired nzFor="enrol-guardian-first-name">{{ 'ASSOC_ENROL.FIRST_NAME' | translate }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="person.controls.guardian_first_name.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                    <input nz-input id="enrol-guardian-first-name" formControlName="guardian_first_name" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label nzRequired nzFor="enrol-guardian-last-name">{{ 'ASSOC_ENROL.LAST_NAME' | translate }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="person.controls.guardian_last_name.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+                    <input nz-input id="enrol-guardian-last-name" formControlName="guardian_last_name" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label nzRequired nzFor="enrol-guardian-email">{{ 'ASSOC_ENROL.EMAIL' | translate }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="person.controls.guardian_email.errors?.['serverError'] ?? ('ASSOC_ENROL.INVALID_EMAIL' | translate)">
+                    <input nz-input id="enrol-guardian-email" type="email" formControlName="guardian_email" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label nzFor="enrol-guardian-phone">{{ 'ASSOC_ENROL.PHONE' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input id="enrol-guardian-phone" type="tel" formControlName="guardian_phone" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label nzFor="enrol-guardian-relationship">{{ 'ASSOC_ENROL.RELATIONSHIP' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input id="enrol-guardian-relationship" formControlName="guardian_relationship" />
+                  </nz-form-control>
+                </nz-form-item>
+              </fieldset>
+            }
+
+            @if (form.fields.length > 0) {
+              <fieldset class="enrol-group" [formGroup]="extra">
+                <legend>{{ 'ASSOC_ENROL.MORE_INFORMATION' | translate }}</legend>
+                @for (field of form.fields; track field.code) {
+                  <nz-form-item>
+                    <nz-form-label [nzRequired]="field.required === true" [nzFor]="'enrol-extra-' + field.code">{{ field.label }}</nz-form-label>
+                    <nz-form-control [nzErrorTip]="'ASSOC_ENROL.REQUIRED' | translate">
+                      @switch (field.type) {
+                        @case ('boolean') {
+                          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                          <label nz-checkbox [formControlName]="field.code" [id]="'enrol-extra-' + field.code">{{ field.label }}</label>
+                        }
+                        @case ('select') {
+                          <nz-select [id]="'enrol-extra-' + field.code" nzAllowClear [formControlName]="field.code" class="enrol-select">
+                            @for (option of optionsOf(field); track option) {
+                              <nz-option [nzValue]="option" [nzLabel]="option" />
+                            }
+                          </nz-select>
+                        }
+                        @default {
+                          <input nz-input [id]="'enrol-extra-' + field.code" [type]="fieldType(field)" [formControlName]="field.code" />
+                        }
+                      }
+                    </nz-form-control>
+                  </nz-form-item>
+                }
+              </fieldset>
+            }
+
+            @if (form.documents.length > 0) {
+              <fieldset class="enrol-group">
+                <legend>{{ 'ASSOC_ENROL.DOCUMENTS' | translate }}</legend>
+                @for (document of form.documents; track document.id) {
+                  <div class="enrol-document">
+                    <span class="enrol-document-title">
+                      {{ document.title }}
+                      @if (document.mode === 'required') {
+                        <span aria-hidden="true">*</span>
+                      }
+                    </span>
+                    @if (document.has_template) {
+                      <button nz-button nzSize="small" type="button" (click)="downloadTemplate(document.id, document.title)">
+                        {{ 'ASSOC_ENROL.DOWNLOAD_TEMPLATE' | translate }}
+                      </button>
+                    }
+                    @if (document.mode !== 'download_only') {
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" [attr.aria-label]="document.title" (change)="onFile(document.id, $event)" />
+                    }
+                  </div>
+                }
+              </fieldset>
+            }
+
+            <nz-form-item>
+              <nz-form-control [nzErrorTip]="'ASSOC_ENROL.PRIVACY_REQUIRED' | translate">
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label nz-checkbox formControlName="privacy_accepted">{{ 'ASSOC_ENROL.PRIVACY' | translate }}</label>
+              </nz-form-control>
+            </nz-form-item>
+
+            @for (error of errors(); track error) {
+              <p class="enrol-error" role="alert">{{ error.startsWith('ASSOC_ENROL.') ? (error | translate) : error }}</p>
+            }
+            <button nz-button nzType="primary" type="submit" [nzLoading]="submitting()">{{ 'ASSOC_ENROL.SUBMIT' | translate }}</button>
+          </form>
+        }
+
+        <section class="enrol-track" [attr.aria-label]="'ASSOC_ENROL.TRACK' | translate">
+          <h2>{{ 'ASSOC_ENROL.TRACK' | translate }}</h2>
+          <div class="enrol-track-row">
+            <input nz-input [formControl]="lookupCode" [placeholder]="'ASSOC_ENROL.TRACKING_CODE' | translate" [attr.aria-label]="'ASSOC_ENROL.TRACKING_CODE' | translate" />
+            <button nz-button type="button" (click)="track()">{{ 'ASSOC_ENROL.CHECK_STATUS' | translate }}</button>
+          </div>
+          @if (status(); as current) {
+            <nz-alert class="enrol-status" nzType="info" nzShowIcon [nzMessage]="'ASSOC_ENROL.STATUS_' + current | translate" />
+          }
+        </section>
+      }
+    }
+  }
+</main>
