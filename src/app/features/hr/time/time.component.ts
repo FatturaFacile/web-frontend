@@ -8,6 +8,11 @@ import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
 import { TimeClosingsComponent } from './time-closings.component';
+import { TimeMealsComponent } from './time-meals.component';
+import { TimePayrollViewComponent } from './time-payroll-view.component';
+import { TimePresenceComponent } from './time-presence.component';
+import { TimePunchImportComponent } from './time-punch-import.component';
+import { TimeScheduleGroupsComponent } from './time-schedule-groups.component';
 import { TimeReportComponent } from './time-report.component';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -26,7 +31,12 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
     TranslatePipe,
     CrudTableComponent,
     TimeClosingsComponent,
+    TimeMealsComponent,
+    TimePayrollViewComponent,
+    TimePresenceComponent,
+    TimePunchImportComponent,
     TimeReportComponent,
+    TimeScheduleGroupsComponent,
   ],
   template: `
     <app-page-header [title]="'hrmTime.title' | translate" [subtitle]="'hrmTime.subtitle' | translate" />
@@ -45,6 +55,21 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
         <nz-tab [nzTitle]="'hrmTime.overtimeRules' | translate">
           <app-crud-table [config]="overtimeConfig()" />
         </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeX.presenceTab' | translate">
+          <app-time-presence />
+        </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeX.payrollViewTab' | translate">
+          <app-time-payroll-view [employees]="employeeOptions()" />
+        </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeX.groupsTab' | translate">
+          <app-time-schedule-groups [canWrite]="canWrite()" [employees]="employeeOptions()" />
+        </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeX.punchTab' | translate">
+          <app-time-punch-import [canWrite]="canWrite()" />
+        </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeX.mealsTab' | translate">
+          <app-time-meals [canWrite]="canWrite()" [employees]="employeeOptions()" />
+        </nz-tab>
         <nz-tab [nzTitle]="'hrmTime.audit' | translate">
           <app-crud-table [config]="auditConfig()" />
         </nz-tab>
@@ -59,7 +84,7 @@ export class TimeComponent implements OnInit {
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('hr'));
   protected readonly employees = signal<EmployeeResource[]>([]);
-  private readonly employeeOptions = computed<CrudOption[]>(() =>
+  protected readonly employeeOptions = computed<CrudOption[]>(() =>
     this.employees().map((e) => ({ value: e.id, label: `${e.employee_number} - ${e.full_name}` })),
   );
 

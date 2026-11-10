@@ -24,9 +24,11 @@ import {
   I18nService,
   isValidationError,
   LeadResource,
+  LeadScoreBreakdownItem,
+  LeadScoreExplanation,
   StoreLeadPayload,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-crm-leads',
@@ -50,6 +52,7 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
     NzTooltipModule,
     PageHeaderComponent,
     MoneyPipe,
+    TranslatePipe,
   ],
   templateUrl: './leads.component.html',
   styleUrl: './leads.component.scss',
@@ -78,6 +81,7 @@ export class LeadsComponent implements OnInit {
   readonly createDrawerVisible = signal(false);
   readonly selectedLeadForScore = signal<LeadResource | null>(null);
   readonly scoreModalVisible = signal(false);
+  readonly scoreExplanation = signal<LeadScoreExplanation | null>(null);
 
   readonly leadForm = this.fb.group({
     first_name: this.fb.control(''),
@@ -211,7 +215,18 @@ export class LeadsComponent implements OnInit {
 
   openScoreModal(lead: LeadResource): void {
     this.selectedLeadForScore.set(lead);
+    this.scoreExplanation.set(null);
     this.scoreModalVisible.set(true);
+    // Stored score against the score under the model in force now: the server explains both.
+    this.crmApi.getLeadScore(lead.id).subscribe({
+      next: (explanation) => this.scoreExplanation.set(explanation),
+      error: () => this.scoreExplanation.set(null),
+    });
+  }
+
+  /** The breakdown of the stored score (the server may send a plain text for old scores). */
+  storedBreakdown(explanation: LeadScoreExplanation): LeadScoreBreakdownItem[] {
+    return Array.isArray(explanation.breakdown) ? explanation.breakdown : [];
   }
 
   qualify(lead: LeadResource): void {

@@ -249,10 +249,9 @@
               <nz-form-label>{{ 'INTRASTAT.DEFAULT_DELIVERY_TERMS' | translate }}</nz-form-label>
               <nz-form-control>
                 <nz-select formControlName="delivery_terms">
-                  <nz-option nzValue="C" nzLabel="C - Cost & Freight / CIF / CIP / CPT"></nz-option>
-                  <nz-option nzValue="D" nzLabel="D - Delivered DAP / DPU / DDP"></nz-option>
-                  <nz-option nzValue="F" nzLabel="F - Free Carrier FCA / FOB"></nz-option>
-                  <nz-option nzValue="E" nzLabel="E - Ex Works"></nz-option>
+                  @for (option of deliveryTermOptions(); track option.value) {
+                    <nz-option [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+                  }
                 </nz-select>
               </nz-form-control>
             </nz-form-item>
@@ -261,10 +260,9 @@
               <nz-form-label>{{ 'INTRASTAT.DEFAULT_TRANSPORT_MODE' | translate }}</nz-form-label>
               <nz-form-control>
                 <nz-select formControlName="transport_mode">
-                  <nz-option nzValue="3" nzLabel="3 - Trasporto Stradale"></nz-option>
-                  <nz-option nzValue="1" nzLabel="1 - Trasporto Marittimo"></nz-option>
-                  <nz-option nzValue="4" nzLabel="4 - Trasporto Aereo"></nz-option>
-                  <nz-option nzValue="2" nzLabel="2 - Trasporto Ferroviario"></nz-option>
+                  @for (option of transportModeOptions(); track option.value) {
+                    <nz-option [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+                  }
                 </nz-select>
               </nz-form-control>
             </nz-form-item>

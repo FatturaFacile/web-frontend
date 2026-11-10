@@ -288,6 +288,23 @@
       @if (lead.score_calculated_at) {
         <p class="score-date">Calculated at: {{ lead.score_calculated_at }}</p>
       }
+      @if (scoreExplanation(); as explanation) {
+        <h5>{{ 'crmLeadScore.stored' | translate }}: {{ explanation.score }} ({{ explanation.rating }})</h5>
+        <ul>
+          @for (item of storedBreakdown(explanation); track $index) {
+            <li>{{ item.rule }}: {{ item.points }} - {{ item.reason }}</li>
+          }
+        </ul>
+        <h5>
+          {{ 'crmLeadScore.current' | translate }}: {{ explanation.current.score }} ({{ explanation.current.rating }},
+          {{ 'crmLeadScore.models.' + explanation.current.model | translate }})
+        </h5>
+        <ul>
+          @for (item of explanation.current.breakdown; track $index) {
+            <li>{{ item.rule }}: {{ item.points }} - {{ item.reason }}</li>
+          }
+        </ul>
+      }
     }
   </ng-container>
 </nz-modal>
