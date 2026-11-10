@@ -133,6 +133,18 @@ export interface ChildcareCorrectionRequest {
   temperature?: string;
 }
 
+/** One entry of the correction history of an attendance (`GET /childcare/attendances/{id}/corrections`). */
+export interface ChildcareAttendanceCorrection {
+  id: string;
+  attendance_id: string;
+  field?: string | null;
+  old_value?: string | null;
+  new_value?: string | null;
+  reason: string;
+  corrected_by?: string | null;
+  created_at?: string | null;
+}
+
 export interface ChildcareDailyNote {
   id: string;
   child_id: string;
@@ -184,6 +196,14 @@ export interface ChildcareStaffShift {
   starts_at: string;
   ends_at: string;
   break_minutes?: number | null;
+}
+
+/** Row of `GET /childcare/staff-hours`: minutes worked per staff member in a month. */
+export interface ChildcareStaffHours {
+  user_id: string;
+  name: string | null;
+  shifts: number;
+  minutes: number;
 }
 
 export interface ChildcareStaffShiftRequest {
