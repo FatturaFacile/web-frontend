@@ -14,6 +14,12 @@ export const SETTINGS_ROUTES: Routes = [
       import('./settings.component').then((m) => m.SettingsComponent),
   },
   {
+    path: 'profile',
+    data: { breadcrumb: 'PROFILE.TITLE' },
+    loadComponent: () =>
+      import('./pages/profile/profile-settings.component').then((m) => m.ProfileSettingsComponent),
+  },
+  {
     path: 'security',
     data: { breadcrumb: 'Sicurezza & Sessioni', title: 'Sicurezza Utente & Sessioni' },
     loadComponent: () =>

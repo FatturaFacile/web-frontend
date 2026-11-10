@@ -491,6 +491,7 @@
   "HEADER.THEME_LIGHT": "Switch to light theme",
   "HEADER.TOGGLE_SIDEBAR_COLLAPSE": "Collapse menu",
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Expand menu",
+  "HEADER.PROFILE": "Profile",
   "hr": {
     "errors": {
       "loadFailed": "Unable to load human resources data",
@@ -5716,5 +5717,17 @@
     "FINISH_VARIANCE": "Finish variance (days)",
     "CRITICAL_PATH": "Critical path",
     "CRITICAL": "Critical"
-  }
+  },
+  "PROFILE.TITLE": "Profile",
+  "PROFILE.SUBTITLE": "Manage the sign-in details of your account",
+  "PROFILE.PASSWORD_SECTION": "Change password",
+  "PROFILE.PASSWORD_HINT": "After the change every session, this one included, is closed: you will sign in again with the new password.",
+  "PROFILE.CURRENT_PASSWORD": "Current password",
+  "PROFILE.TWO_FACTOR_HINT": "Two-step verification is on: confirm with the code of your authenticator app or with a recovery code.",
+  "PROFILE.TWO_FACTOR_CODE": "Authenticator app code",
+  "PROFILE.RECOVERY_CODE": "Recovery code",
+  "PROFILE.USE_RECOVERY_CODE": "Use a recovery code",
+  "PROFILE.USE_APP_CODE": "Use the app code",
+  "PROFILE.PASSWORD_SUBMIT": "Change password",
+  "PROFILE.PASSWORD_LOCKED": "Too many failed attempts. Please try again in a few minutes."
 }

@@ -491,6 +491,7 @@
   "HEADER.THEME_LIGHT": "Activer le thème clair",
   "HEADER.TOGGLE_SIDEBAR_COLLAPSE": "Réduire le menu",
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Développer le menu",
+  "HEADER.PROFILE": "Profil",
   "hr": {
     "errors": {
       "loadFailed": "Impossible de charger les données RH",
@@ -5716,5 +5717,17 @@
     "FINISH_VARIANCE": "Écart de fin (jours)",
     "CRITICAL_PATH": "Chemin critique",
     "CRITICAL": "Critique"
-  }
+  },
+  "PROFILE.TITLE": "Profil",
+  "PROFILE.SUBTITLE": "Gérez les informations de connexion de votre compte",
+  "PROFILE.PASSWORD_SECTION": "Changer le mot de passe",
+  "PROFILE.PASSWORD_HINT": "Après la modification, toutes les sessions, y compris celle-ci, seront fermées : vous vous reconnecterez avec le nouveau mot de passe.",
+  "PROFILE.CURRENT_PASSWORD": "Mot de passe actuel",
+  "PROFILE.TWO_FACTOR_HINT": "La vérification en deux étapes est active : confirmez avec le code de votre application d'authentification ou avec un code de récupération.",
+  "PROFILE.TWO_FACTOR_CODE": "Code de l'application d'authentification",
+  "PROFILE.RECOVERY_CODE": "Code de récupération",
+  "PROFILE.USE_RECOVERY_CODE": "Utiliser un code de récupération",
+  "PROFILE.USE_APP_CODE": "Utiliser le code de l'application",
+  "PROFILE.PASSWORD_SUBMIT": "Changer le mot de passe",
+  "PROFILE.PASSWORD_LOCKED": "Trop de tentatives échouées. Veuillez réessayer dans quelques minutes."
 }

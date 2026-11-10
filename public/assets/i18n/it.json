@@ -491,6 +491,7 @@
   "HEADER.THEME_LIGHT": "Attiva tema chiaro",
   "HEADER.TOGGLE_SIDEBAR_COLLAPSE": "Comprimi menu",
   "HEADER.TOGGLE_SIDEBAR_EXPAND": "Espandi menu",
+  "HEADER.PROFILE": "Profilo",
   "hr": {
     "errors": {
       "loadFailed": "Impossibile caricare i dati delle risorse umane",
@@ -5716,5 +5717,17 @@
     "FINISH_VARIANCE": "Scostamento di fine (giorni)",
     "CRITICAL_PATH": "Percorso critico",
     "CRITICAL": "Critica"
-  }
+  },
+  "PROFILE.TITLE": "Profilo",
+  "PROFILE.SUBTITLE": "Gestisci i dati di accesso del tuo account",
+  "PROFILE.PASSWORD_SECTION": "Cambia password",
+  "PROFILE.PASSWORD_HINT": "Dopo il cambio tutte le sessioni, compresa questa, verranno chiuse: dovrai accedere di nuovo con la nuova password.",
+  "PROFILE.CURRENT_PASSWORD": "Password attuale",
+  "PROFILE.TWO_FACTOR_HINT": "La verifica in due passaggi è attiva: conferma con il codice dell'app di autenticazione o con un codice di recupero.",
+  "PROFILE.TWO_FACTOR_CODE": "Codice dell'app di autenticazione",
+  "PROFILE.RECOVERY_CODE": "Codice di recupero",
+  "PROFILE.USE_RECOVERY_CODE": "Usa un codice di recupero",
+  "PROFILE.USE_APP_CODE": "Usa il codice dell'app",
+  "PROFILE.PASSWORD_SUBMIT": "Cambia password",
+  "PROFILE.PASSWORD_LOCKED": "Troppi tentativi non riusciti. Riprova tra qualche minuto."
 }

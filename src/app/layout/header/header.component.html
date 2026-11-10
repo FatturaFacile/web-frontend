@@ -145,6 +145,10 @@
             </div>
           </li>
           <li nz-menu-divider></li>
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/profile'])" (keydown.enter)="router.navigate(['/settings/profile'])">
+            <i class="fa-solid fa-user fa-icon-spaced"></i>
+            {{ "HEADER.PROFILE" | translate }}
+          </li>
           <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security'])" (keydown.enter)="router.navigate(['/settings/security'])">
             <i class="fa-solid fa-shield-halved fa-icon-spaced"></i>
             Sicurezza & Sessioni
