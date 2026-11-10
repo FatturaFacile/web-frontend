@@ -115,7 +115,7 @@ export function initialFormValue(fields: readonly ResourceField[], row?: Resourc
     } else if (fromRow !== undefined && fromRow !== null) {
       value[field.key] = fromRow;
     } else {
-      value[field.key] = field.defaultValue ?? (field.type === 'tags' ? [] : '');
+      value[field.key] = field.defaultValue ?? (field.type === 'tags' || field.type === 'multiselect' ? [] : '');
     }
   }
   return value;

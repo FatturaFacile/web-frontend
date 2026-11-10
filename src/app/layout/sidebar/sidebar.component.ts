@@ -303,6 +303,21 @@ export class SidebarComponent {
           module: 'associations',
         },
         {
+          key: 'NAV.ASSOCIATIONS_GOVERNANCE',
+          icon: 'fa-solid fa-scale-balanced',
+          module: 'associations',
+          children: [
+            { key: 'NAV.ASSOC_MEETINGS', route: '/associations/governance/meetings', icon: 'fa-solid fa-people-roof', module: 'associations' },
+            { key: 'NAV.ASSOC_PRIVACY', route: '/associations/governance/privacy', icon: 'fa-solid fa-user-shield', module: 'associations' },
+            { key: 'NAV.ASSOC_STATEMENTS', route: '/associations/governance/statements', icon: 'fa-solid fa-file-invoice', module: 'associations' },
+            { key: 'NAV.ASSOC_COMPLIANCE', route: '/associations/governance/compliance', icon: 'fa-solid fa-book', module: 'associations' },
+            { key: 'NAV.ASSOC_NETWORK', route: '/associations/governance/network', icon: 'fa-solid fa-sitemap', module: 'associations' },
+            { key: 'NAV.ASSOC_CATALOGS', route: '/associations/governance/catalogs', icon: 'fa-solid fa-sliders', module: 'associations' },
+            { key: 'NAV.ASSOC_WORK_CATALOGS', route: '/associations/governance/work-catalogs', icon: 'fa-solid fa-hand-holding-heart', module: 'associations' },
+            { key: 'NAV.ASSOC_FUNDRAISING_CATALOGS', route: '/associations/governance/fundraising-catalogs', icon: 'fa-solid fa-hand-holding-dollar', module: 'associations' },
+          ],
+        },
+        {
           key: 'NAV.CHILDCARE',
           icon: 'fa-solid fa-shapes',
           route: '/childcare',
