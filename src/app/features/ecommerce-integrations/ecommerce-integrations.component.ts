@@ -561,8 +561,9 @@ export class EcommerceIntegrationsComponent implements OnInit {
 
   copyToClipboard(text: string): void {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      this.message.success(this.translate.instant('ECOMMERCE_INTEGRATIONS.COPIED_TO_CLIPBOARD'));
+      navigator.clipboard.writeText(text).then(() => {
+        this.message.success(this.translate.instant('ECOMMERCE_INTEGRATIONS.COPIED_TO_CLIPBOARD'));
+      });
     }
   }
 

@@ -11,10 +11,10 @@ import { GlDimensionTableComponent } from './gl-dimension-table.component';
     <nz-card>
       <nz-tabs>
         <nz-tab [nzTitle]="'GL.COST_CENTERS' | translate">
-          <app-gl-dimension-table kind="cost" />
+          <app-gl-dimension-table [kind]="'cost'" />
         </nz-tab>
         <nz-tab [nzTitle]="'GL.PROFIT_CENTERS' | translate">
-          <app-gl-dimension-table kind="profit" />
+          <app-gl-dimension-table [kind]="'profit'" />
         </nz-tab>
       </nz-tabs>
     </nz-card>

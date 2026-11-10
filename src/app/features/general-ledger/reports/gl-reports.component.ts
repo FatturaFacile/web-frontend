@@ -26,8 +26,8 @@ import { GlVatRegistersComponent } from './gl-vat-registers.component';
       <nz-tabs>
         <nz-tab [nzTitle]="'GL.REPORT_TRIAL_BALANCE' | translate"><app-gl-trial-balance /></nz-tab>
         <nz-tab [nzTitle]="'GL.REPORT_ACCOUNT_LEDGER' | translate"><app-gl-account-ledger /></nz-tab>
-        <nz-tab [nzTitle]="'GL.REPORT_BALANCE_SHEET' | translate"><app-gl-statements mode="balance-sheet" /></nz-tab>
-        <nz-tab [nzTitle]="'GL.REPORT_INCOME_STATEMENT' | translate"><app-gl-statements mode="income-statement" /></nz-tab>
+        <nz-tab [nzTitle]="'GL.REPORT_BALANCE_SHEET' | translate"><app-gl-statements [mode]="'balance-sheet'" /></nz-tab>
+        <nz-tab [nzTitle]="'GL.REPORT_INCOME_STATEMENT' | translate"><app-gl-statements [mode]="'income-statement'" /></nz-tab>
         <nz-tab [nzTitle]="'GL.REPORT_DIMENSIONS' | translate"><app-gl-dimension-report /></nz-tab>
         <nz-tab [nzTitle]="'GL.REPORT_VAT_REGISTERS' | translate"><app-gl-vat-registers /></nz-tab>
       </nz-tabs>

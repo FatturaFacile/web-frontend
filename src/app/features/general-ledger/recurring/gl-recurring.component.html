@@ -129,7 +129,7 @@
 
       <h4 style="margin-top: 16px">{{ 'GL.LINES' | translate }}</h4>
       <div formArrayName="lines">
-        @for (line of lines.controls; track $index) {
+        @for (line of lines.controls; track line) {
           <div [formGroupName]="$index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
             <nz-select
               formControlName="account_id"

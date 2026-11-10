@@ -65,10 +65,10 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <app-crud-table [config]="familyConfig()" />
         </nz-tab>
         <nz-tab [nzTitle]="'hrmPayroll.settingsSwiss' | translate">
-          <app-payroll-settings country="swiss" [canWrite]="canWrite()" />
+          <app-payroll-settings [country]="'swiss'" [canWrite]="canWrite()" />
         </nz-tab>
         <nz-tab [nzTitle]="'hrmPayroll.settingsItalian' | translate">
-          <app-payroll-settings country="italian" [canWrite]="canWrite()" />
+          <app-payroll-settings [country]="'italian'" [canWrite]="canWrite()" />
         </nz-tab>
         <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
           <div style="margin-bottom: 12px;">

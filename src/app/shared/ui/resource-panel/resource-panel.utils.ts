@@ -14,7 +14,7 @@ export function getByPath(source: unknown, path: string): unknown {
 
 /** Fills the `{placeholders}` of a path from the given sources (first match wins). */
 export function resolvePath(path: string, ...sources: (Record<string, unknown> | null | undefined)[]): string {
-  return path.replace(/\{(\w+)\}/g, (_match, name: string) => {
+  return path.replace(/\{(\w+)}/g, (_match, name: string) => {
     for (const source of sources) {
       const value = source?.[name];
       if (value !== undefined && value !== null && value !== '') {
@@ -28,7 +28,7 @@ export function resolvePath(path: string, ...sources: (Record<string, unknown> |
 /** Maps placeholders named like `variantId` / `orderId` to the id of the row when the row has no such key. */
 export function rowIdAliases(path: string, row: ResourceRow | null): Record<string, unknown> {
   const aliases: Record<string, unknown> = {};
-  for (const match of path.matchAll(/\{(\w+Id)\}/g)) {
+  for (const match of path.matchAll(/\{(\w+Id)}/g)) {
     aliases[match[1]] = row?.['id'];
   }
   return aliases;
@@ -36,7 +36,7 @@ export function rowIdAliases(path: string, row: ResourceRow | null): Record<stri
 
 /** True when every placeholder of the path can be resolved. */
 export function isPathResolvable(path: string, ...sources: (Record<string, unknown> | null | undefined)[]): boolean {
-  return [...path.matchAll(/\{(\w+)\}/g)].every((match) =>
+  return [...path.matchAll(/\{(\w+)}/g)].every((match) =>
     sources.some((source) => {
       const value = source?.[match[1]];
       return value !== undefined && value !== null && value !== '';

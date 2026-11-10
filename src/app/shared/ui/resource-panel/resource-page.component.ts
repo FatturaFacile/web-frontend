@@ -14,7 +14,7 @@ import { ResourcePageConfig } from './resource-panel.types';
   imports: [NzTabsModule, PageHeaderComponent, ResourcePanelComponent, TranslatePipe],
   template: `
     <app-page-header [title]="page().titleKey | translate" />
-    <nz-tabs nzLazy>
+    <nz-tabs>
       @for (tab of page().tabs; track tab.id) {
         <nz-tab [nzTitle]="tab.titleKey | translate">
           <ng-template nz-tab>

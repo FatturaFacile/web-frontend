@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -133,11 +133,6 @@ export class ConstructionComponent implements OnInit {
   readonly subcontractModalVisible = signal<boolean>(false);
   readonly certifySubcontractModalVisible = signal<boolean>(false);
   readonly selectedSubcontract = signal<TradesSubcontract | null>(null);
-
-  // Derived metrics
-  readonly totalBidsAmount = computed(() =>
-    this.bids().reduce((acc, b) => acc + (parseFloat(b.total_amount) || 0), 0),
-  );
 
   // --- FORMS ---
   readonly siteForm = this.fb.group({

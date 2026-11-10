@@ -214,4 +214,4 @@
   </ng-container>
 </nz-drawer>
 
-<app-document-form-modal kind="order" [document]="editing()" [(visible)]="formOpen" (saved)="onSaved($event)" />
+<app-document-form-modal [kind]="'order'" [document]="editing()" [(visible)]="formOpen" (saved)="onSaved($event)" />

@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -218,7 +219,7 @@ export class SecuritySettingsComponent implements OnInit {
       nzCancelText: this.i18n.translate('COMMON.CANCEL'),
       nzOkDanger: true,
       nzOnOk: () => {
-        return this.authApi.revokeSession(session.kind, session.id).toPromise().then(() => {
+        return firstValueFrom(this.authApi.revokeSession(session.kind, session.id)).then(() => {
           this.message.success(this.i18n.translate('SECURITY.SESSION_REVOKED'));
           this.loadSessions();
         });

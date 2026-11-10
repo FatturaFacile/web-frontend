@@ -211,9 +211,9 @@ export class DocumentTrustComponent implements OnInit {
     }
     const val = this.sendForm.value;
     const rawPayload = val.payload || '';
-    let payloadBase64 = '';
+    let payloadBase64: string;
     try {
-      payloadBase64 = typeof btoa === 'function' ? btoa(unescape(encodeURIComponent(rawPayload))) : rawPayload;
+      payloadBase64 = typeof btoa === 'function' ? btoa(String.fromCharCode(...new TextEncoder().encode(rawPayload))) : rawPayload;
     } catch {
       payloadBase64 = rawPayload;
     }

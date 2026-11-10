@@ -298,7 +298,7 @@
     (nzOnOk)="submitAuthorize()"
   >
     <ng-container *nzModalContent>
-      <form [formGroup]="authForm" nzLayout="vertical">
+      <form [formGroup]="authForm">
         <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_AUTH_DESC' | translate }}</p>
 
         <nz-form-item>
@@ -344,7 +344,7 @@
     (nzOnOk)="submitCallback()"
   >
     <ng-container *nzModalContent>
-      <form [formGroup]="callbackForm" nzLayout="vertical">
+      <form [formGroup]="callbackForm">
         <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_CALLBACK_DESC' | translate }}</p>
 
         <nz-form-item>

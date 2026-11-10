@@ -82,7 +82,7 @@ export class ProfileSettingsComponent implements OnInit {
   ngOnInit(): void {
     this.authApi.getTwoFactorStatus().subscribe({
       next: (res) => {
-        this.twoFactorEnabled.set(!!res.data?.enabled);
+        this.twoFactorEnabled.set(res.data?.enabled ?? false);
         this.syncSecondFactorValidators();
       },
       // Without the status the form still works: the server asks the code if it is needed.

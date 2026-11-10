@@ -31,7 +31,7 @@ const dictionaries = Object.fromEntries(
 const SAME_IN_FRENCH = new Set(['NAV.DOCS']);
 
 /** Placeholders such as `{number}` must survive the translation. */
-const placeholders = (text: string): string[] => [...text.matchAll(/\{\w+\}/g)].map((m) => m[0]).sort();
+const placeholders = (text: string): string[] => [...text.matchAll(/\{\w+}/g)].map((m) => m[0]).sort();
 
 describe('translation dictionaries', () => {
   it('Italian and English carry the same keys', () => {

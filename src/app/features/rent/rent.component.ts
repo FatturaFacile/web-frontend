@@ -75,7 +75,6 @@ export class RentComponent implements OnInit {
 
   // Rental Fleet Vehicles
   readonly vehicles = signal<RentalVehicle[]>([]);
-  readonly selectedVehicle = signal<RentalVehicle | null>(null);
   readonly vehicleFilterStatus = signal<string>('');
 
   // Rental Bookings
