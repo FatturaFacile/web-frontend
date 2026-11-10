@@ -150,6 +150,13 @@ export const routes: Routes = [
       import('./features/contract-register/contract-register.routes').then((m) => m.CONTRACT_REGISTER_ROUTES),
   },
   {
+    path: 'associations/governance',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Governance e conformità', title: 'Governance e conformità delle associazioni' },
+    loadChildren: () =>
+      import('./features/associations/governance/governance.routes').then((m) => m.ASSOCIATIONS_GOVERNANCE_ROUTES),
+  },
+  {
     path: 'associations',
     canActivate: [authGuard],
     data: { breadcrumb: 'Associazioni & Terzo Settore', title: 'Associazioni ETS & Sportive' },
