@@ -655,14 +655,25 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="child_id" placeholder="ID Bambino" />
+          <nz-select formControlName="child_id" nzShowSearch>
+            @for (child of children(); track child.id) {
+              <nz-option [nzValue]="child.id" [nzLabel]="child.first_name + ' ' + child.last_name"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_PICKED_UP_BY' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="picked_up_by" placeholder="Madre / Padre / Nonno..." />
+        <nz-form-control
+          [nzErrorTip]="checkOutForm.controls.picked_up_by.errors?.['serverError'] ?? ('CHILDCARE.PICKED_UP_BY_REQUIRED' | translate)"
+          [nzExtra]="pickUpPersons().length === 0 && checkOutForm.controls.child_id.value ? ('CHILDCARE.NO_PICK_UP_PERSONS' | translate) : ''"
+        >
+          <nz-select formControlName="picked_up_by" [nzPlaceHolder]="'CHILDCARE.PICKED_UP_BY_PLACEHOLDER' | translate">
+            @for (person of pickUpPersons(); track person.id) {
+              <nz-option [nzValue]="person.id" [nzLabel]="person.full_name + ' (' + person.relationship + ')'"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
     </form>

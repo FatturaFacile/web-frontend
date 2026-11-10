@@ -1,5 +1,6 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -21,6 +22,7 @@ import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  applyServerErrors,
   ChildcareAdmitRequest,
   ChildcareApiService,
   ChildcareAttendance,
@@ -42,6 +44,7 @@ import {
   ChildcareReferencePersonRequest,
   ChildcareRequirement,
   ChildcareRequirementRequest,
+  isValidationError,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
@@ -102,7 +105,10 @@ export class ChildcareComponent implements OnInit {
   // Child Drawer
   readonly drawerVisible = signal<boolean>(false);
   readonly selectedChild = signal<ChildcareChild | null>(null);
+  private readonly destroyRef = inject(DestroyRef);
   readonly refPersons = signal<ChildcareReferencePerson[]>([]);
+  /** Reference persons allowed to pick up the child selected in the check-out dialog. */
+  readonly pickUpPersons = signal<ChildcareReferencePerson[]>([]);
   readonly childDocuments = signal<ChildcareDocument[]>([]);
   readonly childDailyNotes = signal<ChildcareDailyNote[]>([]);
   readonly drawerLoading = signal<boolean>(false);
@@ -222,6 +228,9 @@ export class ChildcareComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.checkOutForm.controls.child_id.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((childId) => this.loadPickUpPersons(childId));
     this.loadGroups();
     this.loadChildren();
     this.loadAttendances();
@@ -507,9 +516,26 @@ export class ChildcareComponent implements OnInit {
     this.checkOutForm.reset({
       child_id: childId || '',
       at: new Date().toISOString().substring(0, 16),
-      picked_up_by: 'Madre',
+      picked_up_by: '',
     });
     this.checkOutModalVisible.set(true);
+  }
+
+  /** Loads the persons authorised to pick up the child and clears the previous choice. */
+  loadPickUpPersons(childId: string): void {
+    this.checkOutForm.controls.picked_up_by.reset('');
+    this.pickUpPersons.set([]);
+    if (!childId) {
+      return;
+    }
+    this.api.getReferencePersons(childId).subscribe({
+      next: (res) => {
+        this.pickUpPersons.set((res.data ?? []).filter((person) => person.can_pick_up));
+      },
+      error: () => {
+        this.message.error(this.translate.instant('CHILDCARE.ACTION_ERROR'));
+      },
+    });
   }
 
   saveCheckOut(): void {
@@ -530,8 +556,11 @@ export class ChildcareComponent implements OnInit {
         this.checkOutModalVisible.set(false);
         this.loadAttendances();
       },
-      error: () => {
-        this.message.error(this.translate.instant('CHILDCARE.ACTION_ERROR'));
+      error: (err: unknown) => {
+        const unmapped = applyServerErrors(this.checkOutForm, err);
+        if (unmapped.length > 0 || !isValidationError(err)) {
+          this.message.error(this.translate.instant('CHILDCARE.ACTION_ERROR'));
+        }
       },
     });
   }

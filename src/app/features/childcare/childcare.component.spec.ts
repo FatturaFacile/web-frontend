@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -288,6 +289,30 @@ describe('ChildcareComponent', () => {
     expect(component.selectedChild()).toBeNull();
   });
 
+  it('should offer only pick-up authorised persons and show the server 422 on the field', () => {
+    const blocked = { ...mockRefPerson, id: 'ref-2-uuid', can_pick_up: false };
+    mockChildcareApi.getReferencePersons.mockReturnValueOnce(of({ data: [mockRefPerson, blocked] }));
+    mockChildcareApi.checkOut.mockReturnValueOnce(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 422,
+            error: { message: 'Invalid', errors: { picked_up_by: ['The selected person is not allowed.'] } },
+          }),
+      ),
+    );
+
+    component.openCheckOutModal('ch-1-uuid');
+    expect(component.pickUpPersons()).toEqual([mockRefPerson]);
+
+    component.checkOutForm.patchValue({ picked_up_by: 'ref-1-uuid' });
+    component.saveCheckOut();
+
+    expect(component.checkOutForm.controls.picked_up_by.errors?.['serverError']).toBe('The selected person is not allowed.');
+    expect(component.checkOutModalVisible()).toBe(true);
+    expect(mockMessageService.error).not.toHaveBeenCalled();
+  });
+
   it('should register check-in, check-out, and absence', () => {
     component.openCheckInModal('ch-1-uuid');
     expect(component.checkInModalVisible()).toBe(true);
@@ -308,15 +333,17 @@ describe('ChildcareComponent', () => {
 
     component.openCheckOutModal('ch-1-uuid');
     expect(component.checkOutModalVisible()).toBe(true);
+    expect(mockChildcareApi.getReferencePersons).toHaveBeenCalledWith('ch-1-uuid');
+    expect(component.pickUpPersons()).toEqual([mockRefPerson]);
     component.checkOutForm.patchValue({
       child_id: 'ch-1-uuid',
-      picked_up_by: 'Madre',
+      picked_up_by: 'ref-1-uuid',
     });
     component.saveCheckOut();
     expect(mockChildcareApi.checkOut).toHaveBeenCalledWith(
       expect.objectContaining({
         child_id: 'ch-1-uuid',
-        picked_up_by: 'Madre',
+        picked_up_by: 'ref-1-uuid',
       }),
     );
     expect(mockMessageService.success).toHaveBeenCalled();
