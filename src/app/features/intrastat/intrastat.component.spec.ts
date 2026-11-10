@@ -96,6 +96,14 @@ describe('IntrastatComponent', () => {
     addLine: vi.fn().mockReturnValue(of({ data: mockLine })),
     deleteLine: vi.fn().mockReturnValue(of({ message: 'Deleted' })),
     exportDeclaration: vi.fn().mockReturnValue(of({ data: { file_name: 'SCINTR26.001', content: 'RAW' } })),
+    getCodes: vi.fn().mockReturnValue(
+      of({
+        data: {
+          delivery_term_groups: { E: ['EXW'], F: ['FCA', 'FAS', 'FOB'] },
+          transport_modes: { '1': 'Trasporto marittimo', '9': 'Propulsione propria' },
+        },
+      }),
+    ),
     getPeriodicity: vi.fn().mockReturnValue(of({ data: mockPeriodicity })),
     getProductProfiles: vi.fn().mockReturnValue(of({ data: [mockProfile] })),
     setProductProfile: vi.fn().mockReturnValue(of({ data: mockProfile })),
@@ -143,6 +151,18 @@ describe('IntrastatComponent', () => {
     expect(component.totalPurchasesEur()).toBe(8000);
     expect(component.totalDraftCount()).toBe(1);
     expect(component.totalSubmittedCount()).toBe(1);
+  });
+
+  it('should build the delivery term and transport mode options from the code lists of the server', () => {
+    expect(apiSpy.getCodes).toHaveBeenCalled();
+    expect(component.deliveryTermOptions()).toEqual([
+      { value: 'E', label: 'E - EXW' },
+      { value: 'F', label: 'F - FCA / FAS / FOB' },
+    ]);
+    expect(component.transportModeOptions()).toEqual([
+      { value: '1', label: '1 - Trasporto marittimo' },
+      { value: '9', label: '9 - Propulsione propria' },
+    ]);
   });
 
   it('should open create modal and create a new declaration', () => {

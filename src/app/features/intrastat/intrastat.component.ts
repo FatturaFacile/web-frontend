@@ -24,6 +24,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   IntrastatApiService,
+  IntrastatCodeList,
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
@@ -38,6 +39,20 @@ import {
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+
+/** Used until the code lists of the server arrive (or when they cannot be loaded). */
+const FALLBACK_DELIVERY_TERM_GROUPS: Record<string, string[]> = {
+  C: ['CFR', 'CIF', 'CPT', 'CIP'],
+  D: ['DAP', 'DPU'],
+  F: ['FCA', 'FAS', 'FOB'],
+  E: ['EXW'],
+};
+const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
+  '3': 'Trasporto stradale',
+  '1': 'Trasporto marittimo',
+  '4': 'Trasporto aereo',
+  '2': 'Trasporto ferroviario',
+};
 
 @Component({
   selector: 'app-intrastat',
@@ -104,6 +119,21 @@ export class IntrastatComponent implements OnInit {
   readonly productProfilesLoading = signal<boolean>(false);
   readonly profileModalVisible = signal<boolean>(false);
   readonly selectedProductProfile = signal<IntrastatProductProfile | null>(null);
+
+  // Code lists of the forms (Table C transport modes, Table D delivery term groups): the server owns them
+  readonly codes = signal<IntrastatCodeList | null>(null);
+  readonly deliveryTermOptions = computed(() =>
+    Object.entries(this.codes()?.delivery_term_groups ?? FALLBACK_DELIVERY_TERM_GROUPS).map(([group, terms]) => ({
+      value: group,
+      label: `${group} - ${terms.join(' / ')}`,
+    })),
+  );
+  readonly transportModeOptions = computed(() =>
+    Object.entries(this.codes()?.transport_modes ?? FALLBACK_TRANSPORT_MODES).map(([code, label]) => ({
+      value: code,
+      label: `${code} - ${label}`,
+    })),
+  );
 
   // Export Dialog
   readonly exportModalVisible = signal<boolean>(false);
@@ -180,6 +210,7 @@ export class IntrastatComponent implements OnInit {
     this.loadDeclarations();
     this.loadPeriodicity();
     this.loadProductProfiles();
+    this.api.getCodes().subscribe({ next: (res) => this.codes.set(res.data), error: () => this.codes.set(null) });
   }
 
   // --- TAB 0: DECLARATIONS ---
