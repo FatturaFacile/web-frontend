@@ -54,10 +54,6 @@ export class TreasuryApiService {
     return this.http.post<ApiResponse<{ matched_count: number }>>(`${this.base}/reconciliation/auto-match`, {});
   }
 
-  importCamtFile(formData: FormData): Observable<ApiResponse<{ imported_count: number }>> {
-    return this.http.post<ApiResponse<{ imported_count: number }>>(`${this.base}/import-camt`, formData);
-  }
-
   importCbiFile(formData: FormData): Observable<ApiResponse<{ imported_count: number }>> {
     return this.http.post<ApiResponse<{ imported_count: number }>>(`${this.base}/import-cbi`, formData);
   }

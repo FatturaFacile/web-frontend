@@ -15,6 +15,7 @@ import {
   BankStatement,
   BankTransactionResource,
   BankingApiService,
+  BillingApiService,
   CashForecastResource,
   PaymentBatchResource,
   TreasuryApiService,
@@ -26,6 +27,7 @@ describe('TreasuryComponent', () => {
   let component: TreasuryComponent;
   let treasuryApiMock: Partial<TreasuryApiService>;
   let bankingApiMock: Partial<BankingApiService>;
+  let billingApiMock: { uploadPaymentImport: ReturnType<typeof vi.fn> };
   let messageMock: Partial<NzMessageService>;
 
   const mockAccount: BankAccountResource = {
@@ -90,13 +92,15 @@ describe('TreasuryComponent', () => {
   };
 
   beforeEach(() => {
+    billingApiMock = {
+      uploadPaymentImport: vi.fn().mockReturnValue(of({ data: { id: 'pi-1', lines: [{ id: 'l1' }, { id: 'l2' }] } })),
+    };
     treasuryApiMock = {
       getBankAccounts: vi.fn().mockReturnValue(of({ data: [mockAccount] })),
       createBankAccount: vi.fn().mockReturnValue(of({ data: mockAccount })),
       deleteBankAccount: vi.fn().mockReturnValue(of(void 0)),
       getBankTransactions: vi.fn().mockReturnValue(of({ data: [mockTx], meta: { total: 1 } })),
       reconcileTransactionsAutoMatch: vi.fn().mockReturnValue(of({ data: { matched_count: 3 } })),
-      importCamtFile: vi.fn().mockReturnValue(of({ data: { imported_count: 5 } })),
       importCbiFile: vi.fn().mockReturnValue(of({ data: { imported_count: 4 } })),
       getPaymentBatches: vi.fn().mockReturnValue(of({ data: [mockBatch], meta: { total: 1 } })),
       createPaymentBatch: vi.fn().mockReturnValue(of({ data: mockBatch })),
@@ -131,6 +135,7 @@ describe('TreasuryComponent', () => {
         provideNzDateFnsAdapter(),
         { provide: TreasuryApiService, useValue: treasuryApiMock },
         { provide: BankingApiService, useValue: bankingApiMock },
+        { provide: BillingApiService, useValue: billingApiMock },
         { provide: NzMessageService, useValue: messageMock },
       ],
     });
@@ -222,6 +227,15 @@ describe('TreasuryComponent', () => {
 
     component.cancelBatch(mockBatch);
     expect(treasuryApiMock.cancelPaymentBatch).toHaveBeenCalledWith('pb-1');
+  });
+
+  it('imports a CAMT file through the payment import, not the deprecated treasury endpoint', () => {
+    const file = new File(['<xml/>'], 'camt053.xml', { type: 'text/xml' });
+    (component as unknown as { selectedFile: File | null }).selectedFile = file;
+    (component as unknown as { importFormat: string }).importFormat = 'camt';
+    component.submitImport();
+    expect(billingApiMock.uploadPaymentImport).toHaveBeenCalledWith(file);
+    expect(messageMock.success).toHaveBeenCalledWith('Importati 2 movimenti CAMT');
   });
 
   it('generates cash flow forecast', () => {

@@ -22,6 +22,7 @@ import {
   BankStatement,
   BankTransactionResource,
   BankingApiService,
+  BillingApiService,
   CashForecastResource,
   CreateBankAccountPayload,
   CreatePaymentBatchPayload,
@@ -75,6 +76,7 @@ import {
 export class TreasuryComponent implements OnInit {
   private readonly treasuryApi = inject(TreasuryApiService);
   private readonly bankingApi = inject(BankingApiService);
+  private readonly billingApi = inject(BillingApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
 
@@ -411,12 +413,12 @@ export class TreasuryComponent implements OnInit {
     this.isUploading.set(true);
     const fd = new FormData();
     if (this.importFormat === 'camt') {
-      fd.append('file', this.selectedFile);
-      this.treasuryApi.importCamtFile(fd).subscribe({
+      // CAMT goes through the payment import (`/sales/payment-imports`); it auto-matches credits to open invoices.
+      this.billingApi.uploadPaymentImport(this.selectedFile).subscribe({
         next: (res) => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success(`Importati ${res.data?.imported_count || 0} movimenti CAMT`);
+          this.message.success(`Importati ${res.data?.lines?.length ?? 0} movimenti CAMT`);
           this.loadTransactions();
           this.loadStatements();
         },
