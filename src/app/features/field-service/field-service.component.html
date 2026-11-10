@@ -88,6 +88,14 @@
   >
     <thead>
       <tr>
+        <th nzWidth="48px">
+          <input
+            type="checkbox"
+            [checked]="allSelected()"
+            (change)="toggleAll($any($event.target).checked)"
+            [attr.aria-label]="'TICKET_BULK.SELECT_ALL' | translate"
+          />
+        </th>
         <th nzWidth="120px">{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
         <th>{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
         <th nzWidth="100px">Canale</th>
@@ -101,6 +109,14 @@
     <tbody>
       @for (tk of tkTable.data; track tk.id) {
         <tr>
+          <td>
+            <input
+              type="checkbox"
+              [checked]="selectedIds().has(tk.id)"
+              (change)="toggleOne(tk.id, $any($event.target).checked)"
+              [attr.aria-label]="'TICKET_BULK.SELECT_ONE' | translate"
+            />
+          </td>
           <td>
             <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
           </td>
@@ -145,6 +161,9 @@
 
 <ng-template #extraTemplate>
   <nz-space>
+    <button *nzSpaceItem nz-button [disabled]="selectedIds().size === 0" (click)="bulkOpen.set(true)">
+      {{ 'TICKET_BULK.OPEN' | translate: { count: selectedIds().size } }}
+    </button>
     <button *nzSpaceItem nz-button (click)="loadTickets()" [nzLoading]="loading()">
       <i nz-icon nzType="reload"></i> Aggiorna
     </button>
@@ -164,4 +183,10 @@
   [ticketId]="selectedTicketId()"
   [(open)]="detailDrawerOpen"
   (updated)="loadTickets()"
+/>
+
+<app-ticket-bulk-modal
+  [(open)]="bulkOpen"
+  [ticketIds]="selectedIdList()"
+  (done)="onBulkDone()"
 />

@@ -205,6 +205,11 @@
                       </span>
                     </div>
                     <div style="white-space: pre-wrap; font-size: 13px;">{{ msg.body }}</div>
+                    @for (attachment of msg.attachments ?? []; track attachment.id) {
+                      <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadAttachment(attachment)">
+                        <i nz-icon nzType="download"></i> {{ attachment.filename }}
+                      </button>
+                    }
                   </div>
                 }
               }
@@ -272,6 +277,18 @@
                 </nz-timeline>
               }
             </div>
+          </nz-tab>
+
+          <!-- TAB 4: STRUMENTI AGENTE -->
+          <nz-tab [nzTitle]="'TICKET_TOOLS.TAB' | translate">
+            @if (ticket(); as currentTicket) {
+              <app-ticket-agent-tools
+                [ticket]="currentTicket"
+                [messages]="messages()"
+                (changed)="onToolsChanged()"
+                (insertReply)="insertReply($event)"
+              />
+            }
           </nz-tab>
         </nz-tabs>
       }

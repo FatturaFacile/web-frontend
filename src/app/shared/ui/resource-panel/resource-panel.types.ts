@@ -29,7 +29,10 @@ export type ResourceLookupName =
   | 'suppliers'
   | 'mfgItems'
   | 'bins'
-  | 'zones';
+  | 'zones'
+  | 'contacts'
+  | 'kbCategories'
+  | 'businessHours';
 
 export interface ResourceField {
   key: string;
@@ -38,6 +41,8 @@ export interface ResourceField {
   labelKey?: string;
   required?: boolean;
   maxLength?: number;
+  /** Text input that hides what is typed (passwords, API secrets). */
+  secret?: boolean;
   min?: number;
   /** Enum values of a `select`; labels come from `RES.V.<value>` (humanised when missing). */
   options?: readonly string[];
