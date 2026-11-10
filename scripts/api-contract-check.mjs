@@ -12,7 +12,7 @@ for (const [path, ops] of Object.entries(spec.paths)) {
   for (const [method, op] of Object.entries(ops)) {
     if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) continue;
     const rel = path.replace(/^(\/api)?\/v1/, '');
-    const regex = new RegExp('^' + rel.split(/\{[^}]+\}/).map((s) => s.replace(/[.*+?^$()|[\]\\]/g, '\\$&')).join('[^/]+') + '$');
+    const regex = new RegExp('^' + rel.split(/\{[^}]+}/).map((s) => s.replace(/[.*+?^$()|[\]\\]/g, '\\$&')).join('[^/]+') + '$');
     operations.push({ method: method.toUpperCase(), path, rel, regex, deprecated: !!op.deprecated });
   }
 }
@@ -34,8 +34,8 @@ for (const file of files) {
   const text = readFileSync(file, 'utf8');
   const fields = {};
   const resolve = (value) => {
-    let out = value.replace(/\$\{environment\.apiBaseUrl\}/g, '');
-    out = out.replace(/\$\{this\.(\w+)\}/g, (all, name) => (name in fields ? fields[name] : all));
+    let out = value.replace(/\$\{environment\.apiBaseUrl}/g, '');
+    out = out.replace(/\$\{this\.(\w+)}/g, (all, name) => (name in fields ? fields[name] : all));
     return out;
   };
   for (let pass = 0; pass < 3; pass++) {
@@ -45,7 +45,7 @@ for (const file of files) {
     const method = m[1].toUpperCase();
     let raw = m[2] ?? m[3] ?? m[4] ?? (m[5] in fields ? fields[m[5]] : null);
     if (raw === null) continue;
-    raw = resolve(raw).split('?')[0].replace(/\$\{[^}]*\}/g, '{p}');
+    raw = resolve(raw).split('?')[0].replace(/\$\{[^}]*}/g, '{p}');
     if (!raw.startsWith('/')) continue;
     if (raw.includes('${')) continue;
     const line = text.slice(0, m.index).split('\n').length;
