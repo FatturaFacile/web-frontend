@@ -1,27 +1,29 @@
-export type TireSeason = 'SUMMER' | 'WINTER' | 'ALL_SEASON';
-
-export interface TireTreadDepth {
-  frontLeft: number;
-  frontRight: number;
-  rearLeft: number;
-  rearRight: number;
+/** A tire set stored in the tire hotel (`TireHotelRecord`). Tread depths are decimal strings. */
+export interface TireHotelRecord {
+  id: string;
+  tenant_id: string | null;
+  vehicle_id: string;
+  season: string;
+  brand: string;
+  model: string | null;
+  size: string;
+  dot: string | null;
+  front_left_tread_mm: string;
+  front_right_tread_mm: string;
+  rear_left_tread_mm: string;
+  rear_right_tread_mm: string;
+  warehouse_shelf_location: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
 }
 
-export interface TireRecord {
+/** Response of `POST /automotive/tire-hotel/check-in`. */
+export interface TireCheckInResult {
   id: string;
-  customerName: string;
-  vehiclePlate: string;
-  vehicleModel: string;
-  season: TireSeason;
-  brandModel: string;
-  dot: string;
-  treadDepthMm: TireTreadDepth;
-  hasRims: boolean;
-  rimType: string;
-  rackLocation: string;
-  depositDate: string;
   status: string;
-  reminderSent: boolean;
 }
 
 export interface AutomotiveVehicle {

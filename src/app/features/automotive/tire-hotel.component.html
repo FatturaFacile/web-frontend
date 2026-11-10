@@ -34,6 +34,8 @@
   </div>
 </div>
 
+
+
 <nz-card [nzTitle]="'TIRE_HOTEL.LOG_TITLE' | translate">
   <nz-table
     #tireTable
@@ -46,79 +48,80 @@
     <thead>
       <tr>
         <th>{{ "TIRE_HOTEL.COL_PLATE_MODEL" | translate }}</th>
-        <th>{{ "TIRE_HOTEL.COL_CUSTOMER" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_SEASON" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_SIZE_BRAND" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_TREAD" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_RACK" | translate }}</th>
-        <th>{{ "TIRE_HOTEL.COL_DATE" | translate }}</th>
-        <th>{{ "TIRE_HOTEL.COL_REMINDER" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_STATUS" | translate }}</th>
+        <th>{{ "TIRE_HOTEL.COL_ACTIONS" | translate }}</th>
       </tr>
     </thead>
     <tbody>
       @for (tire of tireTable.data; track tire.id) {
         <tr>
           <td>
-            <nz-tag
-              [nzColor]="
-                tire.vehiclePlate.startsWith('TI') || tire.vehiclePlate.startsWith('GE')
-                  ? 'red'
-                  : 'blue'
-              "
-            >
-              {{ tire.vehiclePlate }}
-            </nz-tag>
-            <div>
-              <small>{{ tire.vehicleModel }}</small>
-            </div>
+            @if (vehicleOf(tire); as vehicle) {
+              <nz-tag nzColor="blue">{{ vehicle.license_plate }}</nz-tag>
+              <div>
+                <small>{{ vehicle.make }} {{ vehicle.model }}</small>
+              </div>
+            } @else {
+              <small>{{ tire.vehicle_id }}</small>
+            }
           </td>
           <td>
-            <strong>{{ tire.customerName }}</strong>
-          </td>
-          <td>
-            @if (tire.season === "WINTER") {
+            @if (tire.season === "winter") {
               <nz-tag nzColor="blue"
                 ><i class="fa-solid fa-snowflake fa-icon-spaced"></i>
                 {{ "automotive.tireHotel.season.winter" | translate }}</nz-tag
               >
-            } @else {
+            } @else if (tire.season === "summer") {
               <nz-tag nzColor="orange"
                 ><i class="fa-solid fa-sun fa-icon-spaced"></i>
                 {{ "automotive.tireHotel.season.summer" | translate }}</nz-tag
               >
+            } @else {
+              <nz-tag>{{ "TIRE_HOTEL.SEASON_ALL" | translate }}</nz-tag>
             }
           </td>
           <td>
-            {{ tire.brandModel }}
+            {{ tire.brand }} {{ tire.model }}
             <div>
-              <small>DOT: {{ tire.dot }} • {{ tire.rimType }}</small>
+              <small>{{ tire.size }}@if (tire.dot) { • DOT: {{ tire.dot }} }</small>
             </div>
           </td>
           <td>
             <span class="depth-badge">
-              Ant: {{ tire.treadDepthMm.frontLeft }} / {{ tire.treadDepthMm.frontRight }} mm
+              {{ "TIRE_HOTEL.TREAD_FRONT" | translate }}: {{ tire.front_left_tread_mm }} /
+              {{ tire.front_right_tread_mm }} mm
             </span>
             <span class="depth-badge">
-              Post: {{ tire.treadDepthMm.rearLeft }} / {{ tire.treadDepthMm.rearRight }} mm
+              {{ "TIRE_HOTEL.TREAD_REAR" | translate }}: {{ tire.rear_left_tread_mm }} /
+              {{ tire.rear_right_tread_mm }} mm
             </span>
           </td>
           <td>
             <nz-tag nzColor="geekblue">
-              <i class="fa-solid fa-warehouse fa-icon-spaced"></i> {{ tire.rackLocation }}
+              <i class="fa-solid fa-warehouse fa-icon-spaced"></i>
+              {{ tire.warehouse_shelf_location }}
             </nz-tag>
           </td>
-          <td>{{ tire.depositDate }}</td>
           <td>
-            @if (tire.reminderSent) {
-              <nz-tag nzColor="success"
-                ><i class="fa-solid fa-check fa-icon-spaced"></i>
-                {{ "automotive.tireHotel.status.sent" | translate }}</nz-tag
-              >
-            } @else {
-              <button nz-button nzSize="small" nzType="dashed" (click)="sendReminder(tire)">
-                <i class="fa-solid fa-bell fa-icon-spaced"></i> SMS/WhatsApp
-              </button>
-            }
+            <nz-tag>{{ tire.status }}</nz-tag>
+          </td>
+          <td>
+            <button
+              nz-button
+              nzSize="small"
+              nzType="default"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'TIRE_HOTEL.CHECK_OUT_CONFIRM' | translate"
+              (nzOnConfirm)="checkOut(tire)"
+              [nzLoading]="checkingOutId() === tire.id"
+            >
+              <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
+              {{ "TIRE_HOTEL.CHECK_OUT" | translate }}
+            </button>
           </td>
         </tr>
       }

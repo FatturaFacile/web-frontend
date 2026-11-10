@@ -1021,6 +1021,11 @@
       "title": "Gestione Backup"
     }
   },
+  "TIRE_HOTEL.CHECK_OUT": "Riconsegna",
+  "TIRE_HOTEL.CHECK_OUT_CONFIRM": "Riconsegnare questo treno di pneumatici al cliente?",
+  "TIRE_HOTEL.CHECK_OUT_ERROR": "Impossibile registrare la riconsegna",
+  "TIRE_HOTEL.CHECK_OUT_SUCCESS": "Riconsegna pneumatici registrata",
+  "TIRE_HOTEL.COL_ACTIONS": "Azioni",
   "TIRE_HOTEL.COL_CUSTOMER": "Cliente",
   "TIRE_HOTEL.COL_DATE": "Data Deposito",
   "TIRE_HOTEL.COL_PLATE_MODEL": "Targa & Modello",
@@ -1028,12 +1033,16 @@
   "TIRE_HOTEL.COL_REMINDER": "Promemoria Stagionale",
   "TIRE_HOTEL.COL_SEASON": "Stagione",
   "TIRE_HOTEL.COL_SIZE_BRAND": "Misura & Marca",
+  "TIRE_HOTEL.COL_STATUS": "Stato",
   "TIRE_HOTEL.COL_TREAD": "Battistrada (mm) [Ant / Post]",
   "TIRE_HOTEL.LOG_TITLE": "Registro Deposito Pneumatici",
+  "TIRE_HOTEL.SEASON_ALL": "4 stagioni",
   "TIRE_HOTEL.SETS_STORED": "Treni Gomme Custoditi",
   "TIRE_HOTEL.SUBTITLE": "Stoccaggio stagionale pneumatici, rilevazione battistrada in mm, allocazione scaffali e richiamo cambio gomme",
   "TIRE_HOTEL.SUMMER_TIRES": "Pneumatici Estivi in Custodia",
   "TIRE_HOTEL.TITLE": "Hotel Pneumatici & Officina Gommista",
+  "TIRE_HOTEL.TREAD_FRONT": "Ant",
+  "TIRE_HOTEL.TREAD_REAR": "Post",
   "TIRE_HOTEL.WINTER_TIRES": "Pneumatici Invernali in Custodia",
   "treasury": {
     "messages": {

@@ -6,7 +6,8 @@ import {
   ApiResponse,
   AutomotiveVehicle,
   TireCheckInPayload,
-  TireRecord,
+  TireCheckInResult,
+  TireHotelRecord,
 } from '../models';
 
 @Service()
@@ -34,23 +35,15 @@ export class AutomotiveApiService {
     return this.http.delete<ApiResponse<void>>(`${this.base}/vehicles/${id}`);
   }
 
-  getTireHotelRecords(): Observable<TireRecord[]> {
-    return this.http.get<TireRecord[]>(`${this.base}/tire-hotel`);
+  getSeasonalSwitchPlan(): Observable<ApiResponse<TireHotelRecord[]>> {
+    return this.http.get<ApiResponse<TireHotelRecord[]>>(`${this.base}/tire-hotel/seasonal-switch-plan`);
   }
 
-  getSeasonalSwitchPlan(): Observable<ApiResponse<TireRecord[]>> {
-    return this.http.get<ApiResponse<TireRecord[]>>(`${this.base}/tire-hotel/seasonal-switch-plan`);
-  }
-
-  checkInTires(payload: TireCheckInPayload): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.base}/tire-hotel/check-in`, payload);
+  checkInTires(payload: TireCheckInPayload): Observable<ApiResponse<TireCheckInResult>> {
+    return this.http.post<ApiResponse<TireCheckInResult>>(`${this.base}/tire-hotel/check-in`, payload);
   }
 
   checkOutTires(id: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.base}/tire-hotel/${id}/check-out`, {});
-  }
-
-  sendReminder(tireId: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.base}/tire-hotel/${tireId}/reminder`, {});
   }
 }
