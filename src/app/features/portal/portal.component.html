@@ -427,6 +427,12 @@
                     <span nz-icon nzType="download"></span>
                     PDF
                   </button>
+                  @for (att of rep.attachments ?? []; track att.id) {
+                    <button nz-button nzSize="small" nzType="link" (click)="downloadAttachment(att)">
+                      <span nz-icon nzType="download"></span>
+                      {{ att.original_name || ('PORTAL.ATTACHMENT' | translate) }}
+                    </button>
+                  }
                 </td>
               </tr>
             }
@@ -474,6 +480,48 @@
             }
           </tbody>
         </nz-table>
+      </nz-card>
+
+      <!-- Movement history of the consigned goods -->
+      <nz-card [nzTitle]="'PORTAL.MOVEMENT_HISTORY' | translate" class="mb-4">
+        <nz-table
+          #movTable
+          [nzData]="stockMovements()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+        >
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
+              <th>{{ 'PORTAL.MOVEMENT_DIRECTION' | translate }}</th>
+              <th>{{ 'PORTAL.SKU' | translate }}</th>
+              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th>{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th>{{ 'PORTAL.QUANTITY' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (mv of movTable.data; track mv.id) {
+              <tr>
+                <td>{{ mv.executed_at | date: 'short' }}</td>
+                <td>
+                  <nz-tag [nzColor]="mv.direction === 'in' ? 'green' : mv.direction === 'out' ? 'orange' : 'blue'">
+                    {{ 'PORTAL.MOVEMENT_' + mv.direction | translate }}
+                  </nz-tag>
+                </td>
+                <td><code>{{ mv.sku || '-' }}</code></td>
+                <td>{{ mv.name || '-' }}</td>
+                <td>{{ mv.lot_number || '-' }}</td>
+                <td>{{ mv.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        @if (stockMovementsHasMore()) {
+          <button nz-button nzType="default" class="mt-2" (click)="loadMoreStockMovements()">
+            {{ 'PORTAL.LOAD_MORE' | translate }}
+          </button>
+        }
       </nz-card>
     </nz-tab>
 
@@ -624,6 +672,12 @@
                 <span class="message-time">{{ m.created_at }}</span>
               </div>
               <p class="message-text">{{ m.message }}</p>
+              @for (att of m.attachments ?? []; track att.id) {
+                <button nz-button nzSize="small" nzType="link" (click)="downloadTicketAttachment(t, att)">
+                  <span nz-icon nzType="download"></span>
+                  {{ att.original_name || ('PORTAL.ATTACHMENT' | translate) }}
+                </button>
+              }
             </div>
           }
         </div>

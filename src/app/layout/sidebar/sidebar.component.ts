@@ -206,6 +206,9 @@ export class SidebarComponent {
             { key: 'NAV.STOCK', route: '/inventory/stock', icon: 'fa-solid fa-warehouse', module: 'inventory' },
             { key: 'NAV.DDT', route: '/inventory/ddt', icon: 'fa-solid fa-truck-ramp-box', module: 'inventory' },
             { key: 'NAV.CUSTOMS', route: '/inventory/customs', icon: 'fa-solid fa-passport', module: 'customs' },
+            { key: 'NAV.CUSTOMS_OPERATIONS', route: '/customs/operations', icon: 'fa-solid fa-boxes-packing', module: 'customs' },
+            { key: 'NAV.CUSTOMS_ASSESSMENTS', route: '/customs/assessments', icon: 'fa-solid fa-file-invoice-dollar', module: 'customs' },
+            { key: 'NAV.CUSTOMS_SETUP', route: '/customs/setup', icon: 'fa-solid fa-sliders', module: 'customs' },
             { key: 'NAV.WMS_WAREHOUSE', route: '/inventory/warehouse', icon: 'fa-solid fa-map-location-dot', module: 'inventory' },
             { key: 'NAV.WMS_OUTBOUND', route: '/inventory/outbound', icon: 'fa-solid fa-dolly', module: 'inventory' },
             { key: 'NAV.WMS_TRANSFERS', route: '/inventory/transfers', icon: 'fa-solid fa-right-left', module: 'inventory' },
@@ -317,8 +320,11 @@ export class SidebarComponent {
         {
           key: 'NAV.CONTRACT_REGISTER',
           icon: 'fa-solid fa-file-signature',
-          route: '/contract-register',
           module: 'contracts',
+          children: [
+            { key: 'NAV.CONTRACT_REGISTER', route: '/contract-register', icon: 'fa-solid fa-file-signature', module: 'contracts' },
+            { key: 'NAV.CONTRACT_DOCUMENTS', route: '/contract-register/documents', icon: 'fa-solid fa-paperclip', module: 'contracts' },
+          ],
         },
         {
           key: 'NAV.ASSOCIATIONS',
@@ -356,8 +362,12 @@ export class SidebarComponent {
         {
           key: 'NAV.CHILDCARE',
           icon: 'fa-solid fa-shapes',
-          route: '/childcare',
           module: 'childcare',
+          children: [
+            { key: 'NAV.CHILDCARE_OVERVIEW', route: '/childcare', icon: 'fa-solid fa-shapes', module: 'childcare' },
+            { key: 'NAV.CHILDCARE_CARE', route: '/childcare/care', icon: 'fa-solid fa-utensils', module: 'childcare' },
+            { key: 'NAV.CHILDCARE_FAMILY', route: '/portal/family', icon: 'fa-solid fa-people-roof', module: 'childcare' },
+          ],
         },
       ],
     },
@@ -370,6 +380,7 @@ export class SidebarComponent {
           module: 'automotive',
           children: [
             { key: 'NAV.WORKSHOP', route: '/automotive/workshop', icon: 'fa-solid fa-wrench', module: 'workshop' },
+            { key: 'NAV.INSPECTIONS', route: '/automotive/inspections', icon: 'fa-solid fa-clipboard-check', module: 'automotive' },
             {
               key: 'NAV.TIRE_HOTEL',
               route: '/automotive/tire-hotel',
@@ -390,8 +401,11 @@ export class SidebarComponent {
         {
           key: 'NAV.CONSTRUCTION',
           icon: 'fa-solid fa-person-digging',
-          route: '/construction',
           module: 'construction',
+          children: [
+            { key: 'NAV.CONSTRUCTION_OVERVIEW', route: '/construction', icon: 'fa-solid fa-person-digging', module: 'construction' },
+            { key: 'NAV.CONSTRUCTION_BACK_OFFICE', route: '/construction/back-office', icon: 'fa-solid fa-helmet-safety', module: 'construction' },
+          ],
         },
         {
           key: 'NAV.PROFESSIONALS',
@@ -414,14 +428,20 @@ export class SidebarComponent {
         {
           key: 'NAV.HOSPITALITY',
           icon: 'fa-solid fa-utensils',
-          route: '/hospitality',
           module: 'hospitality',
+          children: [
+            { key: 'NAV.HOSPITALITY_OVERVIEW', route: '/hospitality', icon: 'fa-solid fa-utensils', module: 'hospitality' },
+            { key: 'NAV.HOSPITALITY_FLOOR', route: '/hospitality/floor', icon: 'fa-solid fa-chair', module: 'hospitality' },
+          ],
         },
         {
           key: 'NAV.RETAIL',
           icon: 'fa-solid fa-cash-register',
-          route: '/retail',
           module: 'fiscal_retail',
+          children: [
+            { key: 'NAV.RETAIL_OVERVIEW', route: '/retail', icon: 'fa-solid fa-cash-register', module: 'fiscal_retail' },
+            { key: 'NAV.RETAIL_POS_ADMIN', route: '/retail/pos-admin', icon: 'fa-solid fa-receipt', module: 'fiscal_retail' },
+          ],
         },
       ],
     },

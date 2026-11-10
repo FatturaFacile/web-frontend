@@ -34,7 +34,9 @@ export type ResourceLookupName =
   | 'zones'
   | 'contacts'
   | 'kbCategories'
-  | 'businessHours';
+  | 'businessHours'
+  | 'constructionSites'
+  | 'hospitalityRooms';
 
 export interface ResourceField {
   key: string;

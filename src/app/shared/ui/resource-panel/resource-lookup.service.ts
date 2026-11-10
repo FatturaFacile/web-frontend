@@ -26,6 +26,8 @@ const LOOKUPS: Record<ResourceLookupName, LookupDefinition> = {
   contacts: { path: '/crm/contacts', labelKeys: ['company_name', 'first_name', 'last_name'], filters: { per_page: 200 } },
   kbCategories: { path: '/esm/kb/categories', labelKeys: ['name'] },
   businessHours: { path: '/esm/helpdesk/business-hours', labelKeys: ['code', 'name'] },
+  constructionSites: { path: '/construction/sites', labelKeys: ['code', 'name'], filters: { per_page: 200 } },
+  hospitalityRooms: { path: '/hospitality/rooms', labelKeys: ['name'] },
 };
 
 /** Cached remote option lists for the select fields of the resource forms. */

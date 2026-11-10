@@ -261,3 +261,36 @@ export interface CustomsPortalShipmentRequest {
   pickup_on?: string | null;
   notes?: string | null;
 }
+
+export type PortalStockMovementDirection = 'internal' | 'in' | 'out';
+
+/** One stock movement of the customer's consigned goods (`GET /portal/stock-movements/{token}`). */
+export interface PortalStockMovement {
+  id: string;
+  executed_at: string | null;
+  direction: PortalStockMovementDirection;
+  sku: string | null;
+  name: string | null;
+  lot_number: string | null;
+  /** Decimal string. */
+  quantity: string;
+}
+
+export interface PortalStockMovementPage {
+  data: PortalStockMovement[];
+  meta: { current_page: number; last_page: number; total: number };
+}
+
+/** A ticket as listed by `GET /portal/tickets/{token}`: helpdesk tickets and tickets of the former table. */
+export type PortalTicketListItem = PortalHelpdeskTicket & { messages?: PortalHelpdeskMessage[] };
+
+export interface PortalTicketReplyRequest {
+  message: string;
+  author_name?: string | null;
+  attachments?: File[];
+}
+
+export interface PayslipLinkRequest {
+  /** `YYYY-MM-DD`. */
+  birth_date: string;
+}
