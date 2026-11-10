@@ -13,6 +13,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
@@ -52,6 +53,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzButtonModule,
     NzIconModule,
     NzModalModule,
+    NzPopconfirmModule,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -559,6 +561,35 @@ export class EcommerceIntegrationsComponent implements OnInit {
     });
   }
 
+  isPaymentLinkCancellable(link: PaymentLink): boolean {
+    return link.status === 'open' || link.status === 'active';
+  }
+
+  /** Re-reads one link, for example to see whether the customer has paid it. */
+  refreshPaymentLink(link: PaymentLink): void {
+    this.api.getPaymentLink(link.id).subscribe({
+      next: (res) => this.replacePaymentLink(res.data),
+      error: () => this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.PAYMENT_LINKS_LOAD_ERROR')),
+    });
+  }
+
+  cancelPaymentLink(link: PaymentLink): void {
+    this.api.cancelPaymentLink(link.id).subscribe({
+      next: (res) => {
+        this.message.success(this.translate.instant('ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCELLED'));
+        this.replacePaymentLink(res.data ?? { ...link, status: 'cancelled' });
+      },
+      error: (err: unknown) => {
+        const errorDetail = (err as { error?: { message?: string } })?.error?.message;
+        this.message.error(errorDetail || this.translate.instant('ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_FAILED'));
+      },
+    });
+  }
+
+  private replacePaymentLink(updated: PaymentLink): void {
+    this.paymentLinks.update((links) => links.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
+  }
+
   copyToClipboard(text: string): void {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);
@@ -585,8 +616,13 @@ export class EcommerceIntegrationsComponent implements OnInit {
     switch (status?.toLowerCase()) {
       case 'paid':
         return 'success';
+      case 'open':
       case 'active':
         return 'processing';
+      case 'review':
+        return 'warning';
+      case 'failed':
+        return 'error';
       case 'expired':
       case 'cancelled':
         return 'default';

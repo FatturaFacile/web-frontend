@@ -95,4 +95,13 @@ export class EcommerceIntegrationsApiService {
   createPaymentLink(req: CreatePaymentLinkRequest): Observable<ApiResponse<PaymentLink>> {
     return this.http.post<ApiResponse<PaymentLink>>(this.linksBase, req);
   }
+
+  getPaymentLink(id: string): Observable<ApiResponse<PaymentLink>> {
+    return this.http.get<ApiResponse<PaymentLink>>(`${this.linksBase}/${id}`);
+  }
+
+  /** Withdraws an open link so that a new one can be created for the invoice. */
+  cancelPaymentLink(id: string): Observable<ApiResponse<PaymentLink>> {
+    return this.http.post<ApiResponse<PaymentLink>>(`${this.linksBase}/${id}/cancel`, {});
+  }
 }

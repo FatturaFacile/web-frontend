@@ -14,6 +14,9 @@
         @case ('integer') {
           <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
+        @case ('file') {
+          <input type="file" [id]="'rf-' + field.key" (change)="onFileChosen(field.key, $event)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+        }
         @case ('date') {
           <input nz-input type="date" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }

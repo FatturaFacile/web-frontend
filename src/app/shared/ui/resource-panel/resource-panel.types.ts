@@ -20,6 +20,7 @@ export type ResourceFieldType =
   | 'tags'
   | 'json'
   | 'lines'
+  | 'file'
   | 'uuid';
 
 /** Remote option sources shared by every form (see `ResourceLookupService`). */
@@ -29,7 +30,9 @@ export type ResourceLookupName =
   | 'suppliers'
   | 'mfgItems'
   | 'bins'
-  | 'zones';
+  | 'zones'
+  | 'constructionSites'
+  | 'hospitalityRooms';
 
 export interface ResourceField {
   key: string;

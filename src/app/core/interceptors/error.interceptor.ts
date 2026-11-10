@@ -44,7 +44,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.endsWith('/auth/resend-reset-password-email') ||
           req.url.endsWith('/auth/validate-reset-token') ||
           req.url.endsWith('/auth/reset-password') ||
-          req.url.includes('/sanctum/');
+          req.url.includes('/sanctum/') ||
+          // The family portal is token based: a refused token must not end the session of the staff user.
+          req.url.includes('/childcare-family/');
 
         const body: ProblemDetails | null =
           typeof err.error === 'object' && err.error !== null

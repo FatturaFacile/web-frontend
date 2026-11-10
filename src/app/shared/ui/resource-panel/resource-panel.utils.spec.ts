@@ -23,6 +23,21 @@ describe('resource panel utils', () => {
     expect(isPathResolvable('/x/zones')).toBe(true);
   });
 
+  it('keeps a chosen file in the request body and drops an empty file field', () => {
+    const fields = [req(rf.file('file')), rf.select('document_kind', ['invoice', 'other'])];
+    const file = new File(['x'], 'invoice.pdf');
+    expect(buildRequestBody(fields, { file, document_kind: 'invoice' })).toEqual({ file, document_kind: 'invoice' });
+    expect(buildRequestBody(fields, { file: '', document_kind: 'other' })).toEqual({ document_kind: 'other' });
+  });
+
+  it('lets a form value fill a path placeholder that only the form knows, before the row alias', () => {
+    const path = '/customs/consolidations/{id}/dossiers/{dossierId}';
+    const row = { id: 'consolidation-1' };
+    expect(resolvePath(path, row, {}, { dossierId: 'dossier-9' }, rowIdAliases(path, row))).toBe(
+      '/customs/consolidations/consolidation-1/dossiers/dossier-9',
+    );
+  });
+
   it('aliases `...Id` placeholders to the row id', () => {
     expect(rowIdAliases('/variants/{variantId}', { id: 'v1' })).toEqual({ variantId: 'v1' });
     expect(resolvePath('/variants/{variantId}', {}, rowIdAliases('/variants/{variantId}', { id: 'v1' }))).toBe('/variants/v1');

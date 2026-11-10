@@ -87,6 +87,8 @@ describe('EcommerceIntegrationsComponent', () => {
       updatePaymentGateway: vi.fn().mockReturnValue(of({ success: true, data: mockGateway })),
       getPaymentLinks: vi.fn().mockReturnValue(of({ success: true, data: [mockPaymentLink] })),
       createPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: mockPaymentLink })),
+      getPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: { ...mockPaymentLink, status: 'paid' } })),
+      cancelPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: { ...mockPaymentLink, status: 'cancelled' } })),
     };
 
     messageMock = {
@@ -298,6 +300,21 @@ describe('EcommerceIntegrationsComponent', () => {
 
     component.copyToClipboard('https://test.link');
     expect(messageMock['success']).toHaveBeenCalled();
+  });
+
+  it('should refresh and cancel a payment link in place', () => {
+    const link = component.paymentLinks()[0];
+    expect(component.isPaymentLinkCancellable(link)).toBe(true);
+
+    component.refreshPaymentLink(link);
+    expect(apiMock['getPaymentLink']).toHaveBeenCalledWith('link-1');
+    expect(component.paymentLinks()[0].status).toBe('paid');
+
+    component.cancelPaymentLink(link);
+    expect(apiMock['cancelPaymentLink']).toHaveBeenCalledWith('link-1');
+    expect(component.paymentLinks()[0].status).toBe('cancelled');
+    expect(messageMock['success']).toHaveBeenCalled();
+    expect(component.isPaymentLinkCancellable(component.paymentLinks()[0])).toBe(false);
   });
 
   it('should return correct badge colors', () => {

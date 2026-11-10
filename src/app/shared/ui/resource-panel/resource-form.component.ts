@@ -100,6 +100,11 @@ export class ResourceFormComponent implements OnInit {
     this.linesOf(field).removeAt(index);
   }
 
+  protected onFileChosen(key: string, event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.item(0) ?? '';
+    this.form.get(key)?.setValue(file);
+  }
+
   protected options(field: ResourceField): ResourceOption[] {
     if (field.lookup) {
       return this.lookupOptions()[field.key] ?? [];

@@ -212,4 +212,23 @@ describe('EcommerceIntegrationsApiService', () => {
     expect(postLinkReq.request.method).toBe('POST');
     postLinkReq.flush({ success: true, data: mockPaymentLink });
   });
+
+  it('reads one payment link by id', () => {
+    service.getPaymentLink('link-1').subscribe((res) => {
+      expect(res.data).toEqual(mockPaymentLink);
+    });
+    const req = httpMock.expectOne('/api/v1/payment-links/link-1');
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true, data: mockPaymentLink });
+  });
+
+  it('cancels an open payment link', () => {
+    service.cancelPaymentLink('link-1').subscribe((res) => {
+      expect(res.data.status).toBe('cancelled');
+    });
+    const req = httpMock.expectOne('/api/v1/payment-links/link-1/cancel');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({ success: true, data: { ...mockPaymentLink, status: 'cancelled' } });
+  });
 });

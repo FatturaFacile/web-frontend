@@ -22,7 +22,11 @@ import {
   PortalQuote,
   PortalServiceReport,
   PortalStockLine,
+  PortalStockMovementPage,
   PortalSubscription,
+  PortalTicketListItem,
+  PortalTicketReplyRequest,
+  PayslipLinkRequest,
   RejectPortalQuoteRequest,
   ReplyPortalTicketRequest,
 } from '../models';
@@ -84,6 +88,48 @@ export class PortalApiService {
 
   replyTicket(token: string, ticketId: string, payload: ReplyPortalTicketRequest): Observable<ApiResponse<PortalHelpdeskMessage>> {
     return this.http.post<ApiResponse<PortalHelpdeskMessage>>(`${this.base}/helpdesk/${token}/tickets/${ticketId}/reply`, payload);
+  }
+
+  /** Tickets of the customer (helpdesk and former tickets table) with their customer-facing messages, 20 per page. */
+  getPortalTickets(token: string, page = 1): Observable<ApiResponse<PortalTicketListItem[]> & { meta: { current_page: number; per_page: number; total: number } }> {
+    return this.http.get<ApiResponse<PortalTicketListItem[]> & { meta: { current_page: number; per_page: number; total: number } }>(
+      `${this.base}/tickets/${token}`,
+      { params: new HttpParams().set('page', String(page)) },
+    );
+  }
+
+  /** Reply to a ticket listed by `getPortalTickets`; files travel as multipart form data. */
+  replyPortalTicket(token: string, ticketId: string, payload: PortalTicketReplyRequest): Observable<ApiResponse<PortalHelpdeskMessage>> {
+    const body = new FormData();
+    body.append('message', payload.message);
+    if (payload.author_name) {
+      body.append('author_name', payload.author_name);
+    }
+    for (const file of payload.attachments ?? []) {
+      body.append('attachments[]', file);
+    }
+    return this.http.post<ApiResponse<PortalHelpdeskMessage>>(`${this.base}/tickets/${token}/reply/${ticketId}`, body);
+  }
+
+  downloadAttachment(token: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/attachments/${token}/${attachmentId}`, { responseType: 'blob' });
+  }
+
+  downloadHelpdeskAttachment(token: string, ticketId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/helpdesk/${token}/tickets/${ticketId}/attachments/${attachmentId}`, {
+      responseType: 'blob',
+    });
+  }
+
+  getStockMovements(token: string, page = 1): Observable<PortalStockMovementPage> {
+    return this.http.get<PortalStockMovementPage>(`${this.base}/stock-movements/${token}`, {
+      params: new HttpParams().set('page', String(page)),
+    });
+  }
+
+  /** Public payslip link: the PDF is returned against the date of birth of the employee (every failure answers 404). */
+  openPayslipLink(token: string, payload: PayslipLinkRequest): Observable<Blob> {
+    return this.http.post(`${this.base}/payslips/${token}`, payload, { responseType: 'blob' });
   }
 
   getAppointments(token: string): Observable<ApiResponse<PortalAppointment[]>> {
