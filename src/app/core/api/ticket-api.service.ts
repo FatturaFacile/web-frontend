@@ -5,16 +5,25 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   AssignTicketRequest,
+  AutoAssignRequest,
+  BulkTicketRequest,
+  BulkTicketResponse,
   ChangeTicketStatusRequest,
   HelpdeskTicketActivityResource,
   HelpdeskTicketMessageResource,
   HelpdeskTicketMessagesResponse,
+  KnowledgeArticle,
+  MergeTicketRequest,
+  RenderedCannedResponse,
   ResolveTicketRequest,
+  SplitTicketRequest,
   StoreTicketMessageRequest,
   StoreTicketRequest,
   TicketListParams,
   TicketListResponse,
+  TicketReadState,
   TicketResource,
+  TicketWatcher,
   UpdateHelpdeskTicketRequest,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -92,5 +101,66 @@ export class TicketApiService {
 
   getTicketActivities(id: string): Observable<ApiResponse<HelpdeskTicketActivityResource[]>> {
     return this.http.get<ApiResponse<HelpdeskTicketActivityResource[]>>(`${this.base}/${id}/activities`);
+  }
+
+  bulkUpdate(payload: BulkTicketRequest): Observable<BulkTicketResponse> {
+    return this.http.post<BulkTicketResponse>(`${this.base}/bulk`, payload);
+  }
+
+  mergeTicket(id: string, payload: MergeTicketRequest): Observable<{ data: TicketResource }> {
+    return this.http.post<{ data: TicketResource }>(`${this.base}/${id}/merge`, payload);
+  }
+
+  splitTicket(id: string, payload: SplitTicketRequest): Observable<{ data: TicketResource }> {
+    return this.http.post<{ data: TicketResource }>(`${this.base}/${id}/split`, payload);
+  }
+
+  autoAssignTicket(id: string, payload: AutoAssignRequest): Observable<{ data: TicketResource }> {
+    return this.http.post<{ data: TicketResource }>(`${this.base}/${id}/auto-assign`, payload);
+  }
+
+  getWatchers(id: string): Observable<{ data: TicketWatcher[] }> {
+    return this.http.get<{ data: TicketWatcher[] }>(`${this.base}/${id}/watchers`);
+  }
+
+  addWatcher(id: string, userId: string): Observable<{ data: TicketWatcher }> {
+    return this.http.post<{ data: TicketWatcher }>(`${this.base}/${id}/watchers`, { user_id: userId });
+  }
+
+  removeWatcher(id: string, userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}/watchers/${userId}`);
+  }
+
+  markRead(id: string): Observable<{ data: TicketReadState }> {
+    return this.http.post<{ data: TicketReadState }>(`${this.base}/${id}/read`, {});
+  }
+
+  downloadAttachment(id: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+
+  renderCannedResponse(id: string, cannedResponseId: string): Observable<{ data: RenderedCannedResponse }> {
+    return this.http.post<{ data: RenderedCannedResponse }>(
+      `${this.base}/${id}/canned-responses/${cannedResponseId}/render`,
+      {},
+    );
+  }
+
+  applyMacro(id: string, macroId: string): Observable<{ data: TicketResource }> {
+    return this.http.post<{ data: TicketResource }>(`${this.base}/${id}/macros/${macroId}/apply`, {});
+  }
+
+  getKnowledgeLinks(id: string): Observable<{ data: KnowledgeArticle[] }> {
+    return this.http.get<{ data: KnowledgeArticle[] }>(`${this.base}/${id}/knowledge-links`);
+  }
+
+  linkKnowledgeArticle(id: string, articleId: string): Observable<{ data: KnowledgeArticle }> {
+    return this.http.post<{ data: KnowledgeArticle }>(`${this.base}/${id}/knowledge-links`, {
+      article_id: articleId,
+    });
+  }
+
+  unlinkKnowledgeArticle(id: string, articleId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}/knowledge-links/${articleId}`);
   }
 }
