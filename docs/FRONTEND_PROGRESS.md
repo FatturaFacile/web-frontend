@@ -10,8 +10,9 @@ The matrix below was written by hand and overstates the state. The real figure i
 |---|---|---|---|
 | 2026-11-09 (before this pass) | 821 | 2135 | 38% |
 | 2026-11-09 (after: sales/CRM, inventory/procurement/manufacturing, ledger/treasury/assets/projects, HR/payroll) | 1605 | 2135 | 75% |
+| 2026-11-10 (after: associations, ESM/helpdesk, customs/construction/childcare/retail, payroll/HR compliance, exports) | 2129 | 2151 | 99% |
 
-Still uncovered (530): associations 201 (+ association-area 19, association-public 4), esm 79, customs 35, payroll 30, hr 14, analytics 14, construction-trades 13, childcare 12 (+ childcare-family 9), retail 10, settings 9, field-service 7, portal 6, webhooks 5, service-reports 5, dashboard 5, construction 5, admin 5, fiscal-retail 4, hospitality 3, and a few single endpoints.
+Still uncovered (22): the 7 server-to-server webhooks and callbacks (SDI, e-commerce, payment links, incoming invoices), the Swagger/docs routes, the deprecated legacy `/subscriptions/{id}/*` routes (the page uses `/sub/contracts`), and a few meeting/ballot actions on the member area that still need a page. Most pages for the newest areas are config-driven (`shared/ui/resource-panel`); where the API has no list endpoint a row id is typed in by hand.
 
 Pages in the inventory, procurement, purchases and manufacturing areas run on a config-driven panel (`shared/ui/resource-panel`, page configs in `features/*/*.page.ts`) rather than bespoke typed components; many list responses are `any` in the OpenAPI, so their columns are inferred. The older `inventory`, `purchases` and `manufacturing` components were not adapted to the new backend rules (BOM draft/activate, `signed_quantity`, bin-to-bin transfers).
 
@@ -111,4 +112,4 @@ Pages in the inventory, procurement, purchases and manufacturing areas run on a 
 
 ---
 
-### Overall Status: 75% of the API surface is covered (1605/2135 endpoints, measured). The per-module "Done" marks above predate the backend extensions of November 2026 and are not a completeness claim. Build and tests: ng build passes (initial bundle 2.20 MB, over the 2.00 MB budget: warning), 1298 tests in core/features/layout/shared pass.
+### Overall Status: 99% of the API surface is covered (2129/2151 endpoints, measured). The per-module "Done" marks above predate the backend extensions of November 2026 and are not a completeness claim. Build and tests: ng build passes (initial bundle 1.58 MB, within budget), 1707 tests pass, eslint clean.
