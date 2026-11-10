@@ -276,6 +276,30 @@ export class SidebarComponent {
               icon: 'fa-solid fa-screwdriver-wrench',
               module: 'service',
             },
+            {
+              key: 'NAV.FS_WORK_ORDERS',
+              route: '/field-service/work-orders',
+              icon: 'fa-solid fa-clipboard-check',
+              module: 'service',
+            },
+          ],
+        },
+        {
+          key: 'NAV.HELPDESK',
+          icon: 'fa-solid fa-headset',
+          module: 'service',
+          children: [
+            { key: 'NAV.HD_REPORTS', route: '/helpdesk/reports', icon: 'fa-solid fa-chart-pie', module: 'service' },
+            { key: 'NAV.HD_TOOLS', route: '/helpdesk/tools', icon: 'fa-solid fa-comment-dots', module: 'service' },
+            { key: 'NAV.HD_AUTOMATION', route: '/helpdesk/automation', icon: 'fa-solid fa-robot', module: 'service' },
+            { key: 'NAV.HD_KB', route: '/helpdesk/knowledge-base', icon: 'fa-solid fa-book-open', module: 'service' },
+            { key: 'NAV.HD_ITSM', route: '/helpdesk/itsm', icon: 'fa-solid fa-triangle-exclamation', module: 'service' },
+            {
+              key: 'NAV.HD_SERVICE_DELIVERY',
+              route: '/helpdesk/service-delivery',
+              icon: 'fa-solid fa-file-contract',
+              module: 'service',
+            },
           ],
         },
         {
@@ -473,6 +497,13 @@ export class SidebarComponent {
           icon: 'fa-solid fa-gears',
           children: [
             { key: 'NAV.COMPANY_SETTINGS', route: '/settings/tenant', icon: 'fa-solid fa-building' },
+            { key: 'NAV.SDI_CHANNEL', route: '/settings/sdi-channel', icon: 'fa-solid fa-satellite-dish', module: 'system' },
+            {
+              key: 'NAV.DOCUMENT_TEMPLATES',
+              route: '/settings/document-templates',
+              icon: 'fa-solid fa-palette',
+              module: 'integrations',
+            },
             { key: 'NAV.SYSTEM', route: '/system', icon: 'fa-solid fa-server', module: 'system' },
             { key: 'NAV.WORKSPACE', route: '/workspace', icon: 'fa-solid fa-cloud', module: 'system' },
           ],

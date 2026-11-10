@@ -27,12 +27,15 @@ import {
   serverErrorMessage,
   StoreTicketMessageRequest,
   TicketApiService,
+  TicketAttachment,
   TicketPriority,
   TicketResource,
   TicketStatus,
   TicketType,
   UpdateHelpdeskTicketRequest,
 } from '@core';
+import { downloadBlob, TranslatePipe } from '@shared';
+import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-tools.component';
 
 @Component({
   selector: 'app-ticket-detail-drawer',
@@ -55,6 +58,8 @@ import {
     NzRadioModule,
     NzDividerModule,
     NzIconModule,
+    TicketAgentToolsComponent,
+    TranslatePipe,
   ],
   templateUrl: './ticket-detail-drawer.component.html',
 })
@@ -197,6 +202,9 @@ export class TicketDetailDrawerComponent {
     this.api.getTicketMessages(id).subscribe({
       next: (res) => {
         this.messages.set(res.data || []);
+        if ((res.meta?.unread ?? 0) > 0) {
+          this.api.markRead(id).subscribe({ error: () => undefined });
+        }
       },
       error: () => {
         this.messages.set([]);
@@ -219,6 +227,29 @@ export class TicketDetailDrawerComponent {
 
   protected close(): void {
     this.open.set(false);
+  }
+
+  protected onToolsChanged(): void {
+    const id = this.ticketId();
+    if (id) {
+      this.loadTicket(id);
+      this.updated.emit();
+    }
+  }
+
+  protected insertReply(text: string): void {
+    this.replyForm.patchValue({ body: text });
+  }
+
+  protected downloadAttachment(attachment: TicketAttachment): void {
+    const id = this.ticketId();
+    if (!id) {
+      return;
+    }
+    this.api.downloadAttachment(id, attachment.id).subscribe({
+      next: (blob) => downloadBlob(blob, attachment.filename),
+      error: () => this.message.error('Errore nel download dell\'allegato'),
+    });
   }
 
   protected saveDetails(): void {

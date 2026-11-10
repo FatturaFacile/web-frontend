@@ -1,0 +1,149 @@
+<nz-divider [nzText]="'TICKET_TOOLS.MACROS' | translate" nzOrientation="left" />
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzAllowClear
+    [ngModel]="macroId()"
+    (ngModelChange)="macroId.set($event)"
+    [nzPlaceHolder]="'TICKET_TOOLS.PICK_MACRO' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.MACROS' | translate"
+  >
+    @for (macro of macros(); track macro.id) {
+      <nz-option [nzValue]="macro.id" [nzLabel]="macro.name" />
+    }
+  </nz-select>
+  <button nz-button type="button" [disabled]="!macroId() || busy()" (click)="applyMacro()">
+    {{ 'TICKET_TOOLS.APPLY' | translate }}
+  </button>
+</div>
+
+<nz-divider [nzText]="'TICKET_TOOLS.CANNED' | translate" nzOrientation="left" />
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzAllowClear
+    [ngModel]="cannedId()"
+    (ngModelChange)="cannedId.set($event); renderedBody.set(null)"
+    [nzPlaceHolder]="'TICKET_TOOLS.PICK_CANNED' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.CANNED' | translate"
+  >
+    @for (item of canned(); track item.id) {
+      <nz-option [nzValue]="item.id" [nzLabel]="item.title" />
+    }
+  </nz-select>
+  <button nz-button type="button" [disabled]="!cannedId()" (click)="renderCanned()">
+    {{ 'TICKET_TOOLS.PREVIEW' | translate }}
+  </button>
+</div>
+@if (renderedBody(); as body) {
+  <div class="tat-preview">{{ body }}</div>
+  <button nz-button nzType="primary" type="button" (click)="useRendered()">{{ 'TICKET_TOOLS.USE_IN_REPLY' | translate }}</button>
+}
+
+<nz-divider [nzText]="'TICKET_TOOLS.WATCHERS' | translate" nzOrientation="left" />
+<div class="tat-row">
+  @for (watcher of watchers(); track watcher.id) {
+    <nz-tag nzMode="closeable" (nzOnClose)="removeWatcher(watcher)">{{ watcher.name || watcher.user_id }}</nz-tag>
+  } @empty {
+    <span>{{ 'TICKET_TOOLS.NO_WATCHERS' | translate }}</span>
+  }
+</div>
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzShowSearch
+    nzAllowClear
+    [ngModel]="watcherUserId()"
+    (ngModelChange)="watcherUserId.set($event)"
+    [nzPlaceHolder]="'TICKET_TOOLS.PICK_USER' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.WATCHERS' | translate"
+  >
+    @for (user of users(); track user.id) {
+      <nz-option [nzValue]="user.id" [nzLabel]="user.name" />
+    }
+  </nz-select>
+  <button nz-button type="button" [disabled]="!watcherUserId()" (click)="addWatcher()">{{ 'TICKET_TOOLS.ADD' | translate }}</button>
+</div>
+
+<nz-divider [nzText]="'TICKET_TOOLS.AUTO_ASSIGN' | translate" nzOrientation="left" />
+<div class="tat-row">
+  <nz-select
+    [ngModel]="strategy()"
+    (ngModelChange)="strategy.set($event)"
+    [attr.aria-label]="'TICKET_TOOLS.STRATEGY' | translate"
+  >
+    <nz-option nzValue="round_robin" [nzLabel]="'TICKET_TOOLS.ROUND_ROBIN' | translate" />
+    <nz-option nzValue="least_loaded" [nzLabel]="'TICKET_TOOLS.LEAST_LOADED' | translate" />
+  </nz-select>
+  <input
+    nz-input
+    class="tat-select"
+    [ngModel]="teamId()"
+    (ngModelChange)="teamId.set($event)"
+    [placeholder]="'TICKET_TOOLS.TEAM_ID' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.TEAM_ID' | translate"
+  />
+  <button nz-button type="button" [disabled]="busy()" (click)="autoAssign()">{{ 'TICKET_TOOLS.ASSIGN' | translate }}</button>
+</div>
+
+<nz-divider [nzText]="'TICKET_TOOLS.MERGE' | translate" nzOrientation="left" />
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzShowSearch
+    nzAllowClear
+    [nzServerSearch]="true"
+    [ngModel]="mergeTargetId()"
+    (ngModelChange)="mergeTargetId.set($event)"
+    (nzOnSearch)="searchTickets($event)"
+    [nzOptions]="ticketOptions()"
+    [nzPlaceHolder]="'TICKET_TOOLS.SEARCH_TICKET' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.MERGE' | translate"
+  />
+  <button nz-button nzDanger type="button" [disabled]="!mergeTargetId() || busy()" (click)="merge()">
+    {{ 'TICKET_TOOLS.MERGE' | translate }}
+  </button>
+</div>
+
+<nz-divider [nzText]="'TICKET_TOOLS.SPLIT' | translate" nzOrientation="left" />
+<input
+  nz-input
+  maxlength="200"
+  [ngModel]="splitSubject()"
+  (ngModelChange)="splitSubject.set($event)"
+  [placeholder]="'TICKET_TOOLS.SPLIT_SUBJECT' | translate"
+  [attr.aria-label]="'TICKET_TOOLS.SPLIT_SUBJECT' | translate"
+/>
+<div class="tat-row">
+  @for (msg of messages(); track msg.id) {
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-checkbox [ngModel]="splitMessageIds().has(msg.id)" (ngModelChange)="toggleMessage(msg.id, $event)">
+      {{ msg.author_name || msg.author_type }}: {{ msg.body.slice(0, 40) }}
+    </label>
+  }
+</div>
+<button nz-button type="button" [disabled]="!canSplit() || busy()" (click)="split()">{{ 'TICKET_TOOLS.SPLIT' | translate }}</button>
+
+<nz-divider [nzText]="'TICKET_TOOLS.KNOWLEDGE' | translate" nzOrientation="left" />
+<div class="tat-row">
+  @for (article of links(); track article.id) {
+    <nz-tag nzMode="closeable" (nzOnClose)="unlinkArticle(article)">{{ article.article_number }} {{ article.title }}</nz-tag>
+  } @empty {
+    <span>{{ 'TICKET_TOOLS.NO_ARTICLES' | translate }}</span>
+  }
+</div>
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzShowSearch
+    nzAllowClear
+    [nzServerSearch]="true"
+    [ngModel]="articleId()"
+    (ngModelChange)="articleId.set($event)"
+    (nzOnSearch)="searchArticles($event)"
+    [nzOptions]="articleOptions()"
+    [nzPlaceHolder]="'TICKET_TOOLS.SEARCH_ARTICLE' | translate"
+    [attr.aria-label]="'TICKET_TOOLS.KNOWLEDGE' | translate"
+  />
+  <button nz-button type="button" [disabled]="!articleId()" (click)="linkArticle()">{{ 'TICKET_TOOLS.LINK' | translate }}</button>
+</div>

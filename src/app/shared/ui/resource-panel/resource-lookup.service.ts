@@ -23,6 +23,9 @@ const LOOKUPS: Record<ResourceLookupName, LookupDefinition> = {
   mfgItems: { path: '/manufacturing/items', labelKeys: ['item_code', 'name'], filters: { per_page: 200 } },
   bins: { path: '/inventory/warehouses/{dep}/bins', labelKeys: ['zone_code', 'code'] },
   zones: { path: '/inventory/warehouses/{dep}/zones', labelKeys: ['code', 'name'] },
+  contacts: { path: '/crm/contacts', labelKeys: ['company_name', 'first_name', 'last_name'], filters: { per_page: 200 } },
+  kbCategories: { path: '/esm/kb/categories', labelKeys: ['name'] },
+  businessHours: { path: '/esm/helpdesk/business-hours', labelKeys: ['code', 'name'] },
 };
 
 /** Cached remote option lists for the select fields of the resource forms. */

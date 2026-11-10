@@ -4,6 +4,8 @@ export * from './pipes/money.pipe';
 export * from './pipes/translate.pipe';
 export * from './directives/autofocus.directive';
 export * from './components/base-table';
+export * from './components/signature-pad/signature-pad.component';
+export * from './utils/download-blob';
 export * from './ui/resource-panel/resource-panel.component';
 export * from './ui/resource-panel/resource-panel.types';
 export * from './ui/resource-panel/resource-page.component';
