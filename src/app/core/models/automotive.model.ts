@@ -38,6 +38,15 @@ export interface AutomotiveVehicle {
   last_service_date?: string;
 }
 
+/** Laravel paginator nested in the success envelope, as returned by the vehicle list. */
+export interface AutomotiveVehiclePage {
+  current_page: number;
+  data: AutomotiveVehicle[];
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
 export interface TireCheckInPayload {
   vehicle_id: string;
   season: 'summer' | 'winter' | 'all_season';
