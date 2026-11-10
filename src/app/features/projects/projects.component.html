@@ -1,11 +1,11 @@
 <app-page-header
-  title="Projects & Work Orders"
+  [title]="'PRJ.LBL_PROJECTS_AND_WORK_ORDERS' | translate"
   subtitle="Manage enterprise projects, task schedules, EVM indicators, and billing milestones"
 >
   <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateModal()">
       <nz-icon nzType="plus" />
-      New Project
+      {{ 'PRJ.LBL_NEW_PROJECT' | translate }}
     </button>
   </div>
 </app-page-header>
@@ -18,7 +18,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Search by code, project name..."
+          [placeholder]="'PRJ.LBL_SEARCH_BY_CODE_PROJECT_NAME' | translate"
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
@@ -33,16 +33,16 @@
         [ngModel]="statusFilter()"
         (ngModelChange)="onStatusChange($event)"
       >
-        <nz-option nzValue="draft" nzLabel="Draft"></nz-option>
-        <nz-option nzValue="active" nzLabel="Active"></nz-option>
-        <nz-option nzValue="paused" nzLabel="Paused"></nz-option>
-        <nz-option nzValue="completed" nzLabel="Completed"></nz-option>
-        <nz-option nzValue="closed" nzLabel="Closed"></nz-option>
+        <nz-option nzValue="draft" [nzLabel]="'PRJ.LBL_DRAFT' | translate"></nz-option>
+        <nz-option nzValue="active" [nzLabel]="'PRJ.LBL_ACTIVE' | translate"></nz-option>
+        <nz-option nzValue="paused" [nzLabel]="'PRJ.LBL_PAUSED' | translate"></nz-option>
+        <nz-option nzValue="completed" [nzLabel]="'PRJ.LBL_COMPLETED' | translate"></nz-option>
+        <nz-option nzValue="closed" [nzLabel]="'PRJ.LBL_CLOSED' | translate"></nz-option>
       </nz-select>
 
       <button nz-button nzType="default" (click)="loadProjects()">
         <nz-icon nzType="reload" />
-        Refresh
+        {{ 'PRJ.LBL_REFRESH' | translate }}
       </button>
     </div>
   </div>
@@ -59,13 +59,13 @@
   >
     <thead>
       <tr>
-        <th>Project</th>
-        <th>Type</th>
-        <th>Status</th>
-        <th>Health</th>
-        <th>Progress</th>
-        <th>Contract Value</th>
-        <th nzWidth="220px">Actions</th>
+        <th>{{ 'PRJ.LBL_PROJECT' | translate }}</th>
+        <th>{{ 'PRJ.LBL_TYPE' | translate }}</th>
+        <th>{{ 'PRJ.LBL_STATUS' | translate }}</th>
+        <th>{{ 'PRJ.LBL_HEALTH' | translate }}</th>
+        <th>{{ 'PRJ.LBL_PROGRESS' | translate }}</th>
+        <th>{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
+        <th nzWidth="220px">{{ 'PRJ.LBL_ACTIONS' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -93,22 +93,22 @@
           <td>
             <nz-space>
               <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
-                Manage
+                {{ 'PRJ.LBL_MANAGE' | translate }}
               </button>
               <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
                 {{ 'PRJ.CONTROL' | translate }}
               </a>
               @if (p.status === 'draft' || p.status === 'paused') {
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
-                  Start
+                  {{ 'PRJ.LBL_START' | translate }}
                 </button>
               }
               @if (p.status === 'active') {
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
-                  Pause
+                  {{ 'PRJ.LBL_PAUSE' | translate }}
                 </button>
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
-                  Complete
+                  {{ 'PRJ.LBL_COMPLETE' | translate }}
                 </button>
               }
             </nz-space>
@@ -122,7 +122,7 @@
 <!-- Create Project Modal -->
 <nz-modal
   [nzVisible]="createModalVisible()"
-  nzTitle="Create New Project"
+  [nzTitle]="'PRJ.LBL_CREATE_NEW_PROJECT' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateProject()"
   [nzOkLoading]="saving()"
@@ -132,55 +132,55 @@
     <form nz-form [formGroup]="projectForm" nzLayout="vertical">
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Project Number</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NUMBER' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Project number is required">
             <input nz-input formControlName="project_number" placeholder="PRJ-2026-001" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Project Name</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NAME' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Name is required">
-            <input nz-input formControlName="name" placeholder="E.g. ERP Implementation" />
+            <input nz-input formControlName="name" [placeholder]="'PRJ.LBL_E_G_ERP_IMPLEMENTATION' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Client Contact ID (UUID)</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_CLIENT_CONTACT_ID_UUID' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Client ID is required">
-            <input nz-input formControlName="contact_id" placeholder="Client contact UUID" />
+            <input nz-input formControlName="contact_id" [placeholder]="'PRJ.LBL_CLIENT_CONTACT_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Project Manager ID (UUID)</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_MANAGER_ID_UUID' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Manager is required">
-            <input nz-input formControlName="project_manager_user_id" placeholder="User UUID" />
+            <input nz-input formControlName="project_manager_user_id" [placeholder]="'PRJ.LBL_USER_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Project Type</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_TYPE' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="project_type">
-              <nz-option nzValue="fixed_price" nzLabel="Fixed Price"></nz-option>
-              <nz-option nzValue="time_and_materials" nzLabel="Time & Materials"></nz-option>
-              <nz-option nzValue="milestone" nzLabel="Milestone Based"></nz-option>
-              <nz-option nzValue="consulting" nzLabel="Consulting"></nz-option>
-              <nz-option nzValue="construction" nzLabel="Construction"></nz-option>
+              <nz-option nzValue="fixed_price" [nzLabel]="'PRJ.LBL_FIXED_PRICE' | translate"></nz-option>
+              <nz-option nzValue="time_and_materials" [nzLabel]="'PRJ.LBL_TIME_AND_MATERIALS' | translate"></nz-option>
+              <nz-option nzValue="milestone" [nzLabel]="'PRJ.LBL_MILESTONE_BASED' | translate"></nz-option>
+              <nz-option nzValue="consulting" [nzLabel]="'PRJ.LBL_CONSULTING' | translate"></nz-option>
+              <nz-option nzValue="construction" [nzLabel]="'PRJ.LBL_CONSTRUCTION' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Billing Method</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_BILLING_METHOD' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="billing_method">
-              <nz-option nzValue="fixed_price" nzLabel="Fixed Price"></nz-option>
-              <nz-option nzValue="time_and_materials" nzLabel="Time & Materials"></nz-option>
-              <nz-option nzValue="milestone" nzLabel="Milestone"></nz-option>
-              <nz-option nzValue="percentage_of_completion" nzLabel="% of Completion"></nz-option>
+              <nz-option nzValue="fixed_price" [nzLabel]="'PRJ.LBL_FIXED_PRICE' | translate"></nz-option>
+              <nz-option nzValue="time_and_materials" [nzLabel]="'PRJ.LBL_TIME_AND_MATERIALS' | translate"></nz-option>
+              <nz-option nzValue="milestone" [nzLabel]="'PRJ.LBL_MILESTONE' | translate"></nz-option>
+              <nz-option nzValue="percentage_of_completion" [nzLabel]="'PRJ.LBL_OF_COMPLETION' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -188,13 +188,13 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Planned Start</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_START' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Start date is required">
             <input nz-input formControlName="planned_start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Planned End</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_END' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="End date is required">
             <input nz-input formControlName="planned_end_date" type="date" />
           </nz-form-control>

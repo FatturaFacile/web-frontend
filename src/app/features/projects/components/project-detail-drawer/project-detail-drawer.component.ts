@@ -29,12 +29,15 @@ import {
   ProjectTimesheetResource,
   StoreProjectTaskPayload,
   StoreProjectTimesheetPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe } from '@shared';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-project-detail-drawer',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzDrawerModule,
@@ -62,6 +65,7 @@ import { MoneyPipe } from '@shared';
   styleUrl: './project-detail-drawer.component.scss',
 })
 export class ProjectDetailDrawerComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   project = input.required<ProjectResource>();
   visible = input.required<boolean>();
   closed = output<void>();
@@ -128,7 +132,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
     const id = this.project().id;
     this.projectApi.recalculateEvm(id).subscribe({
       next: () => {
-        this.message.success('EVM indicators recalculated');
+        this.message.success(this.translate.instant('projectDetailDrawer.msgEvmIndicatorsRecalculated'));
         this.loadFinancials(id);
       },
       error: () => undefined,
@@ -195,7 +199,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
       next: () => {
         this.savingTask.set(false);
         this.createTaskModalVisible.set(false);
-        this.message.success('Task created');
+        this.message.success(this.translate.instant('projectDetailDrawer.msgTaskCreated'));
         this.loadTasks(this.project().id);
       },
       error: () => this.savingTask.set(false),
@@ -234,7 +238,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
       next: () => {
         this.savingTimesheet.set(false);
         this.createTimesheetModalVisible.set(false);
-        this.message.success('Timesheet logged');
+        this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetLogged'));
         this.loadTimesheets(this.project().id);
       },
       error: () => this.savingTimesheet.set(false),
@@ -244,7 +248,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
   submitTimesheet(ts: ProjectTimesheetResource): void {
     this.projectApi.submitTimesheet(ts.id).subscribe({
       next: () => {
-        this.message.success('Timesheet submitted for approval');
+        this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetSubmittedForApproval'));
         this.loadTimesheets(this.project().id);
       },
       error: () => undefined,
@@ -254,7 +258,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
   approveTimesheet(ts: ProjectTimesheetResource): void {
     this.projectApi.approveTimesheet(ts.id).subscribe({
       next: () => {
-        this.message.success('Timesheet approved');
+        this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetApproved'));
         this.loadTimesheets(this.project().id);
       },
       error: () => undefined,
@@ -264,7 +268,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
   rejectTimesheet(ts: ProjectTimesheetResource): void {
     this.projectApi.rejectTimesheet(ts.id, 'Hours not recognized').subscribe({
       next: () => {
-        this.message.info('Timesheet rejected');
+        this.message.info(this.translate.instant('projectDetailDrawer.msgTimesheetRejected'));
         this.loadTimesheets(this.project().id);
       },
       error: () => undefined,

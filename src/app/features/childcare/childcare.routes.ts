@@ -6,7 +6,7 @@ export const CHILDCARE_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { breadcrumb: 'Infanzia & Asilo Nido', title: 'Infanzia & Asilo Nido' },
+    data: { breadcrumb: 'BREADCRUMB.INFANZIA_AND_ASILO_NIDO', title: 'Infanzia & Asilo Nido' },
     loadComponent: () =>
       import('./childcare.component').then((m) => m.ChildcareComponent),
   },

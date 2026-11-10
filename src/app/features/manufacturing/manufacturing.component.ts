@@ -237,7 +237,7 @@ export class ManufacturingComponent implements OnInit {
         this.loadingOrders.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare gli ordini di produzione');
+        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_GLI_ORDINI_DI_PRODUZIONE'));
         this.loadingOrders.set(false);
       },
     });
@@ -303,14 +303,14 @@ export class ManufacturingComponent implements OnInit {
 
     this.api.createProductionOrder(payload).subscribe({
       next: () => {
-        this.message.success('Ordine di produzione creato con successo');
+        this.message.success(this.translate.instant('MFG.MSG_ORDINE_DI_PRODUZIONE_CREATO_CON_SUCCESSO'));
         this.isSubmittingOrder.set(false);
         this.isCreateOrderModalVisible.set(false);
         this.loadOrders(1);
       },
       error: (err) => {
         // 422 carries the reason (no released BOM revision on the start date, item bought not made, ...)
-        this.message.error(apiErrorText(err) || 'Errore durante la creazione dell’ordine di produzione');
+        this.message.error(apiErrorText(err) || this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELL_ORDINE'));
         this.isSubmittingOrder.set(false);
       },
     });
@@ -318,16 +318,16 @@ export class ManufacturingComponent implements OnInit {
 
   releaseOrder(order: MfgProductionOrderResource): void {
     this.modal.confirm({
-      nzTitle: `Rilasciare l'ordine ${order.order_number}?`,
-      nzContent: 'Lo stato passerà a "Rilasciato" e i materiali potranno essere prelevati.',
-      nzOkText: 'Rilascia',
+      nzTitle: this.translate.instant('MFG.DLG_RILASCIARE_L_ORDINE', { order_number: order.order_number }),
+      nzContent: this.translate.instant('MFG.DLG_LO_STATO_PASSERA_A_RILASCIATO_E'),
+      nzOkText: this.translate.instant('MFG.DLG_RILASCIA'),
       nzOnOk: () => {
         this.api.releaseProductionOrder(order.id).subscribe({
           next: () => {
-            this.message.success('Ordine rilasciato con successo');
+            this.message.success(this.translate.instant('MFG.MSG_ORDINE_RILASCIATO_CON_SUCCESSO'));
             this.loadOrders(this.ordersPage());
           },
-          error: () => this.message.error('Errore durante il rilascio dell’ordine'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_RILASCIO_DELL_ORDINE')),
         });
       },
     });
@@ -335,16 +335,16 @@ export class ManufacturingComponent implements OnInit {
 
   startOrder(order: MfgProductionOrderResource): void {
     this.modal.confirm({
-      nzTitle: `Avviare l'ordine ${order.order_number}?`,
-      nzContent: 'Lo stato passerà a "In Lavorazione".',
-      nzOkText: 'Avvia',
+      nzTitle: this.translate.instant('MFG.DLG_AVVIARE_L_ORDINE', { order_number: order.order_number }),
+      nzContent: this.translate.instant('MFG.DLG_LO_STATO_PASSERA_A_IN_LAVORAZIONE'),
+      nzOkText: this.translate.instant('MFG.DLG_AVVIA'),
       nzOnOk: () => {
         this.api.startProductionOrder(order.id).subscribe({
           next: () => {
-            this.message.success('Ordine avviato con successo');
+            this.message.success(this.translate.instant('MFG.MSG_ORDINE_AVVIATO_CON_SUCCESSO'));
             this.loadOrders(this.ordersPage());
           },
-          error: () => this.message.error('Errore durante l’avvio dell’ordine'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_AVVIO_DELL_ORDINE')),
         });
       },
     });
@@ -352,16 +352,16 @@ export class ManufacturingComponent implements OnInit {
 
   completeOrder(order: MfgProductionOrderResource): void {
     this.modal.confirm({
-      nzTitle: `Completare tecnicamente l'ordine ${order.order_number}?`,
-      nzContent: 'I prodotti finiti verranno registrati a magazzino.',
-      nzOkText: 'Completa',
+      nzTitle: this.translate.instant('MFG.DLG_COMPLETARE_TECNICAMENTE_L_ORDINE', { order_number: order.order_number }),
+      nzContent: this.translate.instant('MFG.DLG_I_PRODOTTI_FINITI_VERRANNO_REGISTRATI_A'),
+      nzOkText: this.translate.instant('MFG.DLG_COMPLETA'),
       nzOnOk: () => {
         this.api.completeProductionOrder(order.id).subscribe({
           next: () => {
-            this.message.success('Ordine completato con successo');
+            this.message.success(this.translate.instant('MFG.MSG_ORDINE_COMPLETATO_CON_SUCCESSO'));
             this.loadOrders(this.ordersPage());
           },
-          error: () => this.message.error('Errore durante il completamento dell’ordine'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_COMPLETAMENTO_DELL_ORDINE')),
         });
       },
     });
@@ -369,17 +369,17 @@ export class ManufacturingComponent implements OnInit {
 
   closeOrder(order: MfgProductionOrderResource): void {
     this.modal.confirm({
-      nzTitle: `Chiudere l'ordine ${order.order_number} e saldare varianze?`,
+      nzTitle: this.translate.instant('MFG.DLG_CHIUDERE_L_ORDINE_E_SALDARE_VARIANZE', { order_number: order.order_number }),
       nzContent:
-        'Verranno calcolate le varianze di costo e registrate in contabilità generale.',
-      nzOkText: 'Chiudi e Salda',
+        this.translate.instant('MFG.DLG_VERRANNO_CALCOLATE_LE_VARIANZE_DI_COSTO'),
+      nzOkText: this.translate.instant('MFG.DLG_CHIUDI_E_SALDA'),
       nzOnOk: () => {
         this.api.closeProductionOrder(order.id).subscribe({
           next: () => {
-            this.message.success('Ordine chiuso e varianze saldate');
+            this.message.success(this.translate.instant('MFG.MSG_ORDINE_CHIUSO_E_VARIANZE_SALDATE'));
             this.loadOrders(this.ordersPage());
           },
-          error: () => this.message.error('Errore durante la chiusura dell’ordine'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CHIUSURA_DELL_ORDINE')),
         });
       },
     });
@@ -401,12 +401,12 @@ export class ManufacturingComponent implements OnInit {
       next: () => {
         this.isCancellingOrder.set(false);
         this.cancellingOrder.set(null);
-        this.message.success('Ordine annullato');
+        this.message.success(this.translate.instant('MFG.MSG_ORDINE_ANNULLATO'));
         this.loadOrders(this.ordersPage());
       },
       error: (err) => {
         this.isCancellingOrder.set(false);
-        this.message.error(apiErrorText(err) || 'Errore durante l’annullamento dell’ordine');
+        this.message.error(apiErrorText(err) || this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_ANNULLAMENTO_DELL_ORDINE'));
       },
     });
   }
@@ -432,7 +432,7 @@ export class ManufacturingComponent implements OnInit {
         this.loadingBoms.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare le distinte base');
+        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_LE_DISTINTE_BASE'));
         this.loadingBoms.set(false);
       },
     });
@@ -512,7 +512,7 @@ export class ManufacturingComponent implements OnInit {
         this.loadBoms(1);
       },
       error: () => {
-        this.message.error('Errore durante la creazione della distinta base');
+        this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELLA_DISTINTA'));
         this.isSubmittingBom.set(false);
       },
     });
@@ -520,13 +520,13 @@ export class ManufacturingComponent implements OnInit {
 
   activateBom(bom: MfgBomResource): void {
     this.modal.confirm({
-      nzTitle: `Attivare la distinta base ${bom.bom_number} (Rev. ${bom.revision})?`,
-      nzContent: 'Questa versione diventerà attiva e utilizzabile negli ordini.',
-      nzOkText: 'Attiva',
+      nzTitle: this.translate.instant('MFG.DLG_ATTIVARE_LA_DISTINTA_BASE_REV', { bom_number: bom.bom_number, revision: bom.revision }),
+      nzContent: this.translate.instant('MFG.DLG_QUESTA_VERSIONE_DIVENTERA_ATTIVA_E_UTILIZZABILE'),
+      nzOkText: this.translate.instant('MFG.DLG_ATTIVA'),
       nzOnOk: () => {
         this.api.activateBom(bom.id).subscribe({
           next: () => {
-            this.message.success('Distinta base attivata');
+            this.message.success(this.translate.instant('MFG.MSG_DISTINTA_BASE_ATTIVATA'));
             this.loadBoms(this.bomsPage());
           },
           error: (err) =>
@@ -542,16 +542,16 @@ export class ManufacturingComponent implements OnInit {
 
   reviseBom(bom: MfgBomResource): void {
     this.modal.confirm({
-      nzTitle: `Creare una nuova revisione per ${bom.bom_number}?`,
-      nzContent: 'Verrà creata una copia in bozza con numero di revisione successivo.',
-      nzOkText: 'Nuova Revisione',
+      nzTitle: this.translate.instant('MFG.DLG_CREARE_UNA_NUOVA_REVISIONE_PER', { bom_number: bom.bom_number }),
+      nzContent: this.translate.instant('MFG.DLG_VERRA_CREATA_UNA_COPIA_IN_BOZZA'),
+      nzOkText: this.translate.instant('MFG.DLG_NUOVA_REVISIONE'),
       nzOnOk: () => {
         this.api.reviseBom(bom.id).subscribe({
           next: () => {
-            this.message.success('Nuova revisione creata');
+            this.message.success(this.translate.instant('MFG.MSG_NUOVA_REVISIONE_CREATA'));
             this.loadBoms(1);
           },
-          error: () => this.message.error('Errore durante la revisione della distinta base'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_REVISIONE_DELLA_DISTINTA')),
         });
       },
     });
@@ -564,7 +564,7 @@ export class ManufacturingComponent implements OnInit {
         this.explodedBomData.set(res?.data || {});
         this.isExplodeModalVisible.set(true);
       },
-      error: () => this.message.error('Errore durante l’esplosione della distinta base'),
+      error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_ESPLOSIONE_DELLA_DISTINTA')),
     });
   }
 
@@ -643,7 +643,7 @@ export class ManufacturingComponent implements OnInit {
 
     this.api.runMrp(payload).subscribe({
       next: () => {
-        this.message.success('Elaborazione MRP completata');
+        this.message.success(this.translate.instant('MFG.MSG_ELABORAZIONE_MRP_COMPLETATA'));
         this.isSubmittingMrp.set(false);
         this.isRunMrpModalVisible.set(false);
         this.loadMrpRuns(1);
@@ -651,7 +651,7 @@ export class ManufacturingComponent implements OnInit {
         this.loadShortages(1);
       },
       error: () => {
-        this.message.error('Errore durante l’elaborazione MRP');
+        this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_ELABORAZIONE_MRP'));
         this.isSubmittingMrp.set(false);
       },
     });
@@ -659,17 +659,17 @@ export class ManufacturingComponent implements OnInit {
 
   convertPlannedOrder(order: MfgPlannedOrderResource): void {
     this.modal.confirm({
-      nzTitle: `Convertire l'ordine pianificato ${order.planned_order_number}?`,
-      nzContent: `Verrà generato un nuovo Ordine di Produzione per quantità ${order.quantity} ${order.uom}.`,
-      nzOkText: 'Converti in OdP',
+      nzTitle: this.translate.instant('MFG.DLG_CONVERTIRE_L_ORDINE_PIANIFICATO', { planned_order_number: order.planned_order_number }),
+      nzContent: this.translate.instant('MFG.DLG_VERRA_GENERATO_UN_NUOVO_ORDINE_DI', { quantity: order.quantity, uom: order.uom }),
+      nzOkText: this.translate.instant('MFG.DLG_CONVERTI_IN_ODP'),
       nzOnOk: () => {
         this.api.convertPlannedOrder(order.id).subscribe({
           next: () => {
-            this.message.success('Ordine pianificato convertito con successo');
+            this.message.success(this.translate.instant('MFG.MSG_ORDINE_PIANIFICATO_CONVERTITO_CON_SUCCESSO'));
             this.loadPlannedOrders(this.plannedPage());
             this.loadOrders(1);
           },
-          error: () => this.message.error('Errore durante la conversione'),
+          error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CONVERSIONE')),
         });
       },
     });
@@ -731,13 +731,13 @@ export class ManufacturingComponent implements OnInit {
 
     this.api.createWorkCenter(payload).subscribe({
       next: () => {
-        this.message.success('Centro di lavoro creato');
+        this.message.success(this.translate.instant('MFG.MSG_CENTRO_DI_LAVORO_CREATO'));
         this.isSubmittingWorkCenter.set(false);
         this.isCreateWorkCenterModalVisible.set(false);
         this.loadWorkCenters();
       },
       error: () => {
-        this.message.error('Errore durante la creazione del centro di lavoro');
+        this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DEL_CENTRO'));
         this.isSubmittingWorkCenter.set(false);
       },
     });

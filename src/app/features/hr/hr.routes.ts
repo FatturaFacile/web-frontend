@@ -9,7 +9,7 @@ export const HR_ROUTES: Routes = [
   },
   {
     path: 'employees',
-    data: { breadcrumb: 'Dipendenti & Frontalieri', title: 'HR & Payroll' },
+    data: { breadcrumb: 'BREADCRUMB.DIPENDENTI_AND_FRONTALIERI', title: 'HR & Payroll' },
     loadComponent: () =>
       import('./hr.component').then((m) => m.HrComponent),
   },

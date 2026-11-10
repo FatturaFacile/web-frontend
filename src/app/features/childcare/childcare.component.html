@@ -520,14 +520,14 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_FIRST_NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="first_name" placeholder="Nome" />
+            <input nz-input formControlName="first_name" [placeholder]="'CHILDCARE.LBL_NOME' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_LAST_NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="last_name" placeholder="Cognome" />
+            <input nz-input formControlName="last_name" [placeholder]="'CHILDCARE.LBL_COGNOME' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -556,7 +556,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_BILLING_CONTACT' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="billing_contact_id" placeholder="ID Genitore Fatturazione" />
+            <input nz-input formControlName="billing_contact_id" [placeholder]="'CHILDCARE.LBL_ID_GENITORE_FATTURAZIONE' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -571,14 +571,14 @@
       <nz-form-item>
         <nz-form-label>{{ 'CHILDCARE.FIELD_ALLERGIES' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="allergies" placeholder="Es. Lattosio, Glutine, Polline..." />
+          <input nz-input formControlName="allergies" [placeholder]="'CHILDCARE.LBL_ES_LATTOSIO_GLUTINE_POLLINE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'CHILDCARE.FIELD_DIETARY_NOTES' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="dietary_notes" placeholder="Dieta vegetariana, no suino, etc." />
+          <input nz-input formControlName="dietary_notes" [placeholder]="'CHILDCARE.LBL_DIETA_VEGETARIANA_NO_SUINO_ETC' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -604,7 +604,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_GROUP_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="Es. Coccinelle, Pulcini, Orsetti..." />
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_COCCINELLE_PULCINI_ORSETTI' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -630,7 +630,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="child_id" placeholder="ID Bambino" />
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -693,7 +693,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="child_id" placeholder="ID Bambino" />
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -707,7 +707,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'CHILDCARE.FIELD_REASON' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="reason" placeholder="Malattia, ferie famiglia..." />
+          <input nz-input formControlName="reason" [placeholder]="'CHILDCARE.LBL_MALATTIA_FERIE_FAMIGLIA' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -726,7 +726,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="child_id" placeholder="ID Bambino" />
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -747,7 +747,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_BODY' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="body" rows="3" placeholder="Dettagli attività o evento..."></textarea>
+          <textarea nz-input formControlName="body" rows="3" [placeholder]="'CHILDCARE.LBL_DETTAGLI_ATTIVITA_O_EVENTO' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
 
@@ -773,7 +773,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_PLAN_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="Es. Tempo Pieno, Part-time Mattina..." />
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_TEMPO_PIENO_PART_TIME_MATTINA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -838,7 +838,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_FULL_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="full_name" placeholder="Nome e Cognome" />
+          <input nz-input formControlName="full_name" [placeholder]="'CHILDCARE.LBL_NOME_E_COGNOME' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -846,7 +846,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_RELATIONSHIP' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="relationship" placeholder="Madre / Padre / Nonna..." />
+            <input nz-input formControlName="relationship" [placeholder]="'CHILDCARE.LBL_MADRE_PADRE_NONNA' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -889,7 +889,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_REQUIREMENT_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="Es. Libretto Vaccinazioni, Consenso Uscite..." />
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_LIBRETTO_VACCINAZIONI_CONSENSO_USCITE' | translate" />
         </nz-form-control>
       </nz-form-item>
 

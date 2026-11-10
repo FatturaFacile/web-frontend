@@ -236,8 +236,7 @@
                     <span class="text-muted">{{ 'ANALYTICS.VARIANCE' | translate }}:</span>
                     <span
                       class="ms-2 fw-bold"
-                      [class.text-success]="comp.overall_variance_percent >= 0"
-                      [class.text-danger]="comp.overall_variance_percent < 0"
+                      [class.text-success]="comp.overall_variance_percent >= 0" [class.text-danger]="comp.overall_variance_percent < 0"
                     >
                       {{ comp.overall_variance_percent > 0 ? '+' : '' }}{{ comp.overall_variance_percent }}%
                     </span>
@@ -443,10 +442,10 @@
               (ngModelChange)="onBiDatasetChange($event)"
               style="width: 200px"
             >
-              <nz-option nzValue="invoices" nzLabel="Invoices (Vendite)"></nz-option>
-              <nz-option nzValue="expenses" nzLabel="Expenses (Spese)"></nz-option>
-              <nz-option nzValue="clients" nzLabel="Clients (Anagrafiche)"></nz-option>
-              <nz-option nzValue="payments" nzLabel="Payments (Incassi)"></nz-option>
+              <nz-option nzValue="invoices" [nzLabel]="'ANALYTICS.LBL_INVOICES_VENDITE' | translate"></nz-option>
+              <nz-option nzValue="expenses" [nzLabel]="'ANALYTICS.LBL_EXPENSES_SPESE' | translate"></nz-option>
+              <nz-option nzValue="clients" [nzLabel]="'ANALYTICS.LBL_CLIENTS_ANAGRAFICHE' | translate"></nz-option>
+              <nz-option nzValue="payments" [nzLabel]="'ANALYTICS.LBL_PAYMENTS_INCASSI' | translate"></nz-option>
             </nz-select>
             <button nz-button nzType="default" (click)="loadBiFeed()">
               <i class="fa-solid fa-rotate me-1"></i>
@@ -495,7 +494,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="name" placeholder="es. Board Pack Mensile" />
+            <input nz-input formControlName="name" [placeholder]="'ANALYTICS.LBL_ES_BOARD_PACK_MENSILE' | translate" />
           </nz-form-control>
         </nz-form-item>
 

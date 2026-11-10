@@ -52,14 +52,14 @@
 <nz-card>
   <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
     <!-- TAB 1: DOCUMENTI COMMERCIALI -->
-    <nz-tab nzTitle="Documenti Commerciali (Scontrini)">
+    <nz-tab [nzTitle]="'retail.lblDocumentiCommercialiScontrini' | translate">
       <div class="flex justify-between items-center mb-4">
         <button nz-button nzType="default" type="button" (click)="loadDocuments(page())">
-          <span nz-icon nzType="reload"></span> Aggiorna
+          <span nz-icon nzType="reload"></span> {{ 'retail.lblAggiorna' | translate }}
         </button>
 
         <button nz-button nzType="primary" type="button" (click)="openCreateModal()">
-          <span nz-icon nzType="plus"></span> Nuovo Documento Commerciale
+          <span nz-icon nzType="plus"></span> {{ 'retail.lblNuovoDocumentoCommerciale' | translate }}
         </button>
       </div>
 
@@ -76,13 +76,13 @@
       >
         <thead>
           <tr>
-            <th>N. Scontrino</th>
-            <th>Data e Ora</th>
-            <th>Cassiere</th>
-            <th>Metodo Pagamento</th>
-            <th class="text-right">Totale Euro</th>
-            <th>Stato</th>
-            <th class="text-center">Azioni</th>
+            <th>{{ 'retail.lblNScontrino' | translate }}</th>
+            <th>{{ 'retail.lblDataEOra' | translate }}</th>
+            <th>{{ 'retail.lblCassiere' | translate }}</th>
+            <th>{{ 'retail.lblMetodoPagamento' | translate }}</th>
+            <th class="text-right">{{ 'retail.lblTotaleEuro' | translate }}</th>
+            <th>{{ 'retail.lblStato' | translate }}</th>
+            <th class="text-center">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -101,10 +101,10 @@
               <td class="text-center">
                 @if (d.status === 'issued') {
                   <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="voidDocument(d)">
-                    Annulla
+                    {{ 'retail.lblAnnulla' | translate }}
                   </button>
                 } @else {
-                  <span class="text-muted text-xs">Annullato</span>
+                  <span class="text-muted text-xs">{{ 'retail.lblAnnullato' | translate }}</span>
                 }
               </td>
             </tr>
@@ -114,9 +114,9 @@
     </nz-tab>
 
     <!-- TAB 2: CORRISPETTIVI GIORNALIERI -->
-    <nz-tab nzTitle="Corrispettivi Giornalieri RT">
+    <nz-tab [nzTitle]="'retail.lblCorrispettiviGiornalieriRt' | translate">
       <div class="flex items-center gap-4 mb-4">
-        <span class="font-medium">Data Chiusura:</span>
+        <span class="font-medium">{{ 'retail.lblDataChiusura' | translate }}</span>
         <nz-date-picker
           [ngModel]="selectedDate()"
           (ngModelChange)="selectedDate.set($event); loadDailyCorrispettivi()"
@@ -126,21 +126,21 @@
       @if (dailyCorrispettivo()) {
         <div nz-row [nzGutter]="16" class="mb-4">
           <div nz-col [nzSpan]="8">
-            <nz-card nzType="inner" nzTitle="Totale Incassi del Giorno">
+            <nz-card nzType="inner" [nzTitle]="'retail.lblTotaleIncassiDelGiorno' | translate">
               <span class="text-2xl font-bold text-green-600">
                 {{ dailyCorrispettivo()!.total_sales | money: 'EUR' }}
               </span>
             </nz-card>
           </div>
           <div nz-col [nzSpan]="8">
-            <nz-card nzType="inner" nzTitle="Totale IVA Incorporata">
+            <nz-card nzType="inner" [nzTitle]="'retail.lblTotaleIvaIncorporata' | translate">
               <span class="text-2xl font-bold text-blue-600">
                 {{ dailyCorrispettivo()!.total_vat | money: 'EUR' }}
               </span>
             </nz-card>
           </div>
           <div nz-col [nzSpan]="8">
-            <nz-card nzType="inner" nzTitle="Numero Transazioni">
+            <nz-card nzType="inner" [nzTitle]="'retail.lblNumeroTransazioni' | translate">
               <span class="text-2xl font-bold">
                 {{ dailyCorrispettivo()!.transactions_count }}
               </span>
@@ -149,20 +149,20 @@
         </div>
       } @else {
         <div class="p-8 text-center text-muted">
-          Nessuna chiusura o corrispettivo registrato per la data selezionata.
+          {{ 'retail.lblNessunaChiusuraOCorrispettivoRegistratoPer' | translate }}
         </div>
       }
     </nz-tab>
 
     <!-- TAB 3: CARTE FEDELTÀ & PUNTI -->
-    <nz-tab nzTitle="Carte Fedeltà & Raccolta Punti">
+    <nz-tab [nzTitle]="'retail.lblCarteFedeltaAndRaccoltaPunti' | translate">
       <div class="flex justify-between items-center mb-4">
         <button nz-button nzType="default" type="button" (click)="loadLoyaltyCards()">
-          <span nz-icon nzType="reload"></span> Aggiorna
+          <span nz-icon nzType="reload"></span> {{ 'retail.lblAggiorna' | translate }}
         </button>
 
         <button nz-button nzType="primary" type="button" (click)="openIssueCardModal()">
-          <span nz-icon nzType="plus"></span> Nuova Carta Fedeltà
+          <span nz-icon nzType="plus"></span> {{ 'retail.lblNuovaCartaFedelta' | translate }}
         </button>
       </div>
 
@@ -175,12 +175,12 @@
       >
         <thead>
           <tr>
-            <th>Codice Carta</th>
-            <th>Cliente (ID / Nome)</th>
-            <th class="text-right">Saldo Punti / Credito</th>
-            <th>Stato</th>
-            <th>Data Emissione</th>
-            <th class="text-center">Azioni</th>
+            <th>{{ 'retail.lblCodiceCarta' | translate }}</th>
+            <th>{{ 'retail.lblClienteIdNome' | translate }}</th>
+            <th class="text-right">{{ 'retail.lblSaldoPuntiCredito' | translate }}</th>
+            <th>{{ 'retail.lblStato' | translate }}</th>
+            <th>{{ 'retail.lblDataEmissione' | translate }}</th>
+            <th class="text-center">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -205,7 +205,7 @@
                   type="button"
                   (click)="openLoyaltyDrawer(card)"
                 >
-                  <span nz-icon nzType="history"></span> Movimenti
+                  <span nz-icon nzType="history"></span> {{ 'retail.lblMovimenti' | translate }}
                 </button>
                 <button
                   nz-button
@@ -214,7 +214,7 @@
                   type="button"
                   (click)="openRecordTxModal(card)"
                 >
-                  <span nz-icon nzType="transaction"></span> Accredita/Scala
+                  <span nz-icon nzType="transaction"></span> {{ 'retail.lblAccreditaScala' | translate }}
                 </button>
                 <button
                   nz-button
@@ -233,7 +233,7 @@
                   type="button"
                   (click)="deleteLoyaltyCard(card)"
                 >
-                  Elimina
+                  {{ 'retail.lblElimina' | translate }}
                 </button>
               </td>
             </tr>
@@ -247,7 +247,7 @@
 <!-- MODAL: CREA DOCUMENTO COMMERCIALE -->
 <nz-modal
   [nzVisible]="isCreateModalVisible()"
-  nzTitle="Emissione Documento Commerciale (Scontrino)"
+  [nzTitle]="'retail.lblEmissioneDocumentoCommercialeScontrino' | translate"
   [nzOkLoading]="isSubmitting()"
   (nzOnCancel)="isCreateModalVisible.set(false)"
   (nzOnOk)="submitDocument()"
@@ -258,18 +258,18 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired nzFor="retail-payment-method">Metodo di Pagamento</nz-form-label>
+            <nz-form-label nzRequired nzFor="retail-payment-method">{{ 'retail.lblMetodoDiPagamento' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select id="retail-payment-method" formControlName="payment_method" style="width: 100%;">
-                <nz-option nzValue="electronic" nzLabel="Carta / POS Elettronico"></nz-option>
-                <nz-option nzValue="cash" nzLabel="Contanti"></nz-option>
+                <nz-option nzValue="electronic" [nzLabel]="'retail.lblCartaPosElettronico' | translate"></nz-option>
+                <nz-option nzValue="cash" [nzLabel]="'retail.lblContanti' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired nzFor="retail-cashier-name">Cassiere / Punto Vendita</nz-form-label>
+            <nz-form-label nzRequired nzFor="retail-cashier-name">{{ 'retail.lblCassierePuntoVendita' | translate }}</nz-form-label>
             <nz-form-control>
               <input id="retail-cashier-name" nz-input formControlName="cashier_name" />
             </nz-form-control>
@@ -283,7 +283,7 @@
         @for (_ of linesArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
             <div style="flex: 2;">
-              <input nz-input formControlName="description" placeholder="Descrizione Prodotto/Servizio" />
+              <input nz-input formControlName="description" [placeholder]="'retail.lblDescrizioneProdottoServizio' | translate" />
             </div>
             <div style="flex: 1;">
               <nz-input-number formControlName="quantity" [nzMin]="1" nzPlaceHolder="Q.tà" style="width: 100%;"></nz-input-number>
@@ -307,7 +307,7 @@
       </div>
 
       <button nz-button nzType="dashed" nzBlock type="button" (click)="addLine()" class="mt-2">
-        <span nz-icon nzType="plus"></span> Aggiungi Riga
+        <span nz-icon nzType="plus"></span> {{ 'retail.lblAggiungiRiga' | translate }}
       </button>
     </form>
   </ng-container>
@@ -316,7 +316,7 @@
 <!-- MODAL: EMETTI CARTA FEDELTÀ -->
 <nz-modal
   [nzVisible]="isIssueCardModalVisible()"
-  nzTitle="Emetti Nuova Carta Fedeltà"
+  [nzTitle]="'retail.lblEmettiNuovaCartaFedelta' | translate"
   [nzOkLoading]="isSubmittingLoyalty()"
   (nzOnCancel)="isIssueCardModalVisible.set(false)"
   (nzOnOk)="submitIssueCard()"
@@ -324,31 +324,31 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="issueCardForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="loyalty-customer-id">ID / Riferimento Cliente</nz-form-label>
+        <nz-form-label nzRequired nzFor="loyalty-customer-id">{{ 'retail.lblIdRiferimentoCliente' | translate }}</nz-form-label>
         <nz-form-control>
           <input
             id="loyalty-customer-id"
             nz-input
             formControlName="customer_id"
-            placeholder="es. UUID cliente o C.F."
+            [placeholder]="'retail.lblEsUuidClienteOCF' | translate"
           />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="loyalty-card-number">Codice Carta (Barcode / Tessera)</nz-form-label>
+        <nz-form-label nzFor="loyalty-card-number">{{ 'retail.lblCodiceCartaBarcodeTessera' | translate }}</nz-form-label>
         <nz-form-control>
           <input
             id="loyalty-card-number"
             nz-input
             formControlName="card_number"
-            placeholder="Generato automaticamente se vuoto"
+            [placeholder]="'retail.lblGeneratoAutomaticamenteSeVuoto' | translate"
           />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="loyalty-initial-balance">Saldo Punti Iniziale</nz-form-label>
+        <nz-form-label nzFor="loyalty-initial-balance">{{ 'retail.lblSaldoPuntiIniziale' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-input-number
             id="loyalty-initial-balance"
@@ -365,7 +365,7 @@
 <!-- MODAL: REGISTRA MOVIMENTO PUNTI (TOP-UP / SPEND) -->
 <nz-modal
   [nzVisible]="isRecordTxModalVisible()"
-  nzTitle="Movimento Punti / Saldo Fedeltà"
+  [nzTitle]="'retail.lblMovimentoPuntiSaldoFedelta' | translate"
   [nzOkLoading]="isSubmittingLoyalty()"
   (nzOnCancel)="isRecordTxModalVisible.set(false)"
   (nzOnOk)="submitRecordTx()"
@@ -373,23 +373,23 @@
   <ng-container *nzModalContent>
     @if (selectedLoyaltyCard(); as card) {
       <div class="mb-4 p-3 bg-gray-50 rounded">
-        <strong>Carta:</strong> {{ card.card_number }} | <strong>Saldo Attuale:</strong> {{ card.balance }} punti
+        <strong>{{ 'retail.lblCarta' | translate }}</strong> {{ card.card_number }} | <strong>{{ 'retail.lblSaldoAttuale' | translate }}</strong> {{ card.balance }} punti
       </div>
     }
 
     <form nz-form [formGroup]="recordTxForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="tx-type-select">Tipo Operazione</nz-form-label>
+        <nz-form-label nzRequired nzFor="tx-type-select">{{ 'retail.lblTipoOperazione' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="tx-type-select" formControlName="type" style="width: 100%;">
-            <nz-option nzValue="topup" nzLabel="Accredita Punti / Ricarica"></nz-option>
-            <nz-option nzValue="spend" nzLabel="Scala Punti / Riscatto"></nz-option>
+            <nz-option nzValue="topup" [nzLabel]="'retail.lblAccreditaPuntiRicarica' | translate"></nz-option>
+            <nz-option nzValue="spend" [nzLabel]="'retail.lblScalaPuntiRiscatto' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="tx-amount-input">Quantità Punti</nz-form-label>
+        <nz-form-label nzRequired nzFor="tx-amount-input">{{ 'retail.lblQuantitaPunti' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-input-number
             id="tx-amount-input"
@@ -401,13 +401,13 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="tx-desc-input">Causale / Descrizione</nz-form-label>
+        <nz-form-label nzFor="tx-desc-input">{{ 'retail.lblCausaleDescrizione' | translate }}</nz-form-label>
         <nz-form-control>
           <input
             id="tx-desc-input"
             nz-input
             formControlName="description"
-            placeholder="es. Acquisto scontrino #104 o premio fedeltà"
+            [placeholder]="'retail.lblEsAcquistoScontrino104OPremio' | translate"
           />
         </nz-form-control>
       </nz-form-item>
@@ -419,7 +419,7 @@
 <nz-drawer
   [nzVisible]="isLoyaltyDrawerVisible()"
   [nzWidth]="500"
-  nzTitle="Storico Movimenti Carta Fedeltà"
+  [nzTitle]="'retail.lblStoricoMovimentiCartaFedelta' | translate"
   (nzOnClose)="closeLoyaltyDrawer()"
 >
   <ng-container *nzDrawerContent>
@@ -444,10 +444,10 @@
       >
         <thead>
           <tr>
-            <th>Data</th>
-            <th>Tipo</th>
-            <th class="text-right">Punti</th>
-            <th>Causale</th>
+            <th>{{ 'retail.lblData' | translate }}</th>
+            <th>{{ 'retail.lblTipo' | translate }}</th>
+            <th class="text-right">{{ 'retail.lblPunti' | translate }}</th>
+            <th>{{ 'retail.lblCausale' | translate }}</th>
           </tr>
         </thead>
         <tbody>

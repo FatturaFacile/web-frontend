@@ -8,13 +8,13 @@ export const RENT_ROUTES: Routes = [
   },
   {
     path: 'fleet',
-    data: { breadcrumb: 'Planning Flotta', title: 'Flotta Noleggio' },
+    data: { breadcrumb: 'BREADCRUMB.PLANNING_FLOTTA', title: 'Flotta Noleggio' },
     loadComponent: () =>
       import('./rent.component').then((m) => m.RentComponent),
   },
   {
     path: 'appraisal',
-    data: { breadcrumb: 'Perizia Danni', title: 'Perizia Danni' },
+    data: { breadcrumb: 'BREADCRUMB.PERIZIA_DANNI', title: 'Perizia Danni' },
     loadComponent: () =>
       import('./rent.component').then((m) => m.RentComponent),
   },

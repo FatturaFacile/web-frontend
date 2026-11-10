@@ -65,7 +65,7 @@
           >
             <nz-option nzValue="" [nzLabel]="'DOCUMENT_TRUST.ALL_NETWORKS' | translate"></nz-option>
             <nz-option nzValue="peppol" nzLabel="Peppol AS4"></nz-option>
-            <nz-option nzValue="ebill" nzLabel="Swiss eBill"></nz-option>
+            <nz-option nzValue="ebill" [nzLabel]="'DOCUMENT_TRUST.LBL_SWISS_EBILL' | translate"></nz-option>
             <nz-option nzValue="nso" nzLabel="NSO Sanità"></nz-option>
           </nz-select>
 
@@ -393,8 +393,8 @@
           <nz-form-control>
             <nz-select formControlName="network">
               <nz-option nzValue="peppol" nzLabel="Peppol AS4 Network"></nz-option>
-              <nz-option nzValue="ebill" nzLabel="Swiss eBill (SIX)"></nz-option>
-              <nz-option nzValue="nso" nzLabel="Nodo Smistamento Ordini (NSO)"></nz-option>
+              <nz-option nzValue="ebill" [nzLabel]="'DOCUMENT_TRUST.LBL_SWISS_EBILL_SIX' | translate"></nz-option>
+              <nz-option nzValue="nso" [nzLabel]="'DOCUMENT_TRUST.LBL_NODO_SMISTAMENTO_ORDINI_NSO' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -416,7 +416,7 @@
             <input
               nz-input
               formControlName="recipient_identifier"
-              placeholder="e.g. iso6523-actorid-upis::9906:it12345678901"
+              [placeholder]="'DOCUMENT_TRUST.LBL_E_G_ISO6523_ACTORID_UPIS_9906' | translate"
             />
           </nz-form-control>
         </nz-form-item>
@@ -428,7 +428,7 @@
               nz-input
               rows="4"
               formControlName="payload"
-              placeholder="<Invoice>...</Invoice>"
+              [placeholder]="'DOCUMENT_TRUST.LBL_INVOICE_INVOICE' | translate"
             ></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -462,7 +462,7 @@
             <input
               nz-input
               formControlName="document_id"
-              placeholder="UUID (e.g. 11111111-2222-3333-4444-555555555555)"
+              [placeholder]="'DOCUMENT_TRUST.LBL_UUID_E_G_11111111_2222_3333' | translate"
             />
           </nz-form-control>
         </nz-form-item>
@@ -496,7 +496,7 @@
             <input
               nz-input
               formControlName="document_id"
-              placeholder="UUID (e.g. 11111111-2222-3333-4444-555555555555)"
+              [placeholder]="'DOCUMENT_TRUST.LBL_UUID_E_G_11111111_2222_3333' | translate"
             />
           </nz-form-control>
         </nz-form-item>

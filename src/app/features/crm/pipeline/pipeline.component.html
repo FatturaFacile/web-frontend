@@ -1,16 +1,16 @@
 <app-page-header
-  title="CRM Pipeline"
+  [title]="'CRMX.LBL_CRM_PIPELINE' | translate"
   subtitle="Track sales opportunities, deal stages, and duplicate contact detection"
 >
   <div class="header-actions">
     <nz-space>
       <button *nzSpaceItem nz-button nzType="default" [nzLoading]="checkingDuplicates()" (click)="checkDuplicates()">
         <nz-icon nzType="swap" />
-        Detect Duplicates
+        {{ 'CRMX.LBL_DETECT_DUPLICATES' | translate }}
       </button>
       <button *nzSpaceItem nz-button nzType="primary" (click)="openCreateModal()">
         <nz-icon nzType="plus" />
-        New Opportunity
+        {{ 'CRMX.LBL_NEW_OPPORTUNITY' | translate }}
       </button>
     </nz-space>
   </div>
@@ -24,7 +24,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Search opportunities..."
+          [placeholder]="'CRMX.LBL_SEARCH_OPPORTUNITIES' | translate"
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
@@ -46,7 +46,7 @@
 
       <button nz-button nzType="default" (click)="loadOpportunities()">
         <nz-icon nzType="reload" />
-        Refresh
+        {{ 'CRMX.LBL_REFRESH' | translate }}
       </button>
     </div>
   </div>
@@ -63,13 +63,13 @@
   >
     <thead>
       <tr>
-        <th>Opportunity</th>
-        <th>Account</th>
-        <th>Amount</th>
-        <th>Stage</th>
-        <th>Forecast Category</th>
-        <th>Expected Close</th>
-        <th nzWidth="180px">Actions</th>
+        <th>{{ 'CRMX.LBL_OPPORTUNITY' | translate }}</th>
+        <th>{{ 'CRMX.LBL_ACCOUNT' | translate }}</th>
+        <th>{{ 'CRMX.LBL_AMOUNT' | translate }}</th>
+        <th>{{ 'CRMX.LBL_STAGE' | translate }}</th>
+        <th>{{ 'CRMX.LBL_FORECAST_CATEGORY' | translate }}</th>
+        <th>{{ 'CRMX.LBL_EXPECTED_CLOSE' | translate }}</th>
+        <th nzWidth="180px">{{ 'CRMX.LBL_ACTIONS' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -141,7 +141,7 @@
 <!-- Create Opportunity Modal -->
 <nz-modal
   [nzVisible]="createModalVisible()"
-  nzTitle="New Opportunity"
+  [nzTitle]="'CRMX.LBL_NEW_OPPORTUNITY' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateOpportunity()"
   [nzOkLoading]="saving()"
@@ -149,28 +149,28 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="oppForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Opportunity Name</nz-form-label>
+        <nz-form-label nzRequired>{{ 'CRMX.LBL_OPPORTUNITY_NAME' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Name is required">
-          <input nz-input formControlName="name" placeholder="E.g. Q4 Cloud Migration" />
+          <input nz-input formControlName="name" [placeholder]="'CRMX.LBL_E_G_Q4_CLOUD_MIGRATION' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Account ID (UUID)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'CRMX.LBL_ACCOUNT_ID_UUID' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Account is required">
-          <input nz-input formControlName="account_id" placeholder="Account UUID" />
+          <input nz-input formControlName="account_id" [placeholder]="'CRMX.LBL_ACCOUNT_UUID' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Amount</nz-form-label>
+        <nz-form-label nzRequired>{{ 'CRMX.LBL_AMOUNT' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Amount is required">
           <nz-input-number formControlName="amount" [nzMin]="0" [nzStep]="500" style="width: 100%"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Stage</nz-form-label>
+        <nz-form-label nzRequired>{{ 'CRMX.LBL_STAGE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="stage_code">
             @for (st of stages(); track st.id) {
@@ -181,14 +181,14 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>Forecast Category</nz-form-label>
+        <nz-form-label>{{ 'CRMX.LBL_FORECAST_CATEGORY' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="forecast_category">
-            <nz-option nzValue="pipeline" nzLabel="Pipeline"></nz-option>
-            <nz-option nzValue="best_case" nzLabel="Best Case"></nz-option>
-            <nz-option nzValue="commit" nzLabel="Commit"></nz-option>
-            <nz-option nzValue="closed" nzLabel="Closed"></nz-option>
-            <nz-option nzValue="omitted" nzLabel="Omitted"></nz-option>
+            <nz-option nzValue="pipeline" [nzLabel]="'CRMX.LBL_PIPELINE' | translate"></nz-option>
+            <nz-option nzValue="best_case" [nzLabel]="'CRMX.LBL_BEST_CASE' | translate"></nz-option>
+            <nz-option nzValue="commit" [nzLabel]="'CRMX.LBL_COMMIT' | translate"></nz-option>
+            <nz-option nzValue="closed" [nzLabel]="'CRMX.LBL_CLOSED' | translate"></nz-option>
+            <nz-option nzValue="omitted" [nzLabel]="'CRMX.LBL_OMITTED' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -199,13 +199,13 @@
 <!-- Duplicates Modal -->
 <nz-modal
   [nzVisible]="duplicateModalVisible()"
-  nzTitle="Potential Duplicates"
+  [nzTitle]="'CRMX.LBL_POTENTIAL_DUPLICATES' | translate"
   [nzFooter]="null"
   (nzOnCancel)="duplicateModalVisible.set(false)"
 >
   <ng-container *nzModalContent>
     @if (duplicateResult(); as dup) {
-      <p>Duplicate Scan Mode: <strong>{{ dup.mode }}</strong> (Entity: {{ dup.entity }})</p>
+      <p>{{ 'CRMX.LBL_DUPLICATE_SCAN_MODE' | translate }} <strong>{{ dup.mode }}</strong> (Entity: {{ dup.entity }})</p>
       @if (dup.data.length === 0) {
         <nz-empty nzNotFoundContent="No duplicate entities found."></nz-empty>
       } @else {

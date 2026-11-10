@@ -29,12 +29,15 @@ import {
   RetailApiService,
   StoreCommercialDocumentPayload,
   UpdateLoyaltyCardPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-retail',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -61,6 +64,7 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
   templateUrl: './retail.component.html',
 })
 export class RetailComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly api = inject(RetailApiService);
   private readonly loyaltyApi = inject(LoyaltyApiService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -151,7 +155,7 @@ export class RetailComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare i documenti commerciali');
+        this.message.error(this.translate.instant('retail.msgImpossibileCaricareIDocumentiCommerciali'));
         this.loading.set(false);
       },
     });
@@ -180,7 +184,7 @@ export class RetailComponent implements OnInit {
         this.loadingLoyalty.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare le carte fedeltà');
+        this.message.error(this.translate.instant('retail.msgImpossibileCaricareLeCarteFedelta'));
         this.loadingLoyalty.set(false);
       },
     });
@@ -243,14 +247,14 @@ export class RetailComponent implements OnInit {
 
     this.api.createCommercialDocument(payload).subscribe({
       next: () => {
-        this.message.success('Documento commerciale (scontrino) emesso');
+        this.message.success(this.translate.instant('retail.msgDocumentoCommercialeScontrinoEmesso'));
         this.isSubmitting.set(false);
         this.isCreateModalVisible.set(false);
         this.loadDocuments(1);
         this.loadDailyCorrispettivi();
       },
       error: () => {
-        this.message.error('Errore durante l’emissione del documento commerciale');
+        this.message.error(this.translate.instant('retail.msgErroreDuranteLEmissioneDelDocumento'));
         this.isSubmitting.set(false);
       },
     });
@@ -258,18 +262,18 @@ export class RetailComponent implements OnInit {
 
   voidDocument(doc: CommercialDocumentResource): void {
     this.modal.confirm({
-      nzTitle: `Annullare lo scontrino ${doc.document_number}?`,
-      nzContent: 'Verrà trasmesso l’annullo telematico all’Agenzia delle Entrate.',
+      nzTitle: this.translate.instant('retail.dlgAnnullareLoScontrino', { document_number: doc.document_number }),
+      nzContent: this.translate.instant('retail.dlgVerraTrasmessoLAnnulloTelematicoAll'),
       nzOkDanger: true,
-      nzOkText: 'Annulla Scontrino',
+      nzOkText: this.translate.instant('retail.dlgAnnullaScontrino'),
       nzOnOk: () => {
         this.api.voidCommercialDocument(doc.id).subscribe({
           next: () => {
-            this.message.success('Documento commerciale annullato');
+            this.message.success(this.translate.instant('retail.msgDocumentoCommercialeAnnullato'));
             this.loadDocuments(this.page());
             this.loadDailyCorrispettivi();
           },
-          error: () => this.message.error('Errore durante l’annullamento dello scontrino'),
+          error: () => this.message.error(this.translate.instant('retail.msgErroreDuranteLAnnullamentoDelloScontrino')),
         });
       },
     });
@@ -302,13 +306,13 @@ export class RetailComponent implements OnInit {
 
     this.loyaltyApi.createCard(payload).subscribe({
       next: () => {
-        this.message.success('Carta fedeltà emessa con successo');
+        this.message.success(this.translate.instant('retail.msgCartaFedeltaEmessaConSuccesso'));
         this.isSubmittingLoyalty.set(false);
         this.isIssueCardModalVisible.set(false);
         this.loadLoyaltyCards();
       },
       error: () => {
-        this.message.error('Errore durante l’emissione della carta fedeltà');
+        this.message.error(this.translate.instant('retail.msgErroreDuranteLEmissioneDellaCarta'));
         this.isSubmittingLoyalty.set(false);
       },
     });
@@ -322,7 +326,7 @@ export class RetailComponent implements OnInit {
         this.loyaltyTransactions.set(res?.data || []);
       },
       error: () => {
-        this.message.error('Impossibile caricare i movimenti della carta');
+        this.message.error(this.translate.instant('retail.msgImpossibileCaricareIMovimentiDellaCarta'));
       },
     });
   }
@@ -371,7 +375,7 @@ export class RetailComponent implements OnInit {
         }
       },
       error: () => {
-        this.message.error('Errore durante la registrazione della transazione punti');
+        this.message.error(this.translate.instant('retail.msgErroreDuranteLaRegistrazioneDellaTransazione'));
         this.isSubmittingLoyalty.set(false);
       },
     });
@@ -383,28 +387,28 @@ export class RetailComponent implements OnInit {
 
     this.loyaltyApi.updateCard(card.id, payload).subscribe({
       next: () => {
-        this.message.success(`Stato carta aggiornato a ${newStatus}`);
+        this.message.success(this.translate.instant('retail.msgStatoCartaAggiornatoA', { newStatus }));
         this.loadLoyaltyCards();
       },
       error: () => {
-        this.message.error('Errore durante l’aggiornamento dello stato');
+        this.message.error(this.translate.instant('retail.msgErroreDuranteLAggiornamentoDelloStato'));
       },
     });
   }
 
   deleteLoyaltyCard(card: LoyaltyCard): void {
     this.modal.confirm({
-      nzTitle: `Eliminare la carta fedeltà ${card.card_number}?`,
-      nzContent: 'L’operazione cancellerà la carta e lo storico dei punti accumulati.',
+      nzTitle: this.translate.instant('retail.dlgEliminareLaCartaFedelta', { card_number: card.card_number }),
+      nzContent: this.translate.instant('retail.dlgLOperazioneCancelleraLaCartaE'),
       nzOkDanger: true,
-      nzOkText: 'Elimina',
+      nzOkText: this.translate.instant('retail.dlgElimina'),
       nzOnOk: () => {
         this.loyaltyApi.deleteCard(card.id).subscribe({
           next: () => {
-            this.message.success('Carta fedeltà eliminata');
+            this.message.success(this.translate.instant('retail.msgCartaFedeltaEliminata'));
             this.loadLoyaltyCards();
           },
-          error: () => this.message.error('Errore durante l’eliminazione della carta'),
+          error: () => this.message.error(this.translate.instant('retail.msgErroreDuranteLEliminazioneDellaCarta')),
         });
       },
     });

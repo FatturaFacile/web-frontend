@@ -8,7 +8,7 @@ export const SYSTEM_ROUTES: Routes = [
   },
   {
     path: 'backups',
-    data: { breadcrumb: 'Backup & Ripristino', title: 'Backup & Ripristino' },
+    data: { breadcrumb: 'BREADCRUMB.BACKUP_AND_RIPRISTINO', title: 'Backup & Ripristino' },
     loadComponent: () =>
       import('./components/backups/backups.component').then((m) => m.BackupsComponent),
   },

@@ -236,12 +236,12 @@
           <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="fuel_level">
-              <nz-option nzValue="8/8" nzLabel="8/8 (Pieno / Full)"></nz-option>
+              <nz-option nzValue="8/8" [nzLabel]="'RENT.LBL_8_8_PIENO_FULL' | translate"></nz-option>
               <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
               <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
               <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
               <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
-              <nz-option nzValue="1/8" nzLabel="1/8 (Riserva)"></nz-option>
+              <nz-option nzValue="1/8" [nzLabel]="'RENT.LBL_1_8_RISERVA' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -309,12 +309,12 @@
           <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="fuel_level">
-              <nz-option nzValue="8/8" nzLabel="8/8 (Pieno / Full)"></nz-option>
+              <nz-option nzValue="8/8" [nzLabel]="'RENT.LBL_8_8_PIENO_FULL' | translate"></nz-option>
               <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
               <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
               <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
               <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
-              <nz-option nzValue="1/8" nzLabel="1/8 (Riserva)"></nz-option>
+              <nz-option nzValue="1/8" [nzLabel]="'RENT.LBL_1_8_RISERVA' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -375,14 +375,14 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'RENT.MAKE' | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="make" placeholder="e.g. Volkswagen" />
+              <input nz-input formControlName="make" [placeholder]="'RENT.LBL_E_G_VOLKSWAGEN' | translate" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'RENT.MODEL' | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="model" placeholder="e.g. Golf 8" />
+              <input nz-input formControlName="model" [placeholder]="'RENT.LBL_E_G_GOLF_8' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -406,7 +406,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'RENT.CUSTOMER' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="customer_name" placeholder="Owner / Client Name" />
+            <input nz-input formControlName="customer_name" [placeholder]="'RENT.LBL_OWNER_CLIENT_NAME' | translate" />
           </nz-form-control>
         </nz-form-item>
       </form>

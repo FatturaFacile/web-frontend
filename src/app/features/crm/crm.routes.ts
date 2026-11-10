@@ -8,30 +8,30 @@ export const CRM_ROUTES: Routes = [
   },
   {
     path: 'clients',
-    data: { breadcrumb: 'Clienti Cross-Border', title: 'Anagrafica Clienti' },
+    data: { breadcrumb: 'BREADCRUMB.CLIENTI_CROSS_BORDER', title: 'Anagrafica Clienti' },
     loadComponent: () =>
       import('./clients/clients.component').then((m) => m.CrmClientsComponent),
   },
   {
     path: 'suppliers',
-    data: { breadcrumb: 'Fornitori & Listini', title: 'Fornitori & Listini' },
+    data: { breadcrumb: 'BREADCRUMB.FORNITORI_AND_LISTINI', title: 'Fornitori & Listini' },
     loadComponent: () =>
       import('./clients/clients.component').then((m) => m.CrmClientsComponent),
   },
   {
     path: 'leads',
-    data: { breadcrumb: 'Leads & Scoring', title: 'Leads' },
+    data: { breadcrumb: 'BREADCRUMB.LEADS_AND_SCORING', title: 'Leads' },
     loadComponent: () =>
       import('./leads/leads.component').then((m) => m.LeadsComponent),
   },
   {
     path: 'engagement',
-    data: { breadcrumb: 'Attività e campagne', title: 'Attività e campagne' },
+    data: { breadcrumb: 'BREADCRUMB.ATTIVITA_E_CAMPAGNE', title: 'Attività e campagne' },
     loadChildren: () => import('./engagement/engagement.routes').then((m) => m.ENGAGEMENT_ROUTES),
   },
   {
     path: 'pipeline',
-    data: { breadcrumb: 'Pipeline & Opportunità', title: 'Pipeline' },
+    data: { breadcrumb: 'BREADCRUMB.PIPELINE_AND_OPPORTUNITA', title: 'Pipeline' },
     loadComponent: () =>
       import('./pipeline/pipeline.component').then((m) => m.PipelineComponent),
   },

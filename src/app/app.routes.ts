@@ -75,98 +75,98 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Dashboard', title: 'Dashboard Esecutiva' },
+    data: { breadcrumb: 'BREADCRUMB.DASHBOARD', title: 'Dashboard Esecutiva' },
     loadChildren: () =>
       import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
   },
   {
     path: 'crm',
     canActivate: [authGuard],
-    data: { breadcrumb: 'CRM & Anagrafiche', title: 'CRM Cross-Border' },
+    data: { breadcrumb: 'BREADCRUMB.CRM_AND_ANAGRAFICHE', title: 'CRM Cross-Border' },
     loadChildren: () =>
       import('./features/crm/crm.routes').then((m) => m.CRM_ROUTES),
   },
   {
     path: 'sales',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Vendite & Fatturazione', title: 'Vendite' },
+    data: { breadcrumb: 'BREADCRUMB.VENDITE_AND_FATTURAZIONE', title: 'Vendite' },
     loadChildren: () =>
       import('./features/sales/sales.routes').then((m) => m.SALES_ROUTES),
   },
   {
     path: 'purchases',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Acquisti & AP', title: 'Acquisti' },
+    data: { breadcrumb: 'BREADCRUMB.ACQUISTI_AND_AP', title: 'Acquisti' },
     loadChildren: () =>
       import('./features/purchases/purchases.routes').then((m) => m.PURCHASES_ROUTES),
   },
   {
     path: 'procurement',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Approvvigionamento', title: 'Approvvigionamento' },
+    data: { breadcrumb: 'BREADCRUMB.APPROVVIGIONAMENTO', title: 'Approvvigionamento' },
     loadChildren: () =>
       import('./features/procurement/procurement.routes').then((m) => m.PROCUREMENT_ROUTES),
   },
   {
     path: 'treasury',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Tesoreria & Banche', title: 'Tesoreria' },
+    data: { breadcrumb: 'BREADCRUMB.TESORERIA_AND_BANCHE', title: 'Tesoreria' },
     loadChildren: () =>
       import('./features/treasury/treasury.routes').then((m) => m.TREASURY_ROUTES),
   },
   {
     path: 'inventory',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Magazzino & Logistica', title: 'Magazzino' },
+    data: { breadcrumb: 'BREADCRUMB.MAGAZZINO_AND_LOGISTICA', title: 'Magazzino' },
     loadChildren: () =>
       import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
   },
   {
     path: 'customs',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Dogana IT-CH', title: 'Dogana & Spedizioni IT-CH' },
+    data: { breadcrumb: 'BREADCRUMB.DOGANA_IT_CH', title: 'Dogana & Spedizioni IT-CH' },
     loadChildren: () =>
       import('./features/customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
   },
   {
     path: 'workflows',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Processi & Approvazioni', title: 'Workflow & Approvazioni' },
+    data: { breadcrumb: 'BREADCRUMB.PROCESSI_AND_APPROVAZIONI', title: 'Workflow & Approvazioni' },
     loadChildren: () =>
       import('./features/workflows/workflows.routes').then((m) => m.WORKFLOW_ROUTES),
   },
   {
     path: 'dms',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Gestione Documentale (DMS)', title: 'DMS & Archivio' },
+    data: { breadcrumb: 'BREADCRUMB.GESTIONE_DOCUMENTALE_DMS', title: 'DMS & Archivio' },
     loadChildren: () =>
       import('./features/dms/dms.routes').then((m) => m.DMS_ROUTES),
   },
   {
     path: 'contract-register',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Registro Contratti', title: 'Registro Contratti & Obbligazioni' },
+    data: { breadcrumb: 'BREADCRUMB.REGISTRO_CONTRATTI', title: 'Registro Contratti & Obbligazioni' },
     loadChildren: () =>
       import('./features/contract-register/contract-register.routes').then((m) => m.CONTRACT_REGISTER_ROUTES),
   },
   {
     path: 'associations/governance',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Governance e conformità', title: 'Governance e conformità delle associazioni' },
+    data: { breadcrumb: 'BREADCRUMB.GOVERNANCE_E_CONFORMITA', title: 'Governance e conformità delle associazioni' },
     loadChildren: () =>
       import('./features/associations/governance/governance.routes').then((m) => m.ASSOCIATIONS_GOVERNANCE_ROUTES),
   },
   {
     path: 'associations',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Associazioni & Terzo Settore', title: 'Associazioni ETS & Sportive' },
+    data: { breadcrumb: 'BREADCRUMB.ASSOCIAZIONI_AND_TERZO_SETTORE', title: 'Associazioni ETS & Sportive' },
     loadChildren: () =>
       import('./features/associations/associations.routes').then((m) => m.ASSOCIATIONS_ROUTES),
   },
   {
     path: 'childcare',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Infanzia & Asilo Nido', title: 'Infanzia & Asilo Nido' },
+    data: { breadcrumb: 'BREADCRUMB.INFANZIA_AND_ASILO_NIDO', title: 'Infanzia & Asilo Nido' },
     loadChildren: () =>
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
@@ -221,98 +221,98 @@ export const routes: Routes = [
   {
     path: 'appointments',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Agenda & Appuntamenti', title: 'Appuntamenti & Calendario' },
+    data: { breadcrumb: 'BREADCRUMB.AGENDA_AND_APPUNTAMENTI', title: 'Appuntamenti & Calendario' },
     loadChildren: () =>
       import('./features/appointments/appointments.routes').then((m) => m.APPOINTMENTS_ROUTES),
   },
   {
     path: 'field-service',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Assistenza & Interventi', title: 'Assistenza' },
+    data: { breadcrumb: 'BREADCRUMB.ASSISTENZA_AND_INTERVENTI', title: 'Assistenza' },
     loadChildren: () =>
       import('./features/field-service/field-service.routes').then((m) => m.FIELD_SERVICE_ROUTES),
   },
   {
     path: 'helpdesk',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Helpdesk & ITSM', title: 'Helpdesk' },
+    data: { breadcrumb: 'BREADCRUMB.HELPDESK_AND_ITSM', title: 'Helpdesk' },
     loadChildren: () =>
       import('./features/helpdesk/helpdesk.routes').then((m) => m.HELPDESK_ROUTES),
   },
   {
     path: 'projects',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Progetti & Commesse', title: 'Progetti' },
+    data: { breadcrumb: 'BREADCRUMB.PROGETTI_AND_COMMESSE', title: 'Progetti' },
     loadChildren: () =>
       import('./features/projects/projects.routes').then((m) => m.PROJECTS_ROUTES),
   },
   {
     path: 'assets',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Cespiti & Asset EAM', title: 'Cespiti' },
+    data: { breadcrumb: 'BREADCRUMB.CESPITI_AND_ASSET_EAM', title: 'Cespiti' },
     loadChildren: () =>
       import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
   },
   {
     path: 'catalog',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Anagrafiche catalogo', title: 'Anagrafiche catalogo' },
+    data: { breadcrumb: 'BREADCRUMB.ANAGRAFICHE_CATALOGO', title: 'Anagrafiche catalogo' },
     loadComponent: () =>
       import('./features/catalog/catalog-master-data.component').then((m) => m.CatalogMasterDataComponent),
   },
   {
     path: 'subscriptions',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Abbonamenti & Contratti Recurrenti', title: 'Abbonamenti' },
+    data: { breadcrumb: 'BREADCRUMB.ABBONAMENTI_AND_CONTRATTI_RECURRENTI', title: 'Abbonamenti' },
     loadChildren: () =>
       import('./features/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
   },
   {
     path: 'automotive',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Automotive & Gomme', title: 'Automotive' },
+    data: { breadcrumb: 'BREADCRUMB.AUTOMOTIVE_AND_GOMME', title: 'Automotive' },
     loadChildren: () =>
       import('./features/automotive/automotive.routes').then((m) => m.AUTOMOTIVE_ROUTES),
   },
   {
     path: 'rent',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Noleggio Flotte', title: 'Noleggio' },
+    data: { breadcrumb: 'BREADCRUMB.NOLEGGIO_FLOTTE', title: 'Noleggio' },
     loadChildren: () =>
       import('./features/rent/rent.routes').then((m) => m.RENT_ROUTES),
   },
   {
     path: 'construction',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Cantieri & Impianti', title: 'Cantieri' },
+    data: { breadcrumb: 'BREADCRUMB.CANTIERI_AND_IMPIANTI', title: 'Cantieri' },
     loadChildren: () =>
       import('./features/construction/construction.routes').then((m) => m.CONSTRUCTION_ROUTES),
   },
   {
     path: 'professionals',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Studi Professionali', title: 'Studi Professionali' },
+    data: { breadcrumb: 'BREADCRUMB.STUDI_PROFESSIONALI', title: 'Studi Professionali' },
     loadChildren: () =>
       import('./features/professionals/professionals.routes').then((m) => m.PROFESSIONALS_ROUTES),
   },
   {
     path: 'manufacturing',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Produzione & MRP', title: 'Produzione' },
+    data: { breadcrumb: 'BREADCRUMB.PRODUZIONE_AND_MRP', title: 'Produzione' },
     loadChildren: () =>
       import('./features/manufacturing/manufacturing.routes').then((m) => m.MANUFACTURING_ROUTES),
   },
   {
     path: 'hospitality',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Ristorazione & Hospitality', title: 'Hospitality & Comande' },
+    data: { breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_HOSPITALITY', title: 'Hospitality & Comande' },
     loadChildren: () =>
       import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
   },
   {
     path: 'retail',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Vendita al Banco & POS', title: 'POS' },
+    data: { breadcrumb: 'BREADCRUMB.VENDITA_AL_BANCO_AND_POS', title: 'POS' },
     loadChildren: () =>
       import('./features/retail/retail.routes').then((m) => m.RETAIL_ROUTES),
   },
@@ -325,7 +325,7 @@ export const routes: Routes = [
   {
     path: 'hr',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Payroll & HR IT-CH', title: 'HR & Payroll' },
+    data: { breadcrumb: 'BREADCRUMB.PAYROLL_AND_HR_IT_CH', title: 'HR & Payroll' },
     loadChildren: () =>
       import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
   },
@@ -338,7 +338,7 @@ export const routes: Routes = [
   {
     path: 'accounting',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Contabilità & Fiscale', title: 'Contabilità' },
+    data: { breadcrumb: 'BREADCRUMB.CONTABILITA_AND_FISCALE', title: 'Contabilità' },
     loadChildren: () =>
       import('./features/accounting/accounting.routes').then((m) => m.ACCOUNTING_ROUTES),
   },
@@ -352,14 +352,14 @@ export const routes: Routes = [
   {
     path: 'alerts',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Centro Avvisi', title: 'Centro Avvisi' },
+    data: { breadcrumb: 'BREADCRUMB.CENTRO_AVVISI', title: 'Centro Avvisi' },
     loadChildren: () =>
       import('./features/alerts/alerts.routes').then((m) => m.ALERTS_ROUTES),
   },
   {
     path: 'system',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Sistema & Backup', title: 'Sistema' },
+    data: { breadcrumb: 'BREADCRUMB.SISTEMA_AND_BACKUP', title: 'Sistema' },
     loadChildren: () =>
       import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
   },
@@ -373,21 +373,21 @@ export const routes: Routes = [
   {
     path: 'settings',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Impostazioni & Tenant', title: 'Impostazioni' },
+    data: { breadcrumb: 'BREADCRUMB.IMPOSTAZIONI_AND_TENANT', title: 'Impostazioni' },
     loadChildren: () =>
       import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
   },
   {
     path: 'orders',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Storico Ordini', title: 'Storico Ordini' },
+    data: { breadcrumb: 'BREADCRUMB.STORICO_ORDINI', title: 'Storico Ordini' },
     loadChildren: () =>
       import('./features/order-history').then((m) => m.ORDER_ROUTES),
   },
   {
     path: 'welcome',
     canActivate: [authGuard],
-    data: { breadcrumb: 'Benvenuto', title: 'Benvenuto' },
+    data: { breadcrumb: 'BREADCRUMB.BENVENUTO', title: 'Benvenuto' },
     loadChildren: () =>
       import('./features/welcome').then((m) => m.WELCOME_ROUTES),
   },

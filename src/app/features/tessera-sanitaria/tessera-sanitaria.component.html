@@ -223,7 +223,7 @@
             <nz-form-control>
               <nz-select formControlName="format" style="width: 140px">
                 <nz-option nzValue="json" nzLabel="JSON (Sogei Payload)"></nz-option>
-                <nz-option nzValue="csv" nzLabel="CSV (Ministero Salute)"></nz-option>
+                <nz-option nzValue="csv" [nzLabel]="'STS.LBL_CSV_MINISTERO_SALUTE' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -281,21 +281,21 @@
             <nz-form-item>
               <nz-form-label>{{ 'STS.REGION_CODE' | translate }}</nz-form-label>
               <nz-form-control>
-                <input nz-input formControlName="region_code" placeholder="030 (Lombardia)" />
+                <input nz-input formControlName="region_code" [placeholder]="'STS.LBL_030_LOMBARDIA' | translate" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-label>{{ 'STS.ASL_CODE' | translate }}</nz-form-label>
               <nz-form-control>
-                <input nz-input formControlName="asl_code" placeholder="201 (Milano)" />
+                <input nz-input formControlName="asl_code" [placeholder]="'STS.LBL_201_MILANO' | translate" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-label>{{ 'STS.SSA_CODE' | translate }}</nz-form-label>
               <nz-form-control>
-                <input nz-input formControlName="ssa_code" placeholder="Codice Struttura" />
+                <input nz-input formControlName="ssa_code" [placeholder]="'STS.LBL_CODICE_STRUTTURA' | translate" />
               </nz-form-control>
             </nz-form-item>
           </div>
@@ -338,7 +338,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.DOCUMENT_ID' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="document_id" placeholder="UUID documento o fattura" />
+            <input nz-input formControlName="document_id" [placeholder]="'STS.LBL_UUID_DOCUMENTO_O_FATTURA' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -348,17 +348,17 @@
           <nz-form-label nzRequired>{{ 'STS.EXPENSE_TYPE' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="expense_type">
-              <nz-option nzValue="SV" nzLabel="SV - Visita Medica / Generica"></nz-option>
-              <nz-option nzValue="SP" nzLabel="SP - Prestazione Specialistica"></nz-option>
-              <nz-option nzValue="AD" nzLabel="AD - Dispositivo Medico CE"></nz-option>
-              <nz-option nzValue="FC" nzLabel="FC - Farmaco da Banco / Omeopatico"></nz-option>
-              <nz-option nzValue="FV" nzLabel="FV - Farmaco Veterinario"></nz-option>
-              <nz-option nzValue="TK" nzLabel="TK - Ticket Sanitario"></nz-option>
-              <nz-option nzValue="PI" nzLabel="PI - Protesi & Integrativa"></nz-option>
-              <nz-option nzValue="SR" nzLabel="SR - Ricovero Ospedaliero"></nz-option>
-              <nz-option nzValue="CT" nzLabel="CT - Cure Termali"></nz-option>
-              <nz-option nzValue="IC" nzLabel="IC - Intervento Chirurgico"></nz-option>
-              <nz-option nzValue="AA" nzLabel="AA - Altra Spesa"></nz-option>
+              <nz-option nzValue="SV" [nzLabel]="'STS.LBL_SV_VISITA_MEDICA_GENERICA' | translate"></nz-option>
+              <nz-option nzValue="SP" [nzLabel]="'STS.LBL_SP_PRESTAZIONE_SPECIALISTICA' | translate"></nz-option>
+              <nz-option nzValue="AD" [nzLabel]="'STS.LBL_AD_DISPOSITIVO_MEDICO_CE' | translate"></nz-option>
+              <nz-option nzValue="FC" [nzLabel]="'STS.LBL_FC_FARMACO_DA_BANCO_OMEOPATICO' | translate"></nz-option>
+              <nz-option nzValue="FV" [nzLabel]="'STS.LBL_FV_FARMACO_VETERINARIO' | translate"></nz-option>
+              <nz-option nzValue="TK" [nzLabel]="'STS.LBL_TK_TICKET_SANITARIO' | translate"></nz-option>
+              <nz-option nzValue="PI" [nzLabel]="'STS.LBL_PI_PROTESI_AND_INTEGRATIVA' | translate"></nz-option>
+              <nz-option nzValue="SR" [nzLabel]="'STS.LBL_SR_RICOVERO_OSPEDALIERO' | translate"></nz-option>
+              <nz-option nzValue="CT" [nzLabel]="'STS.LBL_CT_CURE_TERMALI' | translate"></nz-option>
+              <nz-option nzValue="IC" [nzLabel]="'STS.LBL_IC_INTERVENTO_CHIRURGICO' | translate"></nz-option>
+              <nz-option nzValue="AA" [nzLabel]="'STS.LBL_AA_ALTRA_SPESA' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>

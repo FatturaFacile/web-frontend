@@ -195,7 +195,7 @@ describe('AnalyticsComponent', () => {
     vi.spyOn(component as unknown as { downloadBlob: () => void }, 'downloadBlob').mockImplementation(() => undefined);
     component.exportKpisCsv();
     expect(analyticsApiSpy.exportKpisCsv).toHaveBeenCalled();
-    expect(messageSpy.success).toHaveBeenCalledWith('KPI export completed');
+    expect(messageSpy.success).toHaveBeenCalledWith('ANALYTICS.MSG_KPI_EXPORT_COMPLETED');
   });
 
   it('should switch dimension and load breakdown', () => {
@@ -245,7 +245,7 @@ describe('AnalyticsComponent', () => {
     vi.spyOn(component as unknown as { downloadBlob: () => void }, 'downloadBlob').mockImplementation(() => undefined);
     component.exportReportCsv(mockReportDefs[0]);
     expect(analyticsApiSpy.exportReportDefinition).toHaveBeenCalledWith('rep-1');
-    expect(messageSpy.success).toHaveBeenCalledWith('Export completed');
+    expect(messageSpy.success).toHaveBeenCalledWith('ANALYTICS.MSG_EXPORT_COMPLETED');
   });
 
   it('should switch BI feed dataset', () => {

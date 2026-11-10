@@ -318,10 +318,10 @@ export class PurchasesComponent implements OnInit {
 
   cancelOrder(order: PurchaseOrder): void {
     this.modal.confirm({
-      nzTitle: `Annullare l'ordine ${order.po_number}?`,
-      nzOkText: 'Annulla Ordine',
+      nzTitle: this.translate.instant('PURCHASES.DLG_ANNULLARE_L_ORDINE', { po_number: order.po_number }),
+      nzOkText: this.translate.instant('PURCHASES.DLG_ANNULLA_ORDINE'),
       nzOkDanger: true,
-      nzCancelText: 'Chiudi',
+      nzCancelText: this.translate.instant('PURCHASES.DLG_CHIUDI'),
       nzOnOk: () => {
         this.runOrderAction(this.procurementApi.cancelPurchaseOrder(order.id), 'purchases.messages.cancelled', order);
       },
@@ -461,13 +461,13 @@ export class PurchasesComponent implements OnInit {
       next: (res) => {
         this.saving.set(false);
         this.goodsReceiptModalVisible.set(false);
-        this.message.success(`Bolla di ricezione ${res.data.receipt_number || 'creata'} registrata con successo`);
+        this.message.success(this.translate.instant('PURCHASES.MSG_BOLLA_DI_RICEZIONE_REGISTRATA_CON_SUCCESSO', { value: res.data.receipt_number || this.translate.instant('PURCHASES.MSG_CREATA') }));
         this.loadOrders();
         this.loadGoodsReceipts();
       },
       error: (err) => {
         this.saving.set(false);
-        this.message.error(apiErrorText(err) || 'Errore durante la registrazione della ricezione merce');
+        this.message.error(apiErrorText(err) || this.translate.instant('PURCHASES.MSG_ERRORE_DURANTE_LA_REGISTRAZIONE_DELLA_RICEZIONE'));
       },
     });
   }
@@ -504,10 +504,10 @@ export class PurchasesComponent implements OnInit {
     this.procurementApi.inspectGoodsReceipt(receipt.id, payload).subscribe({
       next: () => {
         this.inspectModalVisible.set(false);
-        this.message.success('Ispezione aggiornata con successo');
+        this.message.success(this.translate.instant('PURCHASES.MSG_ISPEZIONE_AGGIORNATA_CON_SUCCESSO'));
         this.loadGoodsReceipts();
       },
-      error: (err) => this.message.error(apiErrorText(err) || 'Errore durante l\'aggiornamento dell\'ispezione'),
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('PURCHASES.MSG_ERRORE_DURANTE_L_AGGIORNAMENTO_DELL_ISPEZIONE')),
     });
   }
 
@@ -547,11 +547,11 @@ export class PurchasesComponent implements OnInit {
     this.procurementApi.executeThreeWayMatch(payload).subscribe({
       next: (res) => {
         this.executeMatchModalVisible.set(false);
-        this.message.success(`3-Way Match completato: stato ${res.data.match_status}`);
+        this.message.success(this.translate.instant('PURCHASES.MSG_3_WAY_MATCH_COMPLETATO_STATO', { match_status: res.data.match_status }));
         this.loadThreeWayMatches();
         this.loadSupplierInvoices();
       },
-      error: (err) => this.message.error(apiErrorText(err) || 'Errore durante l\'esecuzione del 3-Way Match'),
+      error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('PURCHASES.MSG_ERRORE_DURANTE_L_ESECUZIONE_DEL_3')),
     });
   }
 
@@ -645,13 +645,13 @@ export class PurchasesComponent implements OnInit {
 
   markInvoicePaid(invoice: SupplierInvoice): void {
     this.modal.confirm({
-      nzTitle: `Segnare la fattura fornitore ${invoice.invoice_number} come pagata?`,
-      nzOkText: 'Conferma Pagamento',
-      nzCancelText: 'Annulla',
+      nzTitle: this.translate.instant('PURCHASES.DLG_SEGNARE_LA_FATTURA_FORNITORE_COME_PAGATA', { invoice_number: invoice.invoice_number }),
+      nzOkText: this.translate.instant('PURCHASES.DLG_CONFERMA_PAGAMENTO'),
+      nzCancelText: this.translate.instant('PURCHASES.DLG_ANNULLA'),
       nzOnOk: () => {
         this.procurementApi.markSupplierInvoicePaid(invoice.id).subscribe({
           next: () => {
-            this.message.success(`Fattura ${invoice.invoice_number} contrassegnata come pagata`);
+            this.message.success(this.translate.instant('PURCHASES.MSG_FATTURA_CONTRASSEGNATA_COME_PAGATA', { invoice_number: invoice.invoice_number }));
             this.loadSupplierInvoices();
           },
           error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
@@ -689,7 +689,7 @@ export class PurchasesComponent implements OnInit {
       },
       error: (err) => {
         this.saving.set(false);
-        this.message.error(apiErrorText(err) || 'Errore durante l\'importazione del file XML SDI');
+        this.message.error(apiErrorText(err) || this.translate.instant('PURCHASES.MSG_ERRORE_DURANTE_L_IMPORTAZIONE_DEL_FILE'));
       },
     });
   }

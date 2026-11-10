@@ -17,10 +17,12 @@ import {
   MaintenanceWorkOrderResource,
 } from '@core';
 import { MoneyPipe } from '@shared';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-asset-detail-drawer',
   imports: [
+    TranslatePipe,
     NzDrawerModule,
     NzTabsModule,
     NzDescriptionsModule,

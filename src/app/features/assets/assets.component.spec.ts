@@ -172,7 +172,7 @@ describe('AssetsComponent', () => {
         currency: 'CHF',
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Fixed asset recorded');
+    expect(mockMessage.success).toHaveBeenCalledWith('assets.msgFixedAssetRecorded');
     expect(component.createModalVisible()).toBe(false);
   });
 

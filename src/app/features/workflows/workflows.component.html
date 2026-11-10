@@ -74,10 +74,10 @@
                   {{ task.status | uppercase }}
                 </nz-tag>
                 @if (task.is_sla_breached) {
-                  <nz-tag nzColor="error">SLA BREACH</nz-tag>
+                  <nz-tag nzColor="error">{{ 'WORKFLOWS.LBL_SLA_BREACH' | translate }}</nz-tag>
                 }
                 @if (task.is_escalated) {
-                  <nz-tag nzColor="warning">ESCALATED</nz-tag>
+                  <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_ESCALATED' | translate }}</nz-tag>
                 }
               </td>
               <td nzAlign="right">
@@ -120,11 +120,11 @@
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
-            <nz-option nzValue="pending" nzLabel="In corso"></nz-option>
-            <nz-option nzValue="approved" nzLabel="Approvati"></nz-option>
-            <nz-option nzValue="rejected" nzLabel="Rifiutati"></nz-option>
-            <nz-option nzValue="cancelled" nzLabel="Annullati"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'WORKFLOWS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="pending" [nzLabel]="'WORKFLOWS.LBL_IN_CORSO' | translate"></nz-option>
+            <nz-option nzValue="approved" [nzLabel]="'WORKFLOWS.LBL_APPROVATI' | translate"></nz-option>
+            <nz-option nzValue="rejected" [nzLabel]="'WORKFLOWS.LBL_RIFIUTATI' | translate"></nz-option>
+            <nz-option nzValue="cancelled" [nzLabel]="'WORKFLOWS.LBL_ANNULLATI' | translate"></nz-option>
           </nz-select>
           <button nz-button nzType="default" (click)="loadInstances()">
             <span nz-icon nzType="reload"></span>
@@ -193,7 +193,7 @@
                     (click)="openAuditTrail(inst)"
                   >
                     <span nz-icon nzType="audit"></span>
-                    Audit
+                    {{ 'WORKFLOWS.LBL_AUDIT' | translate }}
                   </button>
                   @if (inst.status === 'pending') {
                     <button
@@ -277,9 +277,9 @@
               <td>v{{ def.version }}</td>
               <td>
                 @if (def.is_published) {
-                  <nz-tag nzColor="success">PUBBLICATO</nz-tag>
+                  <nz-tag nzColor="success">{{ 'WORKFLOWS.LBL_PUBBLICATO' | translate }}</nz-tag>
                 } @else {
-                  <nz-tag nzColor="warning">BOZZA</nz-tag>
+                  <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_BOZZA' | translate }}</nz-tag>
                 }
               </td>
               <td>
@@ -298,7 +298,7 @@
                       (click)="publishDefinition(def)"
                     >
                       <span nz-icon nzType="check"></span>
-                      Pubblica
+                      {{ 'WORKFLOWS.LBL_PUBBLICA' | translate }}
                     </button>
                   }
                   <button
@@ -539,7 +539,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.PROCESS_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="workflow_code" placeholder="es. purchase_approval" />
+          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_ES_PURCHASE_APPROVAL' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -547,11 +547,11 @@
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_TYPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="approvable_type">
-            <nz-option nzValue="Invoice" nzLabel="Fattura (Invoice)"></nz-option>
-            <nz-option nzValue="PurchaseOrder" nzLabel="Ordine d Acquisto"></nz-option>
-            <nz-option nzValue="Quote" nzLabel="Preventivo (Quote)"></nz-option>
-            <nz-option nzValue="LeaveRequest" nzLabel="Ferie / Permesso"></nz-option>
-            <nz-option nzValue="CustomsDossier" nzLabel="Dossier Doganale"></nz-option>
+            <nz-option nzValue="Invoice" [nzLabel]="'WORKFLOWS.LBL_FATTURA_INVOICE' | translate"></nz-option>
+            <nz-option nzValue="PurchaseOrder" [nzLabel]="'WORKFLOWS.LBL_ORDINE_D_ACQUISTO' | translate"></nz-option>
+            <nz-option nzValue="Quote" [nzLabel]="'WORKFLOWS.LBL_PREVENTIVO_QUOTE' | translate"></nz-option>
+            <nz-option nzValue="LeaveRequest" [nzLabel]="'WORKFLOWS.LBL_FERIE_PERMESSO' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'WORKFLOWS.LBL_DOSSIER_DOGANALE' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -559,7 +559,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="approvable_id" placeholder="UUID o codice del documento" />
+          <input nz-input formControlName="approvable_id" [placeholder]="'WORKFLOWS.LBL_UUID_O_CODICE_DEL_DOCUMENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -604,8 +604,8 @@
           <th>#</th>
           <th>{{ 'WORKFLOWS.EVENT' | translate }}</th>
           <th>{{ 'WORKFLOWS.ACTOR' | translate }}</th>
-          <th>Timestamp</th>
-          <th>Cryptographic Hash</th>
+          <th>{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
+          <th>{{ 'WORKFLOWS.LBL_CRYPTOGRAPHIC_HASH' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -640,14 +640,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="code" placeholder="es. invoice_approval" />
+          <input nz-input formControlName="code" [placeholder]="'WORKFLOWS.LBL_ES_INVOICE_APPROVAL' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Approvazione Fatture Fornitore" />
+          <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_APPROVAZIONE_FATTURE_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -662,11 +662,11 @@
         <nz-form-label nzRequired>{{ 'WORKFLOWS.TARGET_DOC' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="approvable_type">
-            <nz-option nzValue="Invoice" nzLabel="Invoice"></nz-option>
-            <nz-option nzValue="PurchaseOrder" nzLabel="PurchaseOrder"></nz-option>
-            <nz-option nzValue="Quote" nzLabel="Quote"></nz-option>
-            <nz-option nzValue="LeaveRequest" nzLabel="LeaveRequest"></nz-option>
-            <nz-option nzValue="CustomsDossier" nzLabel="CustomsDossier"></nz-option>
+            <nz-option nzValue="Invoice" [nzLabel]="'WORKFLOWS.LBL_INVOICE' | translate"></nz-option>
+            <nz-option nzValue="PurchaseOrder" [nzLabel]="'WORKFLOWS.LBL_PURCHASEORDER' | translate"></nz-option>
+            <nz-option nzValue="Quote" [nzLabel]="'WORKFLOWS.LBL_QUOTE' | translate"></nz-option>
+            <nz-option nzValue="LeaveRequest" [nzLabel]="'WORKFLOWS.LBL_LEAVEREQUEST' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'WORKFLOWS.LBL_CUSTOMSDOSSIER' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -687,14 +687,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="delegate_user_id" placeholder="UUID utente delegato" />
+          <input nz-input formControlName="delegate_user_id" [placeholder]="'WORKFLOWS.LBL_UUID_UTENTE_DELEGATO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKFLOWS.SCOPE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="workflow_code" placeholder="Vuoto per tutti i workflow" />
+          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_VUOTO_PER_TUTTI_I_WORKFLOW' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -715,7 +715,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'WORKFLOWS.REASON' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="reason" placeholder="es. Ferie estive" />
+          <input nz-input formControlName="reason" [placeholder]="'WORKFLOWS.LBL_ES_FERIE_ESTIVE' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -735,14 +735,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Sollecito 24h ed escalation 48h" />
+          <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_SOLLECITO_24H_ED_ESCALATION_48H' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKFLOWS.PROCESS_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="workflow_code" placeholder="Vuoto per regola globale" />
+          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_VUOTO_PER_REGOLA_GLOBALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -764,9 +764,9 @@
         <nz-form-label nzRequired>{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="escalate_to_type">
-            <nz-option nzValue="manager" nzLabel="Manager"></nz-option>
-            <nz-option nzValue="admin" nzLabel="Amministratore"></nz-option>
-            <nz-option nzValue="role" nzLabel="Ruolo specifico"></nz-option>
+            <nz-option nzValue="manager" [nzLabel]="'WORKFLOWS.LBL_MANAGER' | translate"></nz-option>
+            <nz-option nzValue="admin" [nzLabel]="'WORKFLOWS.LBL_AMMINISTRATORE' | translate"></nz-option>
+            <nz-option nzValue="role" [nzLabel]="'WORKFLOWS.LBL_RUOLO_SPECIFICO' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>

@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const SUBSCRIPTIONS_ROUTES: Routes = [
   {
     path: 'billing',
-    data: { breadcrumb: 'Modifiche contratto e fatturazione a consumo', title: 'Fatturazione abbonamenti' },
+    data: { breadcrumb: 'BREADCRUMB.MODIFICHE_CONTRATTO_E_FATTURAZIONE_A_CONSUMO', title: 'Fatturazione abbonamenti' },
     loadComponent: () => import('./billing/subscription-billing.component').then((m) => m.SubscriptionBillingComponent),
   },
   {

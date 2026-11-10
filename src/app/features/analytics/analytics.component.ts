@@ -24,6 +24,7 @@ import {
   BreakdownEntry,
   DueCalendarEntry,
   RevenueComparisonData,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -55,6 +56,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrl: './analytics.component.scss',
 })
 export class AnalyticsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly analyticsApi = inject(AnalyticsApiService);
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
@@ -196,10 +198,10 @@ export class AnalyticsComponent implements OnInit {
       .subscribe({
         next: (blob) => {
           this.downloadBlob(blob, `kpis-${this.selectedPeriodPreset()}.csv`);
-          this.message.success('KPI export completed');
+          this.message.success(this.translate.instant('ANALYTICS.MSG_KPI_EXPORT_COMPLETED'));
         },
         error: () => {
-          this.message.error('Export failed');
+          this.message.error(this.translate.instant('ANALYTICS.MSG_EXPORT_FAILED'));
         },
       });
   }
@@ -290,12 +292,12 @@ export class AnalyticsComponent implements OnInit {
         next: () => {
           this.isActionLoading.set(false);
           this.isReportModalVisible.set(false);
-          this.message.success('Report updated successfully');
+          this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_UPDATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
         error: () => {
           this.isActionLoading.set(false);
-          this.message.error('Failed to update report');
+          this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_UPDATE_REPORT'));
         },
       });
     } else {
@@ -303,12 +305,12 @@ export class AnalyticsComponent implements OnInit {
         next: () => {
           this.isActionLoading.set(false);
           this.isReportModalVisible.set(false);
-          this.message.success('Report created successfully');
+          this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_CREATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
         error: () => {
           this.isActionLoading.set(false);
-          this.message.error('Failed to create report');
+          this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_CREATE_REPORT'));
         },
       });
     }
@@ -316,18 +318,18 @@ export class AnalyticsComponent implements OnInit {
 
   deleteReportDefinition(report: AnalyticsReportDefinition): void {
     this.modal.confirm({
-      nzTitle: 'Delete Report Definition',
-      nzContent: `Are you sure you want to delete report "${report.name}"?`,
-      nzOkText: 'Delete',
+      nzTitle: this.translate.instant('ANALYTICS.DLG_DELETE_REPORT_DEFINITION'),
+      nzContent: this.translate.instant('ANALYTICS.DLG_ARE_YOU_SURE_YOU_WANT_TO', { name: report.name }),
+      nzOkText: this.translate.instant('ANALYTICS.DLG_DELETE'),
       nzOkDanger: true,
       nzOnOk: () => {
         this.analyticsApi.deleteReportDefinition(report.id).subscribe({
           next: () => {
-            this.message.success('Report deleted');
+            this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_DELETED'));
             this.loadReportDefinitions();
           },
           error: () => {
-            this.message.error('Failed to delete report');
+            this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_DELETE_REPORT'));
           },
         });
       },
@@ -340,11 +342,11 @@ export class AnalyticsComponent implements OnInit {
       next: (res) => {
         this.selectedReportResult.set(res.data);
         this.isActionLoading.set(false);
-        this.message.success(`Report "${report.name}" executed successfully`);
+        this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_EXECUTED_SUCCESSFULLY', { name: report.name }));
       },
       error: () => {
         this.isActionLoading.set(false);
-        this.message.error('Failed to execute report');
+        this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_EXECUTE_REPORT'));
       },
     });
   }
@@ -353,10 +355,10 @@ export class AnalyticsComponent implements OnInit {
     this.analyticsApi.exportReportDefinition(report.id).subscribe({
       next: (blob) => {
         this.downloadBlob(blob, `${report.name.toLowerCase().replace(/\s+/g, '-')}.csv`);
-        this.message.success('Export completed');
+        this.message.success(this.translate.instant('ANALYTICS.MSG_EXPORT_COMPLETED'));
       },
       error: () => {
-        this.message.error('Failed to export report');
+        this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_EXPORT_REPORT'));
       },
     });
   }

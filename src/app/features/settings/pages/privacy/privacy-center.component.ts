@@ -8,6 +8,7 @@ import {
   PrivacyProcessingActivity,
   PrivacySensitiveAccessLog,
   PrivacySubprocessor,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -385,6 +386,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
   `,
 })
 export class PrivacyCenterComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly api = inject(PrivacyApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -464,7 +466,7 @@ export class PrivacyCenterComponent implements OnInit {
     this.api.createDataSubjectRequest(this.dsrForm.getRawValue()).subscribe({
       next: () => {
         this.dsrModalOpen.set(false);
-        this.message.success('Richiesta registrata');
+        this.message.success(this.translate.instant('privacy.msgRichiestaRegistrata'));
         this.loadAll();
       },
     });
@@ -473,7 +475,7 @@ export class PrivacyCenterComponent implements OnInit {
   protected executeErasure(req: PrivacyDataSubjectRequest): void {
     this.api.executeErasure(req.id).subscribe({
       next: (res) => {
-        this.message.success(`Esito cancellazione: ${res.data.status}`);
+        this.message.success(this.translate.instant('privacy.msgEsitoCancellazione', { status: res.data.status }));
         this.loadAll();
       },
     });
@@ -484,7 +486,7 @@ export class PrivacyCenterComponent implements OnInit {
     this.api.exportPortabilityDossier(this.portabilitySubjectType, this.portabilitySubjectId).subscribe({
       next: (res) => {
         this.exportedDossier.set(res.data);
-        this.message.success('Dossier di portabilità generato');
+        this.message.success(this.translate.instant('privacy.msgDossierDiPortabilitaGenerato'));
         this.loadAll();
       },
     });
@@ -502,7 +504,7 @@ export class PrivacyCenterComponent implements OnInit {
       .subscribe({
         next: () => {
           this.ropaModalOpen.set(false);
-          this.message.success('Attività di trattamento registrata');
+          this.message.success(this.translate.instant('privacy.msgAttivitaDiTrattamentoRegistrata'));
           this.loadAll();
         },
       });
@@ -513,7 +515,7 @@ export class PrivacyCenterComponent implements OnInit {
     this.api.createSubprocessor(this.subForm.getRawValue()).subscribe({
       next: () => {
         this.subModalOpen.set(false);
-        this.message.success('Sub-responsabile registrato');
+        this.message.success(this.translate.instant('privacy.msgSubResponsabileRegistrato'));
         this.loadAll();
       },
     });
@@ -531,7 +533,7 @@ export class PrivacyCenterComponent implements OnInit {
       .subscribe({
         next: () => {
           this.breachModalOpen.set(false);
-          this.message.success('Incidente Data Breach registrato');
+          this.message.success(this.translate.instant('privacy.msgIncidenteDataBreachRegistrato'));
           this.loadAll();
         },
       });

@@ -25,13 +25,16 @@ import {
   FixedAssetResource,
   isValidationError,
   StoreFixedAssetPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
 import { AssetDetailDrawerComponent } from './components/asset-detail-drawer/asset-detail-drawer.component';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-assets',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
@@ -56,6 +59,7 @@ import { AssetDetailDrawerComponent } from './components/asset-detail-drawer/ass
   styleUrl: './assets.component.scss',
 })
 export class AssetsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly assetApi = inject(AssetApiService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -189,7 +193,7 @@ export class AssetsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Fixed asset recorded');
+        this.message.success(this.translate.instant('assets.msgFixedAssetRecorded'));
         this.loadAssets();
       },
       error: (err: unknown) => {
@@ -204,7 +208,7 @@ export class AssetsComponent implements OnInit {
   capitalize(asset: FixedAssetResource): void {
     this.assetApi.capitalizeAsset(asset.id).subscribe({
       next: () => {
-        this.message.success('Asset capitalized');
+        this.message.success(this.translate.instant('assets.msgAssetCapitalized'));
         this.loadAssets();
       },
       error: () => undefined,
@@ -214,7 +218,7 @@ export class AssetsComponent implements OnInit {
   commission(asset: FixedAssetResource): void {
     this.assetApi.commissionAsset(asset.id).subscribe({
       next: () => {
-        this.message.success('Asset commissioned and put in service');
+        this.message.success(this.translate.instant('assets.msgAssetCommissionedAndPutInService'));
         this.loadAssets();
       },
       error: () => undefined,
@@ -231,7 +235,7 @@ export class AssetsComponent implements OnInit {
       },
       error: () => {
         this.loadingTag.set(false);
-        this.message.error('Unable to load asset QR tag');
+        this.message.error(this.translate.instant('assets.msgUnableToLoadAssetQrTag'));
       },
     });
   }

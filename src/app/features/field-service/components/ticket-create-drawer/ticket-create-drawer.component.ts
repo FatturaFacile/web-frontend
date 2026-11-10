@@ -18,11 +18,14 @@ import {
   TicketApiService,
   TicketChannel,
   TicketPriority,
+  TranslateService,
 } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-ticket-create-drawer',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     NzDrawerModule,
     NzFormModule,
@@ -37,6 +40,7 @@ export class TicketCreateDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(TicketApiService);
   private readonly message = inject(NzMessageService);
+  private readonly translate = inject(TranslateService);
 
   readonly open = model.required<boolean>();
   readonly saved = output<void>();
@@ -89,7 +93,7 @@ export class TicketCreateDrawerComponent {
     this.api.createTicket(payload).subscribe({
       next: (res) => {
         this.isSaving.set(false);
-        this.message.success(res?.message || 'Ticket creato con successo');
+        this.message.success(res?.message || this.translate.instant('ticketCreateDrawer.msgTicketCreatoConSuccesso'));
         this.form.reset({
           title: '',
           description: '',
@@ -110,7 +114,7 @@ export class TicketCreateDrawerComponent {
         if (unmapped.length > 0) {
           this.message.error(unmapped.join('; '));
         } else if (!err?.status || err.status !== 422) {
-          this.message.error(err?.error?.detail || err?.message || 'Errore nella creazione del ticket');
+          this.message.error(err?.error?.detail || err?.message || this.translate.instant('ticketCreateDrawer.msgErroreNellaCreazioneDelTicket'));
         }
       },
     });

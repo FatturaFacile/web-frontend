@@ -550,7 +550,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.HOST_USER' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="host_user_id" placeholder="ID Referente" />
+            <input nz-input formControlName="host_user_id" [placeholder]="'VISITORS.LBL_ID_REFERENTE' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
@@ -564,7 +564,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'VISITORS.PURPOSE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="purpose" placeholder="Es. Riunione di coordinamento" />
+          <input nz-input formControlName="purpose" [placeholder]="'VISITORS.LBL_ES_RIUNIONE_DI_COORDINAMENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -678,7 +678,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.KIOSK_NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="name" placeholder="Es. Reception Ingresso Principale" />
+            <input nz-input formControlName="name" [placeholder]="'VISITORS.LBL_ES_RECEPTION_INGRESSO_PRINCIPALE' | translate" />
           </nz-form-control>
         </nz-form-item>
       </form>

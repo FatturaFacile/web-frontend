@@ -24,9 +24,9 @@
             nzPlaceHolder="Tutti i tipi"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
-            <nz-option nzValue="customer" nzLabel="Clienti"></nz-option>
-            <nz-option nzValue="supplier" nzLabel="Fornitori"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="customer" [nzLabel]="'CONTRACTS.LBL_CLIENTI' | translate"></nz-option>
+            <nz-option nzValue="supplier" [nzLabel]="'CONTRACTS.LBL_FORNITORI' | translate"></nz-option>
           </nz-select>
 
           <nz-select
@@ -35,12 +35,12 @@
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti gli stati"></nz-option>
-            <nz-option nzValue="active" nzLabel="Attivo"></nz-option>
-            <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
-            <nz-option nzValue="renewed" nzLabel="Rinnovato"></nz-option>
-            <nz-option nzValue="expired" nzLabel="Scaduto"></nz-option>
-            <nz-option nzValue="terminated" nzLabel="Cessato"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
+            <nz-option nzValue="active" [nzLabel]="'CONTRACTS.LBL_ATTIVO' | translate"></nz-option>
+            <nz-option nzValue="draft" [nzLabel]="'CONTRACTS.LBL_BOZZA' | translate"></nz-option>
+            <nz-option nzValue="renewed" [nzLabel]="'CONTRACTS.LBL_RINNOVATO' | translate"></nz-option>
+            <nz-option nzValue="expired" [nzLabel]="'CONTRACTS.LBL_SCADUTO' | translate"></nz-option>
+            <nz-option nzValue="terminated" [nzLabel]="'CONTRACTS.LBL_CESSATO' | translate"></nz-option>
           </nz-select>
 
           <button nz-button nzType="default" (click)="loadContracts()">
@@ -98,7 +98,7 @@
               </td>
               <td>{{ c.counterparty_name || c.counterparty_id }}</td>
               <td>
-                <div>{{ c.start_date | date: 'dd/MM/yyyy' }} &rarr; {{ c.end_date ? (c.end_date | date: 'dd/MM/yyyy') : 'A tempo indeterminato' }}</div>
+                <div>{{ c.start_date | date: 'dd/MM/yyyy' }} &rarr; {{ c.end_date ? (c.end_date | date: 'dd/MM/yyyy') : ('CONTRACTS.LBL_OPEN_ENDED' | translate) }}</div>
                 @if (c.auto_renew) {
                   <span class="text-muted">Rinnovo automatico ({{ c.renewal_term_months || 12 }}m)</span>
                 }
@@ -161,11 +161,11 @@
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
-            <nz-option nzValue="pending" nzLabel="In attesa"></nz-option>
-            <nz-option nzValue="completed" nzLabel="Completati"></nz-option>
-            <nz-option nzValue="waived" nzLabel="Condonati"></nz-option>
-            <nz-option nzValue="overdue" nzLabel="Scaduti"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="pending" [nzLabel]="'CONTRACTS.LBL_IN_ATTESA' | translate"></nz-option>
+            <nz-option nzValue="completed" [nzLabel]="'CONTRACTS.LBL_COMPLETATI' | translate"></nz-option>
+            <nz-option nzValue="waived" [nzLabel]="'CONTRACTS.LBL_CONDONATI' | translate"></nz-option>
+            <nz-option nzValue="overdue" [nzLabel]="'CONTRACTS.LBL_SCADUTI' | translate"></nz-option>
           </nz-select>
 
           <button nz-button nzType="default" (click)="loadGlobalObligations()">
@@ -298,9 +298,9 @@
               <td>{{ a.message || '-' }}</td>
               <td>
                 @if (a.is_acknowledged) {
-                  <nz-tag nzColor="success">CONFERMATO</nz-tag>
+                  <nz-tag nzColor="success">{{ 'CONTRACTS.LBL_CONFERMATO' | translate }}</nz-tag>
                 } @else {
-                  <nz-tag nzColor="warning">DA VERIFICARE</nz-tag>
+                  <nz-tag nzColor="warning">{{ 'CONTRACTS.LBL_DA_VERIFICARE' | translate }}</nz-tag>
                 }
               </td>
               <td nzAlign="right">
@@ -333,8 +333,8 @@
         <nz-form-label nzRequired>{{ 'CONTRACTS.KIND' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="kind">
-            <nz-option nzValue="customer" nzLabel="Contratto Attivo (Cliente)"></nz-option>
-            <nz-option nzValue="supplier" nzLabel="Contratto Passivo (Fornitore)"></nz-option>
+            <nz-option nzValue="customer" [nzLabel]="'CONTRACTS.LBL_CONTRATTO_ATTIVO_CLIENTE' | translate"></nz-option>
+            <nz-option nzValue="supplier" [nzLabel]="'CONTRACTS.LBL_CONTRATTO_PASSIVO_FORNITORE' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -349,14 +349,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="es. Fornitura e Manutenzione IT" />
+          <input nz-input formControlName="title" [placeholder]="'CONTRACTS.LBL_ES_FORNITURA_E_MANUTENZIONE_IT' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.COUNTERPARTY_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="counterparty_id" placeholder="UUID Cliente o Fornitore" />
+          <input nz-input formControlName="counterparty_id" [placeholder]="'CONTRACTS.LBL_UUID_CLIENTE_O_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -418,7 +418,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'CONTRACTS.REVISED_VALUE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="revised_value" placeholder="Importo rinegoziato" />
+          <input nz-input formControlName="revised_value" [placeholder]="'CONTRACTS.LBL_IMPORTO_RINEGOZIATO' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -459,7 +459,7 @@
   (nzOnOk)="submitCompleteObligation()"
 >
   <ng-container *nzModalContent>
-    <p>Confermi il completamento dell obbligazione: <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
+    <p>{{ 'CONTRACTS.LBL_CONFERMI_IL_COMPLETAMENTO_DELL_OBBLIGAZIONE' | translate }} <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
     <nz-form-item>
       <nz-form-label>{{ 'CONTRACTS.NOTES' | translate }}</nz-form-label>
       <nz-form-control>
@@ -477,7 +477,7 @@
   (nzOnOk)="submitWaiveObligation()"
 >
   <ng-container *nzModalContent>
-    <p>Confermi la rinuncia (waive) all obbligazione: <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
+    <p>{{ 'CONTRACTS.LBL_CONFERMI_LA_RINUNCIA_WAIVE_ALL_OBBLIGAZIONE' | translate }} <strong>{{ actionObligationTarget()?.title }}</strong>?</p>
     <nz-form-item>
       <nz-form-label>{{ 'CONTRACTS.REASON' | translate }}</nz-form-label>
       <nz-form-control>
@@ -525,8 +525,8 @@
       <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>Ruolo</th>
-            <th>Nome</th>
+            <th>{{ 'CONTRACTS.LBL_RUOLO' | translate }}</th>
+            <th>{{ 'CONTRACTS.LBL_NOME' | translate }}</th>
             <th>Email</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -561,10 +561,10 @@
       <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>Tipo</th>
-            <th>Titolo</th>
-            <th>Scadenza</th>
-            <th>Stato</th>
+            <th>{{ 'CONTRACTS.LBL_TIPO' | translate }}</th>
+            <th>{{ 'CONTRACTS.LBL_TITOLO' | translate }}</th>
+            <th>{{ 'CONTRACTS.LBL_SCADENZA' | translate }}</th>
+            <th>{{ 'CONTRACTS.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -592,8 +592,8 @@
           <tr>
             <th>Da</th>
             <th>A</th>
-            <th>Data</th>
-            <th>Motivo</th>
+            <th>{{ 'CONTRACTS.LBL_DATA' | translate }}</th>
+            <th>{{ 'CONTRACTS.LBL_MOTIVO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -627,14 +627,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.ROLE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="role" placeholder="es. Contraente, Garante, Subappaltatore" />
+          <input nz-input formControlName="role" [placeholder]="'CONTRACTS.LBL_ES_CONTRAENTE_GARANTE_SUBAPPALTATORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="Ragione sociale o Nominativo" />
+          <input nz-input formControlName="name" [placeholder]="'CONTRACTS.LBL_RAGIONE_SOCIALE_O_NOMINATIVO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -661,8 +661,8 @@
         <nz-form-label nzRequired>{{ 'CONTRACTS.TYPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="type">
-            <nz-option nzValue="obligation" nzLabel="Obbligazione contrattuale"></nz-option>
-            <nz-option nzValue="milestone" nzLabel="Milestone di consegna / collaudo"></nz-option>
+            <nz-option nzValue="obligation" [nzLabel]="'CONTRACTS.LBL_OBBLIGAZIONE_CONTRATTUALE' | translate"></nz-option>
+            <nz-option nzValue="milestone" [nzLabel]="'CONTRACTS.LBL_MILESTONE_DI_CONSEGNA_COLLAUDO' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -670,7 +670,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="es. Rilascio Certificazione Conformità" />
+          <input nz-input formControlName="title" [placeholder]="'CONTRACTS.LBL_ES_RILASCIO_CERTIFICAZIONE_CONFORMITA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -684,7 +684,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'CONTRACTS.PENALTY' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="penalty_amount" placeholder="Importo penale in caso di inadempienza" />
+          <input nz-input formControlName="penalty_amount" [placeholder]="'CONTRACTS.LBL_IMPORTO_PENALE_IN_CASO_DI_INADEMPIENZA' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>

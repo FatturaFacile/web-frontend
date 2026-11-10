@@ -178,7 +178,7 @@ describe('LeadsComponent', () => {
         estimated_budget: 12000,
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Lead created successfully');
+    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadCreatedSuccessfully');
     expect(component.createDrawerVisible()).toBe(false);
   });
 
@@ -187,7 +187,7 @@ describe('LeadsComponent', () => {
     component.recalculateScore(mockLeads[0]);
 
     expect(mockCrmApi.recalculateLeadScores).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Score recalculated');
+    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgScoreRecalculated');
   });
 
   it('explains the score of a lead: stored and under the current model', () => {
@@ -208,7 +208,7 @@ describe('LeadsComponent', () => {
     component.qualify(mockLeads[0]);
 
     expect(mockCrmApi.qualifyLead).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Lead marked as Qualified');
+    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadMarkedAsQualified');
   });
 
   it('disqualifies a lead', () => {
@@ -216,6 +216,6 @@ describe('LeadsComponent', () => {
     component.disqualify(mockLeads[0]);
 
     expect(mockCrmApi.disqualifyLead).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Lead marked as Disqualified');
+    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadMarkedAsDisqualified');
   });
 });

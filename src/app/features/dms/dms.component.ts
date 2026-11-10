@@ -39,6 +39,7 @@ import {
   DmsStoreTagRequest,
   DmsTagResource,
   DmsUpdateAiSettingRequest,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -73,6 +74,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrls: ['./dms.component.scss'],
 })
 export class DmsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly dmsApi = inject(DmsApiService);
   private readonly message = inject(NzMessageService);
@@ -220,7 +222,7 @@ export class DmsComponent implements OnInit {
         this.documentsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento dei documenti DMS');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_CARICAMENTO_DEI_DOCUMENTI_DMS'));
         this.documentsLoading.set(false);
       },
     });
@@ -267,13 +269,13 @@ export class DmsComponent implements OnInit {
     this.createDocSubmitting.set(true);
     this.dmsApi.createDocument(payload).subscribe({
       next: () => {
-        this.message.success('Documento archiviato con successo');
+        this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_ARCHIVIATO_CON_SUCCESSO'));
         this.createDocModalVisible.set(false);
         this.createDocSubmitting.set(false);
         this.loadDocuments();
       },
       error: () => {
-        this.message.error('Errore durante l archiviazione del documento');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_ARCHIVIAZIONE_DEL_DOCUMENTO'));
         this.createDocSubmitting.set(false);
       },
     });
@@ -281,17 +283,17 @@ export class DmsComponent implements OnInit {
 
   protected deleteDocument(doc: DmsDocumentResource): void {
     if (doc.is_legal_hold) {
-      this.message.warning('Impossibile eliminare un documento protetto da Legal Hold!');
+      this.message.warning(this.translate.instant('DMS.MSG_IMPOSSIBILE_ELIMINARE_UN_DOCUMENTO_PROTETTO_DA'));
       return;
     }
 
     this.dmsApi.deleteDocument(doc.id).subscribe({
       next: () => {
-        this.message.info('Documento eliminato');
+        this.message.info(this.translate.instant('DMS.MSG_DOCUMENTO_ELIMINATO'));
         this.loadDocuments();
       },
       error: () => {
-        this.message.error('Errore durante l eliminazione');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_ELIMINAZIONE'));
       },
     });
   }
@@ -310,13 +312,13 @@ export class DmsComponent implements OnInit {
     this.checkOutSubmitting.set(true);
     this.dmsApi.checkOutDocument(doc.id, { reason: this.checkOutReason() }).subscribe({
       next: () => {
-        this.message.success('Documento estratto in modifica (Check-Out)');
+        this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_ESTRATTO_IN_MODIFICA_CHECK_OUT'));
         this.checkOutModalVisible.set(false);
         this.checkOutSubmitting.set(false);
         this.loadDocuments();
       },
       error: () => {
-        this.message.error('Errore durante il check-out');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_CHECK_OUT'));
         this.checkOutSubmitting.set(false);
       },
     });
@@ -343,13 +345,13 @@ export class DmsComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.message.success('Nuova versione caricata (Check-In completato)');
+          this.message.success(this.translate.instant('DMS.MSG_NUOVA_VERSIONE_CARICATA_CHECK_IN_COMPLETATO'));
           this.checkInModalVisible.set(false);
           this.checkInSubmitting.set(false);
           this.loadDocuments();
         },
         error: () => {
-          this.message.error('Errore durante il check-in');
+          this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_CHECK_IN'));
           this.checkInSubmitting.set(false);
         },
       });
@@ -367,7 +369,7 @@ export class DmsComponent implements OnInit {
     if (!doc) return;
 
     if (!this.legalHoldReason().trim()) {
-      this.message.warning('La motivazione del blocco conservativo è obbligatoria');
+      this.message.warning(this.translate.instant('DMS.MSG_LA_MOTIVAZIONE_DEL_BLOCCO_CONSERVATIVO_E'));
       return;
     }
 
@@ -375,13 +377,13 @@ export class DmsComponent implements OnInit {
     this.legalHoldSubmitting.set(true);
     this.dmsApi.placeLegalHold(doc.id, payload).subscribe({
       next: () => {
-        this.message.success('Blocco probatorio (Legal Hold) applicato con successo');
+        this.message.success(this.translate.instant('DMS.MSG_BLOCCO_PROBATORIO_LEGAL_HOLD_APPLICATO_CON'));
         this.legalHoldModalVisible.set(false);
         this.legalHoldSubmitting.set(false);
         this.loadDocuments();
       },
       error: () => {
-        this.message.error('Errore durante l applicazione del blocco probatorio');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_APPLICAZIONE_DEL_BLOCCO'));
         this.legalHoldSubmitting.set(false);
       },
     });
@@ -390,11 +392,11 @@ export class DmsComponent implements OnInit {
   protected releaseLegalHold(doc: DmsDocumentResource): void {
     this.dmsApi.releaseLegalHold(doc.id).subscribe({
       next: () => {
-        this.message.info('Blocco probatorio rimosso');
+        this.message.info(this.translate.instant('DMS.MSG_BLOCCO_PROBATORIO_RIMOSSO'));
         this.loadDocuments();
       },
       error: () => {
-        this.message.error('Errore nella rimozione del Legal Hold');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NELLA_RIMOZIONE_DEL_LEGAL_HOLD'));
       },
     });
   }
@@ -439,13 +441,13 @@ export class DmsComponent implements OnInit {
     this.dmsApi.verifyVersion(doc.id, version.id).subscribe({
       next: (res) => {
         if (res.data.is_valid) {
-          this.message.success(`Integrità SHA-256 verificata: ${version.sha256.slice(0, 16)}...`);
+          this.message.success(this.translate.instant('DMS.MSG_INTEGRITA_SHA_256_VERIFICATA', { value: version.sha256.slice(0, 16) }));
         } else {
-          this.message.error('Attenzione: Impronta hash non corrispondente!');
+          this.message.error(this.translate.instant('DMS.MSG_ATTENZIONE_IMPRONTA_HASH_NON_CORRISPONDENTE'));
         }
       },
       error: () => {
-        this.message.error('Errore durante la verifica crittografica');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_LA_VERIFICA_CRITTOGRAFICA'));
       },
     });
   }
@@ -453,20 +455,20 @@ export class DmsComponent implements OnInit {
   protected confirmExtraction(extr: DmsExtractionResource): void {
     this.dmsApi.confirmExtraction(extr.id, { confirmed_value: extr.extracted_value }).subscribe({
       next: () => {
-        this.message.success(`Dato "${extr.field_name}" confermato`);
+        this.message.success(this.translate.instant('DMS.MSG_DATO_CONFERMATO', { field_name: extr.field_name }));
         extr.status = 'confirmed';
       },
-      error: () => this.message.error('Errore nella conferma del dato'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_ERRORE_NELLA_CONFERMA_DEL_DATO')),
     });
   }
 
   protected rejectExtraction(extr: DmsExtractionResource): void {
     this.dmsApi.rejectExtraction(extr.id).subscribe({
       next: () => {
-        this.message.info(`Dato "${extr.field_name}" scartato`);
+        this.message.info(this.translate.instant('DMS.MSG_DATO_SCARTATO', { field_name: extr.field_name }));
         extr.status = 'rejected';
       },
-      error: () => this.message.error('Errore nel rifiuto del dato'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_RIFIUTO_DEL_DATO')),
     });
   }
 
@@ -492,11 +494,11 @@ export class DmsComponent implements OnInit {
 
     this.dmsApi.linkDocument(doc.id, payload).subscribe({
       next: (res) => {
-        this.message.success('Documento collegato all entità gestionale');
+        this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_COLLEGATO_ALL_ENTITA_GESTIONALE'));
         this.docLinks.update((list) => [...list, res.data]);
         this.linkModalVisible.set(false);
       },
-      error: () => this.message.error('Errore durante il collegamento'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_COLLEGAMENTO')),
     });
   }
 
@@ -506,10 +508,10 @@ export class DmsComponent implements OnInit {
 
     this.dmsApi.removeLink(doc.id, link.id).subscribe({
       next: () => {
-        this.message.info('Collegamento rimosso');
+        this.message.info(this.translate.instant('DMS.MSG_COLLEGAMENTO_RIMOSSO'));
         this.docLinks.update((list) => list.filter((l) => l.id !== link.id));
       },
-      error: () => this.message.error('Impossibile rimuovere il collegamento'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_IMPOSSIBILE_RIMUOVERE_IL_COLLEGAMENTO')),
     });
   }
 
@@ -522,7 +524,7 @@ export class DmsComponent implements OnInit {
         this.foldersLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle cartelle');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_CARTELLE'));
         this.foldersLoading.set(false);
       },
     });
@@ -547,13 +549,13 @@ export class DmsComponent implements OnInit {
     this.folderSubmitting.set(true);
     this.dmsApi.createFolder(payload).subscribe({
       next: () => {
-        this.message.success('Cartella creata');
+        this.message.success(this.translate.instant('DMS.MSG_CARTELLA_CREATA'));
         this.createFolderModalVisible.set(false);
         this.folderSubmitting.set(false);
         this.loadFolders();
       },
       error: () => {
-        this.message.error('Errore nella creazione della cartella');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NELLA_CREAZIONE_DELLA_CARTELLA'));
         this.folderSubmitting.set(false);
       },
     });
@@ -562,10 +564,10 @@ export class DmsComponent implements OnInit {
   protected deleteFolder(folder: DmsFolderResource): void {
     this.dmsApi.deleteFolder(folder.id).subscribe({
       next: () => {
-        this.message.info('Cartella eliminata');
+        this.message.info(this.translate.instant('DMS.MSG_CARTELLA_ELIMINATA'));
         this.loadFolders();
       },
-      error: () => this.message.error('Impossibile eliminare la cartella'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_IMPOSSIBILE_ELIMINARE_LA_CARTELLA')),
     });
   }
 
@@ -578,7 +580,7 @@ export class DmsComponent implements OnInit {
         this.retentionLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle policy di retention');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_POLICY_DI'));
         this.retentionLoading.set(false);
       },
     });
@@ -605,13 +607,13 @@ export class DmsComponent implements OnInit {
     this.policySubmitting.set(true);
     this.dmsApi.createRetentionPolicy(payload).subscribe({
       next: () => {
-        this.message.success('Policy di conservazione registrata');
+        this.message.success(this.translate.instant('DMS.MSG_POLICY_DI_CONSERVAZIONE_REGISTRATA'));
         this.createPolicyModalVisible.set(false);
         this.policySubmitting.set(false);
         this.loadRetentionPolicies();
       },
       error: () => {
-        this.message.error('Errore durante la registrazione della policy');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_LA_REGISTRAZIONE_DELLA_POLICY'));
         this.policySubmitting.set(false);
       },
     });
@@ -620,10 +622,10 @@ export class DmsComponent implements OnInit {
   protected deleteRetentionPolicy(policy: DmsRetentionPolicyResource): void {
     this.dmsApi.deleteRetentionPolicy(policy.id).subscribe({
       next: () => {
-        this.message.info('Policy eliminata');
+        this.message.info(this.translate.instant('DMS.MSG_POLICY_ELIMINATA'));
         this.loadRetentionPolicies();
       },
-      error: () => this.message.error('Impossibile eliminare la policy'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_IMPOSSIBILE_ELIMINARE_LA_POLICY')),
     });
   }
 
@@ -636,7 +638,7 @@ export class DmsComponent implements OnInit {
         this.tagsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento dei tag');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_CARICAMENTO_DEI_TAG'));
         this.tagsLoading.set(false);
       },
     });
@@ -654,13 +656,13 @@ export class DmsComponent implements OnInit {
     this.tagSubmitting.set(true);
     this.dmsApi.createTag(payload).subscribe({
       next: () => {
-        this.message.success('Tag creato con successo');
+        this.message.success(this.translate.instant('DMS.MSG_TAG_CREATO_CON_SUCCESSO'));
         this.createTagModalVisible.set(false);
         this.tagSubmitting.set(false);
         this.loadTags();
       },
       error: () => {
-        this.message.error('Errore nella creazione del tag');
+        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NELLA_CREAZIONE_DEL_TAG'));
         this.tagSubmitting.set(false);
       },
     });
@@ -669,10 +671,10 @@ export class DmsComponent implements OnInit {
   protected deleteTag(tag: DmsTagResource): void {
     this.dmsApi.deleteTag(tag.id).subscribe({
       next: () => {
-        this.message.info('Tag eliminato');
+        this.message.info(this.translate.instant('DMS.MSG_TAG_ELIMINATO'));
         this.loadTags();
       },
-      error: () => this.message.error('Impossibile eliminare il tag'),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_IMPOSSIBILE_ELIMINARE_IL_TAG')),
     });
   }
 
@@ -692,8 +694,8 @@ export class DmsComponent implements OnInit {
   protected saveAiSettings(): void {
     const payload: DmsUpdateAiSettingRequest = this.aiSettings();
     this.dmsApi.updateAiSettings(payload).subscribe({
-      next: () => this.message.success('Configurazione AI / OCR salvata'),
-      error: () => this.message.error('Errore durante il salvataggio dei parametri AI'),
+      next: () => this.message.success(this.translate.instant('DMS.MSG_CONFIGURAZIONE_AI_OCR_SALVATA')),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_SALVATAGGIO_DEI_PARAMETRI')),
     });
   }
 

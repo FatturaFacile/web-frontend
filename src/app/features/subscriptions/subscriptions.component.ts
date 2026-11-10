@@ -26,12 +26,15 @@ import {
   SubscriptionContractResource,
   SubscriptionMetrics,
   SubscriptionPlanResource,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-subscriptions',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
@@ -56,6 +59,7 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
   styleUrl: './subscriptions.component.scss',
 })
 export class SubscriptionsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly subApi = inject(SubscriptionApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -186,7 +190,7 @@ export class SubscriptionsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Subscription contract created');
+        this.message.success(this.translate.instant('subscriptions.msgSubscriptionContractCreated'));
         this.loadContracts();
         this.loadMetrics();
       },
@@ -202,7 +206,7 @@ export class SubscriptionsComponent implements OnInit {
   activate(contract: SubscriptionContractResource): void {
     this.subApi.activateContract(contract.id).subscribe({
       next: () => {
-        this.message.success('Subscription activated');
+        this.message.success(this.translate.instant('subscriptions.msgSubscriptionActivated'));
         this.loadContracts();
         this.loadMetrics();
       },
@@ -213,7 +217,7 @@ export class SubscriptionsComponent implements OnInit {
   pause(contract: SubscriptionContractResource): void {
     this.subApi.pauseContract(contract.id, { reason: 'Customer requested pause' }).subscribe({
       next: () => {
-        this.message.info('Subscription paused');
+        this.message.info(this.translate.instant('subscriptions.msgSubscriptionPaused'));
         this.loadContracts();
         this.loadMetrics();
       },
@@ -224,7 +228,7 @@ export class SubscriptionsComponent implements OnInit {
   reactivate(contract: SubscriptionContractResource): void {
     this.subApi.reactivateContract(contract.id).subscribe({
       next: () => {
-        this.message.success('Subscription resumed');
+        this.message.success(this.translate.instant('subscriptions.msgSubscriptionResumed'));
         this.loadContracts();
         this.loadMetrics();
       },
@@ -235,7 +239,7 @@ export class SubscriptionsComponent implements OnInit {
   billNow(contract: SubscriptionContractResource): void {
     this.subApi.billContract(contract.id).subscribe({
       next: () => {
-        this.message.success('Invoice generated for current billing period');
+        this.message.success(this.translate.instant('subscriptions.msgInvoiceGeneratedForCurrentBillingPeriod'));
         this.loadContracts();
       },
       error: () => undefined,
@@ -244,14 +248,14 @@ export class SubscriptionsComponent implements OnInit {
 
   cancel(contract: SubscriptionContractResource): void {
     this.modal.confirm({
-      nzTitle: 'Cancel Subscription',
-      nzContent: `Are you sure you want to cancel ${contract.contract_number}?`,
-      nzOkText: 'Cancel Subscription',
+      nzTitle: this.translate.instant('subscriptions.dlgCancelSubscription'),
+      nzContent: this.translate.instant('subscriptions.dlgAreYouSureYouWantTo', { contract_number: contract.contract_number }),
+      nzOkText: this.translate.instant('subscriptions.dlgCancelSubscription'),
       nzOkDanger: true,
       nzOnOk: () => {
         this.subApi.cancelContract(contract.id, { cancel_at_period_end: true }).subscribe({
           next: () => {
-            this.message.success('Subscription scheduled for cancellation');
+            this.message.success(this.translate.instant('subscriptions.msgSubscriptionScheduledForCancellation'));
             this.loadContracts();
             this.loadMetrics();
           },
@@ -266,11 +270,11 @@ export class SubscriptionsComponent implements OnInit {
     this.subApi.runDunning().subscribe({
       next: () => {
         this.runningDunning.set(false);
-        this.message.success('Automated dunning run executed');
+        this.message.success(this.translate.instant('subscriptions.msgAutomatedDunningRunExecuted'));
       },
       error: () => {
         this.runningDunning.set(false);
-        this.message.error('Failed to run dunning process');
+        this.message.error(this.translate.instant('subscriptions.msgFailedToRunDunningProcess'));
       },
     });
   }

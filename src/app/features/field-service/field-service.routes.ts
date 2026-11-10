@@ -8,19 +8,19 @@ export const FIELD_SERVICE_ROUTES: Routes = [
   },
   {
     path: 'tickets',
-    data: { breadcrumb: 'Ticket Helpdesk SLA', title: 'Ticket Helpdesk' },
+    data: { breadcrumb: 'BREADCRUMB.TICKET_HELPDESK_SLA', title: 'Ticket Helpdesk' },
     loadComponent: () =>
       import('./field-service.component').then((m) => m.FieldServiceComponent),
   },
   {
     path: 'reports',
-    data: { breadcrumb: 'Rapportini Intervento', title: 'Rapportini' },
+    data: { breadcrumb: 'BREADCRUMB.RAPPORTINI_INTERVENTO', title: 'Rapportini' },
     loadComponent: () =>
       import('./service-reports/service-reports.component').then((m) => m.ServiceReportsComponent),
   },
   {
     path: 'work-orders',
-    data: { breadcrumb: 'Ordini di lavoro', title: 'Ordini di lavoro' },
+    data: { breadcrumb: 'BREADCRUMB.ORDINI_DI_LAVORO', title: 'Ordini di lavoro' },
     loadComponent: () =>
       import('./work-orders/field-work-orders.component').then((m) => m.FieldWorkOrdersComponent),
   },

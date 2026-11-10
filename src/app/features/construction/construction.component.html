@@ -472,14 +472,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CLIENT' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="client" placeholder="Committente / Ente Appaltante" />
+          <input nz-input formControlName="client" [placeholder]="'CONSTRUCTION.LBL_COMMITTENTE_ENTE_APPALTANTE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_LOCATION' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="location" placeholder="Comune, Via, Cantiere" />
+          <input nz-input formControlName="location" [placeholder]="'CONSTRUCTION.LBL_COMUNE_VIA_CANTIERE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -487,8 +487,8 @@
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_REGIME' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="regime">
-            <nz-option nzValue="CH" nzLabel="Svizzera (SIA 118 / IVA 8.1%)"></nz-option>
-            <nz-option nzValue="IT" nzLabel="Italia (D.Lgs 36/2023 / Reverse Charge / Split Payment)"></nz-option>
+            <nz-option nzValue="CH" [nzLabel]="'CONSTRUCTION.LBL_SVIZZERA_SIA_118_IVA_8_1' | translate"></nz-option>
+            <nz-option nzValue="IT" [nzLabel]="'CONSTRUCTION.LBL_ITALIA_D_LGS_36_2023_REVERSE' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -570,7 +570,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_BID_TITLE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="Opere Edili, Finiture..." />
+          <input nz-input formControlName="title" [placeholder]="'CONSTRUCTION.LBL_OPERE_EDILI_FINITURE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -578,7 +578,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'CONSTRUCTION.FIELD_CLIENT' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="client_name" placeholder="Committente" />
+            <input nz-input formControlName="client_name" [placeholder]="'CONSTRUCTION.LBL_COMMITTENTE' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -608,14 +608,14 @@
       <nz-form-item>
         <nz-form-label>{{ 'CONSTRUCTION.FIELD_POS_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="code" placeholder="Art. 01.02.03" />
+          <input nz-input formControlName="code" [placeholder]="'CONSTRUCTION.LBL_ART_01_02_03' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="description" placeholder="Descrizione voce di capitolato" />
+          <input nz-input formControlName="description" [placeholder]="'CONSTRUCTION.LBL_DESCRIZIONE_VOCE_DI_CAPITOLATO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -623,7 +623,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_UNIT' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="unit" placeholder="m², m³, kg, cad..." />
+            <input nz-input formControlName="unit" [placeholder]="'CONSTRUCTION.LBL_M_M_KG_CAD' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -728,14 +728,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_WEATHER' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="weather_condition" placeholder="Sereno 18°C / Pioggia 12°C" />
+          <input nz-input formControlName="weather_condition" [placeholder]="'CONSTRUCTION.LBL_SERENO_18_C_PIOGGIA_12_C' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_WORK_PERFORMED' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="work_performed" rows="3" placeholder="Lavorazioni eseguite nella giornata..."></textarea>
+          <textarea nz-input formControlName="work_performed" rows="3" [placeholder]="'CONSTRUCTION.LBL_LAVORAZIONI_ESEGUITE_NELLA_GIORNATA' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -765,7 +765,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_DOCUMENT_TITLE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="Es. Piano Operativo di Sicurezza POS" />
+          <input nz-input formControlName="title" [placeholder]="'CONSTRUCTION.LBL_ES_PIANO_OPERATIVO_DI_SICUREZZA_POS' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -774,11 +774,11 @@
           <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_CATEGORY' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="category">
-              <nz-option nzValue="pos" nzLabel="POS - Piano Operativo di Sicurezza"></nz-option>
-              <nz-option nzValue="psc" nzLabel="PSC - Piano di Sicurezza e Coordinamento"></nz-option>
-              <nz-option nzValue="durc" nzLabel="DURC - Documento Unico Regolarità Contributiva"></nz-option>
-              <nz-option nzValue="insurance" nzLabel="Polizza Assicurativa CAR / Decennale"></nz-option>
-              <nz-option nzValue="compliance" nzLabel="Certificato di Conformità Impianti"></nz-option>
+              <nz-option nzValue="pos" [nzLabel]="'CONSTRUCTION.LBL_POS_PIANO_OPERATIVO_DI_SICUREZZA' | translate"></nz-option>
+              <nz-option nzValue="psc" [nzLabel]="'CONSTRUCTION.LBL_PSC_PIANO_DI_SICUREZZA_E_COORDINAMENTO' | translate"></nz-option>
+              <nz-option nzValue="durc" [nzLabel]="'CONSTRUCTION.LBL_DURC_DOCUMENTO_UNICO_REGOLARITA_CONTRIBUTIVA' | translate"></nz-option>
+              <nz-option nzValue="insurance" [nzLabel]="'CONSTRUCTION.LBL_POLIZZA_ASSICURATIVA_CAR_DECENNALE' | translate"></nz-option>
+              <nz-option nzValue="compliance" [nzLabel]="'CONSTRUCTION.LBL_CERTIFICATO_DI_CONFORMITA_IMPIANTI' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -806,7 +806,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_COMPANY_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="company_name" placeholder="Ragione Sociale" />
+          <input nz-input formControlName="company_name" [placeholder]="'CONSTRUCTION.LBL_RAGIONE_SOCIALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -820,7 +820,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'CONSTRUCTION.FIELD_QUALIFICATION' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="qualification" placeholder="Opere di finitura, cartongesso, impianti..." />
+          <input nz-input formControlName="qualification" [placeholder]="'CONSTRUCTION.LBL_OPERE_DI_FINITURA_CARTONGESSO_IMPIANTI' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -861,7 +861,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONSTRUCTION.FIELD_SCOPE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="scope_of_work" placeholder="Fornitura e posa in opera..." />
+          <input nz-input formControlName="scope_of_work" [placeholder]="'CONSTRUCTION.LBL_FORNITURA_E_POSA_IN_OPERA' | translate" />
         </nz-form-control>
       </nz-form-item>
 

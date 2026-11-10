@@ -11,7 +11,7 @@ export const SETTINGS_ROUTES: Routes = [
   },
   {
     path: 'tenant',
-    data: { breadcrumb: 'Impostazioni & Tenant', title: 'Impostazioni Tenant' },
+    data: { breadcrumb: 'BREADCRUMB.IMPOSTAZIONI_AND_TENANT', title: 'Impostazioni Tenant' },
     loadComponent: () =>
       import('./settings.component').then((m) => m.SettingsComponent),
   },
@@ -41,7 +41,7 @@ export const SETTINGS_ROUTES: Routes = [
   {
     path: 'sdi-channel',
     canActivate: [moduleGuard('system', 'read')],
-    data: { breadcrumb: 'Canale SDI', title: 'Canale di fatturazione elettronica', page: SDI_CHANNEL_PAGE },
+    data: { breadcrumb: 'BREADCRUMB.CANALE_SDI', title: 'Canale di fatturazione elettronica', page: SDI_CHANNEL_PAGE },
     component: ResourcePageComponent,
   },
   {
@@ -69,7 +69,7 @@ export const SETTINGS_ROUTES: Routes = [
   },
   {
     path: 'privacy',
-    data: { breadcrumb: 'Privacy (GDPR / nLPD)', title: 'Privacy Center (GDPR & Swiss nLPD)' },
+    data: { breadcrumb: 'BREADCRUMB.PRIVACY_GDPR_NLPD', title: 'Privacy Center (GDPR & Swiss nLPD)' },
     loadComponent: () =>
       import('./pages/privacy/privacy-center.component').then(
         (m) => m.PrivacyCenterComponent

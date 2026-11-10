@@ -35,6 +35,7 @@ import {
   AssociationReimbursement,
   AssociationVolunteer,
   AuthStore,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -70,6 +71,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrls: ['./associations.component.scss'],
 })
 export class AssociationsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly associationApi = inject(AssociationsApiService);
   private readonly message = inject(NzMessageService);
@@ -232,7 +234,7 @@ export class AssociationsComponent implements OnInit {
         this.membersLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento del libro soci');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEL_LIBRO_SOCI'));
         this.membersLoading.set(false);
       },
     });
@@ -266,13 +268,13 @@ export class AssociationsComponent implements OnInit {
     this.createMemberSubmitting.set(true);
     this.associationApi.createMember(payload).subscribe({
       next: () => {
-        this.message.success('Nuovo socio iscritto al libro soci');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_NUOVO_SOCIO_ISCRITTO_AL_LIBRO_SOCI'));
         this.createMemberModalVisible.set(false);
         this.createMemberSubmitting.set(false);
         this.loadMembers();
       },
       error: () => {
-        this.message.error('Errore durante l iscrizione del socio');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_L_ISCRIZIONE_DEL_SOCIO'));
         this.createMemberSubmitting.set(false);
       },
     });
@@ -281,10 +283,10 @@ export class AssociationsComponent implements OnInit {
   protected deleteMember(member: AssociationMember): void {
     this.associationApi.deleteMember(member.id).subscribe({
       next: () => {
-        this.message.info('Socio rimosso');
+        this.message.info(this.translate.instant('ASSOCIATIONS.MSG_SOCIO_RIMOSSO'));
         this.loadMembers();
       },
-      error: () => this.message.error('Impossibile rimuovere il socio'),
+      error: () => this.message.error(this.translate.instant('ASSOCIATIONS.MSG_IMPOSSIBILE_RIMUOVERE_IL_SOCIO')),
     });
   }
 
@@ -308,7 +310,7 @@ export class AssociationsComponent implements OnInit {
         this.feesLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle quote associative');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_QUOTE_ASSOCIATIVE'));
         this.feesLoading.set(false);
       },
     });
@@ -331,13 +333,13 @@ export class AssociationsComponent implements OnInit {
     this.createFeeSubmitting.set(true);
     this.associationApi.createFeeAssignment(this.feeForm.getRawValue()).subscribe({
       next: () => {
-        this.message.success('Quota associativa assegnata');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_QUOTA_ASSOCIATIVA_ASSEGNATA'));
         this.createFeeModalVisible.set(false);
         this.createFeeSubmitting.set(false);
         this.loadFees();
       },
       error: () => {
-        this.message.error('Errore durante l assegnazione della quota');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_L_ASSEGNAZIONE_DELLA_QUOTA'));
         this.createFeeSubmitting.set(false);
       },
     });
@@ -346,10 +348,10 @@ export class AssociationsComponent implements OnInit {
   protected cancelFee(fee: AssociationFeeAssignment): void {
     this.associationApi.cancelFeeAssignment(fee.id).subscribe({
       next: () => {
-        this.message.info('Quota annullata');
+        this.message.info(this.translate.instant('ASSOCIATIONS.MSG_QUOTA_ANNULLATA'));
         this.loadFees();
       },
-      error: () => this.message.error('Errore nell annullamento della quota'),
+      error: () => this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NELL_ANNULLAMENTO_DELLA_QUOTA')),
     });
   }
 
@@ -373,13 +375,13 @@ export class AssociationsComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.message.success('Pagamento quota registrato');
+          this.message.success(this.translate.instant('ASSOCIATIONS.MSG_PAGAMENTO_QUOTA_REGISTRATO'));
           this.paymentModalVisible.set(false);
           this.paymentSubmitting.set(false);
           this.loadFees();
         },
         error: () => {
-          this.message.error('Errore nella registrazione del pagamento');
+          this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NELLA_REGISTRAZIONE_DEL_PAGAMENTO'));
           this.paymentSubmitting.set(false);
         },
       });
@@ -395,7 +397,7 @@ export class AssociationsComponent implements OnInit {
         this.coursesLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento dei corsi');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEI_CORSI'));
         this.coursesLoading.set(false);
       },
     });
@@ -418,13 +420,13 @@ export class AssociationsComponent implements OnInit {
     const payload: AssociationCourseRequest = this.courseForm.getRawValue();
     this.associationApi.createCourse(payload).subscribe({
       next: () => {
-        this.message.success('Nuovo corso creato');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_NUOVO_CORSO_CREATO'));
         this.createCourseModalVisible.set(false);
         this.createCourseSubmitting.set(false);
         this.loadCourses();
       },
       error: () => {
-        this.message.error('Errore durante la creazione del corso');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_LA_CREAZIONE_DEL_CORSO'));
         this.createCourseSubmitting.set(false);
       },
     });
@@ -443,13 +445,13 @@ export class AssociationsComponent implements OnInit {
     this.enrolSubmitting.set(true);
     this.associationApi.enrolInCourse(course.id, { member_id: this.enrolMemberId() }).subscribe({
       next: () => {
-        this.message.success('Socio iscritto al corso con successo');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_SOCIO_ISCRITTO_AL_CORSO_CON_SUCCESSO'));
         this.enrolModalVisible.set(false);
         this.enrolSubmitting.set(false);
         this.loadCourses();
       },
       error: () => {
-        this.message.error('Errore durante l iscrizione al corso');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_L_ISCRIZIONE_AL_CORSO'));
         this.enrolSubmitting.set(false);
       },
     });
@@ -464,7 +466,7 @@ export class AssociationsComponent implements OnInit {
         this.donationsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle donazioni');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DONAZIONI'));
         this.donationsLoading.set(false);
       },
     });
@@ -497,13 +499,13 @@ export class AssociationsComponent implements OnInit {
     const payload: AssociationDonationRequest = this.donationForm.getRawValue();
     this.associationApi.createDonation(payload).subscribe({
       next: () => {
-        this.message.success('Donazione registrata');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_DONAZIONE_REGISTRATA'));
         this.createDonationModalVisible.set(false);
         this.createDonationSubmitting.set(false);
         this.loadDonations();
       },
       error: () => {
-        this.message.error('Errore nella registrazione della donazione');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NELLA_REGISTRAZIONE_DELLA_DONAZIONE'));
         this.createDonationSubmitting.set(false);
       },
     });
@@ -512,10 +514,10 @@ export class AssociationsComponent implements OnInit {
   protected generateReceipt(donation: AssociationDonation): void {
     this.associationApi.generateDonationReceipt(donation.id).subscribe({
       next: (res) => {
-        this.message.success(`Ricevuta fiscale n. ${res.data.receipt_number} generata`);
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_RICEVUTA_FISCALE_N_GENERATA', { receipt_number: res.data.receipt_number }));
         donation.receipt_number = res.data.receipt_number;
       },
-      error: () => this.message.error('Errore nella generazione della ricevuta'),
+      error: () => this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NELLA_GENERAZIONE_DELLA_RICEVUTA')),
     });
   }
 
@@ -528,7 +530,7 @@ export class AssociationsComponent implements OnInit {
         this.volunteersLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento dei volontari RUNTS');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEI_VOLONTARI_RUNTS'));
         this.volunteersLoading.set(false);
       },
     });
@@ -542,7 +544,7 @@ export class AssociationsComponent implements OnInit {
         this.reimbursementsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento dei rimborsi spese');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEI_RIMBORSI_SPESE'));
         this.reimbursementsLoading.set(false);
       },
     });
@@ -564,13 +566,13 @@ export class AssociationsComponent implements OnInit {
     this.reimbSubmitting.set(true);
     this.associationApi.createReimbursement(this.reimbForm.getRawValue()).subscribe({
       next: () => {
-        this.message.success('Richiesta rimborso presentata');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_RICHIESTA_RIMBORSO_PRESENTATA'));
         this.createReimbModalVisible.set(false);
         this.reimbSubmitting.set(false);
         this.loadReimbursements();
       },
       error: () => {
-        this.message.error('Errore nella creazione della richiesta rimborso');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NELLA_CREAZIONE_DELLA_RICHIESTA_RIMBORSO'));
         this.reimbSubmitting.set(false);
       },
     });
@@ -582,17 +584,17 @@ export class AssociationsComponent implements OnInit {
         this.message.success(approved ? 'Rimborso approvato' : 'Rimborso respinto');
         this.loadReimbursements();
       },
-      error: () => this.message.error('Errore durante la decisione sul rimborso'),
+      error: () => this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_LA_DECISIONE_SUL_RIMBORSO')),
     });
   }
 
   protected payReimb(reimb: AssociationReimbursement): void {
     this.associationApi.payReimbursement(reimb.id).subscribe({
       next: () => {
-        this.message.success('Liquidazione rimborso registrata');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_LIQUIDAZIONE_RIMBORSO_REGISTRATA'));
         this.loadReimbursements();
       },
-      error: () => this.message.error('Errore durante la liquidazione'),
+      error: () => this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_LA_LIQUIDAZIONE')),
     });
   }
 
@@ -605,7 +607,7 @@ export class AssociationsComponent implements OnInit {
         this.meetingsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle assemblee');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ASSEMBLEE'));
         this.meetingsLoading.set(false);
       },
     });
@@ -628,13 +630,13 @@ export class AssociationsComponent implements OnInit {
     const payload: AssociationMeetingRequest = this.meetingForm.getRawValue();
     this.associationApi.createMeeting(payload).subscribe({
       next: () => {
-        this.message.success('Assemblea convocata con successo');
+        this.message.success(this.translate.instant('ASSOCIATIONS.MSG_ASSEMBLEA_CONVOCATA_CON_SUCCESSO'));
         this.createMeetingModalVisible.set(false);
         this.meetingSubmitting.set(false);
         this.loadMeetings();
       },
       error: () => {
-        this.message.error('Errore durante la convocazione dell assemblea');
+        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_DURANTE_LA_CONVOCAZIONE_DELL_ASSEMBLEA'));
         this.meetingSubmitting.set(false);
       },
     });

@@ -34,6 +34,7 @@ import {
   ContractStatusChangeResource,
   RenewContractRequest,
   StoreContractRequest,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -68,6 +69,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrls: ['./contract-register.component.scss'],
 })
 export class ContractRegisterComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly contractApi = inject(ContractRegisterApiService);
   private readonly message = inject(NzMessageService);
@@ -200,7 +202,7 @@ export class ContractRegisterComponent implements OnInit {
         this.contractsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento del registro contratti');
+        this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_NEL_CARICAMENTO_DEL_REGISTRO_CONTRATTI'));
         this.contractsLoading.set(false);
       },
     });
@@ -240,13 +242,13 @@ export class ContractRegisterComponent implements OnInit {
 
     this.contractApi.createContract(payload).subscribe({
       next: () => {
-        this.message.success('Contratto registrato con successo');
+        this.message.success(this.translate.instant('CONTRACTS.MSG_CONTRATTO_REGISTRATO_CON_SUCCESSO'));
         this.createModalVisible.set(false);
         this.createSubmitting.set(false);
         this.loadContracts();
       },
       error: () => {
-        this.message.error('Errore durante la creazione del contratto');
+        this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_CREAZIONE_DEL_CONTRATTO'));
         this.createSubmitting.set(false);
       },
     });
@@ -272,13 +274,13 @@ export class ContractRegisterComponent implements OnInit {
 
     this.contractApi.renewContract(contract.kind, contract.id, payload).subscribe({
       next: () => {
-        this.message.success('Contratto rinnovato con successo');
+        this.message.success(this.translate.instant('CONTRACTS.MSG_CONTRATTO_RINNOVATO_CON_SUCCESSO'));
         this.renewModalVisible.set(false);
         this.renewSubmitting.set(false);
         this.loadContracts();
       },
       error: () => {
-        this.message.error('Errore durante il rinnovo del contratto');
+        this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_IL_RINNOVO_DEL_CONTRATTO'));
         this.renewSubmitting.set(false);
       },
     });
@@ -304,13 +306,13 @@ export class ContractRegisterComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.message.success('Preavviso di disdetta registrato');
+          this.message.success(this.translate.instant('CONTRACTS.MSG_PREAVVISO_DI_DISDETTA_REGISTRATO'));
           this.noticeModalVisible.set(false);
           this.noticeSubmitting.set(false);
           this.loadContracts();
         },
         error: () => {
-          this.message.error('Errore durante la registrazione della disdetta');
+          this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_REGISTRAZIONE_DELLA_DISDETTA'));
           this.noticeSubmitting.set(false);
         },
       });
@@ -361,11 +363,11 @@ export class ContractRegisterComponent implements OnInit {
     const payload: ContractSavePartyRequest = this.partyForm.getRawValue();
     this.contractApi.addParty(contract.kind, contract.id, payload).subscribe({
       next: (res) => {
-        this.message.success('Parte contrattuale aggiunta');
+        this.message.success(this.translate.instant('CONTRACTS.MSG_PARTE_CONTRATTUALE_AGGIUNTA'));
         this.contractParties.update((list) => [...list, res.data]);
         this.partyModalVisible.set(false);
       },
-      error: () => this.message.error('Errore durante l aggiunta della parte'),
+      error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_L_AGGIUNTA_DELLA_PARTE')),
     });
   }
 
@@ -375,10 +377,10 @@ export class ContractRegisterComponent implements OnInit {
 
     this.contractApi.deleteParty(contract.kind, contract.id, party.id).subscribe({
       next: () => {
-        this.message.info('Parte rimossa');
+        this.message.info(this.translate.instant('CONTRACTS.MSG_PARTE_RIMOSSA'));
         this.contractParties.update((list) => list.filter((p) => p.id !== party.id));
       },
-      error: () => this.message.error('Impossibile rimuovere la parte'),
+      error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_IMPOSSIBILE_RIMUOVERE_LA_PARTE')),
     });
   }
 
@@ -401,11 +403,11 @@ export class ContractRegisterComponent implements OnInit {
     const payload: ContractSaveObligationRequest = this.obligationForm.getRawValue();
     this.contractApi.addObligation(contract.kind, contract.id, payload).subscribe({
       next: (res) => {
-        this.message.success('Obbligazione contrattuale aggiunta');
+        this.message.success(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_AGGIUNTA'));
         this.contractObligations.update((list) => [...list, res.data]);
         this.obligationModalVisible.set(false);
       },
-      error: () => this.message.error('Errore durante l aggiunta dell obbligazione'),
+      error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_L_AGGIUNTA_DELL_OBBLIGAZIONE')),
     });
   }
 
@@ -425,7 +427,7 @@ export class ContractRegisterComponent implements OnInit {
           this.obligationsLoading.set(false);
         },
         error: () => {
-          this.message.error('Errore nel caricamento delle obbligazioni contrattuali');
+          this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_OBBLIGAZIONI_CONTRATTUALI'));
           this.obligationsLoading.set(false);
         },
       });
@@ -454,11 +456,11 @@ export class ContractRegisterComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.message.success('Obbligazione contrattuale completata');
+          this.message.success(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_COMPLETATA'));
           this.completeModalVisible.set(false);
           this.loadGlobalObligations();
         },
-        error: () => this.message.error('Errore durante il completamento dell obbligazione'),
+        error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_IL_COMPLETAMENTO_DELL_OBBLIGAZIONE')),
       });
   }
 
@@ -474,11 +476,11 @@ export class ContractRegisterComponent implements OnInit {
 
     this.contractApi.waiveObligation(ob.id, { reason: this.waiveReason() || undefined }).subscribe({
       next: () => {
-        this.message.info('Obbligazione contrattuale condonata (Waived)');
+        this.message.info(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_CONDONATA_WAIVED'));
         this.waiveModalVisible.set(false);
         this.loadGlobalObligations();
       },
-      error: () => this.message.error('Errore durante la rinuncia all obbligazione'),
+      error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_RINUNCIA_ALL_OBBLIGAZIONE')),
     });
   }
 
@@ -491,7 +493,7 @@ export class ContractRegisterComponent implements OnInit {
         this.alertsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento degli avvisi contrattuali');
+        this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_NEL_CARICAMENTO_DEGLI_AVVISI_CONTRATTUALI'));
         this.alertsLoading.set(false);
       },
     });
@@ -500,10 +502,10 @@ export class ContractRegisterComponent implements OnInit {
   protected acknowledgeAlert(alert: ContractAlertResource): void {
     this.contractApi.acknowledgeAlert(alert.id).subscribe({
       next: () => {
-        this.message.success('Presa visione confermata');
+        this.message.success(this.translate.instant('CONTRACTS.MSG_PRESA_VISIONE_CONFERMATA'));
         alert.is_acknowledged = true;
       },
-      error: () => this.message.error('Errore durante la conferma'),
+      error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_CONFERMA')),
     });
   }
 

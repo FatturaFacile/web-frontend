@@ -21,13 +21,13 @@ export const INVENTORY_ROUTES: Routes = [
   },
   {
     path: 'stock',
-    data: { breadcrumb: 'Giacenze & Articoli', title: 'Giacenze' },
+    data: { breadcrumb: 'BREADCRUMB.GIACENZE_AND_ARTICOLI', title: 'Giacenze' },
     loadComponent: () =>
       import('./inventory.component').then((m) => m.InventoryComponent),
   },
   {
     path: 'ddt',
-    data: { breadcrumb: 'DDT & Trasporti', title: 'DDT' },
+    data: { breadcrumb: 'BREADCRUMB.DDT_AND_TRASPORTI', title: 'DDT' },
     loadComponent: () =>
       import('./inventory.component').then((m) => m.InventoryComponent),
   },
@@ -43,7 +43,7 @@ export const INVENTORY_ROUTES: Routes = [
   wmsRoute('services', 'Assistenza & Pesa', INVENTORY_SERVICES_PAGE),
   {
     path: 'customs',
-    data: { breadcrumb: 'Dogana IT-CH', title: 'Dogana IT-CH' },
+    data: { breadcrumb: 'BREADCRUMB.DOGANA_IT_CH', title: 'Dogana IT-CH' },
     loadChildren: () =>
       import('../customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
   },

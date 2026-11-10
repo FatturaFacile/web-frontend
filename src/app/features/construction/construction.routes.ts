@@ -6,7 +6,7 @@ export const CONSTRUCTION_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { breadcrumb: 'Cantieri & Impianti', title: 'Cantieri & Impianti' },
+    data: { breadcrumb: 'BREADCRUMB.CANTIERI_AND_IMPIANTI', title: 'Cantieri & Impianti' },
     loadComponent: () =>
       import('./construction.component').then((m) => m.ConstructionComponent),
   },
