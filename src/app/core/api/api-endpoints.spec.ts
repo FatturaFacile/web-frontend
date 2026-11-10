@@ -28,8 +28,8 @@ describe('API endpoints', () => {
   });
 
   /**
-   * I18nService loads the initial dictionaries as soon as it is created. They are answered with a non-empty
-   * dictionary, otherwise the service would also request the bundled /assets/i18n fallback.
+   * I18nService loads the initial dictionaries as soon as it is created; they are answered here so that the
+   * pending requests do not fail the verification of the test.
    */
   const flushInitialTranslations = () =>
     httpTesting

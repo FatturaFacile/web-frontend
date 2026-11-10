@@ -1,31 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { hasSeededDictionaries, seededDictionaries } from '../../../testing/seeded-dictionaries';
 
-interface Tree { [key: string]: string | Tree }
+type Language = 'it' | 'en' | 'de' | 'fr';
 
-const LANGUAGES = ['it', 'en', 'de', 'fr'] as const;
-type Language = (typeof LANGUAGES)[number];
-
-/** Flattens nested objects and dotted flat keys alike: `a.b` as a key or as `{ a: { b } }` is the same key. */
-function flatten(tree: Tree, prefix = '', out: Record<string, string> = {}): Record<string, string> {
-  for (const [key, value] of Object.entries(tree)) {
-    const path = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === 'string') {
-      out[path] = value;
-    } else {
-      flatten(value, path, out);
-    }
-  }
-  return out;
-}
-
-const dictionaries = Object.fromEntries(
-  LANGUAGES.map((lang) => [
-    lang,
-    flatten(JSON.parse(readFileSync(resolve(process.cwd(), `public/assets/i18n/${lang}.json`), 'utf8')) as Tree),
-  ]),
-) as Record<Language, Record<string, string>>;
+/** The dictionaries live in the API seeders; the specs below are skipped when the API project is not available. */
+const dictionaries = seededDictionaries as Record<Language, Record<string, string>>;
 
 /** Words that are spelled the same in English and French (loan words and cognates). */
 const SAME_IN_FRENCH = new Set(['NAV.DOCS']);
@@ -33,7 +12,7 @@ const SAME_IN_FRENCH = new Set(['NAV.DOCS']);
 /** Placeholders such as `{number}` must survive the translation. */
 const placeholders = (text: string): string[] => [...text.matchAll(/\{\w+}/g)].map((m) => m[0]).sort();
 
-describe('translation dictionaries', () => {
+describe.skipIf(!hasSeededDictionaries)('translation dictionaries', () => {
   it('Italian and English carry the same keys', () => {
     const it = Object.keys(dictionaries.it);
     const en = Object.keys(dictionaries.en);

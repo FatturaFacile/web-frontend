@@ -6,11 +6,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { of } from 'rxjs';
 import { AuthApiService, I18nService } from '@core';
 import { SecuritySettingsComponent } from './security-settings.component';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { hasSeededDictionaries, seededDictionaries } from '../../../../../testing/seeded-dictionaries';
 
 const dictionary = (language: string): Record<string, string> =>
-  JSON.parse(fs.readFileSync(path.resolve(process.cwd(), `public/assets/i18n/${language}.json`), 'utf8'));
+  seededDictionaries[language as keyof typeof seededDictionaries] ?? {};
 
 describe('SecuritySettingsComponent', () => {
   async function render(language: 'it' | 'de', enabled: boolean) {
@@ -49,7 +48,7 @@ describe('SecuritySettingsComponent', () => {
       ],
     });
     const http = TestBed.inject(HttpTestingController);
-    // The dictionaries are answered from the bundled files; the API mock answers synchronously.
+    // The dictionaries are answered from the seeded API dictionaries; the API mock answers synchronously.
     const answerTranslations = () =>
       http
         .match((req) => req.url.includes('/translations/'))
@@ -64,7 +63,7 @@ describe('SecuritySettingsComponent', () => {
     return (fixture.nativeElement as HTMLElement).textContent ?? '';
   }
 
-  it('shows the page in the language of the user', async () => {
+  it.skipIf(!hasSeededDictionaries)('shows the page in the language of the user', async () => {
     const text = await render('de', false);
 
     expect(text).toContain('Zwei-Faktor-Authentifizierung (2FA)');
@@ -73,14 +72,14 @@ describe('SecuritySettingsComponent', () => {
     expect(text).not.toContain('Autenticazione');
   });
 
-  it('fills the date and the recovery codes into the sentences', async () => {
+  it.skipIf(!hasSeededDictionaries)('fills the date and the recovery codes into the sentences', async () => {
     const text = await render('it', true);
 
     expect(text).toContain('Codici di recupero rimanenti: 7');
     expect(text).toMatch(/attiva sul tuo account dal \d{2}\/11\/2026/);
   });
 
-  it('has every key of the security pages in the four languages', () => {
+  it.skipIf(!hasSeededDictionaries)('has every key of the security pages in the four languages', () => {
     const prefixes = ['SECURITY.', 'TWO_FACTOR.', 'TENANT_SECURITY.', 'PROFILE.'];
     const keysOf = (entries: object) =>
       Object.keys(entries).filter((key) => prefixes.some((prefix) => key.startsWith(prefix))).sort();

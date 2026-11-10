@@ -32,24 +32,22 @@ describe('I18nService', () => {
     expect(httpTesting.match('/assets/i18n/it.json')).toHaveLength(0);
   });
 
-  it('falls back to the bundled dictionary when the translations call fails', async () => {
+  it('has no bundled fallback: the keys are shown while the translations call fails', async () => {
     httpTesting
       .expectOne((req) => req.url.endsWith('/translations/it'))
       .error(new ProgressEvent('error'));
 
-    await vi.waitFor(() => httpTesting.expectOne('/assets/i18n/it.json').flush({ 'NAV.DASHBOARD': 'Dashboard locale' }));
-
-    await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('Dashboard locale'));
+    await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('NAV.DASHBOARD'));
+    expect(httpTesting.match('/assets/i18n/it.json')).toHaveLength(0);
   });
 
-  it('falls back to the bundled dictionary when the translations call returns no translations', async () => {
+  it('does not request any static file when the API returns no translations', async () => {
     httpTesting
       .expectOne((req) => req.url.endsWith('/translations/it'))
       .flush({ locale: 'it', translations: {} });
 
-    await vi.waitFor(() => httpTesting.expectOne('/assets/i18n/it.json').flush({ 'NAV.DASHBOARD': 'Dashboard locale' }));
-
-    await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('Dashboard locale'));
+    await vi.waitFor(() => expect(service.translate('NAV.DASHBOARD')).toBe('NAV.DASHBOARD'));
+    expect(httpTesting.match((req) => req.url.includes('/assets/i18n/'))).toHaveLength(0);
   });
 
   it('resolves hierarchical dot-notation keys and supports instant() with params', async () => {
@@ -75,16 +73,18 @@ describe('I18nService', () => {
     });
   });
 
-  it('returns an empty dictionary when the fallback is unavailable too', async () => {
+  it('returns an empty dictionary and asks the API again on the next call after a failure', async () => {
     const result = service.loadDictionary('de');
 
     httpTesting
       .expectOne((req) => req.url.endsWith('/translations/de'))
       .error(new ProgressEvent('error'));
-    await vi.waitFor(() =>
-      httpTesting.expectOne('/assets/i18n/de.json').flush(null, { status: 404, statusText: 'Not Found' }),
-    );
-
     await expect(result).resolves.toEqual({});
+
+    const retry = service.loadDictionary('de');
+    httpTesting
+      .expectOne((req) => req.url.endsWith('/translations/de'))
+      .flush({ locale: 'de', translations: { 'NAV.DASHBOARD': 'Übersicht' } });
+    await expect(retry).resolves.toEqual({ 'NAV.DASHBOARD': 'Übersicht' });
   });
 });

@@ -1,52 +1,22 @@
 import '@angular/localize/init';
 import { getTestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 
 getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
-// Mock fetch for Vitest / JSDOM environment to serve local static i18n JSON files
+// The UI strings live only in the API and the frontend has no copy of them. A component that creates the real
+// I18nService gets an empty dictionary from the translations endpoint, so it shows translation keys. The specs that
+// need real translations read the seeded dictionaries through src/testing/seeded-dictionaries.ts.
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   const urlStr = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
-  const getFilePath = (lang: string): string => {
-    const srcPath = path.resolve(process.cwd(), `src/assets/i18n/${lang}.json`);
-    if (fs.existsSync(srcPath)) return srcPath;
-    return path.resolve(process.cwd(), `public/assets/i18n/${lang}.json`);
-  };
-
-  const match = urlStr.match(/\/assets\/i18n\/([a-z]{2})\.json$/i);
-  if (match) {
-    const lang = match[1];
-    const filePath = getFilePath(lang);
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      return new Response(content, {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-  }
-
   const apiMatch = urlStr.match(/\/api\/(?:v\d+\/)?translations\/([a-z]{2})/i);
   if (apiMatch) {
-    const lang = apiMatch[1];
-    const filePath = getFilePath(lang);
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      return new Response(
-        JSON.stringify({
-          locale: lang,
-          translations: JSON.parse(content),
-        }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
+    return new Response(JSON.stringify({ locale: apiMatch[1], translations: {} }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   if (originalFetch) {

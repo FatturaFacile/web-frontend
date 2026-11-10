@@ -122,28 +122,13 @@ export class I18nService {
         this.http.get<ApiResponseTranslations | TranslationDictionary>(endpoint, { params, headers })
       );
 
-      // Supporta sia l'oggetto { translations: { ... } } sia la mappa chiave-valore piatta
-      let dict = (res as ApiResponseTranslations).translations ?? {};
-      // se arrivano vuote prendiamo dal fallback
-      if (Object.keys(dict).length === 0) {
-        dict = await this.loadFallbackDictionary(lang);
-      }
-      this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
-      return dict
-    } catch (error) {
-      console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
-      return this.loadFallbackDictionary(lang);
-    }
-  }
-
-  // Dizionari statici distribuiti con l'app, usati quando l'API delle traduzioni non risponde
-  private async loadFallbackDictionary(lang: SupportedLanguage): Promise<TranslationDictionary> {
-    try {
-      const dict = await firstValueFrom(this.http.get<TranslationDictionary>(`/assets/i18n/${lang}.json`));
+      // Le traduzioni arrivano solo dall'API (seeders + eventuali override del tenant): il frontend non ne ha una copia
+      const dict = (res as ApiResponseTranslations).translations ?? {};
       this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
       return dict;
     } catch (error) {
-      console.error(`Impossibile caricare le traduzioni di fallback per la lingua ${lang}`, error);
+      // Il dizionario non viene memorizzato: la prossima richiesta riprova
+      console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
       return {};
     }
   }
