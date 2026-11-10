@@ -73,6 +73,15 @@ export interface ResetPasswordPayload {
   password_confirmation: string;
 }
 
+/** With two factors active, `code` or `recovery_code` is required as well. */
+export interface ChangePasswordPayload {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+  code?: string;
+  recovery_code?: string;
+}
+
 /** RFC 7807 `type` of the authentication problems that need their own message. */
 export const AUTH_PROBLEM = {
   EmailNotVerified: 'urn:fatturafacile:problem:email-not-verified',
@@ -83,6 +92,7 @@ export const AUTH_PROBLEM = {
   PasswordResetTokenInvalid: 'urn:fatturafacile:problem:password-reset-token-invalid',
   PasswordResetTokenExpired: 'urn:fatturafacile:problem:password-reset-token-expired',
   PasswordResetLocked: 'urn:fatturafacile:problem:password-reset-locked',
+  PasswordChangeLocked: 'urn:fatturafacile:problem:password-change-locked',
   TwoFactorChallengeInvalid: 'urn:fatturafacile:problem:two-factor-challenge-invalid',
   TwoFactorCodeInvalid: 'urn:fatturafacile:problem:two-factor-code-invalid',
   TwoFactorSetupRequired: 'urn:fatturafacile:problem:two-factor-setup-required',
@@ -288,6 +298,13 @@ export class AuthApiService {
   /** Consumes the token and sets the new password, signing the user out everywhere. */
   resetPassword(payload: ResetPasswordPayload): Observable<ApiResponse<unknown>> {
     return this.postPublic('reset-password', payload);
+  }
+
+  /** Changes the password of the signed-in user; the server then closes every session, this one included. */
+  changePassword(payload: ChangePasswordPayload): Observable<ApiResponse<unknown>> {
+    return this.http.put<ApiResponse<unknown>>(`${this.base}/auth/password`, payload, {
+      withCredentials: true,
+    });
   }
 
   private postPublic(path: string, body: unknown): Observable<ApiResponse<unknown>> {

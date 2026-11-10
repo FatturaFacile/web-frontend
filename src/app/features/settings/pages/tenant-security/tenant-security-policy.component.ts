@@ -11,12 +11,13 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  I18nService,
   PermissionsService,
   SettingsApiService,
   TenantMemberTwoFactorStatus,
   TwoFactorPolicyResponse,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tenant-security-policy',
@@ -32,6 +33,7 @@ import { PageHeaderComponent } from '@shared';
     NzModalModule,
     NzIconModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   templateUrl: './tenant-security-policy.component.html',
   styleUrl: './tenant-security-policy.component.scss',
@@ -41,6 +43,7 @@ export class TenantSecurityPolicyComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   private readonly message = inject(NzMessageService);
   protected readonly permissions = inject(PermissionsService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly policy = signal<TwoFactorPolicyResponse | null>(null);
   protected readonly members = signal<TenantMemberTwoFactorStatus[]>([]);
@@ -69,24 +72,23 @@ export class TenantSecurityPolicyComponent implements OnInit {
 
   onPolicyToggle(value: boolean): void {
     this.modal.confirm({
-      nzTitle: value ? 'Imporre 2FA a tutti i membri?' : 'Rendere il 2FA facoltativo?',
-      nzContent: value
-        ? 'Tutti i membri del tenant saranno obbligati a configurare l\'autenticazione a due fattori al prossimo accesso.'
-        : 'I membri potranno scegliere individualmente se utilizzare il 2FA.',
-      nzOkText: 'Conferma',
+      nzTitle: this.i18n.translate(value ? 'TENANT_SECURITY.ENFORCE_TITLE' : 'TENANT_SECURITY.RELAX_TITLE'),
+      nzContent: this.i18n.translate(value ? 'TENANT_SECURITY.ENFORCE_BODY' : 'TENANT_SECURITY.RELAX_BODY'),
+      nzOkText: this.i18n.translate('TENANT_SECURITY.CONFIRM'),
+      nzCancelText: this.i18n.translate('COMMON.CANCEL'),
       nzOnOk: () => {
         this.isUpdatingPolicy.set(true);
         this.settingsApi.updateTwoFactorPolicy({ require_two_factor: value }).subscribe({
           next: (res) => {
             this.isUpdatingPolicy.set(false);
             this.requireTwoFactor.set(res.data.require_two_factor);
-            this.message.success('Policy 2FA aggiornata con successo.');
+            this.message.success(this.i18n.translate('TENANT_SECURITY.UPDATED'));
           },
           error: (err: unknown) => {
             this.isUpdatingPolicy.set(false);
             this.requireTwoFactor.set(!value); // Revert switch on error
             const body = (err as { error?: { message?: string; detail?: string } })?.error;
-            this.message.error(body?.detail || body?.message || 'Errore durante l\'aggiornamento della policy.');
+            this.message.error(body?.detail || body?.message || this.i18n.translate('TENANT_SECURITY.UPDATE_FAILED'));
           },
         });
       },
@@ -98,13 +100,14 @@ export class TenantSecurityPolicyComponent implements OnInit {
 
   resetUser2FA(member: TenantMemberTwoFactorStatus): void {
     this.modal.confirm({
-      nzTitle: `Reimpostare il 2FA per ${member.name}?`,
-      nzContent: `L'autenticazione a due fattori dell'utente ${member.email} verrà revocata. L'utente dovrà riconfigurarla se la policy è attiva.`,
-      nzOkText: 'Reimposta 2FA',
+      nzTitle: this.i18n.translate('TENANT_SECURITY.RESET_TITLE', { name: member.name }),
+      nzContent: this.i18n.translate('TENANT_SECURITY.RESET_BODY', { email: member.email }),
+      nzOkText: this.i18n.translate('TENANT_SECURITY.RESET'),
+      nzCancelText: this.i18n.translate('COMMON.CANCEL'),
       nzOkDanger: true,
       nzOnOk: () => {
         return this.settingsApi.resetUserTwoFactor(member.id).toPromise().then(() => {
-          this.message.success(`2FA reimpostato per ${member.name}.`);
+          this.message.success(this.i18n.translate('TENANT_SECURITY.RESET_DONE', { name: member.name }));
           this.loadPolicy();
         });
       },

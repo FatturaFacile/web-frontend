@@ -124,11 +124,11 @@ export class LoginComponent {
     const { code, recoveryCode } = this.challengeForm.getRawValue();
 
     if (isRecovery && !recoveryCode.trim()) {
-      this.errorMessage.set('Inserisci un codice di recupero valido.');
+      this.errorMessage.set(this.i18n.translate('TWO_FACTOR.RECOVERY_CODE_INVALID'));
       return;
     }
     if (!isRecovery && !code.trim()) {
-      this.errorMessage.set('Inserisci il codice temporaneo generato dall\'app.');
+      this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CODE_REQUIRED'));
       return;
     }
 
@@ -149,11 +149,11 @@ export class LoginComponent {
         error: (err: unknown) => {
           this.isSubmitting.set(false);
           if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorCodeInvalid) {
-            this.errorMessage.set('Il codice di verifica inserito non è corretto o è scaduto.');
+            this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CODE_INVALID'));
             return;
           }
           if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorChallengeInvalid) {
-            this.errorMessage.set('La sessione di verifica 2FA è scaduta. Effettua nuovamente il login.');
+            this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CHALLENGE_EXPIRED'));
             this.cancelChallenge();
             return;
           }

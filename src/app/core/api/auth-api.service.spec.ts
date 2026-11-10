@@ -328,4 +328,20 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({ success: true });
   });
+
+  it('should call PUT /auth/password with credentials on changePassword()', () => {
+    const payload = {
+      current_password: TEST_PASSWORD,
+      password: `${TEST_PASSWORD}N`,
+      password_confirmation: `${TEST_PASSWORD}N`,
+      code: '123456',
+    };
+    service.changePassword(payload).subscribe();
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual(payload);
+    req.flush({ success: true });
+  });
 });
