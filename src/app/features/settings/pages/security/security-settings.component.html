@@ -1,27 +1,24 @@
-<app-page-header
-  title="Sicurezza & Sessioni"
-  subtitle="Gestione dell'autenticazione a due fattori e controllo delle sessioni attive"
-></app-page-header>
+<app-page-header [title]="'SECURITY.TITLE' | translate" [subtitle]="'SECURITY.SUBTITLE' | translate" />
 
 <div class="security-container">
   <!-- 2FA SECTION -->
-  <nz-card nzTitle="Autenticazione a Due Fattori (2FA)" [nzLoading]="isLoading2FA()" class="section-card">
+  <nz-card [nzTitle]="'SECURITY.TWO_FACTOR_CARD' | translate" [nzLoading]="isLoading2FA()" class="section-card">
     @if (twoFactorStatus(); as status) {
       <div class="status-overview">
         <div class="status-indicator">
-          <span class="status-label">Stato attuale:</span>
+          <span class="status-label">{{ 'SECURITY.CURRENT_STATUS' | translate }}</span>
           @if (status.enabled) {
-            <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> ATTIVO</nz-tag>
+            <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> {{ 'SECURITY.STATUS_ACTIVE' | translate }}</nz-tag>
           } @else {
-            <nz-tag nzColor="default"><i nz-icon nzType="close-circle"></i> NON ATTIVO</nz-tag>
+            <nz-tag nzColor="default"><i nz-icon nzType="close-circle"></i> {{ 'SECURITY.STATUS_INACTIVE' | translate }}</nz-tag>
           }
         </div>
 
         @if (status.required_by_tenant) {
           <nz-alert
             nzType="info"
-            nzMessage="Richiesto dal Tenant"
-            nzDescription="La policy di sicurezza dell'azienda richiede che tutti gli utenti attivino l'autenticazione a due fattori."
+            [nzMessage]="'SECURITY.REQUIRED_BY_TENANT_TITLE' | translate"
+            [nzDescription]="'SECURITY.REQUIRED_BY_TENANT_BODY' | translate"
             nzShowIcon
             class="status-alert"
           ></nz-alert>
@@ -30,30 +27,26 @@
         @if (status.enabled) {
           <div class="active-details">
             <p>
-              L'autenticazione a due fattori è attiva sul tuo account dal
-              <strong>{{ status.confirmed_at | date: 'dd/MM/yyyy HH:mm' }}</strong>.
+              {{ 'SECURITY.ACTIVE_SINCE' | translate: { date: (status.confirmed_at | date: 'dd/MM/yyyy HH:mm') ?? '-' } }}
             </p>
             <p>
-              Codici di recupero rimanenti:
-              <strong>{{ status.remaining_recovery_codes }}</strong>
+              {{ 'SECURITY.RECOVERY_CODES_LEFT' | translate: { count: status.remaining_recovery_codes } }}
             </p>
 
             <div class="actions-row">
               <button nz-button nzType="default" (click)="openRegenerateModal()">
-                <i nz-icon nzType="sync"></i> Rigenera Codici di Recupero
+                <i nz-icon nzType="sync"></i> {{ 'SECURITY.REGENERATE_CODES' | translate }}
               </button>
               <button nz-button nzDanger nzType="default" (click)="openDisableModal()">
-                <i nz-icon nzType="stop"></i> Disattiva 2FA
+                <i nz-icon nzType="stop"></i> {{ 'SECURITY.DISABLE' | translate }}
               </button>
             </div>
           </div>
         } @else {
           <div class="inactive-details">
-            <p>
-              Aggiungi un ulteriore livello di sicurezza al tuo account. Oltre alla password, ti verrà richiesto un codice a 6 cifre generato da un'app di autenticazione.
-            </p>
+            <p>{{ 'SECURITY.INACTIVE_BODY' | translate }}</p>
             <button nz-button nzType="primary" (click)="showSetupModal.set(true)">
-              <i nz-icon nzType="safety-certificate"></i> Attiva Autenticazione a Due Fattori
+              <i nz-icon nzType="safety-certificate"></i> {{ 'SECURITY.ENABLE' | translate }}
             </button>
           </div>
         }
@@ -63,7 +56,7 @@
 
   <!-- ACTIVE SESSIONS SECTION -->
   <nz-card
-    nzTitle="Sessioni e Dispositivi Attivi"
+    [nzTitle]="'SECURITY.SESSIONS_CARD' | translate"
     [nzLoading]="isLoadingSessions()"
     [nzExtra]="extraSessionsTpl"
     class="section-card"
@@ -76,7 +69,7 @@
         (click)="openRevokeOthersModal()"
         [nzLoading]="isRevokingOthers()"
       >
-        <i nz-icon nzType="disconnect"></i> Disconnetti tutte le altre sessioni
+        <i nz-icon nzType="disconnect"></i> {{ 'SECURITY.REVOKE_OTHERS' | translate }}
       </button>
     </ng-template>
 
@@ -89,12 +82,12 @@
     >
       <thead>
         <tr>
-          <th>Tipo</th>
-          <th>Dispositivo / Client</th>
-          <th>Indirizzo IP</th>
-          <th>Ultima Attività</th>
-          <th>Stato</th>
-          <th nzAlign="right">Azione</th>
+          <th>{{ 'SECURITY.COL_TYPE' | translate }}</th>
+          <th>{{ 'SECURITY.COL_DEVICE' | translate }}</th>
+          <th>{{ 'SECURITY.COL_IP' | translate }}</th>
+          <th>{{ 'SECURITY.COL_LAST_ACTIVITY' | translate }}</th>
+          <th>{{ 'COMMON.STATUS' | translate }}</th>
+          <th nzAlign="right">{{ 'COMMON.ACTION' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -102,9 +95,9 @@
           <tr>
             <td>
               @if (session.kind === 'session') {
-                <nz-tag nzColor="blue"><i nz-icon nzType="global"></i> Web Session</nz-tag>
+                <nz-tag nzColor="blue"><i nz-icon nzType="global"></i> {{ 'SECURITY.KIND_SESSION' | translate }}</nz-tag>
               } @else {
-                <nz-tag nzColor="purple"><i nz-icon nzType="key"></i> API Token ({{ session.name }})</nz-tag>
+                <nz-tag nzColor="purple"><i nz-icon nzType="key"></i> {{ 'SECURITY.KIND_TOKEN' | translate: { name: session.name } }}</nz-tag>
               }
             </td>
             <td>
@@ -118,9 +111,9 @@
             </td>
             <td>
               @if (session.current) {
-                <nz-tag nzColor="green">Sessione Corrente</nz-tag>
+                <nz-tag nzColor="green">{{ 'SECURITY.CURRENT_SESSION' | translate }}</nz-tag>
               } @else {
-                <nz-tag nzColor="default">Altro Dispositivo</nz-tag>
+                <nz-tag nzColor="default">{{ 'SECURITY.OTHER_DEVICE' | translate }}</nz-tag>
               }
             </td>
             <td nzAlign="right">
@@ -132,10 +125,10 @@
                   nzSize="small"
                   (click)="revokeSingleSession(session)"
                 >
-                  Revoca
+                  {{ 'SECURITY.REVOKE' | translate }}
                 </button>
               } @else {
-                <span class="text-muted">In uso</span>
+                <span class="text-muted">{{ 'SECURITY.IN_USE' | translate }}</span>
               }
             </td>
           </tr>
@@ -155,31 +148,46 @@
 <nz-modal
   [nzVisible]="showDisableModal()"
   (nzVisibleChange)="showDisableModal.set($event)"
-  nzTitle="Disattiva Autenticazione a Due Fattori"
+  [nzTitle]="'SECURITY.DISABLE_TITLE' | translate"
   (nzOnCancel)="showDisableModal.set(false)"
   (nzOnOk)="confirmDisable()"
-  nzOkText="Disattiva"
+  [nzOkText]="'SECURITY.DISABLE_OK' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>
-    <p>Per disattivare il 2FA, inserisci la tua password e un codice generato dall'app (o un codice di recupero).</p>
+    <p>{{ 'SECURITY.DISABLE_BODY' | translate }}</p>
     <form [formGroup]="disableForm" nz-form nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Password attuale</nz-form-label>
-        <nz-form-control nzErrorTip="Inserisci la password attuale">
-          <input nz-input type="password" formControlName="currentPassword" />
+        <nz-form-label nzRequired nzFor="disable-password">{{ 'TWO_FACTOR.CURRENT_PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'TWO_FACTOR.CURRENT_PASSWORD_REQUIRED' | translate">
+          <input nz-input id="disable-password" type="password" formControlName="currentPassword" autocomplete="current-password" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label>Codice App OTP</nz-form-label>
+        <nz-form-label nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input type="text" formControlName="code" placeholder="Codice a 6 cifre" />
+          <input
+            nz-input
+            id="disable-code"
+            type="text"
+            formControlName="code"
+            autocomplete="one-time-code"
+            [placeholder]="'SECURITY.APP_CODE_PLACEHOLDER' | translate"
+          />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label>Oppure Codice di Recupero</nz-form-label>
+        <nz-form-label nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input type="text" formControlName="recoveryCode" placeholder="Codice di recupero" />
+          <input
+            nz-input
+            id="disable-recovery-code"
+            type="text"
+            formControlName="recoveryCode"
+            autocomplete="off"
+            [placeholder]="'TWO_FACTOR.RECOVERY_CODE' | translate"
+          />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -190,18 +198,19 @@
 <nz-modal
   [nzVisible]="showRegenerateModal()"
   (nzVisibleChange)="showRegenerateModal.set($event)"
-  nzTitle="Rigenera Codici di Recupero"
+  [nzTitle]="'SECURITY.REGENERATE_TITLE' | translate"
   (nzOnCancel)="showRegenerateModal.set(false)"
   (nzOnOk)="confirmRegenerate()"
-  nzOkText="Rigenera"
+  [nzOkText]="'SECURITY.REGENERATE_OK' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
 >
   <ng-container *nzModalContent>
-    <p>I codici precedenti non saranno più validi. Inserisci la tua password attuale per confermare:</p>
+    <p>{{ 'SECURITY.REGENERATE_BODY' | translate }}</p>
     <form [formGroup]="passwordConfirmForm" nz-form nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Password attuale</nz-form-label>
-        <nz-form-control nzErrorTip="Inserisci la password attuale">
-          <input nz-input type="password" formControlName="currentPassword" />
+        <nz-form-label nzRequired nzFor="regenerate-password">{{ 'TWO_FACTOR.CURRENT_PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'TWO_FACTOR.CURRENT_PASSWORD_REQUIRED' | translate">
+          <input nz-input id="regenerate-password" type="password" formControlName="currentPassword" autocomplete="current-password" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -212,16 +221,17 @@
 <nz-modal
   [nzVisible]="showCodesDialog()"
   (nzVisibleChange)="showCodesDialog.set($event)"
-  nzTitle="Nuovi Codici di Recupero"
+  [nzTitle]="'SECURITY.NEW_CODES_TITLE' | translate"
   (nzOnCancel)="showCodesDialog.set(false)"
   (nzOnOk)="showCodesDialog.set(false)"
-  nzOkText="Ho salvato i codici"
+  [nzOkText]="'SECURITY.CODES_SAVED_OK' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
 >
   <ng-container *nzModalContent>
     <nz-alert
       nzType="warning"
-      nzMessage="Salva subito questi codici!"
-      nzDescription="Questi codici sostituiscono i precedenti. Non saranno mostrati nuovamente."
+      [nzMessage]="'SECURITY.NEW_CODES_WARNING' | translate"
+      [nzDescription]="'SECURITY.NEW_CODES_BODY' | translate"
       nzShowIcon
       style="margin-bottom: 16px"
     ></nz-alert>
@@ -239,19 +249,20 @@
 <nz-modal
   [nzVisible]="showRevokeOthersModal()"
   (nzVisibleChange)="showRevokeOthersModal.set($event)"
-  nzTitle="Disconnetti tutte le altre sessioni"
+  [nzTitle]="'SECURITY.REVOKE_OTHERS' | translate"
   (nzOnCancel)="showRevokeOthersModal.set(false)"
   (nzOnOk)="confirmRevokeOthers()"
-  nzOkText="Disconnetti Tutte"
+  [nzOkText]="'SECURITY.REVOKE_OTHERS_OK' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>
-    <p>Tutti gli altri accessi da browser e token API verranno immediatamente invalidati. Inserisci la password per confermare:</p>
+    <p>{{ 'SECURITY.REVOKE_OTHERS_BODY' | translate }}</p>
     <form [formGroup]="passwordConfirmForm" nz-form nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Password attuale</nz-form-label>
-        <nz-form-control nzErrorTip="Inserisci la password attuale">
-          <input nz-input type="password" formControlName="currentPassword" />
+        <nz-form-label nzRequired nzFor="revoke-password">{{ 'TWO_FACTOR.CURRENT_PASSWORD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'TWO_FACTOR.CURRENT_PASSWORD_REQUIRED' | translate">
+          <input nz-input id="revoke-password" type="password" formControlName="currentPassword" autocomplete="current-password" />
         </nz-form-control>
       </nz-form-item>
     </form>

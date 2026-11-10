@@ -1,7 +1,7 @@
 <nz-modal
   [nzVisible]="isVisible()"
   (nzVisibleChange)="isVisible.set($event)"
-  nzTitle="Configurazione Autenticazione a Due Fattori (2FA)"
+  [nzTitle]="'TWO_FACTOR.SETUP_TITLE' | translate"
   [nzFooter]="null"
   [nzClosable]="currentStep() !== 1"
   [nzMaskClosable]="false"
@@ -10,9 +10,9 @@
 >
   <ng-container *nzModalContent>
     <nz-steps [nzCurrent]="currentStep()" nzSize="small" class="steps-nav">
-      <nz-step nzTitle="Verifica" nzDescription="Password"></nz-step>
-      <nz-step nzTitle="Scansione" nzDescription="App Authenticator"></nz-step>
-      <nz-step nzTitle="Backup" nzDescription="Codici Recupero"></nz-step>
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_VERIFY' | translate" [nzDescription]="'TWO_FACTOR.STEP_VERIFY_DESC' | translate"></nz-step>
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_SCAN' | translate" [nzDescription]="'TWO_FACTOR.STEP_SCAN_DESC' | translate"></nz-step>
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_BACKUP' | translate" [nzDescription]="'TWO_FACTOR.STEP_BACKUP_DESC' | translate"></nz-step>
     </nz-steps>
 
     @if (errorMessage()) {
@@ -27,21 +27,19 @@
     <!-- Step 0: Confirm password -->
     @if (currentStep() === 0) {
       <div class="step-content">
-        <p class="step-desc">
-          Per motivi di sicurezza, inserisci la tua password attuale prima di configurare l'autenticazione a due fattori.
-        </p>
+        <p class="step-desc">{{ 'TWO_FACTOR.PASSWORD_INTRO' | translate }}</p>
 
         <form [formGroup]="passwordForm" (ngSubmit)="onStartEnable()" nz-form nzLayout="vertical">
           <nz-form-item>
-            <nz-form-label nzRequired>Password attuale</nz-form-label>
-            <nz-form-control nzErrorTip="Inserisci la tua password attuale">
+            <nz-form-label nzRequired nzFor="setup-password">{{ 'TWO_FACTOR.CURRENT_PASSWORD' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'TWO_FACTOR.CURRENT_PASSWORD_REQUIRED' | translate">
               <nz-input-wrapper>
                 <nz-icon nzInputPrefix nzType="lock" />
                 <input
                   nz-input
+                  id="setup-password"
                   type="password"
                   formControlName="currentPassword"
-                  placeholder="Password attuale"
                   autocomplete="current-password"
                 />
               </nz-input-wrapper>
@@ -49,7 +47,7 @@
           </nz-form-item>
 
           <div class="modal-actions">
-            <button nz-button type="button" (click)="handleCancel()">Annulla</button>
+            <button nz-button type="button" (click)="handleCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
             <button
               nz-button
               nzType="primary"
@@ -57,7 +55,7 @@
               [nzLoading]="isLoading()"
               [disabled]="passwordForm.invalid"
             >
-              Continua
+              {{ 'TWO_FACTOR.CONTINUE' | translate }}
             </button>
           </div>
         </form>
@@ -67,9 +65,7 @@
     <!-- Step 1: Scan QR Code and confirm code -->
     @if (currentStep() === 1) {
       <div class="step-content">
-        <p class="step-desc">
-          Scansiona questo QR Code con la tua app di autenticazione (es. Google Authenticator, Microsoft Authenticator o 1Password).
-        </p>
+        <p class="step-desc">{{ 'TWO_FACTOR.SCAN_INTRO' | translate }}</p>
 
         <div class="qrcode-wrapper">
           @if (otpauthUri()) {
@@ -77,7 +73,7 @@
           }
           @if (secretKey()) {
             <div class="manual-key">
-              <span class="key-label">Chiave di configurazione manuale:</span>
+              <span class="key-label">{{ 'TWO_FACTOR.MANUAL_KEY' | translate }}</span>
               <code class="key-code">{{ secretKey() }}</code>
             </div>
           }
@@ -85,15 +81,17 @@
 
         <form [formGroup]="confirmForm" (ngSubmit)="onConfirmCode()" nz-form nzLayout="vertical">
           <nz-form-item>
-            <nz-form-label nzRequired>Codice a 6 cifre visualizzato nell'app</nz-form-label>
-            <nz-form-control nzErrorTip="Inserisci il codice temporaneo generato dall'app">
+            <nz-form-label nzRequired nzFor="setup-code">{{ 'TWO_FACTOR.CODE_LABEL' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'TWO_FACTOR.CODE_REQUIRED' | translate">
               <nz-input-wrapper>
                 <nz-icon nzInputPrefix nzType="safety" />
                 <input
                   nz-input
+                  id="setup-code"
                   type="text"
+                  inputmode="numeric"
                   formControlName="code"
-                  placeholder="Es. 123456"
+                  [placeholder]="'TWO_FACTOR.CODE_PLACEHOLDER' | translate"
                   maxlength="16"
                   autocomplete="one-time-code"
                 />
@@ -102,7 +100,7 @@
           </nz-form-item>
 
           <div class="modal-actions">
-            <button nz-button type="button" (click)="handleCancel()">Annulla</button>
+            <button nz-button type="button" (click)="handleCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
             <button
               nz-button
               nzType="primary"
@@ -110,7 +108,7 @@
               [nzLoading]="isLoading()"
               [disabled]="confirmForm.invalid"
             >
-              Verifica e Attiva
+              {{ 'TWO_FACTOR.VERIFY_AND_ENABLE' | translate }}
             </button>
           </div>
         </form>
@@ -122,8 +120,8 @@
       <div class="step-content">
         <nz-alert
           nzType="warning"
-          nzMessage="Salva i codici di recupero!"
-          nzDescription="Questi codici di recupero ti permettono di accedere se perdi il dispositivo di autenticazione. Ogni codice può essere utilizzato una sola volta e non verrà più mostrato."
+          [nzMessage]="'TWO_FACTOR.SAVE_CODES_TITLE' | translate"
+          [nzDescription]="'TWO_FACTOR.SAVE_CODES_BODY' | translate"
           nzShowIcon
           class="step-alert"
         ></nz-alert>
@@ -141,7 +139,7 @@
             (click)="copyRecoveryCodes()"
             class="copy-btn"
           >
-            <i nz-icon nzType="copy"></i> Copia tutti i codici negli appunti
+            <i nz-icon nzType="copy"></i> {{ 'TWO_FACTOR.COPY_CODES' | translate }}
           </button>
         </div>
 
@@ -152,7 +150,7 @@
             type="button"
             (click)="onFinish()"
           >
-            Ho salvato i codici, completa
+            {{ 'TWO_FACTOR.FINISH' | translate }}
           </button>
         </div>
       </div>

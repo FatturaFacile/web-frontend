@@ -21,7 +21,7 @@ export const SETTINGS_ROUTES: Routes = [
   },
   {
     path: 'security',
-    data: { breadcrumb: 'Sicurezza & Sessioni', title: 'Sicurezza Utente & Sessioni' },
+    data: { breadcrumb: 'SECURITY.TITLE' },
     loadComponent: () =>
       import('./pages/security/security-settings.component').then(
         (m) => m.SecuritySettingsComponent
@@ -30,7 +30,7 @@ export const SETTINGS_ROUTES: Routes = [
   {
     path: 'security/two-factor',
     canActivate: [moduleGuard('system', 'read')],
-    data: { breadcrumb: 'Policy 2FA', title: 'Policy Sicurezza 2FA Aziendale' },
+    data: { breadcrumb: 'TENANT_SECURITY.BREADCRUMB' },
     loadComponent: () =>
       import('./pages/tenant-security/tenant-security-policy.component').then(
         (m) => m.TenantSecurityPolicyComponent
