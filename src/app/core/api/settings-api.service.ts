@@ -6,7 +6,10 @@ import {
   ApiResponse,
   AuditLogResource,
   BranchResource,
+  DocumentQuota,
+  DocumentTemplate,
   ResetUserTwoFactorResponse,
+  SaveDocumentTemplatePayload,
   RoleResource,
   TenantPreferences,
   TenantSettings,
@@ -63,6 +66,25 @@ export class SettingsApiService {
 
   updateTwoFactorPolicy(payload: UpdateTwoFactorPolicyPayload): Observable<ApiResponse<TwoFactorPolicyResponse>> {
     return this.http.put<ApiResponse<TwoFactorPolicyResponse>>(`${this.base}/security/two-factor`, payload);
+  }
+
+  getDocumentTemplates(): Observable<ApiResponse<DocumentTemplate[]>> {
+    return this.http.get<ApiResponse<DocumentTemplate[]>>(`${this.base}/document-templates`);
+  }
+
+  saveDocumentTemplate(
+    type: string,
+    payload: SaveDocumentTemplatePayload,
+  ): Observable<ApiResponse<DocumentTemplate>> {
+    return this.http.put<ApiResponse<DocumentTemplate>>(`${this.base}/document-templates/${type}`, payload);
+  }
+
+  deleteDocumentTemplate(type: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.base}/document-templates/${type}`);
+  }
+
+  getDocumentQuota(): Observable<ApiResponse<DocumentQuota>> {
+    return this.http.get<ApiResponse<DocumentQuota>>(`${this.base}/document-quota`);
   }
 
   resetUserTwoFactor(userId: string): Observable<ApiResponse<ResetUserTwoFactorResponse>> {
