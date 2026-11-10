@@ -105,6 +105,24 @@ export class GeneralLedgerFiscalApiService {
     return this.http.get(`${this.base}/tax-settlements/${settlementId}/statement`, { responseType: 'blob' });
   }
 
+  downloadSwissEstvXml(settlementId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/tax-settlements/${settlementId}/swiss-xml`, { responseType: 'blob' });
+  }
+
+  getVatAnnualReconciliation(year: number): Observable<{ data: Record<string, unknown> }> {
+    return this.http.get<{ data: Record<string, unknown> }>(`${this.base}/vat-annual-reconciliation`, {
+      params: toHttpParams({ year }),
+    });
+  }
+
+  getSwissAnhang(fiscalYearId: string): Observable<{ data: Record<string, unknown> }> {
+    return this.http.get<{ data: Record<string, unknown> }>(`${this.base}/financial-statements/swiss-anhang/${fiscalYearId}`);
+  }
+
+  updateSwissAnhang(fiscalYearId: string, payload: Record<string, unknown>): Observable<{ data: Record<string, unknown> }> {
+    return this.http.put<{ data: Record<string, unknown> }>(`${this.base}/financial-statements/swiss-anhang/${fiscalYearId}`, payload);
+  }
+
   // --- Withholding ---
 
   getWithholdingSettlements(params?: { year?: string; status?: string }): Observable<{ data: WithholdingSettlement[] }> {

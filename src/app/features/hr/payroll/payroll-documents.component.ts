@@ -86,8 +86,13 @@ export class PayrollDocumentsComponent {
         { key: 'year', labelKey: 'hrmCommon.year', type: 'text' },
         { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'text' },
         money('box8_gross', 'hrmPayroll.gross'),
+        money('box10_1_ordinary_pension', 'LPP 10.1'),
+        money('box10_2_pension_buyin', 'LPP 10.2'),
         money('box11_net', 'hrmPayroll.net'),
         money('box12_withholding_tax', 'hrmPayroll.withholdingTax'),
+        money('box13_1_effective_expenses', 'Spese 13.1'),
+        money('box13_2_lump_sum_expenses', 'Spese 13.2'),
+        { key: 'box15_remarks', labelKey: 'hrmCommon.notes', type: 'text' },
         { key: 'generated_at', labelKey: 'hrmPayroll.generatedAt', type: 'text' },
       ],
     };

@@ -45,7 +45,10 @@
             }
             @if (canWrite && year.status === 'closed') {
               <button nz-button nzSize="small" type="button" (click)="carryForward(year)">{{ 'GL.ACTION_CARRY_FORWARD' | translate }}</button>
+              <button nz-button nzSize="small" type="button" (click)="openReopenModal(year)">Riapri Esercizio (Pre-AGM)</button>
+              <button nz-button nzSize="small" nzType="primary" type="button" (click)="openAgmModal(year)">Approva Bilancio (AGM CO 958c)</button>
             }
+            <button nz-button nzSize="small" type="button" (click)="openAnhangModal(year)">Nota Integrativa Svizzera (Anhang CO 959c)</button>
           </td>
         </tr>
         <tr [nzExpand]="expandedYears[year.id]">
@@ -105,5 +108,61 @@
         </nz-form-control>
       </nz-form-item>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Reopen Fiscal Year (Pre-AGM) -->
+<nz-modal
+  [nzVisible]="reopenModalOpen()"
+  nzTitle="Riapertura Esercizio Fiscale (Pre-Assemblea Generale CO Art. 958c)"
+  (nzOnOk)="confirmReopenYear()"
+  (nzOnCancel)="reopenModalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>Motivazione obbligatoria per la riapertura e rettifica pre-AGM:</p>
+    <input nz-input [(ngModel)]="reopenReason" placeholder="Es. Rettifica di revisione prima dell'Assemblea Generale" />
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: AGM Approval (CO Art. 958c / 698) -->
+<nz-modal
+  [nzVisible]="agmModalOpen()"
+  nzTitle="Approvazione Assemblea Generale (AGM - CO Art. 958c / 698)"
+  (nzOnOk)="confirmAgmApproval()"
+  (nzOnCancel)="agmModalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>Riferimento verbale / delibera Assemblea Generale (blocca definitivamente l'esercizio):</p>
+    <input nz-input [(ngModel)]="agmResolutionRef" placeholder="Es. AGM-2027-04-15-RES-01" />
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Swiss Statutory Notes (Anhang CO Art. 959c) -->
+<nz-modal
+  [nzVisible]="anhangModalOpen()"
+  nzTitle="Nota Integrativa Svizzera (Anhang - CO Art. 959c)"
+  (nzOnOk)="saveSwissAnhang()"
+  (nzOnCancel)="anhangModalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <label>Fascia Posti a Tempo Pieno (FTE Band - CO Art. 959c cpv. 2 n. 2)</label>
+        <select nz-input [(ngModel)]="anhangFteBand">
+          <option value="up_to_10">Fino a 10 FTE</option>
+          <option value="up_to_50">Da 10 a 50 FTE</option>
+          <option value="up_to_250">Da 50 a 250 FTE</option>
+          <option value="over_250">Oltre 250 FTE</option>
+        </select>
+      </div>
+      <div>
+        <label>Attivi costituiti in pegno / garanzie (CHF/EUR)</label>
+        <input nz-input [(ngModel)]="anhangPledgedAssets" />
+      </div>
+      <div>
+        <label>Impegni da leasing non iscritti a bilancio (CHF/EUR)</label>
+        <input nz-input [(ngModel)]="anhangLeasingCommitments" />
+      </div>
+    </div>
   </ng-container>
 </nz-modal>

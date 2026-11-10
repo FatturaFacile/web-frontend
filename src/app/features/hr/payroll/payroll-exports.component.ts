@@ -46,7 +46,16 @@ const EXPORTS: ExportDefinition[] = [
       <button nz-button type="button" [disabled]="!year()" (click)="downloadYearEnd()">
         {{ 'hrmPayroll.yearEndReport' | translate }}
       </button>
+      <button nz-button type="button" [disabled]="!year()" (click)="downloadSwissdecXml()">
+        Swissdec ELM XML
+      </button>
+      <button nz-button type="button" [disabled]="!year()" (click)="validateSwissdecXml()">
+        Valida Swissdec ELM 5.0
+      </button>
     </div>
+    @if (validationSummary()) {
+      <div class="mt-2 text-xs">{{ validationSummary() }}</div>
+    }
   `,
 })
 export class PayrollExportsComponent {
@@ -57,6 +66,7 @@ export class PayrollExportsComponent {
   protected readonly exports = EXPORTS;
   protected readonly year = signal<number | null>(new Date().getFullYear());
   protected readonly month = signal<number | null>(null);
+  protected readonly validationSummary = signal<string>('');
 
   protected canExport(item: ExportDefinition): boolean {
     return !!this.year() && (!item.needsMonth || !!this.month());
@@ -72,6 +82,25 @@ export class PayrollExportsComponent {
 
   protected downloadYearEnd(): void {
     this.save(this.api.downloadYearEndReportCsv(this.year() ?? 0), `year-end-${this.year()}.csv`);
+  }
+
+  protected downloadSwissdecXml(): void {
+    this.save(this.api.downloadSwissdecElmXml(this.year() ?? 0), `swissdec-elm-${this.year()}.xml`);
+  }
+
+  protected validateSwissdecXml(): void {
+    const yr = this.year() ?? new Date().getFullYear();
+    this.api.validateSwissdecElmXml({ year: yr }).subscribe({
+      next: (res) => {
+        const valid = res.data.is_valid;
+        this.validationSummary.set(
+          valid
+            ? 'Swissdec ELM 5.0 XML valido'
+            : `Errori Swissdec ELM: ${(res.data.errors ?? []).join('; ')}`,
+        );
+      },
+      error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
+    });
   }
 
   private save(request: Observable<Blob>, filename: string): void {

@@ -207,9 +207,33 @@ export class PayrollApiService {
     return this.http.put<ApiResponse<PayrollSettingsRecord>>(this.settingsUrls[country], payload);
   }
 
-  // --- CSV exports ---
+  // --- CSV exports & Swissdec ELM / Permit Compliance ---
 
   downloadExport(name: PayrollExportName, params: Record<string, string | number | undefined>): Observable<Blob> {
     return this.http.get(this.exportUrls[name], { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  getPermitAlerts(params?: { as_of?: string; warning_days?: number }): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.get<ApiResponse<Record<string, unknown>>>(`${this.base}/compliance/permit-alerts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  downloadSwissdecElmXml(year: number, version: '5.0' | '6.0' = '5.0'): Observable<Blob> {
+    return this.http.get(`${this.base}/compliance/salary-declaration/xml`, {
+      params: toHttpParams({ year, version }),
+      responseType: 'blob',
+    });
+  }
+
+  validateSwissdecElmXml(payload: {
+    year?: number;
+    xml?: string;
+    version?: '5.0' | '6.0';
+  }): Observable<ApiResponse<{ is_valid: boolean; errors: string[]; domain_warnings: string[] }>> {
+    return this.http.post<ApiResponse<{ is_valid: boolean; errors: string[]; domain_warnings: string[] }>>(
+      `${this.base}/compliance/salary-declaration/validate`,
+      payload,
+    );
   }
 }

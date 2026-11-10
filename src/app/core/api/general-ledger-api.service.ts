@@ -212,6 +212,16 @@ export class GeneralLedgerApiService {
     return this.http.post<ApiResponse<FiscalYearClosingRun>>(`${this.base}/fiscal-years/${id}/close`, {});
   }
 
+  reopenFiscalYear(id: string, reason: string): Observable<ApiResponse<GlFiscalYear>> {
+    return this.http.post<ApiResponse<GlFiscalYear>>(`${this.base}/fiscal-years/${id}/reopen`, { reason });
+  }
+
+  approveFiscalYearAtAgm(id: string, resolutionReference?: string | null): Observable<ApiResponse<GlFiscalYear>> {
+    return this.http.post<ApiResponse<GlFiscalYear>>(`${this.base}/fiscal-years/${id}/approve-agm`, {
+      resolution_reference: resolutionReference ?? null,
+    });
+  }
+
   carryForwardFiscalYear(id: string): Observable<ApiResponse<{ journal_entry_id: string | null; entry_number: string | null }>> {
     return this.http.post<ApiResponse<{ journal_entry_id: string | null; entry_number: string | null }>>(
       `${this.base}/fiscal-years/${id}/carry-forward`,
