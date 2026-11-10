@@ -14,7 +14,7 @@ import { MEMBER_FILE_PANELS } from '../pages/members.page';
   template: `
     <app-page-header [title]="'RES.PAGE.ASSOC_MEMBER_FILE' | translate" />
     <a nz-button nzType="link" routerLink="/associations/memberships">{{ 'RES.A.back_to_members' | translate }}</a>
-    <nz-tabs nzLazy>
+    <nz-tabs>
       @for (panel of panels; track panel.id) {
         <nz-tab [nzTitle]="panel.titleKey | translate">
           <ng-template nz-tab>

@@ -49,7 +49,7 @@ import { AreaProfileComponent } from './area-profile.component';
           </nz-radio-group>
         }
         @if (selected(); as person) {
-          <nz-tabs nzLazy>
+          <nz-tabs>
             <nz-tab [nzTitle]="'ASSOC_AREA.PROFILE' | translate">
               <ng-template nz-tab>
                 <app-area-profile [person]="person" [isSelf]="isSelf()" [contact]="isSelf() ? me()?.contact ?? null : null" (updated)="reload()" />

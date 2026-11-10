@@ -53,7 +53,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
             <button nz-button nzType="primary" type="button" (click)="dsrModalOpen.set(true)">
               Nuova Richiesta (DSR)
             </button>
-            <select nz-input style="width: 140px;" [(ngModel)]="portabilitySubjectType">
+            <select class="ant-input" style="width: 140px;" [(ngModel)]="portabilitySubjectType">
               <option value="contact">Contatto</option>
               <option value="employee">Dipendente</option>
               <option value="user">Utente</option>
@@ -264,7 +264,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           <nz-form-item>
             <nz-form-label nzRequired>Normativa</nz-form-label>
             <nz-form-control>
-              <select nz-input formControlName="regulation">
+              <select class="ant-input" formControlName="regulation">
                 <option value="nLPD">nLPD (Svizzera)</option>
                 <option value="GDPR">GDPR (UE)</option>
               </select>
@@ -273,7 +273,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           <nz-form-item>
             <nz-form-label nzRequired>Tipo Richiesta</nz-form-label>
             <nz-form-control>
-              <select nz-input formControlName="request_type">
+              <select class="ant-input" formControlName="request_type">
                 <option value="access">Accesso (Art. 15 GDPR / Art. 25 nLPD)</option>
                 <option value="portability">Portabilità (Art. 20 GDPR / Art. 28 nLPD)</option>
                 <option value="erasure">Cancellazione / Oblio (Art. 17 GDPR / Art. 32 nLPD)</option>
@@ -284,7 +284,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           <nz-form-item>
             <nz-form-label nzRequired>Tipo Soggetto</nz-form-label>
             <nz-form-control>
-              <select nz-input formControlName="subject_type">
+              <select class="ant-input" formControlName="subject_type">
                 <option value="contact">Contatto (Cliente/Fornitore)</option>
                 <option value="employee">Dipendente</option>
                 <option value="user">Utente</option>
@@ -367,7 +367,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           <nz-form-item>
             <nz-form-label nzRequired>Gravità</nz-form-label>
             <nz-form-control>
-              <select nz-input formControlName="severity">
+              <select class="ant-input" formControlName="severity">
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>

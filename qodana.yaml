@@ -51,6 +51,8 @@ exclude:
   - name: AngularNgOptimizedImage
     paths:
       - src/app/layout/sidebar/sidebar.component.html
+      # The logo preview is a data: URL read from the file the user just picked: NgOptimizedImage does not accept data URLs.
+      - src/app/features/settings/pages/document-templates/document-templates.component.html
 
 failureConditions:
   severityThresholds:
