@@ -57,12 +57,7 @@ describe('LeadsComponent', () => {
         data: mockLeads[0],
       }),
     ),
-    scoreLead: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: { ...mockLeads[0], score: 95 },
-      }),
-    ),
+    recalculateLeadScores: vi.fn().mockReturnValue(of({ recalculated: 1 })),
     qualifyLead: vi.fn().mockReturnValue(
       of({
         success: true,
@@ -175,8 +170,8 @@ describe('LeadsComponent', () => {
     fixture.detectChanges();
     component.recalculateScore(mockLeads[0]);
 
-    expect(mockCrmApi.scoreLead).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Score updated to 95');
+    expect(mockCrmApi.recalculateLeadScores).toHaveBeenCalledWith('lead-1');
+    expect(mockMessage.success).toHaveBeenCalledWith('Score recalculated');
   });
 
   it('qualifies a lead', () => {

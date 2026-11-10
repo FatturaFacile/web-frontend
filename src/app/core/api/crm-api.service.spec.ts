@@ -94,13 +94,14 @@ describe('CrmApiService', () => {
     expect(reqCreate.request.body).toEqual(payload);
     reqCreate.flush({ success: true, data: { id: 'lead-2', ...payload } });
 
-    service.scoreLead('lead-2').subscribe((res) => {
-      expect(res.data.score).toBe(90);
+    service.recalculateLeadScores('lead-2').subscribe((res) => {
+      expect(res.recalculated).toBe(1);
     });
 
-    const reqScore = httpMock.expectOne(`${baseUrl}/leads/lead-2/score`);
+    const reqScore = httpMock.expectOne(`${baseUrl}/lead-scoring-rules/recalculate`);
     expect(reqScore.request.method).toBe('POST');
-    reqScore.flush({ success: true, data: { id: 'lead-2', score: 90 } });
+    expect(reqScore.request.body).toEqual({ lead_id: 'lead-2' });
+    reqScore.flush({ recalculated: 1 });
   });
 
   it('qualifies and converts lead', () => {
@@ -165,7 +166,8 @@ describe('CrmApiService', () => {
     });
 
     const reqStageUpdate = httpMock.expectOne(`${baseUrl}/opportunities/opp-1/stage`);
-    expect(reqStageUpdate.request.method).toBe('PUT');
+    expect(reqStageUpdate.request.method).toBe('POST');
+    expect(reqStageUpdate.request.body).toEqual({ target_stage_code: 'proposal' });
     reqStageUpdate.flush({
       success: true,
       data: { id: 'opp-1', stage: { id: 'st-2', code: 'proposal', name: 'Proposal', is_won: false, is_lost: false } },

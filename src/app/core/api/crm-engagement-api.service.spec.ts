@@ -1,7 +1,7 @@
 import { describeApiCases } from '../../../testing/api-cases';
 import { CrmApiService } from './crm-api.service';
 
-const segment = { name: 'VIP', entity: 'contacts' as const, filters: [['country', '=', 'IT']] };
+const segment = { name: 'VIP', entity: 'contacts' as const, filters: [{ field: 'country', operator: 'eq', value: 'IT' }] };
 const rule = { name: 'Has phone', rule_type: 'field' as const, field: 'phone', operator: 'filled', points: 5 };
 
 describeApiCases('CrmApiService (accounts, activities, segments, campaigns, reports)', CrmApiService, [
@@ -34,7 +34,7 @@ describeApiCases('CrmApiService (accounts, activities, segments, campaigns, repo
   { name: 'getSegmentById', call: (s) => s.getSegmentById('s1'), method: 'GET', path: '/crm/segments/s1' },
   { name: 'getSegmentMembers', call: (s) => s.getSegmentMembers('s1'), method: 'GET', path: '/crm/segments/s1/members' },
   { name: 'createSegment', call: (s) => s.createSegment(segment), method: 'POST', path: '/crm/segments', body: segment },
-  { name: 'updateSegment', call: (s) => s.updateSegment('s1', segment), method: 'PUT', path: '/crm/segments/s1', body: segment },
+  { name: 'updateSegment', call: (s) => s.updateSegment('s1', { name: 'VIP', filters: segment.filters }), method: 'PUT', path: '/crm/segments/s1', body: { name: 'VIP', filters: segment.filters } },
   { name: 'deleteSegment', call: (s) => s.deleteSegment('s1'), method: 'DELETE', path: '/crm/segments/s1' },
   { name: 'getLeadScoringRules', call: (s) => s.getLeadScoringRules(), method: 'GET', path: '/crm/lead-scoring-rules' },
   { name: 'createLeadScoringRule', call: (s) => s.createLeadScoringRule(rule), method: 'POST', path: '/crm/lead-scoring-rules', body: rule },
