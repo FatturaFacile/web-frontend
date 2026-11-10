@@ -38,7 +38,7 @@ export interface PrivacyDataSubjectRequest {
   status: string;
   due_at: string;
   completed_at?: string | null;
-  legal_holds?: Array<{ statute: string; reason: string; retain_until: string }>;
+  legal_holds?: { statute: string; reason: string; retain_until: string }[];
   notes?: string | null;
 }
 
