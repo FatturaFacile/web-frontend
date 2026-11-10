@@ -69,10 +69,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         } else if (err.status === 403) {
           if (body?.type === 'urn:fatturafacile:problem:two-factor-setup-required') {
             authStore.setTwoFactorSetupRequired(true);
-            message.warning(
-              detailOrMessage ||
-                'È richiesta la configurazione dell\'autenticazione a due fattori per procedere.'
-            );
+            message.warning(detailOrMessage || i18n.translate('ERRORS.TWO_FACTOR_SETUP_REQUIRED'));
           } else {
             message.error(
               detailOrMessage ||
@@ -84,10 +81,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             detailOrMessage || 'Conflitto di stato con il record attuale.'
           );
         } else if (err.status === 429) {
-          message.warning(
-            detailOrMessage ||
-              'Troppe richieste inviate al server. Si prega di attendere qualche istante prima di riprovare.'
-          );
+          message.warning(detailOrMessage || i18n.translate('ERRORS.TOO_MANY_REQUESTS_DESC'));
         } else if (err.status === 0) {
           message.error(i18n.translate('ERRORS.NETWORK'));
         } else {

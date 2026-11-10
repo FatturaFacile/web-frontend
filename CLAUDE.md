@@ -57,3 +57,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Tests
+
+- Never write passwords, secrets or tokens in specs as fixed strings, not even in part: GitGuardian reports them on the pull request.
+- Use `TEST_PASSWORD` from `src/testing/credentials.ts`, generated at runtime and valid for the backend password policy. For other values, derive them from it (for example `${TEST_PASSWORD}x` for a wrong password) or generate them at runtime.

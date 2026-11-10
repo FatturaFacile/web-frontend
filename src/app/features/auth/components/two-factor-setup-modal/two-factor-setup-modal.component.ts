@@ -9,7 +9,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzQRCodeComponent } from 'ng-zorro-antd/qr-code';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
-import { AuthApiService, AuthStore } from '@core';
+import { AuthApiService, AuthStore, I18nService } from '@core';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-two-factor-setup-modal',
@@ -23,6 +24,7 @@ import { AuthApiService, AuthStore } from '@core';
     NzButtonModule,
     NzAlertModule,
     NzIconModule,
+    TranslatePipe,
   ],
   templateUrl: './two-factor-setup-modal.component.html',
   styleUrl: './two-factor-setup-modal.component.scss',
@@ -32,6 +34,7 @@ export class TwoFactorSetupModalComponent {
   private readonly authApi = inject(AuthApiService);
   private readonly authStore = inject(AuthStore);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   readonly isVisible = model<boolean>(false);
   readonly completed = output<void>();
@@ -78,7 +81,7 @@ export class TwoFactorSetupModalComponent {
         this.isLoading.set(false);
         const body = (err as { error?: { message?: string; detail?: string } })?.error;
         this.errorMessage.set(
-          body?.detail || body?.message || 'Password non valida. Impossibile attivare 2FA.'
+          body?.detail || body?.message || this.i18n.translate('TWO_FACTOR.ENABLE_FAILED')
         );
       },
     });
@@ -100,13 +103,13 @@ export class TwoFactorSetupModalComponent {
         const codes = (res.data.recovery_codes || []).filter((c) => c && c !== '-');
         this.recoveryCodes.set(codes);
         this.currentStep.set(2);
-        this.message.success('Autenticazione a due fattori attivata con successo.');
+        this.message.success(this.i18n.translate('TWO_FACTOR.ENABLED_SUCCESS'));
       },
       error: (err: unknown) => {
         this.isLoading.set(false);
         const body = (err as { error?: { message?: string; detail?: string } })?.error;
         this.errorMessage.set(
-          body?.detail || body?.message || 'Codice errato. Riprova con un codice recente.'
+          body?.detail || body?.message || this.i18n.translate('TWO_FACTOR.CONFIRM_FAILED')
         );
       },
     });
@@ -116,7 +119,7 @@ export class TwoFactorSetupModalComponent {
     const text = this.recoveryCodes().join('\n');
     if (navigator?.clipboard) {
       void navigator.clipboard.writeText(text).then(() => {
-        this.message.success('Codici di recupero copiati negli appunti!');
+        this.message.success(this.i18n.translate('TWO_FACTOR.CODES_COPIED'));
         this.codesSaved.set(true);
       });
     }
