@@ -33,6 +33,10 @@
     </div>
   </div>
 
+  @if (canWrite() && r.status === 'Final') {
+    <app-payroll-run-delivery class="block mb-3" [runId]="runId()" [currency]="r.currency" />
+  }
+
   <nz-tabs (nzSelectedIndexChange)="$event === 2 && loadAllocation()">
     <nz-tab [nzTitle]="'hrmPayroll.payslips' | translate">
       <nz-table #slips [nzData]="r.payslips ?? []" [nzFrontPagination]="false" nzSize="small">

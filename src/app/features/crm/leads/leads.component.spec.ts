@@ -44,6 +44,22 @@ describe('LeadsComponent', () => {
   ];
 
   const mockCrmApi = {
+    getLeadScore: vi.fn().mockReturnValue(
+      of({
+        lead_id: 'l1',
+        score: 40,
+        rating: 'warm',
+        model: null,
+        breakdown: [{ rule: 'budget', points: 40, reason: 'Budget above threshold' }],
+        calculated_at: null,
+        current: {
+          score: 70,
+          rating: 'hot',
+          model: 'tenant_rules',
+          breakdown: [{ rule: 'budget', points: 70, reason: 'Budget above threshold' }],
+        },
+      }),
+    ),
     getLeads: vi.fn().mockReturnValue(
       of({
         success: true,
@@ -172,6 +188,19 @@ describe('LeadsComponent', () => {
 
     expect(mockCrmApi.recalculateLeadScores).toHaveBeenCalledWith('lead-1');
     expect(mockMessage.success).toHaveBeenCalledWith('Score recalculated');
+  });
+
+  it('explains the score of a lead: stored and under the current model', () => {
+    fixture.detectChanges();
+    component.openScoreModal(mockLeads[0]);
+
+    expect(mockCrmApi.getLeadScore).toHaveBeenCalledWith('lead-1');
+    expect(component.scoreModalVisible()).toBe(true);
+    const explanation = component.scoreExplanation();
+    expect(explanation?.current.score).toBe(70);
+    expect(component.storedBreakdown(explanation as NonNullable<typeof explanation>)).toHaveLength(1);
+    // The modal service of this spec is a stub: close it before the next change detection.
+    component.scoreModalVisible.set(false);
   });
 
   it('qualifies a lead', () => {

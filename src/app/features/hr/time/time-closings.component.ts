@@ -1,8 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HrTimeApiService, I18nService, TimeClosingResource } from '@core';
+import { HrTimeApiService, I18nService, TimeClosingResource, TimeTransferResult } from '@core';
 import { TranslatePipe } from '@shared';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -17,6 +18,7 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
   imports: [
     DatePipe,
     FormsModule,
+    NzAlertModule,
     NzButtonModule,
     NzInputModule,
     NzTableModule,
@@ -48,6 +50,14 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
         </button>
       }
     </div>
+    @if (transfer(); as t) {
+      <nz-alert
+        class="mb-3"
+        nzType="success"
+        nzShowIcon
+        [nzMessage]="'hrmTime.transferDone' | translate: { month: t.month + '/' + t.year, employees: t.employees_processed, inputs: t.inputs_upserted, credits: t.night_time_bank_credits }"
+      />
+    }
     <nz-table #table [nzData]="closings()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
@@ -76,6 +86,11 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
                 @if (row.status.toLowerCase() === 'closed') {
                   <app-reason-button labelKey="hrmTime.reopen" [danger]="true" (confirmed)="reopen(row, $event)" />
                 }
+                @if (canTransfer(row)) {
+                  <button nz-button nzSize="small" type="button" (click)="transferToPayroll(row)">
+                    {{ 'hrmTime.transferToPayroll' | translate }}
+                  </button>
+                }
               </td>
             }
           </tr>
@@ -96,6 +111,7 @@ export class TimeClosingsComponent implements OnInit {
   protected readonly saving = signal(false);
   protected readonly year = signal<number>(new Date().getFullYear());
   protected readonly month = signal<number | null>(null);
+  protected readonly transfer = signal<TimeTransferResult | null>(null);
 
   ngOnInit(): void {
     this.reload();
@@ -137,6 +153,18 @@ export class TimeClosingsComponent implements OnInit {
         this.saving.set(false);
         reportHttpError(err, this.message, this.i18n);
       },
+    });
+  }
+
+  /** A closed (or approved) period can be carried into the payroll variable inputs. */
+  protected canTransfer(row: TimeClosingResource): boolean {
+    return ['closed', 'approved'].includes(row.status.toLowerCase());
+  }
+
+  protected transferToPayroll(row: TimeClosingResource): void {
+    this.api.transferToPayroll(row.year, row.month).subscribe({
+      next: (res) => this.transfer.set(res.data),
+      error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
   }
 

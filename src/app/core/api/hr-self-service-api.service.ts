@@ -7,6 +7,7 @@ import {
   EmployeeDocumentResource,
   SelfServiceLeaveBalance,
   SelfServiceLeaveRequest,
+  SelfServiceLeaveType,
   SelfServiceProfile,
   SelfServiceTraining,
   SubmitSelfServiceLeaveRequestPayload,
@@ -21,6 +22,11 @@ export class HrSelfServiceApiService {
 
   getProfile(): Observable<ApiResponse<SelfServiceProfile>> {
     return this.http.get<ApiResponse<SelfServiceProfile>>(this.base);
+  }
+
+  /** The absence types, to label own balances and requests (no HR role needed). */
+  getLeaveTypes(): Observable<ApiResponse<SelfServiceLeaveType[]>> {
+    return this.http.get<ApiResponse<SelfServiceLeaveType[]>>(`${this.base}/leave-types`);
   }
 
   getLeaveBalances(year?: number): Observable<ApiResponse<SelfServiceLeaveBalance[]>> {

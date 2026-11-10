@@ -4,6 +4,7 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  IntrastatCodeList,
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
@@ -121,6 +122,11 @@ export class IntrastatApiService {
     return this.http.get<ApiResponse<IntrastatPeriodicityThresholds>>(`${this.base}/periodicity`, {
       params: httpParams,
     });
+  }
+
+  /** Code lists of the INTRA forms (nature of transaction, transport, delivery terms). */
+  getCodes(): Observable<ApiResponse<IntrastatCodeList>> {
+    return this.http.get<ApiResponse<IntrastatCodeList>>(`${this.base}/codes`);
   }
 
   getProductProfiles(): Observable<ApiResponse<IntrastatProductProfile[]>> {

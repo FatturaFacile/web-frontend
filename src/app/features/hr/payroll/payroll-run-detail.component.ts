@@ -11,6 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 import { ReasonButtonComponent } from '../shared/reason-button.component';
+import { PayrollRunDeliveryComponent } from './payroll-run-delivery.component';
 import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component';
 
 /**
@@ -29,6 +30,7 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
     NzTableModule,
     NzTabsModule,
     TranslatePipe,
+    PayrollRunDeliveryComponent,
     PayrollRunStatusTagComponent,
     ReasonButtonComponent,
   ],

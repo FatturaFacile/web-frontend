@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { moduleGuard } from '@core';
 
 export const HR_ROUTES: Routes = [
   {
@@ -46,6 +47,19 @@ export const HR_ROUTES: Routes = [
     path: 'payroll',
     data: { breadcrumb: 'NAV.HR_PAYROLL', title: 'NAV.HR_PAYROLL' },
     loadComponent: () => import('./payroll/payroll.component').then((m) => m.PayrollComponent),
+  },
+  {
+    path: 'payroll-compliance',
+    canActivate: [moduleGuard('payroll', 'read')],
+    data: { breadcrumb: 'NAV.HR_PAYROLL_COMPLIANCE', title: 'NAV.HR_PAYROLL_COMPLIANCE' },
+    loadComponent: () =>
+      import('./payroll-compliance/payroll-compliance.component').then((m) => m.PayrollComplianceComponent),
+  },
+  {
+    path: 'short-time',
+    canActivate: [moduleGuard('payroll', 'read')],
+    data: { breadcrumb: 'NAV.HR_SHORT_TIME', title: 'NAV.HR_SHORT_TIME' },
+    loadComponent: () => import('./short-time/short-time.component').then((m) => m.ShortTimeComponent),
   },
   {
     path: 'talent',

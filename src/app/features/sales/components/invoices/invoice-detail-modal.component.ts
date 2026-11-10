@@ -1,12 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, model } from '@angular/core';
+import { Component, computed, effect, inject, input, model, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
-import { AuthStore, CatalogApiService, InvoiceDetailResource } from '@core';
+import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
 
 /**
@@ -15,7 +16,16 @@ import { MoneyPipe, TranslatePipe } from '@shared';
  */
 @Component({
   selector: 'app-invoice-detail-modal',
-  imports: [DatePipe, MoneyPipe, NzModalModule, NzDescriptionsModule, NzButtonModule, NzTagModule, TranslatePipe],
+  imports: [
+    DatePipe,
+    MoneyPipe,
+    NzModalModule,
+    NzDescriptionsModule,
+    NzButtonModule,
+    NzTableModule,
+    NzTagModule,
+    TranslatePipe,
+  ],
   template: `
     <nz-modal
       [nzVisible]="open()"
@@ -54,6 +64,32 @@ import { MoneyPipe, TranslatePipe } from '@shared';
           @if (!isForeignCurrency()) {
             <p class="hint">{{ 'SALES.INVOICES.DETAIL.NO_FX_NEEDED' | translate }}</p>
           }
+          <h4 class="emails-title">{{ 'SALES.INVOICES.DETAIL.EMAILS' | translate }}</h4>
+          <nz-table #emailTable [nzData]="emails()" [nzFrontPagination]="false" nzSize="small" [nzLoading]="emailsLoading()">
+            <thead>
+              <tr>
+                <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_RECIPIENT' | translate }}</th>
+                <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_STATUS' | translate }}</th>
+                <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_SENT_AT' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mail of emailTable.data; track mail.id) {
+                <tr>
+                  <td>{{ mail.recipient }}</td>
+                  <td>
+                    <nz-tag [nzColor]="mail.status === 'sent' ? 'green' : mail.status === 'failed' ? 'red' : 'default'">
+                      {{ mail.status }}
+                    </nz-tag>
+                    @if (mail.error) {
+                      <div class="hint">{{ mail.error }}</div>
+                    }
+                  </td>
+                  <td>{{ mail.sent_at ? (mail.sent_at | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
         }
       </ng-container>
       <ng-template #footer>
@@ -64,6 +100,9 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     </nz-modal>
   `,
   styles: `
+    .emails-title {
+      margin-top: 16px;
+    }
     .hint {
       margin-top: 12px;
       color: var(--ant-color-text-secondary, #666);
@@ -73,9 +112,36 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 export class InvoiceDetailModalComponent {
   private readonly authStore = inject(AuthStore);
   private readonly catalogApi = inject(CatalogApiService);
+  private readonly invoiceApi = inject(InvoiceApiService);
 
   readonly open = model(false);
   readonly invoice = input<InvoiceDetailResource | null>(null);
+
+  /** E-mails sent for the invoice, loaded when the modal opens. */
+  protected readonly emails = signal<DocumentEmailRecord[]>([]);
+  protected readonly emailsLoading = signal(false);
+
+  constructor() {
+    effect(() => {
+      const id = this.open() ? this.invoice()?.id : null;
+      untracked(() => this.loadEmails(id ?? null));
+    });
+  }
+
+  private loadEmails(id: string | null): void {
+    this.emails.set([]);
+    if (!id) {
+      return;
+    }
+    this.emailsLoading.set(true);
+    this.invoiceApi.getDocumentEmails('invoice', id).subscribe({
+      next: (res) => {
+        this.emails.set(res.data);
+        this.emailsLoading.set(false);
+      },
+      error: () => this.emailsLoading.set(false),
+    });
+  }
 
   private readonly paymentTerms = toSignal(
     this.catalogApi.getPaymentTerms().pipe(

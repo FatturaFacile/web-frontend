@@ -14,6 +14,8 @@ import {
   InvoiceResource,
   PaginatedResponse,
   SdiLogsData,
+  DocumentEmailRecord,
+  DocumentEmailType,
   SendDocumentEmailPayload,
   SwissQrBillData,
 } from '../models';
@@ -57,6 +59,11 @@ export class InvoiceApiService {
 
   sendByEmail(id: string, payload: SendDocumentEmailPayload = {}): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/documents/invoice/${id}/email`, payload);
+  }
+
+  /** E-mails sent for a document, newest first. */
+  getDocumentEmails(type: DocumentEmailType, id: string): Observable<ApiResponse<DocumentEmailRecord[]>> {
+    return this.http.get<ApiResponse<DocumentEmailRecord[]>>(`${this.base}/documents/${type}/${id}/emails`);
   }
 
   // SDI Electronic Invoicing
