@@ -517,9 +517,9 @@
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DIRECTION' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="direction">
-                <nz-option nzValue="import" nzLabel="Import (CH &larr; IT/EU)"></nz-option>
-                <nz-option nzValue="export" nzLabel="Export (CH &rarr; IT/EU)"></nz-option>
-                <nz-option nzValue="transit" nzLabel="Transito"></nz-option>
+                <nz-option nzValue="import" [nzLabel]="'CUSTOMS.LBL_IMPORT_CH_IT_EU' | translate"></nz-option>
+                <nz-option nzValue="export" [nzLabel]="'CUSTOMS.LBL_EXPORT_CH_IT_EU' | translate"></nz-option>
+                <nz-option nzValue="transit" [nzLabel]="'CUSTOMS.LBL_TRANSITO' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -528,7 +528,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.SERVICE_TYPE' | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="service_type" placeholder="es. standard_customs" />
+              <input nz-input formControlName="service_type" [placeholder]="'CUSTOMS.LBL_ES_STANDARD_CUSTOMS' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -623,9 +623,9 @@
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DECLARATION_TYPE' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="declaration_type">
-                <nz-option nzValue="import" nzLabel="Import (e-dec / Passar)"></nz-option>
-                <nz-option nzValue="export" nzLabel="Export (e-dec)"></nz-option>
-                <nz-option nzValue="transit" nzLabel="Transito (NCTS)"></nz-option>
+                <nz-option nzValue="import" [nzLabel]="'CUSTOMS.LBL_IMPORT_E_DEC_PASSAR' | translate"></nz-option>
+                <nz-option nzValue="export" [nzLabel]="'CUSTOMS.LBL_EXPORT_E_DEC' | translate"></nz-option>
+                <nz-option nzValue="transit" [nzLabel]="'CUSTOMS.LBL_TRANSITO_NCTS' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -653,7 +653,7 @@
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.TRADER_REF' | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="trader_reference" placeholder="Rif. interno" />
+              <input nz-input formControlName="trader_reference" [placeholder]="'CUSTOMS.LBL_RIF_INTERNO' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>

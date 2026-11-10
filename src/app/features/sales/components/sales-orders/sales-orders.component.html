@@ -15,12 +15,12 @@
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
           nzAllowClear
         >
-          <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
-          <nz-option nzValue="pending_approval" nzLabel="In Approvazione"></nz-option>
-          <nz-option nzValue="approved" nzLabel="Approvato"></nz-option>
-          <nz-option nzValue="rejected" nzLabel="Rifiutato"></nz-option>
-          <nz-option nzValue="accepted" nzLabel="Accettato dal Cliente"></nz-option>
-          <nz-option nzValue="converted" nzLabel="Convertito in Ordine"></nz-option>
+          <nz-option nzValue="draft" [nzLabel]="'SALES.LBL_BOZZA' | translate"></nz-option>
+          <nz-option nzValue="pending_approval" [nzLabel]="'SALES.LBL_IN_APPROVAZIONE' | translate"></nz-option>
+          <nz-option nzValue="approved" [nzLabel]="'SALES.LBL_APPROVATO' | translate"></nz-option>
+          <nz-option nzValue="rejected" [nzLabel]="'SALES.LBL_RIFIUTATO' | translate"></nz-option>
+          <nz-option nzValue="accepted" [nzLabel]="'SALES.LBL_ACCETTATO_DAL_CLIENTE' | translate"></nz-option>
+          <nz-option nzValue="converted" [nzLabel]="'SALES.LBL_CONVERTITO_IN_ORDINE' | translate"></nz-option>
         </nz-select>
 
         <button nz-button nzType="default" (click)="loadQuotes()" [nzLoading]="loading()">
@@ -71,19 +71,19 @@
               <td nzAlign="center">
                 @switch (q.status) {
                   @case ('approved') {
-                    <nz-tag nzColor="success">Approvato</nz-tag>
+                    <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
                   }
                   @case ('pending_approval') {
-                    <nz-tag nzColor="processing">In Approvazione</nz-tag>
+                    <nz-tag nzColor="processing">{{ 'SALES.LBL_IN_APPROVAZIONE' | translate }}</nz-tag>
                   }
                   @case ('rejected') {
-                    <nz-tag nzColor="error">Rifiutato</nz-tag>
+                    <nz-tag nzColor="error">{{ 'SALES.LBL_RIFIUTATO' | translate }}</nz-tag>
                   }
                   @case ('accepted') {
-                    <nz-tag nzColor="cyan">Accettato</nz-tag>
+                    <nz-tag nzColor="cyan">{{ 'SALES.LBL_ACCETTATO' | translate }}</nz-tag>
                   }
                   @case ('converted') {
-                    <nz-tag nzColor="purple">Convertito</nz-tag>
+                    <nz-tag nzColor="purple">{{ 'SALES.LBL_CONVERTITO' | translate }}</nz-tag>
                   }
                   @default {
                     <nz-tag nzColor="default">{{ q.status }}</nz-tag>
@@ -93,25 +93,25 @@
               <td nzAlign="right">
                 @if (q.status === 'draft') {
                   <button nz-button nzType="link" nzSize="small" (click)="submitQuoteForApproval(q.id)">
-                    <nz-icon nzType="send" /> Invia Appr.
+                    <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_APPR' | translate }}
                   </button>
                 }
                 @if (q.status === 'pending_approval') {
                   <button nz-button nzType="link" nzSize="small" (click)="approveQuote(q.id)">
-                    <nz-icon nzType="check" /> Approva
+                    <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
                   </button>
                   <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectQuote(q.id)">
-                    <nz-icon nzType="close" /> Rifiuta
+                    <nz-icon nzType="close" /> {{ 'SALES.LBL_RIFIUTA' | translate }}
                   </button>
                 }
                 @if (q.status === 'approved') {
                   <button nz-button nzType="link" nzSize="small" (click)="acceptQuote(q.id)">
-                    <nz-icon nzType="check-circle" /> Accetta
+                    <nz-icon nzType="check-circle" /> {{ 'SALES.LBL_ACCETTA' | translate }}
                   </button>
                 }
                 @if (q.status === 'accepted') {
                   <button nz-button nzType="link" nzSize="small" (click)="convertQuote(q.id)">
-                    <nz-icon nzType="swap" /> Converti in Ordine
+                    <nz-icon nzType="swap" /> {{ 'SALES.LBL_CONVERTI_IN_ORDINE' | translate }}
                   </button>
                 }
               </td>
@@ -137,12 +137,12 @@
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
           nzAllowClear
         >
-          <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
-          <nz-option nzValue="confirmed" nzLabel="Confermato"></nz-option>
-          <nz-option nzValue="approved" nzLabel="Approvato"></nz-option>
-          <nz-option nzValue="shipped" nzLabel="Spedito"></nz-option>
-          <nz-option nzValue="completed" nzLabel="Completato"></nz-option>
-          <nz-option nzValue="cancelled" nzLabel="Annullato"></nz-option>
+          <nz-option nzValue="draft" [nzLabel]="'SALES.LBL_BOZZA' | translate"></nz-option>
+          <nz-option nzValue="confirmed" [nzLabel]="'SALES.LBL_CONFERMATO' | translate"></nz-option>
+          <nz-option nzValue="approved" [nzLabel]="'SALES.LBL_APPROVATO' | translate"></nz-option>
+          <nz-option nzValue="shipped" [nzLabel]="'SALES.LBL_SPEDITO' | translate"></nz-option>
+          <nz-option nzValue="completed" [nzLabel]="'SALES.LBL_COMPLETATO' | translate"></nz-option>
+          <nz-option nzValue="cancelled" [nzLabel]="'SALES.LBL_ANNULLATO' | translate"></nz-option>
         </nz-select>
 
         <button nz-button nzType="default" (click)="loadOrders()" [nzLoading]="loading()">
@@ -175,7 +175,7 @@
             <th>{{ 'SALES.COL_DUE_DATE' | translate }}</th>
             <th nzAlign="right">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
             <th nzAlign="right">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
-            <th nzAlign="center">Stock</th>
+            <th nzAlign="center">{{ 'SALES.LBL_STOCK' | translate }}</th>
             <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -191,27 +191,27 @@
               <td nzAlign="right"><strong>{{ o.total_gross | money: o.currency }}</strong></td>
               <td nzAlign="center">
                 @if (o.is_stock_reserved) {
-                  <nz-tag nzColor="success"><nz-icon nzType="lock" /> Riservato</nz-tag>
+                  <nz-tag nzColor="success"><nz-icon nzType="lock" /> {{ 'SALES.LBL_RISERVATO' | translate }}</nz-tag>
                 } @else {
-                  <nz-tag nzColor="default">Libero</nz-tag>
+                  <nz-tag nzColor="default">{{ 'SALES.LBL_LIBERO' | translate }}</nz-tag>
                 }
               </td>
               <td nzAlign="center">
                 @switch (o.status) {
                   @case ('confirmed') {
-                    <nz-tag nzColor="blue">Confermato</nz-tag>
+                    <nz-tag nzColor="blue">{{ 'SALES.LBL_CONFERMATO' | translate }}</nz-tag>
                   }
                   @case ('approved') {
-                    <nz-tag nzColor="success">Approvato</nz-tag>
+                    <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
                   }
                   @case ('shipped') {
-                    <nz-tag nzColor="cyan">Spedito</nz-tag>
+                    <nz-tag nzColor="cyan">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
                   }
                   @case ('completed') {
-                    <nz-tag nzColor="purple">Completato</nz-tag>
+                    <nz-tag nzColor="purple">{{ 'SALES.LBL_COMPLETATO' | translate }}</nz-tag>
                   }
                   @case ('cancelled') {
-                    <nz-tag nzColor="error">Annullato</nz-tag>
+                    <nz-tag nzColor="error">{{ 'SALES.LBL_ANNULLATO' | translate }}</nz-tag>
                   }
                   @default {
                     <nz-tag nzColor="default">{{ o.status }}</nz-tag>
@@ -221,12 +221,12 @@
               <td nzAlign="right">
                 @if (o.status === 'confirmed') {
                   <button nz-button nzType="link" nzSize="small" (click)="approveOrder(o.id)">
-                    <nz-icon nzType="check" /> Approva
+                    <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
                   </button>
                 }
                 @if (!o.is_stock_reserved && o.status !== 'cancelled') {
                   <button nz-button nzType="link" nzSize="small" (click)="reserveStock(o.id)">
-                    <nz-icon nzType="lock" /> Riserva
+                    <nz-icon nzType="lock" /> {{ 'SALES.LBL_RISERVA' | translate }}
                   </button>
                 }
                 @if (o.status !== 'cancelled') {
@@ -304,13 +304,13 @@
               <td nzAlign="center">
                 @switch (d.status) {
                   @case ('dispatched') {
-                    <nz-tag nzColor="blue">Spedito</nz-tag>
+                    <nz-tag nzColor="blue">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
                   }
                   @case ('confirmed') {
-                    <nz-tag nzColor="success">Consegnato</nz-tag>
+                    <nz-tag nzColor="success">{{ 'SALES.LBL_CONSEGNATO' | translate }}</nz-tag>
                   }
                   @case ('invoiced') {
-                    <nz-tag nzColor="purple">Fatturato</nz-tag>
+                    <nz-tag nzColor="purple">{{ 'SALES.LBL_FATTURATO' | translate }}</nz-tag>
                   }
                   @default {
                     <nz-tag nzColor="default">{{ d.status || 'Bozza' }}</nz-tag>
@@ -320,12 +320,12 @@
               <td nzAlign="right">
                 @if (d.status !== 'dispatched' && d.status !== 'confirmed' && d.status !== 'invoiced') {
                   <button nz-button nzType="link" nzSize="small" (click)="dispatchDdt(d.id)">
-                    <nz-icon nzType="send" /> Spedisci
+                    <nz-icon nzType="send" /> {{ 'SALES.LBL_SPEDISCI' | translate }}
                   </button>
                 }
                 @if (d.status === 'dispatched') {
                   <button nz-button nzType="link" nzSize="small" (click)="confirmDdt(d.id)">
-                    <nz-icon nzType="check-circle" /> Conferma
+                    <nz-icon nzType="check-circle" /> {{ 'SALES.LBL_CONFERMA' | translate }}
                   </button>
                 }
                 @if (d.status === 'confirmed') {
@@ -397,7 +397,7 @@
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
               <nz-col [nzSpan]="8">
-                <input nz-input formControlName="description" placeholder="Descrizione articolo / servizio" />
+                <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO_SERVIZIO' | translate" />
               </nz-col>
               <nz-col [nzSpan]="4">
                 <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'" style="width: 100%;"></nz-input-number>
@@ -422,13 +422,13 @@
       </div>
 
       <button nz-button nzType="dashed" (click)="addQuoteItem()" style="width: 100%; margin-top: 8px;">
-        <nz-icon nzType="plus" /> Aggiungi Riga
+        <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
       </button>
 
       <nz-form-item style="margin-top: 16px;">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="2" placeholder="Note commerciali o condizioni di pagamento..."></textarea>
+          <textarea nz-input formControlName="notes" rows="2" [placeholder]="'SALES.LBL_NOTE_COMMERCIALI_O_CONDIZIONI_DI_PAGAMENTO' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -484,7 +484,7 @@
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12" style="margin-bottom: 8px;">
               <nz-col [nzSpan]="8">
-                <input nz-input formControlName="description" placeholder="Descrizione articolo" />
+                <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO' | translate" />
               </nz-col>
               <nz-col [nzSpan]="4">
                 <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'" style="width: 100%;"></nz-input-number>
@@ -509,13 +509,13 @@
       </div>
 
       <button nz-button nzType="dashed" (click)="addOrderItem()" style="width: 100%; margin-top: 8px;">
-        <nz-icon nzType="plus" /> Aggiungi Riga
+        <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
       </button>
 
       <nz-form-item style="margin-top: 16px;">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="2" placeholder="Note per la consegna o rif. ordine cliente..."></textarea>
+          <textarea nz-input formControlName="notes" rows="2" [placeholder]="'SALES.LBL_NOTE_PER_LA_CONSEGNA_O_RIF' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -574,10 +574,10 @@
             <nz-form-label nzRequired>{{ 'SALES.COL_REASON' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="transport_reason">
-                <nz-option nzValue="Vendita" nzLabel="Vendita"></nz-option>
-                <nz-option nzValue="Conto Visione" nzLabel="Conto Visione"></nz-option>
-                <nz-option nzValue="Riparazione" nzLabel="Riparazione"></nz-option>
-                <nz-option nzValue="Reso" nzLabel="Reso"></nz-option>
+                <nz-option nzValue="Vendita" [nzLabel]="'SALES.LBL_VENDITA' | translate"></nz-option>
+                <nz-option nzValue="Conto Visione" [nzLabel]="'SALES.LBL_CONTO_VISIONE' | translate"></nz-option>
+                <nz-option nzValue="Riparazione" [nzLabel]="'SALES.LBL_RIPARAZIONE' | translate"></nz-option>
+                <nz-option nzValue="Reso" [nzLabel]="'SALES.LBL_RESO' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -605,13 +605,13 @@
           <nz-form-item>
             <nz-form-label>{{ 'SALES.COL_CARRIER' | translate }}</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="carrier_name" placeholder="es. DHL / Bartolini" />
+              <input nz-input formControlName="carrier_name" [placeholder]="'SALES.LBL_ES_DHL_BARTOLINI' | translate" />
             </nz-form-control>
           </nz-form-item>
         </nz-col>
         <nz-col [nzSpan]="8">
           <nz-form-item>
-            <nz-form-label>Targa Vettore</nz-form-label>
+            <nz-form-label>{{ 'SALES.LBL_TARGA_VETTORE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input formControlName="carrier_license_plate" placeholder="es. TI 12345" />
             </nz-form-control>

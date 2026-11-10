@@ -21,9 +21,9 @@
       [ngModel]="selectedSeverity"
       (ngModelChange)="onSeverityFilterChange($event)"
     >
-      <nz-option nzValue="info" nzLabel="Informativo" />
-      <nz-option nzValue="warning" nzLabel="Attenzione" />
-      <nz-option nzValue="critical" nzLabel="Critico" />
+      <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativo' | translate" />
+      <nz-option nzValue="warning" [nzLabel]="'alerts.lblAttenzione' | translate" />
+      <nz-option nzValue="critical" [nzLabel]="'alerts.lblCritico' | translate" />
     </nz-select>
 
     <span class="spacer"></span>

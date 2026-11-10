@@ -52,7 +52,7 @@
 <nz-card>
   <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
     <!-- TAB 1: ORDINI DI PRODUZIONE -->
-    <nz-tab nzTitle="Ordini di Produzione">
+    <nz-tab [nzTitle]="'MFG.LBL_ORDINI_DI_PRODUZIONE' | translate">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
           <nz-input-wrapper style="width: 250px;">
@@ -60,7 +60,7 @@
             <input
               type="text"
               nz-input
-              placeholder="Cerca ordine / articolo..."
+              [placeholder]="'MFG.LBL_CERCA_ORDINE_ARTICOLO' | translate"
               [ngModel]="ordersSearch()"
               (ngModelChange)="ordersSearch.set($event); loadOrders(1)"
             />
@@ -73,12 +73,12 @@
             nzAllowClear
             style="width: 170px;"
           >
-            <nz-option nzValue="planned" nzLabel="Pianificato"></nz-option>
-            <nz-option nzValue="released" nzLabel="Rilasciato"></nz-option>
-            <nz-option nzValue="in_progress" nzLabel="In Lavorazione"></nz-option>
-            <nz-option nzValue="completed" nzLabel="Completato"></nz-option>
-            <nz-option nzValue="closed" nzLabel="Chiuso"></nz-option>
-            <nz-option nzValue="cancelled" nzLabel="Annullato"></nz-option>
+            <nz-option nzValue="planned" [nzLabel]="'MFG.LBL_PIANIFICATO' | translate"></nz-option>
+            <nz-option nzValue="released" [nzLabel]="'MFG.LBL_RILASCIATO' | translate"></nz-option>
+            <nz-option nzValue="in_progress" [nzLabel]="'MFG.LBL_IN_LAVORAZIONE' | translate"></nz-option>
+            <nz-option nzValue="completed" [nzLabel]="'MFG.LBL_COMPLETATO' | translate"></nz-option>
+            <nz-option nzValue="closed" [nzLabel]="'MFG.LBL_CHIUSO' | translate"></nz-option>
+            <nz-option nzValue="cancelled" [nzLabel]="'MFG.LBL_ANNULLATO' | translate"></nz-option>
           </nz-select>
 
           <button nz-button nzType="default" (click)="loadOrders(ordersPage())">
@@ -87,7 +87,7 @@
         </div>
 
         <button nz-button nzType="primary" (click)="openCreateOrderModal()">
-          <span nz-icon nzType="plus"></span> Nuovo Ordine
+          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVO_ORDINE' | translate }}
         </button>
       </div>
 
@@ -104,15 +104,15 @@
       >
         <thead>
           <tr>
-            <th>N. Ordine</th>
-            <th>Articolo / Descrizione</th>
-            <th class="text-right">Q.tà Prevista</th>
-            <th class="text-right">Q.tà Prodotta</th>
-            <th>Inizio Previsto</th>
-            <th>Fine Prevista</th>
-            <th>Stato</th>
-            <th class="text-right">Costi Totali</th>
-            <th class="text-center">Azioni</th>
+            <th>{{ 'MFG.LBL_N_ORDINE' | translate }}</th>
+            <th>{{ 'MFG.LBL_ARTICOLO_DESCRIZIONE' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_Q_TA_PREVISTA' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_Q_TA_PRODOTTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_INIZIO_PREVISTO' | translate }}</th>
+            <th>{{ 'MFG.LBL_FINE_PREVISTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_COSTI_TOTALI' | translate }}</th>
+            <th class="text-center">{{ 'MFG.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -139,29 +139,29 @@
               <td class="text-center">
                 @if (o.status === 'planned') {
                   <button nz-button nzType="link" nzSize="small" (click)="releaseOrder(o)">
-                    Rilascia
+                    {{ 'MFG.LBL_RILASCIA' | translate }}
                   </button>
                   <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o)">
-                    Annulla
+                    {{ 'MFG.LBL_ANNULLA' | translate }}
                   </button>
                 }
                 @if (o.status === 'released') {
                   <button nz-button nzType="link" nzSize="small" (click)="startOrder(o)">
-                    Avvia
+                    {{ 'MFG.LBL_AVVIA' | translate }}
                   </button>
                 }
                 @if (o.status === 'in_progress') {
                   <button nz-button nzType="link" nzSize="small" (click)="completeOrder(o)">
-                    Completa
+                    {{ 'MFG.LBL_COMPLETA' | translate }}
                   </button>
                 }
                 @if (o.status === 'completed') {
                   <button nz-button nzType="link" nzSize="small" (click)="closeOrder(o)">
-                    Chiudi e Salda
+                    {{ 'MFG.LBL_CHIUDI_E_SALDA' | translate }}
                   </button>
                 }
                 @if (o.status === 'closed' || o.status === 'cancelled') {
-                  <span class="text-muted text-xs">Archiviato</span>
+                  <span class="text-muted text-xs">{{ 'MFG.LBL_ARCHIVIATO' | translate }}</span>
                 }
               </td>
             </tr>
@@ -171,7 +171,7 @@
     </nz-tab>
 
     <!-- TAB 2: DISTINTE BASE (BOMs) -->
-    <nz-tab nzTitle="Distinte Base (BOM)">
+    <nz-tab [nzTitle]="'MFG.LBL_DISTINTE_BASE_BOM' | translate">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
           <nz-input-wrapper style="width: 250px;">
@@ -179,7 +179,7 @@
             <input
               type="text"
               nz-input
-              placeholder="Cerca distinta..."
+              [placeholder]="'MFG.LBL_CERCA_DISTINTA' | translate"
               [ngModel]="bomsSearch()"
               (ngModelChange)="bomsSearch.set($event); loadBoms(1)"
             />
@@ -191,7 +191,7 @@
         </div>
 
         <button nz-button nzType="primary" (click)="openCreateBomModal()">
-          <span nz-icon nzType="plus"></span> Nuova Distinta Base
+          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVA_DISTINTA_BASE' | translate }}
         </button>
       </div>
       <p class="text-muted">{{ 'MFG.BOM_DRAFT_HINT' | translate }}</p>
@@ -209,15 +209,15 @@
       >
         <thead>
           <tr>
-            <th>N. Distinta</th>
-            <th>Nome Distinta</th>
-            <th>Articolo</th>
-            <th>Revisione</th>
-            <th>Tipo</th>
-            <th class="text-right">Q.tà Base</th>
-            <th>Stato</th>
-            <th>Componenti</th>
-            <th class="text-center">Azioni</th>
+            <th>{{ 'MFG.LBL_N_DISTINTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_REVISIONE' | translate }}</th>
+            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_Q_TA_BASE' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th>{{ 'MFG.LBL_COMPONENTI' | translate }}</th>
+            <th class="text-center">{{ 'MFG.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -237,7 +237,7 @@
               <td>{{ b.components?.length || 0 }} elementi</td>
               <td class="text-center">
                 <button nz-button nzType="link" nzSize="small" (click)="explodeBom(b)">
-                  Esplodi
+                  {{ 'MFG.LBL_ESPLODI' | translate }}
                 </button>
                 @if (b.status === 'draft') {
                   <button
@@ -248,12 +248,12 @@
                     [attr.title]="canActivateBom() ? null : ('MFG.BOM_ACTIVATE_FORBIDDEN' | translate)"
                     (click)="activateBom(b)"
                   >
-                    Attiva
+                    {{ 'MFG.LBL_ATTIVA' | translate }}
                   </button>
                 }
                 @if (b.status === 'active') {
                   <button nz-button nzType="link" nzSize="small" (click)="reviseBom(b)">
-                    Nuova Rev.
+                    {{ 'MFG.LBL_NUOVA_REV' | translate }}
                   </button>
                 }
               </td>
@@ -264,11 +264,11 @@
     </nz-tab>
 
     <!-- TAB 3: PIANIFICAZIONE FABBISOGNI (MRP) -->
-    <nz-tab nzTitle="MRP & Fabbisogni">
+    <nz-tab [nzTitle]="'MFG.LBL_MRP_AND_FABBISOGNI' | translate">
       <div class="flex justify-between items-center mb-4">
-        <h4 class="text-base font-semibold">Elaborazioni MRP (Material Requirements Planning)</h4>
+        <h4 class="text-base font-semibold">{{ 'MFG.LBL_ELABORAZIONI_MRP_MATERIAL_REQUIREMENTS_PLANNING' | translate }}</h4>
         <button nz-button nzType="primary" (click)="openRunMrpModal()">
-          <span nz-icon nzType="calculator"></span> Esegui Calcolo MRP
+          <span nz-icon nzType="calculator"></span> {{ 'MFG.LBL_ESEGUI_CALCOLO_MRP' | translate }}
         </button>
       </div>
 
@@ -286,15 +286,15 @@
       >
         <thead>
           <tr>
-            <th>N. Calcolo MRP</th>
-            <th>Tipo</th>
-            <th>Orizzonte Inizio</th>
-            <th>Orizzonte Fine</th>
-            <th class="text-right">Articoli Elaborati</th>
-            <th class="text-right">Ordini Pianificati</th>
-            <th class="text-right">Fabbisogni Mancanti</th>
-            <th>Stato</th>
-            <th>Data Esecuzione</th>
+            <th>{{ 'MFG.LBL_N_CALCOLO_MRP' | translate }}</th>
+            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th>{{ 'MFG.LBL_ORIZZONTE_INIZIO' | translate }}</th>
+            <th>{{ 'MFG.LBL_ORIZZONTE_FINE' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_ARTICOLI_ELABORATI' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_ORDINI_PIANIFICATI' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_FABBISOGNI_MANCANTI' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th>{{ 'MFG.LBL_DATA_ESECUZIONE' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -334,15 +334,15 @@
       >
         <thead>
           <tr>
-            <th>Codice Pianificato</th>
-            <th>Articolo</th>
-            <th>Tipo</th>
-            <th class="text-right">Quantità Netta</th>
-            <th>Livello Distinta</th>
-            <th>Data Inizio</th>
-            <th>Data Scadenza</th>
-            <th>Stato</th>
-            <th class="text-center">Azione</th>
+            <th>{{ 'MFG.LBL_CODICE_PIANIFICATO' | translate }}</th>
+            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_QUANTITA_NETTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_LIVELLO_DISTINTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_DATA_INIZIO' | translate }}</th>
+            <th>{{ 'MFG.LBL_DATA_SCADENZA' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th class="text-center">{{ 'MFG.LBL_AZIONE' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -359,7 +359,7 @@
               <td class="text-center">
                 @if (p.status === 'planned' && p.order_type === 'make') {
                   <button nz-button nzType="link" nzSize="small" (click)="convertPlannedOrder(p)">
-                    Converti in OdP
+                    {{ 'MFG.LBL_CONVERTI_IN_ODP' | translate }}
                   </button>
                 }
               </td>
@@ -383,13 +383,13 @@
       >
         <thead>
           <tr>
-            <th>Articolo</th>
-            <th>Data Necessaria</th>
-            <th class="text-right">Fabbisogno Lordo</th>
-            <th class="text-right">Disponibilità Attuale</th>
-            <th class="text-right">Scorta Sicurezza</th>
-            <th class="text-right text-red-600">Mancanza Netta</th>
-            <th>Azione Consigliata</th>
+            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_DATA_NECESSARIA' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_FABBISOGNO_LORDO' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_DISPONIBILITA_ATTUALE' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_SCORTA_SICUREZZA' | translate }}</th>
+            <th class="text-right text-red-600">{{ 'MFG.LBL_MANCANZA_NETTA' | translate }}</th>
+            <th>{{ 'MFG.LBL_AZIONE_CONSIGLIATA' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -409,11 +409,11 @@
     </nz-tab>
 
     <!-- TAB 4: CENTRI DI LAVORO & CICLI -->
-    <nz-tab nzTitle="Centri di Lavoro & Cicli">
+    <nz-tab [nzTitle]="'MFG.LBL_CENTRI_DI_LAVORO_AND_CICLI' | translate">
       <div class="flex justify-between items-center mb-4">
-        <h4 class="text-base font-semibold">Centri di Lavoro</h4>
+        <h4 class="text-base font-semibold">{{ 'MFG.LBL_CENTRI_DI_LAVORO' | translate }}</h4>
         <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()">
-          <span nz-icon nzType="plus"></span> Nuovo Centro di Lavoro
+          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVO_CENTRO_DI_LAVORO' | translate }}
         </button>
       </div>
 
@@ -426,12 +426,12 @@
       >
         <thead>
           <tr>
-            <th>Codice Centro</th>
-            <th>Nome</th>
-            <th>Reparto</th>
-            <th class="text-right">Capacità Giornaliera (ore)</th>
-            <th class="text-right">Costo Orario (€/h)</th>
-            <th>Stato</th>
+            <th>{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</th>
+            <th>{{ 'MFG.LBL_NOME' | translate }}</th>
+            <th>{{ 'MFG.LBL_REPARTO' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_CAPACITA_GIORNALIERA_ORE' | translate }}</th>
+            <th class="text-right">{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -458,13 +458,13 @@
       >
         <thead>
           <tr>
-            <th>N. Ciclo</th>
-            <th>Nome Ciclo</th>
-            <th>Articolo</th>
-            <th>Revisione</th>
-            <th>Predefinito</th>
-            <th>Operazioni</th>
-            <th>Stato</th>
+            <th>{{ 'MFG.LBL_N_CICLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_NOME_CICLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th>{{ 'MFG.LBL_REVISIONE' | translate }}</th>
+            <th>{{ 'MFG.LBL_PREDEFINITO' | translate }}</th>
+            <th>{{ 'MFG.LBL_OPERAZIONI' | translate }}</th>
+            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -494,7 +494,7 @@
 <!-- MODAL: CREA ORDINE DI PRODUZIONE -->
 <nz-modal
   [nzVisible]="isCreateOrderModalVisible()"
-  nzTitle="Crea Ordine di Produzione"
+  [nzTitle]="'MFG.LBL_CREA_ORDINE_DI_PRODUZIONE' | translate"
   [nzOkLoading]="isSubmittingOrder()"
   (nzOnCancel)="isCreateOrderModalVisible.set(false)"
   (nzOnOk)="submitCreateOrder()"
@@ -503,7 +503,7 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>ID Articolo da Produrre (UUID)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_ID_ARTICOLO_DA_PRODURRE_UUID' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Inserire l'ID dell'articolo">
           <input
             nz-input
@@ -529,7 +529,7 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Quantità da Produrre</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_QUANTITA_DA_PRODURRE' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Inserire una quantità valida">
           <nz-input-number formControlName="target_quantity" [nzMin]="1" [nzStep]="1" style="width: 100%;"></nz-input-number>
         </nz-form-control>
@@ -538,7 +538,7 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Data Inizio Prevista</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_INIZIO_PREVISTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Selezionare data inizio">
               <nz-date-picker formControlName="planned_start_date" style="width: 100%;"></nz-date-picker>
             </nz-form-control>
@@ -546,7 +546,7 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Data Fine Prevista</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_FINE_PREVISTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Selezionare data fine">
               <nz-date-picker formControlName="planned_end_date" style="width: 100%;"></nz-date-picker>
             </nz-form-control>
@@ -555,9 +555,9 @@
       </div>
 
       <nz-form-item>
-        <nz-form-label>Note di Produzione</nz-form-label>
+        <nz-form-label>{{ 'MFG.LBL_NOTE_DI_PRODUZIONE' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="3" placeholder="Istruzioni o dettagli per il reparto"></textarea>
+          <textarea nz-input formControlName="notes" rows="3" [placeholder]="'MFG.LBL_ISTRUZIONI_O_DETTAGLI_PER_IL_REPARTO' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -598,7 +598,7 @@
 <!-- MODAL: CREA DISTINTA BASE (BOM) -->
 <nz-modal
   [nzVisible]="isCreateBomModalVisible()"
-  nzTitle="Crea Distinta Base (BOM)"
+  [nzTitle]="'MFG.LBL_CREA_DISTINTA_BASE_BOM' | translate"
   [nzOkLoading]="isSubmittingBom()"
   (nzOnCancel)="isCreateBomModalVisible.set(false)"
   (nzOnOk)="submitCreateBom()"
@@ -609,7 +609,7 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Numero Distinta</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_NUMERO_DISTINTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Campo obbligatorio">
               <input nz-input formControlName="bom_number" placeholder="Es. BOM-ASY-001" />
             </nz-form-control>
@@ -617,9 +617,9 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Nome Distinta</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Campo obbligatorio">
-              <input nz-input formControlName="name" placeholder="Es. Assemblato Principale" />
+              <input nz-input formControlName="name" [placeholder]="'MFG.LBL_ES_ASSEMBLATO_PRINCIPALE' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -628,15 +628,15 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>ID Articolo Finito (UUID)</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_ID_ARTICOLO_FINITO_UUID' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Campo obbligatorio">
-              <input nz-input formControlName="mfg_item_id" placeholder="UUID articolo" />
+              <input nz-input formControlName="mfg_item_id" [placeholder]="'MFG.LBL_UUID_ARTICOLO' | translate" />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzSpan]="6">
           <nz-form-item>
-            <nz-form-label nzRequired>Revisione</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_REVISIONE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input formControlName="revision" placeholder="A" />
             </nz-form-control>
@@ -644,7 +644,7 @@
         </div>
         <div nz-col [nzSpan]="6">
           <nz-form-item>
-            <nz-form-label nzRequired>Unità di Misura</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_UNITA_DI_MISURA' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input formControlName="uom" placeholder="PZ" />
             </nz-form-control>
@@ -658,13 +658,13 @@
         @for (_ of bomComponentsFormArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
             <div style="flex: 2;">
-              <input nz-input formControlName="component_item_id" placeholder="UUID Componente / Materia Prima" />
+              <input nz-input formControlName="component_item_id" [placeholder]="'MFG.LBL_UUID_COMPONENTE_MATERIA_PRIMA' | translate" />
             </div>
             <div style="flex: 1;">
               <nz-input-number formControlName="quantity_per" [nzMin]="0.001" [nzStep]="1" nzPlaceHolder="Q.tà per unita" style="width: 100%;"></nz-input-number>
             </div>
             <div style="flex: 1.5;">
-              <input nz-input formControlName="notes" placeholder="Note / Posizione" />
+              <input nz-input formControlName="notes" [placeholder]="'MFG.LBL_NOTE_POSIZIONE' | translate" />
             </div>
             <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)">
               <span nz-icon nzType="delete"></span>
@@ -674,7 +674,7 @@
       </div>
 
       <button nz-button nzType="dashed" nzBlock (click)="addComponentRow()" class="mt-2">
-        <span nz-icon nzType="plus"></span> Aggiungi Componente
+        <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_AGGIUNGI_COMPONENTE' | translate }}
       </button>
     </form>
   </ng-container>
@@ -683,7 +683,7 @@
 <!-- MODAL: ESEGUI MRP -->
 <nz-modal
   [nzVisible]="isRunMrpModalVisible()"
-  nzTitle="Esegui Calcolo MRP"
+  [nzTitle]="'MFG.LBL_ESEGUI_CALCOLO_MRP' | translate"
   [nzOkLoading]="isSubmittingMrp()"
   (nzOnCancel)="isRunMrpModalVisible.set(false)"
   (nzOnOk)="submitRunMrp()"
@@ -692,24 +692,24 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="mrpForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Tipo di Elaborazione</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_TIPO_DI_ELABORAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="run_type" style="width: 100%;">
-            <nz-option nzValue="regenerative" nzLabel="Rigenerativo Completo (Tutti gli ordini)"></nz-option>
-            <nz-option nzValue="net_change" nzLabel="Variazione Netta (Net Change)"></nz-option>
+            <nz-option nzValue="regenerative" [nzLabel]="'MFG.LBL_RIGENERATIVO_COMPLETO_TUTTI_GLI_ORDINI' | translate"></nz-option>
+            <nz-option nzValue="net_change" [nzLabel]="'MFG.LBL_VARIAZIONE_NETTA_NET_CHANGE' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Inizio Orizzonte di Pianificazione</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_INIZIO_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-date-picker formControlName="horizon_start_date" style="width: 100%;"></nz-date-picker>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Fine Orizzonte di Pianificazione</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_FINE_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-date-picker formControlName="horizon_end_date" style="width: 100%;"></nz-date-picker>
         </nz-form-control>
@@ -721,7 +721,7 @@
 <!-- MODAL: CREA CENTRO DI LAVORO -->
 <nz-modal
   [nzVisible]="isCreateWorkCenterModalVisible()"
-  nzTitle="Nuovo Centro di Lavoro"
+  [nzTitle]="'MFG.LBL_NUOVO_CENTRO_DI_LAVORO' | translate"
   [nzOkLoading]="isSubmittingWorkCenter()"
   (nzOnCancel)="isCreateWorkCenterModalVisible.set(false)"
   (nzOnOk)="submitCreateWorkCenter()"
@@ -730,23 +730,23 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="workCenterForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Codice Centro</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Inserire il codice">
           <input nz-input formControlName="work_center_code" placeholder="Es. WC-TAGLIO-01" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Nome Centro</nz-form-label>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_NOME_CENTRO' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Inserire il nome">
-          <input nz-input formControlName="name" placeholder="Es. Stazione Taglio Laser" />
+          <input nz-input formControlName="name" [placeholder]="'MFG.LBL_ES_STAZIONE_TAGLIO_LASER' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Capacità (ore/giorno)</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_CAPACITA_ORE_GIORNO' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-input-number formControlName="capacity_hours_per_day" [nzMin]="1" [nzMax]="24" style="width: 100%;"></nz-input-number>
             </nz-form-control>
@@ -754,7 +754,7 @@
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>Costo Orario (€/h)</nz-form-label>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-input-number formControlName="hourly_cost_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
             </nz-form-control>

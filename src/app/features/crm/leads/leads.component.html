@@ -1,11 +1,11 @@
 <app-page-header
-  title="CRM Leads"
+  [title]="'crmLeadScore.lblCrmLeads' | translate"
   subtitle="Manage prospective clients, lead scoring, qualifications, and conversions"
 >
   <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateDrawer()">
       <nz-icon nzType="plus" />
-      New Lead
+      {{ 'crmLeadScore.lblNewLead' | translate }}
     </button>
   </div>
 </app-page-header>
@@ -18,7 +18,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Search by name, company, email..."
+          [placeholder]="'crmLeadScore.lblSearchByNameCompanyEmail' | translate"
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
@@ -33,11 +33,11 @@
         [ngModel]="statusFilter()"
         (ngModelChange)="onStatusChange($event)"
       >
-        <nz-option nzValue="new" nzLabel="New"></nz-option>
-        <nz-option nzValue="contacted" nzLabel="Contacted"></nz-option>
-        <nz-option nzValue="qualified" nzLabel="Qualified"></nz-option>
-        <nz-option nzValue="converted" nzLabel="Converted"></nz-option>
-        <nz-option nzValue="disqualified" nzLabel="Disqualified"></nz-option>
+        <nz-option nzValue="new" [nzLabel]="'crmLeadScore.lblNew' | translate"></nz-option>
+        <nz-option nzValue="contacted" [nzLabel]="'crmLeadScore.lblContacted' | translate"></nz-option>
+        <nz-option nzValue="qualified" [nzLabel]="'crmLeadScore.lblQualified' | translate"></nz-option>
+        <nz-option nzValue="converted" [nzLabel]="'crmLeadScore.lblConverted' | translate"></nz-option>
+        <nz-option nzValue="disqualified" [nzLabel]="'crmLeadScore.lblDisqualified' | translate"></nz-option>
       </nz-select>
 
       <nz-select
@@ -47,14 +47,14 @@
         [ngModel]="ratingFilter()"
         (ngModelChange)="onRatingChange($event)"
       >
-        <nz-option nzValue="hot" nzLabel="Hot"></nz-option>
-        <nz-option nzValue="warm" nzLabel="Warm"></nz-option>
-        <nz-option nzValue="cold" nzLabel="Cold"></nz-option>
+        <nz-option nzValue="hot" [nzLabel]="'crmLeadScore.lblHot' | translate"></nz-option>
+        <nz-option nzValue="warm" [nzLabel]="'crmLeadScore.lblWarm' | translate"></nz-option>
+        <nz-option nzValue="cold" [nzLabel]="'crmLeadScore.lblCold' | translate"></nz-option>
       </nz-select>
 
       <button nz-button nzType="default" (click)="loadLeads()">
         <nz-icon nzType="reload" />
-        Refresh
+        {{ 'crmLeadScore.lblRefresh' | translate }}
       </button>
     </div>
   </div>
@@ -71,13 +71,13 @@
   >
     <thead>
       <tr>
-        <th>Lead / Company</th>
-        <th>Status</th>
-        <th>Rating</th>
-        <th>Score</th>
-        <th>Country</th>
-        <th>Estimated Budget</th>
-        <th nzWidth="200px">Actions</th>
+        <th>{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
+        <th>{{ 'crmLeadScore.lblStatus' | translate }}</th>
+        <th>{{ 'crmLeadScore.lblRating' | translate }}</th>
+        <th>{{ 'crmLeadScore.lblScore' | translate }}</th>
+        <th>{{ 'crmLeadScore.lblCountry' | translate }}</th>
+        <th>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</th>
+        <th nzWidth="200px">{{ 'crmLeadScore.lblActions' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -140,7 +140,7 @@
                   nzSize="small"
                   (click)="qualify(lead)"
                 >
-                  Qualify
+                  {{ 'crmLeadScore.lblQualify' | translate }}
                 </button>
               }
               @if (lead.status === 'qualified') {
@@ -151,7 +151,7 @@
                   nzSize="small"
                   (click)="convert(lead)"
                 >
-                  Convert
+                  {{ 'crmLeadScore.lblConvert' | translate }}
                 </button>
               }
               @if (lead.status !== 'disqualified' && lead.status !== 'converted') {
@@ -163,7 +163,7 @@
                   nzSize="small"
                   (click)="disqualify(lead)"
                 >
-                  Disqualify
+                  {{ 'crmLeadScore.lblDisqualify' | translate }}
                 </button>
               }
               <button
@@ -190,13 +190,13 @@
 <nz-drawer
   [nzVisible]="createDrawerVisible()"
   [nzWidth]="480"
-  nzTitle="Create New Lead"
+  [nzTitle]="'crmLeadScore.lblCreateNewLead' | translate"
   (nzOnClose)="closeCreateDrawer()"
 >
   <ng-container *nzDrawerContent>
     <form nz-form [formGroup]="leadForm" nzLayout="vertical" (ngSubmit)="submitCreateLead()">
       <nz-form-item>
-        <nz-form-label nzRequired>Company Name</nz-form-label>
+        <nz-form-label nzRequired>{{ 'crmLeadScore.lblCompanyName' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Company name is required">
           <input nz-input formControlName="company_name" placeholder="Acme Inc." />
         </nz-form-control>
@@ -204,13 +204,13 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label>First Name</nz-form-label>
+          <nz-form-label>{{ 'crmLeadScore.lblFirstName' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="first_name" placeholder="John" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Last Name</nz-form-label>
+          <nz-form-label>{{ 'crmLeadScore.lblLastName' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="last_name" placeholder="Doe" />
           </nz-form-control>
@@ -218,9 +218,9 @@
       </div>
 
       <nz-form-item>
-        <nz-form-label>Title / Role</nz-form-label>
+        <nz-form-label>{{ 'crmLeadScore.lblTitleRole' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="Managing Director" />
+          <input nz-input formControlName="title" [placeholder]="'crmLeadScore.lblManagingDirector' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -228,11 +228,11 @@
         <nz-form-item class="form-col">
           <nz-form-label>Email</nz-form-label>
           <nz-form-control nzErrorTip="Enter a valid email">
-            <input nz-input formControlName="email" type="email" placeholder="john@example.com" />
+            <input nz-input formControlName="email" type="email" [placeholder]="'crmLeadScore.lblJohnExampleCom' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Phone</nz-form-label>
+          <nz-form-label>{{ 'crmLeadScore.lblPhone' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="phone" placeholder="+41 91 123 4567" />
           </nz-form-control>
@@ -241,7 +241,7 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Country</nz-form-label>
+          <nz-form-label nzRequired>{{ 'crmLeadScore.lblCountry' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="country">
               <nz-option nzValue="CH" nzLabel="Switzerland (CH)"></nz-option>
@@ -252,7 +252,7 @@
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Estimated Budget</nz-form-label>
+          <nz-form-label>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number
               formControlName="estimated_budget"
@@ -265,8 +265,8 @@
       </div>
 
       <div class="drawer-footer">
-        <button nz-button type="button" (click)="closeCreateDrawer()">Cancel</button>
-        <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">Save Lead</button>
+        <button nz-button type="button" (click)="closeCreateDrawer()">{{ 'crmLeadScore.lblCancel' | translate }}</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'crmLeadScore.lblSaveLead' | translate }}</button>
       </div>
     </form>
   </ng-container>
@@ -275,7 +275,7 @@
 <!-- Score Breakdown Modal -->
 <nz-modal
   [nzVisible]="scoreModalVisible()"
-  nzTitle="Lead Score Breakdown"
+  [nzTitle]="'crmLeadScore.lblLeadScoreBreakdown' | translate"
   [nzFooter]="null"
   (nzOnCancel)="scoreModalVisible.set(false)"
 >

@@ -27,6 +27,7 @@ import {
   JournalEntryResource,
   TaxSettlementResource,
   TrialBalanceReport,
+  TranslateService,
 } from '@core';
 import {
   BaseTableComponent,
@@ -71,6 +72,7 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
   styleUrl: './accounting.component.scss',
 })
 export class AccountingComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly api = inject(AccountingApiService);
   private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly modal = inject(NzModalService);
@@ -290,29 +292,29 @@ export class AccountingComponent implements OnInit {
   postJournal(journal: JournalEntryResource): void {
     this.api.postJournal(journal.id).subscribe({
       next: () => {
-        this.message.success(`Scrittura ${journal.entry_number} contabilizzata a libro giornale`);
+        this.message.success(this.translate.instant('accounting.msgScritturaContabilizzataALibroGiornale', { entry_number: journal.entry_number }));
         this.loadLedgerEntries();
       },
       error: () => {
-        this.message.error('Errore durante la contabilizzazione della scrittura');
+        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaContabilizzazioneDellaScrittura'));
       },
     });
   }
 
   reverseJournal(journal: JournalEntryResource): void {
     this.modal.confirm({
-      nzTitle: `Stornare la scrittura ${journal.entry_number}?`,
-      nzOkText: 'Storna Scrittura',
+      nzTitle: this.translate.instant('accounting.dlgStornareLaScrittura', { entry_number: journal.entry_number }),
+      nzOkText: this.translate.instant('accounting.dlgStornaScrittura'),
       nzOkDanger: true,
-      nzCancelText: 'Annulla',
+      nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.reverseJournal(journal.id).subscribe({
           next: () => {
-            this.message.success(`Scrittura ${journal.entry_number} stornata con successo`);
+            this.message.success(this.translate.instant('accounting.msgScritturaStornataConSuccesso', { entry_number: journal.entry_number }));
             this.loadLedgerEntries();
           },
           error: () => {
-            this.message.error('Errore durante lo storno');
+            this.message.error(this.translate.instant('accounting.msgErroreDuranteLoStorno'));
           },
         });
       },
@@ -355,11 +357,11 @@ export class AccountingComponent implements OnInit {
     this.api.createAccount(payload).subscribe({
       next: () => {
         this.accountModalVisible.set(false);
-        this.message.success('Conto mastro inserito nel Piano dei Conti');
+        this.message.success(this.translate.instant('accounting.msgContoMastroInseritoNelPianoDei'));
         this.loadChartOfAccounts();
       },
       error: () => {
-        this.message.error('Errore durante la creazione del conto');
+        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaCreazioneDelConto'));
       },
     });
   }
@@ -399,11 +401,11 @@ export class AccountingComponent implements OnInit {
     this.api.calculateTaxSettlement(payload).subscribe({
       next: (res) => {
         this.calcVatModalVisible.set(false);
-        this.message.success(`Liquidazione IVA calcolata: saldo € ${res.data.balance}`);
+        this.message.success(this.translate.instant('accounting.msgLiquidazioneIvaCalcolataSaldo', { balance: res.data.balance }));
         this.loadVatSettlements();
       },
       error: () => {
-        this.message.error('Errore durante il calcolo della liquidazione IVA');
+        this.message.error(this.translate.instant('accounting.msgErroreDuranteIlCalcoloDellaLiquidazione'));
       },
     });
   }
@@ -411,7 +413,7 @@ export class AccountingComponent implements OnInit {
   postVatSettlement(settlement: TaxSettlementResource): void {
     this.api.postTaxSettlement(settlement.id).subscribe({
       next: () => {
-        this.message.success('Liquidazione IVA registrata a libro giornale');
+        this.message.success(this.translate.instant('accounting.msgLiquidazioneIvaRegistrataALibroGiornale'));
         this.loadVatSettlements();
       },
     });
@@ -420,7 +422,7 @@ export class AccountingComponent implements OnInit {
   payVatSettlement(settlement: TaxSettlementResource): void {
     this.api.payTaxSettlement(settlement.id).subscribe({
       next: () => {
-        this.message.success('Pagamento IVA registrato (modello F24 / debito estinto)');
+        this.message.success(this.translate.instant('accounting.msgPagamentoIvaRegistratoModelloF24Debito'));
         this.loadVatSettlements();
       },
     });
@@ -436,7 +438,7 @@ export class AccountingComponent implements OnInit {
         anchor.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.message.error('Errore durante il download XML ESTV eCH-0217'),
+      error: () => this.message.error(this.translate.instant('accounting.msgErroreDuranteIlDownloadXmlEstv')),
     });
   }
 
@@ -444,9 +446,9 @@ export class AccountingComponent implements OnInit {
     this.fiscalApi.getVatAnnualReconciliation(year).subscribe({
       next: (res) => {
         this.vatAnnualReconciliation.set(res.data);
-        this.message.success(`Riconciliazione annuale IVA ${year} (Art. 72 LIVA) calcolata`);
+        this.message.success(this.translate.instant('accounting.msgRiconciliazioneAnnualeIvaArt72Liva', { year }));
       },
-      error: () => this.message.error('Errore nel calcolo della riconciliazione annuale IVA'),
+      error: () => this.message.error(this.translate.instant('accounting.msgErroreNelCalcoloDellaRiconciliazioneAnnuale')),
     });
   }
 
@@ -468,15 +470,15 @@ export class AccountingComponent implements OnInit {
 
   closePeriod(period: FiscalPeriodResource): void {
     this.modal.confirm({
-      nzTitle: `Chiudere definitivamente il periodo fiscale ${period.name}?`,
-      nzContent: 'La chiusura bloccherà nuove registrazioni contabili con data appartenente a questo intervallo.',
-      nzOkText: 'Chiudi Periodo',
+      nzTitle: this.translate.instant('accounting.dlgChiudereDefinitivamenteIlPeriodoFiscale', { name: period.name }),
+      nzContent: this.translate.instant('accounting.dlgLaChiusuraBloccheraNuoveRegistrazioniContabili'),
+      nzOkText: this.translate.instant('accounting.dlgChiudiPeriodo'),
       nzOkDanger: true,
-      nzCancelText: 'Annulla',
+      nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.closeFiscalPeriod(period.id).subscribe({
           next: () => {
-            this.message.success(`Periodo ${period.name} chiuso`);
+            this.message.success(this.translate.instant('accounting.msgPeriodoChiuso', { name: period.name }));
             this.loadFiscalPeriods();
           },
         });
@@ -486,13 +488,13 @@ export class AccountingComponent implements OnInit {
 
   reopenPeriod(period: FiscalPeriodResource): void {
     this.modal.confirm({
-      nzTitle: `Riaprire il periodo fiscale ${period.name}?`,
-      nzOkText: 'Riapri Periodo',
-      nzCancelText: 'Annulla',
+      nzTitle: this.translate.instant('accounting.dlgRiaprireIlPeriodoFiscale', { name: period.name }),
+      nzOkText: this.translate.instant('accounting.dlgRiapriPeriodo'),
+      nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.reopenFiscalPeriod(period.id).subscribe({
           next: () => {
-            this.message.success(`Periodo ${period.name} riaperto`);
+            this.message.success(this.translate.instant('accounting.msgPeriodoRiaperto', { name: period.name }));
             this.loadFiscalPeriods();
           },
         });
@@ -535,11 +537,11 @@ export class AccountingComponent implements OnInit {
     this.api.generateIntrastatDeclaration(val.year, val.period, val.direction).subscribe({
       next: (res) => {
         this.intrastatModalVisible.set(false);
-        this.message.success(`Dichiarazione Intrastat ${res.data.declaration_number} generata`);
+        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatGenerata', { declaration_number: res.data.declaration_number }));
         this.loadIntrastat();
       },
       error: () => {
-        this.message.error('Errore durante la generazione Intrastat');
+        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaGenerazioneIntrastat'));
       },
     });
   }
@@ -548,9 +550,9 @@ export class AccountingComponent implements OnInit {
     this.api.validateIntrastatDeclaration(dec.id).subscribe({
       next: (res) => {
         if (res.data.is_valid) {
-          this.message.success('Dichiarazione Intrastat valida formalmente per Agenzia Dogane');
+          this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatValidaFormalmentePerAgenzia'));
         } else {
-          this.message.warning(`Errori riscontrati: ${(res.data.errors || []).join(', ')}`);
+          this.message.warning(this.translate.instant('accounting.msgErroriRiscontrati', { value: (res.data.errors || []).join(', ') }));
         }
         this.loadIntrastat();
       },
@@ -560,7 +562,7 @@ export class AccountingComponent implements OnInit {
   submitIntrastat(dec: IntrastatDeclarationResource): void {
     this.api.submitIntrastatDeclaration(dec.id).subscribe({
       next: () => {
-        this.message.success(`Dichiarazione Intrastat ${dec.declaration_number} trasmessa telematicamente`);
+        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatTrasmessaTelematicamente', { declaration_number: dec.declaration_number }));
         this.loadIntrastat();
       },
     });

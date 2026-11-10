@@ -60,7 +60,7 @@
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>
-            <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+            <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
             <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
             <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
           </nz-select>
@@ -214,7 +214,7 @@
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>
-            <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+            <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
             <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
             <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
           </nz-select>
@@ -329,7 +329,7 @@
             <nz-form-control [nzSpan]="12">
               <nz-select formControlName="channel">
                 <nz-option nzValue="email" nzLabel="Email"></nz-option>
-                <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+                <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
                 <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
                 <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
               </nz-select>
@@ -387,7 +387,7 @@
                 <input
                   nz-input
                   formControlName="template_code"
-                  placeholder="payment.reminder"
+                  [placeholder]="'COMMUNICATION.LBL_PAYMENT_REMINDER' | translate"
                 />
               </nz-form-control>
             </nz-form-item>
@@ -477,9 +477,9 @@
             <nz-option nzValue="sendgrid" nzLabel="SendGrid"></nz-option>
             <nz-option nzValue="mailgun" nzLabel="Mailgun"></nz-option>
             <nz-option nzValue="twilio" nzLabel="Twilio"></nz-option>
-            <nz-option nzValue="whatsapp_cloud" nzLabel="WhatsApp Cloud API"></nz-option>
+            <nz-option nzValue="whatsapp_cloud" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP_CLOUD_API' | translate"></nz-option>
             <nz-option nzValue="telegram_bot" nzLabel="Telegram Bot"></nz-option>
-            <nz-option nzValue="log" nzLabel="Log (Simulator)"></nz-option>
+            <nz-option nzValue="log" [nzLabel]="'COMMUNICATION.LBL_LOG_SIMULATOR' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -495,7 +495,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.HOST' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="host" placeholder="smtp.example.com" />
+            <input nz-input formControlName="host" [placeholder]="'COMMUNICATION.LBL_SMTP_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -514,7 +514,7 @@
             <nz-select formControlName="encryption">
               <nz-option nzValue="tls" nzLabel="TLS"></nz-option>
               <nz-option nzValue="ssl" nzLabel="SSL"></nz-option>
-              <nz-option nzValue="none" nzLabel="None"></nz-option>
+              <nz-option nzValue="none" [nzLabel]="'COMMUNICATION.LBL_NONE' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -522,7 +522,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.USERNAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="username" placeholder="user@example.com" />
+            <input nz-input formControlName="username" [placeholder]="'COMMUNICATION.LBL_USER_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -538,7 +538,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.FROM_ADDRESS' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="from_address" placeholder="billing@company.com" />
+            <input nz-input formControlName="from_address" [placeholder]="'COMMUNICATION.LBL_BILLING_COMPANY_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -569,7 +569,7 @@
           <input
             nz-input
             formControlName="recipient"
-            placeholder="test@example.com o +39333000000"
+            [placeholder]="'COMMUNICATION.LBL_TEST_EXAMPLE_COM_O_39333000000' | translate"
           />
         </nz-form-control>
       </nz-form-item>
@@ -591,7 +591,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="code" placeholder="invoice.created" />
+            <input nz-input formControlName="code" [placeholder]="'COMMUNICATION.LBL_INVOICE_CREATED' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -600,7 +600,7 @@
           <nz-form-control>
             <nz-select formControlName="channel">
               <nz-option nzValue="email" nzLabel="Email"></nz-option>
-              <nz-option nzValue="whatsapp" nzLabel="WhatsApp"></nz-option>
+              <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
               <nz-option nzValue="telegram" nzLabel="Telegram"></nz-option>
               <nz-option nzValue="sms" nzLabel="SMS"></nz-option>
             </nz-select>
@@ -616,7 +616,7 @@
               <nz-option nzValue="it_IT" nzLabel="Italiano (it_IT)"></nz-option>
               <nz-option nzValue="en_US" nzLabel="English (en_US)"></nz-option>
               <nz-option nzValue="de_DE" nzLabel="Deutsch (de_DE)"></nz-option>
-              <nz-option nzValue="fr_FR" nzLabel="Français (fr_FR)"></nz-option>
+              <nz-option nzValue="fr_FR" [nzLabel]="'COMMUNICATION.LBL_FRANCAIS_FR_FR' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -662,13 +662,13 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="previewForm" nzLayout="inline" class="preview-vars-form">
       <nz-form-item>
-        <nz-form-label>Name</nz-form-label>
+        <nz-form-label>{{ 'COMMUNICATION.LBL_NAME' | translate }}</nz-form-label>
         <nz-form-control>
           <input nz-input formControlName="sample_name" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label>Number</nz-form-label>
+        <nz-form-label>{{ 'COMMUNICATION.LBL_NUMBER' | translate }}</nz-form-label>
         <nz-form-control>
           <input nz-input formControlName="sample_number" />
         </nz-form-control>

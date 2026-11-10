@@ -169,7 +169,7 @@ describe('ProjectDetailDrawerComponent', () => {
     component.recalculateEvm();
 
     expect(mockProjectApi.recalculateEvm).toHaveBeenCalledWith('proj-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('EVM indicators recalculated');
+    expect(mockMessage.success).toHaveBeenCalledWith('projectDetailDrawer.msgEvmIndicatorsRecalculated');
   });
 
   it('submits create task modal', () => {
@@ -193,7 +193,7 @@ describe('ProjectDetailDrawerComponent', () => {
         priority: 'high',
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Task created');
+    expect(mockMessage.success).toHaveBeenCalledWith('projectDetailDrawer.msgTaskCreated');
     expect(component.createTaskModalVisible()).toBe(false);
   });
 
@@ -217,10 +217,10 @@ describe('ProjectDetailDrawerComponent', () => {
         hours_worked: 7.5,
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Timesheet logged');
+    expect(mockMessage.success).toHaveBeenCalledWith('projectDetailDrawer.msgTimesheetLogged');
 
     component.approveTimesheet(mockTimesheets[0]);
     expect(mockProjectApi.approveTimesheet).toHaveBeenCalledWith('ts-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Timesheet approved');
+    expect(mockMessage.success).toHaveBeenCalledWith('projectDetailDrawer.msgTimesheetApproved');
   });
 });

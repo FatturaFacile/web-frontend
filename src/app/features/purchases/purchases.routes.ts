@@ -10,29 +10,29 @@ export const PURCHASES_ROUTES: Routes = [
   },
   {
     path: 'sdi-inbox',
-    data: { breadcrumb: 'Ciclo Passivo SDI', title: 'Ciclo Passivo SDI' },
+    data: { breadcrumb: 'BREADCRUMB.CICLO_PASSIVO_SDI', title: 'Ciclo Passivo SDI' },
     loadComponent: () =>
       import('./purchases.component').then((m) => m.PurchasesComponent),
   },
   {
     path: 'qr-scanner',
-    data: { breadcrumb: 'Scanner QR & pain.001', title: 'Scanner QR & pain.001' },
+    data: { breadcrumb: 'BREADCRUMB.SCANNER_QR_AND_PAIN_001', title: 'Scanner QR & pain.001' },
     loadComponent: () =>
       import('./purchases.component').then((m) => m.PurchasesComponent),
   },
   {
     path: 'orders',
-    data: { breadcrumb: 'Ordini di acquisto', title: 'Ordini di acquisto', page: PURCHASE_ORDERS_PAGE },
+    data: { breadcrumb: 'BREADCRUMB.ORDINI_DI_ACQUISTO', title: 'Ordini di acquisto', page: PURCHASE_ORDERS_PAGE },
     component: ResourcePageComponent,
   },
   {
     path: 'invoices',
-    data: { breadcrumb: 'Fatture fornitori', title: 'Fatture fornitori', page: PURCHASE_INVOICES_PAGE },
+    data: { breadcrumb: 'BREADCRUMB.FATTURE_FORNITORI', title: 'Fatture fornitori', page: PURCHASE_INVOICES_PAGE },
     component: ResourcePageComponent,
   },
   {
     path: 'expenses',
-    data: { breadcrumb: 'Note Spese', title: 'Note Spese & Uscite' },
+    data: { breadcrumb: 'BREADCRUMB.NOTE_SPESE', title: 'Note Spese & Uscite' },
     loadComponent: () =>
       import('./components/expenses/expenses.component').then((m) => m.ExpensesComponent),
   },

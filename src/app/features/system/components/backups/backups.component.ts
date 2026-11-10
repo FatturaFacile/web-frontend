@@ -45,18 +45,18 @@ export class BackupsComponent implements OnInit {
   private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
 
   readonly columns = computed<TableColumnDef<SystemBackup>[]>(() => [
-    { key: 'filename', header: 'Nome Archivio ZIP', width: '320px', sortable: true },
+    { key: 'filename', header: 'COLUMNS.NOME_ARCHIVIO_ZIP', width: '320px', sortable: true },
     {
       key: 'size_bytes',
-      header: 'Dimensione',
+      header: 'COLUMNS.DIMENSIONE',
       width: '140px',
       align: 'right',
       customCellTemplate: this.sizeTpl(),
     },
-    { key: 'status', header: 'Stato', width: '150px', customCellTemplate: this.statusTpl() },
+    { key: 'status', header: 'COLUMNS.STATO', width: '150px', customCellTemplate: this.statusTpl() },
     {
       key: 'created_at',
-      header: 'Data Creazione',
+      header: 'COLUMNS.DATA_CREAZIONE',
       width: '200px',
       sortable: true,
       customCellTemplate: this.dateTpl(),

@@ -179,7 +179,7 @@
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'APPOINTMENTS.TECHNICIAN_USER_ID' | translate }}</nz-form-label>
               <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-                <input nz-input formControlName="user_id" placeholder="UUID Tecnico / Risorsa" />
+                <input nz-input formControlName="user_id" [placeholder]="'APPOINTMENTS.LBL_UUID_TECNICO_RISORSA' | translate" />
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
@@ -333,7 +333,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'APPOINTMENTS.TITLE_COL' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <input nz-input formControlName="title" placeholder="Es. Sopralluogo impianto elettrico" />
+          <input nz-input formControlName="title" [placeholder]="'APPOINTMENTS.LBL_ES_SOPRALLUOGO_IMPIANTO_ELETTRICO' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
@@ -353,7 +353,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'APPOINTMENTS.CONTACT' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="contact_id" placeholder="ID o codice cliente" />
+          <input nz-input formControlName="contact_id" [placeholder]="'APPOINTMENTS.LBL_ID_O_CODICE_CLIENTE' | translate" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -384,7 +384,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'APPOINTMENTS.CANCELLATION_REASON' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <textarea nz-input formControlName="reason" rows="3" placeholder="Es. Richiesta spostamento data dal cliente"></textarea>
+          <textarea nz-input formControlName="reason" rows="3" [placeholder]="'APPOINTMENTS.LBL_ES_RICHIESTA_SPOSTAMENTO_DATA_DAL_CLIENTE' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>

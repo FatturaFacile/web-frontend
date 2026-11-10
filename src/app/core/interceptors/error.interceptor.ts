@@ -77,13 +77,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             message.warning(detailOrMessage || i18n.translate('ERRORS.TWO_FACTOR_SETUP_REQUIRED'));
           } else {
             message.error(
-              detailOrMessage ||
-                'Operazione non consentita: autorizzazioni insufficienti per il modulo.'
+              detailOrMessage || i18n.translate('ERRORS.FORBIDDEN_MODULE')
             );
           }
         } else if (err.status === 409) {
           message.warning(
-            detailOrMessage || 'Conflitto di stato con il record attuale.'
+            detailOrMessage || i18n.translate('ERRORS.CONFLICT')
           );
         } else if (err.status === 429) {
           message.warning(detailOrMessage || i18n.translate('ERRORS.TOO_MANY_REQUESTS_DESC'));

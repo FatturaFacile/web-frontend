@@ -11,35 +11,35 @@ export const SALES_ROUTES: Routes = [
   },
   {
     path: 'orders',
-    data: { breadcrumb: 'Preventivi & Ordini', title: 'Preventivi & Ordini' },
+    data: { breadcrumb: 'BREADCRUMB.PREVENTIVI_AND_ORDINI', title: 'Preventivi & Ordini' },
     loadComponent: () =>
       import('./components/sales-orders/sales-orders.component').then((m) => m.SalesOrdersComponent),
   },
   {
     path: 'quotes',
-    data: { breadcrumb: 'Preventivi', title: 'Preventivi' },
+    data: { breadcrumb: 'BREADCRUMB.PREVENTIVI', title: 'Preventivi' },
     loadComponent: () =>
       import('./components/sales-orders/sales-orders.component').then((m) => m.SalesOrdersComponent),
   },
   {
     path: 'cycle',
-    data: { breadcrumb: 'Ciclo vendite', title: 'Ciclo vendite' },
+    data: { breadcrumb: 'BREADCRUMB.CICLO_VENDITE', title: 'Ciclo vendite' },
     loadChildren: () => import('./cycle/cycle.routes').then((m) => m.CYCLE_ROUTES),
   },
   {
     path: 'billing',
-    data: { breadcrumb: 'Fatturazione', title: 'Fatturazione' },
+    data: { breadcrumb: 'BREADCRUMB.FATTURAZIONE', title: 'Fatturazione' },
     loadChildren: () => import('./billing/billing.routes').then((m) => m.BILLING_ROUTES),
   },
   {
     path: 'invoices',
-    data: { breadcrumb: 'Fatture', title: 'Fatture' },
+    data: { breadcrumb: 'BREADCRUMB.FATTURE', title: 'Fatture' },
     loadComponent: () =>
       import('./components/invoices/invoices.component').then((m) => m.InvoicesComponent),
   },
   {
     path: 'qr-bill',
-    data: { breadcrumb: 'Swiss QR-Bill', title: 'Swiss QR-Bill' },
+    data: { breadcrumb: 'BREADCRUMB.SWISS_QR_BILL', title: 'Swiss QR-Bill' },
     providers: [
       { provide: QR_BILL_REPOSITORY, useClass: QrBillHttpRepository },
       QrBillStore,
@@ -51,7 +51,7 @@ export const SALES_ROUTES: Routes = [
   },
   {
     path: 'sdi',
-    data: { breadcrumb: 'Fattura Elettronica SDI', title: 'Fattura Elettronica SDI' },
+    data: { breadcrumb: 'BREADCRUMB.FATTURA_ELETTRONICA_SDI', title: 'Fattura Elettronica SDI' },
     providers: [
       { provide: QR_BILL_REPOSITORY, useClass: QrBillHttpRepository },
       QrBillStore,

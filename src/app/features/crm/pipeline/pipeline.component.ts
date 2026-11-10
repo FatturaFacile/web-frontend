@@ -22,12 +22,15 @@ import {
   OpportunityResource,
   PipelineStageResource,
   StoreOpportunityPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-crm-pipeline',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
@@ -50,6 +53,7 @@ import { MoneyPipe, PageHeaderComponent } from '@shared';
   styleUrl: './pipeline.component.scss',
 })
 export class PipelineComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly crmApi = inject(CrmApiService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -168,7 +172,7 @@ export class PipelineComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Opportunity created');
+        this.message.success(this.translate.instant('CRMX.MSG_OPPORTUNITY_CREATED'));
         this.loadOpportunities();
       },
       error: () => {
@@ -180,7 +184,7 @@ export class PipelineComponent implements OnInit {
   changeStage(opp: OpportunityResource, newStageCode: string): void {
     this.crmApi.updateOpportunityStage(opp.id, newStageCode).subscribe({
       next: () => {
-        this.message.success('Stage updated');
+        this.message.success(this.translate.instant('CRMX.MSG_STAGE_UPDATED'));
         this.loadOpportunities();
       },
       error: () => undefined,
@@ -204,7 +208,7 @@ export class PipelineComponent implements OnInit {
   deleteOpportunity(opp: OpportunityResource): void {
     this.crmApi.deleteOpportunity(opp.id).subscribe({
       next: () => {
-        this.message.success('Opportunity deleted');
+        this.message.success(this.translate.instant('CRMX.MSG_OPPORTUNITY_DELETED'));
         this.loadOpportunities();
       },
       error: () => undefined,
@@ -221,7 +225,7 @@ export class PipelineComponent implements OnInit {
       },
       error: () => {
         this.checkingDuplicates.set(false);
-        this.message.info('No duplicates detected');
+        this.message.info(this.translate.instant('CRMX.MSG_NO_DUPLICATES_DETECTED'));
       },
     });
   }

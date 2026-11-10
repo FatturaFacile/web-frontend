@@ -32,6 +32,7 @@ import {
   CustomsSignatureStatus,
   CustomsTariffGridResource,
   ShipmentRequestStatus,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -63,6 +64,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrl: './customs.component.scss',
 })
 export class CustomsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly customsApi = inject(CustomsApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -231,7 +233,7 @@ export class CustomsComponent implements OnInit {
       next: () => {
         this.submittingDossier.set(false);
         this.createDossierModalVisible.set(false);
-        this.message.success('Pratica doganale creata con successo');
+        this.message.success(this.translate.instant('CUSTOMS.MSG_PRATICA_DOGANALE_CREATA_CON_SUCCESSO'));
         this.loadDossiers(1);
       },
       error: () => this.submittingDossier.set(false),
@@ -250,7 +252,7 @@ export class CustomsComponent implements OnInit {
   invoiceDossier(dossierId: string): void {
     this.customsApi.invoiceDossier(dossierId).subscribe({
       next: () => {
-        this.message.success('Pratica fatturata con successo');
+        this.message.success(this.translate.instant('CUSTOMS.MSG_PRATICA_FATTURATA_CON_SUCCESSO'));
         this.loadDossiers();
       },
     });
@@ -320,7 +322,7 @@ export class CustomsComponent implements OnInit {
       next: () => {
         this.submittingDeclaration.set(false);
         this.createDeclarationModalVisible.set(false);
-        this.message.success('Dichiarazione doganale creata con successo');
+        this.message.success(this.translate.instant('CUSTOMS.MSG_DICHIARAZIONE_DOGANALE_CREATA_CON_SUCCESSO'));
         this.loadDeclarations(1);
       },
       error: () => this.submittingDeclaration.set(false),
@@ -330,7 +332,7 @@ export class CustomsComponent implements OnInit {
   validateDeclaration(id: string): void {
     this.customsApi.validateDeclaration(id).subscribe({
       next: (res) => {
-        this.message.success(`Dichiarazione validata: ${res.data.status}`);
+        this.message.success(this.translate.instant('CUSTOMS.MSG_DICHIARAZIONE_VALIDATA', { status: res.data.status }));
         this.loadDeclarations();
       },
     });
@@ -339,7 +341,7 @@ export class CustomsComponent implements OnInit {
   submitDeclaration(id: string): void {
     this.customsApi.submitDeclaration(id).subscribe({
       next: (res) => {
-        this.message.success(`Dichiarazione inviata con successo. MRN: ${res.data.mrn}`);
+        this.message.success(this.translate.instant('CUSTOMS.MSG_DICHIARAZIONE_INVIATA_CON_SUCCESSO_MRN', { mrn: res.data.mrn }));
         this.loadDeclarations();
       },
     });
@@ -348,7 +350,7 @@ export class CustomsComponent implements OnInit {
   cancelDeclaration(id: string): void {
     this.customsApi.cancelDeclaration(id).subscribe({
       next: () => {
-        this.message.info('Dichiarazione annullata');
+        this.message.info(this.translate.instant('CUSTOMS.MSG_DICHIARAZIONE_ANNULLATA'));
         this.loadDeclarations();
       },
     });
@@ -404,7 +406,7 @@ export class CustomsComponent implements OnInit {
     this.customsApi.retrieveAssessmentDecisions().subscribe({
       next: (res) => {
         this.retrievingAssessments.set(false);
-        this.message.success(`Recuperate ${res.data.retrieved_count} decisioni d'imposizione eVV`);
+        this.message.success(this.translate.instant('CUSTOMS.MSG_RECUPERATE_DECISIONI_D_IMPOSIZIONE_EVV', { retrieved_count: res.data.retrieved_count }));
         this.loadAssessments(1);
       },
       error: () => this.retrievingAssessments.set(false),
@@ -455,7 +457,7 @@ export class CustomsComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.message.success('Griglia tariffaria creata');
+          this.message.success(this.translate.instant('CUSTOMS.MSG_GRIGLIA_TARIFFARIA_CREATA'));
           this.loadGridsAndShipments();
         },
       });
@@ -464,7 +466,7 @@ export class CustomsComponent implements OnInit {
   deleteTariffGrid(id: string): void {
     this.customsApi.deleteTariffGrid(id).subscribe({
       next: () => {
-        this.message.info('Griglia tariffaria eliminata');
+        this.message.info(this.translate.instant('CUSTOMS.MSG_GRIGLIA_TARIFFARIA_ELIMINATA'));
         this.loadGridsAndShipments();
       },
     });
@@ -473,7 +475,7 @@ export class CustomsComponent implements OnInit {
   acceptShipmentRequest(id: string): void {
     this.customsApi.acceptShipmentRequest(id).subscribe({
       next: () => {
-        this.message.success('Richiesta di spedizione accettata');
+        this.message.success(this.translate.instant('CUSTOMS.MSG_RICHIESTA_DI_SPEDIZIONE_ACCETTATA'));
         this.loadGridsAndShipments();
       },
     });
@@ -482,7 +484,7 @@ export class CustomsComponent implements OnInit {
   refuseShipmentRequest(id: string): void {
     this.customsApi.refuseShipmentRequest(id).subscribe({
       next: () => {
-        this.message.info('Richiesta di spedizione rifiutata');
+        this.message.info(this.translate.instant('CUSTOMS.MSG_RICHIESTA_DI_SPEDIZIONE_RIFIUTATA'));
         this.loadGridsAndShipments();
       },
     });

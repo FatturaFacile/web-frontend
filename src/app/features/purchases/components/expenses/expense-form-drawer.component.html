@@ -65,11 +65,11 @@
         <nz-form-label nzFor="status">{{ 'common.status.label' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="status" formControlName="status">
-            <nz-option nzValue="draft" nzLabel="Bozza" />
-            <nz-option nzValue="pending_approval" nzLabel="In Approvazione" />
-            <nz-option nzValue="approved" nzLabel="Approvata" />
-            <nz-option nzValue="reimbursed" nzLabel="Rimborsata" />
-            <nz-option nzValue="paid" nzLabel="Pagata" />
+            <nz-option nzValue="draft" [nzLabel]="'expenses.lblBozza' | translate" />
+            <nz-option nzValue="pending_approval" [nzLabel]="'expenses.lblInApprovazione' | translate" />
+            <nz-option nzValue="approved" [nzLabel]="'expenses.lblApprovata' | translate" />
+            <nz-option nzValue="reimbursed" [nzLabel]="'expenses.lblRimborsata' | translate" />
+            <nz-option nzValue="paid" [nzLabel]="'expenses.lblPagata' | translate" />
           </nz-select>
         </nz-form-control>
       </nz-form-item>

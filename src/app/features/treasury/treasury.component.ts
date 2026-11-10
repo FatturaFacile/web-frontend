@@ -30,7 +30,7 @@ import {
   PaymentBatchStatus,
   PaymentMethodType,
   TreasuryApiService,
-
+  TranslateService,
 } from '@core';
 import {
   BaseTableComponent,
@@ -74,6 +74,7 @@ import {
   styleUrl: './treasury.component.scss',
 })
 export class TreasuryComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly treasuryApi = inject(TreasuryApiService);
   private readonly bankingApi = inject(BankingApiService);
   private readonly billingApi = inject(BillingApiService);
@@ -297,25 +298,25 @@ export class TreasuryComponent implements OnInit {
     this.treasuryApi.createBankAccount(payload).subscribe({
       next: () => {
         this.accountModalVisible.set(false);
-        this.message.success('Conto bancario registrato con successo');
+        this.message.success(this.translate.instant('treasury.msgContoBancarioRegistratoConSuccesso'));
         this.loadAccounts();
       },
       error: () => {
-        this.message.error('Errore durante la registrazione del conto bancario');
+        this.message.error(this.translate.instant('treasury.msgErroreDuranteLaRegistrazioneDelConto'));
       },
     });
   }
 
   deleteAccount(account: BankAccountResource): void {
     this.modal.confirm({
-      nzTitle: `Eliminare il conto ${account.bank_name} (${account.iban})?`,
-      nzOkText: 'Elimina',
+      nzTitle: this.translate.instant('treasury.dlgEliminareIlConto', { bank_name: account.bank_name, iban: account.iban }),
+      nzOkText: this.translate.instant('treasury.dlgElimina'),
       nzOkDanger: true,
-      nzCancelText: 'Annulla',
+      nzCancelText: this.translate.instant('treasury.dlgAnnulla'),
       nzOnOk: () => {
         this.treasuryApi.deleteBankAccount(account.id).subscribe({
           next: () => {
-            this.message.success('Conto eliminato');
+            this.message.success(this.translate.instant('treasury.msgContoEliminato'));
             this.loadAccounts();
           },
         });
@@ -374,12 +375,12 @@ export class TreasuryComponent implements OnInit {
     this.treasuryApi.reconcileTransactionsAutoMatch().subscribe({
       next: (res) => {
         this.isReconciling.set(false);
-        this.message.success(`Conciliazione completata: ${res.data?.matched_count || 0} movimenti riconciliati`);
+        this.message.success(this.translate.instant('treasury.msgConciliazioneCompletataMovimentiRiconciliati', { value: res.data?.matched_count || 0 }));
         this.loadTransactions();
       },
       error: () => {
         this.isReconciling.set(false);
-        this.message.error('Errore durante la conciliazione automatica');
+        this.message.error(this.translate.instant('treasury.msgErroreDuranteLaConciliazioneAutomatica'));
       },
     });
   }
@@ -387,12 +388,12 @@ export class TreasuryComponent implements OnInit {
   reconcileStatement(st: BankStatement): void {
     this.bankingApi.reconcileStatement(st.id).subscribe({
       next: (res) => {
-        this.message.success(`Estratto conto riconciliato (${res.data?.reconciled_count || 0} righe)`);
+        this.message.success(this.translate.instant('treasury.msgEstrattoContoRiconciliatoRighe', { value: res.data?.reconciled_count || 0 }));
         this.loadStatements();
         this.loadTransactions();
       },
       error: () => {
-        this.message.error('Errore durante la riconciliazione dell\'estratto conto');
+        this.message.error(this.translate.instant('treasury.msgErroreDuranteLaRiconciliazioneDellEstratto'));
       },
     });
   }
@@ -406,7 +407,7 @@ export class TreasuryComponent implements OnInit {
 
   submitImport(): void {
     if (!this.selectedFile) {
-      this.message.warning('Seleziona un file da importare');
+      this.message.warning(this.translate.instant('treasury.msgSelezionaUnFileDaImportare'));
       return;
     }
 
@@ -418,13 +419,13 @@ export class TreasuryComponent implements OnInit {
         next: (res) => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success(`Importati ${res.data?.lines?.length ?? 0} movimenti CAMT`);
+          this.message.success(this.translate.instant('treasury.msgImportatiMovimentiCamt', { value: res.data?.lines?.length ?? 0 }));
           this.loadTransactions();
           this.loadStatements();
         },
         error: () => {
           this.isUploading.set(false);
-          this.message.error('Errore durante l\'importazione CAMT');
+          this.message.error(this.translate.instant('treasury.msgErroreDuranteLImportazioneCamt'));
         },
       });
     } else {
@@ -433,13 +434,13 @@ export class TreasuryComponent implements OnInit {
         next: (res) => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
-          this.message.success(`Importati ${res.data?.imported_count || 0} movimenti CBI`);
+          this.message.success(this.translate.instant('treasury.msgImportatiMovimentiCbi', { value: res.data?.imported_count || 0 }));
           this.loadTransactions();
           this.loadStatements();
         },
         error: () => {
           this.isUploading.set(false);
-          this.message.error('Errore durante l\'importazione CBI');
+          this.message.error(this.translate.instant('treasury.msgErroreDuranteLImportazioneCbi'));
         },
       });
     }
@@ -499,11 +500,11 @@ export class TreasuryComponent implements OnInit {
     this.treasuryApi.createPaymentBatch(payload).subscribe({
       next: (res) => {
         this.batchModalVisible.set(false);
-        this.message.success(`Distinta ${res.data.batch_reference} creata`);
+        this.message.success(this.translate.instant('treasury.msgDistintaCreata', { batch_reference: res.data.batch_reference }));
         this.loadPaymentBatches();
       },
       error: () => {
-        this.message.error('Errore durante la creazione della distinta di pagamento');
+        this.message.error(this.translate.instant('treasury.msgErroreDuranteLaCreazioneDellaDistinta'));
       },
     });
   }
@@ -511,7 +512,7 @@ export class TreasuryComponent implements OnInit {
   submitBatchApproval(batch: PaymentBatchResource): void {
     this.treasuryApi.submitPaymentBatchApproval(batch.id).subscribe({
       next: () => {
-        this.message.success(`Distinta ${batch.batch_reference} inviata per approvazione`);
+        this.message.success(this.translate.instant('treasury.msgDistintaInviataPerApprovazione', { batch_reference: batch.batch_reference }));
         this.loadPaymentBatches();
       },
     });
@@ -520,7 +521,7 @@ export class TreasuryComponent implements OnInit {
   approveBatch(batch: PaymentBatchResource): void {
     this.treasuryApi.approvePaymentBatch(batch.id).subscribe({
       next: () => {
-        this.message.success(`Distinta ${batch.batch_reference} approvata`);
+        this.message.success(this.translate.instant('treasury.msgDistintaApprovata', { batch_reference: batch.batch_reference }));
         this.loadPaymentBatches();
       },
     });
@@ -529,7 +530,7 @@ export class TreasuryComponent implements OnInit {
   exportBatchXml(batch: PaymentBatchResource): void {
     this.treasuryApi.exportPaymentBatch(batch.id).subscribe({
       next: () => {
-        this.message.success(`Distinta ${batch.batch_reference} esportata in XML (pain.001 / CBI)`);
+        this.message.success(this.translate.instant('treasury.msgDistintaEsportataInXmlPain001', { batch_reference: batch.batch_reference }));
         this.loadPaymentBatches();
       },
     });
@@ -550,14 +551,14 @@ export class TreasuryComponent implements OnInit {
 
   cancelBatch(batch: PaymentBatchResource): void {
     this.modal.confirm({
-      nzTitle: `Annullare la distinta ${batch.batch_reference}?`,
-      nzOkText: 'Annulla Distinta',
+      nzTitle: this.translate.instant('treasury.dlgAnnullareLaDistinta', { batch_reference: batch.batch_reference }),
+      nzOkText: this.translate.instant('treasury.dlgAnnullaDistinta'),
       nzOkDanger: true,
-      nzCancelText: 'Chiudi',
+      nzCancelText: this.translate.instant('treasury.dlgChiudi'),
       nzOnOk: () => {
         this.treasuryApi.cancelPaymentBatch(batch.id).subscribe({
           next: () => {
-            this.message.success('Distinta annullata');
+            this.message.success(this.translate.instant('treasury.msgDistintaAnnullata'));
             this.loadPaymentBatches();
           },
         });
@@ -584,11 +585,11 @@ export class TreasuryComponent implements OnInit {
   generateForecast(days: number): void {
     this.treasuryApi.generateCashForecast(days).subscribe({
       next: (res) => {
-        this.message.success(`Previsione di cassa generata per ${res.data.horizon_days} giorni`);
+        this.message.success(this.translate.instant('treasury.msgPrevisioneDiCassaGenerataPerGiorni', { horizon_days: res.data.horizon_days }));
         this.loadCashForecasts();
       },
       error: () => {
-        this.message.error('Errore durante la generazione della previsione di cassa');
+        this.message.error(this.translate.instant('treasury.msgErroreDuranteLaGenerazioneDellaPrevisione'));
       },
     });
   }

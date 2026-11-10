@@ -22,9 +22,9 @@
         <nz-form-label nzFor="severity">{{ "alerts.form.severity" | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select id="severity" formControlName="severity">
-            <nz-option nzValue="info" nzLabel="Informativo (Blu)" />
-            <nz-option nzValue="warning" nzLabel="Attenzione (Arancione)" />
-            <nz-option nzValue="critical" nzLabel="Critico / Bloccante (Rosso)" />
+            <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativoBlu' | translate" />
+            <nz-option nzValue="warning" [nzLabel]="'alerts.lblAttenzioneArancione' | translate" />
+            <nz-option nzValue="critical" [nzLabel]="'alerts.lblCriticoBloccanteRosso' | translate" />
           </nz-select>
         </nz-form-control>
       </nz-form-item>

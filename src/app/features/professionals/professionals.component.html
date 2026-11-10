@@ -564,7 +564,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PRACTICE.DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <textarea nz-input formControlName="description" rows="3" placeholder="Es. Esame atti di citazione e redazione comparsa di risposta"></textarea>
+          <textarea nz-input formControlName="description" rows="3" [placeholder]="'PRACTICE.LBL_ES_ESAME_ATTI_DI_CITAZIONE_E' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -583,7 +583,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PRACTICE.CLIENT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <input nz-input formControlName="client_id" placeholder="ID o codice cliente" />
+          <input nz-input formControlName="client_id" [placeholder]="'PRACTICE.LBL_ID_O_CODICE_CLIENTE' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
@@ -636,7 +636,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PRACTICE.CLIENT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <input nz-input formControlName="client_id" placeholder="ID Cliente o Ragione Sociale" />
+          <input nz-input formControlName="client_id" [placeholder]="'PRACTICE.LBL_ID_CLIENTE_O_RAGIONE_SOCIALE' | translate" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -666,7 +666,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'PRACTICE.REFERENCE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="reference" placeholder="Es. Bonifico rif. anticipo fondo spese" />
+          <input nz-input formControlName="reference" [placeholder]="'PRACTICE.LBL_ES_BONIFICO_RIF_ANTICIPO_FONDO_SPESE' | translate" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -731,7 +731,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PRACTICE.CLIENT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <input nz-input formControlName="client_id" placeholder="ID o Ragione Sociale Cliente" />
+          <input nz-input formControlName="client_id" [placeholder]="'PRACTICE.LBL_ID_O_RAGIONE_SOCIALE_CLIENTE' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
@@ -751,7 +751,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'PRACTICE.NOTES' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="2" placeholder="Es. Chiusura bilancio d'esercizio 2026"></textarea>
+          <textarea nz-input formControlName="notes" rows="2" [placeholder]="'PRACTICE.LBL_ES_CHIUSURA_BILANCIO_D_ESERCIZIO_2026' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>

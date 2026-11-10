@@ -6,7 +6,7 @@ export const RETAIL_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { breadcrumb: 'Vendita al Banco & POS', title: 'Vendita al Banco' },
+    data: { breadcrumb: 'BREADCRUMB.VENDITA_AL_BANCO_AND_POS', title: 'Vendita al Banco' },
     loadComponent: () =>
       import('./retail.component').then((m) => m.RetailComponent),
   },

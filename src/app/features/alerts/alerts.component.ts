@@ -67,26 +67,26 @@ export class AlertsComponent implements OnInit {
   readonly columns = computed<TableColumnDef<AlertResource>[]>(() => [
     {
       key: 'title',
-      header: 'Titolo Avviso',
+      header: 'COLUMNS.TITOLO_AVVISO',
       width: '320px',
       sortable: true,
       customCellTemplate: this.titleTpl(),
     },
     {
       key: 'severity',
-      header: 'Gravità',
+      header: 'COLUMNS.GRAVITA',
       width: '130px',
       customCellTemplate: this.severityTpl(),
     },
     {
       key: 'is_active',
-      header: 'Stato',
+      header: 'COLUMNS.STATO',
       width: '120px',
       customCellTemplate: this.statusTpl(),
     },
     {
       key: 'created_at',
-      header: 'Data Creazione',
+      header: 'COLUMNS.DATA_CREAZIONE',
       width: '160px',
       sortable: true,
       customCellTemplate: this.dateTpl(),

@@ -34,6 +34,7 @@ import {
   WorkflowSlaReport,
   WorkflowStartWorkflowRequest,
   WorkflowTask,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -67,6 +68,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrls: ['./workflows.component.scss'],
 })
 export class WorkflowsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly workflowApi = inject(WorkflowApiService);
   private readonly message = inject(NzMessageService);
@@ -200,7 +202,7 @@ export class WorkflowsComponent implements OnInit {
           this.tasksLoading.set(false);
         },
         error: () => {
-          this.message.error('Errore nel caricamento delle attività in attesa');
+          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ATTIVITA_IN'));
           this.tasksLoading.set(false);
         },
       });
@@ -224,7 +226,7 @@ export class WorkflowsComponent implements OnInit {
     if (!task) return;
 
     if (this.decisionType() === 'rejected' && !this.decisionComment().trim()) {
-      this.message.warning('Il motivo del rifiuto è obbligatorio.');
+      this.message.warning(this.translate.instant('WORKFLOWS.MSG_IL_MOTIVO_DEL_RIFIUTO_E_OBBLIGATORIO'));
       return;
     }
 
@@ -244,7 +246,7 @@ export class WorkflowsComponent implements OnInit {
           this.loadTasks();
         },
         error: () => {
-          this.message.error('Errore durante la registrazione della decisione');
+          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_LA_REGISTRAZIONE_DELLA_DECISIONE'));
           this.decisionSubmitting.set(false);
         },
       });
@@ -266,7 +268,7 @@ export class WorkflowsComponent implements OnInit {
           this.instancesLoading.set(false);
         },
         error: () => {
-          this.message.error('Errore nel caricamento delle istanze di workflow');
+          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ISTANZE_DI'));
           this.instancesLoading.set(false);
         },
       });
@@ -305,13 +307,13 @@ export class WorkflowsComponent implements OnInit {
     this.startSubmitting.set(true);
     this.workflowApi.startInstance(payload).subscribe({
       next: () => {
-        this.message.success('Istanza di workflow avviata con successo');
+        this.message.success(this.translate.instant('WORKFLOWS.MSG_ISTANZA_DI_WORKFLOW_AVVIATA_CON_SUCCESSO'));
         this.startModalVisible.set(false);
         this.startSubmitting.set(false);
         this.loadInstances();
       },
       error: () => {
-        this.message.error('Impossibile avviare il processo di approvazione');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_IMPOSSIBILE_AVVIARE_IL_PROCESSO_DI_APPROVAZIONE'));
         this.startSubmitting.set(false);
       },
     });
@@ -320,11 +322,11 @@ export class WorkflowsComponent implements OnInit {
   protected cancelInstance(inst: WorkflowInstanceResource): void {
     this.workflowApi.cancelInstance(inst.id, 'Annullato manualmente dall operatore').subscribe({
       next: () => {
-        this.message.info('Istanza annullata');
+        this.message.info(this.translate.instant('WORKFLOWS.MSG_ISTANZA_ANNULLATA'));
         this.loadInstances();
       },
       error: () => {
-        this.message.error('Errore durante l annullamento');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_L_ANNULLAMENTO'));
       },
     });
   }
@@ -340,7 +342,7 @@ export class WorkflowsComponent implements OnInit {
         this.auditLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento del registro audit');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DEL_REGISTRO_AUDIT'));
         this.auditLoading.set(false);
       },
     });
@@ -371,7 +373,7 @@ export class WorkflowsComponent implements OnInit {
           this.definitionsLoading.set(false);
         },
         error: () => {
-          this.message.error('Errore nel caricamento delle definizioni di workflow');
+          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DEFINIZIONI_DI'));
           this.definitionsLoading.set(false);
         },
       });
@@ -403,13 +405,13 @@ export class WorkflowsComponent implements OnInit {
     this.createDefSubmitting.set(true);
     this.workflowApi.createDefinition(payload).subscribe({
       next: () => {
-        this.message.success('Definizione di workflow creata con successo');
+        this.message.success(this.translate.instant('WORKFLOWS.MSG_DEFINIZIONE_DI_WORKFLOW_CREATA_CON_SUCCESSO'));
         this.createDefModalVisible.set(false);
         this.createDefSubmitting.set(false);
         this.loadDefinitions();
       },
       error: () => {
-        this.message.error('Errore durante la creazione della definizione');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELLA_DEFINIZIONE'));
         this.createDefSubmitting.set(false);
       },
     });
@@ -418,11 +420,11 @@ export class WorkflowsComponent implements OnInit {
   protected publishDefinition(def: WorkflowDefinitionResource): void {
     this.workflowApi.publishDefinition(def.id).subscribe({
       next: () => {
-        this.message.success(`Workflow "${def.name}" pubblicato con successo!`);
+        this.message.success(this.translate.instant('WORKFLOWS.MSG_WORKFLOW_PUBBLICATO_CON_SUCCESSO', { name: def.name }));
         this.loadDefinitions();
       },
       error: () => {
-        this.message.error('Errore durante la pubblicazione del workflow');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_LA_PUBBLICAZIONE_DEL_WORKFLOW'));
       },
     });
   }
@@ -430,11 +432,11 @@ export class WorkflowsComponent implements OnInit {
   protected deleteDefinition(def: WorkflowDefinitionResource): void {
     this.workflowApi.deleteDefinition(def.id).subscribe({
       next: () => {
-        this.message.info('Definizione eliminata');
+        this.message.info(this.translate.instant('WORKFLOWS.MSG_DEFINIZIONE_ELIMINATA'));
         this.loadDefinitions();
       },
       error: () => {
-        this.message.error('Impossibile eliminare la definizione di workflow');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_IMPOSSIBILE_ELIMINARE_LA_DEFINIZIONE_DI_WORKFLOW'));
       },
     });
   }
@@ -448,7 +450,7 @@ export class WorkflowsComponent implements OnInit {
         this.delegationsLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle deleghe');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DELEGHE'));
         this.delegationsLoading.set(false);
       },
     });
@@ -483,13 +485,13 @@ export class WorkflowsComponent implements OnInit {
     this.delegationSubmitting.set(true);
     this.workflowApi.createDelegation(payload).subscribe({
       next: () => {
-        this.message.success('Delega approvazione registrata');
+        this.message.success(this.translate.instant('WORKFLOWS.MSG_DELEGA_APPROVAZIONE_REGISTRATA'));
         this.createDelegationVisible.set(false);
         this.delegationSubmitting.set(false);
         this.loadDelegations();
       },
       error: () => {
-        this.message.error('Errore durante la registrazione della delega');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_LA_REGISTRAZIONE_DELLA_DELEGA'));
         this.delegationSubmitting.set(false);
       },
     });
@@ -498,11 +500,11 @@ export class WorkflowsComponent implements OnInit {
   protected deleteDelegation(del: WorkflowDelegationModel): void {
     this.workflowApi.deleteDelegation(del.id).subscribe({
       next: () => {
-        this.message.info('Delega revocata');
+        this.message.info(this.translate.instant('WORKFLOWS.MSG_DELEGA_REVOCATA'));
         this.loadDelegations();
       },
       error: () => {
-        this.message.error('Impossibile revocare la delega');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_IMPOSSIBILE_REVOCARE_LA_DELEGA'));
       },
     });
   }
@@ -515,7 +517,7 @@ export class WorkflowsComponent implements OnInit {
         this.rulesLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento delle regole di sollecito ed escalation');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_REGOLE_DI'));
         this.rulesLoading.set(false);
       },
     });
@@ -544,13 +546,13 @@ export class WorkflowsComponent implements OnInit {
     this.ruleSubmitting.set(true);
     this.workflowApi.createEscalationRule(payload).subscribe({
       next: () => {
-        this.message.success('Regola di escalation salvata con successo');
+        this.message.success(this.translate.instant('WORKFLOWS.MSG_REGOLA_DI_ESCALATION_SALVATA_CON_SUCCESSO'));
         this.createRuleVisible.set(false);
         this.ruleSubmitting.set(false);
         this.loadEscalationRules();
       },
       error: () => {
-        this.message.error('Errore durante il salvataggio della regola');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_DURANTE_IL_SALVATAGGIO_DELLA_REGOLA'));
         this.ruleSubmitting.set(false);
       },
     });
@@ -559,11 +561,11 @@ export class WorkflowsComponent implements OnInit {
   protected deleteEscalationRule(rule: WorkflowEscalationRule): void {
     this.workflowApi.deleteEscalationRule(rule.id).subscribe({
       next: () => {
-        this.message.info('Regola eliminata');
+        this.message.info(this.translate.instant('WORKFLOWS.MSG_REGOLA_ELIMINATA'));
         this.loadEscalationRules();
       },
       error: () => {
-        this.message.error('Impossibile eliminare la regola');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_IMPOSSIBILE_ELIMINARE_LA_REGOLA'));
       },
     });
   }
@@ -577,7 +579,7 @@ export class WorkflowsComponent implements OnInit {
         this.slaLoading.set(false);
       },
       error: () => {
-        this.message.error('Errore nel caricamento del report SLA');
+        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DEL_REPORT_SLA'));
         this.slaLoading.set(false);
       },
     });

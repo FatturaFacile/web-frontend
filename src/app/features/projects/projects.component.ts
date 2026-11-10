@@ -23,6 +23,7 @@ import {
   ProjectFilterParams,
   ProjectResource,
   StoreProjectPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { RouterLink } from '@angular/router';
@@ -57,6 +58,7 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
   styleUrl: './projects.component.scss',
 })
 export class ProjectsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly projectApi = inject(ProjectApiService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -176,7 +178,7 @@ export class ProjectsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success('Project created successfully');
+        this.message.success(this.translate.instant('PRJ.MSG_PROJECT_CREATED_SUCCESSFULLY'));
         this.loadProjects();
       },
       error: (err: unknown) => {
@@ -191,7 +193,7 @@ export class ProjectsComponent implements OnInit {
   start(project: ProjectResource): void {
     this.projectApi.startProject(project.id).subscribe({
       next: () => {
-        this.message.success('Project started');
+        this.message.success(this.translate.instant('PRJ.MSG_PROJECT_STARTED'));
         this.loadProjects();
       },
       error: () => undefined,
@@ -201,7 +203,7 @@ export class ProjectsComponent implements OnInit {
   pause(project: ProjectResource): void {
     this.projectApi.pauseProject(project.id).subscribe({
       next: () => {
-        this.message.info('Project paused');
+        this.message.info(this.translate.instant('PRJ.MSG_PROJECT_PAUSED'));
         this.loadProjects();
       },
       error: () => undefined,
@@ -211,7 +213,7 @@ export class ProjectsComponent implements OnInit {
   complete(project: ProjectResource): void {
     this.projectApi.completeProject(project.id).subscribe({
       next: () => {
-        this.message.success('Project marked as completed');
+        this.message.success(this.translate.instant('PRJ.MSG_PROJECT_MARKED_AS_COMPLETED'));
         this.loadProjects();
       },
       error: () => undefined,

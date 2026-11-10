@@ -12,7 +12,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Cerca per titolo, numero o cliente..."
+          [placeholder]="'FIELD_SERVICE.LBL_CERCA_PER_TITOLO_NUMERO_O_CLIENTE' | translate"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           (keyup.enter)="onSearch()"
@@ -27,13 +27,13 @@
         style="width: 100%;"
         nzPlaceHolder="Stato (Tutti)"
       >
-        <nz-option nzValue="" nzLabel="Tutti gli stati"></nz-option>
-        <nz-option nzValue="new" nzLabel="Nuovo (new)"></nz-option>
-        <nz-option nzValue="open" nzLabel="Aperto (open)"></nz-option>
-        <nz-option nzValue="pending_customer" nzLabel="In attesa cliente"></nz-option>
-        <nz-option nzValue="on_hold" nzLabel="In sospeso (on hold)"></nz-option>
-        <nz-option nzValue="resolved" nzLabel="Risolto (resolved)"></nz-option>
-        <nz-option nzValue="closed" nzLabel="Chiuso (closed)"></nz-option>
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
+        <nz-option nzValue="new" [nzLabel]="'FIELD_SERVICE.LBL_NUOVO_NEW' | translate"></nz-option>
+        <nz-option nzValue="open" [nzLabel]="'FIELD_SERVICE.LBL_APERTO_OPEN' | translate"></nz-option>
+        <nz-option nzValue="pending_customer" [nzLabel]="'FIELD_SERVICE.LBL_IN_ATTESA_CLIENTE' | translate"></nz-option>
+        <nz-option nzValue="on_hold" [nzLabel]="'FIELD_SERVICE.LBL_IN_SOSPESO_ON_HOLD' | translate"></nz-option>
+        <nz-option nzValue="resolved" [nzLabel]="'FIELD_SERVICE.LBL_RISOLTO_RESOLVED' | translate"></nz-option>
+        <nz-option nzValue="closed" [nzLabel]="'FIELD_SERVICE.LBL_CHIUSO_CLOSED' | translate"></nz-option>
       </nz-select>
     </div>
 
@@ -44,11 +44,11 @@
         style="width: 100%;"
         nzPlaceHolder="Priorità (Tutte)"
       >
-        <nz-option nzValue="" nzLabel="Tutte le priorità"></nz-option>
-        <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
-        <nz-option nzValue="medium" nzLabel="Media"></nz-option>
-        <nz-option nzValue="high" nzLabel="Alta"></nz-option>
-        <nz-option nzValue="critical" nzLabel="Critica"></nz-option>
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
+        <nz-option nzValue="low" [nzLabel]="'FIELD_SERVICE.LBL_BASSA' | translate"></nz-option>
+        <nz-option nzValue="medium" [nzLabel]="'FIELD_SERVICE.LBL_MEDIA' | translate"></nz-option>
+        <nz-option nzValue="high" [nzLabel]="'FIELD_SERVICE.LBL_ALTA' | translate"></nz-option>
+        <nz-option nzValue="critical" [nzLabel]="'FIELD_SERVICE.LBL_CRITICA' | translate"></nz-option>
       </nz-select>
     </div>
 
@@ -59,16 +59,16 @@
         style="width: 100%;"
         nzPlaceHolder="SLA (Tutti)"
       >
-        <nz-option nzValue="" nzLabel="Tutti gli SLA"></nz-option>
-        <nz-option nzValue="ok" nzLabel="OK (Nei tempi)"></nz-option>
-        <nz-option nzValue="warning" nzLabel="In scadenza"></nz-option>
-        <nz-option nzValue="breached" nzLabel="Violato"></nz-option>
-        <nz-option nzValue="paused" nzLabel="In pausa"></nz-option>
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
+        <nz-option nzValue="ok" [nzLabel]="'FIELD_SERVICE.LBL_OK_NEI_TEMPI' | translate"></nz-option>
+        <nz-option nzValue="warning" [nzLabel]="'FIELD_SERVICE.LBL_IN_SCADENZA' | translate"></nz-option>
+        <nz-option nzValue="breached" [nzLabel]="'FIELD_SERVICE.LBL_VIOLATO' | translate"></nz-option>
+        <nz-option nzValue="paused" [nzLabel]="'FIELD_SERVICE.LBL_IN_PAUSA' | translate"></nz-option>
       </nz-select>
     </div>
 
-    <button nz-button (click)="resetFilters()" title="Reimposta filtri">
-      <i nz-icon nzType="clear"></i> Reset
+    <button nz-button (click)="resetFilters()" [title]="'FIELD_SERVICE.LBL_REIMPOSTA_FILTRI' | translate">
+      <i nz-icon nzType="clear"></i> {{ 'FIELD_SERVICE.LBL_RESET' | translate }}
     </button>
   </div>
 
@@ -98,12 +98,12 @@
         </th>
         <th nzWidth="120px">{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
         <th>{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
-        <th nzWidth="100px">Canale</th>
-        <th nzWidth="110px">Priorità</th>
+        <th nzWidth="100px">{{ 'FIELD_SERVICE.LBL_CANALE' | translate }}</th>
+        <th nzWidth="110px">{{ 'FIELD_SERVICE.LBL_PRIORITA' | translate }}</th>
         <th nzWidth="130px">{{ "COMMON.STATUS" | translate }}</th>
         <th nzWidth="140px">{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
-        <th nzWidth="150px">Data Creazione</th>
-        <th nzWidth="100px" nzAlign="center">Azioni</th>
+        <th nzWidth="150px">{{ 'FIELD_SERVICE.LBL_DATA_CREAZIONE' | translate }}</th>
+        <th nzWidth="100px" nzAlign="center">{{ 'FIELD_SERVICE.LBL_AZIONI' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -148,9 +148,9 @@
               nzType="link"
               nzSize="small"
               (click)="openDetail(tk.id)"
-              title="Visualizza e modifica"
+              [title]="'FIELD_SERVICE.LBL_VISUALIZZA_E_MODIFICA' | translate"
             >
-              <i nz-icon nzType="eye"></i> Dettagli
+              <i nz-icon nzType="eye"></i> {{ 'FIELD_SERVICE.LBL_DETTAGLI' | translate }}
             </button>
           </td>
         </tr>
@@ -165,10 +165,10 @@
       {{ 'TICKET_BULK.OPEN' | translate: { count: selectedIds().size } }}
     </button>
     <button *nzSpaceItem nz-button (click)="loadTickets()" [nzLoading]="loading()">
-      <i nz-icon nzType="reload"></i> Aggiorna
+      <i nz-icon nzType="reload"></i> {{ 'FIELD_SERVICE.LBL_AGGIORNA' | translate }}
     </button>
     <button *nzSpaceItem nz-button nzType="primary" (click)="openCreate()">
-      <i nz-icon nzType="plus"></i> Nuovo Ticket
+      <i nz-icon nzType="plus"></i> {{ 'FIELD_SERVICE.LBL_NUOVO_TICKET' | translate }}
     </button>
   </nz-space>
 </ng-template>

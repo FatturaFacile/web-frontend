@@ -8,7 +8,7 @@ export const ACCOUNTING_ROUTES: Routes = [
   },
   {
     path: 'ledger',
-    data: { breadcrumb: 'Contabilità & Fiscale', title: 'Contabilità Dual-Ledger' },
+    data: { breadcrumb: 'BREADCRUMB.CONTABILITA_AND_FISCALE', title: 'Contabilità Dual-Ledger' },
     loadComponent: () =>
       import('./accounting.component').then((m) => m.AccountingComponent),
   },

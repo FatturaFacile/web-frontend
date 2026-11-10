@@ -36,7 +36,7 @@
 
     <span class="spacer"></span>
     <button nz-button nzType="default" type="button" (click)="sendBulkSdi()" style="margin-right: 8px">
-      <nz-icon nzType="send" /> Invia SDI (Massivo)
+      <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_SDI_MASSIVO' | translate }}
     </button>
     <button nz-button nzType="primary" type="button" (click)="create()">
       <nz-icon nzType="plus" /> {{ "SALES.INVOICES.NEW" | translate }}
@@ -120,10 +120,10 @@
             <nz-icon nzType="send" /> {{ "SALES.INVOICES.ACTIONS.SEND_SDI" | translate }}
           </li>
           <li nz-menu-item tabindex="0" (click)="generateSdiXml(inv)" (keydown.enter)="generateSdiXml(inv)">
-            <nz-icon nzType="file-text" /> Genera FatturaPA XML
+            <nz-icon nzType="file-text" /> {{ 'SALES.LBL_GENERA_FATTURAPA_XML' | translate }}
           </li>
           <li nz-menu-item tabindex="0" (click)="viewSdiLogs(inv)" (keydown.enter)="viewSdiLogs(inv)">
-            <nz-icon nzType="audit" /> Log Trasmissioni SDI
+            <nz-icon nzType="audit" /> {{ 'SALES.LBL_LOG_TRASMISSIONI_SDI' | translate }}
           </li>
         }
 
@@ -142,16 +142,16 @@
             (click)="viewQrBill(inv)"
             (keydown.enter)="viewQrBill(inv)"
           >
-            <nz-icon nzType="eye" /> Visualizza Swiss QR-Bill
+            <nz-icon nzType="eye" /> {{ 'SALES.LBL_VISUALIZZA_SWISS_QR_BILL' | translate }}
           </li>
         }
 
         <li nz-menu-item tabindex="0" (click)="viewInstallments(inv)" (keydown.enter)="viewInstallments(inv)">
-          <nz-icon nzType="dollar" /> Scadenze / Rate
+          <nz-icon nzType="dollar" /> {{ 'SALES.LBL_SCADENZE_RATE' | translate }}
         </li>
 
         <li nz-menu-item tabindex="0" (click)="openCreditNoteModal(inv)" (keydown.enter)="openCreditNoteModal(inv)">
-          <nz-icon nzType="redo" /> Crea Nota di Credito
+          <nz-icon nzType="redo" /> {{ 'SALES.LBL_CREA_NOTA_DI_CREDITO' | translate }}
         </li>
 
         @if (inv.status === 'draft') {
@@ -195,7 +195,7 @@
 <!-- Swiss QR-Bill Modal -->
 <nz-modal
   [nzVisible]="qrModalVisible()"
-  nzTitle="Swiss QR-Bill (Polizza di versamento)"
+  [nzTitle]="'SALES.LBL_SWISS_QR_BILL_POLIZZA_DI_VERSAMENTO' | translate"
   [nzFooter]="qrModalFooter"
   (nzOnCancel)="qrModalVisible.set(false)"
 >
@@ -204,23 +204,23 @@
       <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
         <nz-qrcode [nzValue]="qr.payload || ''" [nzSize]="220"></nz-qrcode>
         <div style="width: 100%; font-size: 13px;">
-          <div><strong>IBAN:</strong> {{ qr.iban }}</div>
-          <div><strong>Importo:</strong> {{ qr.amount | money: qr.currency }}</div>
-          <div><strong>Tipo Riferimento:</strong> {{ qr.reference_type }}</div>
-          <div><strong>Riferimento:</strong> {{ qr.reference || 'N/A' }}</div>
+          <div><strong>{{ 'SALES.LBL_IBAN' | translate }}</strong> {{ qr.iban }}</div>
+          <div><strong>{{ 'SALES.LBL_IMPORTO' | translate }}</strong> {{ qr.amount | money: qr.currency }}</div>
+          <div><strong>{{ 'SALES.LBL_TIPO_RIFERIMENTO' | translate }}</strong> {{ qr.reference_type }}</div>
+          <div><strong>{{ 'SALES.LBL_RIFERIMENTO' | translate }}</strong> {{ qr.reference || 'N/A' }}</div>
         </div>
       </div>
     }
   </ng-container>
   <ng-template #qrModalFooter>
-    <button nz-button nzType="primary" (click)="qrModalVisible.set(false)">Chiudi</button>
+    <button nz-button nzType="primary" (click)="qrModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
   </ng-template>
 </nz-modal>
 
 <!-- SDI Logs Modal -->
 <nz-modal
   [nzVisible]="sdiLogsModalVisible()"
-  nzTitle="Log Trasmissioni SDI FatturaPA"
+  [nzTitle]="'SALES.LBL_LOG_TRASMISSIONI_SDI_FATTURAPA' | translate"
   nzWidth="720px"
   [nzFooter]="sdiFooter"
   (nzOnCancel)="sdiLogsModalVisible.set(false)"
@@ -228,14 +228,14 @@
   <ng-container *nzModalContent>
     @if (currentSdiLogs(); as sdi) {
       <div>
-        <h4>Invii verso SDI (Outbound)</h4>
+        <h4>{{ 'SALES.LBL_INVII_VERSO_SDI_OUTBOUND' | translate }}</h4>
         <nz-table #outTable [nzData]="sdi.outbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>Azione</th>
-              <th>Data Trasmissione</th>
-              <th>Stato</th>
-              <th>Dettagli</th>
+              <th>{{ 'SALES.LBL_AZIONE' | translate }}</th>
+              <th>{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
+              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th>{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -252,14 +252,14 @@
 
         <nz-divider></nz-divider>
 
-        <h4>Notifiche e Ricevute SDI (Inbound)</h4>
+        <h4>{{ 'SALES.LBL_NOTIFICHE_E_RICEVUTE_SDI_INBOUND' | translate }}</h4>
         <nz-table #inTable [nzData]="sdi.inbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>Azione / Ricevuta</th>
-              <th>Data Ricezione</th>
-              <th>Stato</th>
-              <th>Dettagli / Codice</th>
+              <th>{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
+              <th>{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
+              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th>{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -277,14 +277,14 @@
     }
   </ng-container>
   <ng-template #sdiFooter>
-    <button nz-button nzType="primary" (click)="sdiLogsModalVisible.set(false)">Chiudi</button>
+    <button nz-button nzType="primary" (click)="sdiLogsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
   </ng-template>
 </nz-modal>
 
 <!-- Credit Note Modal -->
 <nz-modal
   [nzVisible]="creditNoteModalVisible()"
-  nzTitle="Emetti Nota di Credito"
+  [nzTitle]="'SALES.LBL_EMETTI_NOTA_DI_CREDITO' | translate"
   [nzOkLoading]="savingCreditNote()"
   (nzOnCancel)="creditNoteModalVisible.set(false)"
   (nzOnOk)="submitCreditNote()"
@@ -292,41 +292,41 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="creditNoteForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Data Emissione</nz-form-label>
+        <nz-form-label nzRequired>{{ 'SALES.LBL_DATA_EMISSIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <input nz-input type="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzRequired>Descrizione Voce</nz-form-label>
+        <nz-form-label nzRequired>{{ 'SALES.LBL_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="description" placeholder="Descrizione riga nota di credito" />
+          <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_RIGA_NOTA_DI_CREDITO' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div style="display: flex; gap: 12px;">
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzRequired>Quantità</nz-form-label>
+          <nz-form-label nzRequired>{{ 'SALES.LBL_QUANTITA' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="quantity" [nzMin]="0.01" style="width: 100%;"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+          <nz-form-label nzRequired>{{ 'SALES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="unit_price" [nzMin]="0" style="width: 100%;"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzRequired>Aliquota IVA %</nz-form-label>
+          <nz-form-label nzRequired>{{ 'SALES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="tax_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
-        <nz-form-label>Note</nz-form-label>
+        <nz-form-label>{{ 'SALES.LBL_NOTE' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input rows="2" formControlName="notes" placeholder="Note interne o per il cliente"></textarea>
+          <textarea nz-input rows="2" formControlName="notes" [placeholder]="'SALES.LBL_NOTE_INTERNE_O_PER_IL_CLIENTE' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -336,7 +336,7 @@
 <!-- Installments / Scadenze Modal -->
 <nz-modal
   [nzVisible]="installmentsModalVisible()"
-  nzTitle="Piano Rateale / Scadenze Pagamento"
+  [nzTitle]="'SALES.LBL_PIANO_RATEALE_SCADENZE_PAGAMENTO' | translate"
   nzWidth="600px"
   [nzFooter]="instFooter"
   (nzOnCancel)="installmentsModalVisible.set(false)"
@@ -345,10 +345,10 @@
     <nz-table #instTable [nzData]="currentInstallments()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>Rata</th>
-          <th>Scadenza</th>
-          <th>Importo</th>
-          <th>Stato</th>
+          <th>{{ 'SALES.LBL_RATA' | translate }}</th>
+          <th>{{ 'SALES.LBL_SCADENZA' | translate }}</th>
+          <th>{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
+          <th>{{ 'SALES.LBL_STATO' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -368,6 +368,6 @@
     </nz-table>
   </ng-container>
   <ng-template #instFooter>
-    <button nz-button nzType="primary" (click)="installmentsModalVisible.set(false)">Chiudi</button>
+    <button nz-button nzType="primary" (click)="installmentsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
   </ng-template>
 </nz-modal>

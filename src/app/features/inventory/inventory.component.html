@@ -151,12 +151,12 @@
           [nzPlaceHolder]="'INVENTORY.FILTER_MOVEMENT_TYPE' | translate"
           nzAllowClear
         >
-          <nz-option nzValue="INTERNAL_TRANSFER" nzLabel="Internal Transfer"></nz-option>
-          <nz-option nzValue="PURCHASE_RECEIPT" nzLabel="Purchase Receipt (Entrata)"></nz-option>
-          <nz-option nzValue="SALES_DELIVERY" nzLabel="Sales Delivery (Uscita)"></nz-option>
-          <nz-option nzValue="ADJUSTMENT_IN" nzLabel="Adjustment In"></nz-option>
-          <nz-option nzValue="ADJUSTMENT_OUT" nzLabel="Adjustment Out"></nz-option>
-          <nz-option nzValue="SCRAP" nzLabel="Scrap / Rottamazione"></nz-option>
+          <nz-option nzValue="INTERNAL_TRANSFER" [nzLabel]="'INVENTORY.LBL_INTERNAL_TRANSFER' | translate"></nz-option>
+          <nz-option nzValue="PURCHASE_RECEIPT" [nzLabel]="'INVENTORY.LBL_PURCHASE_RECEIPT_ENTRATA' | translate"></nz-option>
+          <nz-option nzValue="SALES_DELIVERY" [nzLabel]="'INVENTORY.LBL_SALES_DELIVERY_USCITA' | translate"></nz-option>
+          <nz-option nzValue="ADJUSTMENT_IN" [nzLabel]="'INVENTORY.LBL_ADJUSTMENT_IN' | translate"></nz-option>
+          <nz-option nzValue="ADJUSTMENT_OUT" [nzLabel]="'INVENTORY.LBL_ADJUSTMENT_OUT' | translate"></nz-option>
+          <nz-option nzValue="SCRAP" [nzLabel]="'INVENTORY.LBL_SCRAP_ROTTAMAZIONE' | translate"></nz-option>
         </nz-select>
 
         <button nz-button nzType="default" (click)="loadMovements()" [nzLoading]="loading()">
@@ -659,7 +659,7 @@
         <nz-form-control>
           <nz-input-wrapper>
             <nz-icon nzInputPrefix nzType="search" />
-            <input nz-input formControlName="stock_item_id" placeholder="UUID articolo" />
+            <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
           </nz-input-wrapper>
         </nz-form-control>
       </nz-form-item>
@@ -739,11 +739,11 @@
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_REASON' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="reason">
-                <nz-option nzValue="cycle_count_variance" nzLabel="Cycle count variance"></nz-option>
-                <nz-option nzValue="damage_loss" nzLabel="Damage / Loss"></nz-option>
-                <nz-option nzValue="obsolete_write_off" nzLabel="Obsolete write-off"></nz-option>
-                <nz-option nzValue="found_stock" nzLabel="Found stock"></nz-option>
-                <nz-option nzValue="scrap" nzLabel="Scrap"></nz-option>
+                <nz-option nzValue="cycle_count_variance" [nzLabel]="'INVENTORY.LBL_CYCLE_COUNT_VARIANCE' | translate"></nz-option>
+                <nz-option nzValue="damage_loss" [nzLabel]="'INVENTORY.LBL_DAMAGE_LOSS' | translate"></nz-option>
+                <nz-option nzValue="obsolete_write_off" [nzLabel]="'INVENTORY.LBL_OBSOLETE_WRITE_OFF' | translate"></nz-option>
+                <nz-option nzValue="found_stock" [nzLabel]="'INVENTORY.LBL_FOUND_STOCK' | translate"></nz-option>
+                <nz-option nzValue="scrap" [nzLabel]="'INVENTORY.LBL_SCRAP' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -753,7 +753,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="stock_item_id" placeholder="UUID articolo" />
+          <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -851,10 +851,10 @@
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="count_type">
-            <nz-option nzValue="full_physical" nzLabel="Full Physical Inventory"></nz-option>
-            <nz-option nzValue="cycle_count_abc" nzLabel="ABC Cycle Count"></nz-option>
-            <nz-option nzValue="spot_check" nzLabel="Spot Check"></nz-option>
-            <nz-option nzValue="zone_sweep" nzLabel="Zone Sweep"></nz-option>
+            <nz-option nzValue="full_physical" [nzLabel]="'INVENTORY.LBL_FULL_PHYSICAL_INVENTORY' | translate"></nz-option>
+            <nz-option nzValue="cycle_count_abc" [nzLabel]="'INVENTORY.LBL_ABC_CYCLE_COUNT' | translate"></nz-option>
+            <nz-option nzValue="spot_check" [nzLabel]="'INVENTORY.LBL_SPOT_CHECK' | translate"></nz-option>
+            <nz-option nzValue="zone_sweep" [nzLabel]="'INVENTORY.LBL_ZONE_SWEEP' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -896,7 +896,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_DESC' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Name is required">
-          <input nz-input formControlName="name" placeholder="Descrizione prodotto" />
+          <input nz-input formControlName="name" [placeholder]="'INVENTORY.LBL_DESCRIZIONE_PRODOTTO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -922,13 +922,13 @@
         </nz-col>
         <nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>UdM</nz-form-label>
+            <nz-form-label nzRequired>{{ 'INVENTORY.LBL_UDM' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="unit_of_measure">
-                <nz-option nzValue="Pz" nzLabel="Pezzi (Pz)"></nz-option>
-                <nz-option nzValue="Kg" nzLabel="Chilogrammi (Kg)"></nz-option>
-                <nz-option nzValue="M" nzLabel="Metri (M)"></nz-option>
-                <nz-option nzValue="Ore" nzLabel="Ore"></nz-option>
+                <nz-option nzValue="Pz" [nzLabel]="'INVENTORY.LBL_PEZZI_PZ' | translate"></nz-option>
+                <nz-option nzValue="Kg" [nzLabel]="'INVENTORY.LBL_CHILOGRAMMI_KG' | translate"></nz-option>
+                <nz-option nzValue="M" [nzLabel]="'INVENTORY.LBL_METRI_M' | translate"></nz-option>
+                <nz-option nzValue="Ore" [nzLabel]="'INVENTORY.LBL_ORE' | translate"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>

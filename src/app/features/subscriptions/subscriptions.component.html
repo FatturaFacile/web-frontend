@@ -1,16 +1,16 @@
 <app-page-header
-  title="Subscriptions & Recurring Contracts"
+  [title]="'subscriptions.lblSubscriptionsAndRecurringContracts' | translate"
   subtitle="Manage SaaS plans, recurring billing contracts (/sub/contracts), MRR/ARR metrics, and dunning"
 >
   <div class="header-actions">
     <nz-space>
       <button *nzSpaceItem nz-button nzType="default" [nzLoading]="runningDunning()" (click)="triggerDunning()">
         <nz-icon nzType="sync" />
-        Run Dunning
+        {{ 'subscriptions.lblRunDunning' | translate }}
       </button>
       <button *nzSpaceItem nz-button nzType="primary" (click)="openCreateModal()">
         <nz-icon nzType="plus" />
-        New Contract
+        {{ 'subscriptions.lblNewContract' | translate }}
       </button>
     </nz-space>
   </div>
@@ -20,16 +20,16 @@
 @if (metrics(); as m) {
   <div class="metrics-grid">
     <nz-card class="metric-card">
-      <nz-statistic [nzValue]="m.mrr | money: authStore.activeCurrency()" nzTitle="Monthly Recurring Revenue (MRR)"></nz-statistic>
+      <nz-statistic [nzValue]="m.mrr | money: authStore.activeCurrency()" [nzTitle]="'subscriptions.lblMonthlyRecurringRevenueMrr' | translate"></nz-statistic>
     </nz-card>
     <nz-card class="metric-card">
-      <nz-statistic [nzValue]="m.arr | money: authStore.activeCurrency()" nzTitle="Annual Run Rate (ARR)"></nz-statistic>
+      <nz-statistic [nzValue]="m.arr | money: authStore.activeCurrency()" [nzTitle]="'subscriptions.lblAnnualRunRateArr' | translate"></nz-statistic>
     </nz-card>
     <nz-card class="metric-card">
-      <nz-statistic [nzValue]="m.active_subscriptions" nzTitle="Active Subscriptions"></nz-statistic>
+      <nz-statistic [nzValue]="m.active_subscriptions" [nzTitle]="'subscriptions.lblActiveSubscriptions' | translate"></nz-statistic>
     </nz-card>
     <nz-card class="metric-card">
-      <nz-statistic [nzValue]="m.customer_churn_rate + '%'" nzTitle="Customer Churn Rate"></nz-statistic>
+      <nz-statistic [nzValue]="m.customer_churn_rate + '%'" [nzTitle]="'subscriptions.lblCustomerChurnRate' | translate"></nz-statistic>
     </nz-card>
   </div>
 }
@@ -42,7 +42,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Search contracts by number, customer, plan..."
+          [placeholder]="'subscriptions.lblSearchContractsByNumberCustomerPlan' | translate"
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
@@ -57,15 +57,15 @@
         [ngModel]="statusFilter()"
         (ngModelChange)="onStatusChange($event)"
       >
-        <nz-option nzValue="active" nzLabel="Active"></nz-option>
-        <nz-option nzValue="trialing" nzLabel="Trialing"></nz-option>
-        <nz-option nzValue="paused" nzLabel="Paused"></nz-option>
-        <nz-option nzValue="cancelled" nzLabel="Cancelled"></nz-option>
+        <nz-option nzValue="active" [nzLabel]="'subscriptions.lblActive' | translate"></nz-option>
+        <nz-option nzValue="trialing" [nzLabel]="'subscriptions.lblTrialing' | translate"></nz-option>
+        <nz-option nzValue="paused" [nzLabel]="'subscriptions.lblPaused' | translate"></nz-option>
+        <nz-option nzValue="cancelled" [nzLabel]="'subscriptions.lblCancelled' | translate"></nz-option>
       </nz-select>
 
       <button nz-button nzType="default" (click)="loadContracts()">
         <nz-icon nzType="reload" />
-        Refresh
+        {{ 'subscriptions.lblRefresh' | translate }}
       </button>
     </div>
   </div>
@@ -82,13 +82,13 @@
   >
     <thead>
       <tr>
-        <th>Contract</th>
-        <th>Customer</th>
-        <th>Plan</th>
-        <th>Status</th>
-        <th>MRR</th>
-        <th>Current Period</th>
-        <th nzWidth="240px">Actions</th>
+        <th>{{ 'subscriptions.lblContract' | translate }}</th>
+        <th>{{ 'subscriptions.lblCustomer' | translate }}</th>
+        <th>{{ 'subscriptions.lblPlan' | translate }}</th>
+        <th>{{ 'subscriptions.lblStatus' | translate }}</th>
+        <th>{{ 'subscriptions.lblMrr' | translate }}</th>
+        <th>{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
+        <th nzWidth="240px">{{ 'subscriptions.lblActions' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -112,32 +112,32 @@
           </td>
           <td>
             <span class="sub-text">
-              {{ c.current_period_start || c.start_date }} &rarr; {{ c.current_period_end || 'ongoing' }}
+              {{ c.current_period_start || c.start_date }} &rarr; {{ c.current_period_end || ('subscriptions.lblOngoing' | translate) }}
             </span>
           </td>
           <td>
             <nz-space>
               @if (c.status === 'trialing' || c.status === 'draft') {
                 <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="activate(c)">
-                  Activate
+                  {{ 'subscriptions.lblActivate' | translate }}
                 </button>
               }
               @if (c.status === 'active') {
                 <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="billNow(c)">
-                  Bill Now
+                  {{ 'subscriptions.lblBillNow' | translate }}
                 </button>
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(c)">
-                  Pause
+                  {{ 'subscriptions.lblPause' | translate }}
                 </button>
               }
               @if (c.status === 'paused') {
                 <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="reactivate(c)">
-                  Resume
+                  {{ 'subscriptions.lblResume' | translate }}
                 </button>
               }
               @if (c.status !== 'cancelled') {
                 <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="cancel(c)">
-                  Cancel
+                  {{ 'subscriptions.lblCancel' | translate }}
                 </button>
               }
             </nz-space>
@@ -151,7 +151,7 @@
 <!-- Create Contract Modal -->
 <nz-modal
   [nzVisible]="createModalVisible()"
-  nzTitle="New Subscription Contract"
+  [nzTitle]="'subscriptions.lblNewSubscriptionContract' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateContract()"
   [nzOkLoading]="saving()"
@@ -160,14 +160,14 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="contractForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>Customer ID (UUID)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'subscriptions.lblCustomerIdUuid' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Customer ID required">
-          <input nz-input formControlName="customer_id" placeholder="Customer contact UUID" />
+          <input nz-input formControlName="customer_id" [placeholder]="'subscriptions.lblCustomerContactUuid' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Subscription Plan</nz-form-label>
+        <nz-form-label nzRequired>{{ 'subscriptions.lblSubscriptionPlan' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Plan is required">
           <nz-select formControlName="plan_id">
             @for (p of plans(); track p.id) {
@@ -178,21 +178,21 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>Contract Label</nz-form-label>
+        <nz-form-label>{{ 'subscriptions.lblContractLabel' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="E.g. SaaS Annual Commitment" />
+          <input nz-input formControlName="name" [placeholder]="'subscriptions.lblEGSaasAnnualCommitment' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Start Date</nz-form-label>
+          <nz-form-label nzRequired>{{ 'subscriptions.lblStartDate' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Start date required">
             <input nz-input formControlName="start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Quantity / Seats</nz-form-label>
+          <nz-form-label nzRequired>{{ 'subscriptions.lblQuantitySeats' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Quantity required">
             <nz-input-number formControlName="quantity" [nzMin]="1" [nzStep]="1" style="width: 100%"></nz-input-number>
           </nz-form-control>
@@ -201,17 +201,17 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label>Trial Days</nz-form-label>
+          <nz-form-label>{{ 'subscriptions.lblTrialDays' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="trial_days" [nzMin]="0" [nzStep]="7" style="width: 100%"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Auto Renew</nz-form-label>
+          <nz-form-label>{{ 'subscriptions.lblAutoRenew' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="auto_renew">
-              <nz-option [nzValue]="true" nzLabel="Yes (Auto Renew)"></nz-option>
-              <nz-option [nzValue]="false" nzLabel="No (Manual Renewal)"></nz-option>
+              <nz-option [nzValue]="true" [nzLabel]="'subscriptions.lblYesAutoRenew' | translate"></nz-option>
+              <nz-option [nzValue]="false" [nzLabel]="'subscriptions.lblNoManualRenewal' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>

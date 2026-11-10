@@ -7,27 +7,27 @@
   <ng-container *nzDrawerContent>
     <nz-tabs>
       <!-- TAB 1: OVERVIEW -->
-      <nz-tab nzTitle="Overview & Metrics">
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblOverviewAndMetrics' | translate">
         <div class="tab-content">
           <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
-            <nz-descriptions-item nzTitle="Asset Name">{{ asset().name || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Asset Number">{{ asset().asset_number || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Serial Number">{{ asset().serial_number || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Barcode Tag">{{ asset().barcode_tag || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Status">
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAssetName' | translate">{{ asset().name || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAssetNumber' | translate">{{ asset().asset_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblSerialNumber' | translate">{{ asset().serial_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblBarcodeTag' | translate">{{ asset().barcode_tag || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblStatus' | translate">
               <nz-badge nzStatus="processing" [nzText]="asset().status || 'draft'"></nz-badge>
             </nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Condition">
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblCondition' | translate">
               <nz-tag>{{ asset().condition || 'good' }}</nz-tag>
             </nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Acquisition Date">{{ asset().acquisition_date || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="In-Service Date">{{ asset().in_service_date || '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Depreciation Method">{{ asset().depreciation_method || 'straight_line' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Useful Life">{{ asset().useful_life_years ? asset().useful_life_years + ' years' : '—' }}</nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Acquisition Cost">
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAcquisitionDate' | translate">{{ asset().acquisition_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblInServiceDate' | translate">{{ asset().in_service_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblDepreciationMethod' | translate">{{ asset().depreciation_method || 'straight_line' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblUsefulLife' | translate">{{ asset().useful_life_years ? asset().useful_life_years + ' years' : '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAcquisitionCost' | translate">
               <strong>{{ asset().acquisition_cost | money: asset().currency }}</strong>
             </nz-descriptions-item>
-            <nz-descriptions-item nzTitle="Carrying Amount">
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblCarryingAmount' | translate">
               <strong style="color: #1890ff">
                 {{ asset().carrying_amount ? (asset().carrying_amount | money: asset().currency) : (asset().acquisition_cost | money: asset().currency) }}
               </strong>
@@ -36,7 +36,7 @@
 
           @if (asset().description) {
             <div class="desc-box">
-              <h4>Description & Notes</h4>
+              <h4>{{ 'assetDetailDrawer.lblDescriptionAndNotes' | translate }}</h4>
               <p>{{ asset().description }}</p>
             </div>
           }
@@ -44,9 +44,9 @@
       </nz-tab>
 
       <!-- TAB 2: PARALLEL BOOKS (STATUTORY, TAX, MANAGERIAL) -->
-      <nz-tab nzTitle="Parallel Books">
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblParallelBooks' | translate">
         <div class="tab-content">
-          <p class="tab-info">Multi-standard asset depreciation: Statutory (IT/CH Code of Obligations), Fiscal Tax deductions, and Internal Managerial accounting.</p>
+          <p class="tab-info">{{ 'assetDetailDrawer.lblMultiStandardAssetDepreciationStatutoryIt' | translate }}</p>
 
           <nz-table
             #booksTable
@@ -57,14 +57,14 @@
           >
             <thead>
               <tr>
-                <th>Ledger Standard</th>
-                <th>Depr. Method</th>
-                <th>Useful Life</th>
-                <th>Rate</th>
-                <th>Cost</th>
-                <th>Accum. Depr.</th>
-                <th>Net Book Value</th>
-                <th>Posts to GL</th>
+                <th>{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblUsefulLife' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblRate' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblCost' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblPostsToGl' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,7 +92,7 @@
       </nz-tab>
 
       <!-- TAB 3: DEPRECIATION SCHEDULE -->
-      <nz-tab nzTitle="Depreciation Schedule">
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblDepreciationSchedule' | translate">
         <div class="tab-content">
           <nz-table
             #schTable
@@ -103,13 +103,13 @@
           >
             <thead>
               <tr>
-                <th>Period</th>
-                <th>Ledger</th>
-                <th>Opening Value</th>
-                <th>Depr. Amount</th>
-                <th>Closing Value</th>
-                <th>Accumulated</th>
-                <th>Status</th>
+                <th>{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -132,7 +132,7 @@
       </nz-tab>
 
       <!-- TAB 4: MAINTENANCE WORK ORDERS -->
-      <nz-tab nzTitle="Maintenance">
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblMaintenance' | translate">
         <div class="tab-content">
           <nz-table
             #woTable
@@ -143,12 +143,12 @@
           >
             <thead>
               <tr>
-                <th>WO Number</th>
-                <th>Type</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Scheduled Date</th>
-                <th>Total Cost</th>
+                <th>{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblType' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblTotalCost' | translate }}</th>
               </tr>
             </thead>
             <tbody>

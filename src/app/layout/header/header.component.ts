@@ -12,6 +12,7 @@ import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
 import { PermissionsService } from '@core/auth/permissions.service';
 import type { SupportedLanguage } from '@core/i18n/i18n.types';
+import { TranslateService } from '@core/i18n/i18n.service';
 import { AppStore } from '@core/state/app.store';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
@@ -32,6 +33,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  private readonly translate = inject(TranslateService);
   readonly appStore = inject(AppStore);
   readonly authStore = inject(AuthStore);
   readonly permissions = inject(PermissionsService);
@@ -47,11 +49,11 @@ export class HeaderComponent {
     this.authApi.switchTenant({ tenant_id: tenantId }).subscribe({
       next: () => {
         this.authStore.switchTenant(tenantId);
-        this.message.success('Tenant attivo aggiornato con successo.');
+        this.message.success(this.translate.instant('header.msgTenantAttivoAggiornatoConSuccesso'));
       },
       error: (err: unknown) => {
         const body = (err as { error?: { message?: string; detail?: string } })?.error;
-        this.message.error(body?.detail || body?.message || 'Impossibile cambiare tenant.');
+        this.message.error(body?.detail || body?.message || this.translate.instant('header.msgImpossibileCambiareTenant'));
       },
     });
   }

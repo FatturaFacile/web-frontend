@@ -1,19 +1,19 @@
 <nz-drawer
   [nzVisible]="open()"
-  nzTitle="Nuovo Ticket di Assistenza"
+  [nzTitle]="'ticketCreateDrawer.lblNuovoTicketDiAssistenza' | translate"
   [nzWidth]="520"
   (nzOnClose)="close()"
 >
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="title">Titolo / Oggetto</nz-form-label>
+        <nz-form-label nzRequired nzFor="title">{{ 'ticketCreateDrawer.lblTitoloOggetto' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="titleError">
           <input
             nz-input
             id="title"
             formControlName="title"
-            placeholder="Descrizione sintetica del problema o richiesta"
+            [placeholder]="'ticketCreateDrawer.lblDescrizioneSinteticaDelProblemaORichiesta' | translate"
           />
           <ng-template #titleError let-control>
             @if (getErrorMessage('title')) {
@@ -29,27 +29,27 @@
 
       <div style="display: flex; gap: 16px;">
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="priority">Priorità</nz-form-label>
+          <nz-form-label nzFor="priority">{{ 'ticketCreateDrawer.lblPriorita' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="priority" formControlName="priority">
-              <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
-              <nz-option nzValue="medium" nzLabel="Media"></nz-option>
-              <nz-option nzValue="high" nzLabel="Alta"></nz-option>
-              <nz-option nzValue="critical" nzLabel="Critica"></nz-option>
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassa' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblMedia' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblAlta' | translate"></nz-option>
+              <nz-option nzValue="critical" [nzLabel]="'ticketCreateDrawer.lblCritica' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="channel">Canale di Ingresso</nz-form-label>
+          <nz-form-label nzFor="channel">{{ 'ticketCreateDrawer.lblCanaleDiIngresso' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="channel" formControlName="channel">
-              <nz-option nzValue="portal" nzLabel="Portale Clienti"></nz-option>
+              <nz-option nzValue="portal" [nzLabel]="'ticketCreateDrawer.lblPortaleClienti' | translate"></nz-option>
               <nz-option nzValue="email" nzLabel="Email"></nz-option>
-              <nz-option nzValue="phone" nzLabel="Telefono"></nz-option>
-              <nz-option nzValue="chat" nzLabel="Chat"></nz-option>
-              <nz-option nzValue="field" nzLabel="Intervento sul campo"></nz-option>
-              <nz-option nzValue="api" nzLabel="Integrazione API"></nz-option>
+              <nz-option nzValue="phone" [nzLabel]="'ticketCreateDrawer.lblTelefono' | translate"></nz-option>
+              <nz-option nzValue="chat" [nzLabel]="'ticketCreateDrawer.lblChat' | translate"></nz-option>
+              <nz-option nzValue="field" [nzLabel]="'ticketCreateDrawer.lblInterventoSulCampo' | translate"></nz-option>
+              <nz-option nzValue="api" [nzLabel]="'ticketCreateDrawer.lblIntegrazioneApi' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -57,23 +57,23 @@
 
       <div style="display: flex; gap: 16px;">
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="impact">Impatto</nz-form-label>
+          <nz-form-label nzFor="impact">{{ 'ticketCreateDrawer.lblImpatto' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="impact" formControlName="impact">
-              <nz-option nzValue="low" nzLabel="Basso (Singolo utente)"></nz-option>
-              <nz-option nzValue="medium" nzLabel="Medio (Dipartimento)"></nz-option>
-              <nz-option nzValue="high" nzLabel="Alto (Intera azienda)"></nz-option>
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassoSingoloUtente' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblMedioDipartimento' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblAltoInteraAzienda' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="urgency">Urgenza</nz-form-label>
+          <nz-form-label nzFor="urgency">{{ 'ticketCreateDrawer.lblUrgenza' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="urgency" formControlName="urgency">
-              <nz-option nzValue="low" nzLabel="Bassa"></nz-option>
-              <nz-option nzValue="medium" nzLabel="Normale"></nz-option>
-              <nz-option nzValue="high" nzLabel="Immediata"></nz-option>
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassa' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblNormale' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblImmediata' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -81,14 +81,14 @@
 
       <div style="display: flex; gap: 16px;">
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="contact_email">Email Contatto</nz-form-label>
+          <nz-form-label nzFor="contact_email">{{ 'ticketCreateDrawer.lblEmailContatto' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="emailError">
             <input
               nz-input
               id="contact_email"
               type="email"
               formControlName="contact_email"
-              placeholder="cliente@esempio.ch"
+              [placeholder]="'ticketCreateDrawer.lblClienteEsempioCh' | translate"
             />
             <ng-template #emailError let-control>
               @if (getErrorMessage('contact_email')) {
@@ -101,7 +101,7 @@
         </nz-form-item>
 
         <nz-form-item style="flex: 1;">
-          <nz-form-label nzFor="contact_phone">Telefono Contatto</nz-form-label>
+          <nz-form-label nzFor="contact_phone">{{ 'ticketCreateDrawer.lblTelefonoContatto' | translate }}</nz-form-label>
           <nz-form-control>
             <input
               nz-input
@@ -114,20 +114,20 @@
       </div>
 
       <nz-form-item>
-        <nz-form-label nzFor="description">Descrizione Dettagliata</nz-form-label>
+        <nz-form-label nzFor="description">{{ 'ticketCreateDrawer.lblDescrizioneDettagliata' | translate }}</nz-form-label>
         <nz-form-control>
           <textarea
             nz-input
             id="description"
             rows="4"
             formControlName="description"
-            placeholder="Dettagli del problema, passaggi per riprodurre o richieste specifiche"
+            [placeholder]="'ticketCreateDrawer.lblDettagliDelProblemaPassaggiPerRiprodurre' | translate"
           ></textarea>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="tags">Tag</nz-form-label>
+        <nz-form-label nzFor="tags">{{ 'ticketCreateDrawer.lblTag' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select
             id="tags"
@@ -140,14 +140,14 @@
       </nz-form-item>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
-        <button nz-button type="button" (click)="close()">Annulla</button>
+        <button nz-button type="button" (click)="close()">{{ 'ticketCreateDrawer.lblAnnulla' | translate }}</button>
         <button
           nz-button
           nzType="primary"
           type="submit"
           [nzLoading]="isSaving()"
         >
-          Crea Ticket
+          {{ 'ticketCreateDrawer.lblCreaTicket' | translate }}
         </button>
       </div>
     </form>

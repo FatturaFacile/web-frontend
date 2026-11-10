@@ -573,14 +573,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="vehicle_id" placeholder="VEH-001 / Targa" />
+          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_VEH_001_TARGA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_CONTACT_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="contact_id" placeholder="ID Cliente" />
+          <input nz-input formControlName="contact_id" [placeholder]="'WORKSHOP.LBL_ID_CLIENTE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -638,7 +638,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="description" placeholder="Descrizione ricambio o intervento" />
+          <input nz-input formControlName="description" [placeholder]="'WORKSHOP.LBL_DESCRIZIONE_RICAMBIO_O_INTERVENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -792,7 +792,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="buyer_contact_id" placeholder="ID Acquirente / Cliente" />
+          <input nz-input formControlName="buyer_contact_id" [placeholder]="'WORKSHOP.LBL_ID_ACQUIRENTE_CLIENTE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -834,14 +834,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="vehicle_id" placeholder="Targa o ID Veicolo" />
+          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_TARGA_O_ID_VEICOLO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="Es. Tagliando 30.000 km, Revisione MCTC..." />
+          <input nz-input formControlName="name" [placeholder]="'WORKSHOP.LBL_ES_TAGLIANDO_30_000_KM_REVISIONE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -849,7 +849,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_INTERVAL' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="interval" placeholder="1 year / 15000 km" />
+            <input nz-input formControlName="interval" [placeholder]="'WORKSHOP.LBL_1_YEAR_15000_KM' | translate" />
           </nz-form-control>
         </nz-form-item>
 

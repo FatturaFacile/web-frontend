@@ -16,6 +16,7 @@ import {
   GlFiscalYear,
   I18nService,
   PermissionsService,
+  TranslateService,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
@@ -40,6 +41,7 @@ import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dat
   templateUrl: './gl-fiscal-years.component.html',
 })
 export class GlFiscalYearsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -158,7 +160,7 @@ export class GlFiscalYearsComponent implements OnInit {
     this.api.reopenFiscalYear(year.id, this.reopenReason.trim()).subscribe({
       next: () => {
         this.reopenModalOpen.set(false);
-        this.message.success(`Esercizio ${year.year_code} riaperto per rettifiche pre-AGM`);
+        this.message.success(this.translate.instant('GL.MSG_ESERCIZIO_RIAPERTO_PER_RETTIFICHE_PRE_AGM', { year_code: year.year_code }));
         this.load();
       },
       error: (err: unknown) => this.error.set(err),
@@ -180,7 +182,7 @@ export class GlFiscalYearsComponent implements OnInit {
     this.api.approveFiscalYearAtAgm(year.id, this.agmResolutionRef.trim() || undefined).subscribe({
       next: () => {
         this.agmModalOpen.set(false);
-        this.message.success(`Bilancio ${year.year_code} approvato dall'Assemblea Generale (CO Art. 958c)`);
+        this.message.success(this.translate.instant('GL.MSG_BILANCIO_APPROVATO_DALL_ASSEMBLEA_GENERALE_CO', { year_code: year.year_code }));
         this.load();
       },
       error: (err: unknown) => this.error.set(err),
@@ -215,7 +217,7 @@ export class GlFiscalYearsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.anhangModalOpen.set(false);
-          this.message.success('Nota Integrativa Svizzera (Anhang CO Art. 959c) salvata');
+          this.message.success(this.translate.instant('GL.MSG_NOTA_INTEGRATIVA_SVIZZERA_ANHANG_CO_ART'));
         },
         error: (err: unknown) => this.error.set(err),
       });

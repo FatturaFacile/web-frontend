@@ -22,6 +22,7 @@ import {
   WorkspaceItemResource,
   WorkspaceProvider,
   WorkspaceScope,
+  TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -50,6 +51,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrl: './workspace.component.scss',
 })
 export class WorkspaceComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly workspaceApi = inject(WorkspaceApiService);
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
@@ -127,7 +129,7 @@ export class WorkspaceComponent implements OnInit {
         this.items.set(res.data ?? []);
       },
       error: () => {
-        this.message.error('Impossibile caricare gli elementi sincronizzati.');
+        this.message.error(this.translate.instant('workspace.msgImpossibileCaricareGliElementiSincronizzati'));
       },
     });
   }
@@ -153,7 +155,7 @@ export class WorkspaceComponent implements OnInit {
     if (this.authForm.controls.mail.value) scopes.push('mail');
 
     if (scopes.length === 0) {
-      this.message.warning('Seleziona almeno un ambito di sincronizzazione (Calendario o Posta).');
+      this.message.warning(this.translate.instant('workspace.msgSelezionaAlmenoUnAmbitoDiSincronizzazione'));
       return;
     }
 
@@ -170,14 +172,14 @@ export class WorkspaceComponent implements OnInit {
         this.isAuthorizeModalVisible.set(false);
         const authUrl = res.data?.authorization_url;
         if (authUrl) {
-          this.message.success('Reindirizzamento all autorizzazione cloud in corso...');
+          this.message.success(this.translate.instant('workspace.msgReindirizzamentoAllAutorizzazioneCloudInCorso'));
           // Open authorization window
           window.open(authUrl, '_blank', 'noopener,noreferrer');
         }
       },
       error: () => {
         this.isAuthorizing.set(false);
-        this.message.error('Errore durante l avvio dell autorizzazione OAuth.');
+        this.message.error(this.translate.instant('workspace.msgErroreDuranteLAvvioDellAutorizzazione'));
       },
     });
   }
@@ -203,7 +205,7 @@ export class WorkspaceComponent implements OnInit {
     this.isAuthorizing.set(true);
     this.workspaceApi.callback(this.selectedProvider(), payload).subscribe({
       next: () => {
-        this.message.success('Connessione cloud completata con successo!');
+        this.message.success(this.translate.instant('workspace.msgConnessioneCloudCompletataConSuccesso'));
         this.isAuthorizing.set(false);
         this.isCallbackModalVisible.set(false);
         this.loadConnections();
@@ -211,7 +213,7 @@ export class WorkspaceComponent implements OnInit {
       },
       error: () => {
         this.isAuthorizing.set(false);
-        this.message.error('Codice o token di autorizzazione non valido.');
+        this.message.error(this.translate.instant('workspace.msgCodiceOTokenDiAutorizzazioneNon'));
       },
     });
   }
@@ -222,31 +224,31 @@ export class WorkspaceComponent implements OnInit {
       next: (res) => {
         this.isSyncing.set(false);
         const count = res.data?.items ?? 0;
-        this.message.success(`Sincronizzazione completata: ${count} elementi aggiornati.`);
+        this.message.success(this.translate.instant('workspace.msgSincronizzazioneCompletataElementiAggiornati', { count }));
         this.loadConnections();
         this.loadItems();
       },
       error: () => {
         this.isSyncing.set(false);
-        this.message.error('Errore durante la sincronizzazione.');
+        this.message.error(this.translate.instant('workspace.msgErroreDuranteLaSincronizzazione'));
       },
     });
   }
 
   revokeConnection(connection: WorkspaceConnectionResource): void {
     this.modal.confirm({
-      nzTitle: `Disconnettere ${connection.provider.toUpperCase()}?`,
+      nzTitle: this.translate.instant('workspace.dlgDisconnettere', { value: connection.provider.toUpperCase() }),
       nzContent:
-        'Tutti i token di accesso e le autorizzazioni OAuth saranno revocati. I dati sincronizzati rimarranno invariati.',
+        this.translate.instant('workspace.dlgTuttiITokenDiAccessoE'),
       nzOkDanger: true,
-      nzOkText: 'Revoca Accesso',
+      nzOkText: this.translate.instant('workspace.dlgRevocaAccesso'),
       nzOnOk: () => {
         this.workspaceApi.revoke(connection.id).subscribe({
           next: () => {
-            this.message.success('Connessione revocata con successo.');
+            this.message.success(this.translate.instant('workspace.msgConnessioneRevocataConSuccesso'));
             this.loadConnections();
           },
-          error: () => this.message.error('Impossibile revocare la connessione.'),
+          error: () => this.message.error(this.translate.instant('workspace.msgImpossibileRevocareLaConnessione')),
         });
       },
     });

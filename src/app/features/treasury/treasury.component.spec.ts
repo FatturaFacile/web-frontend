@@ -235,7 +235,7 @@ describe('TreasuryComponent', () => {
     (component as unknown as { importFormat: string }).importFormat = 'camt';
     component.submitImport();
     expect(billingApiMock.uploadPaymentImport).toHaveBeenCalledWith(file);
-    expect(messageMock.success).toHaveBeenCalledWith('Importati 2 movimenti CAMT');
+    expect(messageMock.success).toHaveBeenCalledWith('treasury.msgImportatiMovimentiCamt');
   });
 
   it('generates cash flow forecast', () => {

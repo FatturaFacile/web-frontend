@@ -159,7 +159,7 @@ describe('PipelineComponent', () => {
       stage_code: 'discovery',
       forecast_category: 'pipeline',
     });
-    expect(mockMessage.success).toHaveBeenCalledWith('Opportunity created');
+    expect(mockMessage.success).toHaveBeenCalledWith('CRMX.MSG_OPPORTUNITY_CREATED');
     expect(component.createModalVisible()).toBe(false);
   });
 
@@ -168,7 +168,7 @@ describe('PipelineComponent', () => {
     component.changeStage(mockOpportunities[0], 'proposal');
 
     expect(mockCrmApi.updateOpportunityStage).toHaveBeenCalledWith('opp-1', 'proposal');
-    expect(mockMessage.success).toHaveBeenCalledWith('Stage updated');
+    expect(mockMessage.success).toHaveBeenCalledWith('CRMX.MSG_STAGE_UPDATED');
   });
 
   it('creates a quote and a project from an opportunity', () => {

@@ -24,11 +24,11 @@
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti"></nz-option>
-            <nz-option nzValue="active" nzLabel="Attivo"></nz-option>
-            <nz-option nzValue="candidate" nzLabel="Candidato"></nz-option>
-            <nz-option nzValue="inactive" nzLabel="Inattivo"></nz-option>
-            <nz-option nzValue="ceased" nzLabel="Decaduto"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'ASSOCIATIONS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="active" [nzLabel]="'ASSOCIATIONS.LBL_ATTIVO' | translate"></nz-option>
+            <nz-option nzValue="candidate" [nzLabel]="'ASSOCIATIONS.LBL_CANDIDATO' | translate"></nz-option>
+            <nz-option nzValue="inactive" [nzLabel]="'ASSOCIATIONS.LBL_INATTIVO' | translate"></nz-option>
+            <nz-option nzValue="ceased" [nzLabel]="'ASSOCIATIONS.LBL_DECADUTO' | translate"></nz-option>
           </nz-select>
 
           <button nz-button nzType="default" (click)="loadMembers()">
@@ -89,9 +89,9 @@
               <td>{{ m.joined_on | date: 'dd/MM/yyyy' }}</td>
               <td>
                 @if (m.has_medical_certificate) {
-                  <nz-tag nzColor="success">VALIDO</nz-tag>
+                  <nz-tag nzColor="success">{{ 'ASSOCIATIONS.LBL_VALIDO' | translate }}</nz-tag>
                 } @else {
-                  <nz-tag nzColor="error">MANCANTE</nz-tag>
+                  <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_MANCANTE' | translate }}</nz-tag>
                 }
               </td>
               <td>
@@ -258,7 +258,7 @@
               <td nzAlign="right">
                 <button nz-button nzType="default" nzSize="small" (click)="openEnrolModal(course)">
                   <span nz-icon nzType="plus"></span>
-                  Iscrivi
+                  {{ 'ASSOCIATIONS.LBL_ISCRIVI' | translate }}
                 </button>
               </td>
             </tr>
@@ -272,9 +272,8 @@
       @if (fivePerMille(); as fpm) {
         <div class="fpm-summary-banner">
           <div>
-            <strong>Rendiconto 5 per Mille (Anno {{ fpm.year }})</strong>:
-            Incassato: <strong>{{ fpm.total_received | money: 'CHF' }}</strong> &bull;
-            Allocato a progetti sociali: <strong>{{ fpm.allocated | money: 'CHF' }}</strong>
+            <strong>Rendiconto 5 per Mille (Anno {{ fpm.year }})</strong>{{ 'ASSOCIATIONS.LBL_INCASSATO' | translate }} <strong>{{ fpm.total_received | money: 'CHF' }}</strong> &bull;
+            {{ 'ASSOCIATIONS.LBL_ALLOCATO_A_PROGETTI_SOCIALI' | translate }}: <strong>{{ fpm.allocated | money: 'CHF' }}</strong>
           </div>
         </div>
       }
@@ -317,7 +316,7 @@
               <td>
                 <strong>{{ d.amount | money: d.currency }}</strong>
                 @if (d.is_cash) {
-                  <nz-tag nzColor="orange">CONTANTI</nz-tag>
+                  <nz-tag nzColor="orange">{{ 'ASSOCIATIONS.LBL_CONTANTI' | translate }}</nz-tag>
                 }
               </td>
               <td>{{ d.donation_date | date: 'dd/MM/yyyy' }}</td>
@@ -325,14 +324,14 @@
                 @if (d.receipt_number) {
                   <nz-tag nzColor="success">{{ d.receipt_number }}</nz-tag>
                 } @else {
-                  <span class="text-muted">Non emessa</span>
+                  <span class="text-muted">{{ 'ASSOCIATIONS.LBL_NON_EMESSA' | translate }}</span>
                 }
               </td>
               <td nzAlign="right">
                 @if (!d.receipt_number) {
                   <button nz-button nzType="default" nzSize="small" (click)="generateReceipt(d)">
                     <span nz-icon nzType="check"></span>
-                    Ricevuta Fiscale
+                    {{ 'ASSOCIATIONS.LBL_RICEVUTA_FISCALE' | translate }}
                   </button>
                 }
               </td>
@@ -372,7 +371,7 @@
                   <td>{{ vol.insurance_policy_number || 'Polizza Collettiva Terzo Settore' }}</td>
                   <td>{{ vol.insurance_expiry ? (vol.insurance_expiry | date: 'dd/MM/yyyy') : '31/12/2026' }}</td>
                   <td>
-                    <nz-tag nzColor="success">VIDIMATO RUNTS</nz-tag>
+                    <nz-tag nzColor="success">{{ 'ASSOCIATIONS.LBL_VIDIMATO_RUNTS' | translate }}</nz-tag>
                   </td>
                 </tr>
               }
@@ -424,7 +423,7 @@
                       }
                       @if (r.status === 'approved') {
                         <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="payReimb(r)">
-                          Liquida
+                          {{ 'ASSOCIATIONS.LBL_LIQUIDA' | translate }}
                         </button>
                       }
                     </nz-space>
@@ -577,7 +576,7 @@
   (nzOnOk)="submitPayment()"
 >
   <ng-container *nzModalContent>
-    <p>Registra incasso quota per: <strong>{{ paymentFeeTarget()?.member_name }}</strong></p>
+    <p>{{ 'ASSOCIATIONS.LBL_REGISTRA_INCASSO_QUOTA_PER' | translate }} <strong>{{ paymentFeeTarget()?.member_name }}</strong></p>
     <nz-form-item>
       <nz-form-label nzRequired>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</nz-form-label>
       <nz-form-control>
@@ -600,7 +599,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Pilates & Posturale" />
+          <input nz-input formControlName="name" [placeholder]="'ASSOCIATIONS.LBL_ES_PILATES_AND_POSTURALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -630,7 +629,7 @@
   (nzOnOk)="submitEnrol()"
 >
   <ng-container *nzModalContent>
-    <p>Corso: <strong>{{ enrolCourseTarget()?.name }}</strong></p>
+    <p>{{ 'ASSOCIATIONS.LBL_CORSO' | translate }} <strong>{{ enrolCourseTarget()?.name }}</strong></p>
     <nz-form-item>
       <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEMBER' | translate }}</nz-form-label>
       <nz-form-control>
@@ -657,14 +656,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'ASSOCIATIONS.DONOR' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="donor_name" placeholder="Nominativo o Ragione Sociale" />
+          <input nz-input formControlName="donor_name" [placeholder]="'ASSOCIATIONS.LBL_NOMINATIVO_O_RAGIONE_SOCIALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="fiscal_code" placeholder="Necessario per detrazione 730" />
+          <input nz-input formControlName="fiscal_code" [placeholder]="'ASSOCIATIONS.LBL_NECESSARIO_PER_DETRAZIONE_730' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -709,7 +708,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="description" placeholder="es. Spese vive carburante trasferta" />
+          <input nz-input formControlName="description" [placeholder]="'ASSOCIATIONS.LBL_ES_SPESE_VIVE_CARBURANTE_TRASFERTA' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -737,9 +736,9 @@
         <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEETING_TYPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="meeting_type">
-            <nz-option nzValue="ordinary" nzLabel="Assemblea Ordinaria"></nz-option>
-            <nz-option nzValue="extraordinary" nzLabel="Assemblea Straordinaria"></nz-option>
-            <nz-option nzValue="board" nzLabel="Consiglio Direttivo"></nz-option>
+            <nz-option nzValue="ordinary" [nzLabel]="'ASSOCIATIONS.LBL_ASSEMBLEA_ORDINARIA' | translate"></nz-option>
+            <nz-option nzValue="extraordinary" [nzLabel]="'ASSOCIATIONS.LBL_ASSEMBLEA_STRAORDINARIA' | translate"></nz-option>
+            <nz-option nzValue="board" [nzLabel]="'ASSOCIATIONS.LBL_CONSIGLIO_DIRETTIVO' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -770,7 +769,7 @@
           @if (m.has_medical_certificate) {
             <nz-tag nzColor="success">Valido fino al {{ m.medical_certificate_expiry | date: 'dd/MM/yyyy' }}</nz-tag>
           } @else {
-            <nz-tag nzColor="error">Certificato assente o scaduto</nz-tag>
+            <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_CERTIFICATO_ASSENTE_O_SCADUTO' | translate }}</nz-tag>
           }
         </nz-descriptions-item>
       </nz-descriptions>
@@ -780,7 +779,7 @@
           <strong>
             {{ fs.is_in_good_standing ? 'In regola con le quote associative' : 'Quote in sospeso da regolarizzare' }}
           </strong>
-          <div>Importo dovuto: <strong>{{ fs.outstanding_amount | money: 'CHF' }}</strong></div>
+          <div>{{ 'ASSOCIATIONS.LBL_IMPORTO_DOVUTO' | translate }} <strong>{{ fs.outstanding_amount | money: 'CHF' }}</strong></div>
         </div>
       }
     }

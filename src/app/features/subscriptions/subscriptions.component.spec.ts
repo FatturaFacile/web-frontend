@@ -188,7 +188,7 @@ describe('SubscriptionsComponent', () => {
         quantity: 3,
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Subscription contract created');
+    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgSubscriptionContractCreated');
     expect(component.createModalVisible()).toBe(false);
   });
 
@@ -196,7 +196,7 @@ describe('SubscriptionsComponent', () => {
     fixture.detectChanges();
     component.billNow(mockContracts[0]);
     expect(mockSubApi.billContract).toHaveBeenCalledWith('contract-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('Invoice generated for current billing period');
+    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgInvoiceGeneratedForCurrentBillingPeriod');
 
     component.pause(mockContracts[0]);
     expect(mockSubApi.pauseContract).toHaveBeenCalledWith('contract-1', expect.anything());
@@ -210,7 +210,7 @@ describe('SubscriptionsComponent', () => {
     component.triggerDunning();
 
     expect(mockSubApi.runDunning).toHaveBeenCalled();
-    expect(mockMessage.success).toHaveBeenCalledWith('Automated dunning run executed');
+    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgAutomatedDunningRunExecuted');
     expect(component.runningDunning()).toBe(false);
   });
 });

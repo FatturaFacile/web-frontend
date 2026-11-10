@@ -1,11 +1,11 @@
 <app-page-header
-  title="Asset Management (Cespiti & EAM)"
+  [title]="'assets.lblAssetManagementCespitiAndEam' | translate"
   subtitle="Fixed assets registers, parallel accounting books (IT/CH), depreciations, and QR identification"
 >
   <div class="header-actions">
     <button nz-button nzType="primary" (click)="openCreateModal()">
       <nz-icon nzType="plus" />
-      New Asset
+      {{ 'assets.lblNewAsset' | translate }}
     </button>
   </div>
 </app-page-header>
@@ -18,7 +18,7 @@
         <input
           type="text"
           nz-input
-          placeholder="Search by asset code, serial, name..."
+          [placeholder]="'assets.lblSearchByAssetCodeSerialName' | translate"
           [value]="searchTerm()"
           (input)="onSearch($event)"
         />
@@ -33,15 +33,15 @@
         [ngModel]="statusFilter()"
         (ngModelChange)="onStatusChange($event)"
       >
-        <nz-option nzValue="acquired" nzLabel="Acquired"></nz-option>
-        <nz-option nzValue="capitalized" nzLabel="Capitalized"></nz-option>
-        <nz-option nzValue="in_service" nzLabel="In Service"></nz-option>
-        <nz-option nzValue="disposed" nzLabel="Disposed"></nz-option>
+        <nz-option nzValue="acquired" [nzLabel]="'assets.lblAcquired' | translate"></nz-option>
+        <nz-option nzValue="capitalized" [nzLabel]="'assets.lblCapitalized' | translate"></nz-option>
+        <nz-option nzValue="in_service" [nzLabel]="'assets.lblInService' | translate"></nz-option>
+        <nz-option nzValue="disposed" [nzLabel]="'assets.lblDisposed' | translate"></nz-option>
       </nz-select>
 
       <button nz-button nzType="default" (click)="loadAssets()">
         <nz-icon nzType="reload" />
-        Refresh
+        {{ 'assets.lblRefresh' | translate }}
       </button>
     </div>
   </div>
@@ -58,13 +58,13 @@
   >
     <thead>
       <tr>
-        <th>Asset / Serial</th>
-        <th>Status</th>
-        <th>Condition</th>
-        <th>Acquisition Cost</th>
-        <th>Carrying Amount</th>
-        <th>Depr. Rate</th>
-        <th nzWidth="240px">Actions</th>
+        <th>{{ 'assets.lblAssetSerial' | translate }}</th>
+        <th>{{ 'assets.lblStatus' | translate }}</th>
+        <th>{{ 'assets.lblCondition' | translate }}</th>
+        <th>{{ 'assets.lblAcquisitionCost' | translate }}</th>
+        <th>{{ 'assets.lblCarryingAmount' | translate }}</th>
+        <th>{{ 'assets.lblDeprRate' | translate }}</th>
+        <th nzWidth="240px">{{ 'assets.lblActions' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -90,7 +90,7 @@
           <td>
             <nz-space>
               <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(a)">
-                Manage
+                {{ 'assets.lblManage' | translate }}
               </button>
               <button
                 *nzSpaceItem
@@ -100,16 +100,16 @@
                 (click)="viewQrCode(a)"
               >
                 <nz-icon nzType="qrcode" />
-                QR Tag
+                {{ 'assets.lblQrTag' | translate }}
               </button>
               @if (a.status === 'acquired') {
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="capitalize(a)">
-                  Capitalize
+                  {{ 'assets.lblCapitalize' | translate }}
                 </button>
               }
               @if (a.status === 'capitalized') {
                 <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="commission(a)">
-                  In Service
+                  {{ 'assets.lblInService' | translate }}
                 </button>
               }
             </nz-space>
@@ -123,7 +123,7 @@
 <!-- Create Asset Modal -->
 <nz-modal
   [nzVisible]="createModalVisible()"
-  nzTitle="Record New Fixed Asset"
+  [nzTitle]="'assets.lblRecordNewFixedAsset' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateAsset()"
   [nzOkLoading]="saving()"
@@ -133,13 +133,13 @@
     <form nz-form [formGroup]="assetForm" nzLayout="vertical">
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Asset Name</nz-form-label>
+          <nz-form-label nzRequired>{{ 'assets.lblAssetName' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Name is required">
-            <input nz-input formControlName="name" placeholder="E.g. Precision CNC Machine" />
+            <input nz-input formControlName="name" [placeholder]="'assets.lblEGPrecisionCncMachine' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Category</nz-form-label>
+          <nz-form-label nzRequired>{{ 'assets.lblCategory' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Category is required">
             <nz-select formControlName="category_id">
               @for (cat of categories(); track cat.id) {
@@ -158,7 +158,7 @@
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>Useful Life (Years)</nz-form-label>
+          <nz-form-label nzRequired>{{ 'assets.lblUsefulLifeYears' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Useful life required">
             <nz-input-number formControlName="useful_life_years" [nzMin]="1" [nzMax]="50" style="width: 100%"></nz-input-number>
           </nz-form-control>
@@ -167,24 +167,24 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label>Depreciation Method</nz-form-label>
+          <nz-form-label>{{ 'assets.lblDepreciationMethod' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="depreciation_method">
-              <nz-option nzValue="straight_line" nzLabel="Straight Line"></nz-option>
-              <nz-option nzValue="declining_balance" nzLabel="Declining Balance"></nz-option>
-              <nz-option nzValue="double_declining_balance" nzLabel="Double Declining"></nz-option>
-              <nz-option nzValue="units_of_production" nzLabel="Units of Production"></nz-option>
+              <nz-option nzValue="straight_line" [nzLabel]="'assets.lblStraightLine' | translate"></nz-option>
+              <nz-option nzValue="declining_balance" [nzLabel]="'assets.lblDecliningBalance' | translate"></nz-option>
+              <nz-option nzValue="double_declining_balance" [nzLabel]="'assets.lblDoubleDeclining' | translate"></nz-option>
+              <nz-option nzValue="units_of_production" [nzLabel]="'assets.lblUnitsOfProduction' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Condition</nz-form-label>
+          <nz-form-label>{{ 'assets.lblCondition' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="condition">
-              <nz-option nzValue="new" nzLabel="New"></nz-option>
-              <nz-option nzValue="excellent" nzLabel="Excellent"></nz-option>
-              <nz-option nzValue="good" nzLabel="Good"></nz-option>
-              <nz-option nzValue="fair" nzLabel="Fair"></nz-option>
+              <nz-option nzValue="new" [nzLabel]="'assets.lblNew' | translate"></nz-option>
+              <nz-option nzValue="excellent" [nzLabel]="'assets.lblExcellent' | translate"></nz-option>
+              <nz-option nzValue="good" [nzLabel]="'assets.lblGood' | translate"></nz-option>
+              <nz-option nzValue="fair" [nzLabel]="'assets.lblFair' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -192,13 +192,13 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label>Asset Tag / Number</nz-form-label>
+          <nz-form-label>{{ 'assets.lblAssetTagNumber' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="asset_number" placeholder="AST-1001" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label>Serial Number</nz-form-label>
+          <nz-form-label>{{ 'assets.lblSerialNumber' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="serial_number" placeholder="SN-987654" />
           </nz-form-control>
@@ -206,9 +206,9 @@
       </div>
 
       <nz-form-item>
-        <nz-form-label>Description</nz-form-label>
+        <nz-form-label>{{ 'assets.lblDescription' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input formControlName="description" rows="2" placeholder="Specifications and technical details"></textarea>
+          <textarea nz-input formControlName="description" rows="2" [placeholder]="'assets.lblSpecificationsAndTechnicalDetails' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -218,7 +218,7 @@
 <!-- Asset QR Code Modal using ng-zorro nz-qrcode -->
 <nz-modal
   [nzVisible]="qrModalVisible()"
-  nzTitle="Asset QR Tag & Barcode"
+  [nzTitle]="'assets.lblAssetQrTagAndBarcode' | translate"
   [nzFooter]="null"
   (nzOnCancel)="qrModalVisible.set(false)"
 >

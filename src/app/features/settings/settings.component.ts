@@ -76,48 +76,48 @@ export class SettingsComponent implements OnInit {
   });
 
   readonly branchColumns = computed<TableColumnDef<BranchResource>[]>(() => [
-    { key: 'name', header: 'Nome Filiale', width: '220px', sortable: true },
-    { key: 'code', header: 'Codice', width: '120px' },
-    { key: 'city', header: 'Città', width: '160px' },
-    { key: 'country', header: 'Nazione', width: '100px' },
+    { key: 'name', header: 'COLUMNS.NOME_FILIALE', width: '220px', sortable: true },
+    { key: 'code', header: 'COLUMNS.CODICE', width: '120px' },
+    { key: 'city', header: 'COLUMNS.CITTA', width: '160px' },
+    { key: 'country', header: 'COLUMNS.NAZIONE', width: '100px' },
     {
       key: 'is_headquarters',
-      header: 'Tipologia',
+      header: 'COLUMNS.TIPOLOGIA',
       width: '150px',
       customCellTemplate: this.hqTpl(),
     },
   ]);
 
   readonly userColumns = computed<TableColumnDef<UserResource>[]>(() => [
-    { key: 'name', header: 'Nome Utente', width: '200px', sortable: true },
-    { key: 'email', header: 'Email', width: '220px' },
-    { key: 'role', header: 'Ruolo Principale', width: '160px' },
-    { key: 'is_active', header: 'Stato', width: '120px', customCellTemplate: this.activeTpl() },
+    { key: 'name', header: 'COLUMNS.NOME_UTENTE', width: '200px', sortable: true },
+    { key: 'email', header: 'COLUMNS.EMAIL', width: '220px' },
+    { key: 'role', header: 'COLUMNS.RUOLO_PRINCIPALE', width: '160px' },
+    { key: 'is_active', header: 'COLUMNS.STATO', width: '120px', customCellTemplate: this.activeTpl() },
     {
       key: 'last_login_at',
-      header: 'Ultimo Accesso',
+      header: 'COLUMNS.ULTIMO_ACCESSO',
       width: '160px',
       customCellTemplate: this.dateTpl(),
     },
   ]);
 
   readonly roleColumns = computed<TableColumnDef<RoleResource>[]>(() => [
-    { key: 'name', header: 'Nome Ruolo', width: '200px', sortable: true },
-    { key: 'description', header: 'Descrizione', width: '320px' },
+    { key: 'name', header: 'COLUMNS.NOME_RUOLO', width: '200px', sortable: true },
+    { key: 'description', header: 'COLUMNS.DESCRIZIONE', width: '320px' },
   ]);
 
   readonly auditColumns = computed<TableColumnDef<AuditLogResource>[]>(() => [
     {
       key: 'created_at',
-      header: 'Data & Ora',
+      header: 'COLUMNS.DATA_AND_ORA',
       width: '160px',
       sortable: true,
       customCellTemplate: this.dateTpl(),
     },
-    { key: 'user_name', header: 'Utente', width: '160px' },
-    { key: 'event', header: 'Azione / Evento', width: '160px' },
-    { key: 'auditable_type', header: 'Modulo', width: '180px' },
-    { key: 'ip_address', header: 'Indirizzo IP', width: '140px' },
+    { key: 'user_name', header: 'COLUMNS.UTENTE', width: '160px' },
+    { key: 'event', header: 'COLUMNS.AZIONE_EVENTO', width: '160px' },
+    { key: 'auditable_type', header: 'COLUMNS.MODULO', width: '180px' },
+    { key: 'ip_address', header: 'COLUMNS.INDIRIZZO_IP', width: '140px' },
   ]);
 
   ngOnInit(): void {

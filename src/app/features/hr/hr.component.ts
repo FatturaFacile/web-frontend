@@ -31,6 +31,7 @@ import {
   SubmitTimesheetPayload,
   TerminateEmployeePayload,
   TimesheetResource,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { reportHttpError } from './shared/hr-http.util';
@@ -66,6 +67,7 @@ import { ReasonButtonComponent } from './shared/reason-button.component';
   templateUrl: './hr.component.html',
 })
 export class HrComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly api = inject(HrApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -181,7 +183,7 @@ export class HrComponent implements OnInit {
         this.loadingEmployees.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare i dipendenti');
+        this.message.error(this.translate.instant('hrmEmp.msgImpossibileCaricareIDipendenti'));
         this.loadingEmployees.set(false);
       },
     });
@@ -225,13 +227,13 @@ export class HrComponent implements OnInit {
 
     this.api.createEmployee(payload).subscribe({
       next: () => {
-        this.message.success('Nuovo dipendente assunto con successo');
+        this.message.success(this.translate.instant('hrmEmp.msgNuovoDipendenteAssuntoConSuccesso'));
         this.isSubmittingHire.set(false);
         this.isHireModalVisible.set(false);
         this.loadEmployees(1);
       },
       error: () => {
-        this.message.error('Errore durante l’assunzione del dipendente');
+        this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLAssunzioneDelDipendente'));
         this.isSubmittingHire.set(false);
       },
     });
@@ -239,16 +241,16 @@ export class HrComponent implements OnInit {
 
   completeProbation(emp: EmployeeResource): void {
     this.modal.confirm({
-      nzTitle: `Confermare periodo di prova per ${emp.full_name}?`,
-      nzContent: 'Lo stato di assunzione passerà da "Periodo di Prova" a "Attivo".',
-      nzOkText: 'Conferma Prova',
+      nzTitle: this.translate.instant('hrmEmp.dlgConfermarePeriodoDiProvaPer', { full_name: emp.full_name }),
+      nzContent: this.translate.instant('hrmEmp.dlgLoStatoDiAssunzionePasseraDa'),
+      nzOkText: this.translate.instant('hrmEmp.dlgConfermaProva'),
       nzOnOk: () => {
         this.api.completeProbation(emp.id).subscribe({
           next: () => {
-            this.message.success('Periodo di prova confermato');
+            this.message.success(this.translate.instant('hrmEmp.msgPeriodoDiProvaConfermato'));
             this.loadEmployees(this.employeesPage());
           },
-          error: () => this.message.error('Errore durante la conferma della prova'),
+          error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaConfermaDellaProva')),
         });
       },
     });
@@ -260,17 +262,17 @@ export class HrComponent implements OnInit {
 
   promoteEmployee(emp: EmployeeResource): void {
     this.modal.confirm({
-      nzTitle: `Promuovere il dipendente ${emp.full_name}?`,
-      nzContent: 'Verrà applicato un aumento retributivo e aggiornamento di qualifica.',
-      nzOkText: 'Promuovi',
+      nzTitle: this.translate.instant('hrmEmp.dlgPromuovereIlDipendente', { full_name: emp.full_name }),
+      nzContent: this.translate.instant('hrmEmp.dlgVerraApplicatoUnAumentoRetributivoE'),
+      nzOkText: this.translate.instant('hrmEmp.dlgPromuovi'),
       nzOnOk: () => {
         const newSalary = Number(emp.base_annual_salary) * 1.1;
         this.api.promoteEmployee(emp.id, { base_annual_salary: Math.round(newSalary) }).subscribe({
           next: () => {
-            this.message.success('Dipendente promosso con successo');
+            this.message.success(this.translate.instant('hrmEmp.msgDipendentePromossoConSuccesso'));
             this.loadEmployees(this.employeesPage());
           },
-          error: () => this.message.error('Errore durante la promozione'),
+          error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaPromozione')),
         });
       },
     });
@@ -278,10 +280,10 @@ export class HrComponent implements OnInit {
 
   terminateEmployee(emp: EmployeeResource): void {
     this.modal.confirm({
-      nzTitle: `Terminare rapporto con ${emp.full_name}?`,
-      nzContent: 'Verrà registrata la data di cessazione e archiviato il fascicolo.',
+      nzTitle: this.translate.instant('hrmEmp.dlgTerminareRapportoCon', { full_name: emp.full_name }),
+      nzContent: this.translate.instant('hrmEmp.dlgVerraRegistrataLaDataDiCessazione'),
       nzOkDanger: true,
-      nzOkText: 'Termina Rapporto',
+      nzOkText: this.translate.instant('hrmEmp.dlgTerminaRapporto'),
       nzOnOk: () => {
         const payload: TerminateEmployeePayload = {
           termination_date: new Date().toISOString().split('T')[0],
@@ -289,10 +291,10 @@ export class HrComponent implements OnInit {
         };
         this.api.terminateEmployee(emp.id, payload).subscribe({
           next: () => {
-            this.message.success('Rapporto di lavoro terminato');
+            this.message.success(this.translate.instant('hrmEmp.msgRapportoDiLavoroTerminato'));
             this.loadEmployees(this.employeesPage());
           },
-          error: () => this.message.error('Errore durante la cessazione del rapporto'),
+          error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaCessazioneDelRapporto')),
         });
       },
     });
@@ -350,13 +352,13 @@ export class HrComponent implements OnInit {
 
     this.api.submitLeaveRequest(payload).subscribe({
       next: () => {
-        this.message.success('Richiesta di ferie/permesso inviata');
+        this.message.success(this.translate.instant('hrmEmp.msgRichiestaDiFeriePermessoInviata'));
         this.isSubmittingLeave.set(false);
         this.isLeaveModalVisible.set(false);
         this.loadLeaveRequests(1);
       },
       error: () => {
-        this.message.error('Errore durante l’invio della richiesta');
+        this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLInvioDellaRichiesta'));
         this.isSubmittingLeave.set(false);
       },
     });
@@ -365,7 +367,7 @@ export class HrComponent implements OnInit {
   approveLeave(req: LeaveRequestResource): void {
     this.api.approveLeaveRequest(req.id).subscribe({
       next: () => {
-        this.message.success('Richiesta approvata');
+        this.message.success(this.translate.instant('hrmEmp.msgRichiestaApprovata'));
         this.loadLeaveRequests(this.leavesPage());
       },
       // 409: a running approval workflow decides, the request cannot be approved manually.
@@ -386,7 +388,7 @@ export class HrComponent implements OnInit {
   rejectLeave(req: LeaveRequestResource): void {
     this.api.rejectLeaveRequest(req.id).subscribe({
       next: () => {
-        this.message.success('Richiesta rifiutata');
+        this.message.success(this.translate.instant('hrmEmp.msgRichiestaRifiutata'));
         this.loadLeaveRequests(this.leavesPage());
       },
       error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
@@ -442,13 +444,13 @@ export class HrComponent implements OnInit {
 
     this.api.submitTimesheet(payload).subscribe({
       next: () => {
-        this.message.success('Presenze/ore registrate con successo');
+        this.message.success(this.translate.instant('hrmEmp.msgPresenzeOreRegistrateConSuccesso'));
         this.isSubmittingTimesheet.set(false);
         this.isTimesheetModalVisible.set(false);
         this.loadTimesheets(1);
       },
       error: () => {
-        this.message.error('Errore durante la registrazione delle ore');
+        this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaRegistrazioneDelleOre'));
         this.isSubmittingTimesheet.set(false);
       },
     });
@@ -457,10 +459,10 @@ export class HrComponent implements OnInit {
   approveTimesheet(ts: TimesheetResource): void {
     this.api.approveTimesheet(ts.id).subscribe({
       next: () => {
-        this.message.success('Timesheet approvato');
+        this.message.success(this.translate.instant('hrmEmp.msgTimesheetApprovato'));
         this.loadTimesheets(this.timesheetsPage());
       },
-      error: () => this.message.error('Errore durante l’approvazione del timesheet'),
+      error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLApprovazioneDelTimesheet')),
     });
   }
 

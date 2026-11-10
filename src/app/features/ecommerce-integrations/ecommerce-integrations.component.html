@@ -114,7 +114,7 @@
           @for (ch of channels(); track ch.id) {
             <nz-card class="webhook-card" [nzTitle]="ch.name">
               <div class="webhook-row">
-                <span class="label"><strong>URL Endpoint:</strong></span>
+                <span class="label"><strong>{{ 'ECOMMERCE_INTEGRATIONS.LBL_URL_ENDPOINT' | translate }}</strong></span>
                 <code>https://api.fatturafacile.eu/api/v1/webhooks/ecommerce/{{ ch.uuid || ch.id }}</code>
                 <button
                   nz-button
@@ -226,7 +226,7 @@
                 <nz-form-control>
                   <nz-select formControlName="provider">
                     <nz-option nzValue="stripe" nzLabel="Stripe Payments"></nz-option>
-                    <nz-option nzValue="local" nzLabel="Local / Offline Driver"></nz-option>
+                    <nz-option nzValue="local" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_LOCAL_OFFLINE_DRIVER' | translate"></nz-option>
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
@@ -238,7 +238,7 @@
                     nz-input
                     type="password"
                     formControlName="secret_key"
-                    placeholder="sk_live_... / sk_test_..."
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_SK_LIVE_SK_TEST' | translate"
                   />
                 </nz-form-control>
               </nz-form-item>
@@ -250,7 +250,7 @@
                     nz-input
                     type="password"
                     formControlName="webhook_secret"
-                    placeholder="whsec_..."
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_WHSEC' | translate"
                   />
                 </nz-form-control>
               </nz-form-item>
@@ -261,7 +261,7 @@
                   <input
                     nz-input
                     formControlName="publishable_key"
-                    placeholder="pk_live_... / pk_test_..."
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_PK_LIVE_PK_TEST' | translate"
                   />
                 </nz-form-control>
               </nz-form-item>
@@ -375,7 +375,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="name" placeholder="e.g. Shopify Store Main" />
+            <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_SHOPIFY_STORE_MAIN' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -384,10 +384,10 @@
           <nz-form-control>
             <nz-select formControlName="driver">
               <nz-option nzValue="shopify" nzLabel="Shopify"></nz-option>
-              <nz-option nzValue="woocommerce" nzLabel="WooCommerce"></nz-option>
-              <nz-option nzValue="prestashop" nzLabel="PrestaShop"></nz-option>
+              <nz-option nzValue="woocommerce" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_WOOCOMMERCE' | translate"></nz-option>
+              <nz-option nzValue="prestashop" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_PRESTASHOP' | translate"></nz-option>
               <nz-option nzValue="amazon" nzLabel="Amazon Seller Central"></nz-option>
-              <nz-option nzValue="custom" nzLabel="Custom API Connector"></nz-option>
+              <nz-option nzValue="custom" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_CUSTOM_API_CONNECTOR' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -395,21 +395,21 @@
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="store_url" placeholder="https://store.example.com" />
+            <input nz-input formControlName="store_url" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_HTTPS_STORE_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.API_KEY' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="api_key" placeholder="API Key / Client ID" />
+            <input nz-input formControlName="api_key" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_KEY_CLIENT_ID' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.API_SECRET' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input type="password" formControlName="api_secret" placeholder="API Secret / Access Token" />
+            <input nz-input type="password" formControlName="api_secret" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_SECRET_ACCESS_TOKEN' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -485,7 +485,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="name" placeholder="e.g. BI Analytics Sync" />
+            <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_BI_ANALYTICS_SYNC' | translate" />
           </nz-form-control>
         </nz-form-item>
 
@@ -552,7 +552,7 @@
             <input
               nz-input
               formControlName="invoice_id"
-              placeholder="UUID (e.g. 11111111-2222-3333-4444-555555555555)"
+              [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_UUID_E_G_11111111_2222_3333' | translate"
             />
           </nz-form-control>
         </nz-form-item>

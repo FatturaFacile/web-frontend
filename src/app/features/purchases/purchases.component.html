@@ -24,7 +24,7 @@
 <nz-card>
   <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="activeTabIndex.set($event)">
     <!-- TAB 1: ORDINI DI ACQUISTO (PURCHASE ORDERS) -->
-    <nz-tab nzTitle="Ordini di Acquisto (PO)">
+    <nz-tab [nzTitle]="'PURCHASES.LBL_ORDINI_DI_ACQUISTO_PO' | translate">
       <div class="toolbar">
         <nz-select
           class="supplier-filter"
@@ -52,7 +52,7 @@
 
         <span class="spacer"></span>
         <button nz-button nzType="primary" (click)="openCreateModal()">
-          <nz-icon nzType="plus" /> Nuovo Ordine
+          <nz-icon nzType="plus" /> {{ 'PURCHASES.LBL_NUOVO_ORDINE' | translate }}
         </button>
       </div>
 
@@ -99,25 +99,25 @@
                 <div class="actions">
                   @if (item.status === 'draft') {
                     <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
-                      Invia Appr.
+                      {{ 'PURCHASES.LBL_INVIA_APPR' | translate }}
                     </button>
                   }
                   @if (item.status === 'pending_approval') {
                     <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
-                      Approva
+                      {{ 'PURCHASES.LBL_APPROVA' | translate }}
                     </button>
                     <button nz-button nzSize="small" nzDanger (click)="reject(item)">
-                      Rifiuta
+                      {{ 'PURCHASES.LBL_RIFIUTA' | translate }}
                     </button>
                   }
                   @if (item.status === 'approved') {
                     <button nz-button nzSize="small" nzType="default" (click)="sendToSupplier(item)">
-                      <nz-icon nzType="send" /> Invia Fornitore
+                      <nz-icon nzType="send" /> {{ 'PURCHASES.LBL_INVIA_FORNITORE' | translate }}
                     </button>
                   }
                   @if (canReceive(item)) {
                     <button nz-button nzSize="small" nzType="primary" (click)="openGoodsReceiptModal(item)">
-                      <nz-icon nzType="check" /> Ricevi Merce
+                      <nz-icon nzType="check" /> {{ 'PURCHASES.LBL_RICEVI_MERCE' | translate }}
                     </button>
                   }
                   @if (item.status === 'received') {
@@ -132,7 +132,7 @@
                   }
                   @if (canCancel(item)) {
                     <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelOrder(item)">
-                      Annulla
+                      {{ 'PURCHASES.LBL_ANNULLA' | translate }}
                     </button>
                   }
                 </div>
@@ -144,11 +144,11 @@
     </nz-tab>
 
     <!-- TAB 2: RICEZIONE MERCI (GOODS RECEIPTS) -->
-    <nz-tab nzTitle="Ricezione Merci (DDT Fornitore)">
+    <nz-tab [nzTitle]="'PURCHASES.LBL_RICEZIONE_MERCI_DDT_FORNITORE' | translate">
       <div class="tab-header">
-        <span class="muted">Bollati di ricezione materiali, DDT d'entrata e controlli qualità.</span>
+        <span class="muted">{{ 'PURCHASES.LBL_BOLLATI_DI_RICEZIONE_MATERIALI_DDT_D' | translate }}</span>
         <button nz-button nzType="default" (click)="loadGoodsReceipts()">
-          <nz-icon nzType="sync" /> Aggiorna
+          <nz-icon nzType="sync" /> {{ 'PURCHASES.LBL_AGGIORNA' | translate }}
         </button>
       </div>
 
@@ -162,12 +162,12 @@
       >
         <thead>
           <tr>
-            <th>N. Bolla Ricezione</th>
-            <th>Rif. DDT Fornitore</th>
-            <th>Data Arrivo</th>
-            <th>Stato Ispezione</th>
-            <th>Righe</th>
-            <th nzAlign="right">Azioni</th>
+            <th>{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_DATA_ARRIVO' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
+            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -185,7 +185,7 @@
               <td nzAlign="right">
                 @if (gr.inspection_required) {
                   <button nz-button nzSize="small" nzType="default" (click)="openInspectModal(gr)">
-                    <nz-icon nzType="audit" /> Ispezione
+                    <nz-icon nzType="audit" /> {{ 'PURCHASES.LBL_ISPEZIONE' | translate }}
                   </button>
                 }
               </td>
@@ -196,11 +196,11 @@
     </nz-tab>
 
     <!-- TAB 3: 3-WAY MATCH & RICONCILIAZIONE -->
-    <nz-tab nzTitle="3-Way Match & Riconciliazione">
+    <nz-tab [nzTitle]="'PURCHASES.LBL_3_WAY_MATCH_AND_RICONCILIAZIONE' | translate">
       <div class="tab-header">
-        <span class="muted">Controllo a tre vie: Ordine di Acquisto (PO) vs Ricezione (GRN) vs Fattura Fornitore (AP).</span>
+        <span class="muted">{{ 'PURCHASES.LBL_CONTROLLO_A_TRE_VIE_ORDINE_DI' | translate }}</span>
         <button nz-button nzType="primary" (click)="openExecuteMatchModal()">
-          <nz-icon nzType="audit" /> Esegui 3-Way Match
+          <nz-icon nzType="audit" /> {{ 'PURCHASES.LBL_ESEGUI_3_WAY_MATCH' | translate }}
         </button>
       </div>
 
@@ -214,13 +214,13 @@
       >
         <thead>
           <tr>
-            <th>ID Match</th>
-            <th>PO / Ordine</th>
-            <th>Stato Conciliazione</th>
+            <th>{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_STATO_CONCILIAZIONE' | translate }}</th>
             <th>{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
             <th>{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
             <th>{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
-            <th nzAlign="right">Azioni</th>
+            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -243,7 +243,7 @@
               <td nzAlign="right">
                 @if (hasOpenVariance(m)) {
                   <button nz-button nzSize="small" nzType="default" (click)="approveVariance(m)">
-                    Approva Tolleranza
+                    {{ 'PURCHASES.LBL_APPROVA_TOLLERANZA' | translate }}
                   </button>
                 }
               </td>
@@ -254,11 +254,11 @@
     </nz-tab>
 
     <!-- TAB 4: FATTURE FORNITORE - AP INVOICES -->
-    <nz-tab nzTitle="Fatture Fornitore (Ciclo Passivo AP)">
+    <nz-tab [nzTitle]="'PURCHASES.LBL_FATTURE_FORNITORE_CICLO_PASSIVO_AP' | translate">
       <div class="tab-header">
-        <span class="muted">Fatture passive registrate, importazione SDI FatturaPA XML e scadenze fornitori.</span>
+        <span class="muted">{{ 'PURCHASES.LBL_FATTURE_PASSIVE_REGISTRATE_IMPORTAZIONE_SDI_FATTURAPA' | translate }}</span>
         <button nz-button nzType="default" (click)="openImportSdiModal()">
-          <nz-icon nzType="upload" /> Importa XML SDI Passivo
+          <nz-icon nzType="upload" /> {{ 'PURCHASES.LBL_IMPORTA_XML_SDI_PASSIVO' | translate }}
         </button>
       </div>
 
@@ -272,14 +272,14 @@
       >
         <thead>
           <tr>
-            <th>N. Fattura Fornitore</th>
-            <th>Fornitore</th>
-            <th>Data Emissione</th>
-            <th>Scadenza</th>
-            <th>Totale Lordo</th>
+            <th>{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_FORNITORE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_SCADENZA' | translate }}</th>
+            <th>{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
             <th>{{ 'PURCHASES.COL_PAYMENT' | translate }}</th>
             <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
-            <th nzAlign="right">Azioni</th>
+            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -316,7 +316,7 @@
                       [attr.title]="isPaymentBlocked(inv) ? ('PURCHASES.PAYMENT_BLOCKED' | translate) : null"
                       (click)="markInvoicePaid(inv)"
                     >
-                      Segna Pagata
+                      {{ 'PURCHASES.LBL_SEGNA_PAGATA' | translate }}
                     </button>
                   }
                 </div>
@@ -361,40 +361,40 @@
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Valuta</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_VALUTA' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="currency">
-              <nz-option nzValue="CHF" nzLabel="CHF (Svizzera)" />
-              <nz-option nzValue="EUR" nzLabel="EUR (Italia/UE)" />
+              <nz-option nzValue="CHF" [nzLabel]="'PURCHASES.LBL_CHF_SVIZZERA' | translate" />
+              <nz-option nzValue="EUR" [nzLabel]="'PURCHASES.LBL_EUR_ITALIA_UE' | translate" />
             </nz-select>
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Articolo / Descrizione Voce</nz-form-label>
+        <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ARTICOLO_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="item_description" placeholder="Descrizione materiale o servizio" />
+          <input nz-input formControlName="item_description" [placeholder]="'PURCHASES.LBL_DESCRIZIONE_MATERIALE_O_SERVIZIO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="form-row">
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Quantità</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_QUANTITA' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="quantity" [nzMin]="0.0001" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="unit_price" [nzMin]="0" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Aliquota IVA %</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-input-number formControlName="tax_rate" [nzMin]="0" class="full-width" />
           </nz-form-control>
@@ -407,9 +407,9 @@
 <!-- Modal: Registra Ricezione Merci -->
 <nz-modal
   [nzVisible]="goodsReceiptModalVisible()"
-  nzTitle="Registra Ricezione Merce (Bolla DDT d'Entrata)"
-  nzOkText="Registra Ricezione"
-  nzCancelText="Annulla"
+  [nzTitle]="'PURCHASES.LBL_REGISTRA_RICEZIONE_MERCE_BOLLA_DDT_D' | translate"
+  [nzOkText]="'PURCHASES.LBL_REGISTRA_RICEZIONE' | translate"
+  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="720px"
   [nzOkLoading]="saving()"
   (nzOnCancel)="goodsReceiptModalVisible.set(false)"
@@ -419,14 +419,14 @@
     <form nz-form [formGroup]="receiptForm" nzLayout="vertical">
       <div class="form-row">
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Riferimento DDT Fornitore</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_RIFERIMENTO_DDT_FORNITORE' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="supplier_delivery_note_ref" placeholder="Es. DDT-2026/8841" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>Data Ricezione</nz-form-label>
+          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_DATA_RICEZIONE' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input type="date" formControlName="received_date" />
           </nz-form-control>
@@ -440,7 +440,7 @@
             <th nzAlign="right">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_QTY_NOW' | translate }}</th>
-            <th>N. Lotto</th>
+            <th>{{ 'PURCHASES.LBL_N_LOTTO' | translate }}</th>
           </tr>
         </thead>
         <tbody formArrayName="lines">
@@ -459,9 +459,9 @@
       </nz-table>
 
       <nz-form-item>
-        <nz-form-label>Note</nz-form-label>
+        <nz-form-label>{{ 'PURCHASES.LBL_NOTE' | translate }}</nz-form-label>
         <nz-form-control>
-          <textarea nz-input rows="2" formControlName="notes" placeholder="Note su imballo o verifica"></textarea>
+          <textarea nz-input rows="2" formControlName="notes" [placeholder]="'PURCHASES.LBL_NOTE_SU_IMBALLO_O_VERIFICA' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -471,9 +471,9 @@
 <!-- Modal: Ispezione Qualità Ricezione -->
 <nz-modal
   [nzVisible]="inspectModalVisible()"
-  nzTitle="Esito Ispezione Qualità"
-  nzOkText="Aggiorna Esito"
-  nzCancelText="Annulla"
+  [nzTitle]="'PURCHASES.LBL_ESITO_ISPEZIONE_QUALITA' | translate"
+  [nzOkText]="'PURCHASES.LBL_AGGIORNA_ESITO' | translate"
+  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="640px"
   (nzOnCancel)="inspectModalVisible.set(false)"
   (nzOnOk)="submitInspection()"
@@ -510,37 +510,37 @@
 <!-- Modal: Esegui 3-Way Match -->
 <nz-modal
   [nzVisible]="executeMatchModalVisible()"
-  nzTitle="Esegui Conciliazione 3-Way Match"
-  nzOkText="Esegui Conciliazione"
-  nzCancelText="Annulla"
+  [nzTitle]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE_3_WAY_MATCH' | translate"
+  [nzOkText]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE' | translate"
+  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   (nzOnCancel)="executeMatchModalVisible.set(false)"
   (nzOnOk)="submitExecuteMatch()"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="matchForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>ID Ordine di Acquisto (PO)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_ORDINE_DI_ACQUISTO_PO' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="purchase_order_id" placeholder="ID o UUID ordine" />
+          <input nz-input formControlName="purchase_order_id" [placeholder]="'PURCHASES.LBL_ID_O_UUID_ORDINE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>ID Ricezione Merce (GRN)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_RICEZIONE_MERCE_GRN' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="purchase_receipt_id" placeholder="ID ricezione merce" />
+          <input nz-input formControlName="purchase_receipt_id" [placeholder]="'PURCHASES.LBL_ID_RICEZIONE_MERCE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>ID Fattura Fornitore (AP)</nz-form-label>
+        <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_FATTURA_FORNITORE_AP' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="passive_invoice_id" placeholder="ID fattura fornitore" />
+          <input nz-input formControlName="passive_invoice_id" [placeholder]="'PURCHASES.LBL_ID_FATTURA_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>Totale Fattura Fornitore</nz-form-label>
+        <nz-form-label nzRequired>{{ 'PURCHASES.LBL_TOTALE_FATTURA_FORNITORE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-input-number formControlName="invoice_total_amount" [nzMin]="0.01" class="full-width" />
         </nz-form-control>
@@ -552,9 +552,9 @@
 <!-- Modal: Importa SDI FatturaPA Passivo -->
 <nz-modal
   [nzVisible]="importSdiModalVisible()"
-  nzTitle="Importa Fattura Elettronica XML (SDI Passivo)"
-  nzOkText="Importa XML"
-  nzCancelText="Annulla"
+  [nzTitle]="'PURCHASES.LBL_IMPORTA_FATTURA_ELETTRONICA_XML_SDI_PASSIVO' | translate"
+  [nzOkText]="'PURCHASES.LBL_IMPORTA_XML' | translate"
+  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!selectedXmlFile()"
   (nzOnCancel)="importSdiModalVisible.set(false)"

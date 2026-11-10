@@ -33,6 +33,7 @@ import {
   TicketStatus,
   TicketType,
   UpdateHelpdeskTicketRequest,
+  TranslateService,
 } from '@core';
 import { downloadBlob, TranslatePipe } from '@shared';
 import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-tools.component';
@@ -64,6 +65,7 @@ import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-to
   templateUrl: './ticket-detail-drawer.component.html',
 })
 export class TicketDetailDrawerComponent {
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(TicketApiService);
   private readonly message = inject(NzMessageService);
@@ -195,7 +197,7 @@ export class TicketDetailDrawerComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.message.error(err?.error?.detail || err?.message || 'Errore nel caricamento del ticket');
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_CARICAMENTO_DEL_TICKET'));
       },
     });
 
@@ -248,7 +250,7 @@ export class TicketDetailDrawerComponent {
     }
     this.api.downloadAttachment(id, attachment.id).subscribe({
       next: (blob) => downloadBlob(blob, attachment.filename),
-      error: () => this.message.error('Errore nel download dell\'allegato'),
+      error: () => this.message.error(this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_DOWNLOAD_DELL_ALLEGATO')),
     });
   }
 
@@ -274,7 +276,7 @@ export class TicketDetailDrawerComponent {
       next: (res) => {
         this.isSaving.set(false);
         this.ticket.set(res.data);
-        this.message.success('Ticket aggiornato');
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_AGGIORNATO'));
         this.updated.emit();
       },
       error: (err) => {
@@ -283,7 +285,7 @@ export class TicketDetailDrawerComponent {
         if (unmapped.length > 0) {
           this.message.error(unmapped.join('; '));
         } else {
-          this.message.error(err?.error?.detail || err?.message || 'Errore durante l\'aggiornamento');
+          this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_DURANTE_L_AGGIORNAMENTO'));
         }
       },
     });
@@ -305,11 +307,11 @@ export class TicketDetailDrawerComponent {
         this.isPostingMessage.set(false);
         this.replyForm.reset({ body: '', visibility: 'public' });
         this.messages.update((list) => [...list, res.data]);
-        this.message.success('Messaggio inviato');
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_MESSAGGIO_INVIATO'));
       },
       error: (err) => {
         this.isPostingMessage.set(false);
-        this.message.error(err?.error?.detail || err?.message || 'Errore nell\'invio del messaggio');
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELL_INVIO_DEL_MESSAGGIO'));
       },
     });
   }
@@ -335,12 +337,12 @@ export class TicketDetailDrawerComponent {
       next: (res) => {
         this.statusModalVisible.set(false);
         this.ticket.set(res.data);
-        this.message.success('Stato del ticket aggiornato');
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_STATO_DEL_TICKET_AGGIORNATO'));
         this.loadTicket(id);
         this.updated.emit();
       },
       error: (err) => {
-        this.message.error(err?.error?.detail || err?.message || 'Errore nel cambio di stato');
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_CAMBIO_DI_STATO'));
       },
     });
   }
@@ -355,7 +357,7 @@ export class TicketDetailDrawerComponent {
   protected confirmAssign(): void {
     const id = this.ticketId();
     if (!id || !this.assignedUserId().trim()) {
-      this.message.warning('Inserisci l\'ID utente da assegnare');
+      this.message.warning(this.translate.instant('TICKET_TOOLS.MSG_INSERISCI_L_ID_UTENTE_DA_ASSEGNARE'));
       return;
     }
 
@@ -368,12 +370,12 @@ export class TicketDetailDrawerComponent {
       next: (res) => {
         this.assignModalVisible.set(false);
         this.ticket.set(res.data);
-        this.message.success('Ticket assegnato con successo');
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_ASSEGNATO_CON_SUCCESSO'));
         this.loadTicket(id);
         this.updated.emit();
       },
       error: (err) => {
-        this.message.error(err?.error?.detail || err?.message || 'Errore nell\'assegnazione');
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELL_ASSEGNAZIONE'));
       },
     });
   }
@@ -397,12 +399,12 @@ export class TicketDetailDrawerComponent {
       next: (res) => {
         this.resolveModalVisible.set(false);
         this.ticket.set(res.data);
-        this.message.success('Ticket contrassegnato come risolto');
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_CONTRASSEGNATO_COME_RISOLTO'));
         this.loadTicket(id);
         this.updated.emit();
       },
       error: (err) => {
-        this.message.error(err?.error?.detail || err?.message || 'Errore nella risoluzione');
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_RISOLUZIONE'));
       },
     });
   }
@@ -412,20 +414,20 @@ export class TicketDetailDrawerComponent {
     if (!id) return;
 
     this.modal.confirm({
-      nzTitle: 'Conferma chiusura ticket',
-      nzContent: 'Sei sicuro di voler chiudere definitivamente questo ticket?',
-      nzOkText: 'Chiudi Ticket',
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_CONFERMA_CHIUSURA_TICKET'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_SEI_SICURO_DI_VOLER_CHIUDERE_DEFINITIVAMENTE'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.DLG_CHIUDI_TICKET'),
       nzOkDanger: true,
       nzOnOk: () => {
         this.api.closeTicket(id).subscribe({
           next: (res) => {
             this.ticket.set(res.data);
-            this.message.success('Ticket chiuso con successo');
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_CHIUSO_CON_SUCCESSO'));
             this.loadTicket(id);
             this.updated.emit();
           },
           error: (err) => {
-            this.message.error(err?.error?.detail || err?.message || 'Errore nella chiusura');
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_CHIUSURA'));
           },
         });
       },
@@ -437,19 +439,19 @@ export class TicketDetailDrawerComponent {
     if (!id) return;
 
     this.modal.confirm({
-      nzTitle: 'Riapri Ticket',
-      nzContent: 'Vuoi riaprire questo ticket e riavviare la lavorazione?',
-      nzOkText: 'Riapri',
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_RIAPRI_TICKET'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_VUOI_RIAPRIRE_QUESTO_TICKET_E_RIAVVIARE'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.DLG_RIAPRI'),
       nzOnOk: () => {
         this.api.reopenTicket(id).subscribe({
           next: (res) => {
             this.ticket.set(res.data);
-            this.message.success('Ticket riaperto');
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_RIAPERTO'));
             this.loadTicket(id);
             this.updated.emit();
           },
           error: (err) => {
-            this.message.error(err?.error?.detail || err?.message || 'Errore nella riapertura');
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_RIAPERTURA'));
           },
         });
       },

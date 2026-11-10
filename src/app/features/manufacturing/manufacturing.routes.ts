@@ -14,7 +14,7 @@ export const MANUFACTURING_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { breadcrumb: 'Produzione & MRP', title: 'Produzione & MRP' },
+    data: { breadcrumb: 'BREADCRUMB.PRODUZIONE_AND_MRP', title: 'Produzione & MRP' },
     loadComponent: () =>
       import('./manufacturing.component').then((m) => m.ManufacturingComponent),
   },

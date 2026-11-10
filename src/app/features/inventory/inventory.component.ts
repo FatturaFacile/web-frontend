@@ -351,7 +351,7 @@ export class InventoryComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.transferModalVisible.set(false);
-        this.message.success(this.translate.instant('inventory.messages.transfer_success') || 'Transfer recorded successfully');
+        this.message.success(this.translate.instant('inventory.messages.transfer_success') );
         this.loadMovements();
         this.loadStockLevels();
       },
@@ -433,7 +433,7 @@ export class InventoryComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.adjustmentModalVisible.set(false);
-        this.message.success(this.translate.instant('inventory.messages.adjustment_created') || 'Adjustment created');
+        this.message.success(this.translate.instant('inventory.messages.adjustment_created') );
         this.loadAdjustments();
       },
       error: (err) => {
@@ -547,7 +547,7 @@ export class InventoryComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.countModalVisible.set(false);
-        this.message.success(this.translate.instant('inventory.messages.count_created') || 'Count session scheduled');
+        this.message.success(this.translate.instant('inventory.messages.count_created') );
         this.loadCounts();
       },
       error: (err) => {
@@ -560,12 +560,12 @@ export class InventoryComponent implements OnInit {
   reconcileCount(id: string): void {
     this.inventoryApi.reconcileCount(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('inventory.messages.reconciled') || 'Stock reconciled successfully');
+        this.message.success(this.translate.instant('inventory.messages.reconciled') );
         this.loadCounts();
         this.loadStockLevels();
       },
       error: () => {
-        this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed');
+        this.message.error(this.translate.instant('common.errors.generic') );
       },
     });
   }
@@ -698,7 +698,7 @@ export class InventoryComponent implements OnInit {
         this.loadStockLevels();
       },
       error: () => {
-        this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed');
+        this.message.error(this.translate.instant('common.errors.generic') );
       },
     });
   }

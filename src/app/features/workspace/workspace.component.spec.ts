@@ -161,13 +161,13 @@ describe('WorkspaceComponent', () => {
   it('should trigger sync on connection', () => {
     component.syncConnection(mockGoogleConn);
     expect(mockWorkspaceApi.sync).toHaveBeenCalledWith('conn-g');
-    expect(mockMessage.success).toHaveBeenCalledWith(expect.stringContaining('5 elementi aggiornati'));
+    expect(mockMessage.success).toHaveBeenCalledWith('workspace.msgSincronizzazioneCompletataElementiAggiornati');
   });
 
   it('should revoke connection and reload', () => {
     component.revokeConnection(mockGoogleConn);
     expect(mockWorkspaceApi.revoke).toHaveBeenCalledWith('conn-g');
-    expect(mockMessage.success).toHaveBeenCalledWith(expect.stringContaining('revocata con successo'));
+    expect(mockMessage.success).toHaveBeenCalledWith('workspace.msgConnessioneRevocataConSuccesso');
   });
 
   it('should handle API errors gracefully during load', () => {

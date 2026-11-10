@@ -304,7 +304,7 @@ export class SalesOrdersComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.quoteModalVisible.set(false);
-        this.message.success(this.translate.instant('sales.messages.quote_created') || 'Quote created');
+        this.message.success(this.translate.instant('sales.messages.quote_created') );
         this.loadQuotes();
       },
       error: (err) => {
@@ -317,51 +317,51 @@ export class SalesOrdersComponent implements OnInit {
   submitQuoteForApproval(id: string): void {
     this.salesApi.submitQuoteForApproval(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.quote_submitted') || 'Submitted for approval');
+        this.message.success(this.translate.instant('sales.messages.quote_submitted') );
         this.loadQuotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   approveQuote(id: string): void {
     this.salesApi.approveQuote(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.quote_approved') || 'Quote approved');
+        this.message.success(this.translate.instant('sales.messages.quote_approved') );
         this.loadQuotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   rejectQuote(id: string): void {
     this.salesApi.rejectQuote(id, 'Price conditions unfeasible').subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.quote_rejected') || 'Quote rejected');
+        this.message.success(this.translate.instant('sales.messages.quote_rejected') );
         this.loadQuotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   acceptQuote(id: string): void {
     this.salesApi.acceptQuote(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.quote_accepted') || 'Quote marked accepted');
+        this.message.success(this.translate.instant('sales.messages.quote_accepted') );
         this.loadQuotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   convertQuote(id: string): void {
     this.salesApi.convertQuoteToOrder(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.quote_converted') || 'Quote converted to Order');
+        this.message.success(this.translate.instant('sales.messages.quote_converted') );
         this.loadQuotes();
         this.loadOrders();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
@@ -436,7 +436,7 @@ export class SalesOrdersComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.orderModalVisible.set(false);
-        this.message.success(this.translate.instant('sales.messages.order_created') || 'Order created');
+        this.message.success(this.translate.instant('sales.messages.order_created') );
         this.loadOrders();
       },
       error: (err) => {
@@ -449,40 +449,40 @@ export class SalesOrdersComponent implements OnInit {
   approveOrder(id: string): void {
     this.salesApi.approveOrder(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.order_approved') || 'Order approved');
+        this.message.success(this.translate.instant('sales.messages.order_approved') );
         this.loadOrders();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   reserveStock(id: string): void {
     this.salesApi.reserveOrderStock(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.stock_reserved') || 'Stock reserved for order');
+        this.message.success(this.translate.instant('sales.messages.stock_reserved') );
         this.loadOrders();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   invoiceOrder(id: string): void {
     this.salesApi.invoiceOrder(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.order_invoiced') || 'Invoice generated from order');
+        this.message.success(this.translate.instant('sales.messages.order_invoiced') );
         this.loadOrders();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   cancelOrder(id: string): void {
     this.salesApi.cancelOrder(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.order_cancelled') || 'Order cancelled');
+        this.message.success(this.translate.instant('sales.messages.order_cancelled') );
         this.loadOrders();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
@@ -565,7 +565,7 @@ export class SalesOrdersComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.ddtModalVisible.set(false);
-        this.message.success(this.translate.instant('sales.messages.ddt_created') || 'Delivery note created');
+        this.message.success(this.translate.instant('sales.messages.ddt_created') );
         this.loadDeliveryNotes();
       },
       error: (err) => {
@@ -578,30 +578,30 @@ export class SalesOrdersComponent implements OnInit {
   dispatchDdt(id: string): void {
     this.salesApi.dispatchDeliveryNote(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.ddt_dispatched') || 'DDT dispatched');
+        this.message.success(this.translate.instant('sales.messages.ddt_dispatched') );
         this.loadDeliveryNotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   confirmDdt(id: string): void {
     this.salesApi.confirmDeliveryNote(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.ddt_confirmed') || 'Delivery confirmed');
+        this.message.success(this.translate.instant('sales.messages.ddt_confirmed') );
         this.loadDeliveryNotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 
   invoiceDdt(id: string): void {
     this.salesApi.invoiceDeliveryNote(id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('sales.messages.ddt_invoiced') || 'Invoice generated from DDT');
+        this.message.success(this.translate.instant('sales.messages.ddt_invoiced') );
         this.loadDeliveryNotes();
       },
-      error: () => this.message.error(this.translate.instant('common.errors.generic') || 'Operation failed'),
+      error: () => this.message.error(this.translate.instant('common.errors.generic') ),
     });
   }
 }

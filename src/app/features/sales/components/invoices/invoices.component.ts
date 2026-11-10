@@ -29,6 +29,7 @@ import {
   PaymentStatus,
   SdiLogsData,
   SwissQrBillData,
+  TranslateService,
 } from '@core';
 import {
   BaseTableComponent,
@@ -95,6 +96,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
   styleUrl: './invoices.component.scss',
 })
 export class InvoicesComponent {
+  private readonly translate = inject(TranslateService);
   protected readonly facade = inject(InvoiceFacade);
   private readonly api = inject(InvoiceApiService);
   private readonly message = inject(NzMessageService);
@@ -298,7 +300,7 @@ export class InvoicesComponent {
 
   generateSdiXml(inv: InvoiceResource): void {
     this.run(inv, this.api.generateSdiXml(inv.id), null, (res) => {
-      this.message.success(`FatturaPA XML generato con successo (${res.data.status})`);
+      this.message.success(this.translate.instant('SALES.MSG_FATTURAPA_XML_GENERATO_CON_SUCCESSO', { status: res.data.status }));
       this.facade.reload();
     });
   }
@@ -317,17 +319,17 @@ export class InvoicesComponent {
       .map((i) => i.id);
 
     if (itInvoiceIds.length === 0) {
-      this.message.info('Nessuna fattura italiana selezionabile per l\'invio SDI');
+      this.message.info(this.translate.instant('SALES.MSG_NESSUNA_FATTURA_ITALIANA_SELEZIONABILE_PER_L'));
       return;
     }
 
     this.confirm('Confermi l\'invio massivo delle fatture a SDI?', () => {
       this.api.sendSdiBulk(itInvoiceIds).subscribe({
         next: (res) => {
-          this.message.success(`Invio massivo SDI completato: ${res.data.sent} inviate, ${res.data.failed} fallite`);
+          this.message.success(this.translate.instant('SALES.MSG_INVIO_MASSIVO_SDI_COMPLETATO_INVIATE_FALLITE', { sent: res.data.sent, failed: res.data.failed }));
           this.facade.reload();
         },
-        error: () => this.message.error('Errore durante l\'invio massivo SDI'),
+        error: () => this.message.error(this.translate.instant('SALES.MSG_ERRORE_DURANTE_L_INVIO_MASSIVO_SDI')),
       });
     });
   }
@@ -372,12 +374,12 @@ export class InvoicesComponent {
       next: (res) => {
         this.savingCreditNote.set(false);
         this.creditNoteModalVisible.set(false);
-        this.message.success(`Nota di credito ${res.data.credit_note_number} creata con successo`);
+        this.message.success(this.translate.instant('SALES.MSG_NOTA_DI_CREDITO_CREATA_CON_SUCCESSO', { credit_note_number: res.data.credit_note_number }));
         this.facade.reload();
       },
       error: () => {
         this.savingCreditNote.set(false);
-        this.message.error('Errore durante la creazione della nota di credito');
+        this.message.error(this.translate.instant('SALES.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELLA_NOTA'));
       },
     });
   }

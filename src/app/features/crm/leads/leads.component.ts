@@ -27,6 +27,7 @@ import {
   LeadScoreBreakdownItem,
   LeadScoreExplanation,
   StoreLeadPayload,
+  TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
@@ -58,6 +59,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
   styleUrl: './leads.component.scss',
 })
 export class LeadsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly crmApi = inject(CrmApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -191,7 +193,7 @@ export class LeadsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.createDrawerVisible.set(false);
-        this.message.success('Lead created successfully');
+        this.message.success(this.translate.instant('crmLeadScore.msgLeadCreatedSuccessfully'));
         this.loadLeads();
       },
       error: (err: unknown) => {
@@ -206,7 +208,7 @@ export class LeadsComponent implements OnInit {
   recalculateScore(lead: LeadResource): void {
     this.crmApi.recalculateLeadScores(lead.id).subscribe({
       next: () => {
-        this.message.success('Score recalculated');
+        this.message.success(this.translate.instant('crmLeadScore.msgScoreRecalculated'));
         this.loadLeads();
       },
       error: () => undefined,
@@ -232,7 +234,7 @@ export class LeadsComponent implements OnInit {
   qualify(lead: LeadResource): void {
     this.crmApi.qualifyLead(lead.id).subscribe({
       next: () => {
-        this.message.success('Lead marked as Qualified');
+        this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsQualified'));
         this.loadLeads();
       },
       error: () => undefined,
@@ -242,7 +244,7 @@ export class LeadsComponent implements OnInit {
   disqualify(lead: LeadResource): void {
     this.crmApi.disqualifyLead(lead.id).subscribe({
       next: () => {
-        this.message.success('Lead marked as Disqualified');
+        this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsDisqualified'));
         this.loadLeads();
       },
       error: () => undefined,
@@ -251,13 +253,13 @@ export class LeadsComponent implements OnInit {
 
   convert(lead: LeadResource): void {
     this.modal.confirm({
-      nzTitle: 'Convert Lead',
-      nzContent: `Convert ${lead.full_name || lead.company_name} into Account and Contact?`,
-      nzOkText: 'Convert',
+      nzTitle: this.translate.instant('crmLeadScore.dlgConvertLead'),
+      nzContent: this.translate.instant('crmLeadScore.dlgConvertIntoAccountAndContact', { value: lead.full_name || lead.company_name || '' }),
+      nzOkText: this.translate.instant('crmLeadScore.dlgConvert'),
       nzOnOk: () => {
         this.crmApi.convertLead(lead.id, { create_opportunity: true }).subscribe({
           next: () => {
-            this.message.success('Lead successfully converted');
+            this.message.success(this.translate.instant('crmLeadScore.msgLeadSuccessfullyConverted'));
             this.loadLeads();
           },
           error: () => undefined,
@@ -269,7 +271,7 @@ export class LeadsComponent implements OnInit {
   deleteLead(lead: LeadResource): void {
     this.crmApi.deleteLead(lead.id).subscribe({
       next: () => {
-        this.message.success('Lead deleted');
+        this.message.success(this.translate.instant('crmLeadScore.msgLeadDeleted'));
         this.loadLeads();
       },
       error: () => undefined,

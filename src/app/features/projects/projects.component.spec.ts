@@ -158,7 +158,7 @@ describe('ProjectsComponent', () => {
         currency: 'CHF',
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('Project created successfully');
+    expect(mockMessage.success).toHaveBeenCalledWith('PRJ.MSG_PROJECT_CREATED_SUCCESSFULLY');
     expect(component.createModalVisible()).toBe(false);
   });
 

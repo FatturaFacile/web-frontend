@@ -192,15 +192,15 @@
         <input nz-input id="camp-revenue" inputmode="decimal" class="field" [(ngModel)]="draft.expected_revenue" />
       </div>
       <div>
-        <label for="camp-utm-source">UTM source</label>
+        <label for="camp-utm-source">{{ 'CRMX.LBL_UTM_SOURCE' | translate }}</label>
         <input nz-input id="camp-utm-source" class="field" [(ngModel)]="draft.utm_source" />
       </div>
       <div>
-        <label for="camp-utm-medium">UTM medium</label>
+        <label for="camp-utm-medium">{{ 'CRMX.LBL_UTM_MEDIUM' | translate }}</label>
         <input nz-input id="camp-utm-medium" class="field" [(ngModel)]="draft.utm_medium" />
       </div>
       <div>
-        <label for="camp-utm-campaign">UTM campaign</label>
+        <label for="camp-utm-campaign">{{ 'CRMX.LBL_UTM_CAMPAIGN' | translate }}</label>
         <input nz-input id="camp-utm-campaign" class="field" [(ngModel)]="draft.utm_campaign" />
       </div>
     </div>

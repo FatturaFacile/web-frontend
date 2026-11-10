@@ -24,7 +24,7 @@
             nzPlaceHolder="Tutte le cartelle"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutte le cartelle"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTE_LE_CARTELLE' | translate"></nz-option>
             @for (folder of folders(); track folder.id) {
               <nz-option [nzValue]="folder.id" [nzLabel]="folder.name"></nz-option>
             }
@@ -36,13 +36,13 @@
             nzPlaceHolder="Tutti i tipi"
             class="filter-select"
           >
-            <nz-option nzValue="" nzLabel="Tutti i tipi"></nz-option>
-            <nz-option nzValue="Invoice" nzLabel="Fatture"></nz-option>
-            <nz-option nzValue="Contract" nzLabel="Contratti"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTI_I_TIPI' | translate"></nz-option>
+            <nz-option nzValue="Invoice" [nzLabel]="'DMS.LBL_FATTURE' | translate"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTI' | translate"></nz-option>
             <nz-option nzValue="DeliveryNote" nzLabel="DDT"></nz-option>
-            <nz-option nzValue="Receipt" nzLabel="Ricevute"></nz-option>
-            <nz-option nzValue="CustomsDossier" nzLabel="Dogana"></nz-option>
-            <nz-option nzValue="Other" nzLabel="Altro"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RICEVUTE' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'DMS.LBL_DOGANA' | translate"></nz-option>
+            <nz-option nzValue="Other" [nzLabel]="'DMS.LBL_ALTRO' | translate"></nz-option>
           </nz-select>
 
           <button nz-button nzType="default" (click)="loadDocuments()">
@@ -116,14 +116,14 @@
                   {{ doc.status | uppercase }}
                 </nz-tag>
                 @if (doc.checked_out_by) {
-                  <nz-tag nzColor="warning">CHECK-OUT</nz-tag>
+                  <nz-tag nzColor="warning">{{ 'DMS.LBL_CHECK_OUT' | translate }}</nz-tag>
                 }
               </td>
               <td>
                 @if (doc.is_legal_hold) {
                   <nz-tag nzColor="error">
                     <span nz-icon nzType="lock"></span>
-                    LEGAL HOLD
+                    {{ 'DMS.LBL_LEGAL_HOLD' | translate }}
                   </nz-tag>
                 } @else {
                   <span class="text-muted">-</span>
@@ -150,7 +150,7 @@
                       (click)="openCheckOutModal(doc)"
                     >
                       <span nz-icon nzType="edit"></span>
-                      Check-out
+                      {{ 'DMS.LBL_CHECK_OUT_2' | translate }}
                     </button>
                   } @else {
                     <button
@@ -161,7 +161,7 @@
                       (click)="openCheckInModal(doc)"
                     >
                       <span nz-icon nzType="upload"></span>
-                      Check-in
+                      {{ 'DMS.LBL_CHECK_IN' | translate }}
                     </button>
                   }
 
@@ -184,7 +184,7 @@
                       (click)="releaseLegalHold(doc)"
                     >
                       <span nz-icon nzType="check"></span>
-                      Sblocca
+                      {{ 'DMS.LBL_SBLOCCA' | translate }}
                     </button>
                   }
 
@@ -243,7 +243,7 @@
                     <nz-tag>{{ role }}</nz-tag>
                   }
                 } @else {
-                  <nz-tag nzColor="default">Tutti i ruoli</nz-tag>
+                  <nz-tag nzColor="default">{{ 'DMS.LBL_TUTTI_I_RUOLI' | translate }}</nz-tag>
                 }
               </td>
               <td>{{ folder.documents_count ?? 0 }}</td>
@@ -407,7 +407,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.DOC_TITLE' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="title" placeholder="es. Fattura Fornitore #120" />
+          <input nz-input formControlName="title" [placeholder]="'DMS.LBL_ES_FATTURA_FORNITORE_120' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -416,11 +416,11 @@
         <nz-form-control>
           <nz-select formControlName="document_type">
             <nz-option nzValue="Invoice" nzLabel="Fattura"></nz-option>
-            <nz-option nzValue="Contract" nzLabel="Contratto"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTO' | translate"></nz-option>
             <nz-option nzValue="DeliveryNote" nzLabel="DDT"></nz-option>
-            <nz-option nzValue="Receipt" nzLabel="Ricevuta Spesa"></nz-option>
-            <nz-option nzValue="CustomsDossier" nzLabel="Dogana IT-CH"></nz-option>
-            <nz-option nzValue="Other" nzLabel="Altro"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RICEVUTA_SPESA' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'DMS.LBL_DOGANA_IT_CH' | translate"></nz-option>
+            <nz-option nzValue="Other" [nzLabel]="'DMS.LBL_ALTRO' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -429,7 +429,7 @@
         <nz-form-label>{{ 'DMS.FOLDER' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="folder_id">
-            <nz-option nzValue="" nzLabel="Cartella Radice"></nz-option>
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_CARTELLA_RADICE' | translate"></nz-option>
             @for (folder of folders(); track folder.id) {
               <nz-option [nzValue]="folder.id" [nzLabel]="folder.name"></nz-option>
             }
@@ -510,7 +510,7 @@
           rows="2"
           [ngModel]="legalHoldReason()"
           (ngModelChange)="legalHoldReason.set($event)"
-          placeholder="es. Ordinanza di custodia documentale per contenzioso"
+          [placeholder]="'DMS.LBL_ES_ORDINANZA_DI_CUSTODIA_DOCUMENTALE_PER' | translate"
         ></textarea>
       </nz-form-control>
     </nz-form-item>
@@ -530,7 +530,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Bilanci e Dichiarazioni" />
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_BILANCI_E_DICHIARAZIONI' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -550,7 +550,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Conservazione 10 Anni Fiscale" />
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONSERVAZIONE_10_ANNI_FISCALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
@@ -558,10 +558,10 @@
         <nz-form-label nzRequired>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="document_type">
-            <nz-option nzValue="Invoice" nzLabel="Invoice"></nz-option>
-            <nz-option nzValue="Contract" nzLabel="Contract"></nz-option>
-            <nz-option nzValue="Receipt" nzLabel="Receipt"></nz-option>
-            <nz-option nzValue="DeliveryNote" nzLabel="DeliveryNote"></nz-option>
+            <nz-option nzValue="Invoice" [nzLabel]="'DMS.LBL_INVOICE' | translate"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRACT' | translate"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RECEIPT' | translate"></nz-option>
+            <nz-option nzValue="DeliveryNote" [nzLabel]="'DMS.LBL_DELIVERYNOTE' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -589,7 +589,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="name" placeholder="es. Confidenziale" />
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONFIDENZIALE' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -617,9 +617,9 @@
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'DMS.PROTECTION' | translate">
           @if (doc.is_legal_hold) {
-            <nz-tag nzColor="error">LEGAL HOLD ATTIVO</nz-tag>
+            <nz-tag nzColor="error">{{ 'DMS.LBL_LEGAL_HOLD_ATTIVO' | translate }}</nz-tag>
           } @else {
-            <span>Nessun blocco</span>
+            <span>{{ 'DMS.LBL_NESSUN_BLOCCO' | translate }}</span>
           }
         </nz-descriptions-item>
       </nz-descriptions>
@@ -629,8 +629,8 @@
       <nz-table [nzData]="docVersions()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>Ver</th>
-            <th>File</th>
+            <th>{{ 'DMS.LBL_VER' | translate }}</th>
+            <th>{{ 'DMS.LBL_FILE' | translate }}</th>
             <th>SHA-256</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -649,7 +649,7 @@
               <td nzAlign="right">
                 <button nz-button nzType="default" nzSize="small" (click)="verifySha256(v)">
                   <span nz-icon nzType="audit"></span>
-                  Verifica
+                  {{ 'DMS.LBL_VERIFICA' | translate }}
                 </button>
               </td>
             </tr>
@@ -663,9 +663,9 @@
         <nz-table [nzData]="docExtractions()" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>Campo</th>
-              <th>Valore Rilevato</th>
-              <th>Confidenza</th>
+              <th>{{ 'DMS.LBL_CAMPO' | translate }}</th>
+              <th>{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
+              <th>{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -708,7 +708,7 @@
           </tbody>
         </nz-table>
       } @else {
-        <p class="text-muted">Nessuna estrazione OCR disponibile.</p>
+        <p class="text-muted">{{ 'DMS.LBL_NESSUNA_ESTRAZIONE_OCR_DISPONIBILE' | translate }}</p>
       }
 
       <!-- LINK ENTITÀ ERP -->
@@ -716,15 +716,15 @@
         <h4>{{ 'DMS.LINKED_ENTITIES' | translate }}</h4>
         <button nz-button nzType="default" nzSize="small" (click)="openLinkModal()">
           <span nz-icon nzType="plus"></span>
-          Collega
+          {{ 'DMS.LBL_COLLEGA' | translate }}
         </button>
       </div>
       @if (docLinks().length > 0) {
         <nz-table [nzData]="docLinks()" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>Tipo</th>
-              <th>Riferimento</th>
+              <th>{{ 'DMS.LBL_TIPO' | translate }}</th>
+              <th>{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -745,7 +745,7 @@
           </tbody>
         </nz-table>
       } @else {
-        <p class="text-muted">Nessun collegamento presente.</p>
+        <p class="text-muted">{{ 'DMS.LBL_NESSUN_COLLEGAMENTO_PRESENTE' | translate }}</p>
       }
 
       <!-- AUDIT LOG -->
@@ -753,9 +753,9 @@
       <nz-table [nzData]="docAuditTrail()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>Evento</th>
-            <th>Utente</th>
-            <th>Data</th>
+            <th>{{ 'DMS.LBL_EVENTO' | translate }}</th>
+            <th>{{ 'DMS.LBL_UTENTE' | translate }}</th>
+            <th>{{ 'DMS.LBL_DATA' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -788,9 +788,9 @@
         <nz-form-control>
           <nz-select formControlName="target_type">
             <nz-option nzValue="Invoice" nzLabel="Fattura"></nz-option>
-            <nz-option nzValue="PurchaseOrder" nzLabel="Ordine d Acquisto"></nz-option>
-            <nz-option nzValue="Quote" nzLabel="Preventivo"></nz-option>
-            <nz-option nzValue="Contract" nzLabel="Contratto"></nz-option>
+            <nz-option nzValue="PurchaseOrder" [nzLabel]="'DMS.LBL_ORDINE_D_ACQUISTO' | translate"></nz-option>
+            <nz-option nzValue="Quote" [nzLabel]="'DMS.LBL_PREVENTIVO' | translate"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTO' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -798,14 +798,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.ENTITY_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="target_id" placeholder="UUID dell entità" />
+          <input nz-input formControlName="target_id" [placeholder]="'DMS.LBL_UUID_DELL_ENTITA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMON.LABEL' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="label" placeholder="es. Fattura F-2026-098" />
+          <input nz-input formControlName="label" [placeholder]="'DMS.LBL_ES_FATTURA_F_2026_098' | translate" />
         </nz-form-control>
       </nz-form-item>
     </form>

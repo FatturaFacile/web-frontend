@@ -577,10 +577,10 @@
           <nz-form-label nzRequired>{{ 'INTRASTAT.SECTION' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="section">
-              <nz-option [nzValue]="1" nzLabel="Sezione 1 - Beni"></nz-option>
-              <nz-option [nzValue]="2" nzLabel="Sezione 2 - Rettifiche Beni"></nz-option>
-              <nz-option [nzValue]="3" nzLabel="Sezione 3 - Servizi"></nz-option>
-              <nz-option [nzValue]="4" nzLabel="Sezione 4 - Rettifiche Servizi"></nz-option>
+              <nz-option [nzValue]="1" [nzLabel]="'INTRASTAT.LBL_SEZIONE_1_BENI' | translate"></nz-option>
+              <nz-option [nzValue]="2" [nzLabel]="'INTRASTAT.LBL_SEZIONE_2_RETTIFICHE_BENI' | translate"></nz-option>
+              <nz-option [nzValue]="3" [nzLabel]="'INTRASTAT.LBL_SEZIONE_3_SERVIZI' | translate"></nz-option>
+              <nz-option [nzValue]="4" [nzLabel]="'INTRASTAT.LBL_SEZIONE_4_RETTIFICHE_SERVIZI' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -641,7 +641,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INTRASTAT.PRODUCT_ID' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="product_id" placeholder="UUID o codice articolo" />
+          <input nz-input formControlName="product_id" [placeholder]="'INTRASTAT.LBL_UUID_O_CODICE_ARTICOLO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
