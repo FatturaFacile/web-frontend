@@ -284,7 +284,7 @@ export class RentComponent implements OnInit {
   loadAutomotiveVehicles(): void {
     this.autoApi.getVehicles().subscribe({
       next: (res) => {
-        this.automotiveVehicles.set(res?.data || []);
+        this.automotiveVehicles.set(res?.data?.data ?? []);
       },
       error: () => {
         this.message.error(this.translate.instant('RENT.LOAD_AUTO_VEHICLES_ERROR'));

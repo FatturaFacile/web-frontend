@@ -12,15 +12,6 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AutomotiveApiService, AutomotiveVehicle, TireHotelRecord, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
-/** The vehicles endpoint is paginated (`data.data`); accept a plain array too. */
-function extractVehicles(data: unknown): AutomotiveVehicle[] {
-  if (Array.isArray(data)) {
-    return data as AutomotiveVehicle[];
-  }
-  const nested = (data as { data?: unknown } | null)?.data;
-  return Array.isArray(nested) ? (nested as AutomotiveVehicle[]) : [];
-}
-
 @Component({
   selector: 'app-tire-hotel',
   imports: [
@@ -70,7 +61,7 @@ export class TireHotelComponent implements OnInit {
     }).subscribe({
       next: ({ plan, vehicles }) => {
         this.tireRecords.set(plan.data ?? []);
-        this.vehicles.set(extractVehicles(vehicles.data));
+        this.vehicles.set(vehicles.data?.data ?? []);
         this.loading.set(false);
       },
       error: (err) => {

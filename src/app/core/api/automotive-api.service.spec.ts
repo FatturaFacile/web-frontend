@@ -37,13 +37,13 @@ describe('AutomotiveApiService', () => {
     };
 
     service.getVehicles().subscribe((res) => {
-      expect(res.data.length).toBe(1);
-      expect(res.data[0].license_plate).toBe('AA123BB');
+      expect(res.data.data.length).toBe(1);
+      expect(res.data.data[0].license_plate).toBe('AA123BB');
     });
 
     const vReq = httpMock.expectOne(`${base}/vehicles`);
     expect(vReq.request.method).toBe('GET');
-    vReq.flush({ data: [mockVehicle] });
+    vReq.flush({ data: { current_page: 1, data: [mockVehicle], last_page: 1, per_page: 15, total: 1 } });
 
     service.getSeasonalSwitchPlan().subscribe((res) => {
       expect(res.data.length).toBe(1);

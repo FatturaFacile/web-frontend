@@ -71,7 +71,7 @@ describe('RentComponent', () => {
     };
 
     autoApiMock = {
-      getVehicles: vi.fn().mockReturnValue(of({ success: true, data: [mockAutoVehicle] })),
+      getVehicles: vi.fn().mockReturnValue(of({ success: true, data: { current_page: 1, data: [mockAutoVehicle], last_page: 1, per_page: 15, total: 1 } })),
       registerVehicle: vi.fn().mockReturnValue(of({ success: true, data: mockAutoVehicle })),
       updateVehicle: vi.fn().mockReturnValue(of({ success: true, data: mockAutoVehicle })),
       deleteVehicle: vi.fn().mockReturnValue(of({ success: true })),
