@@ -281,7 +281,7 @@ export class HospitalityComponent implements OnInit {
   // --- ORDERS METHODS ---
   loadOrders(): void {
     this.ordersLoading.set(true);
-    this.api.getOrders().subscribe({
+    this.api.getOpenOrders().subscribe({
       next: (res) => {
         let list = res.data || [];
         const status = this.filterOrderStatus();
@@ -436,12 +436,11 @@ export class HospitalityComponent implements OnInit {
   }
 
   printPreBill(order: HospitalityOrder): void {
-    this.api.printBill(order.id).subscribe({
+    this.api.getBill(order.id).subscribe({
       next: (res) => {
         this.message.success(
-          `${this.translate.instant('HOSPITALITY.PRE_BILL_PRINTED')}: ${res.data.total_amount}`,
+          `${this.translate.instant('HOSPITALITY.PRE_BILL_PRINTED')}: ${res.data.remaining_gross} ${order.currency}`,
         );
-        this.loadOrders();
       },
       error: () => {
         this.message.error(this.translate.instant('HOSPITALITY.ACTION_ERROR'));

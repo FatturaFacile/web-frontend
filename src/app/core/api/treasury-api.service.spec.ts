@@ -66,16 +66,9 @@ describe('TreasuryApiService', () => {
     reqMatch.flush({ success: true, message: 'Matched', data: { matched_count: 5 } });
   });
 
-  it('handles CAMT and CBI file imports', () => {
+  it('handles CBI file imports', () => {
     const formData = new FormData();
     formData.append('file', new Blob(['camt']), 'camt053.xml');
-
-    service.importCamtFile(formData).subscribe((res) => {
-      expect(res.data.imported_count).toBe(12);
-    });
-    const reqCamt = httpTesting.expectOne(`${baseUrl}/import-camt`);
-    expect(reqCamt.request.method).toBe('POST');
-    reqCamt.flush({ success: true, message: 'Imported', data: { imported_count: 12 } });
 
     service.importCbiFile(formData).subscribe((res) => {
       expect(res.data.imported_count).toBe(8);

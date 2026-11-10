@@ -32,6 +32,7 @@ describe('CRM engagement pages', () => {
     addCampaignMembers: vi.fn(),
     sendCampaign: vi.fn(),
     createSegment: vi.fn(),
+    updateSegment: vi.fn(),
     getSegmentMembers: vi.fn(),
     getLeadScoringRules: vi.fn(),
     createLeadScoringRule: vi.fn(),
@@ -135,20 +136,50 @@ describe('CRM engagement pages', () => {
     expect(api.sendCampaign).toHaveBeenCalledWith('cp1', { subject: 'Hello', body: 'Body' });
   });
 
-  it('saves a segment with its filters as [field, operator, value] triples', () => {
+  it('saves a segment with its filters as {field, operator, value} objects', () => {
     const fixture = TestBed.createComponent(SegmentsComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;
     component['open'](null);
     component['name'] = 'Italian clients';
     component['entity'] = 'contacts';
-    component['filters'] = [{ field: 'country', operator: '=', value: 'IT' }];
+    component['filters'] = [
+      { field: 'country', operator: 'eq', value: 'IT', channel: 'email', purpose: 'marketing' },
+      { field: 'email', operator: 'not_null', value: '', channel: 'email', purpose: 'marketing' },
+      { field: 'consent', operator: 'eq', value: '', channel: 'sms', purpose: 'newsletter' },
+    ];
     expect(component['valid']()).toBe(true);
     api.createSegment.mockReturnValue(ok());
     component['save']();
     expect(api.createSegment).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Italian clients', entity: 'contacts', filters: [['country', '=', 'IT']] }),
+      expect.objectContaining({ name: 'Italian clients', entity: 'contacts', filters: [
+          { field: 'country', operator: 'eq', value: 'IT' },
+          { field: 'email', operator: 'not_null' },
+          { field: 'consent', channel: 'sms', purpose: 'newsletter' },
+        ],
+      }),
     );
+  });
+
+  it('edits a segment without sending its entity and reloads stored object filters', () => {
+    const fixture = TestBed.createComponent(SegmentsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component['open']({
+      id: 's1',
+      name: 'VIP',
+      entity: 'leads',
+      filters: [{ field: 'status', operator: 'in', value: 'new,qualified' }],
+    });
+    expect(component['filters'][0]).toEqual(expect.objectContaining({ field: 'status', operator: 'in', value: 'new,qualified' }));
+    api.updateSegment.mockReturnValue(ok());
+    component['save']();
+    expect(api.updateSegment).toHaveBeenCalledWith('s1', {
+      name: 'VIP',
+      description: null,
+      filters: [{ field: 'status', operator: 'in', value: 'new,qualified' }],
+      is_active: true,
+    });
   });
 
   it('validates field and activity scoring rules and recalculates', () => {

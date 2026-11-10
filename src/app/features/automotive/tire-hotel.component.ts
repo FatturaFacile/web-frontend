@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -6,9 +7,19 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { AutomotiveApiService, TireRecord, TranslateService } from '@core';
+import { AutomotiveApiService, AutomotiveVehicle, TireHotelRecord, TranslateService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+
+/** The vehicles endpoint is paginated (`data.data`); accept a plain array too. */
+function extractVehicles(data: unknown): AutomotiveVehicle[] {
+  if (Array.isArray(data)) {
+    return data as AutomotiveVehicle[];
+  }
+  const nested = (data as { data?: unknown } | null)?.data;
+  return Array.isArray(nested) ? (nested as AutomotiveVehicle[]) : [];
+}
 
 @Component({
   selector: 'app-tire-hotel',
@@ -19,6 +30,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     NzButtonModule,
     NzGridModule,
     NzStatisticModule,
+    NzPopconfirmModule,
     NzEmptyModule,
     PageHeaderComponent,
     TranslatePipe,
@@ -33,14 +45,16 @@ export class TireHotelComponent implements OnInit {
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly tireRecords = signal<TireRecord[]>([]);
+  readonly tireRecords = signal<TireHotelRecord[]>([]);
+  readonly vehicles = signal<AutomotiveVehicle[]>([]);
+  readonly checkingOutId = signal<string | null>(null);
 
   readonly winterCount = computed(() =>
-    this.tireRecords().filter((r) => r.season === 'WINTER').length,
+    this.tireRecords().filter((r) => r.season === 'winter').length,
   );
 
   readonly summerCount = computed(() =>
-    this.tireRecords().filter((r) => r.season === 'SUMMER').length,
+    this.tireRecords().filter((r) => r.season === 'summer').length,
   );
 
   ngOnInit(): void {
@@ -50,9 +64,13 @@ export class TireHotelComponent implements OnInit {
   loadTireRecords(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.api.getTireHotelRecords().subscribe({
-      next: (data) => {
-        this.tireRecords.set(data || []);
+    forkJoin({
+      plan: this.api.getSeasonalSwitchPlan(),
+      vehicles: this.api.getVehicles(),
+    }).subscribe({
+      next: ({ plan, vehicles }) => {
+        this.tireRecords.set(plan.data ?? []);
+        this.vehicles.set(extractVehicles(vehicles.data));
         this.loading.set(false);
       },
       error: (err) => {
@@ -63,24 +81,21 @@ export class TireHotelComponent implements OnInit {
     });
   }
 
-  sendReminder(tire: TireRecord): void {
-    this.api.sendReminder(tire.id).subscribe({
+  vehicleOf(tire: TireHotelRecord): AutomotiveVehicle | undefined {
+    return this.vehicles().find((v) => v.id === tire.vehicle_id);
+  }
+
+  checkOut(tire: TireHotelRecord): void {
+    this.checkingOutId.set(tire.id);
+    this.api.checkOutTires(tire.id).subscribe({
       next: () => {
-        this.tireRecords.update((records) =>
-          records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
-        );
-        this.message.success(
-          this.translate.instant('automotive.tireHotel.notifySuccess', { plate: tire.vehiclePlate }),
-        );
+        this.tireRecords.update((records) => records.filter((r) => r.id !== tire.id));
+        this.checkingOutId.set(null);
+        this.message.success(this.translate.instant('TIRE_HOTEL.CHECK_OUT_SUCCESS'));
       },
       error: () => {
-        // Fallback optimistic notification if endpoint simulation succeeds
-        this.tireRecords.update((records) =>
-          records.map((r) => (r.id === tire.id ? { ...r, reminderSent: true } : r)),
-        );
-        this.message.success(
-          this.translate.instant('automotive.tireHotel.notifySuccess', { plate: tire.vehiclePlate }),
-        );
+        this.checkingOutId.set(null);
+        this.message.error(this.translate.instant('TIRE_HOTEL.CHECK_OUT_ERROR'));
       },
     });
   }

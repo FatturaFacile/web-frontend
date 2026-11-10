@@ -173,4 +173,55 @@ describe('ChildcareApiService', () => {
     expect(reqBills.request.method).toBe('GET');
     reqBills.flush({ data: [mockBill] });
   });
+
+  it('should read the reference persons from the child resource', () => {
+    service.getReferencePersons('ch-1-uuid').subscribe((res) => {
+      expect(res.data.length).toBe(1);
+      expect(res.data[0].full_name).toBe('Anna Rossi');
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/children/ch-1-uuid`);
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      success: true,
+      data: { ...mockChild, reference_persons: [{ id: 'rp-1', full_name: 'Anna Rossi' }] },
+    });
+  });
+
+  it('should correct an attendance with PUT and read its correction history with GET', () => {
+    service.correctAttendance('att-1-uuid', { reason: 'Orario errato', check_in_at: '2026-03-02T08:00:00Z' }).subscribe();
+
+    const reqPut = httpTesting.expectOne(`${baseUrl}/attendances/att-1-uuid`);
+    expect(reqPut.request.method).toBe('PUT');
+    expect(reqPut.request.body.reason).toBe('Orario errato');
+    reqPut.flush({ data: mockAttendance });
+
+    service.getAttendanceCorrections('att-1-uuid').subscribe((res) => {
+      expect(res.data[0].field).toBe('check_in_at');
+    });
+
+    const reqGet = httpTesting.expectOne(`${baseUrl}/attendances/att-1-uuid/corrections`);
+    expect(reqGet.request.method).toBe('GET');
+    reqGet.flush({ data: [{ id: 'c-1', attendance_id: 'att-1-uuid', field: 'check_in_at', reason: 'Orario errato' }] });
+  });
+
+  it('should record a staff shift with POST and read staff hours per month with GET', () => {
+    service
+      .createStaffShift({ user_id: 'u-1', date: '2026-03-02', starts_at: '08:00', ends_at: '16:00' })
+      .subscribe();
+
+    const reqPost = httpTesting.expectOne(`${baseUrl}/staff-shifts`);
+    expect(reqPost.request.method).toBe('POST');
+    expect(reqPost.request.body.starts_at).toBe('08:00');
+    reqPost.flush({ data: {} });
+
+    service.getStaffHours({ month: '2026-03' }).subscribe((res) => {
+      expect(res.data[0].minutes).toBe(480);
+    });
+
+    const reqGet = httpTesting.expectOne((r) => r.url === `${baseUrl}/staff-hours`);
+    expect(reqGet.request.method).toBe('GET');
+    expect(reqGet.request.params.get('month')).toBe('2026-03');
+    reqGet.flush({ data: [{ user_id: 'u-1', name: 'Luisa', shifts: 1, minutes: 480 }] });
+  });
 });

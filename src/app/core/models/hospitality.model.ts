@@ -35,6 +35,40 @@ export interface HospitalityTable {
   current_order_id?: string | null;
 }
 
+/** Table of `GET /hospitality/rooms/{id}/plan`, with its open order. */
+export interface HospitalityPlanTable {
+  id: string;
+  name: string;
+  seats: number;
+  shape: string;
+  pos_x: number;
+  pos_y: number;
+  width: number;
+  height: number;
+  status: 'occupied' | 'free';
+  order_id: string | null;
+  covers: string | null;
+}
+
+export interface HospitalityRoomPlan {
+  room: { id: string; name: string; width: number; height: number };
+  tables: HospitalityPlanTable[];
+}
+
+/** What is left to pay of an order (`GET /hospitality/orders/{id}/bill`); amounts are decimal strings. */
+export interface HospitalityBill {
+  order_id: string;
+  lines: {
+    order_item_id: string;
+    description: string;
+    remaining_quantity: string;
+    unit_price: string;
+    tax_rate: string;
+    gross: string;
+  }[];
+  remaining_gross: string;
+}
+
 export interface HospitalityTableRequest {
   name: string;
   seats: number;

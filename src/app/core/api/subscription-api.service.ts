@@ -63,8 +63,9 @@ export class SubscriptionApiService {
     return this.http.put<ApiResponse<SubscriptionPlanResource>>(`${this.plansUrl}/${id}`, payload);
   }
 
-  deletePlan(id: string): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.plansUrl}/${id}`);
+  /** Plans cannot be deleted: the API only allows to deactivate them (`is_active = false`). */
+  deactivatePlan(id: string): Observable<ApiResponse<SubscriptionPlanResource>> {
+    return this.http.put<ApiResponse<SubscriptionPlanResource>>(`${this.plansUrl}/${id}`, { is_active: false });
   }
 
   // --- Contracts (using active /sub/contracts successor) ---

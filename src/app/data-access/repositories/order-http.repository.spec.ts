@@ -3,27 +3,29 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, beforeEach, afterEach, it, expect } from 'vitest';
 import { environment } from '@env';
-import { OrderDto } from '@data-access/dtos/order.dto';
+import { SalesOrderApiDto } from '@data-access/dtos/sales-order.dto';
 import { OrderHttpRepository } from '@data-access/repositories/order-http.repository';
 
 describe('OrderHttpRepository', () => {
   let repository: OrderHttpRepository;
   let httpMock: HttpTestingController;
 
-  const mockDtos: OrderDto[] = [
+  const mockDtos: SalesOrderApiDto[] = [
     {
-      order_id: 'ord-1',
-      ref_code: 'REF-001',
-      created_timestamp: '2026-01-01T10:00:00.000Z',
-      items: [{ item_id: 'i-1', prod_name: 'Widget A', qty: 2, price: 50 }],
-      total: 100,
+      id: 'ord-1',
+      order_number: 'SO-001',
+      date: '2026-01-01',
+      created_at: '2026-01-01T10:00:00.000Z',
+      total_gross: '100.00',
+      items: [{ id: 'i-1', description: 'Widget A', quantity: '2.0000', unit_price: '50.00' }],
     },
     {
-      order_id: 'ord-2',
-      ref_code: 'REF-002',
-      created_timestamp: '2026-01-02T12:00:00.000Z',
-      items: [{ item_id: 'i-2', prod_name: 'Widget B', qty: 1, price: 150 }],
-      total: 150,
+      id: 'ord-2',
+      order_number: 'SO-002',
+      date: '2026-01-02',
+      created_at: '2026-01-02T12:00:00.000Z',
+      total_gross: '150.00',
+      items: [{ id: 'i-2', description: 'Widget B', quantity: '1.0000', unit_price: '150.00' }],
     },
   ];
 
@@ -49,30 +51,31 @@ describe('OrderHttpRepository', () => {
       next: (orders) => {
         expect(orders.length).toBe(2);
         expect(orders[0].id).toBe('ord-1');
-        expect(orders[0].referenceNumber).toBe('REF-001');
+        expect(orders[0].referenceNumber).toBe('SO-001');
         expect(orders[0].createdAt).toEqual(new Date('2026-01-01T10:00:00.000Z'));
         expect(orders[0].totalAmount).toBe(100);
         expect(orders[0].items[0].productName).toBe('Widget A');
       },
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders`);
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiBaseUrl}/sales/orders`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockDtos);
+    expect(req.request.params.get('per_page')).toBe('100');
+    req.flush({ data: mockDtos });
   });
 
   it('should fetch single order by id via GET and map to domain model', () => {
     repository.getOrderById('ord-1').subscribe({
       next: (order) => {
         expect(order.id).toBe('ord-1');
-        expect(order.referenceNumber).toBe('REF-001');
+        expect(order.referenceNumber).toBe('SO-001');
         expect(order.totalAmount).toBe(100);
       },
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders/ord-1`);
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/sales/orders/ord-1`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockDtos[0]);
+    req.flush({ data: mockDtos[0] });
   });
 
   it('should propagate HTTP errors when getOrders fails', () => {
@@ -87,7 +90,7 @@ describe('OrderHttpRepository', () => {
       },
     });
 
-    const req = httpMock.expectOne(`${environment.apiBaseUrl}/orders`);
+    const req = httpMock.expectOne((r) => r.url === `${environment.apiBaseUrl}/sales/orders`);
     req.flush('Failed to fetch', { status: 500, statusText: 'Internal Server Error' });
 
     expect(errorStatus).toBe(500);
