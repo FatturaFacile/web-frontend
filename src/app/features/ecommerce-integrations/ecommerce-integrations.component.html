@@ -305,6 +305,7 @@
                   <th>{{ 'ECOMMERCE_INTEGRATIONS.AMOUNT' | translate }}</th>
                   <th>{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
                   <th>{{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_URL' | translate }}</th>
+                  <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -330,6 +331,26 @@
                           {{ 'ECOMMERCE_INTEGRATIONS.COPY_LINK' | translate }}
                         </button>
                       </div>
+                    </td>
+                    <td>
+                      <button nz-button nzSize="small" nzType="link" (click)="refreshPaymentLink(link)">
+                        <span nz-icon nzType="reload"></span>
+                        {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_REFRESH' | translate }}
+                      </button>
+                      @if (isPaymentLinkCancellable(link)) {
+                        <button
+                          nz-button
+                          nzSize="small"
+                          nzType="link"
+                          nzDanger
+                          nz-popconfirm
+                          [nzPopconfirmTitle]="'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_CONFIRM' | translate"
+                          (nzOnConfirm)="cancelPaymentLink(link)"
+                        >
+                          <span nz-icon nzType="close-circle"></span>
+                          {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL' | translate }}
+                        </button>
+                      }
                     </td>
                   </tr>
                 }

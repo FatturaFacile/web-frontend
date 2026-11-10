@@ -1,4 +1,4 @@
-import { SlicePipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, SlicePipe, UpperCasePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -30,6 +30,7 @@ import {
   PortalAccessData,
   PortalApiService,
   PortalAppointment,
+  PortalAttachment,
   PortalCsatSurvey,
   PortalHelpdeskMessage,
   PortalHelpdeskTicket,
@@ -40,6 +41,7 @@ import {
   PortalQuote,
   PortalServiceReport,
   PortalStockLine,
+  PortalStockMovement,
   PortalSubscription,
   RejectPortalQuoteRequest,
   ReplyPortalTicketRequest,
@@ -52,6 +54,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
   imports: [
     SlicePipe,
     UpperCasePipe,
+    DatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
@@ -103,6 +106,9 @@ export class PortalComponent implements OnInit {
   readonly selectedArticle = signal<PortalKnowledgeArticle | null>(null);
   readonly stockLines = signal<PortalStockLine[]>([]);
   readonly movementRequests = signal<PortalMovementRequest[]>([]);
+  readonly stockMovements = signal<PortalStockMovement[]>([]);
+  readonly stockMovementsHasMore = signal<boolean>(false);
+  private stockMovementsPage = 1;
   readonly customsDossiers = signal<CustomsPortalDossier[]>([]);
 
   // Modals & Drawers visibility
@@ -307,6 +313,46 @@ export class PortalComponent implements OnInit {
       },
       error: () => undefined,
     });
+
+    this.loadStockMovements(1);
+  }
+
+  loadMoreStockMovements(): void {
+    this.loadStockMovements(this.stockMovementsPage + 1);
+  }
+
+  private loadStockMovements(page: number): void {
+    this.portalApi.getStockMovements(this.token(), page).subscribe({
+      next: (res) => {
+        this.stockMovementsPage = res.meta.current_page;
+        this.stockMovements.update((rows) => (page === 1 ? res.data : [...rows, ...res.data]));
+        this.stockMovementsHasMore.set(res.meta.current_page < res.meta.last_page);
+      },
+      error: () => undefined,
+    });
+  }
+
+  downloadAttachment(attachment: PortalAttachment): void {
+    this.portalApi.downloadAttachment(this.token(), attachment.id).subscribe({
+      next: (blob) => this.saveBlob(blob, attachment.original_name || attachment.id),
+      error: () => this.msg.error(this.t('PORTAL.ACTION_ERROR')),
+    });
+  }
+
+  downloadTicketAttachment(ticket: PortalHelpdeskTicket, attachment: PortalAttachment): void {
+    this.portalApi.downloadHelpdeskAttachment(this.token(), ticket.id, attachment.id).subscribe({
+      next: (blob) => this.saveBlob(blob, attachment.original_name || attachment.id),
+      error: () => this.msg.error(this.t('PORTAL.ACTION_ERROR')),
+    });
+  }
+
+  private saveBlob(blob: Blob, fileName: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   loadCustoms(): void {

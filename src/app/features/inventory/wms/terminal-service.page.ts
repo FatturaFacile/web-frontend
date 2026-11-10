@@ -17,8 +17,7 @@ const TERMINAL_FIELDS = [
   rf.uuid('purchase_receipt_id'),
 ];
 
-const terminal = (key: string, labelKey: string) =>
-  act('POST', labelKey, `/inventory/terminal/${key}`, { fields: TERMINAL_FIELDS, showResult: true });
+const terminal = (labelKey: string, path: string) => act('POST', labelKey, path, { fields: TERMINAL_FIELDS, showResult: true });
 
 /** Handheld support: barcode lookup/scan (GS1-128, GTIN, SKU, bin, lot, serial) and terminal operations. */
 export const TERMINAL_PAGE: ResourcePageConfig = {
@@ -36,10 +35,10 @@ export const TERMINAL_PAGE: ResourcePageConfig = {
         columns: [],
       },
       toolbar: [
-        terminal('receipt', 'RES.A.terminal_receipt'),
-        terminal('pick', 'RES.A.terminal_pick'),
-        terminal('transfer', 'RES.A.terminal_transfer'),
-        terminal('count', 'RES.A.terminal_count'),
+        terminal('RES.A.terminal_receipt', '/inventory/terminal/receipt'),
+        terminal('RES.A.terminal_pick', '/inventory/terminal/pick'),
+        terminal('RES.A.terminal_transfer', '/inventory/terminal/transfer'),
+        terminal('RES.A.terminal_count', '/inventory/terminal/count'),
         act('POST', 'RES.A.scan', '/inventory/barcode/scan', {
           fields: [
             req(rf.text('raw_payload')),

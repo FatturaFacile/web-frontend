@@ -44,6 +44,9 @@ describe('PortalComponent', () => {
     getSubscriptions: ReturnType<typeof vi.fn>;
     getStock: ReturnType<typeof vi.fn>;
     getMovementRequests: ReturnType<typeof vi.fn>;
+    getStockMovements: ReturnType<typeof vi.fn>;
+    downloadAttachment: ReturnType<typeof vi.fn>;
+    downloadHelpdeskAttachment: ReturnType<typeof vi.fn>;
     createMovementRequest: ReturnType<typeof vi.fn>;
     getCustomsDossiers: ReturnType<typeof vi.fn>;
     createCustomsShipmentRequest: ReturnType<typeof vi.fn>;
@@ -165,6 +168,14 @@ describe('PortalComponent', () => {
       getSubscriptions: vi.fn().mockReturnValue(of({ data: [] })),
       getStock: vi.fn().mockReturnValue(of({ data: [] })),
       getMovementRequests: vi.fn().mockReturnValue(of({ data: [] })),
+      getStockMovements: vi.fn().mockReturnValue(
+        of({
+          data: [{ id: 'mv-1', executed_at: '2026-03-01T10:00:00Z', direction: 'in', sku: 'A1', name: 'Bolt', lot_number: null, quantity: '5.000' }],
+          meta: { current_page: 1, last_page: 2, total: 2 },
+        }),
+      ),
+      downloadAttachment: vi.fn().mockReturnValue(of(new Blob(['x']))),
+      downloadHelpdeskAttachment: vi.fn().mockReturnValue(of(new Blob(['x']))),
       createMovementRequest: vi.fn().mockReturnValue(of({ data: {} })),
       getCustomsDossiers: vi.fn().mockReturnValue(of({ data: [] })),
       createCustomsShipmentRequest: vi.fn().mockReturnValue(of({ data: {} })),
@@ -331,6 +342,32 @@ describe('PortalComponent', () => {
     component.kbSearchQuery.set('VPN');
     component.searchKnowledgeBase();
     expect(apiMock.getKnowledgeArticles).toHaveBeenCalledWith('test-token-777', { query: 'VPN' });
+  });
+
+  it('should load the stock movement history page by page', () => {
+    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', 1);
+    expect(component.stockMovements().length).toBe(1);
+    expect(component.stockMovementsHasMore()).toBe(true);
+
+    apiMock.getStockMovements.mockReturnValue(
+      of({
+        data: [{ id: 'mv-2', executed_at: null, direction: 'out', sku: null, name: null, lot_number: 'L1', quantity: '1.000' }],
+        meta: { current_page: 2, last_page: 2, total: 2 },
+      }),
+    );
+    component.loadMoreStockMovements();
+    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', 2);
+    expect(component.stockMovements().map((m) => m.id)).toEqual(['mv-1', 'mv-2']);
+    expect(component.stockMovementsHasMore()).toBe(false);
+  });
+
+  it('should download attachments of service reports and ticket messages', () => {
+    component.downloadAttachment({ id: 'att-1', original_name: 'photo.png' });
+    expect(apiMock.downloadAttachment).toHaveBeenCalledWith('test-token-777', 'att-1');
+
+    component.downloadTicketAttachment({ id: 'tkt-1' } as never, { id: 'att-2' });
+    expect(apiMock.downloadHelpdeskAttachment).toHaveBeenCalledWith('test-token-777', 'tkt-1', 'att-2');
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
   });
 
   it('should submit consignment movement request', () => {

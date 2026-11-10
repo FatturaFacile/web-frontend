@@ -47,7 +47,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.includes('/sanctum/') ||
           // Member area and public enrolment have their own token: a 401 there must not end the staff session.
           req.url.includes('/association-area/') ||
-          req.url.includes('/association-public/');
+          req.url.includes('/association-public/') ||
+          // The family portal is token based: a refused token must not end the session of the staff user.
+          req.url.includes('/childcare-family/');
 
         const body: ProblemDetails | null =
           typeof err.error === 'object' && err.error !== null
