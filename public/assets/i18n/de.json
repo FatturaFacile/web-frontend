@@ -1998,7 +1998,7 @@
     "ITEM_ADDED": "Artikel hinzugefügt",
     "COURSE_FIRED": "Gang an Küche gesendet",
     "ITEM_VOIDED": "Artikel storniert",
-    "PRE_BILL_PRINTED": "Zwischenrechnung gedruckt",
+    "PRE_BILL_PRINTED": "Noch zu zahlen",
     "PAYMENT_RECORDED": "Zahlung erfolgreich erfasst",
     "ORDER_MOVED": "Bestellung verschoben",
     "TICKET_UPDATED": "Küchenticket aktualisiert",

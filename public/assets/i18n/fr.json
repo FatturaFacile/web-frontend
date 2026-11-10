@@ -1998,7 +1998,7 @@
     "ITEM_ADDED": "Plat ajouté à la commande",
     "COURSE_FIRED": "Service envoyé en cuisine",
     "ITEM_VOIDED": "Plat annulé",
-    "PRE_BILL_PRINTED": "Addition imprimée",
+    "PRE_BILL_PRINTED": "Reste à payer",
     "PAYMENT_RECORDED": "Paiement enregistré avec succès",
     "ORDER_MOVED": "Commande déplacée vers la table",
     "TICKET_UPDATED": "Statut du ticket cuisine mis à jour",
