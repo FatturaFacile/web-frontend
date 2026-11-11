@@ -1,5 +1,9 @@
+<a class="skip-link" href="#main-content">Salta al contenuto principale</a>
+
 @if (!authStore.isAuthenticated()) {
-  <router-outlet></router-outlet>
+  <main id="main-content" tabindex="-1">
+    <router-outlet></router-outlet>
+  </main>
 } @else {
   <nz-layout class="app-layout">
     <nz-sider
@@ -18,9 +22,9 @@
       </nz-header>
       <nz-content class="main-content">
         <app-breadcrumb />
-        <div class="content-container">
+        <main id="main-content" tabindex="-1" class="content-container">
           <router-outlet></router-outlet>
-        </div>
+        </main>
       </nz-content>
     </nz-layout>
   </nz-layout>

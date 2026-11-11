@@ -40,7 +40,7 @@
         <nz-statistic
           [nzValue]="revenueDisplay()"
           [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
-          [nzValueStyle]="{ color: 'var(--primary-color, #0d9488)' }"
+          [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
         />
       </nz-card>
     </div>
@@ -49,7 +49,7 @@
         <nz-statistic
           [nzValue]="receivablesDisplay()"
           [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
-          [nzValueStyle]="{ color: '#f59e0b' }"
+          [nzValueStyle]="{ color: 'var(--kpi-pending, #b45309)' }"
         />
       </nz-card>
     </div>
@@ -58,7 +58,7 @@
         <nz-statistic
           [nzValue]="pendingCount()"
           [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
-          [nzValueStyle]="{ color: '#10b981' }"
+          [nzValueStyle]="{ color: 'var(--kpi-orders, #047857)' }"
         />
       </nz-card>
     </div>
@@ -67,7 +67,7 @@
         <nz-statistic
           [nzValue]="alertsCount()"
           [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
-          [nzValueStyle]="{ color: '#8b5cf6' }"
+          [nzValueStyle]="{ color: 'var(--kpi-compliance, #6d28d9)' }"
         />
       </nz-card>
     </div>

@@ -108,13 +108,13 @@
         <!-- Summary Stats -->
         <div class="summary-cards">
           <nz-card class="stat-card inflow-card">
-            <span class="stat-title">{{ 'ANALYTICS.TOTAL_INFLOW' | translate }}</span>
+            <span class="stat-title"><i class="fa-solid fa-arrow-down-left text-success me-1" aria-hidden="true"></i> {{ 'ANALYTICS.TOTAL_INFLOW' | translate }}</span>
             <span class="stat-value text-success">
               {{ dueCalendarSummary().totalInflow | currency: 'EUR':'symbol':'1.2-2' }}
             </span>
           </nz-card>
           <nz-card class="stat-card outflow-card">
-            <span class="stat-title">{{ 'ANALYTICS.TOTAL_OUTFLOW' | translate }}</span>
+            <span class="stat-title"><i class="fa-solid fa-arrow-up-right text-danger me-1" aria-hidden="true"></i> {{ 'ANALYTICS.TOTAL_OUTFLOW' | translate }}</span>
             <span class="stat-value text-danger">
               {{ dueCalendarSummary().totalOutflow | currency: 'EUR':'symbol':'1.2-2' }}
             </span>

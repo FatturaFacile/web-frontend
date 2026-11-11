@@ -91,4 +91,51 @@
   margin-top: 10px;
 }
 
+.sso-section {
+  margin-top: 16px;
+}
+
+.language-flags {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 12px;
+}
+.language-flags .flag-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  opacity: 0.65;
+}
+.language-flags .flag-btn:hover {
+  opacity: 1;
+  transform: scale(1.12);
+}
+.language-flags .flag-btn.active {
+  opacity: 1;
+  border-color: #1890ff;
+  background-color: rgba(24, 144, 255, 0.08);
+}
+
+.auth-footer-info {
+  margin-top: 10px;
+  margin-bottom: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #8c8c8c;
+}
+.auth-footer-info a {
+  color: inherit;
+  text-decoration: underline;
+}
+.auth-footer-info a:hover {
+  color: #1890ff;
+}
+
 /*# sourceMappingURL=login.component.css.map */

@@ -73,10 +73,10 @@
   align-items: center;
 }
 .kpi-variance.positive {
-  color: #16a34a;
+  color: #047857;
 }
 .kpi-variance.negative {
-  color: #dc2626;
+  color: #b91c1c;
 }
 .kpi-variance .variance-sub {
   font-weight: 400;
@@ -105,11 +105,11 @@
 }
 
 .inflow-card {
-  border-left: 4px solid #16a34a;
+  border-left: 4px solid #047857;
 }
 
 .outflow-card {
-  border-left: 4px solid #dc2626;
+  border-left: 4px solid #b91c1c;
 }
 
 .liquidity-card {

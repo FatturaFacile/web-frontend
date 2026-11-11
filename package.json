@@ -12,7 +12,7 @@
     "preinstall": "npx only-allow pnpm",
     "ng": "ng",
     "start": "node scripts/ng-env.mjs serve",
-    "start:local": "node scripts/ng-env.mjs serve --configuration local",
+    "start:local": "pnpm start --configuration local",
     "build": "node scripts/ng-env.mjs build",
     "watch": "node scripts/ng-env.mjs build --watch --configuration development",
     "test": "vitest run",
