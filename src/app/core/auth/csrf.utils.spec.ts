@@ -4,6 +4,7 @@ import {
   getSanctumBaseUrl,
   getCsrfCookieUrl,
   isBackendApiRequest,
+  isInsecureBackendRequest,
 } from '@core/auth/csrf.utils';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
@@ -86,6 +87,24 @@ describe('CSRF and Sanctum Utilities', () => {
 
     it('should return false for third-party external URLs', () => {
       expect(isBackendApiRequest('https://images.unsplash.com/photo-123')).toBe(false);
+    });
+  });
+
+  describe('isInsecureBackendRequest', () => {
+    it('accepts https URLs and relative URLs of an https page', () => {
+      expect(isInsecureBackendRequest('https://api.example.com/api/v1/x', 'http:', 'example.com')).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'https:', 'erp.example.com')).toBe(false);
+    });
+
+    it('refuses plain http outside loopback, for absolute and relative URLs', () => {
+      expect(isInsecureBackendRequest('http://api.example.com/api/v1/x', 'https:', 'erp.example.com')).toBe(true);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', 'erp.example.com')).toBe(true);
+    });
+
+    it('lets loopback hosts use http for local development', () => {
+      expect(isInsecureBackendRequest('http://localhost:8000/api/v1/x', 'http:', 'localhost')).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', '127.0.0.1')).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', 'app.localhost')).toBe(false);
     });
   });
 });

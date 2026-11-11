@@ -5,6 +5,7 @@ import { catchError, throwError } from 'rxjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { AuthStore, USER_ID_STORAGE_KEY } from '../auth/auth.store';
 import { getXsrfCookie, isBackendApiRequest } from '../auth/csrf.utils';
+import { purgeLegacyTokenKeys } from '../auth/token-storage.service';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -99,17 +100,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
             const notification = injector.get(NzNotificationService);
 
             authStore?.logout?.();
-            // Purge any legacy token artifacts from storage
-            if (typeof window !== 'undefined' && window.localStorage) {
-              window.localStorage.removeItem('ff_access_token');
-              window.localStorage.removeItem('token');
-              window.localStorage.removeItem('auth_token');
-            }
-            if (typeof window !== 'undefined' && window.sessionStorage) {
-              window.sessionStorage.removeItem('ff_access_token');
-              window.sessionStorage.removeItem('token');
-              window.sessionStorage.removeItem('auth_token');
-            }
+            purgeLegacyTokenKeys();
 
             const currentUrl = router.url;
             if (!currentUrl.startsWith('/login')) {

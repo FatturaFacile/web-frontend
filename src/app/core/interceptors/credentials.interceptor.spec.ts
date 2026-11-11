@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { environment } from '@env';
 import { credentialsInterceptor } from '@core/interceptors/credentials.interceptor';
 
 describe('credentialsInterceptor', () => {
@@ -55,5 +56,26 @@ describe('credentialsInterceptor', () => {
     const req = httpTesting.expectOne('https://external-cdn.com/logo.png');
     expect(req.request.withCredentials).toBe(false);
     req.flush('');
+  });
+
+  it('never adds an Authorization header: cookie-only authentication', () => {
+    http.get('/api/test').subscribe();
+
+    const req = httpTesting.expectOne('/api/test');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    req.flush({});
+  });
+
+  it('refuses a backend request over plain http outside loopback', () => {
+    const original = environment.apiBaseUrl;
+    environment.apiBaseUrl = 'http://api.example.com/api/v1';
+    let error: { status?: number; statusText?: string } | undefined;
+
+    http.get('http://api.example.com/api/v1/ping', { responseType: 'text' }).subscribe({ error: (e) => (error = e) });
+    environment.apiBaseUrl = original;
+
+    httpTesting.expectNone('http://api.example.com/api/v1/ping');
+    expect(error?.status).toBe(0);
+    expect(error?.statusText).toBe('HTTPS required');
   });
 });

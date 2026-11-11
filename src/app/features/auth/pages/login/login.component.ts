@@ -22,6 +22,7 @@ import {
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
+import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
 import { LanguageSelectorComponent } from '../../components/language-selector.component';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
@@ -176,18 +177,8 @@ export class LoginComponent {
   }
 
   private processSuccessfulLogin(data?: LoginResult): void {
-    // Cookie-First SPA Authentication:
-    // Purge legacy storage keys to ensure purely cookie-based security
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.removeItem('ff_access_token');
-      window.localStorage.removeItem('token');
-      window.localStorage.removeItem('auth_token');
-    }
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.removeItem('ff_access_token');
-      window.sessionStorage.removeItem('token');
-      window.sessionStorage.removeItem('auth_token');
-    }
+    // Cookie-only authentication: remove any bearer token an older version left in the browser
+    purgeLegacyTokenKeys();
 
     const activeTenantId = data?.active_tenant?.id ?? data?.tenant_id;
     if (activeTenantId && typeof window !== 'undefined' && window.localStorage) {

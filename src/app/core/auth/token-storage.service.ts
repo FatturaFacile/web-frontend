@@ -1,44 +1,46 @@
 import { Service, signal } from '@angular/core';
 
-const ACCESS_TOKEN_KEY = 'ff_access_token';
-const REFRESH_TOKEN_KEY = 'ff_refresh_token';
 const TENANT_ID_KEY = 'ff_active_tenant_id';
 
+/** Keys under which an older version of the app stored a bearer token: they are only ever removed. */
+const LEGACY_TOKEN_KEYS = ['ff_access_token', 'ff_refresh_token', 'access_token', 'token', 'auth_token'] as const;
+
 /**
- * Token and tenant storage service.
+ * Removes the bearer tokens that older versions of the app left in the browser storage.
+ * The app authenticates only through the HttpOnly session cookie, so nothing here is ever read back.
+ */
+export function purgeLegacyTokenKeys(): void {
+  for (const storage of [safeStorage('localStorage'), safeStorage('sessionStorage')]) {
+    for (const key of LEGACY_TOKEN_KEYS) {
+      try {
+        storage?.removeItem(key);
+      } catch {
+        // Storage unavailable
+      }
+    }
+  }
+}
+
+function safeStorage(kind: 'localStorage' | 'sessionStorage'): Storage | null {
+  try {
+    return typeof window !== 'undefined' ? window[kind] : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Tenant context storage.
  *
- * NOTE: For Laravel Sanctum SPA cookie-based session authentication, bearer tokens
- * are NEVER stored in localStorage, sessionStorage, or IndexedDB.
- * Token operations return null / no-op to prevent client-side token storage (XSS mitigation).
- * Non-sensitive routing metadata such as tenant context is maintained.
+ * Authentication is cookie-only: the session lives in an HttpOnly cookie that the browser sends by itself,
+ * so no access or refresh token is ever stored, read or sent from here. Only the non-sensitive tenant
+ * context used for routing (`X-Tenant-Id`) is kept.
  */
 @Service()
 export class TokenStorageService {
   private readonly _tenantId = signal<string | null>(this.readInitialTenantId());
 
-  readonly token = signal<string | null>(null).asReadonly();
   readonly tenantId = this._tenantId.asReadonly();
-
-  getToken(): string | null {
-    // Cookie-first: bearer tokens are not stored or read on the client.
-    return null;
-  }
-
-  hasToken(): boolean {
-    return false;
-  }
-
-  setToken(_token: string): void {
-    // Deliberately no-op: bearer tokens must NOT be stored in client storage.
-  }
-
-  getRefreshToken(): string | null {
-    return null;
-  }
-
-  setRefreshToken(_refreshToken: string): void {
-    // Deliberately no-op: refresh tokens must NOT be stored in client storage.
-  }
 
   getTenantId(): string | null {
     return this._tenantId();
@@ -56,11 +58,7 @@ export class TokenStorageService {
   clear(): void {
     this._tenantId.set(null);
     this.safeStorageRemove(TENANT_ID_KEY);
-    // Clean up any legacy token keys from storage
-    this.safeStorageRemove(ACCESS_TOKEN_KEY);
-    this.safeStorageRemove(REFRESH_TOKEN_KEY);
-    this.safeStorageRemove('token');
-    this.safeStorageRemove('auth_token');
+    purgeLegacyTokenKeys();
   }
 
   private readInitialTenantId(): string | null {
@@ -69,20 +67,15 @@ export class TokenStorageService {
 
   private safeStorageGet(key: string): string | null {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
-      }
+      return safeStorage('localStorage')?.getItem(key) ?? null;
     } catch {
-      // Storage unavailable or disabled
+      return null;
     }
-    return null;
   }
 
   private safeStorageSet(key: string, value: string): void {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(key, value);
-      }
+      safeStorage('localStorage')?.setItem(key, value);
     } catch {
       // Storage unavailable
     }
@@ -90,9 +83,7 @@ export class TokenStorageService {
 
   private safeStorageRemove(key: string): void {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.removeItem(key);
-      }
+      safeStorage('localStorage')?.removeItem(key);
     } catch {
       // Storage unavailable
     }

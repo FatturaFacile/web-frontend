@@ -70,3 +70,35 @@ export function isBackendApiRequest(url: string): boolean {
     (Boolean(environment.apiBaseUrl) && url.startsWith(environment.apiBaseUrl))
   );
 }
+
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+
+function isLoopbackHost(hostname: string): boolean {
+  return LOOPBACK_HOSTS.has(hostname) || hostname.endsWith('.localhost');
+}
+
+/**
+ * The app works over HTTPS only: the session cookie is `Secure`, so a request that would travel over plain HTTP
+ * is refused before it leaves the browser. Loopback hosts (local development) are the only exception.
+ *
+ * Absolute URLs are judged by their own scheme; relative URLs by the scheme of the page that sends them.
+ */
+export function isInsecureBackendRequest(
+  url: string,
+  pageProtocol: string = typeof window === 'undefined' ? 'https:' : window.location.protocol,
+  pageHostname: string = typeof window === 'undefined' ? '' : window.location.hostname,
+): boolean {
+  if (/^https:\/\//i.test(url)) {
+    return false;
+  }
+
+  if (/^http:\/\//i.test(url)) {
+    try {
+      return !isLoopbackHost(new URL(url).hostname);
+    } catch {
+      return true;
+    }
+  }
+
+  return pageProtocol === 'http:' && !isLoopbackHost(pageHostname);
+}
