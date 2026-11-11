@@ -344,4 +344,36 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({ success: true });
   });
+
+  it('starts an OpenID Connect sign-in and returns the authorization URL', () => {
+    let url = '';
+    service.startSso('oidc', 'tenant-1').subscribe((value) => (url = value));
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/sso/start`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ tenant_id: 'tenant-1' });
+    req.flush({ data: { authorization_url: 'https://idp.example.com/authorize' } });
+    expect(url).toBe('https://idp.example.com/authorize');
+  });
+
+  it('starts a SAML sign-in and returns the redirect URL', () => {
+    let url = '';
+    service.startSso('saml', 'tenant-1').subscribe((value) => (url = value));
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/saml/start`);
+    req.flush({ data: { redirect_url: 'https://idp.example.com/saml' } });
+    expect(url).toBe('https://idp.example.com/saml');
+  });
+
+  it('gets the CSRF cookie before exchanging the SSO code, with credentials', () => {
+    service.exchangeSsoCode('c'.repeat(64)).subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/sso/exchange`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual({ code: 'c'.repeat(64) });
+    req.flush({ data: {} });
+  });
 });

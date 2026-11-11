@@ -20,6 +20,16 @@ export const routes: Routes = [
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    // Must match `auth.sso_exchange.frontend_path` of the API (`/auth/sso/complete`).
+    path: 'auth/sso/complete',
+    canActivate: [guestGuard],
+    data: { title: 'Accesso SSO' },
+    loadComponent: () =>
+      import('./features/auth/pages/sso-complete/sso-complete.component').then(
+        (m) => m.SsoCompleteComponent,
+      ),
+  },
+  {
     path: 'register',
     pathMatch: 'full',
     canActivate: [guestGuard],
