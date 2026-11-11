@@ -26,14 +26,14 @@ export interface LoginPayload {
   remember?: boolean;
 }
 
+/**
+ * Result of a login. The session is the HttpOnly cookie that the API sets: the body never carries a bearer
+ * token and the app would not use one (cookie-only authentication).
+ */
 export interface LoginResult {
   user?: UserProfile;
   message?: string;
-  token?: string | null;
-  access_token?: string | null;
-  token_type?: string | null;
   tenant_id?: string;
-  auth_mode?: 'cookie' | 'token';
   two_factor_setup_required?: boolean;
   active_tenant?: {
     id: string;
