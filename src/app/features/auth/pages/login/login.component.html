@@ -1,6 +1,6 @@
 <main class="login-wrapper">
   <div class="login-box">
-    <app-language-selector />
+    <!-- Rimosso <app-language-selector /> da qui -->
 
     <header class="login-header text-center">
       <h1>Fattura <span class="facile-color">Facile</span></h1>
@@ -51,8 +51,9 @@
 
           <nz-form-item>
             <nz-form-label nzRequired nzFor="password">{{
-              "AUTH.PASSWORD" | translate
-            }}</nz-form-label>
+                "AUTH.PASSWORD" | translate
+              }}
+            </nz-form-label>
             <nz-form-control
               nzHasFeedback
               [nzValidateStatus]="loginForm.controls.password"
@@ -94,8 +95,6 @@
           </nz-form-item>
 
           <div class="options">
-            <!-- nz-checkbox renders its own input inside the label -->
-            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label nz-checkbox formControlName="remember">{{ "AUTH.REMEMBER" | translate }}</label>
             <a routerLink="/forgot-password">{{ "AUTH.FORGOT" | translate }}</a>
           </div>
@@ -122,13 +121,63 @@
             (click)="onSsoSubmit()"
           >
             <nz-icon nzType="safety-certificate" />
-            {{ "SSO.BUTTON" | translate }}
+            {{ "AUTH.SSO_BUTTON" | translate }}
           </button>
         </div>
 
         <p class="register-link">
           {{ "AUTH.NO_ACCOUNT" | translate }}
           <a routerLink="/register">{{ "AUTH.REGISTER_LINK" | translate }}</a>
+        </p>
+
+        <!-- SELETTORE A 4 BANDIERE -->
+        <div class="language-flags" role="group" aria-label="Language selector">
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'it'"
+            (click)="setLanguage('it')"
+            title="Italiano"
+            aria-label="Italiano"
+          >
+            <span class="fi fi-it">🇮🇹</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'en'"
+            (click)="setLanguage('en')"
+            title="English"
+            aria-label="English"
+          >
+            <span class="fi fi-gb">🇬🇧</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'de'"
+            (click)="setLanguage('de')"
+            title="Deutsch"
+            aria-label="Deutsch"
+          >
+            <span class="fi fi-de">🇩🇪</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'fr'"
+            (click)="setLanguage('fr')"
+            title="Français"
+            aria-label="Français"
+          >
+            <span class="fi fi-fr">🇫🇷</span>
+          </button>
+        </div>
+
+        <!-- FOOTER INFO E SUPPORTO -->
+        <p class="auth-footer-info">
+          © {{ currentYear }} Fattura Facile &nbsp;|&nbsp;
+          <a href="mailto:support@fatturafacile.eu">support@fatturafacile.eu</a>
         </p>
       }
 
@@ -164,7 +213,8 @@
               </nz-form-item>
             } @else {
               <nz-form-item>
-                <nz-form-label nzRequired nzFor="challenge-recovery-code">{{ 'TWO_FACTOR.RECOVERY_CODE' | translate }}</nz-form-label>
+                <nz-form-label nzRequired nzFor="challenge-recovery-code">{{ 'TWO_FACTOR.RECOVERY_CODE' | translate }}
+                </nz-form-label>
                 <nz-form-control [nzErrorTip]="'TWO_FACTOR.RECOVERY_CODE_REQUIRED' | translate">
                   <nz-input-wrapper>
                     <nz-icon nzInputPrefix nzType="key" />
@@ -202,7 +252,7 @@
               type="submit"
               [nzLoading]="isSubmitting()"
             >
-              {{ 'TWO_FACTOR.CHALLENGE_SUBMIT' | translate }}
+              {{ 'TWO_FACTOR.CHALLENGE_Submit' | translate }}
             </button>
 
             <button

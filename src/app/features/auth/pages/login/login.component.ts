@@ -24,7 +24,6 @@ import {
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
 import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
-import { LanguageSelectorComponent } from '../../components/language-selector.component';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
 
@@ -45,7 +44,6 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzCheckboxModule,
     NzAlertModule,
     NzIconModule,
-    LanguageSelectorComponent,
     ResendVerificationComponent,
     TwoFactorSetupModalComponent,
     TranslatePipe,
@@ -62,6 +60,14 @@ export class LoginComponent {
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   private readonly sso = inject(SsoLoginService);
+
+  // Footer & Language
+  protected readonly currentYear = new Date().getFullYear();
+  protected readonly currentLang = signal<string>(
+    typeof (this.i18n as unknown as { currentLang?: () => string }).currentLang === 'function'
+      ? (this.i18n as unknown as { currentLang: () => string }).currentLang()
+      : 'it',
+  );
 
   protected readonly isSubmitting = signal(false);
   protected readonly passwordVisible = signal(false);
@@ -91,6 +97,18 @@ export class LoginComponent {
     code: this.fb.control(''),
     recoveryCode: this.fb.control(''),
   });
+
+  protected setLanguage(lang: string): void {
+    if (
+      typeof (this.i18n as unknown as { setLanguage?: (l: string) => void }).setLanguage ===
+      'function'
+    ) {
+      (this.i18n as unknown as { setLanguage: (l: string) => void }).setLanguage(lang);
+    } else if (typeof (this.i18n as unknown as { use?: (l: string) => void }).use === 'function') {
+      (this.i18n as unknown as { use: (l: string) => void }).use(lang);
+    }
+    this.currentLang.set(lang);
+  }
 
   protected onSubmit(): void {
     if (this.loginForm.invalid) {
@@ -133,18 +151,20 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.isSsoStarting.set(true);
 
-    this.sso.signInWithEmail(email.value, this.route.snapshot.queryParamMap.get('returnUrl')).subscribe({
-      next: (leaving) => {
-        if (!leaving) {
+    this.sso
+      .signInWithEmail(email.value, this.route.snapshot.queryParamMap.get('returnUrl'))
+      .subscribe({
+        next: (leaving) => {
+          if (!leaving) {
+            this.isSsoStarting.set(false);
+            this.errorMessage.set(this.i18n.translate('SSO.UNAVAILABLE'));
+          }
+        },
+        error: () => {
           this.isSsoStarting.set(false);
-          this.errorMessage.set(this.i18n.translate('SSO.UNAVAILABLE'));
-        }
-      },
-      error: () => {
-        this.isSsoStarting.set(false);
-        this.errorMessage.set(this.i18n.translate('SSO.START_FAILED'));
-      },
-    });
+          this.errorMessage.set(this.i18n.translate('SSO.START_FAILED'));
+        },
+      });
   }
 
   protected onChallengeSubmit(): void {

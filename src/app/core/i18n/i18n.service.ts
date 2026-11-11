@@ -65,6 +65,9 @@ export class I18nService {
 
   constructor() {
     const initialLang = this.currentLanguage();
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = initialLang;
+    }
     this.syncNzLocale(initialLang);
 
     // Carica la lingua iniziale dall'API
