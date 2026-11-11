@@ -109,6 +109,13 @@ export function authProblemOf(err: unknown): string | null {
 /** Identity protocol of a tenant's single sign-on. The API has no public endpoint that tells which one a tenant uses. */
 export type SsoProtocol = 'oidc' | 'saml';
 
+/** Answer of `POST /auth/sso/discover`: unknown, disabled and ambiguous domains all look the same (unavailable). */
+export interface SsoDiscovery {
+  available: boolean;
+  protocol: SsoProtocol | null;
+  tenant_id: string | null;
+}
+
 export interface SwitchTenantPayload {
   tenant_id?: string | null;
 }
@@ -151,6 +158,32 @@ export class AuthApiService {
           { withCredentials: true }
         )
       )
+    );
+  }
+
+  /**
+   * Which single sign-on to offer for an email address (`POST /auth/sso/discover`, public). It does not say whether
+   * the password login is still allowed, so the password form must stay.
+   */
+  discoverSso(email: string): Observable<SsoDiscovery> {
+    return this.http
+      .post<ApiResponse<{ sso?: SsoDiscovery }>>(`${this.base}/auth/sso/discover`, { email }, { withCredentials: true })
+      .pipe(map((res) => res.data?.sso ?? { available: false, protocol: null, tenant_id: null }));
+  }
+
+  /**
+   * Completes an OpenID Connect sign-in: posts the `code` and `state` the identity provider returned to the SPA
+   * (`POST /auth/sso/callback`, credentials included so the `sso_flow` cookie binds it to this browser).
+   */
+  completeOidcSso(code: string, state: string): Observable<ApiResponse<LoginResult>> {
+    return this.getCsrfCookie().pipe(
+      switchMap(() =>
+        this.http.post<ApiResponse<LoginResult>>(
+          `${this.base}/auth/sso/callback`,
+          { code, state },
+          { withCredentials: true },
+        ),
+      ),
     );
   }
 
@@ -354,8 +387,8 @@ export class AuthApiService {
   /**
    * Invalidates the active Laravel Sanctum cookie session on the server.
    */
-  logout(): Observable<ApiResponse<unknown>> {
-    return this.http.post<ApiResponse<unknown>>(
+  logout(): Observable<ApiResponse<{ idp_logout_url?: string | null } | null>> {
+    return this.http.post<ApiResponse<{ idp_logout_url?: string | null } | null>>(
       `${this.base}/auth/logout`,
       {},
       { withCredentials: true }

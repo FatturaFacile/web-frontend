@@ -27,8 +27,9 @@ type CompleteState = 'loading' | 'challenge' | 'failed';
 const DEFAULT_RETURN_URL = '/sales/invoices';
 
 /**
- * Where a cross-site single sign-on (SAML) lands: `/auth/sso/complete#code=...`. The single-use code is read from the
- * fragment, removed from the address bar at once, and exchanged for the cookie session; the page then behaves like
+ * Where a single sign-on lands: `/auth/sso/complete#code=...` (SAML: a single-use code, exchanged for the cookie
+ * session) or `/auth/sso/complete?code=...&state=...` (OpenID Connect: posted to the callback; the redirect URI of the
+ * tenant's provider must point here). Both are removed from the address bar at once; the page then behaves like
  * the password login (active tenant, return path, two-factor challenge). No token is ever stored.
  */
 @Component({
@@ -173,14 +174,22 @@ export class SsoCompleteComponent implements OnInit {
   ngOnInit(): void {
     // The fragment goes out of the address bar before anything else happens.
     const code = this.sso.consumeSignInCode();
+    const oidc = this.sso.consumeOidcParams();
     this.returnUrl = this.sso.takeReturnUrl();
 
-    if (code === null) {
+    // SAML hands over a single-use code in the fragment; OpenID Connect returns `code` and `state` in the query.
+    const request$ = code
+      ? this.authApi.exchangeSsoCode(code)
+      : oidc
+        ? this.authApi.completeOidcSso(oidc.code, oidc.state)
+        : null;
+
+    if (request$ === null) {
       this.fail('SSO.NO_CODE_BODY');
       return;
     }
 
-    this.authApi.exchangeSsoCode(code).subscribe({
+    request$.subscribe({
       next: (res) => {
         const data = res?.data;
         if (data?.two_factor_required && data.challenge_token) {

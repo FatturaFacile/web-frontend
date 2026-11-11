@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,10 +7,8 @@ import { of, throwError } from 'rxjs';
 import { SsoLoginService } from '@core';
 import { LoginComponent } from './login.component';
 
-const TENANT = '0b5d3d7e-8f0e-4c53-9a63-6f1d3f6c2a11';
-
 describe('LoginComponent single sign-on', () => {
-  const start = vi.fn();
+  const signInWithEmail = vi.fn();
 
   function create() {
     TestBed.configureTestingModule({
@@ -19,7 +17,7 @@ describe('LoginComponent single sign-on', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: SsoLoginService, useValue: { start } },
+        { provide: SsoLoginService, useValue: { signInWithEmail } },
       ],
     });
     const fixture = TestBed.createComponent(LoginComponent);
@@ -27,52 +25,58 @@ describe('LoginComponent single sign-on', () => {
     return { component: fixture.componentInstance, fixture };
   }
 
-  beforeEach(() => start.mockReset());
+  beforeEach(() => signInWithEmail.mockReset());
 
-  it('shows the SSO button and reveals the tenant form on click', () => {
-    const { component, fixture } = create();
-    const host = fixture.nativeElement as HTMLElement;
+  it('shows the SSO button next to the password form', () => {
+    const { fixture } = create();
 
-    expect(host.querySelector('.sso-section button')).not.toBeNull();
-    expect(host.querySelector('#sso-tenant')).toBeNull();
-
-    component['ssoOpen'].set(true);
-    fixture.detectChanges();
-
-    expect(host.querySelector('#sso-tenant')).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.sso-section button')).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('#password')).not.toBeNull();
   });
 
-  it('does not start without a valid tenant UUID', () => {
+  it('does not look anything up without a valid email', () => {
     const { component } = create();
-    component['ssoForm'].patchValue({ tenantId: 'not-a-uuid' });
+    component['loginForm'].controls.email.setValue('not-an-email');
 
     component['onSsoSubmit']();
 
-    expect(start).not.toHaveBeenCalled();
+    expect(signInWithEmail).not.toHaveBeenCalled();
   });
 
-  it('starts the chosen protocol for the tenant', () => {
-    start.mockReturnValue(of(undefined));
+  it('discovers the SSO of the typed email and leaves for the identity provider', () => {
+    signInWithEmail.mockReturnValue(of(true));
     const { component } = create();
-    component['ssoForm'].setValue({ tenantId: ` ${TENANT} `, protocol: 'saml' });
+    component['loginForm'].controls.email.setValue('anna@acme.example');
 
     component['onSsoSubmit']();
 
-    expect(start).toHaveBeenCalledWith('saml', TENANT, null);
+    expect(signInWithEmail).toHaveBeenCalledWith('anna@acme.example', null);
+    expect(component['errorMessage']()).toBeNull();
   });
 
-  it('tells a tenant without SSO from a failure to start', () => {
+  it('says so when the address has no SSO and keeps the password form', () => {
+    signInWithEmail.mockReturnValue(of(false));
     const { component } = create();
-    component['ssoForm'].setValue({ tenantId: TENANT, protocol: 'oidc' });
+    component['loginForm'].controls.email.setValue('anna@acme.example');
 
-    start.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
+    component['onSsoSubmit']();
+
+    expect(component['errorMessage']()).toBeTruthy();
+    expect(component['isSsoStarting']()).toBe(false);
+    expect(component['isChallengeStep']()).toBe(false);
+  });
+
+  it('tells a failure to start from an address without SSO', () => {
+    const { component } = create();
+    component['loginForm'].controls.email.setValue('anna@acme.example');
+
+    signInWithEmail.mockReturnValue(of(false));
     component['onSsoSubmit']();
     const unavailable = component['errorMessage']();
 
-    start.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    signInWithEmail.mockReturnValue(throwError(() => new Error('boom')));
     component['onSsoSubmit']();
 
-    expect(unavailable).toBeTruthy();
     expect(component['errorMessage']()).not.toBe(unavailable);
     expect(component['isSsoStarting']()).toBe(false);
   });

@@ -13,6 +13,8 @@ describe('SsoCompleteComponent', () => {
   const exchangeSsoCode = vi.fn();
   const twoFactorChallenge = vi.fn();
   const consumeSignInCode = vi.fn();
+  const consumeOidcParams = vi.fn();
+  const completeOidcSso = vi.fn();
   const takeReturnUrl = vi.fn();
   const login = vi.fn();
 
@@ -23,8 +25,8 @@ describe('SsoCompleteComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: { exchangeSsoCode, twoFactorChallenge } },
-        { provide: SsoLoginService, useValue: { consumeSignInCode, takeReturnUrl } },
+        { provide: AuthApiService, useValue: { exchangeSsoCode, completeOidcSso, twoFactorChallenge } },
+        { provide: SsoLoginService, useValue: { consumeSignInCode, consumeOidcParams, takeReturnUrl } },
       ],
     });
     vi.spyOn(TestBed.inject(AuthStore), 'login').mockImplementation(login);
@@ -39,10 +41,11 @@ describe('SsoCompleteComponent', () => {
   }
 
   beforeEach(() => {
-    [exchangeSsoCode, twoFactorChallenge, consumeSignInCode, takeReturnUrl, login].forEach((m) =>
+    [exchangeSsoCode, completeOidcSso, twoFactorChallenge, consumeSignInCode, consumeOidcParams, takeReturnUrl, login].forEach((m) =>
       m.mockReset(),
     );
     consumeSignInCode.mockReturnValue(CODE);
+    consumeOidcParams.mockReturnValue(null);
     takeReturnUrl.mockReturnValue(null);
     window.localStorage.clear();
   });
@@ -62,6 +65,30 @@ describe('SsoCompleteComponent', () => {
     expect(login).toHaveBeenCalledWith('tenant-1', user);
     expect(window.localStorage.getItem('ff_active_tenant_id')).toBe('tenant-1');
     expect(navigate).toHaveBeenCalledWith('/sales/orders', { replaceUrl: true });
+  });
+
+  it('completes an OpenID Connect return with the callback and signs in', () => {
+    consumeSignInCode.mockReturnValue(null);
+    consumeOidcParams.mockReturnValue({ code: 'abc', state: 'xyz' });
+    completeOidcSso.mockReturnValue(of({ data: { tenant_id: 'tenant-1', user: { id: 'u1' } } }));
+
+    const { navigate } = create();
+
+    expect(completeOidcSso).toHaveBeenCalledWith('abc', 'xyz');
+    expect(exchangeSsoCode).not.toHaveBeenCalled();
+    expect(login).toHaveBeenCalledWith('tenant-1', { id: 'u1' });
+    expect(navigate).toHaveBeenCalledWith('/sales/invoices', { replaceUrl: true });
+  });
+
+  it('fails an OpenID Connect return that the API refuses', () => {
+    consumeSignInCode.mockReturnValue(null);
+    consumeOidcParams.mockReturnValue({ code: 'abc', state: 'xyz' });
+    completeOidcSso.mockReturnValue(failure(401));
+
+    const { component } = create();
+
+    expect(component['state']()).toBe('failed');
+    expect(login).not.toHaveBeenCalled();
   });
 
   it('never stores a token', () => {

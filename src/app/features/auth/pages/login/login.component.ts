@@ -8,7 +8,6 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import {
@@ -21,7 +20,6 @@ import {
   isValidationError,
   LoginResult,
   SsoLoginService,
-  SsoProtocol,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
@@ -31,8 +29,6 @@ import { ResendVerificationComponent } from '../../components/resend-verificatio
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
-
-const UUID_PATTERN = /^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*$/i;
 
 /** Account recreated by the backend demo reset (`demo:reset` → `erp:bootstrap`); prefilled only in demo builds. */
 const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123!' };
@@ -49,7 +45,6 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzCheckboxModule,
     NzAlertModule,
     NzIconModule,
-    NzRadioModule,
     LanguageSelectorComponent,
     ResendVerificationComponent,
     TwoFactorSetupModalComponent,
@@ -72,7 +67,6 @@ export class LoginComponent {
   protected readonly passwordVisible = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly needsVerification = signal(false);
-  protected readonly ssoOpen = signal(false);
   protected readonly isSsoStarting = signal(false);
 
   // 2FA Challenge & Setup State
@@ -91,11 +85,6 @@ export class LoginComponent {
       Validators.minLength(6),
     ]),
     remember: this.fb.control(false),
-  });
-
-  protected readonly ssoForm = this.fb.group({
-    tenantId: this.fb.control('', [Validators.required, Validators.pattern(UUID_PATTERN)]),
-    protocol: this.fb.control<SsoProtocol>('oidc'),
   });
 
   protected readonly challengeForm = this.fb.group({
@@ -134,24 +123,26 @@ export class LoginComponent {
     });
   }
 
-  /** Sends the browser to the identity provider of the tenant (OpenID Connect or SAML). */
+  /** Looks up the single sign-on of the typed email address and sends the browser to its identity provider. */
   protected onSsoSubmit(): void {
-    if (this.ssoForm.invalid) {
-      this.ssoForm.markAllAsTouched();
+    const email = this.loginForm.controls.email;
+    if (email.invalid) {
+      email.markAsTouched();
       return;
     }
-    const { tenantId, protocol } = this.ssoForm.getRawValue();
     this.errorMessage.set(null);
     this.isSsoStarting.set(true);
 
-    this.sso.start(protocol, tenantId.trim(), this.route.snapshot.queryParamMap.get('returnUrl')).subscribe({
-      error: (err: unknown) => {
+    this.sso.signInWithEmail(email.value, this.route.snapshot.queryParamMap.get('returnUrl')).subscribe({
+      next: (leaving) => {
+        if (!leaving) {
+          this.isSsoStarting.set(false);
+          this.errorMessage.set(this.i18n.translate('SSO.UNAVAILABLE'));
+        }
+      },
+      error: () => {
         this.isSsoStarting.set(false);
-        this.errorMessage.set(
-          this.i18n.translate(
-            err instanceof HttpErrorResponse && err.status === 404 ? 'SSO.UNAVAILABLE' : 'SSO.START_FAILED',
-          ),
-        );
+        this.errorMessage.set(this.i18n.translate('SSO.START_FAILED'));
       },
     });
   }
