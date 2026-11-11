@@ -1,14 +1,18 @@
-import { Component, computed, inject, linkedSignal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { filter, map } from 'rxjs';
 // Deep imports keep the `@core` and `@shared` barrels out of the initial bundle.
 import { AuthStore } from '@core/auth/auth.store';
 import { PermissionsService } from '@core/auth/permissions.service';
+import { TranslateService } from '@core/i18n/i18n.service';
 import { AppStore } from '@core/state/app.store';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
+import { isMenuRouteTested, normalizeMenuSearch } from './menu-availability';
 
 interface MenuItem {
   key: string;
@@ -26,7 +30,7 @@ interface MenuSection {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, NzMenuModule, NzTooltipModule, TranslatePipe],
+  imports: [RouterLink, NzIconModule, NzInputModule, NzMenuModule, NzTooltipModule, TranslatePipe],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
@@ -35,6 +39,11 @@ export class SidebarComponent {
   readonly authStore = inject(AuthStore);
   readonly permissions = inject(PermissionsService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(TranslateService);
+
+  /** Text typed in the quick search box of the menu */
+  protected readonly searchTerm = signal('');
+  protected readonly isSearching = computed(() => normalizeMenuSearch(this.searchTerm()) !== '');
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -46,6 +55,24 @@ export class SidebarComponent {
 
   /** Accordion: only one group is open, reset to the group of the current page on every navigation */
   protected readonly openGroup = linkedSignal<string | null>(() => this.groupOf(this.currentUrl()));
+
+  protected onSearch(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected clearSearch(): void {
+    this.searchTerm.set('');
+  }
+
+  /** An entry is enabled once its route is in TESTED_MENU_ROUTES; the others are greyed out */
+  protected isEnabled(route: string | undefined): boolean {
+    return isMenuRouteTested(route);
+  }
+
+  /** A group is enabled as soon as one of its entries is */
+  protected isGroupEnabled(item: MenuItem): boolean {
+    return item.children?.some((child) => isMenuRouteTested(child.route)) ?? isMenuRouteTested(item.route);
+  }
 
   protected onGroupOpenChange(key: string, open: boolean): void {
     // In the collapsed sidebar groups open as hover popups, which must not change the accordion state
@@ -343,7 +370,7 @@ export class SidebarComponent {
             { key: 'NAV.ASSOC_MEMBERSHIPS', route: '/associations/memberships', icon: 'fa-solid fa-id-card', module: 'associations' },
             { key: 'NAV.ASSOC_COURSES', route: '/associations/courses', icon: 'fa-solid fa-calendar-days', module: 'associations' },
             { key: 'NAV.ASSOC_ENROLMENT', route: '/associations/enrolment', icon: 'fa-solid fa-file-pen', module: 'associations' },
-            { key: 'NAV.ASSOC_COMPLIANCE', route: '/associations/compliance', icon: 'fa-solid fa-notes-medical', module: 'associations' },
+            { key: 'NAV.ASSOC_DEADLINES', route: '/associations/compliance', icon: 'fa-solid fa-notes-medical', module: 'associations' },
             { key: 'NAV.ASSOC_VOLUNTEERS', route: '/associations/volunteers', icon: 'fa-solid fa-people-carry-box', module: 'associations' },
             { key: 'NAV.ASSOC_ACCESS', route: '/associations/access', icon: 'fa-solid fa-door-open', module: 'associations' },
             { key: 'NAV.ASSOC_FEES', route: '/associations/fees', icon: 'fa-solid fa-receipt', module: 'associations' },
@@ -475,14 +502,10 @@ export class SidebarComponent {
           key: 'NAV.MODULES',
           icon: 'fa-solid fa-cubes',
           children: [
-            { key: 'NAV.CRM', route: '/modules/crm', icon: 'fa-solid fa-address-book', module: 'crm' },
-            { key: 'NAV.ACCOUNTING', route: '/modules/accounting', icon: 'fa-solid fa-landmark', module: 'ledger' },
-            { key: 'NAV.MOD_BANK_RECONCILIATION', route: '/modules/bank-reconciliation', icon: 'fa-solid fa-building-columns', module: 'treasury' },
-            { key: 'NAV.MOD_INVOICING', route: '/modules/invoicing', icon: 'fa-solid fa-file-invoice-dollar', module: 'invoicing' },
+            // The `/modules/*` entries of CRM, accounting, bank reconciliation, invoicing, HR and production only
+            // redirected to pages that already have their own menu entry: they are not repeated here.
             { key: 'NAV.MOD_PRODUCTS', route: '/modules/products', icon: 'fa-solid fa-tags', module: 'inventory' },
             { key: 'NAV.MOD_AGENDA', route: '/modules/agenda', icon: 'fa-solid fa-calendar-days' },
-            { key: 'NAV.HR', route: '/modules/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
-            { key: 'NAV.MOD_PRODUCTION', route: '/modules/production', icon: 'fa-solid fa-industry', module: 'manufacturing' },
             { key: 'NAV.MOD_MARKETING', route: '/modules/marketing', icon: 'fa-solid fa-bullhorn', module: 'crm' },
             { key: 'NAV.MOD_FORMS', route: '/modules/forms', icon: 'fa-solid fa-clipboard-list' },
           ],
@@ -543,7 +566,7 @@ export class SidebarComponent {
   ];
 
   /** Menu sections filtered reactively based on the active tenant role and module permissions */
-  readonly filteredSections = computed<MenuSection[]>(() => {
+  private readonly permittedSections = computed<MenuSection[]>(() => {
     // Read the active role signal to trigger reactivity on tenant/role change
     this.authStore.activeRole();
 
@@ -574,6 +597,38 @@ export class SidebarComponent {
 
         return { ...section, items: filteredItems };
       })
+      .filter((section) => section.items.length > 0);
+  });
+
+  /**
+   * The permitted sections, narrowed by the quick search: an entry stays when its own label matches, a group whose
+   * own label matches keeps all its entries, otherwise only the entries that match.
+   */
+  readonly filteredSections = computed<MenuSection[]>(() => {
+    const sections = this.permittedSections();
+    const term = normalizeMenuSearch(this.searchTerm());
+    if (term === '') {
+      return sections;
+    }
+
+    const matches = (key: string): boolean => normalizeMenuSearch(this.i18n.translate(key)).includes(term);
+
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items
+          .map((item) => {
+            if (!item.children) {
+              return matches(item.key) ? item : null;
+            }
+            if (matches(item.key)) {
+              return item;
+            }
+            const children = item.children.filter((child) => matches(child.key));
+            return children.length > 0 ? { ...item, children } : null;
+          })
+          .filter((item): item is MenuItem => item !== null),
+      }))
       .filter((section) => section.items.length > 0);
   });
 }

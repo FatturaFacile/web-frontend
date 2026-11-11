@@ -180,3 +180,43 @@
     width: 100% !important;
   }
 }
+
+.sidebar-search {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sidebar-border, #1e293b);
+
+  nz-input-wrapper {
+    width: 100%;
+  }
+}
+
+.sidebar-search-clear {
+  border: 0;
+  padding: 0 2px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: #ffffff;
+  }
+}
+
+.menu-search-empty {
+  padding: 16px 24px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  list-style: none;
+}
+
+// Entries that are not enabled yet (see TESTED_MENU_ROUTES): greyed out and not clickable
+.sidebar-menu .ant-menu-item-disabled,
+.sidebar-menu .ant-menu-submenu-disabled > .ant-menu-submenu-title {
+  opacity: 0.45;
+  cursor: not-allowed;
+
+  .menu-item-link {
+    pointer-events: none;
+  }
+}
