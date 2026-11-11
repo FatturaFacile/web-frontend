@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable, switchMap } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import {
   ApiResponse,
   ConfirmedPasswordPayload,
@@ -106,6 +106,9 @@ export function authProblemOf(err: unknown): string | null {
   return null;
 }
 
+/** Identity protocol of a tenant's single sign-on. The API has no public endpoint that tells which one a tenant uses. */
+export type SsoProtocol = 'oidc' | 'saml';
+
 export interface SwitchTenantPayload {
   tenant_id?: string | null;
 }
@@ -148,6 +151,37 @@ export class AuthApiService {
           { withCredentials: true }
         )
       )
+    );
+  }
+
+  /**
+   * Starts a single sign-on for a tenant and returns the URL of its identity provider
+   * (`POST /auth/sso/start` for OpenID Connect, `POST /auth/saml/start` for SAML).
+   */
+  startSso(protocol: SsoProtocol, tenantId: string): Observable<string> {
+    const path = protocol === 'saml' ? 'saml' : 'sso';
+    return this.http
+      .post<ApiResponse<{ authorization_url?: string; redirect_url?: string }>>(
+        `${this.base}/auth/${path}/start`,
+        { tenant_id: tenantId },
+        { withCredentials: true },
+      )
+      .pipe(map((res) => res.data?.authorization_url ?? res.data?.redirect_url ?? ''));
+  }
+
+  /**
+   * Exchanges the single-use code that the SAML sign-in handed to the SPA for the cookie session
+   * (`POST /auth/sso/exchange`, after the CSRF cookie handshake). The answer is that of the password login.
+   */
+  exchangeSsoCode(code: string): Observable<ApiResponse<LoginResult>> {
+    return this.getCsrfCookie().pipe(
+      switchMap(() =>
+        this.http.post<ApiResponse<LoginResult>>(
+          `${this.base}/auth/sso/exchange`,
+          { code },
+          { withCredentials: true },
+        ),
+      ),
     );
   }
 

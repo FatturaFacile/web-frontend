@@ -8,6 +8,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import {
@@ -19,6 +20,8 @@ import {
   I18nService,
   isValidationError,
   LoginResult,
+  SsoLoginService,
+  SsoProtocol,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { environment } from '@env';
@@ -28,6 +31,8 @@ import { ResendVerificationComponent } from '../../components/resend-verificatio
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
+
+const UUID_PATTERN = /^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*$/i;
 
 /** Account recreated by the backend demo reset (`demo:reset` → `erp:bootstrap`); prefilled only in demo builds. */
 const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123!' };
@@ -44,6 +49,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzCheckboxModule,
     NzAlertModule,
     NzIconModule,
+    NzRadioModule,
     LanguageSelectorComponent,
     ResendVerificationComponent,
     TwoFactorSetupModalComponent,
@@ -60,11 +66,14 @@ export class LoginComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
+  private readonly sso = inject(SsoLoginService);
 
   protected readonly isSubmitting = signal(false);
   protected readonly passwordVisible = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly needsVerification = signal(false);
+  protected readonly ssoOpen = signal(false);
+  protected readonly isSsoStarting = signal(false);
 
   // 2FA Challenge & Setup State
   protected readonly isChallengeStep = signal(false);
@@ -82,6 +91,11 @@ export class LoginComponent {
       Validators.minLength(6),
     ]),
     remember: this.fb.control(false),
+  });
+
+  protected readonly ssoForm = this.fb.group({
+    tenantId: this.fb.control('', [Validators.required, Validators.pattern(UUID_PATTERN)]),
+    protocol: this.fb.control<SsoProtocol>('oidc'),
   });
 
   protected readonly challengeForm = this.fb.group({
@@ -116,6 +130,28 @@ export class LoginComponent {
       error: (err: unknown) => {
         this.isSubmitting.set(false);
         this.handleError(err);
+      },
+    });
+  }
+
+  /** Sends the browser to the identity provider of the tenant (OpenID Connect or SAML). */
+  protected onSsoSubmit(): void {
+    if (this.ssoForm.invalid) {
+      this.ssoForm.markAllAsTouched();
+      return;
+    }
+    const { tenantId, protocol } = this.ssoForm.getRawValue();
+    this.errorMessage.set(null);
+    this.isSsoStarting.set(true);
+
+    this.sso.start(protocol, tenantId.trim(), this.route.snapshot.queryParamMap.get('returnUrl')).subscribe({
+      error: (err: unknown) => {
+        this.isSsoStarting.set(false);
+        this.errorMessage.set(
+          this.i18n.translate(
+            err instanceof HttpErrorResponse && err.status === 404 ? 'SSO.UNAVAILABLE' : 'SSO.START_FAILED',
+          ),
+        );
       },
     });
   }

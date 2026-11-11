@@ -4,6 +4,7 @@ export * from './auth/permissions.service';
 export * from './auth/auth.interceptor';
 export * from './auth/token-storage.service';
 export * from './auth/csrf.utils';
+export * from './auth/sso-login.service';
 export * from './api/auth-api.service';
 export { AuthService } from './services/auth.service';
 export * from './auth/auth.store';
