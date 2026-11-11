@@ -9,6 +9,35 @@
   }
 </div>
 
+@if (!appStore.isCollapsed()) {
+  <div class="sidebar-search">
+    <nz-input-wrapper>
+      <nz-icon nzInputPrefix nzType="search" />
+      <input
+        type="text"
+        nz-input
+        autocomplete="off"
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+        (keydown.escape)="clearSearch()"
+        [placeholder]="'NAV.SEARCH_PLACEHOLDER' | translate"
+        [attr.aria-label]="'NAV.SEARCH_PLACEHOLDER' | translate"
+      />
+      @if (isSearching()) {
+        <button
+          nzInputSuffix
+          type="button"
+          class="sidebar-search-clear"
+          [attr.aria-label]="'NAV.SEARCH_CLEAR' | translate"
+          (click)="clearSearch()"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      }
+    </nz-input-wrapper>
+  </div>
+}
+
 <ul
   nz-menu
   nzTheme="dark"
@@ -30,12 +59,17 @@
         <li
           nz-menu-item
           nzMatchRouter
-          [title]="item.key | translate"
+          [nzDisabled]="!isEnabled(item.route)"
+          [title]="isEnabled(item.route) ? (item.key | translate) : ((item.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
           nz-tooltip
           [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
           [nzTooltipPlacement]="'right'"
         >
-          <a [routerLink]="item.route" class="menu-item-link" [title]="item.key | translate">
+          <a
+            [routerLink]="isEnabled(item.route) ? item.route : null"
+            class="menu-item-link"
+            [attr.aria-disabled]="isEnabled(item.route) ? null : 'true'"
+          >
             <i [class]="item.icon + ' sidebar-icon'"></i>
             <span class="menu-title-text">{{ item.key | translate }}</span>
           </a>
@@ -44,9 +78,10 @@
         <li
           nz-submenu
           [nzTitle]="submenuTitle"
-          [nzOpen]="!appStore.isCollapsed() && openGroup() === item.key"
+          [nzDisabled]="!isGroupEnabled(item)"
+          [nzOpen]="isSearching() || (!appStore.isCollapsed() && openGroup() === item.key)"
           (nzOpenChange)="onGroupOpenChange(item.key, $event)"
-          [title]="item.key | translate"
+          [title]="isGroupEnabled(item) ? (item.key | translate) : ((item.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
           nz-tooltip
           [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
           [nzTooltipPlacement]="'right'"
@@ -62,12 +97,17 @@
               <li
                 nz-menu-item
                 nzMatchRouter
-                [title]="sub.key | translate"
+                [nzDisabled]="!isEnabled(sub.route)"
+                [title]="isEnabled(sub.route) ? (sub.key | translate) : ((sub.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
                 nz-tooltip
                 [nzTooltipTitle]="appStore.isCollapsed() ? (sub.key | translate) : null"
                 [nzTooltipPlacement]="'right'"
               >
-                <a [routerLink]="sub.route" class="menu-item-link" [title]="sub.key | translate">
+                <a
+                  [routerLink]="isEnabled(sub.route) ? sub.route : null"
+                  class="menu-item-link"
+                  [attr.aria-disabled]="isEnabled(sub.route) ? null : 'true'"
+                >
                   <i [class]="sub.icon + ' sidebar-icon'"></i>
                   <span class="menu-title-text">{{ sub.key | translate }}</span>
                 </a>
@@ -76,6 +116,10 @@
           </ul>
         </li>
       }
+    }
+  } @empty {
+    @if (isSearching()) {
+      <li class="menu-search-empty" role="status">{{ 'NAV.SEARCH_EMPTY' | translate }}</li>
     }
   }
 </ul>
