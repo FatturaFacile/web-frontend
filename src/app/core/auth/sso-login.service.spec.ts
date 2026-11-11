@@ -10,9 +10,12 @@ const CODE = 'A'.repeat(32) + 'b'.repeat(32);
 
 describe('SsoLoginService', () => {
   const startSso = vi.fn();
+  const discoverSso = vi.fn();
 
   function create(): { service: SsoLoginService; navigated: string[] } {
-    TestBed.configureTestingModule({ providers: [{ provide: AuthApiService, useValue: { startSso } }] });
+    TestBed.configureTestingModule({
+      providers: [{ provide: AuthApiService, useValue: { startSso, discoverSso } }],
+    });
     const service = TestBed.inject(SsoLoginService);
     const navigated: string[] = [];
     vi.spyOn(service as unknown as { navigate: (url: string) => void }, 'navigate').mockImplementation(
@@ -23,6 +26,7 @@ describe('SsoLoginService', () => {
 
   beforeEach(() => {
     startSso.mockReset();
+    discoverSso.mockReset();
     window.sessionStorage.clear();
     window.history.replaceState(null, '', '/auth/sso/complete');
   });
@@ -93,5 +97,54 @@ describe('SsoLoginService', () => {
 
     expect(create().service.consumeSignInCode()).toBeNull();
     expect(window.location.hash).toBe('');
+  });
+
+  it('starts the discovered protocol for the discovered tenant', () => {
+    discoverSso.mockReturnValue(of({ available: true, protocol: 'saml', tenant_id: TENANT }));
+    startSso.mockReturnValue(of('https://idp.example.com/saml'));
+    const { service, navigated } = create();
+    let leaving: boolean | undefined;
+
+    service.signInWithEmail(' anna@acme.example ', '/sales/orders').subscribe((v) => (leaving = v));
+
+    expect(discoverSso).toHaveBeenCalledWith('anna@acme.example');
+    expect(startSso).toHaveBeenCalledWith('saml', TENANT);
+    expect(navigated).toEqual(['https://idp.example.com/saml']);
+    expect(leaving).toBe(true);
+  });
+
+  it('does nothing when the address has no single sign-on', () => {
+    discoverSso.mockReturnValue(of({ available: false, protocol: null, tenant_id: null }));
+    const { service, navigated } = create();
+    let leaving: boolean | undefined;
+
+    service.signInWithEmail('anna@acme.example').subscribe((v) => (leaving = v));
+
+    expect(startSso).not.toHaveBeenCalled();
+    expect(navigated).toEqual([]);
+    expect(leaving).toBe(false);
+  });
+
+  it('reads the OpenID Connect code and state and removes them from the address bar', () => {
+    window.history.replaceState(null, '', '/auth/sso/complete?code=abc&state=xyz');
+
+    expect(create().service.consumeOidcParams()).toEqual({ code: 'abc', state: 'xyz' });
+    expect(window.location.search).toBe('');
+  });
+
+  it('strips an identity provider error answer and returns nothing', () => {
+    window.history.replaceState(null, '', '/auth/sso/complete?error=access_denied&state=xyz');
+
+    expect(create().service.consumeOidcParams()).toBeNull();
+    expect(window.location.search).toBe('');
+  });
+
+  it('follows the identity provider logout only to a safe URL', () => {
+    const { service, navigated } = create();
+
+    expect(service.followIdpLogout(null)).toBe(false);
+    expect(service.followIdpLogout('http://idp.example.com/logout')).toBe(false);
+    expect(service.followIdpLogout('https://idp.example.com/logout')).toBe(true);
+    expect(navigated).toEqual(['https://idp.example.com/logout']);
   });
 });

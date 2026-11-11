@@ -376,4 +376,34 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.body).toEqual({ code: 'c'.repeat(64) });
     req.flush({ data: {} });
   });
+
+  it('discovers the SSO of an email address without a tenant', () => {
+    let sso: unknown;
+    service.discoverSso('anna@acme.example').subscribe((v) => (sso = v));
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/sso/discover`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ email: 'anna@acme.example' });
+    req.flush({ data: { sso: { available: true, protocol: 'oidc', tenant_id: 'tenant-1' } } });
+    expect(sso).toEqual({ available: true, protocol: 'oidc', tenant_id: 'tenant-1' });
+  });
+
+  it('treats a missing discovery answer as unavailable', () => {
+    let sso: unknown;
+    service.discoverSso('anna@acme.example').subscribe((v) => (sso = v));
+
+    httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/sso/discover`).flush({ data: {} });
+    expect(sso).toEqual({ available: false, protocol: null, tenant_id: null });
+  });
+
+  it('posts the OpenID Connect code and state to the callback with credentials, after the CSRF cookie', () => {
+    service.completeOidcSso('abc', 'xyz').subscribe();
+
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+
+    const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/sso/callback`);
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.body).toEqual({ code: 'abc', state: 'xyz' });
+    req.flush({ data: {} });
+  });
 });

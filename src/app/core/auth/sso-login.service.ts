@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service } from '@angular/core';
-import { Observable, of, switchMap, throwError } from 'rxjs';
+import { map, Observable, of, switchMap, throwError } from 'rxjs';
 import { AuthApiService, SsoProtocol } from '../api/auth-api.service';
 import { isInsecureBackendRequest } from './csrf.utils';
 
@@ -26,6 +26,21 @@ export class SsoRedirectError extends Error {
 export class SsoLoginService {
   private readonly api = inject(AuthApiService);
   private readonly document = inject(DOCUMENT);
+
+  /**
+   * Discovers the single sign-on of an email address and, when there is one, starts it and leaves for the identity
+   * provider. Emits `false` when the address has no single sign-on (nothing happened), `true` when the browser is
+   * on its way.
+   */
+  signInWithEmail(email: string, returnUrl?: string | null): Observable<boolean> {
+    return this.api.discoverSso(email.trim()).pipe(
+      switchMap((sso) =>
+        sso.available && sso.protocol && sso.tenant_id
+          ? this.start(sso.protocol, sso.tenant_id, returnUrl).pipe(map(() => true))
+          : of(false),
+      ),
+    );
+  }
 
   start(protocol: SsoProtocol, tenantId: string, returnUrl?: string | null): Observable<void> {
     return this.api.startSso(protocol, tenantId).pipe(
@@ -53,6 +68,35 @@ export class SsoLoginService {
     const code = new URLSearchParams(hash.replace(/^#/, '')).get('code');
     view.history.replaceState(view.history.state, '', view.location.pathname + view.location.search);
     return code !== null && SIGN_IN_CODE.test(code) ? code : null;
+  }
+
+  /**
+   * The OpenID Connect redirect: the identity provider sends the browser back with `?code=...&state=...`. Both are
+   * removed from the address bar at once. An error answer (`?error=`) is stripped too. Returns null unless both are present.
+   */
+  consumeOidcParams(): { code: string; state: string } | null {
+    const view = this.document.defaultView;
+    const search = view?.location.search ?? '';
+    if (!view || search === '') {
+      return null;
+    }
+    const params = new URLSearchParams(search);
+    const code = params.get('code');
+    const state = params.get('state');
+    if (code === null && state === null && !params.has('error')) {
+      return null;
+    }
+    view.history.replaceState(view.history.state, '', view.location.pathname + view.location.hash);
+    return code && state ? { code, state } : null;
+  }
+
+  /** After the local logout: ends the session at the identity provider too, when the API gave a URL for it. */
+  followIdpLogout(url: string | null | undefined): boolean {
+    if (!url || !this.isSafeRedirect(url)) {
+      return false;
+    }
+    this.navigate(url);
+    return true;
   }
 
   /** The path the user wanted before leaving for the identity provider; read once. */

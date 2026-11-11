@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 // Deep imports keep the `@core` and `@shared` barrels (every API service, every resource page) out of the initial bundle.
 import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
+import { SsoLoginService } from '@core/auth/sso-login.service';
 import { PermissionsService } from '@core/auth/permissions.service';
 import type { SupportedLanguage } from '@core/i18n/i18n.types';
 import { TranslateService } from '@core/i18n/i18n.service';
@@ -38,6 +39,7 @@ export class HeaderComponent {
   readonly authStore = inject(AuthStore);
   readonly permissions = inject(PermissionsService);
   private readonly authApi = inject(AuthApiService);
+  private readonly sso = inject(SsoLoginService);
   private readonly message = inject(NzMessageService);
   readonly router = inject(Router);
 
@@ -64,9 +66,12 @@ export class HeaderComponent {
 
   logout(): void {
     this.authApi.logout().subscribe({
-      next: () => {
+      next: (res) => {
         this.authStore.logout();
-        void this.router.navigate(['/login']);
+        // A single sign-on session also ends at the identity provider, which then returns to the app.
+        if (!this.sso.followIdpLogout(res?.data?.idp_logout_url)) {
+          void this.router.navigate(['/login']);
+        }
       },
       error: () => {
         this.authStore.logout();
