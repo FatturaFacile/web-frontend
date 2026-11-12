@@ -87,4 +87,29 @@ describe('I18nService', () => {
       .flush({ locale: 'de', translations: { 'NAV.DASHBOARD': 'Übersicht' } });
     await expect(retry).resolves.toEqual({ 'NAV.DASHBOARD': 'Übersicht' });
   });
+
+  it('deduplicates concurrent calls to loadDictionary for the same language', async () => {
+    const p1 = service.loadDictionary('fr');
+    const p2 = service.loadDictionary('fr');
+
+    const requests = httpTesting.match((req) => req.url.endsWith('/translations/fr'));
+    expect(requests).toHaveLength(1);
+
+    requests[0].flush({
+      locale: 'fr',
+      translations: { 'NAV.DASHBOARD': 'Tableau de bord' },
+    });
+
+    const [res1, res2] = await Promise.all([p1, p2]);
+    expect(res1).toEqual({ 'NAV.DASHBOARD': 'Tableau de bord' });
+    expect(res2).toEqual({ 'NAV.DASHBOARD': 'Tableau de bord' });
+  });
+
+  it('loadInitialTranslations completes safely even when the API returns an error', async () => {
+    // Flush initial requests triggered by constructor
+    httpTesting.match(() => true).forEach((req) => req.error(new ProgressEvent('network error')));
+
+    const result = await service.loadInitialTranslations();
+    expect(Array.isArray(result)).toBe(true);
+  });
 });
