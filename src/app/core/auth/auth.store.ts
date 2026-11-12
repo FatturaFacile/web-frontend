@@ -115,18 +115,64 @@ function getInitialTenantId(): string {
   return 't-it-01';
 }
 
-/** Storage key read by the HTTP interceptor to send `X-User-Id` (no injection, to avoid a DI cycle). */
+/** Storage keys read by the HTTP interceptor and for fast synchronous startup hydration */
 export const USER_ID_STORAGE_KEY = 'ff_active_user_id';
+export const USER_PROFILE_STORAGE_KEY = 'ff_user_profile';
+export const AUTH_STATUS_STORAGE_KEY = 'ff_is_authenticated';
 
-function persistUserId(user: UserProfile | null): void {
+function persistUser(user: UserProfile | null): void {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
   }
   if (user?.id) {
     window.localStorage.setItem(USER_ID_STORAGE_KEY, String(user.id));
+    try {
+      window.localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(user));
+      window.localStorage.setItem(AUTH_STATUS_STORAGE_KEY, 'true');
+    } catch {
+      // Storage quota or disabled
+    }
   } else {
     window.localStorage.removeItem(USER_ID_STORAGE_KEY);
+    window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
+    window.localStorage.removeItem(AUTH_STATUS_STORAGE_KEY);
   }
+}
+
+function persistUserId(user: UserProfile | null): void {
+  persistUser(user);
+}
+
+function getInitialUser(): UserProfile | null {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
+      if (raw) {
+        return JSON.parse(raw) as UserProfile;
+      }
+    } catch {
+      // Storage unavailable or JSON error
+    }
+  }
+  return null;
+}
+
+function getInitialTenants(user: UserProfile | null): Tenant[] {
+  if (user?.tenants && user.tenants.length > 0) {
+    return user.tenants.map((t) => {
+      const isCh = t.country === 'CH';
+      return {
+        id: t.id,
+        name: t.name,
+        jurisdiction: isCh ? 'CH' : 'IT',
+        currency: isCh ? 'CHF' : 'EUR',
+        vatNumber: '',
+        address: '',
+        role: t.role,
+      };
+    });
+  }
+  return DEFAULT_TENANTS;
 }
 
 function persistTenantId(tenantId: string | null): void {
@@ -142,17 +188,35 @@ function persistTenantId(tenantId: string | null): void {
   }
 }
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  tenants: DEFAULT_TENANTS,
-  activeTenantId: getInitialTenantId(),
-  activeJurisdiction: 'IT',
-  activeCurrency: 'EUR',
-  activeLocale: resolveInitialLanguage(),
-  theme: getInitialTheme(),
-  twoFactorSetupRequired: false,
-};
+function getInitialAuthState(): AuthState {
+  const user = getInitialUser();
+  const initialTenants = getInitialTenants(user);
+  const initialTenantId = getInitialTenantId();
+  const initialTenant =
+    initialTenants.find((t) => t.id === initialTenantId) ??
+    initialTenants[0] ??
+    DEFAULT_TENANTS[0];
+
+  const hasStoredSession =
+    typeof window !== 'undefined' && window.localStorage
+      ? window.localStorage.getItem(AUTH_STATUS_STORAGE_KEY) === 'true' ||
+        !!window.localStorage.getItem(USER_ID_STORAGE_KEY)
+      : false;
+
+  return {
+    isAuthenticated: !!user || hasStoredSession,
+    user,
+    tenants: initialTenants,
+    activeTenantId: initialTenant.id,
+    activeJurisdiction: initialTenant.jurisdiction,
+    activeCurrency: initialTenant.currency,
+    activeLocale: resolveInitialLanguage(),
+    theme: getInitialTheme(),
+    twoFactorSetupRequired: false,
+  };
+}
+
+const initialState: AuthState = getInitialAuthState();
 
 export const AuthStore = signalStore(
   { providedIn: 'root' },
@@ -247,6 +311,32 @@ export const AuthStore = signalStore(
       patchState(store, {
         user,
         isAuthenticated: !!user,
+      });
+    },
+    updateProfile(user: UserProfile): void {
+      persistUser(user);
+      let targetTenants = store.tenants();
+      if (user.tenants && user.tenants.length > 0) {
+        targetTenants = user.tenants.map((t) => {
+          const existing = store.tenants().find((et) => et.id === t.id);
+          const isCh = t.country === 'CH' || existing?.jurisdiction === 'CH';
+          return {
+            id: t.id,
+            name: t.name,
+            jurisdiction: isCh ? 'CH' : 'IT',
+            currency: isCh ? 'CHF' : 'EUR',
+            vatNumber: existing?.vatNumber ?? '',
+            sdiCode: existing?.sdiCode,
+            qrIban: existing?.qrIban,
+            address: existing?.address ?? '',
+            role: t.role,
+          };
+        });
+      }
+      patchState(store, {
+        user,
+        tenants: targetTenants,
+        isAuthenticated: true,
       });
     },
     switchTenant(tenantId: string): void {
