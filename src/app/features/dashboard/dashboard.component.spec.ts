@@ -157,15 +157,15 @@ describe('DashboardComponent', () => {
       expect(el.textContent).not.toContain('DASHBOARD.KPI_COMPLIANCE');
     });
 
-    it('keeps the three KPI cards on one row from the sm breakpoint upward', async () => {
+    it('stacks the KPI cards below the lg breakpoint and shows three per row from lg upward', async () => {
       const el = await renderDeferred();
       const columns = Array.from(el.querySelectorAll('.stats-grid > [nz-col]'));
 
       expect(columns.length).toBe(3);
       for (const column of columns) {
         expect(column.classList).toContain('ant-col-xs-24');
-        expect(column.classList).toContain('ant-col-sm-8');
         expect(column.classList).toContain('ant-col-lg-8');
+        expect([...column.classList].some((c) => c.startsWith('ant-col-sm-'))).toBe(false);
       }
     });
   });
