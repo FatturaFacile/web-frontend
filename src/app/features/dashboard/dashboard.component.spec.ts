@@ -7,7 +7,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { icons } from '../../icons-provider';
-import { AuthStore, DashboardApiService, InvoiceApiService, InvoiceResource, KpiSummary } from '@core';
+import {
+  AuthStore,
+  DashboardApiService,
+  InvoiceApiService,
+  InvoiceResource,
+  KpiSummary,
+} from '@core';
 import { DashboardComponent } from './dashboard.component';
 
 const PLACEHOLDER = '—';
@@ -15,8 +21,18 @@ const PLACEHOLDER = '—';
 // Same keys and value types as GET /api/v1/dashboard/kpi-summary; only the values are invented.
 function kpiSummaryResponse(): KpiSummary {
   return {
-    tenant: { id: '6f1c2a5e-0000-4000-8000-000000000001', name: 'Test Srl', country: 'IT', currency: 'EUR' },
-    kpis: { total_revenue: 25000, total_unpaid: 12000.5, invoices_count: 42, active_currency: 'EUR' },
+    tenant: {
+      id: '6f1c2a5e-0000-4000-8000-000000000001',
+      name: 'Test Srl',
+      country: 'IT',
+      currency: 'EUR',
+    },
+    kpis: {
+      total_revenue: 25000,
+      total_unpaid: 12000.5,
+      invoices_count: 42,
+      active_currency: 'EUR',
+    },
     metrics_timestamp: '2026-11-12T10:00:00+00:00',
   };
 }
@@ -41,7 +57,10 @@ describe('DashboardComponent', () => {
     status: 'issued',
   };
 
-  async function setup(kpiResponse: Observable<unknown>, currency: 'EUR' | 'CHF' = 'EUR'): Promise<void> {
+  async function setup(
+    kpiResponse: Observable<unknown>,
+    currency: 'EUR' | 'CHF' = 'EUR',
+  ): Promise<void> {
     const dashboardApiMock: Partial<DashboardApiService> = {
       getKpiSummary: vi.fn().mockReturnValue(kpiResponse),
       getCashFlowForecast: vi.fn().mockReturnValue(of({ data: [] })),
@@ -93,7 +112,13 @@ describe('DashboardComponent', () => {
 
   describe('with the real kpi-summary response shape', () => {
     beforeEach(async () => {
-      await setup(of({ success: true, message: 'Dashboard KPI summary retrieved', data: kpiSummaryResponse() }));
+      await setup(
+        of({
+          success: true,
+          message: 'Dashboard KPI summary retrieved',
+          data: kpiSummaryResponse(),
+        }),
+      );
     });
 
     it('stores the response data and loads recent invoices', () => {
@@ -119,7 +144,11 @@ describe('DashboardComponent', () => {
       const stats = statistics(el);
 
       expect(stats.length).toBe(3);
-      expect(stats.map((s) => s.title)).toEqual(['ORDERS.REVENUE', 'DASHBOARD.KPI_PENDING', 'SALES.INVOICES.TITLE']);
+      expect(stats.map((s) => s.title)).toEqual([
+        'ORDERS.REVENUE',
+        'DASHBOARD.KPI_PENDING',
+        'SALES.INVOICES.TITLE',
+      ]);
       expect(stats.map((s) => s.value)).toEqual(['€ 25.000,00', '€ 12.000,50', '42']);
       expect(el.textContent).not.toContain('DASHBOARD.KPI_COMPLIANCE');
     });

@@ -36,16 +36,16 @@
 @defer (on idle) {
   <nz-spin [nzSpinning]="loading()">
     <div nz-row [nzGutter]="16" class="stats-grid">
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
         <nz-card>
           <nz-statistic
             [nzValue]="revenueDisplay()"
-            [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
+            [nzTitle]="'ORDERS.REVENUE' | translate"
             [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
           />
         </nz-card>
       </div>
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
         <nz-card>
           <nz-statistic
             [nzValue]="receivablesDisplay()"
@@ -54,21 +54,12 @@
           />
         </nz-card>
       </div>
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
         <nz-card>
           <nz-statistic
-            [nzValue]="pendingCount()"
-            [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
+            [nzValue]="invoicesCount()"
+            [nzTitle]="'SALES.INVOICES.TITLE' | translate"
             [nzValueStyle]="{ color: 'var(--kpi-orders, #047857)' }"
-          />
-        </nz-card>
-      </div>
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
-        <nz-card>
-          <nz-statistic
-            [nzValue]="alertsCount()"
-            [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
-            [nzValueStyle]="{ color: 'var(--kpi-compliance, #6d28d9)' }"
           />
         </nz-card>
       </div>
@@ -163,8 +154,8 @@
   </div>
 } @placeholder {
   <div nz-row [nzGutter]="16" class="stats-grid">
-    @for (i of [1, 2, 3, 4]; track i) {
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+    @for (i of [1, 2, 3]; track i) {
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
         <nz-card>
           <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 2 }" [nzTitle]="true" />
         </nz-card>
