@@ -26,7 +26,6 @@ import { OrderStore } from '../../state/order.store';
     TranslatePipe,
   ],
   templateUrl: './order-list.component.html',
-  styleUrl: './order-list.component.scss',
 })
 export class OrderListComponent implements OnInit {
   readonly store = inject(OrderStore);

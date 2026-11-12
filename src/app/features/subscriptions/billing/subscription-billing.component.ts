@@ -41,7 +41,6 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
     TranslatePipe,
   ],
   templateUrl: './subscription-billing.component.html',
-  styleUrl: './subscription-billing.scss',
 })
 export class SubscriptionBillingComponent {
   private readonly api = inject(SubscriptionApiService);

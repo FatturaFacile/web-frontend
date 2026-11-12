@@ -74,7 +74,7 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
         <label for="ar-status">{{ 'hrmCommon.statusCol' | translate }}</label>
         <nz-select
           id="ar-status"
-          style="width: 180px; display: block"
+         
           nzAllowClear
           [ngModel]="status()"
           (ngModelChange)="setStatus($event)"

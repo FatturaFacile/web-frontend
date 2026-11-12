@@ -38,28 +38,6 @@ const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'ge
     SignatureDialogComponent,
   ],
   templateUrl: './service-reports.component.html',
-  styles: `
-    .sr-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .sr-filter {
-      width: 180px;
-    }
-    .sr-spacer {
-      flex: 1;
-    }
-    .sr-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-    .sr-select {
-      width: 100%;
-    }
-  `,
 })
 export class ServiceReportsComponent implements OnInit {
   private readonly api = inject(FieldServiceApiService);

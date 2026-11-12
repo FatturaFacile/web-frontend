@@ -19,21 +19,21 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
     <app-gl-error-alert [error]="error()" />
 
     @if (canWrite) {
-      <nz-card [nzTitle]="'PRJ.BILL_TM' | translate" nzSize="small" style="margin-bottom: 16px">
+      <nz-card [nzTitle]="'PRJ.BILL_TM' | translate" nzSize="small">
         <p>{{ 'PRJ.BILL_TM_HINT' | translate }}</p>
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+        <div>
           <label for="bl-tax">{{ 'PRJ.TAX_RATE' | translate }}</label>
           <nz-input-number id="bl-tax" [(ngModel)]="taxRate" [nzMin]="0" [nzMax]="100" [nzPrecision]="2" />
           <label for="bl-upto">{{ 'PRJ.UP_TO_DATE' | translate }}</label>
-          <input id="bl-upto" nz-input type="date" style="width: 160px" [(ngModel)]="upToDate" />
+          <input id="bl-upto" nz-input type="date" [(ngModel)]="upToDate" />
           <button nz-button nzType="primary" type="button" (click)="billTimeAndMaterials()">{{ 'PRJ.BILL' | translate }}</button>
         </div>
       </nz-card>
 
-      <nz-card [nzTitle]="'PRJ.REVENUE_RECOGNITION' | translate" nzSize="small" style="margin-bottom: 16px">
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+      <nz-card [nzTitle]="'PRJ.REVENUE_RECOGNITION' | translate" nzSize="small">
+        <div>
           <label for="rr-date">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</label>
-          <input id="rr-date" nz-input type="date" style="width: 160px" [(ngModel)]="accountingDate" />
+          <input id="rr-date" nz-input type="date" [(ngModel)]="accountingDate" />
           <label for="rr-override">{{ 'PRJ.OVERRIDE_COMPLETION' | translate }}</label>
           <nz-input-number id="rr-override" [(ngModel)]="overrideCompletion" [nzMin]="0" [nzMax]="100" [nzPrecision]="2" />
           <button nz-button nzType="primary" type="button" [disabled]="!accountingDate" (click)="runRecognition()">{{ 'PRJ.RUN_RECOGNITION' | translate }}</button>

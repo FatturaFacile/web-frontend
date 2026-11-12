@@ -39,7 +39,6 @@ import { todayIso } from '../shared/sales-status';
   ],
   providers: [CycleBackordersFacade],
   templateUrl: './sales-overview.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class SalesOverviewComponent {
   protected readonly facade = inject(CycleBackordersFacade);

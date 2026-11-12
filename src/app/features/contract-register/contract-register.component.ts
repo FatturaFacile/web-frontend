@@ -66,7 +66,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './contract-register.component.html',
-  styleUrls: ['./contract-register.component.scss'],
 })
 export class ContractRegisterComponent implements OnInit {
   private readonly translate = inject(TranslateService);

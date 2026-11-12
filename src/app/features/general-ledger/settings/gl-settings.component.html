@@ -2,7 +2,7 @@
   <nz-card [nzTitle]="'GL.SETTINGS_POSTING_ACCOUNTS' | translate" [nzLoading]="loading()">
     <p>{{ 'GL.SETTINGS_POSTING_HINT' | translate }}</p>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 16px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <div formGroupName="posting_accounts" class="settings-grid">
       @for (role of roles; track role) {
@@ -29,7 +29,7 @@
     </div>
   </nz-card>
 
-  <nz-card [nzTitle]="'GL.SETTINGS_FOUR_EYES' | translate" style="margin-top: 16px">
+  <nz-card [nzTitle]="'GL.SETTINGS_FOUR_EYES' | translate">
     <p>{{ 'GL.SETTINGS_FOUR_EYES_HINT' | translate }}</p>
     <nz-form-item>
       <nz-form-label nzFor="approval-required">{{ 'GL.SETTINGS_APPROVAL_REQUIRED' | translate }}</nz-form-label>
@@ -54,7 +54,7 @@
   </nz-card>
 
   @if (canWrite) {
-    <div style="margin-top: 16px">
+    <div>
       <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'GL.SAVE' | translate }}</button>
     </div>
   }

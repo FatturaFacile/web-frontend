@@ -38,7 +38,6 @@ import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-statu
     TranslatePipe,
   ],
   templateUrl: './deferred-billing.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class DeferredBillingComponent implements OnInit {
   private readonly api = inject(BillingApiService);

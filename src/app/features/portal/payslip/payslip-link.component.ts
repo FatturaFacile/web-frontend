@@ -36,18 +36,6 @@ import { NzInputModule } from 'ng-zorro-antd/input';
       </form>
     </nz-card>
   `,
-  styles: `
-    :host {
-      display: block;
-      margin: 48px auto;
-      max-width: 480px;
-      padding: 0 16px;
-    }
-
-    .payslip-alert {
-      margin-bottom: 16px;
-    }
-  `,
 })
 export class PayslipLinkComponent {
   private readonly route = inject(ActivatedRoute);

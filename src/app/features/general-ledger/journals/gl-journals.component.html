@@ -1,9 +1,9 @@
 <nz-card>
-  <div class="toolbar" style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center">
+  <div class="toolbar">
     <label for="gl-journal-status">{{ 'GL.STATUS' | translate }}</label>
     <nz-select
       id="gl-journal-status"
-      style="min-width: 220px"
+     
       nzAllowClear
       [ngModel]="statusFilter()"
       (ngModelChange)="setStatus($event)"

@@ -66,7 +66,7 @@ const HOUR_FIELDS = [
           <div formArrayName="employees">
             @for (row of rows.controls; track row; let i = $index) {
               <div [formGroupName]="i" class="flex gap-2 items-end mb-2 flex-wrap">
-                <div style="width: 220px">
+                <div>
                   <label [attr.for]="'claim-emp-' + i">{{
                     'hrmCommon.employee' | translate
                   }}</label>
@@ -74,7 +74,7 @@ const HOUR_FIELDS = [
                     [id]="'claim-emp-' + i"
                     formControlName="employee_id"
                     nzShowSearch
-                    style="width: 100%"
+                   
                   >
                     @for (option of employees(); track option.value) {
                       <nz-option
@@ -85,7 +85,7 @@ const HOUR_FIELDS = [
                   </nz-select>
                 </div>
                 @for (field of hourFields; track field) {
-                  <div style="width: 110px">
+                  <div>
                     <label [attr.for]="'claim-' + field + i">{{
                       'hrmShortTime.claim.' + field | translate
                     }}</label>

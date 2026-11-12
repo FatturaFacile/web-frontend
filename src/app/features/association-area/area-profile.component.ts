@@ -94,15 +94,6 @@ import { saveBlob } from './save-blob';
       }
     }
   `,
-  styles: `
-    .area-section {
-      margin: 24px 0 12px;
-    }
-
-    .area-gap {
-      margin-top: 12px;
-    }
-  `,
 })
 export class AreaProfileComponent {
   private readonly api = inject(AssociationAreaApiService);

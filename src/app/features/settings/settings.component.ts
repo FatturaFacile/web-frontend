@@ -36,7 +36,6 @@ import { TranslateService } from '@core';
     TranslatePipe,
   ],
   templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);

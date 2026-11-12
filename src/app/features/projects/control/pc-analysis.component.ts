@@ -23,7 +23,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
   template: `
     @if (closure(); as checks) {
       <nz-alert
-        style="margin-bottom: 16px"
+       
         nzShowIcon
         [nzType]="checks.can_close ? 'success' : 'warning'"
         [nzMessage]="(checks.can_close ? 'PRJ.CAN_CLOSE' : 'PRJ.CANNOT_CLOSE') | translate"
@@ -40,7 +40,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     }
 
     @if (profit(); as p) {
-      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small" style="margin-bottom: 16px">
+      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small">
         <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }">
           <nz-descriptions-item [nzTitle]="'PRJ.CONTRACT_VALUE' | translate">{{ p.contract_value | money: p.currency }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'PRJ.BUDGET_REVENUE' | translate">{{ p.budget.revenue | money: p.currency }}</nz-descriptions-item>
@@ -66,7 +66,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     @if (gantt(); as g) {
       <nz-card [nzTitle]="'PRJ.SCHEDULE' | translate" nzSize="small">
         @if (canWrite) {
-          <button nz-button type="button" style="margin-bottom: 12px" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
+          <button nz-button type="button" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
         }
         <p>{{ 'PRJ.SCHEDULE_FINISH' | translate }}: {{ g.schedule_finish ?? '-' }} - {{ 'PRJ.PROGRESS' | translate }}: {{ g.progress_percentage }}%</p>
         <nz-table #ganttTable nzSize="small" [nzData]="g.tasks" [nzPageSize]="20">

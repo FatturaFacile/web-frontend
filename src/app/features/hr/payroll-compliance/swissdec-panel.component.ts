@@ -76,7 +76,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="sd-version">{{ 'hrmCompliance.swissdec.version' | translate }}</label>
         <nz-select
           id="sd-version"
-          style="width: 100px; display: block"
+         
           [ngModel]="version()"
           (ngModelChange)="version.set($event)"
         >
@@ -162,15 +162,6 @@ import { reportHttpError } from '../shared/hr-http.util';
         'hrmCompliance.swissdec.transmitConfirm' | translate
       }}</ng-container>
     </nz-modal>
-  `,
-  styles: `
-    .swissdec-json {
-      max-height: 360px;
-      overflow: auto;
-      padding: 12px;
-      font-size: 12px;
-      background: var(--ant-color-fill-quaternary, #fafafa);
-    }
   `,
 })
 export class SwissdecPanelComponent {

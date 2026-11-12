@@ -71,18 +71,6 @@ import { AreaProfileComponent } from './area-profile.component';
       }
     </main>
   `,
-  styles: `
-    .area {
-      margin: 0 auto;
-      max-width: 960px;
-      padding: 24px 16px;
-    }
-
-    .area-people {
-      display: block;
-      margin-bottom: 16px;
-    }
-  `,
 })
 export class AssociationAreaComponent implements OnInit {
   private readonly api = inject(AssociationAreaApiService);

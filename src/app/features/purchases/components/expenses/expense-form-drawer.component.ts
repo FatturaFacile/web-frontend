@@ -25,7 +25,6 @@ import { TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './expense-form-drawer.component.html',
-  styleUrl: './expense-form-drawer.component.scss',
 })
 export class ExpenseFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);

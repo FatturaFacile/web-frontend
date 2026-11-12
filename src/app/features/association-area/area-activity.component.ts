@@ -106,28 +106,6 @@ import { recordText, saveBlob } from './save-blob';
       }
     }
   `,
-  styles: `
-    .area-section {
-      margin: 24px 0 12px;
-    }
-
-    .area-authorization {
-      border: 1px solid var(--ant-color-border, #d9d9d9);
-      border-radius: 6px;
-      margin-bottom: 12px;
-      padding: 12px 16px;
-    }
-
-    .area-body {
-      white-space: pre-wrap;
-    }
-
-    .area-sign {
-      display: flex;
-      gap: 8px;
-      max-width: 480px;
-    }
-  `,
 })
 export class AreaActivityComponent {
   private readonly api = inject(AssociationAreaApiService);

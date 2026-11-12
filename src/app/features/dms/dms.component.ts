@@ -71,7 +71,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './dms.component.html',
-  styleUrls: ['./dms.component.scss'],
 })
 export class DmsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

@@ -79,7 +79,7 @@ const CANTONS = [
         <label for="ws-type">{{ 'hrmCompliance.statements.periodType' | translate }}</label>
         <nz-select
           id="ws-type"
-          style="width: 150px; display: block"
+         
           [ngModel]="periodType()"
           (ngModelChange)="periodType.set($event)"
         >
@@ -107,7 +107,7 @@ const CANTONS = [
         <label for="ws-canton">{{ 'hrmPayroll.canton' | translate }}</label>
         <nz-select
           id="ws-canton"
-          style="width: 110px; display: block"
+         
           nzAllowClear
           [ngModel]="canton()"
           (ngModelChange)="canton.set($event)"

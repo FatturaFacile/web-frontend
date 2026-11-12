@@ -185,7 +185,6 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
       </div>
     </main>
   `,
-  styleUrls: ['../login/login.component.scss', '../register/register.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);

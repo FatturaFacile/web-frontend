@@ -154,13 +154,13 @@
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>Acquisition Cost ({{ authStore.activeCurrency() }})</nz-form-label>
           <nz-form-control nzErrorTip="Valid cost required">
-            <nz-input-number formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'assets.lblUsefulLifeYears' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Useful life required">
-            <nz-input-number formControlName="useful_life_years" [nzMin]="1" [nzMax]="50" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="useful_life_years" [nzMin]="1" [nzMax]="50"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>

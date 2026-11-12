@@ -121,7 +121,7 @@
           <nz-select
             [ngModel]="filterVisitStatus()"
             (ngModelChange)="filterVisitStatus.set($event); loadVisits()"
-            style="width: 160px"
+           
           >
             <nz-option nzValue="" [nzLabel]="'VISITORS.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="expected" [nzLabel]="'VISITORS.STATUS_EXPECTED' | translate"></nz-option>
@@ -240,7 +240,7 @@
             [ngModel]="searchVisitorQuery()"
             (ngModelChange)="searchVisitorQuery.set($event); loadVisitors()"
             [placeholder]="'VISITORS.SEARCH_PLACEHOLDER' | translate"
-            style="width: 240px"
+           
           />
         </div>
         <div class="actions">

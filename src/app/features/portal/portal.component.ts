@@ -79,7 +79,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './portal.component.html',
-  styleUrls: ['./portal.component.scss'],
 })
 export class PortalComponent implements OnInit {
   private readonly portalApi = inject(PortalApiService);

@@ -14,16 +14,16 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
   selector: 'app-gl-dimension-report',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
-      <nz-select style="min-width: 200px" [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
+    <div>
+      <nz-select [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
         @for (option of dimensions; track option) {
           <nz-option [nzValue]="option" [nzLabel]="'GL.DIMENSION_' + option.toUpperCase() | translate" />
         }
       </nz-select>
       <label for="dr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="dr-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input id="dr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="dr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="dr-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+      <input id="dr-to" nz-input type="date" [(ngModel)]="to" />
       <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
     </div>
     @if (report(); as r) {

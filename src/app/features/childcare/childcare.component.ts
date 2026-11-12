@@ -80,7 +80,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './childcare.component.html',
-  styleUrl: './childcare.component.scss',
 })
 export class ChildcareComponent implements OnInit {
   private readonly api = inject(ChildcareApiService);

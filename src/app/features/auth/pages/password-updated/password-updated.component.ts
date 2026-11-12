@@ -38,6 +38,5 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
       </div>
     </main>
   `,
-  styleUrl: '../login/login.component.scss',
 })
 export class PasswordUpdatedComponent {}

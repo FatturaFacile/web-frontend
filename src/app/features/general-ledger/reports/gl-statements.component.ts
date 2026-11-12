@@ -12,21 +12,21 @@ import { GlStatementViewComponent } from './gl-statement-view.component';
   selector: 'app-gl-statements',
   imports: [FormsModule, NzButtonModule, NzInputModule, GlStatementViewComponent, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
+    <div>
       @if (mode() === 'balance-sheet') {
         <label for="st-asof">{{ 'GL.AS_OF' | translate }}</label>
-        <input id="st-asof" nz-input type="date" style="width: 160px" [(ngModel)]="asOf" />
+        <input id="st-asof" nz-input type="date" [(ngModel)]="asOf" />
         <label for="st-casof">{{ 'GL.COMPARE_AS_OF' | translate }}</label>
-        <input id="st-casof" nz-input type="date" style="width: 160px" [(ngModel)]="compareAsOf" />
+        <input id="st-casof" nz-input type="date" [(ngModel)]="compareAsOf" />
       } @else {
         <label for="st-from">{{ 'GL.FROM' | translate }}</label>
-        <input id="st-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+        <input id="st-from" nz-input type="date" [(ngModel)]="from" />
         <label for="st-to">{{ 'GL.TO' | translate }}</label>
-        <input id="st-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+        <input id="st-to" nz-input type="date" [(ngModel)]="to" />
         <label for="st-cfrom">{{ 'GL.COMPARE_FROM' | translate }}</label>
-        <input id="st-cfrom" nz-input type="date" style="width: 160px" [(ngModel)]="compareFrom" />
+        <input id="st-cfrom" nz-input type="date" [(ngModel)]="compareFrom" />
         <label for="st-cto">{{ 'GL.COMPARE_TO' | translate }}</label>
-        <input id="st-cto" nz-input type="date" style="width: 160px" [(ngModel)]="compareTo" />
+        <input id="st-cto" nz-input type="date" [(ngModel)]="compareTo" />
       }
       <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
     </div>

@@ -62,7 +62,6 @@ import { TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './project-detail-drawer.component.html',
-  styleUrl: './project-detail-drawer.component.scss',
 })
 export class ProjectDetailDrawerComponent implements OnInit {
   private readonly translate = inject(TranslateService);

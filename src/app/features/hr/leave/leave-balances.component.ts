@@ -24,7 +24,7 @@ import { reportHttpError } from '../shared/hr-http.util';
             type="number"
             min="1"
             max="12"
-            style="width: 90px"
+           
             [ngModel]="month()"
             (ngModelChange)="month.set($event)"
           />

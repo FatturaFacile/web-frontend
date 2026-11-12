@@ -67,13 +67,6 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
       </ng-container>
     </nz-modal>
   `,
-  styles: `
-    .alert { margin-bottom: 12px; display: block; }
-    .row { display: grid; grid-template-columns: 1fr auto 120px; gap: 12px; align-items: center; margin-bottom: 6px; }
-    .qty { font-variant-numeric: tabular-nums; }
-    .field { margin: 4px 0 12px; display: block; }
-    .hint { color: var(--ant-color-text-secondary, #666); }
-  `,
 })
 export class OrderBillingModalComponent {
   private readonly salesApi = inject(SalesCycleApiService);

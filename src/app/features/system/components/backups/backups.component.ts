@@ -26,7 +26,6 @@ import { TranslateService } from '@core';
     TranslatePipe,
   ],
   templateUrl: './backups.component.html',
-  styleUrl: './backups.component.scss',
 })
 export class BackupsComponent implements OnInit {
   private readonly api = inject(SystemApiService);

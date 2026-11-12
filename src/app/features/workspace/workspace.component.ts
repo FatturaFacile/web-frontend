@@ -48,7 +48,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './workspace.component.html',
-  styleUrl: './workspace.component.scss',
 })
 export class WorkspaceComponent implements OnInit {
   private readonly translate = inject(TranslateService);

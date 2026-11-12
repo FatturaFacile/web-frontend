@@ -58,7 +58,6 @@ import { statusColor, todayIso } from '../../cycle/shared/sales-status';
     TranslatePipe,
   ],
   templateUrl: './billing-plans.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class BillingPlansComponent implements OnInit {
   private readonly api = inject(BillingApiService);

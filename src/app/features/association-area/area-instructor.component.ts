@@ -69,25 +69,6 @@ import { NzTableModule } from 'ng-zorro-antd/table';
       </section>
     }
   `,
-  styles: `
-    .area-sheet {
-      margin-top: 24px;
-    }
-
-    .area-date {
-      display: block;
-      margin-bottom: 12px;
-    }
-
-    .area-row {
-      align-items: center;
-      display: flex;
-      gap: 16px;
-      justify-content: space-between;
-      max-width: 520px;
-      padding: 6px 0;
-    }
-  `,
 })
 export class AreaInstructorComponent implements OnInit {
   private readonly api = inject(AssociationAreaApiService);

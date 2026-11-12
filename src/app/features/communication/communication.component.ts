@@ -65,7 +65,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './communication.component.html',
-  styleUrl: './communication.component.scss',
 })
 export class CommunicationComponent implements OnInit {
   private readonly api = inject(CommunicationApiService);

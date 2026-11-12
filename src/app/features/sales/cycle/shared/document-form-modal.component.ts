@@ -108,7 +108,6 @@ export type SalesDocumentKind = 'quote' | 'order';
       </ng-container>
     </nz-modal>
   `,
-  styles: `.notes { margin-top: 16px; }`,
 })
 export class DocumentFormModalComponent {
   protected readonly lookups = inject(SalesLookupsService);

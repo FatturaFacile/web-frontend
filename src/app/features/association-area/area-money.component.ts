@@ -84,16 +84,6 @@ import { recordText, saveBlob } from './save-blob';
       </nz-table>
     }
   `,
-  styles: `
-    .area-gap {
-      display: block;
-      margin-top: 12px;
-    }
-
-    .area-section {
-      margin: 24px 0 12px;
-    }
-  `,
 })
 export class AreaMoneyComponent {
   private readonly api = inject(AssociationAreaApiService);

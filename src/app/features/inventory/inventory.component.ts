@@ -76,7 +76,6 @@ function toIsoDay(date: Date): string {
     TranslatePipe,
   ],
   templateUrl: './inventory.component.html',
-  styleUrl: './inventory.component.scss',
 })
 export class InventoryComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);

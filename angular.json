@@ -39,7 +39,11 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/theme.less", "src/styles.scss"]
+            "styles": [
+              "src/theme.less",
+              "src/styles.css",
+              { "input": "src/theme-dark.less", "bundleName": "theme-dark", "inject": false }
+            ]
           },
           "configurations": {
             "production": {

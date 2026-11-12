@@ -51,7 +51,7 @@ import { reportHttpError } from '../shared/hr-http.util';
           <tr>
             <td>{{ list.employee_id.slice(0, 8) }}</td>
             <td>
-              <ul class="m-0 p-0" style="list-style: none">
+              <ul class="m-0 p-0">
                 @for (task of list.tasks ?? []; track task.id) {
                   <li>
                     {{ task.title }}

@@ -40,7 +40,6 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
     TranslatePipe,
   ],
   templateUrl: './ai-assistant.component.html',
-  styleUrl: './ai-assistant.component.scss',
 })
 export class AiAssistantComponent implements OnInit {
   private readonly assistantApi = inject(AssistantApiService);

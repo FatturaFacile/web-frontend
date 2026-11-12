@@ -9,7 +9,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="date">{{ 'expenses.form.date' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
-          <nz-date-picker id="date" formControlName="date" style="width: 100%" />
+          <nz-date-picker id="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
 
@@ -21,7 +21,7 @@
             formControlName="amount"
             [nzMin]="0.01"
             [nzStep]="1"
-            style="width: 100%"
+           
           />
         </nz-form-control>
       </nz-form-item>

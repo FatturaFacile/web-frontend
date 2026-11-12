@@ -99,15 +99,6 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       </ng-template>
     </nz-modal>
   `,
-  styles: `
-    .emails-title {
-      margin-top: 16px;
-    }
-    .hint {
-      margin-top: 12px;
-      color: var(--ant-color-text-secondary, #666);
-    }
-  `,
 })
 export class InvoiceDetailModalComponent {
   private readonly authStore = inject(AuthStore);

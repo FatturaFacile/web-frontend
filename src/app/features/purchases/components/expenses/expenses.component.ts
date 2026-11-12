@@ -54,7 +54,6 @@ const STATUS_COLOR: Record<ExpenseStatus, string> = {
   ],
   providers: [TableStateService],
   templateUrl: './expenses.component.html',
-  styleUrl: './expenses.component.scss',
 })
 export class ExpensesComponent implements OnInit {
   protected readonly api = inject(ExpensesApiService);

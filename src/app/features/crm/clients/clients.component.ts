@@ -48,7 +48,6 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
     ClientFormDrawerComponent,
   ],
   templateUrl: './clients.component.html',
-  styleUrl: './clients.component.scss',
 })
 export class ClientsComponent {
   protected readonly facade = inject(ClientFacade);

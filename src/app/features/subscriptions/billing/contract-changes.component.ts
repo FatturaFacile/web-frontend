@@ -27,7 +27,6 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
   selector: 'app-contract-changes',
   imports: [FormsModule, NzAlertModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, NzTableModule, TranslatePipe],
   templateUrl: './contract-changes.component.html',
-  styleUrl: './subscription-billing.scss',
 })
 export class ContractChangesComponent implements OnInit {
   private readonly api = inject(SubscriptionApiService);

@@ -80,7 +80,6 @@ function toIsoDate(d: Date): string {
     TranslatePipe,
   ],
   templateUrl: './invoice-form-drawer.component.html',
-  styleUrl: './invoice-form-drawer.component.scss',
 })
 export class InvoiceFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);

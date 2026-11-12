@@ -19,7 +19,6 @@ import { TwoFactorSetupModalComponent } from './features/auth/components/two-fac
     TwoFactorSetupModalComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   readonly appStore = inject(AppStore);

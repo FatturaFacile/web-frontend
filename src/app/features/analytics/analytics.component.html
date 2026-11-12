@@ -25,7 +25,7 @@
             <nz-select nzId="analytics-period"
               [ngModel]="selectedPeriodPreset()"
               (ngModelChange)="onPeriodChange($event)"
-              style="width: 180px"
+             
             >
               <nz-option nzValue="month_to_date" [nzLabel]="'ANALYTICS.PERIOD_MTD' | translate"></nz-option>
               <nz-option nzValue="last_month" [nzLabel]="'ANALYTICS.PERIOD_LAST_MONTH' | translate"></nz-option>
@@ -38,7 +38,7 @@
             <nz-select nzId="analytics-compare"
               [ngModel]="selectedCompare()"
               (ngModelChange)="onCompareChange($event)"
-              style="width: 180px"
+             
             >
               <nz-option nzValue="none" [nzLabel]="'ANALYTICS.COMPARE_NONE' | translate"></nz-option>
               <nz-option nzValue="previous_period" [nzLabel]="'ANALYTICS.COMPARE_PREV_PERIOD' | translate"></nz-option>
@@ -140,7 +140,7 @@
             <nz-select nzId="analytics-direction"
               [ngModel]="filterDirection()"
               (ngModelChange)="filterDirection.set($event)"
-              style="width: 140px"
+             
             >
               <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
               <nz-option nzValue="inflow" [nzLabel]="'ANALYTICS.INFLOW' | translate"></nz-option>
@@ -290,7 +290,7 @@
                 <nz-select nzId="analytics-dimension"
                   [ngModel]="selectedDimension()"
                   (ngModelChange)="onDimensionChange($event)"
-                  style="width: 200px"
+                 
                 >
                   <nz-option nzValue="category" [nzLabel]="'ANALYTICS.DIM_CATEGORY' | translate"></nz-option>
                   <nz-option nzValue="customer" [nzLabel]="'ANALYTICS.DIM_CUSTOMER' | translate"></nz-option>
@@ -440,7 +440,7 @@
             <nz-select nzId="analytics-bi-dataset"
               [ngModel]="biFeedDataset()"
               (ngModelChange)="onBiDatasetChange($event)"
-              style="width: 200px"
+             
             >
               <nz-option nzValue="invoices" [nzLabel]="'ANALYTICS.LBL_INVOICES_VENDITE' | translate"></nz-option>
               <nz-option nzValue="expenses" [nzLabel]="'ANALYTICS.LBL_EXPENSES_SPESE' | translate"></nz-option>

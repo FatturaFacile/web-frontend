@@ -47,14 +47,6 @@ type ResendState = 'idle' | 'sending' | 'sent' | 'throttled' | 'failed';
       }
     }
   `,
-  styles: `
-    .resend {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-  `,
 })
 export class ResendVerificationComponent {
   private readonly authApi = inject(AuthApiService);

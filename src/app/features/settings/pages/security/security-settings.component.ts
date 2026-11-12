@@ -43,7 +43,6 @@ import { TwoFactorSetupModalComponent } from '../../../auth/components/two-facto
     TwoFactorSetupModalComponent,
   ],
   templateUrl: './security-settings.component.html',
-  styleUrl: './security-settings.component.scss',
 })
 export class SecuritySettingsComponent implements OnInit {
   private readonly authApi = inject(AuthApiService);

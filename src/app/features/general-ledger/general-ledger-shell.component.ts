@@ -26,16 +26,6 @@ interface GlNavItem {
       <router-outlet />
     </div>
   `,
-  styles: [
-    `
-      .gl-menu {
-        margin-bottom: 16px;
-      }
-      .gl-active {
-        font-weight: 600;
-      }
-    `,
-  ],
 })
 export class GeneralLedgerShellComponent {
   protected readonly items: GlNavItem[] = [

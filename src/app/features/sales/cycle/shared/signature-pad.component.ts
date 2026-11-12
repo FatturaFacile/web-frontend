@@ -21,9 +21,6 @@ import { TranslatePipe } from '@shared';
     ></canvas>
     <button nz-button nzSize="small" type="button" (click)="clear()">{{ 'SC.COMMON.CLEAR' | translate }}</button>
   `,
-  styles: `
-    .pad { display: block; width: 100%; max-width: 480px; border: 1px dashed #999; border-radius: 4px; touch-action: none; background: #fff; margin-bottom: 8px; }
-  `,
 })
 export class SignaturePadComponent {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');

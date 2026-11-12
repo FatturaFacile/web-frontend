@@ -22,7 +22,7 @@ const ABSENCE_TYPES = ['Sickness', 'Accident', 'Maternity', 'Paternity', 'Milita
     <nz-card>
       <div class="mb-3">
         <label for="pd-employee">{{ 'hrmPayData.filterEmployee' | translate }}</label>
-        <nz-select id="pd-employee" style="width: 320px; display: block" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
+        <nz-select id="pd-employee" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
           @for (option of employeeOptions(); track option.value) {
             <nz-option [nzValue]="option.value" [nzLabel]="option.label ?? option.value" />
           }

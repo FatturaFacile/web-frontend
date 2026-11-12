@@ -55,7 +55,6 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
     TranslatePipe,
   ],
   templateUrl: './projects.component.html',
-  styleUrl: './projects.component.scss',
 })
 export class ProjectsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

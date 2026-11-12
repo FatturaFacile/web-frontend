@@ -1,15 +1,15 @@
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
+  <div>
     <input
       nz-input
       type="search"
-      style="max-width: 260px"
+     
       [attr.aria-label]="'GL.SEARCH' | translate"
       [placeholder]="'GL.SEARCH' | translate"
       [(ngModel)]="search"
     />
     <nz-select
-      style="min-width: 180px"
+     
       nzAllowClear
       [attr.aria-label]="'GL.ACCOUNT_TYPE' | translate"
       [nzPlaceHolder]="'GL.ACCOUNT_TYPE' | translate"
@@ -20,7 +20,7 @@
         <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
       }
     </nz-select>
-    <span style="flex: 1"></span>
+    <span></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'GL.ACCOUNT_NEW' | translate }}</button>
     }
@@ -78,7 +78,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
@@ -128,7 +128,7 @@
           </nz-select>
         </nz-form-control>
       </nz-form-item>
-      <div style="display: flex; gap: 24px; flex-wrap: wrap">
+      <div>
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox formControlName="allows_manual_posting">{{ 'GL.ALLOWS_MANUAL_POSTING' | translate }}</label>
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->

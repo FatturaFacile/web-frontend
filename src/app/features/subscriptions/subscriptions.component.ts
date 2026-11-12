@@ -56,7 +56,6 @@ import { TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './subscriptions.component.html',
-  styleUrl: './subscriptions.component.scss',
 })
 export class SubscriptionsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

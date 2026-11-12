@@ -71,7 +71,6 @@ import {
   ],
   providers: [TableStateService],
   templateUrl: './treasury.component.html',
-  styleUrl: './treasury.component.scss',
 })
 export class TreasuryComponent implements OnInit {
   private readonly translate = inject(TranslateService);

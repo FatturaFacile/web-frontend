@@ -1,7 +1,7 @@
 <nz-card>
-  <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+  <div>
     <nz-select
-      style="min-width: 200px"
+     
       nzAllowClear
       [attr.aria-label]="'TR.STATUS' | translate"
       [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
@@ -12,14 +12,14 @@
         <nz-option [nzValue]="status" [nzLabel]="'TR.PROPOSAL_STATUS_' + status.toUpperCase() | translate" />
       }
     </nz-select>
-    <span style="flex: 1"></span>
+    <span></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'TR.PROPOSAL_NEW' | translate }}</button>
     }
   </div>
 
   @if (excluded().length > 0) {
-    <nz-alert nzType="warning" nzShowIcon nzCloseable style="margin-bottom: 16px" [nzMessage]="'TR.PROPOSAL_EXCLUDED' | translate" [nzDescription]="excludedList" (nzOnClose)="excluded.set([])" />
+    <nz-alert nzType="warning" nzShowIcon nzCloseable [nzMessage]="'TR.PROPOSAL_EXCLUDED' | translate" [nzDescription]="excludedList" (nzOnClose)="excluded.set([])" />
     <ng-template #excludedList>
       @for (item of excluded(); track item.invoice_id) {
         <div>{{ item.invoice_number }}: {{ item.reason }}</div>
@@ -81,7 +81,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>

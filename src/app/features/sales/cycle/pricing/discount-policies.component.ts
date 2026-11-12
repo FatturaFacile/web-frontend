@@ -52,7 +52,6 @@ import { todayIso } from '../shared/sales-status';
     TranslatePipe,
   ],
   templateUrl: './discount-policies.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class DiscountPoliciesComponent implements OnInit {
   private readonly api = inject(SalesCycleApiService);

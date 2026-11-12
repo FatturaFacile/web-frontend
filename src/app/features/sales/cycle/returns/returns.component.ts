@@ -64,7 +64,6 @@ interface ReceiveDraft {
   ],
   providers: [CycleReturnsFacade],
   templateUrl: './returns.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CycleReturnsComponent {
   protected readonly facade = inject(CycleReturnsFacade);

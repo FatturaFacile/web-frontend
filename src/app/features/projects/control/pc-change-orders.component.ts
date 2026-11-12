@@ -16,7 +16,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal()">{{ 'PRJ.CHANGE_ORDER_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openModal()">{{ 'PRJ.CHANGE_ORDER_NEW' | translate }}</button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -58,7 +58,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.CHANGE_ORDER_NEW' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -75,11 +75,11 @@ import { MoneyPipe, TranslatePipe } from '@shared';
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="co-cost">{{ 'PRJ.COST_IMPACT' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="form.controls.cost_impact_amount.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><nz-input-number id="co-cost" formControlName="cost_impact_amount" [nzPrecision]="2" style="width: 200px" /></nz-form-control>
+            <nz-form-control [nzErrorTip]="form.controls.cost_impact_amount.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><nz-input-number id="co-cost" formControlName="cost_impact_amount" [nzPrecision]="2" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="co-revenue">{{ 'PRJ.REVENUE_IMPACT' | translate }}</nz-form-label>
-            <nz-form-control><nz-input-number id="co-revenue" formControlName="revenue_impact_amount" [nzPrecision]="2" style="width: 200px" /></nz-form-control>
+            <nz-form-control><nz-input-number id="co-revenue" formControlName="revenue_impact_amount" [nzPrecision]="2" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="co-days">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</nz-form-label>

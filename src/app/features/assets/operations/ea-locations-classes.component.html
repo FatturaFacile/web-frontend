@@ -2,7 +2,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'EA.LOCATIONS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
+        <button nz-button nzType="primary" type="button" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
       }
       <nz-table #locationTable nzSize="middle" [nzData]="locations()" [nzPageSize]="20">
         <thead>
@@ -38,7 +38,7 @@
 
     <nz-tab [nzTitle]="'EA.CLASSES' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
+        <button nz-button nzType="primary" type="button" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
       }
       <nz-table #classTable nzSize="middle" [nzData]="classes()" [nzPageSize]="20">
         <thead>
@@ -75,7 +75,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="locationForm">
       <nz-form-item>
@@ -135,7 +135,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="classForm">
       <nz-form-item>

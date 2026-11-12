@@ -197,12 +197,6 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
       </ng-container>
     </nz-modal>
   `,
-  styles: `
-    .partial { display: block; margin-top: 16px; }
-    .hint { color: var(--ant-color-text-secondary, #666); margin: 8px 0; }
-    .partial-line { display: grid; grid-template-columns: 1fr auto 140px; gap: 12px; align-items: center; margin-bottom: 6px; }
-    .qty { font-variant-numeric: tabular-nums; }
-  `,
 })
 export class DeliveryNoteFormModalComponent {
   protected readonly lookups = inject(SalesLookupsService);

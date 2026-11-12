@@ -67,7 +67,6 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
   ],
   providers: [CycleQuotesFacade],
   templateUrl: './quotes.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CycleQuotesComponent {
   protected readonly facade = inject(CycleQuotesFacade);

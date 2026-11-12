@@ -59,7 +59,6 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
     TranslatePipe,
   ],
   templateUrl: './segments.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class SegmentsComponent {
   private readonly api = inject(CrmApiService);

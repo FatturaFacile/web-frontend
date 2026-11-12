@@ -55,7 +55,6 @@ function jsonValidator(control: AbstractControl): ValidationErrors | null {
     TranslatePipe,
   ],
   templateUrl: './resource-form.component.html',
-  styleUrl: './resource-form.component.scss',
 })
 export class ResourceFormComponent implements OnInit {
   private readonly lookups = inject(ResourceLookupService);

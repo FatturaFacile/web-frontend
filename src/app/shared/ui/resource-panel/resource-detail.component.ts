@@ -16,7 +16,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   selector: 'app-resource-detail',
   imports: [NzTagModule, TranslatePipe],
   templateUrl: './resource-detail.component.html',
-  styleUrl: './resource-detail.component.scss',
 })
 export class ResourceDetailComponent {
   protected readonly labels = inject(ResourceLabelsService);

@@ -114,7 +114,7 @@ interface AllocationRow {
               }}</label>
               <nz-select
                 [id]="'alloc-bank-' + i"
-                style="width: 100%"
+               
                 nzShowSearch
                 [ngModel]="row.bankAccountId"
                 (ngModelChange)="update(i, { bankAccountId: $event })"
@@ -128,7 +128,7 @@ interface AllocationRow {
               <label [attr.for]="'alloc-dep-' + i">{{ 'hrmOrg.department' | translate }}</label>
               <nz-select
                 [id]="'alloc-dep-' + i"
-                style="width: 100%"
+               
                 nzAllowClear
                 [ngModel]="row.departmentId"
                 (ngModelChange)="update(i, { departmentId: $event })"

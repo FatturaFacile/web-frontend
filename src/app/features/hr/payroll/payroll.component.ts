@@ -71,7 +71,7 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <app-payroll-settings [country]="'italian'" [canWrite]="canWrite()" />
         </nz-tab>
         <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
-          <div style="margin-bottom: 12px;">
+          <div>
             <button nz-button type="button" (click)="loadPermitAlerts()">Aggiorna Scadenze Permessi</button>
           </div>
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">

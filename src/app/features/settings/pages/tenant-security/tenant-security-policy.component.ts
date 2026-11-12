@@ -37,7 +37,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './tenant-security-policy.component.html',
-  styleUrl: './tenant-security-policy.component.scss',
 })
 export class TenantSecurityPolicyComponent implements OnInit {
   private readonly settingsApi = inject(SettingsApiService);

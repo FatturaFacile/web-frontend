@@ -60,7 +60,7 @@ let nextFormId = 0;
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <div
         class="grid gap-x-3"
-        style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))"
+       
       >
         @for (field of config().fields; track field.key) {
           @if (field.type === 'boolean') {

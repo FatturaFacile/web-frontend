@@ -19,7 +19,6 @@ import { TranslatePipe } from '@shared';
       </ng-template>
     }
   `,
-  styles: [':host { display: block; margin-bottom: 16px; }'],
 })
 export class GlErrorAlertComponent {
   readonly error = input<unknown>(null);

@@ -64,7 +64,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './document-trust.component.html',
-  styleUrls: ['./document-trust.component.scss'],
 })
 export class DocumentTrustComponent implements OnInit {
   private readonly api = inject(DocumentTrustApiService);

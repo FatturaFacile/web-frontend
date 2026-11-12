@@ -1,9 +1,9 @@
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
+  <div>
     <label for="bd-year">{{ 'GL.FISCAL_YEAR' | translate }}</label>
     <nz-select
       id="bd-year"
-      style="min-width: 200px"
+     
       nzAllowClear
       [ngModel]="yearId()"
       (ngModelChange)="selectYear($event)"
@@ -13,7 +13,7 @@
         <nz-option [nzValue]="year.id" [nzLabel]="year.year_code" />
       }
     </nz-select>
-    <span style="flex: 1"></span>
+    <span></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" [disabled]="!yearId()" (click)="openCreate()">{{ 'GL.BUDGET_NEW' | translate }}</button>
     }
@@ -46,8 +46,8 @@
 </nz-card>
 
 @if (selected(); as budget) {
-  <nz-card [nzTitle]="budget.name + ' v' + budget.version" style="margin-top: 16px">
-    <div style="display: flex; gap: 12px; margin-bottom: 16px">
+  <nz-card [nzTitle]="budget.name + ' v' + budget.version">
+    <div>
       @if (canWrite) {
         @if (isDraft()) {
           <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveLines()">{{ 'GL.SAVE' | translate }}</button>
@@ -60,19 +60,19 @@
     <nz-tabs>
       <nz-tab [nzTitle]="'GL.BUDGET_LINES' | translate">
         @for (line of lines.controls; track $index) {
-          <div [formGroup]="line" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
-            <nz-select formControlName="account_id" nzShowSearch style="flex: 3" [attr.aria-label]="'GL.COL_ACCOUNT' | translate" [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate" [nzDisabled]="!isDraft()">
+          <div [formGroup]="line">
+            <nz-select formControlName="account_id" nzShowSearch [attr.aria-label]="'GL.COL_ACCOUNT' | translate" [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate" [nzDisabled]="!isDraft()">
               @for (account of lookups.accounts(); track account.id) {
                 <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
               }
             </nz-select>
-            <nz-select formControlName="cost_center_id" nzAllowClear style="flex: 2" [attr.aria-label]="'GL.COST_CENTER' | translate" [nzPlaceHolder]="'GL.COST_CENTER' | translate" [nzDisabled]="!isDraft()">
+            <nz-select formControlName="cost_center_id" nzAllowClear [attr.aria-label]="'GL.COST_CENTER' | translate" [nzPlaceHolder]="'GL.COST_CENTER' | translate" [nzDisabled]="!isDraft()">
               @for (center of lookups.costCenters(); track center.id) {
                 <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
               }
             </nz-select>
-            <nz-input-number formControlName="period_number" [nzMin]="1" [nzMax]="14" [attr.aria-label]="'GL.PERIOD' | translate" style="width: 90px" />
-            <nz-input-number formControlName="amount" [nzPrecision]="2" [attr.aria-label]="'GL.COL_AMOUNT' | translate" style="flex: 1" />
+            <nz-input-number formControlName="period_number" [nzMin]="1" [nzMax]="14" [attr.aria-label]="'GL.PERIOD' | translate" />
+            <nz-input-number formControlName="amount" [nzPrecision]="2" [attr.aria-label]="'GL.COL_AMOUNT' | translate" />
             @if (isDraft()) {
               <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)">&times;</button>
             }

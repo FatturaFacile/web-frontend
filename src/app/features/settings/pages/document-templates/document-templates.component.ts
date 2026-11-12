@@ -42,32 +42,6 @@ interface TemplateRow {
     TranslatePipe,
   ],
   templateUrl: './document-templates.component.html',
-  styles: `
-    .dt-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-    .dt-color {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .dt-logo {
-      max-height: 64px;
-      max-width: 200px;
-      display: block;
-      margin-top: 8px;
-    }
-    .dt-quota {
-      margin-bottom: 16px;
-    }
-    .dt-quota-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 48px;
-    }
-  `,
 })
 export class DocumentTemplatesComponent implements OnInit {
   private readonly api = inject(SettingsApiService);

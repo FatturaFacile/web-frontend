@@ -39,7 +39,6 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       </tbody>
     </nz-table>
   `,
-  styles: `.num { text-align: right; font-variant-numeric: tabular-nums; }`,
 })
 export class DocumentLinesViewComponent {
   readonly lines = input<CoreDocumentLine[]>([]);

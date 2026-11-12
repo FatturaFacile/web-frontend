@@ -55,7 +55,6 @@ const nullable = (v: string): string | null => v.trim() || null;
     TranslatePipe,
   ],
   templateUrl: './client-form-drawer.component.html',
-  styleUrl: './client-form-drawer.component.scss',
 })
 export class ClientFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);

@@ -67,7 +67,6 @@ const emptyDraft = (): ActivityDraft => ({
     TranslatePipe,
   ],
   templateUrl: './activities.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class ActivitiesComponent {
   private readonly api = inject(CrmApiService);

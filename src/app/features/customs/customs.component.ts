@@ -61,7 +61,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './customs.component.html',
-  styleUrl: './customs.component.scss',
 })
 export class CustomsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

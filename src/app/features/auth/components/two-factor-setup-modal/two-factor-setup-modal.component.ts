@@ -27,7 +27,6 @@ import { TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './two-factor-setup-modal.component.html',
-  styleUrl: './two-factor-setup-modal.component.scss',
 })
 export class TwoFactorSetupModalComponent {
   private readonly fb = inject(NonNullableFormBuilder);

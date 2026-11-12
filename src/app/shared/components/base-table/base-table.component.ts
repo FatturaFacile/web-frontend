@@ -49,7 +49,6 @@ import {
     TranslatePipe,
   ],
   templateUrl: './base-table.component.html',
-  styleUrl: './base-table.component.scss',
 })
 export class BaseTableComponent<TItem extends object = object> {
   // Inputs

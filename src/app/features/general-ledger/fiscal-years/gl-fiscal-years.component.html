@@ -1,7 +1,7 @@
 <app-gl-error-alert [error]="error()" />
 
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center">
+  <div>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.YEAR_NEW' | translate }}</button>
     }
@@ -70,12 +70,12 @@
   </nz-table>
 </nz-card>
 
-<nz-card [nzTitle]="'GL.AUDIT_TRAIL' | translate" style="margin-top: 16px">
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+<nz-card [nzTitle]="'GL.AUDIT_TRAIL' | translate">
+  <div>
     <label for="at-from">{{ 'GL.FROM' | translate }}</label>
-    <input id="at-from" nz-input type="date" style="width: 160px" [(ngModel)]="auditFrom" />
+    <input id="at-from" nz-input type="date" [(ngModel)]="auditFrom" />
     <label for="at-to">{{ 'GL.TO' | translate }}</label>
-    <input id="at-to" nz-input type="date" style="width: 160px" [(ngModel)]="auditTo" />
+    <input id="at-to" nz-input type="date" [(ngModel)]="auditTo" />
     <button nz-button type="button" (click)="exportAuditTrail()">{{ 'GL.EXPORT_AUDIT_TRAIL' | translate }}</button>
   </div>
 </nz-card>
@@ -145,7 +145,7 @@
   (nzOnCancel)="anhangModalOpen.set(false)"
 >
   <ng-container *nzModalContent>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div>
       <div>
         <label for="anhang-fte-band">{{ 'GL.LBL_FASCIA_POSTI_A_TEMPO_PIENO_FTE' | translate }}</label>
         <select id="anhang-fte-band" class="ant-input" [(ngModel)]="anhangFteBand">
