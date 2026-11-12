@@ -5,17 +5,17 @@ export const CYCLE_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'overview' },
   {
     path: 'overview',
-    data: { breadcrumb: 'BREADCRUMB.PANORAMICA_VENDITE', title: 'Panoramica vendite' },
+    data: { breadcrumb: 'BREADCRUMB.PANORAMICA_VENDITE', title: 'PAGE_TITLE.PANORAMICA_VENDITE' },
     loadComponent: () => import('./overview/sales-overview.component').then((m) => m.SalesOverviewComponent),
   },
   {
     path: 'quotes',
-    data: { breadcrumb: 'BREADCRUMB.PREVENTIVI', title: 'Preventivi' },
+    data: { breadcrumb: 'BREADCRUMB.PREVENTIVI', title: 'PAGE_TITLE.PREVENTIVI' },
     loadComponent: () => import('./quotes/quotes.component').then((m) => m.CycleQuotesComponent),
   },
   {
     path: 'orders',
-    data: { breadcrumb: 'BREADCRUMB.ORDINI_CLIENTE', title: 'Ordini cliente' },
+    data: { breadcrumb: 'BREADCRUMB.ORDINI_CLIENTE', title: 'PAGE_TITLE.ORDINI_CLIENTE' },
     loadComponent: () => import('./orders/orders.component').then((m) => m.CycleOrdersComponent),
   },
   {
@@ -26,17 +26,17 @@ export const CYCLE_ROUTES: Routes = [
   },
   {
     path: 'returns',
-    data: { breadcrumb: 'BREADCRUMB.RESI', title: 'Resi clienti' },
+    data: { breadcrumb: 'BREADCRUMB.RESI', title: 'PAGE_TITLE.RESI_CLIENTI' },
     loadComponent: () => import('./returns/returns.component').then((m) => m.CycleReturnsComponent),
   },
   {
     path: 'pricing',
-    data: { breadcrumb: 'BREADCRUMB.PREZZI_E_SCONTI', title: 'Prezzi e sconti' },
+    data: { breadcrumb: 'BREADCRUMB.PREZZI_E_SCONTI', title: 'PAGE_TITLE.PREZZI_E_SCONTI' },
     loadComponent: () => import('./pricing/discount-policies.component').then((m) => m.DiscountPoliciesComponent),
   },
   {
     path: 'credit',
-    data: { breadcrumb: 'BREADCRUMB.FIDO_CLIENTI', title: 'Fido clienti' },
+    data: { breadcrumb: 'BREADCRUMB.FIDO_CLIENTI', title: 'PAGE_TITLE.FIDO_CLIENTI' },
     loadComponent: () => import('./credit/customer-credit.component').then((m) => m.CustomerCreditComponent),
   },
 ];

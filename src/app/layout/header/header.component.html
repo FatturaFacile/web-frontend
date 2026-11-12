@@ -137,7 +137,7 @@
       </a>
       <nz-dropdown-menu #userMenu="nzDropdownMenu">
         <ul nz-menu class="user-menu-dropdown">
-          <li nz-menu-item nzDisabled>
+          <li nz-menu-item disabled class="cursor-default">
             <div class="user-info-panel">
               <strong>{{ authStore.user()?.name }}</strong>
               <span class="user-role">{{ authStore.activeRole() }}</span>

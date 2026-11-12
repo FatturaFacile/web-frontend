@@ -5,27 +5,27 @@ export const BILLING_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'plans' },
   {
     path: 'plans',
-    data: { breadcrumb: 'BREADCRUMB.PIANI_DI_FATTURAZIONE', title: 'Piani di fatturazione' },
+    data: { breadcrumb: 'BREADCRUMB.PIANI_DI_FATTURAZIONE', title: 'PAGE_TITLE.PIANI_DI_FATTURAZIONE' },
     loadComponent: () => import('./plans/billing-plans.component').then((m) => m.BillingPlansComponent),
   },
   {
     path: 'deferred',
-    data: { breadcrumb: 'BREADCRUMB.FATTURAZIONE_DIFFERITA', title: 'Fatturazione differita' },
+    data: { breadcrumb: 'BREADCRUMB.FATTURAZIONE_DIFFERITA', title: 'PAGE_TITLE.FATTURAZIONE_DIFFERITA' },
     loadComponent: () => import('./deferred/deferred-billing.component').then((m) => m.DeferredBillingComponent),
   },
   {
     path: 'debit-notes',
-    data: { breadcrumb: 'BREADCRUMB.NOTE_DI_DEBITO', title: 'Note di debito' },
+    data: { breadcrumb: 'BREADCRUMB.NOTE_DI_DEBITO', title: 'PAGE_TITLE.NOTE_DI_DEBITO' },
     loadComponent: () => import('./debit-note/debit-note.component').then((m) => m.DebitNoteComponent),
   },
   {
     path: 'reports',
-    data: { breadcrumb: 'BREADCRUMB.REGISTRO_VENDITE_E_SCADENZARIO', title: 'Registro vendite e scadenzario' },
+    data: { breadcrumb: 'BREADCRUMB.REGISTRO_VENDITE_E_SCADENZARIO', title: 'PAGE_TITLE.REGISTRO_VENDITE_E_SCADENZARIO' },
     loadComponent: () => import('./reports/billing-reports.component').then((m) => m.BillingReportsComponent),
   },
   {
     path: 'approvals',
-    data: { breadcrumb: 'BREADCRUMB.APPROVAZIONE_FATTURE', title: 'Approvazione fatture' },
+    data: { breadcrumb: 'BREADCRUMB.APPROVAZIONE_FATTURE', title: 'PAGE_TITLE.APPROVAZIONE_FATTURE' },
     loadComponent: () => import('./approvals/invoice-approvals.component').then((m) => m.InvoiceApprovalsComponent),
   },
 ];

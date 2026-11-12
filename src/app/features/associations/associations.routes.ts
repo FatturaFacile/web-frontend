@@ -22,7 +22,7 @@ export const ASSOCIATIONS_ROUTES: Routes = [
   associationRoute('memberships', 'Tessere & Soci', ASSOC_MEMBERSHIPS_PAGE),
   {
     path: 'members/:id',
-    data: { breadcrumb: 'BREADCRUMB.SCHEDA_SOCIO', title: 'Scheda socio' },
+    data: { breadcrumb: 'BREADCRUMB.SCHEDA_SOCIO', title: 'PAGE_TITLE.SCHEDA_SOCIO' },
     loadComponent: () =>
       import('./member-file/member-file.component').then((m) => m.AssociationMemberFileComponent),
   },
