@@ -44,7 +44,6 @@ const APPROVER_ROLES = ['owner', 'admin', 'accountant', 'sales_manager', 'sales'
     TranslatePipe,
   ],
   templateUrl: './invoice-approvals.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class InvoiceApprovalsComponent implements OnInit {
   private readonly api = inject(BillingApiService);

@@ -76,7 +76,9 @@ export class FieldServiceComponent implements OnInit {
   readonly selectedIds = signal<ReadonlySet<string>>(new Set());
   readonly selectedIdList = computed(() => [...this.selectedIds()]);
   readonly allSelected = computed(
-    () => this.tickets().length > 0 && this.tickets().every((ticket) => this.selectedIds().has(ticket.id)),
+    () =>
+      this.tickets().length > 0 &&
+      this.tickets().every((ticket) => this.selectedIds().has(ticket.id)),
   );
 
   ngOnInit(): void {
@@ -126,7 +128,9 @@ export class FieldServiceComponent implements OnInit {
       },
       error: (err) => {
         this.message.error(
-          err?.error?.detail || err?.message || this.translate.instant('fieldService.errors.loadFailed'),
+          err?.error?.detail ||
+            err?.message ||
+            this.translate.instant('fieldService.errors.loadFailed'),
         );
         this.tickets.set([]);
         this.total.set(0);

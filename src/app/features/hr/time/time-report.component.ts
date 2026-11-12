@@ -17,7 +17,7 @@ import { reportHttpError } from '../shared/hr-http.util';
     <div class="flex items-end gap-2 mb-3 flex-wrap">
       <div>
         <label for="rep-emp">{{ 'hrmCommon.employee' | translate }}</label>
-        <nz-select id="rep-emp" style="width: 260px" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
+        <nz-select id="rep-emp" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
           @for (e of employees(); track e.id) {
             <nz-option [nzValue]="e.id" [nzLabel]="e.employee_number + ' - ' + e.full_name" />
           }

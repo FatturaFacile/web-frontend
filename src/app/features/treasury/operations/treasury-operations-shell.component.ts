@@ -26,16 +26,6 @@ interface TrNavItem {
       <router-outlet />
     </div>
   `,
-  styles: [
-    `
-      .tr-menu {
-        margin-bottom: 16px;
-      }
-      .tr-active {
-        font-weight: 600;
-      }
-    `,
-  ],
 })
 export class TreasuryOperationsShellComponent {
   protected readonly items: TrNavItem[] = [

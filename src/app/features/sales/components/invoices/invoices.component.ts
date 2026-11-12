@@ -93,7 +93,6 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     InvoiceDetailModalComponent,
   ],
   templateUrl: './invoices.component.html',
-  styleUrl: './invoices.component.scss',
 })
 export class InvoicesComponent {
   private readonly translate = inject(TranslateService);

@@ -71,7 +71,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
         <label for="cn-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="cn-employee"
-          style="width: 240px; display: block"
+         
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"

@@ -65,7 +65,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './tessera-sanitaria.component.html',
-  styleUrl: './tessera-sanitaria.component.scss',
 })
 export class TesseraSanitariaComponent implements OnInit {
   private readonly api = inject(TesseraSanitariaApiService);

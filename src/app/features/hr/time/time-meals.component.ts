@@ -37,7 +37,7 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
         <label for="meal-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="meal-employee"
-          style="width: 260px; display: block"
+         
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"

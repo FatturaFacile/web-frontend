@@ -66,7 +66,6 @@ const emptyDraft = (): AccountDraft => ({
     TranslatePipe,
   ],
   templateUrl: './accounts.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class AccountsComponent {
   private readonly api = inject(CrmApiService);

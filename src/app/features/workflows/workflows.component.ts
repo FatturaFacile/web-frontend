@@ -65,7 +65,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './workflows.component.html',
-  styleUrls: ['./workflows.component.scss'],
 })
 export class WorkflowsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

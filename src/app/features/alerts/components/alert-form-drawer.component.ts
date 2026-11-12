@@ -25,7 +25,6 @@ import { TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './alert-form-drawer.component.html',
-  styleUrl: './alert-form-drawer.component.scss',
 })
 export class AlertFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);

@@ -56,7 +56,6 @@ import { TranslatePipe } from '@shared';
     AssetDetailDrawerComponent,
   ],
   templateUrl: './assets.component.html',
-  styleUrl: './assets.component.scss',
 })
 export class AssetsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

@@ -14,6 +14,7 @@ import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.intercep
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { I18nService, PageTitleStrategy } from '@core/i18n';
+import { ThemeService } from '@core/theme';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -40,6 +41,7 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(en_US),
     provideNzDateFnsAdapter(),
     provideAppInitializer(() => {
+      inject(ThemeService);
       const i18n = inject(I18nService);
       return i18n.loadInitialTranslations();
     }),

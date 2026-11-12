@@ -57,24 +57,6 @@ interface ClientOption {
     SignatureDialogComponent,
   ],
   templateUrl: './field-work-orders.component.html',
-  styles: `
-    .fwo-actions {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      justify-content: flex-end;
-    }
-    .fwo-line {
-      display: grid;
-      grid-template-columns: 130px 1fr 90px 110px 90px auto;
-      gap: 8px;
-      align-items: start;
-      margin-bottom: 8px;
-    }
-    .fwo-full {
-      width: 100%;
-    }
-  `,
 })
 export class FieldWorkOrdersComponent implements OnInit {
   private readonly api = inject(FieldServiceApiService);

@@ -5,7 +5,7 @@
     nzType="info"
     nzShowIcon
     nzCloseable
-    style="margin-bottom: 16px"
+   
     [nzMessage]="'GL.SCHEDULED_RESULT' | translate: { posted: result.recurring.posted.length, reversed: result.reversals.reversed.length, failed: result.recurring.failed.length + result.reversals.failed.length }"
     [nzDescription]="failures"
     (nzOnClose)="scheduledResult.set(null)"
@@ -21,12 +21,12 @@
 }
 
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
+  <div>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.RECURRING_NEW' | translate }}</button>
-      <span style="flex: 1"></span>
+      <span></span>
       <label for="gl-scheduled-as-of">{{ 'GL.AS_OF' | translate }}</label>
-      <input id="gl-scheduled-as-of" nz-input type="date" style="width: 160px" [(ngModel)]="scheduledAsOf" />
+      <input id="gl-scheduled-as-of" nz-input type="date" [(ngModel)]="scheduledAsOf" />
       <button nz-button type="button" (click)="runScheduled()">{{ 'GL.SCHEDULED_RUN' | translate }}</button>
     }
   </div>
@@ -85,7 +85,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
@@ -100,11 +100,11 @@
           <input id="rj-description" nz-input formControlName="description" maxlength="500" />
         </nz-form-control>
       </nz-form-item>
-      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+      <div>
         <nz-form-item>
           <nz-form-label nzRequired nzFor="rj-frequency">{{ 'GL.COL_FREQUENCY' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-select id="rj-frequency" formControlName="frequency" style="min-width: 160px">
+            <nz-select id="rj-frequency" formControlName="frequency">
               @for (frequency of frequencies; track frequency) {
                 <nz-option [nzValue]="frequency" [nzLabel]="'GL.FREQUENCY_' + frequency.toUpperCase() | translate" />
               }
@@ -127,14 +127,14 @@
       <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label nz-checkbox formControlName="reverse_next_day">{{ 'GL.REVERSE_NEXT_DAY' | translate }}</label>
 
-      <h4 style="margin-top: 16px">{{ 'GL.LINES' | translate }}</h4>
+      <h4>{{ 'GL.LINES' | translate }}</h4>
       <div formArrayName="lines">
         @for (line of lines.controls; track line) {
-          <div [formGroupName]="$index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center">
+          <div [formGroupName]="$index">
             <nz-select
               formControlName="account_id"
               nzShowSearch
-              style="flex: 3"
+             
               [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
               [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate"
             >
@@ -142,12 +142,12 @@
                 <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
               }
             </nz-select>
-            <nz-input-number formControlName="debit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_DEBIT' | translate" style="flex: 1" />
-            <nz-input-number formControlName="credit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_CREDIT' | translate" style="flex: 1" />
+            <nz-input-number formControlName="debit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_DEBIT' | translate" />
+            <nz-input-number formControlName="credit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_CREDIT' | translate" />
             <nz-select
               formControlName="cost_center_id"
               nzAllowClear
-              style="flex: 2"
+             
               [attr.aria-label]="'GL.COST_CENTER' | translate"
               [nzPlaceHolder]="'GL.COST_CENTER' | translate"
             >

@@ -49,7 +49,6 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     TranslatePipe,
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(NonNullableFormBuilder);

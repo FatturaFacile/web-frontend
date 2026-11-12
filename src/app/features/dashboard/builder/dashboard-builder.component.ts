@@ -43,29 +43,6 @@ type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
     TranslatePipe,
   ],
   templateUrl: './dashboard-builder.component.html',
-  styles: `
-    .db-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .db-name {
-      width: 240px;
-    }
-    .db-select {
-      min-width: 260px;
-    }
-    .db-spacer {
-      flex: 1;
-    }
-    .db-preview {
-      max-height: 320px;
-      overflow: auto;
-      font-size: 12px;
-    }
-  `,
 })
 export class DashboardBuilderComponent implements OnInit {
   private readonly api = inject(DashboardApiService);

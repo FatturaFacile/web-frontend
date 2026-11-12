@@ -115,11 +115,11 @@
       <div class="tab-toolbar">
         <div class="filter-group">
           <span class="label-inline">{{ 'PRACTICE.PERIOD' | translate }}:</span>
-          <input nz-input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); loadActivities()" style="width: 140px" />
+          <input nz-input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); loadActivities()" />
           <span>-</span>
-          <input nz-input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); loadActivities()" style="width: 140px" />
+          <input nz-input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); loadActivities()" />
           <nz-select
-            style="width: 160px"
+           
             [ngModel]="filterActivityStatus()"
             (ngModelChange)="filterActivityStatus.set($event); loadActivities()"
           >
@@ -263,7 +263,7 @@
     <nz-tab [nzTitle]="'PRACTICE.TAB_RETAINERS' | translate">
       <div class="tab-toolbar">
         <nz-select
-          style="width: 180px"
+         
           [ngModel]="filterRetainerStatus()"
           (ngModelChange)="filterRetainerStatus.set($event); loadRetainers()"
           [nzPlaceHolder]="'PRACTICE.FILTER_STATUS' | translate"
@@ -404,7 +404,7 @@
                   {{ ('PRACTICE.CLOSING_' + (cls.status | uppercase)) | translate }}
                 </nz-tag>
               </td>
-              <td style="min-width: 160px">
+              <td>
                 <nz-progress
                   [nzPercent]="getChecklistCompletion(cls)"
                   nzSize="small"
@@ -445,7 +445,7 @@
 >
   <ng-container *nzDrawerContent>
     @if (selectedFeeNote(); as fn) {
-      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" style="margin-bottom: 16px">
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
         <nz-descriptions-item [nzTitle]="'PRACTICE.FEE_NOTE_NUM' | translate">
           {{ fn.fee_note_number }}
         </nz-descriptions-item>
@@ -471,7 +471,7 @@
         nzSize="small"
         [nzShowPagination]="false"
         [nzBordered]="true"
-        style="margin-bottom: 16px"
+       
       >
         <thead>
           <tr>
@@ -551,14 +551,14 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PRACTICE.DURATION_MINUTES' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="duration_minutes" [nzMin]="5" [nzStep]="15" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="duration_minutes" [nzMin]="5" [nzStep]="15"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PRACTICE.HOURLY_RATE' | translate }} (€/h)</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="hourly_rate" [nzMin]="0" [nzStep]="10" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="hourly_rate" [nzMin]="0" [nzStep]="10"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

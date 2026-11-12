@@ -5,8 +5,8 @@
 
 <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
   <!-- Filter bar -->
-  <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center;">
-    <div style="min-width: 240px; flex: 1;">
+  <div>
+    <div>
       <nz-input-wrapper>
         <nz-icon nzInputPrefix nzType="search" />
         <input
@@ -20,11 +20,11 @@
       </nz-input-wrapper>
     </div>
 
-    <div style="width: 170px;">
+    <div>
       <nz-select
         [ngModel]="filterStatus()"
         (ngModelChange)="filterStatus.set($event); onSearch()"
-        style="width: 100%;"
+       
         nzPlaceHolder="Stato (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
@@ -37,11 +37,11 @@
       </nz-select>
     </div>
 
-    <div style="width: 150px;">
+    <div>
       <nz-select
         [ngModel]="filterPriority()"
         (ngModelChange)="filterPriority.set($event); onSearch()"
-        style="width: 100%;"
+       
         nzPlaceHolder="Priorità (Tutte)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
@@ -52,11 +52,11 @@
       </nz-select>
     </div>
 
-    <div style="width: 150px;">
+    <div>
       <nz-select
         [ngModel]="filterSlaState()"
         (ngModelChange)="filterSlaState.set($event); onSearch()"
-        style="width: 100%;"
+       
         nzPlaceHolder="SLA (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
@@ -121,9 +121,9 @@
             <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
           </td>
           <td>
-            <div style="font-weight: 500;">{{ tk.title || tk.subject }}</div>
+            <div>{{ tk.title || tk.subject }}</div>
             @if (tk.contact_email) {
-              <div style="font-size: 12px; color: #888;">{{ tk.contact_email }}</div>
+              <div>{{ tk.contact_email }}</div>
             }
           </td>
           <td>{{ tk.channel || '-' }}</td>
@@ -136,7 +136,7 @@
           <td>
             <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
             @if (tk.resolution_due_at) {
-              <div style="font-size: 11px; color: #888;">
+              <div>
                 Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}
               </div>
             }

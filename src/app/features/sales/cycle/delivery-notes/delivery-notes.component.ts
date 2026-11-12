@@ -41,7 +41,6 @@ const DDT_STATUSES = ['draft', 'issued', 'dispatched', 'delivered', 'invoiced'];
   ],
   providers: [CycleDeliveryNotesFacade],
   templateUrl: './delivery-notes.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CycleDeliveryNotesComponent {
   protected readonly facade = inject(CycleDeliveryNotesFacade);

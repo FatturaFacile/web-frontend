@@ -14,17 +14,17 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
   selector: 'app-gl-trial-balance',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div class="filters" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
+    <div class="filters">
       <label for="tb-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="tb-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input id="tb-from" nz-input type="date" [(ngModel)]="from" />
       <label for="tb-to">{{ 'GL.TO' | translate }}</label>
-      <input id="tb-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+      <input id="tb-to" nz-input type="date" [(ngModel)]="to" />
       <label for="tb-cfrom">{{ 'GL.COMPARE_FROM' | translate }}</label>
-      <input id="tb-cfrom" nz-input type="date" style="width: 160px" [(ngModel)]="compareFrom" />
+      <input id="tb-cfrom" nz-input type="date" [(ngModel)]="compareFrom" />
       <label for="tb-cto">{{ 'GL.COMPARE_TO' | translate }}</label>
-      <input id="tb-cto" nz-input type="date" style="width: 160px" [(ngModel)]="compareTo" />
+      <input id="tb-cto" nz-input type="date" [(ngModel)]="compareTo" />
       <nz-select
-        style="min-width: 200px"
+       
         nzAllowClear
         [attr.aria-label]="'GL.COST_CENTER' | translate"
         [nzPlaceHolder]="'GL.COST_CENTER' | translate"

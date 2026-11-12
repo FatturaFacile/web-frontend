@@ -147,7 +147,6 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
       />
     </main>
   `,
-  styleUrl: '../login/login.component.scss',
 })
 export class SsoCompleteComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);

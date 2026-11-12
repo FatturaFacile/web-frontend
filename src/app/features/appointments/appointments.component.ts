@@ -61,7 +61,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './appointments.component.html',
-  styleUrl: './appointments.component.scss',
 })
 export class AppointmentsComponent implements OnInit {
   private readonly api = inject(AppointmentApiService);

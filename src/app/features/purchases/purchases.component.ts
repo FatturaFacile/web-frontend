@@ -109,7 +109,6 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
     TranslatePipe,
   ],
   templateUrl: './purchases.component.html',
-  styleUrl: './purchases.component.scss',
 })
 export class PurchasesComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);

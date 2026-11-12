@@ -75,7 +75,6 @@ const emptyDraft = (): RuleDraft => ({
     TranslatePipe,
   ],
   templateUrl: './scoring-rules.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class ScoringRulesComponent {
   private readonly api = inject(CrmApiService);

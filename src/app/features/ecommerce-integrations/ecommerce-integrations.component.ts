@@ -68,7 +68,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './ecommerce-integrations.component.html',
-  styleUrls: ['./ecommerce-integrations.component.scss'],
 })
 export class EcommerceIntegrationsComponent implements OnInit {
   private readonly api = inject(EcommerceIntegrationsApiService);

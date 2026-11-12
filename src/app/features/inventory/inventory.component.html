@@ -55,9 +55,9 @@
         </nz-row>
       </div>
 
-      <div class="toolbar" style="margin-top: 16px;">
+      <div class="toolbar">
         <nz-select
-          style="width: 240px;"
+         
           [ngModel]="selectedWarehouseFilter()"
           (ngModelChange)="onWarehouseFilterChange($event)"
           [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
@@ -72,7 +72,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div style="flex: 1;"></div>
+        <div></div>
 
         <button nz-button nzType="primary" (click)="openTransferModal()">
           <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.TRANSFER' | translate }}
@@ -145,7 +145,7 @@
     <nz-tab [nzTitle]="'INVENTORY.TABS.MOVEMENTS' | translate">
       <div class="toolbar">
         <nz-select
-          style="width: 220px;"
+         
           [ngModel]="movementTypeFilter()"
           (ngModelChange)="movementTypeFilter.set($event); loadMovements()"
           [nzPlaceHolder]="'INVENTORY.FILTER_MOVEMENT_TYPE' | translate"
@@ -163,7 +163,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div style="flex: 1;"></div>
+        <div></div>
 
         <button nz-button nzType="primary" (click)="openTransferModal()">
           <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.NEW_TRANSFER' | translate }}
@@ -247,7 +247,7 @@
           <nz-icon nzType="plus" /> {{ 'INVENTORY.ACTIONS.NEW_ADJUSTMENT' | translate }}
         </button>
         <nz-select
-          style="width: 220px;"
+         
           [ngModel]="adjustmentStatusFilter()"
           (ngModelChange)="adjustmentStatusFilter.set($event); adjustmentsPage.set(1); loadAdjustments()"
           [nzPlaceHolder]="'INVENTORY.FILTER_ADJUSTMENT_STATUS' | translate"
@@ -423,7 +423,7 @@
     <nz-tab [nzTitle]="'INVENTORY.TABS.VALUATION' | translate">
       <div class="toolbar">
         <nz-select
-          style="width: 240px;"
+         
           [ngModel]="selectedWarehouseFilter()"
           (ngModelChange)="onWarehouseFilterChange($event); loadValuation()"
           [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
@@ -444,7 +444,7 @@
         ></nz-date-picker>
 
         <nz-select
-          style="width: 200px;"
+         
           [ngModel]="valuationMethod()"
           (ngModelChange)="valuationMethod.set($event); loadValuation()"
           [nzPlaceHolder]="'INVENTORY.VALUATION.METHOD' | translate"
@@ -461,7 +461,7 @@
       </div>
 
       @if (valuation(); as v) {
-        <nz-row [nzGutter]="16" style="margin-bottom: 24px;">
+        <nz-row [nzGutter]="16">
           <nz-col [nzSpan]="8">
             <nz-card nzSize="small">
               <nz-statistic
@@ -548,7 +548,7 @@
           (input)="onSearch($event)"
         />
 
-        <div style="flex: 1;"></div>
+        <div></div>
 
         <button nz-button nzType="primary" (click)="openCreateModal()">
           <nz-icon nzType="plus" /> {{ 'COMMON.ADD' | translate }}
@@ -669,7 +669,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="quantity" [nzMin]="0.0001" style="width: 100%;"></nz-input-number>
+              <nz-input-number formControlName="quantity" [nzMin]="0.0001"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -774,7 +774,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY_DELTA' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="quantity_delta" style="width: 100%;"></nz-input-number>
+              <nz-input-number formControlName="quantity_delta"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -782,7 +782,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="unit_cost" [nzMin]="0" style="width: 100%;"></nz-input-number>
+              <nz-input-number formControlName="unit_cost" [nzMin]="0"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -916,7 +916,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="quantity" [nzMin]="0" style="width: 100%"></nz-input-number>
+              <nz-input-number formControlName="quantity" [nzMin]="0"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -940,7 +940,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRICE' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="price" [nzMin]="0" [nzStep]="0.01" style="width: 100%"></nz-input-number>
+              <nz-input-number formControlName="price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>

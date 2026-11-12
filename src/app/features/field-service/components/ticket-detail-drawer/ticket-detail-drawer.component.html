@@ -5,9 +5,9 @@
   (nzOnClose)="close()"
 >
   <ng-template #drawerTitle>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-weight: 600;">
+    <div>
+      <div>
+        <span>
           {{ ticket()?.ticket_number ? '#' + ticket()?.ticket_number : 'Dettaglio Ticket' }}
         </span>
         @if (ticket()) {
@@ -23,7 +23,7 @@
     <nz-spin [nzSpinning]="loading()">
       @if (ticket()) {
         <!-- Action Toolbar -->
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 12px; background: #fafafa; border-radius: 6px;">
+        <div>
           <button nz-button nzSize="small" (click)="openStatusModal()">
             <i nz-icon nzType="swap"></i> {{ 'TICKET_TOOLS.LBL_CAMBIA_STATO' | translate }}
           </button>
@@ -51,7 +51,7 @@
         <nz-tabs>
           <!-- TAB 1: DETTAGLI & MODIFICA -->
           <nz-tab [nzTitle]="'TICKET_TOOLS.LBL_DETTAGLI_AND_MODIFICA' | translate">
-            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" style="margin-bottom: 24px;">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CANALE' | translate">{{ ticket()?.channel || '-' }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_TIPO' | translate">{{ ticket()?.type || '-' }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNATO_A' | translate">{{ ticket()?.assigned_to_id || 'Non assegnato' }}</nz-descriptions-item>
@@ -97,8 +97,8 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <div style="display: flex; gap: 16px;">
-                <nz-form-item style="flex: 1;">
+              <div>
+                <nz-form-item>
                   <nz-form-label nzFor="priority">{{ 'TICKET_TOOLS.LBL_PRIORITA' | translate }}</nz-form-label>
                   <nz-form-control>
                     <nz-select id="priority" formControlName="priority">
@@ -110,7 +110,7 @@
                   </nz-form-control>
                 </nz-form-item>
 
-                <nz-form-item style="flex: 1;">
+                <nz-form-item>
                   <nz-form-label nzFor="type">{{ 'TICKET_TOOLS.LBL_TIPO' | translate }}</nz-form-label>
                   <nz-form-control>
                     <nz-select id="type" formControlName="type">
@@ -124,8 +124,8 @@
                 </nz-form-item>
               </div>
 
-              <div style="display: flex; gap: 16px;">
-                <nz-form-item style="flex: 1;">
+              <div>
+                <nz-form-item>
                   <nz-form-label nzFor="impact">{{ 'TICKET_TOOLS.LBL_IMPATTO' | translate }}</nz-form-label>
                   <nz-form-control>
                     <nz-select id="impact" formControlName="impact">
@@ -136,7 +136,7 @@
                   </nz-form-control>
                 </nz-form-item>
 
-                <nz-form-item style="flex: 1;">
+                <nz-form-item>
                   <nz-form-label nzFor="urgency">{{ 'TICKET_TOOLS.LBL_URGENZA' | translate }}</nz-form-label>
                   <nz-form-control>
                     <nz-select id="urgency" formControlName="urgency">
@@ -148,15 +148,15 @@
                 </nz-form-item>
               </div>
 
-              <div style="display: flex; gap: 16px;">
-                <nz-form-item style="flex: 1;">
+              <div>
+                <nz-form-item>
                   <nz-form-label nzFor="contact_email">{{ 'TICKET_TOOLS.LBL_EMAIL_CONTATTO' | translate }}</nz-form-label>
                   <nz-form-control>
                     <input nz-input id="contact_email" formControlName="contact_email" />
                   </nz-form-control>
                 </nz-form-item>
 
-                <nz-form-item style="flex: 1;">
+                <nz-form-item>
                   <nz-form-label nzFor="contact_phone">{{ 'TICKET_TOOLS.LBL_TELEFONO_CONTATTO' | translate }}</nz-form-label>
                   <nz-form-control>
                     <input nz-input id="contact_phone" formControlName="contact_phone" />
@@ -171,7 +171,7 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <div style="display: flex; justify-content: flex-end;">
+              <div>
                 <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
                   {{ 'TICKET_TOOLS.LBL_SALVA_MODIFICHE' | translate }}
                 </button>
@@ -182,17 +182,17 @@
           <!-- TAB 2: CONVERSAZIONE & NOTE -->
           <nz-tab [nzTitle]="'Conversazione (' + messages().length + ')'">
             <!-- Messages timeline / list -->
-            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 8px;">
+            <div>
               @if (messages().length === 0) {
-                <div style="text-align: center; color: #888; padding: 24px;">{{ 'TICKET_TOOLS.LBL_NESSUN_MESSAGGIO_PRESENTE' | translate }}</div>
+                <div>{{ 'TICKET_TOOLS.LBL_NESSUN_MESSAGGIO_PRESENTE' | translate }}</div>
               } @else {
                 @for (msg of messages(); track msg.id) {
                   <div
-                    style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1px solid #f0f0f0;"
+                   
                     [style.background]="msg.visibility === 'internal' ? '#fffbe6' : '#f6faff'"
                   >
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                      <div style="display: flex; align-items: center; gap: 8px;">
+                    <div>
+                      <div>
                         <strong>{{ msg.author_name || msg.author_type }}</strong>
                         @if (msg.visibility === 'internal') {
                           <nz-tag nzColor="gold">{{ 'TICKET_TOOLS.LBL_NOTA_INTERNA' | translate }}</nz-tag>
@@ -200,11 +200,11 @@
                           <nz-tag nzColor="blue">{{ 'TICKET_TOOLS.LBL_PUBBLICA' | translate }}</nz-tag>
                         }
                       </div>
-                      <span style="font-size: 12px; color: #999;">
+                      <span>
                         {{ msg.created_at | date:'dd/MM/yyyy HH:mm' }}
                       </span>
                     </div>
-                    <div style="white-space: pre-wrap; font-size: 13px;">{{ msg.body }}</div>
+                    <div>{{ msg.body }}</div>
                     @for (attachment of msg.attachments ?? []; track attachment.id) {
                       <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadAttachment(attachment)">
                         <i nz-icon nzType="download"></i> {{ attachment.filename }}
@@ -230,7 +230,7 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
                 <nz-radio-group formControlName="visibility">
                   <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                   <label nz-radio nzValue="public">{{ 'TICKET_TOOLS.LBL_RISPOSTA_PUBBLICA' | translate }}</label>
@@ -253,20 +253,20 @@
 
           <!-- TAB 3: CRONOLOGIA ATTIVITÀ -->
           <nz-tab [nzTitle]="'Attività (' + activities().length + ')'">
-            <div style="padding: 16px 8px;">
+            <div>
               @if (activities().length === 0) {
-                <div style="text-align: center; color: #888;">{{ 'TICKET_TOOLS.LBL_NESSUNA_ATTIVITA_REGISTRATA' | translate }}</div>
+                <div>{{ 'TICKET_TOOLS.LBL_NESSUNA_ATTIVITA_REGISTRATA' | translate }}</div>
               } @else {
                 <nz-timeline>
                   @for (act of activities(); track act.id) {
                     <nz-timeline-item>
-                      <div style="font-size: 13px;">
+                      <div>
                         <strong>{{ act.type }}</strong>
                         @if (act.from_value || act.to_value) {
                           <span>: {{ act.from_value || '-' }} &rarr; {{ act.to_value }}</span>
                         }
                       </div>
-                      <div style="font-size: 11px; color: #999;">
+                      <div>
                         {{ act.created_at | date:'dd/MM/yyyy HH:mm' }}
                         @if (act.actor_user_id) {
                           - Utente: {{ act.actor_user_id }}
@@ -304,9 +304,9 @@
   (nzOnOk)="confirmStatusChange()"
 >
   <ng-container *nzModalContent>
-    <div style="margin-bottom: 12px;">
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_NUOVO_STATO' | translate }}</span>
-      <nz-select [ngModel]="targetStatus()" (ngModelChange)="targetStatus.set($event)" style="width: 100%;">
+    <div>
+      <span>{{ 'TICKET_TOOLS.LBL_NUOVO_STATO' | translate }}</span>
+      <nz-select [ngModel]="targetStatus()" (ngModelChange)="targetStatus.set($event)">
         <nz-option nzValue="new" [nzLabel]="'TICKET_TOOLS.LBL_NUOVO_NEW' | translate"></nz-option>
         <nz-option nzValue="open" [nzLabel]="'TICKET_TOOLS.LBL_APERTO_OPEN' | translate"></nz-option>
         <nz-option nzValue="pending_customer" [nzLabel]="'TICKET_TOOLS.LBL_IN_ATTESA_CLIENTE_PENDING_CUSTOMER' | translate"></nz-option>
@@ -316,7 +316,7 @@
       </nz-select>
     </div>
     <div>
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_NOTA_DI_TRANSIZIONE_OPZIONALE' | translate }}</span>
+      <span>{{ 'TICKET_TOOLS.LBL_NOTA_DI_TRANSIZIONE_OPZIONALE' | translate }}</span>
       <textarea
         nz-input
         rows="3"
@@ -336,8 +336,8 @@
   (nzOnOk)="confirmAssign()"
 >
   <ng-container *nzModalContent>
-    <div style="margin-bottom: 12px;">
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_ID_UTENTE_AGENTE_UUID' | translate }}</span>
+    <div>
+      <span>{{ 'TICKET_TOOLS.LBL_ID_UTENTE_AGENTE_UUID' | translate }}</span>
       <input
         nz-input
         [ngModel]="assignedUserId()"
@@ -346,7 +346,7 @@
       />
     </div>
     <div>
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_ID_TEAM_DI_ASSISTENZA_OPZIONALE' | translate }}</span>
+      <span>{{ 'TICKET_TOOLS.LBL_ID_TEAM_DI_ASSISTENZA_OPZIONALE' | translate }}</span>
       <input
         nz-input
         [ngModel]="assignedTeamId()"
@@ -365,8 +365,8 @@
   (nzOnOk)="confirmResolve()"
 >
   <ng-container *nzModalContent>
-    <div style="margin-bottom: 12px;">
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_NOTE_DI_RISOLUZIONE' | translate }}</span>
+    <div>
+      <span>{{ 'TICKET_TOOLS.LBL_NOTE_DI_RISOLUZIONE' | translate }}</span>
       <textarea
         nz-input
         rows="3"
@@ -376,7 +376,7 @@
       ></textarea>
     </div>
     <div>
-      <span style="display: block; margin-bottom: 4px; font-weight: 500;">{{ 'TICKET_TOOLS.LBL_CAUSA_PRINCIPALE_ROOT_CAUSE' | translate }}</span>
+      <span>{{ 'TICKET_TOOLS.LBL_CAUSA_PRINCIPALE_ROOT_CAUSE' | translate }}</span>
       <textarea
         nz-input
         rows="2"

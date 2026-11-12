@@ -50,18 +50,18 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
       <nz-tabs>
         <!-- TAB 1: GDPR / nLPD Data Subject Requests & Portability -->
         <nz-tab nzTitle="Diritti Interessati (GDPR / nLPD)">
-          <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+          <div>
             <button nz-button nzType="primary" type="button" (click)="dsrModalOpen.set(true)">
               Nuova Richiesta (DSR)
             </button>
-            <select class="ant-input" style="width: 140px;" [(ngModel)]="portabilitySubjectType">
+            <select class="ant-input" [(ngModel)]="portabilitySubjectType">
               <option value="contact">Contatto</option>
               <option value="employee">Dipendente</option>
               <option value="user">Utente</option>
             </select>
             <input
               nz-input
-              style="width: 260px;"
+             
               placeholder="UUID Soggetto per export portabilità"
               [(ngModel)]="portabilitySubjectId"
             />
@@ -111,15 +111,15 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           </nz-table>
 
           @if (exportedDossier(); as dossier) {
-            <nz-card nzTitle="Dossier Portabilità Esportato" style="margin-top: 16px;">
-              <pre style="max-height: 240px; overflow: auto; font-size: 12px;">{{ dossier | json }}</pre>
+            <nz-card nzTitle="Dossier Portabilità Esportato">
+              <pre>{{ dossier | json }}</pre>
             </nz-card>
           }
         </nz-tab>
 
         <!-- TAB 2: RoPA (Processing Activities) -->
         <nz-tab nzTitle="Registro Trattamenti (RoPA)">
-          <div style="margin-bottom: 16px;">
+          <div>
             <button nz-button nzType="primary" type="button" (click)="ropaModalOpen.set(true)">
               Nuova Attività di Trattamento
             </button>
@@ -150,7 +150,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 
         <!-- TAB 3: Subprocessors (Swiss nLPD Art. 16) -->
         <nz-tab nzTitle="Sub-responsabili Estero (nLPD Art. 16)">
-          <div style="margin-bottom: 16px;">
+          <div>
             <button nz-button nzType="primary" type="button" (click)="subModalOpen.set(true)">
               Aggiungi Sub-responsabile
             </button>
@@ -185,7 +185,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 
         <!-- TAB 4: Data Breach Register (72h) -->
         <nz-tab nzTitle="Registro Data Breach (72h)">
-          <div style="margin-bottom: 16px;">
+          <div>
             <button nz-button nzType="primary" nzDanger type="button" (click)="breachModalOpen.set(true)">
               Segnala Violazione Dati (Data Breach)
             </button>
@@ -222,7 +222,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 
         <!-- TAB 5: Sensitive Access Logs (DPOOP Art. 4) -->
         <nz-tab nzTitle="Log Accessi Dati Sensibili (OPDo Art. 4)">
-          <div style="margin-bottom: 16px;">
+          <div>
             <button nz-button type="button" (click)="loadAll()">Aggiorna Log</button>
           </div>
           <nz-table #logTable [nzData]="accessLogs()" [nzLoading]="loading()" nzSize="small">

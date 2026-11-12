@@ -40,7 +40,6 @@ const AGE_OF_MAJORITY = 18;
     TranslatePipe,
   ],
   templateUrl: './association-enrolment.component.html',
-  styleUrl: './association-enrolment.component.scss',
 })
 export class AssociationEnrolmentComponent implements OnInit {
   private readonly api = inject(AssociationPublicApiService);

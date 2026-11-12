@@ -173,7 +173,7 @@
               nz-input
               [ngModel]="attendanceMonth()"
               (ngModelChange)="attendanceMonth.set($event); loadAttendances()"
-              style="width: 180px"
+             
             />
             <button nz-button nzType="default" (click)="loadAttendances()">
               <span nz-icon nzType="reload"></span>
@@ -286,7 +286,7 @@
         </nz-card>
       </div>
 
-      <nz-card style="margin-top: 16px">
+      <nz-card>
         <div class="filter-toolbar">
           <div class="filter-inputs">
             <input
@@ -294,7 +294,7 @@
               nz-input
               [ngModel]="billingPeriod()"
               (ngModelChange)="billingPeriod.set($event); loadBills()"
-              style="width: 180px"
+             
             />
             <button nz-button nzType="default" (click)="loadBills()">
               <span nz-icon nzType="reload"></span>
@@ -374,7 +374,7 @@
           </tbody>
         </nz-table>
 
-        <h4 style="margin-top: 24px">{{ 'CHILDCARE.OUTSTANDING_DOCS_TITLE' | translate }}</h4>
+        <h4>{{ 'CHILDCARE.OUTSTANDING_DOCS_TITLE' | translate }}</h4>
         <nz-table #outTable [nzData]="outstandingDocuments()" [nzFrontPagination]="true">
           <thead>
             <tr>
@@ -611,7 +611,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CAPACITY' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number formControlName="capacity" [nzMin]="1" [nzMax]="100" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="capacity" [nzMin]="1" [nzMax]="100"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
     </form>

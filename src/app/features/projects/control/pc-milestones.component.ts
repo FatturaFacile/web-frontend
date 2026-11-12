@@ -17,7 +17,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal(null)">{{ 'PRJ.MILESTONE_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'PRJ.MILESTONE_NEW' | translate }}</button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -64,7 +64,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.MILESTONE_FORM' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -77,7 +77,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="ms-amount">{{ 'PRJ.BILLING_AMOUNT' | translate }}</nz-form-label>
-            <nz-form-control><nz-input-number id="ms-amount" formControlName="billing_amount" [nzMin]="0" [nzPrecision]="2" style="width: 200px" /></nz-form-control>
+            <nz-form-control><nz-input-number id="ms-amount" formControlName="billing_amount" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="ms-percentage">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</nz-form-label>

@@ -58,7 +58,7 @@
         <div class="room-selector">
           <span class="label-inline">{{ 'HOSPITALITY.SELECT_ROOM' | translate }}:</span>
           <nz-select
-            style="width: 200px"
+           
             [ngModel]="selectedRoomId()"
             (ngModelChange)="selectedRoomId.set($event); loadTables($event)"
           >
@@ -126,7 +126,7 @@
       <div class="tab-toolbar">
         <div class="filters">
           <nz-select
-            style="width: 180px"
+           
             [ngModel]="filterOrderStatus()"
             (ngModelChange)="filterOrderStatus.set($event); loadOrders()"
             [nzPlaceHolder]="'HOSPITALITY.FILTER_STATUS' | translate"
@@ -482,7 +482,7 @@
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.SORT_ORDER' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number formControlName="sort_order" [nzMin]="1" [nzStep]="1" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="sort_order" [nzMin]="1" [nzStep]="1"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -517,7 +517,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.SEATS' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="seats" [nzMin]="1" [nzMax]="50" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="seats" [nzMin]="1" [nzMax]="50"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -555,7 +555,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.COVERS' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="covers" [nzMin]="1" [nzMax]="100" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="covers" [nzMin]="1" [nzMax]="100"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -587,7 +587,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.QUANTITY' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="quantity" [nzMin]="1" [nzMax]="99" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="quantity" [nzMin]="1" [nzMax]="99"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
@@ -600,7 +600,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.COURSE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="course" [nzMin]="1" [nzMax]="9" style="width: 100%"></nz-input-number>
+          <nz-input-number formControlName="course" [nzMin]="1" [nzMax]="9"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -660,7 +660,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'HOSPITALITY.CASH_AMOUNT' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number formControlName="cash_amount" [nzMin]="0" [nzStep]="0.5" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="cash_amount" [nzMin]="0" [nzStep]="0.5"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       }
@@ -693,13 +693,13 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.PARTY_SIZE' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="party_size" [nzMin]="1" [nzMax]="50" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="party_size" [nzMin]="1" [nzMax]="50"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.DURATION' | translate }} (min)</nz-form-label>
           <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="duration_minutes" [nzMin]="30" [nzStep]="15" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="duration_minutes" [nzMin]="30" [nzStep]="15"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>

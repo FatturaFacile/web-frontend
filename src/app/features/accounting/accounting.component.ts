@@ -69,7 +69,6 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
   ],
   providers: [TableStateService],
   templateUrl: './accounting.component.html',
-  styleUrl: './accounting.component.scss',
 })
 export class AccountingComponent implements OnInit {
   private readonly translate = inject(TranslateService);

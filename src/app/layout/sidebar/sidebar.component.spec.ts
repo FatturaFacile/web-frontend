@@ -68,8 +68,12 @@ describe('SidebarComponent menu', () => {
     const menu = fixture.nativeElement as HTMLElement;
 
     expect(menu.querySelectorAll('li.ant-menu-item').length).toBeGreaterThan(0);
-    expect(menu.querySelectorAll('li.ant-menu-item:not(.ant-menu-item-disabled)').length).toBe(0);
-    expect(menu.querySelectorAll('a[href]').length).toBe(0);
+    // Only the entries whose route is in TESTED_MENU_ROUTES (the list changes as pages get tested) are links
+    const links = Array.from(menu.querySelectorAll('a[href]'));
+    for (const link of links) {
+      expect(isMenuRouteTested(link.getAttribute('href') ?? undefined)).toBe(true);
+    }
+    expect(menu.querySelectorAll('li.ant-menu-item:not(.ant-menu-item-disabled)').length).toBeLessThanOrEqual(links.length);
   });
 
   it('filters the entries with the quick search and keeps the matching group', () => {

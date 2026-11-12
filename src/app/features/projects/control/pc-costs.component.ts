@@ -35,13 +35,13 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   selector: 'app-pc-costs',
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
-      <nz-select style="min-width: 200px" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
+    <div>
+      <nz-select nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
         <nz-option nzValue="pending" [nzLabel]="'PRJ.APPROVAL_PENDING' | translate" />
         <nz-option nzValue="approved" [nzLabel]="'PRJ.APPROVAL_APPROVED' | translate" />
         <nz-option nzValue="rejected" [nzLabel]="'PRJ.APPROVAL_REJECTED' | translate" />
       </nz-select>
-      <span style="flex: 1"></span>
+      <span></span>
       @if (canWrite) {
         <button nz-button nzType="primary" type="button" (click)="openModal()">{{ 'PRJ.EXPENSE_NEW' | translate }}</button>
       }
@@ -87,7 +87,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.EXPENSE_NEW' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -106,7 +106,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ex-amount">{{ 'PRJ.AMOUNT' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="form.controls.amount.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><nz-input-number id="ex-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" /></nz-form-control>
+            <nz-form-control [nzErrorTip]="form.controls.amount.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><nz-input-number id="ex-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ex-date">{{ 'PRJ.DATE' | translate }}</nz-form-label>

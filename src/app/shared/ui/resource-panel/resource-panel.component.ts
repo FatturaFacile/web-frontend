@@ -48,7 +48,6 @@ interface ActiveForm {
     TranslatePipe,
   ],
   templateUrl: './resource-panel.component.html',
-  styleUrl: './resource-panel.component.scss',
 })
 export class ResourcePanelComponent implements OnInit {
   private readonly api = inject(ResourceApiService);

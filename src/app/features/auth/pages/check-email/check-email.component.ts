@@ -33,13 +33,6 @@ import { ResendVerificationComponent } from '../../components/resend-verificatio
       </div>
     </main>
   `,
-  styleUrl: '../login/login.component.scss',
-  styles: `
-    .resend-title {
-      font-size: 15px;
-      margin: 16px 0 8px;
-    }
-  `,
 })
 export class CheckEmailComponent {
   /** Passed through the navigation state, so the address never appears in the URL or in the history. */

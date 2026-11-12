@@ -35,7 +35,6 @@ import { TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './asset-detail-drawer.component.html',
-  styleUrl: './asset-detail-drawer.component.scss',
 })
 export class AssetDetailDrawerComponent implements OnInit {
   asset = input.required<FixedAssetResource>();

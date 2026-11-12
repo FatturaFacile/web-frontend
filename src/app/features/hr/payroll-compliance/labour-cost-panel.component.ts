@@ -60,7 +60,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="lc-group">{{ 'hrmCompliance.labour.groupBy' | translate }}</label>
         <nz-select
           id="lc-group"
-          style="width: 160px; display: block"
+         
           nzAllowClear
           [ngModel]="groupBy()"
           (ngModelChange)="groupBy.set($event)"
@@ -121,7 +121,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="ch-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="ch-employee"
-          style="width: 260px; display: block"
+         
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"

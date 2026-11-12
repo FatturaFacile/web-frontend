@@ -41,7 +41,6 @@ type PasswordField = 'current' | 'password' | 'confirmation';
     TranslatePipe,
   ],
   templateUrl: './profile-settings.component.html',
-  styleUrls: ['../../../auth/pages/register/register.component.scss', './profile-settings.component.scss'],
 })
 export class ProfileSettingsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);

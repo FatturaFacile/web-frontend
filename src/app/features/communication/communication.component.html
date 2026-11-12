@@ -56,7 +56,7 @@
             [ngModel]="filterChannel()"
             (ngModelChange)="filterChannel.set($event); loadDeliveries()"
             nzPlaceHolder="Canale"
-            style="width: 140px"
+           
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>
@@ -69,7 +69,7 @@
             [ngModel]="filterStatus()"
             (ngModelChange)="filterStatus.set($event); loadDeliveries()"
             nzPlaceHolder="Stato"
-            style="width: 140px"
+           
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="sent" [nzLabel]="'COMMUNICATION.STATUS_SENT' | translate"></nz-option>
@@ -210,7 +210,7 @@
             [ngModel]="filterTemplateChannel()"
             (ngModelChange)="filterTemplateChannel.set($event); loadTemplates()"
             nzPlaceHolder="Canale"
-            style="width: 140px"
+           
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>

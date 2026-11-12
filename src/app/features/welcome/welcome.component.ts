@@ -16,6 +16,5 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './welcome.component.html',
-  styleUrl: './welcome.component.scss',
 })
 export class WelcomeComponent {}

@@ -21,18 +21,18 @@ interface KpiTile {
   imports: [FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzStatisticModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+      <div>
         <label for="kp-date">{{ 'TR.AS_OF' | translate }}</label>
-        <input id="kp-date" nz-input type="date" style="width: 160px" [(ngModel)]="asOf" />
+        <input id="kp-date" nz-input type="date" [(ngModel)]="asOf" />
         <label for="kp-days">{{ 'TR.PERIOD_DAYS' | translate }}</label>
         <nz-input-number id="kp-days" [(ngModel)]="periodDays" [nzMin]="1" [nzMax]="730" />
         <label for="kp-currency">{{ 'TR.CURRENCY' | translate }}</label>
-        <input id="kp-currency" nz-input style="width: 90px" maxlength="3" [(ngModel)]="currency" />
+        <input id="kp-currency" nz-input maxlength="3" [(ngModel)]="currency" />
         <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'TR.RUN_REPORT' | translate }}</button>
       </div>
 
       @if (kpis(); as k) {
-        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+        <div class="kpi-grid">
           @for (tile of tiles(); track tile.labelKey) {
             <nz-card nzSize="small">
               <nz-statistic [nzTitle]="tile.labelKey | translate" [nzValue]="tile.money ? (tile.value | money: k.currency) : tile.value" />
@@ -40,13 +40,13 @@ interface KpiTile {
           }
         </div>
         @if (!k.includes_inventory) {
-          <p style="margin-top: 12px">{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
+          <p>{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
         }
       }
     </nz-card>
 
     @if (position(); as p) {
-      <nz-card [nzTitle]="'TR.CASH_POSITION' | translate" style="margin-top: 16px">
+      <nz-card [nzTitle]="'TR.CASH_POSITION' | translate">
         <nz-table #bankTable nzSize="small" [nzData]="p.bank_accounts" [nzShowPagination]="false">
           <thead>
             <tr>
@@ -67,7 +67,7 @@ interface KpiTile {
             }
           </tbody>
         </nz-table>
-        <nz-table #totalTable nzSize="small" style="margin-top: 16px" [nzData]="p.totals" [nzShowPagination]="false">
+        <nz-table #totalTable nzSize="small" [nzData]="p.totals" [nzShowPagination]="false">
           <thead>
             <tr>
               <th>{{ 'TR.CURRENCY' | translate }}</th>

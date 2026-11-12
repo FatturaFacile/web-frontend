@@ -63,7 +63,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './sales-orders.component.html',
-  styleUrl: './sales-orders.component.scss',
 })
 export class SalesOrdersComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);

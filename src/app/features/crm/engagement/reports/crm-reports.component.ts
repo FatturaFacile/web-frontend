@@ -31,7 +31,6 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
     TranslatePipe,
   ],
   templateUrl: './crm-reports.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class CrmReportsComponent {
   private readonly api = inject(CrmApiService);

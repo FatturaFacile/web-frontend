@@ -3,9 +3,9 @@
 <nz-card>
   <nz-tabs>
     <nz-tab [nzTitle]="'TR.BALANCES' | translate">
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+      <div>
         <label for="tr-balance-date">{{ 'TR.AS_OF' | translate }}</label>
-        <input id="tr-balance-date" nz-input type="date" style="width: 160px" [(ngModel)]="balanceDate" (ngModelChange)="loadBalances()" />
+        <input id="tr-balance-date" nz-input type="date" [(ngModel)]="balanceDate" (ngModelChange)="loadBalances()" />
       </div>
       <nz-table #balanceTable nzSize="middle" [nzData]="balances()" [nzLoading]="loading()" [nzShowPagination]="false">
         <thead>
@@ -32,9 +32,9 @@
     </nz-tab>
 
     <nz-tab [nzTitle]="'TR.MOVEMENTS' | translate">
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+      <div>
         <nz-select
-          style="min-width: 220px"
+         
           nzAllowClear
           [attr.aria-label]="'TR.MOVEMENT_TYPE' | translate"
           [nzPlaceHolder]="'TR.MOVEMENT_TYPE' | translate"
@@ -45,7 +45,7 @@
             <nz-option [nzValue]="type" [nzLabel]="'TR.MOVEMENT_' + type.toUpperCase() | translate" />
           }
         </nz-select>
-        <span style="flex: 1"></span>
+        <span></span>
         @if (canWrite) {
           <button nz-button nzType="primary" type="button" (click)="openModal('transfer')">{{ 'TR.TRANSFER_NEW' | translate }}</button>
           <button nz-button type="button" (click)="openModal('charge')">{{ 'TR.CHARGE_NEW' | translate }}</button>
@@ -79,11 +79,11 @@
 
     <nz-tab [nzTitle]="'TR.FX_REVALUATION' | translate">
       <p>{{ 'TR.FX_HINT' | translate }}</p>
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+      <div>
         <label for="tr-fx-date">{{ 'TR.PERIOD_END_DATE' | translate }}</label>
-        <input id="tr-fx-date" nz-input type="date" style="width: 160px" [(ngModel)]="fxPeriodEnd" />
+        <input id="tr-fx-date" nz-input type="date" [(ngModel)]="fxPeriodEnd" />
         <label for="tr-fx-currency">{{ 'TR.CURRENCY' | translate }}</label>
-        <input id="tr-fx-currency" nz-input style="width: 90px" maxlength="3" [(ngModel)]="fxCurrency" />
+        <input id="tr-fx-currency" nz-input maxlength="3" [(ngModel)]="fxCurrency" />
         @if (canWrite) {
           <button nz-button nzType="primary" type="button" [disabled]="!fxPeriodEnd" (click)="revalue()">{{ 'TR.FX_RUN' | translate }}</button>
         }
@@ -127,7 +127,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="transferForm">
       <nz-form-item>
@@ -153,7 +153,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="tf-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="transferForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="tf-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+          <nz-input-number id="tf-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -181,7 +181,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="chargeForm">
       <nz-form-item>
@@ -207,7 +207,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ch-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="chargeForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="ch-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+          <nz-input-number id="ch-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

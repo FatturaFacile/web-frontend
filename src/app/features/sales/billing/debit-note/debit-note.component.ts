@@ -43,7 +43,6 @@ import { todayIso } from '../../cycle/shared/sales-status';
     TranslatePipe,
   ],
   templateUrl: './debit-note.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class DebitNoteComponent implements OnInit {
   private readonly api = inject(BillingApiService);

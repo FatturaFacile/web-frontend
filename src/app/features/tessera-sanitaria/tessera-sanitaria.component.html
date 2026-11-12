@@ -6,7 +6,7 @@
     <nz-select
       [ngModel]="selectedYear()"
       (ngModelChange)="changeYear($event)"
-      style="width: 110px"
+     
     >
       <nz-option [nzValue]="2026" nzLabel="2026"></nz-option>
       <nz-option [nzValue]="2025" nzLabel="2025"></nz-option>
@@ -221,7 +221,7 @@
           <nz-form-item>
             <nz-form-label>{{ 'STS.EXPORT_FORMAT' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-select formControlName="format" style="width: 140px">
+              <nz-select formControlName="format">
                 <nz-option nzValue="json" nzLabel="JSON (Sogei Payload)"></nz-option>
                 <nz-option nzValue="csv" [nzLabel]="'STS.LBL_CSV_MINISTERO_SALUTE' | translate"></nz-option>
               </nz-select>
@@ -375,7 +375,7 @@
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.AMOUNT' | translate }} (€)</nz-form-label>
           <nz-form-control>
-            <nz-input-number formControlName="amount" [nzMin]="0.01" [nzStep]="1" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="amount" [nzMin]="0.01" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 

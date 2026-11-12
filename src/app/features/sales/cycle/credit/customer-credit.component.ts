@@ -53,7 +53,6 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
     TranslatePipe,
   ],
   templateUrl: './customer-credit.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CustomerCreditComponent implements OnInit {
   private readonly api = inject(BillingApiService);

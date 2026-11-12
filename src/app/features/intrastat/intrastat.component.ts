@@ -85,7 +85,6 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
     TranslatePipe,
   ],
   templateUrl: './intrastat.component.html',
-  styleUrl: './intrastat.component.scss',
 })
 export class IntrastatComponent implements OnInit {
   private readonly api = inject(IntrastatApiService);

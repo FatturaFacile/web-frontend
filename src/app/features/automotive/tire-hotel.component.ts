@@ -27,7 +27,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './tire-hotel.component.html',
-  styleUrl: './tire-hotel.component.scss',
 })
 export class TireHotelComponent implements OnInit {
   private readonly api = inject(AutomotiveApiService);

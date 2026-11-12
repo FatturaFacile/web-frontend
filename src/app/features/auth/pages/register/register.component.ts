@@ -34,7 +34,6 @@ import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-
     TranslatePipe,
   ],
   templateUrl: './register.component.html',
-  styleUrls: ['../login/login.component.scss', './register.component.scss'],
 })
 export class RegisterComponent {
   private readonly fb = inject(NonNullableFormBuilder);

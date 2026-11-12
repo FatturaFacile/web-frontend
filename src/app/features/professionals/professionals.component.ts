@@ -73,7 +73,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './professionals.component.html',
-  styleUrl: './professionals.component.scss',
 })
 export class ProfessionalsComponent implements OnInit {
   private readonly profApi = inject(ProfessionalsApiService);

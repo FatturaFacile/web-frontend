@@ -53,7 +53,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './analytics.component.html',
-  styleUrl: './analytics.component.scss',
 })
 export class AnalyticsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

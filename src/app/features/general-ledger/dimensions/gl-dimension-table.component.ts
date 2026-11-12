@@ -27,7 +27,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   ],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal(null)">
+      <button nz-button nzType="primary" type="button" (click)="openModal(null)">
         {{ 'GL.DIMENSION_NEW' | translate }}
       </button>
     }

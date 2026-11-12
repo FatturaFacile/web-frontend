@@ -13,15 +13,15 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
   selector: 'app-gl-vat-registers',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
-      <nz-select style="min-width: 180px" [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
+    <div>
+      <nz-select [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
         <nz-option nzValue="sales" [nzLabel]="'GL.VAT_SALES' | translate" />
         <nz-option nzValue="purchases" [nzLabel]="'GL.VAT_PURCHASES' | translate" />
       </nz-select>
       <label for="vr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="vr-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input id="vr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="vr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="vr-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+      <input id="vr-to" nz-input type="date" [(ngModel)]="to" />
       <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
     </div>
     @if (register(); as r) {

@@ -45,26 +45,6 @@ interface Option {
     TranslatePipe,
   ],
   templateUrl: './ticket-agent-tools.component.html',
-  styles: `
-    .tat-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .tat-select {
-      min-width: 240px;
-      flex: 1;
-    }
-    .tat-preview {
-      white-space: pre-wrap;
-      border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
-      border-radius: 6px;
-      padding: 8px;
-      margin-bottom: 8px;
-    }
-  `,
 })
 export class TicketAgentToolsComponent implements OnInit {
   private readonly tickets = inject(TicketApiService);

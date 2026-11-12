@@ -55,7 +55,7 @@
     <nz-tab [nzTitle]="'MFG.LBL_ORDINI_DI_PRODUZIONE' | translate">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-wrapper style="width: 250px;">
+          <nz-input-wrapper>
             <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
@@ -71,7 +71,7 @@
             (ngModelChange)="ordersStatusFilter.set($event); loadOrders(1)"
             nzPlaceHolder="Tutti gli stati"
             nzAllowClear
-            style="width: 170px;"
+           
           >
             <nz-option nzValue="planned" [nzLabel]="'MFG.LBL_PIANIFICATO' | translate"></nz-option>
             <nz-option nzValue="released" [nzLabel]="'MFG.LBL_RILASCIATO' | translate"></nz-option>
@@ -174,7 +174,7 @@
     <nz-tab [nzTitle]="'MFG.LBL_DISTINTE_BASE_BOM' | translate">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-wrapper style="width: 250px;">
+          <nz-input-wrapper>
             <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
@@ -531,7 +531,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'MFG.LBL_QUANTITA_DA_PRODURRE' | translate }}</nz-form-label>
         <nz-form-control nzErrorTip="Inserire una quantità valida">
-          <nz-input-number formControlName="target_quantity" [nzMin]="1" [nzStep]="1" style="width: 100%;"></nz-input-number>
+          <nz-input-number formControlName="target_quantity" [nzMin]="1" [nzStep]="1"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
@@ -540,7 +540,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_INIZIO_PREVISTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Selezionare data inizio">
-              <nz-date-picker formControlName="planned_start_date" style="width: 100%;"></nz-date-picker>
+              <nz-date-picker formControlName="planned_start_date"></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -548,7 +548,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_FINE_PREVISTA' | translate }}</nz-form-label>
             <nz-form-control nzErrorTip="Selezionare data fine">
-              <nz-date-picker formControlName="planned_end_date" style="width: 100%;"></nz-date-picker>
+              <nz-date-picker formControlName="planned_end_date"></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -657,13 +657,13 @@
       <div formArrayName="components">
         @for (_ of bomComponentsFormArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
-            <div style="flex: 2;">
+            <div>
               <input nz-input formControlName="component_item_id" [placeholder]="'MFG.LBL_UUID_COMPONENTE_MATERIA_PRIMA' | translate" />
             </div>
-            <div style="flex: 1;">
-              <nz-input-number formControlName="quantity_per" [nzMin]="0.001" [nzStep]="1" nzPlaceHolder="Q.tà per unita" style="width: 100%;"></nz-input-number>
+            <div>
+              <nz-input-number formControlName="quantity_per" [nzMin]="0.001" [nzStep]="1" nzPlaceHolder="Q.tà per unita"></nz-input-number>
             </div>
-            <div style="flex: 1.5;">
+            <div>
               <input nz-input formControlName="notes" [placeholder]="'MFG.LBL_NOTE_POSIZIONE' | translate" />
             </div>
             <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)">
@@ -694,7 +694,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'MFG.LBL_TIPO_DI_ELABORAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-select formControlName="run_type" style="width: 100%;">
+          <nz-select formControlName="run_type">
             <nz-option nzValue="regenerative" [nzLabel]="'MFG.LBL_RIGENERATIVO_COMPLETO_TUTTI_GLI_ORDINI' | translate"></nz-option>
             <nz-option nzValue="net_change" [nzLabel]="'MFG.LBL_VARIAZIONE_NETTA_NET_CHANGE' | translate"></nz-option>
           </nz-select>
@@ -704,14 +704,14 @@
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'MFG.LBL_INIZIO_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-date-picker formControlName="horizon_start_date" style="width: 100%;"></nz-date-picker>
+          <nz-date-picker formControlName="horizon_start_date"></nz-date-picker>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'MFG.LBL_FINE_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-date-picker formControlName="horizon_end_date" style="width: 100%;"></nz-date-picker>
+          <nz-date-picker formControlName="horizon_end_date"></nz-date-picker>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -748,7 +748,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'MFG.LBL_CAPACITA_ORE_GIORNO' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="capacity_hours_per_day" [nzMin]="1" [nzMax]="24" style="width: 100%;"></nz-input-number>
+              <nz-input-number formControlName="capacity_hours_per_day" [nzMin]="1" [nzMax]="24"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -756,7 +756,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="hourly_cost_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
+              <nz-input-number formControlName="hourly_cost_rate" [nzMin]="0"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </div>

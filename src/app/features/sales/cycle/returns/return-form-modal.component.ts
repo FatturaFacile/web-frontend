@@ -92,12 +92,6 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
       </ng-container>
     </nz-modal>
   `,
-  styles: `
-    .alert { display: block; margin-bottom: 12px; }
-    .field { display: block; width: 100%; margin: 4px 0 12px; }
-    .hint { color: var(--ant-color-text-secondary, #666); }
-    .row { display: grid; grid-template-columns: 1.5fr 110px 150px auto; gap: 8px; align-items: center; margin-bottom: 6px; }
-  `,
 })
 export class ReturnFormModalComponent {
   private readonly api = inject(SalesCycleApiService);

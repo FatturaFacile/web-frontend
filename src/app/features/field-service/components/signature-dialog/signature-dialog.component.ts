@@ -43,13 +43,6 @@ export interface SignatureResult {
       </ng-template>
     </nz-modal>
   `,
-  styles: `
-    .sd-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-  `,
 })
 export class SignatureDialogComponent {
   readonly open = model.required<boolean>();

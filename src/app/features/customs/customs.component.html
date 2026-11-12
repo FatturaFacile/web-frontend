@@ -32,7 +32,7 @@
           <nz-select
             [ngModel]="dossierStatusFilter()"
             (ngModelChange)="dossierStatusFilter.set($event); loadDossiers(1)"
-            style="width: 180px;"
+           
             [nzPlaceHolder]="'CUSTOMS.FILTER_STATUS' | translate"
             nzAllowClear
           >
@@ -562,7 +562,7 @@
                 formControlName="gross_weight_kg"
                 [nzMin]="0"
                 [nzStep]="0.1"
-                style="width: 100%;"
+               
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -575,7 +575,7 @@
                 formControlName="volume_m3"
                 [nzMin]="0"
                 [nzStep]="0.01"
-                style="width: 100%;"
+               
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -588,7 +588,7 @@
                 formControlName="packages"
                 [nzMin]="1"
                 [nzStep]="1"
-                style="width: 100%;"
+               
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>

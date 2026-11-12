@@ -31,7 +31,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="pv-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="pv-employee"
-          style="width: 260px; display: block"
+         
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"

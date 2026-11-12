@@ -39,7 +39,7 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
             <input nz-input id="reason-input" type="date" [formControl]="reason" />
           }
           @case ('select') {
-            <nz-select id="reason-input" style="width: 100%" nzShowSearch [formControl]="reason">
+            <nz-select id="reason-input" nzShowSearch [formControl]="reason">
               @for (option of options(); track option.value) {
                 <nz-option [nzValue]="option.value" [nzLabel]="option.label ?? option.value" />
               }

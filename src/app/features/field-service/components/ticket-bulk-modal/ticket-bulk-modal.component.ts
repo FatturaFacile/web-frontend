@@ -100,23 +100,6 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
       </ng-template>
     </nz-modal>
   `,
-  styles: `
-    .tb-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-    .tb-full {
-      width: 100%;
-    }
-    .tb-result {
-      margin-top: 16px;
-    }
-    .tb-error {
-      margin: 4px 0 0;
-      font-size: 12px;
-    }
-  `,
 })
 export class TicketBulkModalComponent implements OnInit {
   private readonly tickets = inject(TicketApiService);

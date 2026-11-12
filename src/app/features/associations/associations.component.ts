@@ -68,7 +68,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './associations.component.html',
-  styleUrls: ['./associations.component.scss'],
 })
 export class AssociationsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

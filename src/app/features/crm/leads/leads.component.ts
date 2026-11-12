@@ -56,7 +56,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './leads.component.html',
-  styleUrl: './leads.component.scss',
 })
 export class LeadsComponent implements OnInit {
   private readonly translate = inject(TranslateService);

@@ -48,7 +48,7 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
           <label for="lk-category">{{ 'lookupTranslations.category' | translate }}</label>
           <nz-select
             id="lk-category"
-            style="width: 240px; display: block"
+           
             nzShowSearch
             nzAllowClear
             [ngModel]="category()"

@@ -86,7 +86,7 @@
           <td>
             <nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag>
           </td>
-          <td style="width: 130px">
+          <td>
             <nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress>
           </td>
           <td>{{ p.contract_value | money: p.currency }}</td>
@@ -208,7 +208,7 @@
             formControlName="contract_value"
             [nzMin]="0"
             [nzStep]="1000"
-            style="width: 100%"
+           
           ></nz-input-number>
         </nz-form-control>
       </nz-form-item>

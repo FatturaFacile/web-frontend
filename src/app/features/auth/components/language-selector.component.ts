@@ -21,17 +21,6 @@ import { TranslatePipe } from '@shared';
       }
     </nz-select>
   `,
-  styles: `
-    :host {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 16px;
-    }
-
-    .language-select {
-      width: 140px;
-    }
-  `,
 })
 export class LanguageSelectorComponent {
   private readonly authStore = inject(AuthStore);

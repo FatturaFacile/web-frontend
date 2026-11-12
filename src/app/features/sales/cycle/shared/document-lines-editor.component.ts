@@ -126,12 +126,6 @@ export function linesToPayload(lines: FormArray<LineGroup>): CoreDocumentLinePay
       </button>
     </div>
   `,
-  styles: `
-    .lines { display: flex; flex-direction: column; gap: 8px; }
-    .line { display: grid; grid-template-columns: 1.2fr 1.6fr 0.5fr 0.6fr 0.5fr 0.5fr auto; gap: 8px; align-items: center; }
-    .num { text-align: right; }
-    @media (max-width: 720px) { .line { grid-template-columns: 1fr 1fr; } }
-  `,
 })
 export class DocumentLinesEditorComponent implements OnInit {
   protected readonly lookups = inject(SalesLookupsService);

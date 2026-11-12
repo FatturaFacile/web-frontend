@@ -67,7 +67,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './visitors.component.html',
-  styleUrl: './visitors.component.scss',
 })
 export class VisitorsComponent implements OnInit {
   private readonly api = inject(VisitorsApiService);

@@ -55,7 +55,7 @@
               </nz-card>
             </div>
 
-            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" style="margin-top: 16px">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblPlannedValuePv' | translate">{{ fin.planned_value | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblCostVarianceCv' | translate">{{ fin.cost_variance | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblScheduleVarianceSv' | translate">{{ fin.schedule_variance | money: project().currency }}</nz-descriptions-item>
@@ -105,7 +105,7 @@
                   <td><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></td>
                   <td>{{ t.estimated_hours }}h</td>
                   <td>{{ t.actual_hours }}h</td>
-                  <td style="width: 100px">
+                  <td>
                     <nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress>
                   </td>
                 </tr>
@@ -204,7 +204,7 @@
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblEstimatedHours' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Estimated hours required">
-            <nz-input-number formControlName="estimated_hours" [nzMin]="0.5" [nzStep]="1" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="estimated_hours" [nzMin]="0.5" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
@@ -258,7 +258,7 @@
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblHoursWorked' | translate }}</nz-form-label>
           <nz-form-control nzErrorTip="Hours worked required">
-            <nz-input-number formControlName="hours_worked" [nzMin]="0.5" [nzMax]="24" [nzStep]="0.5" style="width: 100%"></nz-input-number>
+            <nz-input-number formControlName="hours_worked" [nzMin]="0.5" [nzMax]="24" [nzStep]="0.5"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>

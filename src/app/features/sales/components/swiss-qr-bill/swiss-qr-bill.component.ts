@@ -40,7 +40,6 @@ import { QrBillStore } from '../../state/qr-bill.store';
     TranslatePipe,
   ],
   templateUrl: './swiss-qr-bill.component.html',
-  styleUrl: './swiss-qr-bill.component.scss',
 })
 export class SwissQrBillComponent implements OnInit {
   readonly store = inject(QrBillStore);

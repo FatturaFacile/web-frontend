@@ -27,8 +27,8 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div style="display: flex; gap: 16px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzFor="priority">{{ 'ticketCreateDrawer.lblPriorita' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="priority" formControlName="priority">
@@ -40,7 +40,7 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzFor="channel">{{ 'ticketCreateDrawer.lblCanaleDiIngresso' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="channel" formControlName="channel">
@@ -55,8 +55,8 @@
         </nz-form-item>
       </div>
 
-      <div style="display: flex; gap: 16px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzFor="impact">{{ 'ticketCreateDrawer.lblImpatto' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="impact" formControlName="impact">
@@ -67,7 +67,7 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzFor="urgency">{{ 'ticketCreateDrawer.lblUrgenza' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select id="urgency" formControlName="urgency">
@@ -79,8 +79,8 @@
         </nz-form-item>
       </div>
 
-      <div style="display: flex; gap: 16px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzFor="contact_email">{{ 'ticketCreateDrawer.lblEmailContatto' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="emailError">
             <input
@@ -100,7 +100,7 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzFor="contact_phone">{{ 'ticketCreateDrawer.lblTelefonoContatto' | translate }}</nz-form-label>
           <nz-form-control>
             <input
@@ -139,7 +139,7 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
+      <div>
         <button nz-button type="button" (click)="close()">{{ 'ticketCreateDrawer.lblAnnulla' | translate }}</button>
         <button
           nz-button

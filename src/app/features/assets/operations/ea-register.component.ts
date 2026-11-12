@@ -19,10 +19,10 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
     <nz-card>
       <nz-tabs>
         <nz-tab [nzTitle]="'EA.ASSET_REGISTER' | translate">
-          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+          <div>
             <label for="rg-year">{{ 'EA.YEAR' | translate }}</label>
             <nz-input-number id="rg-year" [(ngModel)]="year" [nzMin]="2000" [nzMax]="2100" />
-            <nz-select style="min-width: 160px" [attr.aria-label]="'EA.LEDGER' | translate" [(ngModel)]="ledger">
+            <nz-select [attr.aria-label]="'EA.LEDGER' | translate" [(ngModel)]="ledger">
               @for (type of ledgers; track type) {
                 <nz-option [nzValue]="type" [nzLabel]="type" />
               }

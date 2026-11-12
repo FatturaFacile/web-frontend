@@ -70,7 +70,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './workshop.component.html',
-  styleUrl: './workshop.component.scss',
 })
 export class WorkshopComponent implements OnInit {
   private readonly api = inject(WorkshopApiService);

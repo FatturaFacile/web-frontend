@@ -70,7 +70,6 @@ const emptyDraft = (): CampaignDraft => ({
     TranslatePipe,
   ],
   templateUrl: './campaigns.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class CampaignsComponent {
   private readonly api = inject(CrmApiService);

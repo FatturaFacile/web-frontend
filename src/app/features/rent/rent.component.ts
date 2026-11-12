@@ -61,7 +61,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './rent.component.html',
-  styleUrls: ['./rent.component.scss'],
 })
 export class RentComponent implements OnInit {
   private readonly rentApi = inject(RentApiService);

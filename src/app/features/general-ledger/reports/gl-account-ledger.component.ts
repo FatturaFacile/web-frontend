@@ -26,9 +26,9 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
     TranslatePipe,
   ],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
+    <div>
       <nz-select
-        style="min-width: 320px"
+       
         nzShowSearch
         [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
         [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate"
@@ -39,16 +39,16 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
         }
       </nz-select>
       <label for="al-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="al-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input id="al-from" nz-input type="date" [(ngModel)]="from" />
       <label for="al-to">{{ 'GL.TO' | translate }}</label>
-      <input id="al-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+      <input id="al-to" nz-input type="date" [(ngModel)]="to" />
       <button nz-button nzType="primary" type="button" [disabled]="!accountId" [nzLoading]="loading()" (click)="load(1)">
         {{ 'GL.RUN_REPORT' | translate }}
       </button>
     </div>
 
     @if (report(); as r) {
-      <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }" style="margin-bottom: 16px">
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }">
         <nz-descriptions-item [nzTitle]="'GL.REPORT_CURRENCY' | translate">{{ r.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'GL.COL_OPENING' | translate">{{ r.opening_balance | money: r.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'GL.COL_CLOSING' | translate">{{ r.closing_balance | money: r.currency }}</nz-descriptions-item>

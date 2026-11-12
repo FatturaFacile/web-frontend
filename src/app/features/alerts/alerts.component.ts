@@ -42,7 +42,6 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
   ],
   providers: [TableStateService],
   templateUrl: './alerts.component.html',
-  styleUrl: './alerts.component.scss',
 })
 export class AlertsComponent implements OnInit {
   protected readonly api = inject(AlertsApiService);

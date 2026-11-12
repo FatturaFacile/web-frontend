@@ -76,7 +76,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './construction.component.html',
-  styleUrl: './construction.component.scss',
 })
 export class ConstructionComponent implements OnInit {
   private readonly api = inject(ConstructionApiService);

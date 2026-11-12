@@ -2,7 +2,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'EA.PLANS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openPlanModal(null)">{{ 'EA.PLAN_NEW' | translate }}</button>
+        <button nz-button nzType="primary" type="button" (click)="openPlanModal(null)">{{ 'EA.PLAN_NEW' | translate }}</button>
       }
       <nz-table #planTable nzSize="middle" [nzData]="plans()" [nzLoading]="loading()" [nzPageSize]="20">
         <thead>
@@ -76,7 +76,7 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="planForm">
       <nz-form-item>
@@ -85,7 +85,7 @@
           <input id="pl-name" nz-input formControlName="name" maxlength="255" />
         </nz-form-control>
       </nz-form-item>
-      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+      <div>
         <nz-form-item>
           <nz-form-label nzFor="pl-code">{{ 'EA.CODE' | translate }}</nz-form-label>
           <nz-form-control>
@@ -95,7 +95,7 @@
         <nz-form-item>
           <nz-form-label nzFor="pl-type">{{ 'EA.MAINTENANCE_TYPE' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-select id="pl-type" formControlName="maintenance_type" style="min-width: 180px">
+            <nz-select id="pl-type" formControlName="maintenance_type">
               @for (type of types; track type) {
                 <nz-option [nzValue]="type" [nzLabel]="'EA.TYPE_' + type.toUpperCase() | translate" />
               }
@@ -105,7 +105,7 @@
         <nz-form-item>
           <nz-form-label nzFor="pl-trigger">{{ 'EA.TRIGGER' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-select id="pl-trigger" formControlName="trigger_type" style="min-width: 180px">
+            <nz-select id="pl-trigger" formControlName="trigger_type">
               @for (trigger of triggers; track trigger) {
                 <nz-option [nzValue]="trigger" [nzLabel]="'EA.TRIGGER_' + trigger.toUpperCase() | translate" />
               }
@@ -113,7 +113,7 @@
           </nz-form-control>
         </nz-form-item>
       </div>
-      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+      <div>
         <nz-form-item>
           <nz-form-label nzFor="pl-freq">{{ 'EA.FREQUENCY_DAYS' | translate }}</nz-form-label>
           <nz-form-control>
@@ -139,7 +139,7 @@
           </nz-form-control>
         </nz-form-item>
       </div>
-      <div style="display: flex; gap: 16px; flex-wrap: wrap">
+      <div>
         <nz-form-item>
           <nz-form-label nzFor="pl-cost">{{ 'EA.ESTIMATED_COST' | translate }}</nz-form-label>
           <nz-form-control>
@@ -202,12 +202,12 @@
       </nz-table>
 
       @if (canWrite && !detail.data.is_locked && detail.data.status !== 'completed' && detail.data.status !== 'cancelled') {
-        <form nz-form [formGroup]="partForm" style="display: flex; gap: 8px; margin-top: 12px; align-items: center">
-          <input nz-input formControlName="product_id" style="flex: 3" [attr.aria-label]="'EA.PRODUCT_ID' | translate" [placeholder]="'EA.PRODUCT_ID' | translate" />
-          <nz-input-number formControlName="quantity" [nzMin]="0" [nzPrecision]="4" [attr.aria-label]="'EA.QUANTITY' | translate" style="flex: 1" />
+        <form nz-form [formGroup]="partForm">
+          <input nz-input formControlName="product_id" [attr.aria-label]="'EA.PRODUCT_ID' | translate" [placeholder]="'EA.PRODUCT_ID' | translate" />
+          <nz-input-number formControlName="quantity" [nzMin]="0" [nzPrecision]="4" [attr.aria-label]="'EA.QUANTITY' | translate" />
           <button nz-button type="button" (click)="addPart(detail.data)">{{ 'EA.ADD_PART' | translate }}</button>
         </form>
-        <div style="display: flex; gap: 12px; margin-top: 16px; align-items: center; flex-wrap: wrap">
+        <div>
           @if (detail.data.status !== 'in_progress') {
             <nz-switch [attr.aria-label]="'EA.STOPS_ASSET' | translate" [(ngModel)]="stopsAsset" />
             <span>{{ 'EA.STOPS_ASSET' | translate }}</span>
@@ -228,7 +228,7 @@
   >
     <ng-container *nzModalContent>
       <form nz-form nzLayout="vertical" [formGroup]="completeForm">
-        <div style="display: flex; gap: 16px; flex-wrap: wrap">
+        <div>
           <nz-form-item>
             <nz-form-label nzFor="cw-labor">{{ 'EA.LABOR_COST' | translate }}</nz-form-label>
             <nz-form-control><nz-input-number id="cw-labor" formControlName="labor_cost" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>

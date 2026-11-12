@@ -65,7 +65,6 @@ const emptyTerm = (): TermDraft => ({
     TranslatePipe,
   ],
   templateUrl: './catalog-master-data.component.html',
-  styleUrl: './catalog-master-data.component.scss',
 })
 export class CatalogMasterDataComponent {
   private readonly api = inject(CatalogApiService);

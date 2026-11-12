@@ -260,7 +260,7 @@
           <nz-form-item>
             <nz-form-label nzRequired nzFor="retail-payment-method">{{ 'retail.lblMetodoDiPagamento' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-select id="retail-payment-method" formControlName="payment_method" style="width: 100%;">
+              <nz-select id="retail-payment-method" formControlName="payment_method">
                 <nz-option nzValue="electronic" [nzLabel]="'retail.lblCartaPosElettronico' | translate"></nz-option>
                 <nz-option nzValue="cash" [nzLabel]="'retail.lblContanti' | translate"></nz-option>
               </nz-select>
@@ -282,17 +282,17 @@
       <div formArrayName="lines">
         @for (_ of linesArray.controls; track $index) {
           <div [formGroupName]="$index" class="flex gap-2 items-center mb-2">
-            <div style="flex: 2;">
+            <div>
               <input nz-input formControlName="description" [placeholder]="'retail.lblDescrizioneProdottoServizio' | translate" />
             </div>
-            <div style="flex: 1;">
-              <nz-input-number formControlName="quantity" [nzMin]="1" nzPlaceHolder="Q.tà" style="width: 100%;"></nz-input-number>
+            <div>
+              <nz-input-number formControlName="quantity" [nzMin]="1" nzPlaceHolder="Q.tà"></nz-input-number>
             </div>
-            <div style="flex: 1;">
-              <nz-input-number formControlName="unit_price" [nzMin]="0.01" nzPlaceHolder="Prezzo" style="width: 100%;"></nz-input-number>
+            <div>
+              <nz-input-number formControlName="unit_price" [nzMin]="0.01" nzPlaceHolder="Prezzo"></nz-input-number>
             </div>
-            <div style="flex: 1;">
-              <nz-select formControlName="vat_rate" style="width: 100%;">
+            <div>
+              <nz-select formControlName="vat_rate">
                 <nz-option [nzValue]="22" nzLabel="22%"></nz-option>
                 <nz-option [nzValue]="10" nzLabel="10%"></nz-option>
                 <nz-option [nzValue]="4" nzLabel="4%"></nz-option>
@@ -354,7 +354,7 @@
             id="loyalty-initial-balance"
             formControlName="initial_balance"
             [nzMin]="0"
-            style="width: 100%;"
+           
           ></nz-input-number>
         </nz-form-control>
       </nz-form-item>
@@ -381,7 +381,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="tx-type-select">{{ 'retail.lblTipoOperazione' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-select id="tx-type-select" formControlName="type" style="width: 100%;">
+          <nz-select id="tx-type-select" formControlName="type">
             <nz-option nzValue="topup" [nzLabel]="'retail.lblAccreditaPuntiRicarica' | translate"></nz-option>
             <nz-option nzValue="spend" [nzLabel]="'retail.lblScalaPuntiRiscatto' | translate"></nz-option>
           </nz-select>
@@ -395,7 +395,7 @@
             id="tx-amount-input"
             formControlName="amount"
             [nzMin]="1"
-            style="width: 100%;"
+           
           ></nz-input-number>
         </nz-form-control>
       </nz-form-item>

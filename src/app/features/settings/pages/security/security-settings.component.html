@@ -233,11 +233,11 @@
       [nzMessage]="'SECURITY.NEW_CODES_WARNING' | translate"
       [nzDescription]="'SECURITY.NEW_CODES_BODY' | translate"
       nzShowIcon
-      style="margin-bottom: 16px"
+     
     ></nz-alert>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+    <div>
       @for (code of newRecoveryCodes(); track $index) {
-        <div style="background: #f5f5f5; border: 1px dashed #bfbfbf; padding: 6px; text-align: center; font-family: monospace">
+        <div>
           {{ code }}
         </div>
       }

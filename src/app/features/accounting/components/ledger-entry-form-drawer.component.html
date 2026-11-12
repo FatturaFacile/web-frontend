@@ -24,7 +24,7 @@
           "accounting.form.date" | translate
         }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
-          <nz-date-picker id="date" formControlName="date" style="width: 100%" />
+          <nz-date-picker id="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
 
@@ -64,7 +64,7 @@
               nzFormat="yyyy-MM-dd"
               nzAllowClear
               [nzDisabledDate]="disableReverseDate"
-              style="width: 100%"
+             
             />
           </nz-form-control>
         </nz-form-item>
@@ -93,7 +93,7 @@
                 formControlName="debit"
                 [nzPlaceHolder]="'accounting.form.debitPlaceholder' | translate"
                 [nzMin]="0"
-                style="width: 100%"
+               
               />
             </div>
             <div class="field-amount">
@@ -101,7 +101,7 @@
                 formControlName="credit"
                 [nzPlaceHolder]="'accounting.form.creditPlaceholder' | translate"
                 [nzMin]="0"
-                style="width: 100%"
+               
               />
             </div>
             <button

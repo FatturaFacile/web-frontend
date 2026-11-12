@@ -74,7 +74,6 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
   ],
   providers: [CycleOrdersFacade],
   templateUrl: './orders.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CycleOrdersComponent {
   protected readonly facade = inject(CycleOrdersFacade);

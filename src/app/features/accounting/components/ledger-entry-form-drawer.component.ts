@@ -44,7 +44,6 @@ export function toIsoDay(date: Date): string {
     TranslatePipe,
   ],
   templateUrl: './ledger-entry-form-drawer.component.html',
-  styleUrl: './ledger-entry-form-drawer.component.scss',
 })
 export class LedgerEntryFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);

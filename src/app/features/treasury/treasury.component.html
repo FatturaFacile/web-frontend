@@ -30,18 +30,18 @@
   <nz-tabs [(nzSelectedIndex)]="selectedTab">
     <!-- TAB 1: MOVIMENTI BANCARI -->
     <nz-tab [nzTitle]="'treasury.tabs.bankMovements' | translate">
-      <div class="tab-toolbar" style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
+      <div class="tab-toolbar">
         <input
           class="search-input"
           nz-input
           type="search"
-          style="max-width: 260px;"
+         
           [placeholder]="'treasury.searchPlaceholder' | translate"
           [ngModel]="tableState.search()"
           (ngModelChange)="onSearchChange($event)"
         />
 
-        <span class="spacer" style="flex: 1;"></span>
+        <span class="spacer"></span>
         <button
           nz-button
           nzType="default"
@@ -69,8 +69,8 @@
 
     <!-- TAB 2: CONTI BANCARI -->
     <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
-      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #666;">{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
+      <div>
+        <span>{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
         <button nz-button nzType="primary" (click)="openAccountModal()">
           <nz-icon nzType="plus" /> {{ 'treasury.lblNuovoContoBancario' | translate }}
         </button>
@@ -118,8 +118,8 @@
 
     <!-- TAB 4: DISTINTE DI PAGAMENTO (SEPA / PAIN.001 / RIBA) -->
     <nz-tab [nzTitle]="'treasury.lblDistinteDiPagamentoBonificiAndRiba' | translate">
-      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #666;">{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
+      <div>
+        <span>{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
         <button nz-button nzType="primary" (click)="openBatchModal()">
           <nz-icon nzType="plus" /> {{ 'treasury.lblNuovaDistintaPagamento' | translate }}
         </button>
@@ -147,7 +147,7 @@
                 <nz-tag [nzColor]="batchStatusColor(b.status)">{{ b.status }}</nz-tag>
               </td>
               <td nzAlign="right">
-                <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                <div>
                   @if (b.status === 'draft') {
                     <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
                       {{ 'treasury.lblInviaAppr' | translate }}
@@ -183,9 +183,9 @@
 
     <!-- TAB 5: PREVISIONI FLUSSI DI CASSA (CASH FORECASTS) -->
     <nz-tab [nzTitle]="'treasury.lblPrevisioneFlussiDiCassa' | translate">
-      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #666;">{{ 'treasury.lblAnalisiDellaLiquiditaProspetticaESimulazione' | translate }}</span>
-        <div style="display: flex; gap: 8px;">
+      <div>
+        <span>{{ 'treasury.lblAnalisiDellaLiquiditaProspetticaESimulazione' | translate }}</span>
+        <div>
           <button nz-button nzType="default" (click)="generateForecast(30)">
             <nz-icon nzType="sync" /> {{ 'treasury.lblPrevisione30gg' | translate }}
           </button>
@@ -213,8 +213,8 @@
               <td>{{ cf.forecast_date | date: 'dd.MM.yyyy' }}</td>
               <td>{{ cf.horizon_days }} giorni</td>
               <td>{{ cf.opening_cash | money: cf.currency }}</td>
-              <td style="color: #389e0d;">+{{ cf.expected_inflows | money: cf.currency }}</td>
-              <td style="color: #cf1322;">-{{ cf.expected_outflows | money: cf.currency }}</td>
+              <td>+{{ cf.expected_inflows | money: cf.currency }}</td>
+              <td>-{{ cf.expected_outflows | money: cf.currency }}</td>
               <td><strong>{{ cf.projected_cash | money: cf.currency }}</strong></td>
               <td>
                 <nz-tag [nzColor]="cf.deficit_identified ? 'error' : 'success'">
@@ -254,8 +254,8 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div style="display: flex; gap: 12px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblValuta' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="currency">
@@ -265,7 +265,7 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label>{{ 'treasury.lblBicSwift' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="bic_swift" [placeholder]="'treasury.lblEsBcititmm' | translate" />
@@ -273,18 +273,18 @@
         </nz-form-item>
       </div>
 
-      <div style="display: flex; gap: 12px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label>{{ 'treasury.lblFilialeSede' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="branch_name" [placeholder]="'treasury.lblFilialeDiLuganoOMilano' | translate" />
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label>{{ 'treasury.lblSaldoIniziale' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number formControlName="opening_balance" style="width: 100%;" />
+            <nz-input-number formControlName="opening_balance" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -314,8 +314,8 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div style="display: flex; gap: 12px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblMetodoDispositivo' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="payment_method">
@@ -327,7 +327,7 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblRiferimentoDistinta' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="batch_reference" />
@@ -351,15 +351,15 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div style="display: flex; gap: 12px;">
-        <nz-form-item style="flex: 1;">
+      <div>
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblImportoBonifico' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number formControlName="amount" [nzMin]="0.01" style="width: 100%;" />
+            <nz-input-number formControlName="amount" [nzMin]="0.01" />
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label>{{ 'treasury.lblCausaleRiferimento' | translate }}</nz-form-label>
           <nz-form-control>
             <input nz-input formControlName="remittance_reference" [placeholder]="'treasury.lblEsSaldFatt44' | translate" />
@@ -380,8 +380,8 @@
 >
   <ng-container *nzModalContent>
     <p>{{ 'treasury.modal.description' | translate }}</p>
-    <div style="margin-bottom: 16px">
-      <label style="margin-right: 16px">
+    <div>
+      <label>
         <input
           type="radio"
           name="format"
