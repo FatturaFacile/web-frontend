@@ -176,6 +176,7 @@ describe('ProjectDetailDrawerComponent', () => {
     fixture.detectChanges();
     component.openCreateTaskModal();
     component.taskForm.patchValue({
+      task_number: 'TSK-200',
       title: 'Frontend Component Specs',
       estimated_hours: 16,
       priority: 'high',
@@ -188,6 +189,7 @@ describe('ProjectDetailDrawerComponent', () => {
     expect(mockProjectApi.createTask).toHaveBeenCalledWith(
       'proj-1',
       expect.objectContaining({
+        task_number: 'TSK-200',
         title: 'Frontend Component Specs',
         estimated_hours: 16,
         priority: 'high',
@@ -201,6 +203,7 @@ describe('ProjectDetailDrawerComponent', () => {
     fixture.detectChanges();
     component.openCreateTimesheetModal();
     component.timesheetForm.patchValue({
+      task_id: 'task-1',
       work_date: '2026-11-08',
       hours_worked: 7.5,
       is_billable: true,
@@ -213,6 +216,7 @@ describe('ProjectDetailDrawerComponent', () => {
       'proj-1',
       expect.objectContaining({
         user_id: 'u-1',
+        task_id: 'task-1',
         work_date: '2026-11-08',
         hours_worked: 7.5,
       }),
@@ -222,5 +226,29 @@ describe('ProjectDetailDrawerComponent', () => {
     component.approveTimesheet(mockTimesheets[0]);
     expect(mockProjectApi.approveTimesheet).toHaveBeenCalledWith('ts-1');
     expect(mockMessage.success).toHaveBeenCalledWith('projectDetailDrawer.msgTimesheetApproved');
+  });
+
+  it('does not call the API when the task and timesheet forms are submitted empty', () => {
+    component.openCreateTaskModal();
+    component.taskForm.patchValue({ task_number: '', title: '', planned_start_date: '', planned_end_date: '' });
+    component.submitCreateTask();
+    expect(mockProjectApi.createTask).not.toHaveBeenCalled();
+    expect(component.taskForm.controls.title.touched).toBe(true);
+
+    component.openCreateTimesheetModal();
+    component.timesheetForm.patchValue({ work_date: '' });
+    component.submitCreateTimesheet();
+    expect(mockProjectApi.createTimesheet).not.toHaveBeenCalled();
+
+    component.timesheetForm.patchValue({ work_date: '2999-01-01' });
+    expect(component.timesheetForm.controls.work_date.hasError('futureDate')).toBe(true);
+  });
+
+  it('flags a task that ends before it starts', () => {
+    component.openCreateTaskModal();
+    component.taskForm.patchValue({ planned_start_date: '2026-02-10', planned_end_date: '2026-02-01' });
+    expect(component.taskForm.controls.planned_end_date.hasError('endsBeforeStart')).toBe(true);
+    component.taskForm.patchValue({ planned_start_date: '2026-01-01' });
+    expect(component.taskForm.controls.planned_end_date.hasError('endsBeforeStart')).toBe(false);
   });
 });

@@ -6,7 +6,9 @@ import {
   ApiResponse,
   DmsAiSettingsResource,
   DmsAuditEntry,
+  DmsCheckInRequest,
   DmsCheckOutRequest,
+  DmsStoreVersionRequest,
   DmsConfirmExtractionRequest,
   DmsDocumentParams,
   DmsDocumentResource,
@@ -46,7 +48,19 @@ export class DmsApiService {
   }
 
   createDocument(payload: DmsStoreDocumentRequest): Observable<ApiResponse<DmsDocumentResource>> {
-    return this.http.post<ApiResponse<DmsDocumentResource>>(`${this.base}/dms/documents`, payload);
+    const body = new FormData();
+    body.append('title', payload.title);
+    body.append('file', payload.file, payload.file.name);
+    for (const key of ['folder_id', 'description', 'document_type', 'comment'] as const) {
+      const value = payload[key];
+      if (value) {
+        body.append(key, value);
+      }
+    }
+    if (payload.allow_duplicate !== undefined) {
+      body.append('allow_duplicate', payload.allow_duplicate ? '1' : '0');
+    }
+    return this.http.post<ApiResponse<DmsDocumentResource>>(`${this.base}/dms/documents`, body);
   }
 
   updateDocument(
@@ -86,11 +100,18 @@ export class DmsApiService {
 
   checkInDocument(
     id: string,
-    payload: { original_name: string; sha256: string; size: number },
+    payload: DmsCheckInRequest,
   ): Observable<ApiResponse<DmsDocumentVersionResource>> {
+    const body = new FormData();
+    if (payload.file) {
+      body.append('file', payload.file, payload.file.name);
+    }
+    if (payload.comment) {
+      body.append('comment', payload.comment);
+    }
     return this.http.post<ApiResponse<DmsDocumentVersionResource>>(
       `${this.base}/dms/documents/${id}/check-in`,
-      payload,
+      body,
     );
   }
 
@@ -131,11 +152,16 @@ export class DmsApiService {
 
   createDocumentVersion(
     id: string,
-    payload: { original_name: string; sha256: string; size: number },
+    payload: DmsStoreVersionRequest,
   ): Observable<ApiResponse<DmsDocumentVersionResource>> {
+    const body = new FormData();
+    body.append('file', payload.file, payload.file.name);
+    if (payload.comment) {
+      body.append('comment', payload.comment);
+    }
     return this.http.post<ApiResponse<DmsDocumentVersionResource>>(
       `${this.base}/dms/documents/${id}/versions`,
-      payload,
+      body,
     );
   }
 

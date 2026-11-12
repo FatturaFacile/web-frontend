@@ -42,7 +42,7 @@ const BOM_FIELDS = [
   rf.decimal('base_quantity'),
   rf.text('uom'),
   rf.datetime('effective_from'),
-  rf.datetime('effective_to'),
+  rf.datetime('effective_to', { notBefore: 'effective_from' }),
   rf.textarea('notes'),
   req(rf.lines('components', BOM_COMPONENT, { required: true })),
 ];
@@ -53,7 +53,7 @@ const ROUTING_FIELDS = [
   rf.text('revision'),
   rf.bool('is_default'),
   rf.datetime('effective_from'),
-  rf.datetime('effective_to'),
+  rf.datetime('effective_to', { notBefore: 'effective_from' }),
   rf.textarea('notes'),
   req(
     rf.lines(
@@ -148,7 +148,7 @@ export const MFG_ENGINEERING_PAGE: ResourcePageConfig = {
       rowActions: [
         act('POST', 'RES.A.activate', '/manufacturing/boms/{id}/activate', { confirm: true, visible: whenIn('status', 'draft') }),
         act('POST', 'RES.A.revise', '/manufacturing/boms/{id}/revise', {
-          fields: [rf.text('new_revision'), req(rf.textarea('reason')), rf.datetime('effective_from')],
+          fields: [rf.text('new_revision', { maxLength: 20 }), req(rf.textarea('reason', { maxLength: 1000 })), rf.datetime('effective_from')],
           showResult: true,
           visible: whenIn('status', 'active', 'released'),
         }),
@@ -179,10 +179,10 @@ export const MFG_ENGINEERING_PAGE: ResourcePageConfig = {
           fields: [req(rf.lines('days', [req(rf.integer('weekday', { min: 0 })), req(rf.decimal('available_hours'))], { required: true }))],
         }),
         act('POST', 'RES.A.calendar_exception', '/manufacturing/work-centers/{id}/calendar-exceptions', {
-          fields: [req(rf.datetime('calendar_date')), req(rf.decimal('available_hours')), rf.text('reason')],
+          fields: [req(rf.datetime('calendar_date')), req(rf.decimal('available_hours')), rf.text('reason', { maxLength: 255 })],
         }),
         act('GET', 'RES.A.capacity', '/manufacturing/work-centers/{id}/capacity', {
-          fields: [req(rf.datetime('from')), req(rf.datetime('to'))],
+          fields: [req(rf.datetime('from')), req(rf.datetime('to', { notBefore: 'from' }))],
           showResult: true,
         }),
       ],
@@ -201,7 +201,7 @@ export const MFG_ENGINEERING_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.submit', '/manufacturing/engineering-changes/{id}/submit', { confirm: true, visible: whenIn('status', 'draft') }),
         act('POST', 'RES.A.approve', '/manufacturing/engineering-changes/{id}/approve', { confirm: true, visible: whenIn('status', 'submitted') }),
         act('POST', 'RES.A.reject', '/manufacturing/engineering-changes/{id}/reject', {
-          fields: [req(rf.textarea('reason'))],
+          fields: [req(rf.textarea('reason', { maxLength: 1000 }))],
           danger: true,
           visible: whenIn('status', 'submitted'),
         }),

@@ -12,6 +12,7 @@ const COLORS: Record<string, string> = {
 /** Status of a payroll run: Draft, Calculated, Approved, Final. */
 @Component({
   selector: 'app-payroll-run-status-tag',
+  styleUrl: './payroll-run-status-tag.component.scss',
   imports: [NzTagModule],
   template: `<nz-tag [nzColor]="color()">{{ label() }}</nz-tag>`,
 })

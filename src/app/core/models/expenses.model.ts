@@ -1,40 +1,40 @@
-export type ExpenseStatus =
-  | 'draft'
-  | 'pending_approval'
-  | 'approved'
-  | 'rejected'
-  | 'reimbursed'
-  | 'paid';
+/** Statuses accepted by the API (`in:draft,submitted,approved,rejected`). */
+export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface ExpenseResource {
   id: string;
   expense_number?: string;
   date: string;
   category_id?: string | null;
-  category_name?: string;
-  amount: number;
-  vat_amount?: number;
+  category?: { id: string; code: string; name: string } | null;
+  amount_net?: number;
+  tax_rate?: number;
+  tax_amount?: number;
+  amount_gross: number;
   currency: string;
-  description: string;
-  merchant?: string;
+  notes?: string | null;
+  merchant_name?: string | null;
+  payment_method?: string | null;
   status: ExpenseStatus;
   user_id?: string;
-  user_name?: string;
+  user?: { id: string; name: string; email: string } | null;
   project_id?: string | null;
-  has_receipt?: boolean;
   attachments_count?: number;
   created_at?: string;
 }
 
+/** Body of POST/PUT /expenses, with the API field names (StoreExpenseRequest). */
 export interface CreateExpensePayload {
-  date: string;
-  amount: number;
-  vat_amount?: number;
-  currency: string;
-  description: string;
-  category_id?: string | null;
-  merchant?: string | null;
+  category_id: string;
+  date?: string | null;
+  amount_gross?: number | null;
+  amount_net?: number | null;
+  tax_rate?: number | null;
+  currency?: string | null;
+  merchant_name?: string | null;
+  payment_method?: string | null;
   status?: ExpenseStatus;
+  notes?: string | null;
   project_id?: string | null;
 }
 

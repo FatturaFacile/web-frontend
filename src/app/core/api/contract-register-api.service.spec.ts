@@ -50,13 +50,13 @@ describe('ContractRegisterApiService', () => {
   it('creates a new contract record', () => {
     const payload: StoreContractRequest = {
       kind: 'supplier',
-      counterparty_id: 'supp-456',
+      counterparty_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       contract_number: 'SUP-2026-09',
       title: 'Contratto Manutenzione Server Cloud',
       start_date: '2026-01-01',
       end_date: '2026-12-31',
       currency: 'CHF',
-      total_value: '24000.00',
+      contract_value: '24000.00',
     };
 
     service.createContract(payload).subscribe((res) => {
@@ -74,8 +74,6 @@ describe('ContractRegisterApiService', () => {
   it('renews an existing contract', () => {
     const payload: RenewContractRequest = {
       new_end_date: '2027-12-31',
-      renewal_term_months: 12,
-      revised_value: '26000.00',
     };
 
     service.renewContract('customer', 'ctr-1', payload).subscribe((res) => {
@@ -94,7 +92,8 @@ describe('ContractRegisterApiService', () => {
       type: 'milestone',
       title: 'Collaudo Finale Software ERP',
       due_date: '2026-06-30',
-      penalty_amount: '5000.00',
+      amount: '5000.00',
+      currency: 'CHF',
     };
 
     service.addObligation('customer', 'ctr-1', payload).subscribe((res) => {

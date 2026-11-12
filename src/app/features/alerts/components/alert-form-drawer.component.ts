@@ -8,11 +8,12 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AlertsApiService, AlertResource, AlertSeverity, TranslateService } from '@core';
+import { AlertsApiService, AlertResource, AlertSeverity, applyServerErrors, TranslateService } from '@core';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-alert-form-drawer',
+  styleUrl: './alert-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
     NzDrawerModule,
@@ -41,7 +42,7 @@ export class AlertFormDrawerComponent {
   protected readonly form = this.fb.group({
     title: this.fb.control<string>('', [Validators.required, Validators.maxLength(255)]),
     severity: this.fb.control<AlertSeverity>('info'),
-    message: this.fb.control<string>(''),
+    message: this.fb.control<string>('', [Validators.maxLength(2000)]),
     is_active: this.fb.control<boolean>(true),
   });
 
@@ -96,8 +97,9 @@ export class AlertFormDrawerComponent {
         this.open.set(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.isSaving.set(false);
+        applyServerErrors(this.form, err);
       },
     });
   }

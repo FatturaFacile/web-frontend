@@ -22,9 +22,16 @@ type Row = { id: string } & Record<string, unknown>;
 const PATTERNS = ['rotation', 'weekly_without_sunday', 'weekly_without_weekend', 'manual'];
 const DAY_KINDS = ['weekday', 'weekend', 'holiday'];
 
+/** API `date_format:H:i` on the start and end of a shift type. */
+const TIME_PATTERN = '^([01]\\d|2[0-3]):[0-5]\\d$';
+
+/** API: a working or on-call shift type needs its start and end time. */
+const needsTimes = (values: Record<string, unknown>): boolean => ['working', 'on_call'].includes(String(values['category'] ?? ''));
+
 /** Shift planning: board, shift types, rotation sequences, exceptions and staffing needs. */
 @Component({
   selector: 'app-hr-shifts',
+  styleUrl: './shifts.component.scss',
   imports: [NzCardModule, NzTabsModule, PageHeaderComponent, TranslatePipe, CrudTableComponent, ShiftBoardComponent],
   template: `
     <app-page-header [title]="'hrmShift.title' | translate" [subtitle]="'hrmShift.subtitle' | translate" />
@@ -98,7 +105,7 @@ export class ShiftsComponent implements OnInit {
         { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'select', required: true, options: () => this.employeeOptions() },
         { key: 'shift_type_id', labelKey: 'hrmShift.shiftType', type: 'select', required: true, options: () => this.typeOptions() },
         { key: 'work_date', labelKey: 'hrmCommon.date', type: 'date', required: true },
-        { key: 'note', labelKey: 'hrmCommon.notes', type: 'text', nullable: true },
+        { key: 'note', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, maxLength: 1000 },
       ],
       (payload) => this.api.placeShift(payload as never),
     ),
@@ -124,8 +131,8 @@ export class ShiftsComponent implements OnInit {
         required: true,
         options: () => ['working', 'absence', 'on_call'].map((value) => ({ value, labelKey: `hrmShift.category.${value}` })),
       },
-      { key: 'start_time', labelKey: 'hrmShift.startTime', type: 'text', nullable: true },
-      { key: 'end_time', labelKey: 'hrmShift.endTime', type: 'text', nullable: true },
+      { key: 'start_time', labelKey: 'hrmShift.startTime', type: 'text', nullable: true, pattern: TIME_PATTERN, requiredWhen: needsTimes },
+      { key: 'end_time', labelKey: 'hrmShift.endTime', type: 'text', nullable: true, pattern: TIME_PATTERN, requiredWhen: needsTimes },
       { key: 'break_minutes', labelKey: 'hrmShift.breakMinutes', type: 'integer', column: false },
       { key: 'is_paid_absence', labelKey: 'hrmShift.paidAbsence', type: 'boolean', column: false },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
@@ -170,7 +177,7 @@ export class ShiftsComponent implements OnInit {
         { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'select', required: true, options: () => this.employeeOptions() },
         { key: 'shift_sequence_id', labelKey: 'hrmShift.sequence', type: 'select', required: true, options: () => this.sequenceOptions() },
         { key: 'start_date', labelKey: 'hrmCommon.from', type: 'date', required: true },
-        { key: 'end_date', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
+        { key: 'end_date', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'start_date' },
         { key: 'offset_days', labelKey: 'hrmShift.offsetDays', type: 'integer' },
       ],
       (payload) => this.api.assignShiftSequence(payload as never),
@@ -185,7 +192,7 @@ export class ShiftsComponent implements OnInit {
         { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'select', nullable: true, options: () => this.employeeOptions() },
         { key: 'department_id', labelKey: 'hrmOrg.department', type: 'select', nullable: true, options: () => this.departmentOptions() },
         { key: 'shift_type_id', labelKey: 'hrmShift.shiftType', type: 'select', nullable: true, options: () => this.typeOptions() },
-        { key: 'reason', labelKey: 'hrmCommon.reason', type: 'text', nullable: true },
+        { key: 'reason', labelKey: 'hrmCommon.reason', type: 'text', nullable: true, maxLength: 255 },
       ],
       (payload) => this.api.addShiftException(payload as never),
     ),
@@ -206,7 +213,7 @@ export class ShiftsComponent implements OnInit {
         },
         { key: 'required_count', labelKey: 'hrmShift.requiredCount', type: 'integer', required: true },
         { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date', required: true },
-        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
+        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'valid_from' },
       ],
       (payload) => this.api.setStaffingNeed(payload as never),
     ),

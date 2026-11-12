@@ -1,11 +1,11 @@
-<a class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2" href="#main-content">Salta al contenuto principale</a>
+<a class="skip-link" href="#main-content">Salta al contenuto principale</a>
 
 @if (!authStore.isAuthenticated()) {
   <main id="main-content" tabindex="-1">
     <router-outlet></router-outlet>
   </main>
 } @else {
-  <nz-layout class="min-h-screen">
+  <nz-layout class="app-layout">
     <nz-sider
       class="menu-sidebar"
       nzCollapsible
@@ -16,15 +16,17 @@
     >
       <app-sidebar />
     </nz-sider>
-    <nz-layout>
+    <nz-layout class="main-layout">
       <nz-header class="main-header">
         <app-header />
       </nz-header>
-      <nz-content class="p-4">
-        <app-breadcrumb />
-        <main id="main-content" tabindex="-1" class="mt-4">
-          <router-outlet></router-outlet>
-        </main>
+      <nz-content class="main-content">
+        <div class="content-container">
+          <app-breadcrumb />
+          <main id="main-content" tabindex="-1" class="main-outlet">
+            <router-outlet></router-outlet>
+          </main>
+        </div>
       </nz-content>
     </nz-layout>
   </nz-layout>

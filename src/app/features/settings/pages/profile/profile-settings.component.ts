@@ -29,6 +29,7 @@ type PasswordField = 'current' | 'password' | 'confirmation';
  */
 @Component({
   selector: 'app-profile-settings',
+  styleUrl: './profile-settings.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -61,7 +62,7 @@ export class ProfileSettingsComponent implements OnInit {
 
   protected readonly form = this.fb.group(
     {
-      current_password: this.fb.control('', [Validators.required]),
+      current_password: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
       password: this.fb.control('', [Validators.required]),
       password_confirmation: this.fb.control('', [Validators.required]),
       code: this.fb.control(''),
@@ -159,8 +160,8 @@ export class ProfileSettingsComponent implements OnInit {
   private syncSecondFactorValidators(): void {
     const { code, recovery_code } = this.form.controls;
     const required = [Validators.required];
-    code.setValidators(this.twoFactorEnabled() && !this.useRecoveryCode() ? required : []);
-    recovery_code.setValidators(this.twoFactorEnabled() && this.useRecoveryCode() ? required : []);
+    code.setValidators(this.twoFactorEnabled() && !this.useRecoveryCode() ? [...required, Validators.maxLength(16)] : []);
+    recovery_code.setValidators(this.twoFactorEnabled() && this.useRecoveryCode() ? [...required, Validators.maxLength(32)] : []);
     code.updateValueAndValidity();
     recovery_code.updateValueAndValidity();
   }

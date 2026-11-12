@@ -171,7 +171,7 @@
 
       @if (availability(); as av) {
         <h4 class="section">{{ 'SC.ORDERS.AVAILABILITY' | translate }}</h4>
-        <nz-table [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table [nzScroll]="{ x: '720px' }" [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
               <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
@@ -207,7 +207,7 @@
       >
         <ng-container *nzModalContent>
           <label for="cancel-reason">{{ 'SC.ORDERS.CANCEL_REASON' | translate }}</label>
-          <textarea nz-input id="cancel-reason" rows="3" [(ngModel)]="cancelReason"></textarea>
+          <textarea nz-input id="cancel-reason" rows="3" maxlength="500" [(ngModel)]="cancelReason"></textarea>
         </ng-container>
       </nz-modal>
     }

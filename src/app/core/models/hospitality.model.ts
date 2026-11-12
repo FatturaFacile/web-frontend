@@ -16,7 +16,8 @@ export interface HospitalityRoomRequest {
   height?: number;
 }
 
-export type HospitalityTableShape = 'rect' | 'round';
+/** Shapes the API accepts (`in:square,round,rectangle`). */
+export type HospitalityTableShape = 'square' | 'round' | 'rectangle';
 export type HospitalityTableStatus = 'free' | 'occupied' | 'reserved' | 'billing';
 
 export interface HospitalityTable {
@@ -87,10 +88,11 @@ export interface HospitalityOrderItem {
   id: string;
   order_id: string;
   product_id?: string | null;
-  name: string;
+  description: string;
   quantity: number;
   unit_price: string;
-  subtotal: string;
+  tax_rate?: string;
+  subtotal?: string;
   course: number;
   status: HospitalityItemStatus;
   notes?: string | null;
@@ -118,11 +120,13 @@ export interface HospitalityOrderRequest {
   notes?: string;
 }
 
+/** Row of POST /orders/{id}/items: without a product_id the description, unit_price and tax_rate are required. */
 export interface HospitalityItemPayload {
   product_id?: string;
-  name: string;
+  description?: string;
   quantity: number;
-  unit_price: string;
+  unit_price?: string;
+  tax_rate?: number;
   course?: number;
   notes?: string;
 }
@@ -140,12 +144,23 @@ export interface HospitalityMoveRequest {
 }
 
 export interface HospitalityVoidRequest {
-  reason?: string;
+  /** Required by the API, 3 to 255 characters. */
+  reason: string;
 }
 
+export type HospitalityPaymentMode = 'items' | 'equal';
+export type HospitalityPaymentMethod = 'cash' | 'card' | 'mixed';
+
+/** Body of POST /orders/{id}/payments (HospitalityRequest, route orders.payments.store). */
 export interface HospitalityPaymentRequest {
-  pos_session_id?: string;
-  payment_method: string;
+  pos_session_id: string;
+  mode: HospitalityPaymentMode;
+  /** Required when the mode is `items`. */
+  lines?: { order_item_id: string; quantity: number }[];
+  /** Required when the mode is `equal`: the number of equal shares paid now. */
+  ways?: number;
+  payment_method: HospitalityPaymentMethod;
+  /** Required (greater than zero) when the method is `mixed`. */
   cash_amount?: number;
   cash_tendered?: number;
   contact_id?: string;
@@ -160,11 +175,11 @@ export interface HospitalityKitchenTicket {
   table_name: string;
   course: number;
   status: KitchenTicketStatus;
-  items: { name: string; quantity: number; notes?: string }[];
+  items: { description?: string; name?: string; quantity: number; notes?: string }[];
   created_at: string;
 }
 
-export type ReservationStatus = 'confirmed' | 'seated' | 'cancelled' | 'no_show';
+export type ReservationStatus = 'booked' | 'seated' | 'completed' | 'cancelled' | 'no_show';
 
 export interface HospitalityReservation {
   id: string;

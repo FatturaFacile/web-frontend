@@ -5,6 +5,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
 import {
+  AutomotiveApiService,
+  ClientApiService,
   PaginatedResponse,
   WorkshopApiService,
   WorkshopFolder,
@@ -15,6 +17,9 @@ import {
   WorkshopVehicleStockUnit,
 } from '@core';
 import { WorkshopComponent } from './workshop.component';
+
+const VEHICLE_ID = '11111111-1111-4111-8111-111111111111';
+const CONTACT_ID = '22222222-2222-4222-8222-222222222222';
 
 describe('WorkshopComponent', () => {
   let fixture: ComponentFixture<WorkshopComponent>;
@@ -28,7 +33,7 @@ describe('WorkshopComponent', () => {
     vin: 'ZFA12345678901234',
     vehicle_model: 'Fiat Panda 1.2 Fire',
     customer_name: 'Mario Rossi',
-    kind: 'repair',
+    kind: 'mechanics',
     status: 'open',
     mileage_in: 45000,
     currency: 'EUR',
@@ -68,20 +73,20 @@ describe('WorkshopComponent', () => {
     model: 'Golf VII 1.6 TDI',
     vin: 'WVWZZZAUZHP123456',
     year: 2019,
-    mileage: 68000,
-    purchase_cost: '9500.00',
+    mileage_km: 68000,
+    purchase_price: '9500.00',
     list_price: '13900.00',
     currency: 'EUR',
-    status: 'available',
+    status: 'in_stock',
   };
 
   const mockRecurringService: WorkshopRecurringService = {
     id: 'rec-1-uuid',
     vehicle_id: 'veh-1',
     license_plate: 'AB123CD',
-    service_type: 'scheduled_maintenance',
+    service_type: 'maintenance_plan',
     name: 'Tagliando Annuale / 15.000 km',
-    interval: '1 year',
+    interval: 'yearly',
     start_date: '2026-01-15',
     unit_price: '200.00',
     currency: 'EUR',
@@ -144,6 +149,16 @@ describe('WorkshopComponent', () => {
     sellVehicleStock: vi.fn().mockReturnValue(of({ data: { ...mockStockUnit, status: 'sold' } })),
   };
 
+  const mockAutomotiveApi = {
+    getVehicles: vi.fn().mockReturnValue(
+      of({ data: { data: [{ id: VEHICLE_ID, license_plate: 'AB123CD', make: 'Fiat', model: 'Panda' }] } }),
+    ),
+  };
+
+  const mockClientApi = {
+    list: vi.fn().mockReturnValue(of({ data: [{ id: CONTACT_ID, company_name: 'Rossi Srl' }], meta: {} })),
+  };
+
   const mockMessageService = {
     success: vi.fn(),
     error: vi.fn(),
@@ -159,6 +174,8 @@ describe('WorkshopComponent', () => {
       providers: [
         provideNzIcons(icons),
         { provide: WorkshopApiService, useValue: mockWorkshopApi },
+        { provide: AutomotiveApiService, useValue: mockAutomotiveApi },
+        { provide: ClientApiService, useValue: mockClientApi },
         { provide: NzMessageService, useValue: mockMessageService },
       ],
     }).compileComponents();
@@ -183,22 +200,42 @@ describe('WorkshopComponent', () => {
     expect(component.folderModalVisible()).toBe(true);
 
     component.folderForm.patchValue({
-      vehicle_id: 'veh-1',
-      kind: 'repair',
+      vehicle_id: VEHICLE_ID,
+      contact_id: CONTACT_ID,
+      kind: 'mechanics',
       currency: 'EUR',
       mileage_in: 50000,
+      complaint: 'Rumore freni',
     });
 
     component.saveFolder();
 
     expect(mockWorkshopApi.createFolder).toHaveBeenCalledWith(
       expect.objectContaining({
-        vehicle_id: 'veh-1',
-        kind: 'repair',
+        vehicle_id: VEHICLE_ID,
+        contact_id: CONTACT_ID,
+        kind: 'mechanics',
+        complaint: 'Rumore freni',
       }),
     );
     expect(mockMessageService.success).toHaveBeenCalled();
     expect(component.folderModalVisible()).toBe(false);
+  });
+
+  it('should not call the API when the forms are submitted empty or with an invalid price', () => {
+    component.openCreateFolderModal();
+    component.folderForm.patchValue({ vehicle_id: '' });
+    component.saveFolder();
+    expect(mockWorkshopApi.createFolder).not.toHaveBeenCalled();
+    expect(component.folderForm.controls.vehicle_id.touched).toBe(true);
+
+    component.stockForm.patchValue({ stock_number: '', make: '', model: '' });
+    component.saveStock();
+    expect(mockWorkshopApi.createVehicleStock).not.toHaveBeenCalled();
+
+    component.recurringForm.patchValue({ vehicle_id: VEHICLE_ID, name: 'Service', unit_price: '12.345678' });
+    component.saveRecurringService();
+    expect(mockWorkshopApi.createRecurringService).not.toHaveBeenCalled();
   });
 
   it('should change folder status', () => {
@@ -301,6 +338,8 @@ describe('WorkshopComponent', () => {
       model: '500X',
       list_price: '16500.00',
       currency: 'EUR',
+      mileage_km: 1200,
+      purchase_price: '9000.00',
     });
 
     component.saveStock();
@@ -308,6 +347,8 @@ describe('WorkshopComponent', () => {
       expect.objectContaining({
         stock_number: 'STK-002',
         make: 'Fiat',
+        mileage_km: 1200,
+        purchase_price: '9000.00',
       }),
     );
     expect(mockMessageService.success).toHaveBeenCalled();
@@ -317,7 +358,7 @@ describe('WorkshopComponent', () => {
     expect(component.sellStockModalVisible()).toBe(true);
 
     component.sellStockForm.patchValue({
-      buyer_contact_id: 'cust-99',
+      buyer_contact_id: CONTACT_ID,
       sale_date: '2026-03-01',
       sale_price: '13500.00',
       tax_rate: '22.00',
@@ -327,7 +368,7 @@ describe('WorkshopComponent', () => {
     expect(mockWorkshopApi.sellVehicleStock).toHaveBeenCalledWith(
       'stock-1-uuid',
       expect.objectContaining({
-        buyer_contact_id: 'cust-99',
+        buyer_contact_id: CONTACT_ID,
         sale_price: '13500.00',
       }),
     );
@@ -335,15 +376,35 @@ describe('WorkshopComponent', () => {
     expect(component.sellStockModalVisible()).toBe(false);
   });
 
+  it('loads the vehicle and contact options from the API and rejects a non-UUID id', () => {
+    expect(mockAutomotiveApi.getVehicles).toHaveBeenCalled();
+    expect(mockClientApi.list).toHaveBeenCalledWith({ search: '', per_page: 20 });
+
+    component.openCreateFolderModal();
+    component.folderForm.patchValue({ vehicle_id: 'AB123CD', contact_id: 'not-a-uuid' });
+    expect(component.folderForm.controls.vehicle_id.hasError('uuid')).toBe(true);
+    expect(component.folderForm.controls.contact_id.hasError('uuid')).toBe(true);
+    component.saveFolder();
+    expect(mockWorkshopApi.createFolder).not.toHaveBeenCalled();
+  });
+
+  it('blocks a promised date before the received date', () => {
+    component.openCreateFolderModal();
+    component.folderForm.patchValue({ vehicle_id: VEHICLE_ID, received_at: '2026-03-10', promised_at: '2026-03-01' });
+    expect(component.folderForm.controls.promised_at.hasError('endsBeforeStart')).toBe(true);
+    component.saveFolder();
+    expect(mockWorkshopApi.createFolder).not.toHaveBeenCalled();
+  });
+
   it('should create recurring service and stop it', () => {
     component.openCreateRecurringModal();
     expect(component.recurringModalVisible()).toBe(true);
 
     component.recurringForm.patchValue({
-      vehicle_id: 'veh-1',
-      service_type: 'scheduled_maintenance',
+      vehicle_id: VEHICLE_ID,
+      service_type: 'maintenance_plan',
       name: 'Revisione Biennale',
-      interval: '2 years',
+      interval: 'semiannual',
       start_date: '2026-03-01',
       unit_price: '80.00',
       tax_rate: '22.00',
@@ -353,7 +414,7 @@ describe('WorkshopComponent', () => {
     component.saveRecurringService();
     expect(mockWorkshopApi.createRecurringService).toHaveBeenCalledWith(
       expect.objectContaining({
-        vehicle_id: 'veh-1',
+        vehicle_id: VEHICLE_ID,
         name: 'Revisione Biennale',
       }),
     );

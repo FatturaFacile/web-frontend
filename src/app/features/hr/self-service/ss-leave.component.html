@@ -78,7 +78,7 @@
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-type">{{ 'hrmCommon.type' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('leave_type_id')">
           <nz-select id="ss-leave-type" formControlName="leave_type_id" nzShowSearch>
             @for (type of leaveTypes(); track type.id) {
               <nz-option [nzValue]="type.id" [nzLabel]="type.name" />
@@ -88,35 +88,26 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-start">{{ 'hrmCommon.from' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('start_date')">
           <input nz-input id="ss-leave-start" type="date" formControlName="start_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-end">{{ 'hrmCommon.to' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('end_date')">
           <input nz-input id="ss-leave-end" type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-hours">{{ 'hrmCommon.hours' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="errorTip">
+        <nz-form-control [nzErrorTip]="errorTip('total_hours')">
           <input nz-input id="ss-leave-hours" inputmode="decimal" formControlName="total_hours" />
-          <ng-template #errorTip let-control>
-            @if (control.errors?.['serverError']) {
-              {{ control.errors['serverError'] }}
-            } @else if (control.errors?.['decimal']) {
-              {{ 'hrmCommon.invalidDecimal' | translate }}
-            } @else {
-              {{ 'hrmCommon.required' | translate }}
-            }
-          </ng-template>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="ss-leave-reason">{{ 'hrmCommon.reason' | translate }}</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input id="ss-leave-reason" rows="2" maxlength="500" formControlName="reason"></textarea>
+        <nz-form-control [nzErrorTip]="errorTip('reason')">
+          <textarea nz-input id="ss-leave-reason" rows="2" maxlength="1000" formControlName="reason"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -134,7 +125,11 @@
   (nzOnCancel)="cancelTarget.set(null)"
 >
   <ng-container *nzModalContent>
-    <label for="ss-cancel-reason">{{ 'hrmCommon.reason' | translate }}</label>
-    <textarea nz-input id="ss-cancel-reason" rows="3" [formControl]="cancelReason"></textarea>
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="ss-cancel-reason">{{ 'hrmCommon.reason' | translate }}</nz-form-label>
+      <nz-form-control [nzErrorTip]="cancelReasonTip()">
+        <textarea nz-input id="ss-cancel-reason" rows="3" maxlength="1000" [formControl]="cancelReason"></textarea>
+      </nz-form-control>
+    </nz-form-item>
   </ng-container>
 </nz-modal>

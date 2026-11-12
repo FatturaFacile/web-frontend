@@ -53,7 +53,7 @@ export const LOTS_PAGE: ResourcePageConfig = {
             req(rf.uuid('component_lot_id')),
             rf.decimal('quantity_consumed'),
             rf.uuid('production_order_id'),
-            rf.textarea('notes'),
+            rf.textarea('notes', { maxLength: 1000 }),
           ],
         }),
       ],

@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.search {
+  width: 280px;
+  max-width: 100%;
+}
+
+.filter {
+  width: 170px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.alert-desc {
+  margin-top: 2px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.actions-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}

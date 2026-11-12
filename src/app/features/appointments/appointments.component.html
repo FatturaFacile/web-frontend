@@ -26,7 +26,7 @@
       [nzTitle]="'APPOINTMENTS.COMPLETED' | translate"
       [nzPrefix]="doneIcon"
     ></nz-statistic>
-    <ng-template #doneIcon><span nz-icon nzType="check-circle"></span></ng-template>
+    <ng-template #doneIcon><span nz-icon nzType="check-circle" class="text-success"></span></ng-template>
   </nz-card>
   <nz-card class="stat-card">
     <nz-statistic
@@ -81,10 +81,10 @@
         <div class="filters">
           <input
             nz-input
+            class="date-input"
             type="date"
             [ngModel]="filterDate()"
             (ngModelChange)="filterDate.set($event); loadAppointments()"
-           
           />
         </div>
         <div class="actions">
@@ -175,22 +175,37 @@
     <nz-tab [nzTitle]="'APPOINTMENTS.TAB_CONFLICTS' | translate">
       <nz-card [nzTitle]="'APPOINTMENTS.CHECK_AVAILABILITY' | translate" class="sub-card">
         <form nz-form [formGroup]="conflictForm" (ngSubmit)="runConflictCheck()" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
           <div class="form-row-3">
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'APPOINTMENTS.TECHNICIAN_USER_ID' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-                <input nz-input formControlName="user_id" [placeholder]="'APPOINTMENTS.LBL_UUID_TECNICO_RISORSA' | translate" />
+              <nz-form-control [nzErrorTip]="fieldTip">
+                <nz-select formControlName="user_ids" nzMode="multiple" nzShowSearch [nzPlaceHolder]="'APPOINTMENTS.LBL_UUID_TECNICO_RISORSA' | translate">
+                  @for (user of users(); track user.id) {
+                    <nz-option [nzValue]="user.id" [nzLabel]="user.name"></nz-option>
+                  }
+                </nz-select>
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'APPOINTMENTS.STARTS_AT' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input type="datetime-local" formControlName="starts_at" />
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'APPOINTMENTS.ENDS_AT' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input type="datetime-local" formControlName="ends_at" />
               </nz-form-control>
             </nz-form-item>
@@ -234,7 +249,7 @@
 >
   <ng-container *nzDrawerContent>
     @if (selectedAppointment(); as app) {
-      <nz-descriptions nzBordered [nzColumn]="1" nzSize="small">
+      <nz-descriptions class="mb-4" nzBordered [nzColumn]="1" nzSize="small">
         <nz-descriptions-item [nzTitle]="'APPOINTMENTS.TITLE_COL' | translate">
           <strong>{{ app.title }}</strong>
         </nz-descriptions-item>
@@ -260,7 +275,7 @@
         </nz-descriptions-item>
         @if (app.service_report_id) {
           <nz-descriptions-item [nzTitle]="'APPOINTMENTS.REPORT' | translate">
-            <span nz-icon nzType="check-circle"></span>
+            <span nz-icon nzType="check-circle" class="text-success"></span>
             #{{ app.service_report_id }}
           </nz-descriptions-item>
         }
@@ -330,30 +345,55 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="appointmentForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'APPOINTMENTS.TITLE_COL' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="title" [placeholder]="'APPOINTMENTS.LBL_ES_SOPRALLUOGO_IMPIANTO_ELETTRICO' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'APPOINTMENTS.STARTS_AT' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="datetime-local" formControlName="starts_at" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'APPOINTMENTS.ENDS_AT' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="datetime-local" formControlName="ends_at" />
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
-        <nz-form-label>{{ 'APPOINTMENTS.CONTACT' | translate }}</nz-form-label>
+        <nz-form-label nzRequired>{{ 'APPOINTMENTS.CONTACT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="contact_id" nzShowSearch [nzPlaceHolder]="'APPOINTMENTS.LBL_ID_O_CODICE_CLIENTE' | translate">
+            @for (contact of contacts(); track contact.id) {
+              <nz-option [nzValue]="contact.id" [nzLabel]="contactName(contact)"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'APPOINTMENTS.ATTENDEES' | translate }}</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="contact_id" [placeholder]="'APPOINTMENTS.LBL_ID_O_CODICE_CLIENTE' | translate" />
+          <nz-select formControlName="attendee_ids" nzMode="multiple" nzShowSearch>
+            @for (user of users(); track user.id) {
+              <nz-option [nzValue]="user.id" [nzLabel]="user.name"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -381,9 +421,20 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="cancelForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'APPOINTMENTS.CANCELLATION_REASON' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="fieldTip">
           <textarea nz-input formControlName="reason" rows="3" [placeholder]="'APPOINTMENTS.LBL_ES_RICHIESTA_SPOSTAMENTO_DATA_DAL_CLIENTE' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>

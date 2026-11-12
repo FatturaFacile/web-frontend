@@ -25,6 +25,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 /** Prorated plan and seat changes, suspension and collection failures of a subscription contract (`/sub/contracts`). */
 @Component({
   selector: 'app-contract-changes',
+  styleUrl: './subscription-billing.scss',
   imports: [FormsModule, NzAlertModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, NzTableModule, TranslatePipe],
   templateUrl: './contract-changes.component.html',
 })
@@ -49,6 +50,8 @@ export class ContractChangesComponent implements OnInit {
   protected effectiveDate = '';
   protected reason = '';
   protected resumeOn = '';
+  /** Today (YYYY-MM-DD): the API requires resume_on after today (after:today). */
+  protected readonly today = new Date().toLocaleDateString('en-CA');
   protected invoiceId = '';
 
   ngOnInit(): void {
@@ -85,6 +88,8 @@ export class ContractChangesComponent implements OnInit {
         return DECIMAL.test(this.quantity);
       case 'collection':
         return this.invoiceId.trim().length > 0;
+      case 'suspend':
+        return !this.resumeOn || this.resumeOn > this.today;
       default:
         return true;
     }

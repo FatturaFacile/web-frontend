@@ -1,0 +1,186 @@
+:host {
+  display: block;
+}
+
+.ai-assistant-container {
+  .page-header {
+    margin-bottom: var(--space-4);
+
+    .header-title {
+      h1 {
+        margin: 0;
+        font-size: var(--font-size-xl);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      .subtitle {
+        margin: var(--space-1) 0 0;
+        font-size: var(--font-size-md);
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  .prompt-card {
+    .prompt-box {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+
+      .prompt-textarea {
+        resize: vertical;
+        font-size: var(--font-size-md);
+        padding: var(--space-3);
+      }
+
+      .prompt-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+
+        .hint-text {
+          font-size: var(--font-size-xs);
+          color: var(--text-muted);
+        }
+      }
+    }
+
+    .suggested-prompts {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px dashed var(--border-color);
+
+      .suggested-label {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-size: var(--font-size-xs);
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .prompt-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+
+        .prompt-chip {
+          display: inline-flex;
+          align-items: center;
+          padding: var(--space-1) var(--space-3);
+          background: var(--bg-card-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 9999px;
+          font-size: var(--font-size-sm);
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: background-color 0.2s ease, border-color 0.2s ease;
+
+          &:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-color);
+          }
+        }
+      }
+    }
+  }
+
+  .loading-state {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-6);
+  }
+
+  .answer-card {
+    .answer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+
+      .outcome-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .query-key-text code {
+        padding: 2px var(--space-2);
+        background: var(--bg-card-secondary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+      }
+    }
+
+    .answer-description {
+      margin-bottom: var(--space-4);
+      font-size: var(--font-size-md);
+      color: var(--text-secondary);
+    }
+
+    .results-table-wrapper {
+      margin-top: var(--space-4);
+      overflow-x: auto;
+    }
+  }
+
+  .catalogue-toolbar {
+    display: flex;
+    justify-content: flex-start;
+
+    .search-input {
+      max-width: 360px;
+    }
+  }
+
+  .logs-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+
+    .filter-field {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+
+      .filter-label {
+        font-weight: 500;
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+      }
+    }
+
+    .log-outcome-select {
+      width: 192px;
+    }
+  }
+
+  .log-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    .detail-group {
+      .detail-label {
+        display: block;
+        margin-bottom: var(--space-1);
+        font-size: var(--font-size-xs);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .detail-value {
+        margin: 0;
+        color: var(--text-primary);
+      }
+    }
+  }
+}

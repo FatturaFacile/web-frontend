@@ -1,10 +1,13 @@
 import { Component, inject, input, OnInit } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormControl,
   FormGroup,
   NonNullableFormBuilder,
   ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -17,6 +20,20 @@ import { SalesLookupsService } from './sales-lookups.service';
 
 export const DECIMAL_PATTERN = /^\d+(\.\d{1,4})?$/;
 
+/** The numeric text must be greater than zero (the API requires quantity gt:0). */
+export const greaterThanZero: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const raw = String(control.value ?? '').trim();
+  return raw === '' || Number(raw) > 0 ? null : { min: { min: 0 } };
+};
+
+/** The numeric text must not exceed the given maximum. */
+export function maxNumber(limit: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const raw = String(control.value ?? '').trim();
+    return raw === '' || Number(raw) <= limit ? null : { max: { max: limit } };
+  };
+}
+
 export type LineGroup = FormGroup<{
   product_id: FormControl<string>;
   description: FormControl<string>;
@@ -26,14 +43,37 @@ export type LineGroup = FormGroup<{
   discount_percentage: FormControl<string>;
 }>;
 
-export function createLineGroup(fb: NonNullableFormBuilder, line?: Partial<CoreDocumentLine>): LineGroup {
+/** The numeric text must be strictly below the given limit (the API `lt:` rule). */
+export function belowNumber(limit: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const raw = String(control.value ?? '').trim();
+    return raw === '' || Number(raw) < limit ? null : { max: { max: limit } };
+  };
+}
+
+/** Stricter line rules of the documents whose API request is tighter than the quote/order one. */
+export interface LineGroupOptions {
+  /** `unit_price` gt:0 (debit note) instead of min:0. */
+  positiveUnitPrice?: boolean;
+  /** `discount_percentage` lt:100 (debit note) instead of max:100. */
+  discountBelow100?: boolean;
+}
+
+export function createLineGroup(fb: NonNullableFormBuilder, line?: Partial<CoreDocumentLine>, options: LineGroupOptions = {}): LineGroup {
   return fb.group({
     product_id: fb.control(line?.product_id ?? ''),
     description: fb.control(line?.description ?? '', [Validators.required, Validators.maxLength(1000)]),
-    quantity: fb.control(String(line?.quantity ?? '1'), [Validators.required, Validators.pattern(DECIMAL_PATTERN)]),
-    unit_price: fb.control(String(line?.unit_price ?? '0'), [Validators.required, Validators.pattern(DECIMAL_PATTERN)]),
-    tax_rate: fb.control(String(line?.tax_rate ?? '22'), [Validators.required, Validators.pattern(DECIMAL_PATTERN)]),
-    discount_percentage: fb.control(String(line?.discount_percentage ?? ''), [Validators.pattern(DECIMAL_PATTERN)]),
+    quantity: fb.control(String(line?.quantity ?? '1'), [Validators.required, Validators.pattern(DECIMAL_PATTERN), greaterThanZero]),
+    unit_price: fb.control(String(line?.unit_price ?? (options.positiveUnitPrice ? '' : '0')), [
+      Validators.required,
+      Validators.pattern(DECIMAL_PATTERN),
+      ...(options.positiveUnitPrice ? [greaterThanZero] : []),
+    ]),
+    tax_rate: fb.control(String(line?.tax_rate ?? '22'), [Validators.required, Validators.pattern(DECIMAL_PATTERN), maxNumber(100)]),
+    discount_percentage: fb.control(String(line?.discount_percentage ?? ''), [
+      Validators.pattern(DECIMAL_PATTERN),
+      options.discountBelow100 ? belowNumber(100) : maxNumber(100),
+    ]),
   });
 }
 
@@ -52,6 +92,7 @@ export function linesToPayload(lines: FormArray<LineGroup>): CoreDocumentLinePay
 /** Editable table of document lines (product, description, quantity, price, VAT rate, discount). */
 @Component({
   selector: 'app-document-lines-editor',
+  styleUrl: './document-lines-editor.component.scss',
   imports: [ReactiveFormsModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, TranslatePipe],
   template: `
     <div class="lines" role="group" [attr.aria-label]="'SC.LINES.TITLE' | translate">
@@ -132,13 +173,15 @@ export class DocumentLinesEditorComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
 
   readonly lines = input.required<FormArray<LineGroup>>();
+  /** Stricter rules of the lines this editor adds (see `LineGroupOptions`). */
+  readonly lineOptions = input<LineGroupOptions>({});
 
   ngOnInit(): void {
     this.lookups.load();
   }
 
   add(): void {
-    this.lines().push(createLineGroup(this.fb));
+    this.lines().push(createLineGroup(this.fb, undefined, this.lineOptions()));
   }
 
   remove(index: number): void {
@@ -156,6 +199,6 @@ export class DocumentLinesEditorComponent implements OnInit {
     if (!line.controls.description.value) {
       line.controls.description.setValue(product.name);
     }
-    line.controls.unit_price.setValue(String(product.price));
+    line.controls.unit_price.setValue(String(product.sale_price));
   }
 }

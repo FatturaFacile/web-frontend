@@ -121,7 +121,7 @@
           <nz-select
             [ngModel]="filterVisitStatus()"
             (ngModelChange)="filterVisitStatus.set($event); loadVisits()"
-           
+           class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'VISITORS.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="expected" [nzLabel]="'VISITORS.STATUS_EXPECTED' | translate"></nz-option>
@@ -240,7 +240,7 @@
             [ngModel]="searchVisitorQuery()"
             (ngModelChange)="searchVisitorQuery.set($event); loadVisitors()"
             [placeholder]="'VISITORS.SEARCH_PLACEHOLDER' | translate"
-           
+           class="w-field-md"
           />
         </div>
         <div class="actions">
@@ -411,7 +411,7 @@
           <form nz-form [formGroup]="selfServiceCheckInForm" (ngSubmit)="executeSelfServiceCheckIn()">
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.SELECT_EXPECTED_VISIT' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckInForm, 'visit_id')">
                 <nz-select formControlName="visit_id" [nzLoading]="kioskExpectedLoading()">
                   @for (v of kioskExpected(); track v.id) {
                     <nz-option
@@ -425,7 +425,7 @@
 
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.ASSIGNED_BADGE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckInForm, 'badge_number')">
                 <input nz-input formControlName="badge_number" placeholder="Es. B-042" />
               </nz-form-control>
             </nz-form-item>
@@ -446,7 +446,7 @@
           <form nz-form [formGroup]="selfServiceCheckOutForm" (ngSubmit)="executeSelfServiceCheckOut()">
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.ENTER_BADGE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckOutForm, 'badge_number')">
                 <input nz-input formControlName="badge_number" placeholder="Es. B-042" />
               </nz-form-control>
             </nz-form-item>
@@ -478,7 +478,7 @@
     <form nz-form [formGroup]="announceVisitForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label>{{ 'VISITORS.VISITOR_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'mode')">
           <nz-radio-group formControlName="mode">
             <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label nz-radio nzValue="new">{{ 'VISITORS.NEW_PERSON' | translate }}</label>
@@ -491,7 +491,7 @@
       @if (announceVisitForm.get('mode')?.value === 'existing') {
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.SELECT_VISITOR' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'visitor_id')">
             <nz-select formControlName="visitor_id">
               @for (v of visitors(); track v.id) {
                 <nz-option [nzValue]="v.id" [nzLabel]="v.full_name + ' (' + (v.company_name || '-') + ')'"></nz-option>
@@ -503,13 +503,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'VISITORS.FIRST_NAME' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'first_name')">
               <input nz-input formControlName="first_name" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'VISITORS.LAST_NAME' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'last_name')">
               <input nz-input formControlName="last_name" />
             </nz-form-control>
           </nz-form-item>
@@ -518,13 +518,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.COMPANY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'company_name')">
               <input nz-input formControlName="company_name" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.EMAIL' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'email')">
               <input nz-input formControlName="email" type="email" />
             </nz-form-control>
           </nz-form-item>
@@ -533,13 +533,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.PHONE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'phone')">
               <input nz-input formControlName="phone" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.DOCUMENT_NUM' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'document_number')">
               <input nz-input formControlName="document_number" />
             </nz-form-control>
           </nz-form-item>
@@ -549,13 +549,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.HOST_USER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'host_user_id')">
             <input nz-input formControlName="host_user_id" [placeholder]="'VISITORS.LBL_ID_REFERENTE' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.EXPECTED_AT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'expected_at')">
             <input nz-input formControlName="expected_at" placeholder="2026-11-20T10:00:00Z" />
           </nz-form-control>
         </nz-form-item>
@@ -563,7 +563,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'VISITORS.PURPOSE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'purpose')">
           <input nz-input formControlName="purpose" [placeholder]="'VISITORS.LBL_ES_RIUNIONE_DI_COORDINAMENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -587,7 +587,7 @@
       <form nz-form [formGroup]="checkInForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.BADGE_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(checkInForm, 'badge_number')">
             <input nz-input formControlName="badge_number" placeholder="Es. B-101" />
           </nz-form-control>
         </nz-form-item>
@@ -609,13 +609,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.FIRST_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'first_name')">
             <input nz-input formControlName="first_name" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.LAST_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'last_name')">
             <input nz-input formControlName="last_name" />
           </nz-form-control>
         </nz-form-item>
@@ -624,13 +624,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.COMPANY' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'company_name')">
             <input nz-input formControlName="company_name" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.EMAIL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'email')">
             <input nz-input formControlName="email" type="email" />
           </nz-form-control>
         </nz-form-item>
@@ -639,13 +639,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.PHONE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'phone')">
             <input nz-input formControlName="phone" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.DOCUMENT_NUM' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'document_number')">
             <input nz-input formControlName="document_number" />
           </nz-form-control>
         </nz-form-item>
@@ -677,7 +677,7 @@
       <form nz-form [formGroup]="kioskForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.KIOSK_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(kioskForm, 'name')">
             <input nz-input formControlName="name" [placeholder]="'VISITORS.LBL_ES_RECEPTION_INGRESSO_PRINCIPALE' | translate" />
           </nz-form-control>
         </nz-form-item>

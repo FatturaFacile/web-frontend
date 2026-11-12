@@ -23,6 +23,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
  */
 @Component({
   selector: 'app-reset-password',
+  styleUrl: './reset-password.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,

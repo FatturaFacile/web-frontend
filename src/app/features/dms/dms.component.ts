@@ -1,6 +1,6 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -39,12 +39,39 @@ import {
   DmsStoreTagRequest,
   DmsTagResource,
   DmsUpdateAiSettingRequest,
+  I18nService,
+  serverErrorMessage,
   TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
+
+/** File extensions the API accepts for an upload (`mimes:` of the DMS requests). */
+const DMS_FILE_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt', 'xml', 'zip', 'eml', 'msg'];
+
+/** API `max:25600` (kilobytes) on an uploaded file. */
+const DMS_MAX_FILE_BYTES = 25600 * 1024;
+
+/** Records a document can be linked to: the aliases of the API link registry. */
+const DMS_LINK_TARGET_TYPES = [
+  'contact',
+  'invoice',
+  'quote',
+  'sales_order',
+  'delivery_note',
+  'journal_entry',
+  'project',
+  'asset',
+  'service_contract',
+  'supplier_contract',
+  'supplier',
+  'purchase_requisition',
+] as const;
 
 @Component({
   selector: 'app-dms',
+  styleUrl: './dms.component.scss',
   imports: [
     DatePipe,
     DecimalPipe,
@@ -74,6 +101,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 })
 export class DmsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly dmsApi = inject(DmsApiService);
   private readonly message = inject(NzMessageService);
@@ -97,27 +125,28 @@ export class DmsComponent implements OnInit {
   protected createDocModalVisible = signal<boolean>(false);
   protected createDocSubmitting = signal<boolean>(false);
   protected readonly docForm = this.fb.group({
-    title: ['', [Validators.required]],
-    folder_id: [''],
-    document_type: ['Invoice', [Validators.required]],
-    description: [''],
-    original_name: ['document.pdf', [Validators.required]],
-    file_size: [102400],
-    sha256: ['e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'],
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    folder_id: ['', [uuidFormat]],
+    document_type: ['Invoice', [Validators.required, Validators.maxLength(100)]],
+    description: ['', [Validators.maxLength(5000)]],
+    comment: ['', [Validators.maxLength(500)]],
   });
+  protected readonly docFile = signal<File | null>(null);
+  protected readonly docFileError = signal<string>('');
+  protected readonly acceptedFileTypes = DMS_FILE_EXTENSIONS.map((extension) => `.${extension}`).join(',');
 
   // Check-Out Modal
   protected checkOutModalVisible = signal<boolean>(false);
   protected checkOutDoc = signal<DmsDocumentResource | null>(null);
-  protected checkOutReason = signal<string>('');
+  protected checkOutNote = signal<string>('');
   protected checkOutSubmitting = signal<boolean>(false);
 
   // Check-In Modal
   protected checkInModalVisible = signal<boolean>(false);
   protected checkInDoc = signal<DmsDocumentResource | null>(null);
-  protected checkInFileName = signal<string>('updated_document.pdf');
-  protected checkInSha256 = signal<string>('a1b2c3d4e5f67890123456789abcdef0');
-  protected checkInFileSize = signal<number>(1048576);
+  protected checkInFile = signal<File | null>(null);
+  protected checkInFileError = signal<string>('');
+  protected checkInComment = signal<string>('');
   protected checkInSubmitting = signal<boolean>(false);
 
   // Legal Hold Modal
@@ -138,10 +167,10 @@ export class DmsComponent implements OnInit {
   // Add Link Modal inside Drawer
   protected linkModalVisible = signal<boolean>(false);
   protected readonly linkForm = this.fb.group({
-    target_type: ['Invoice', [Validators.required]],
-    target_id: ['', [Validators.required]],
-    label: [''],
+    linkable_type: ['invoice', [Validators.required]],
+    linkable_id: ['', [Validators.required, uuidFormat]],
   });
+  protected readonly linkTargetTypes = DMS_LINK_TARGET_TYPES;
 
   // --- TAB 2: FOLDERS ---
   protected readonly folders = signal<DmsFolderResource[]>([]);
@@ -149,8 +178,8 @@ export class DmsComponent implements OnInit {
   protected createFolderModalVisible = signal<boolean>(false);
   protected folderSubmitting = signal<boolean>(false);
   protected readonly folderForm = this.fb.group({
-    name: ['', [Validators.required]],
-    parent_id: [''],
+    name: ['', [Validators.required, Validators.maxLength(190)]],
+    parent_id: ['', [uuidFormat]],
     access_roles: [['admin', 'accountant']],
   });
 
@@ -160,9 +189,9 @@ export class DmsComponent implements OnInit {
   protected createPolicyModalVisible = signal<boolean>(false);
   protected policySubmitting = signal<boolean>(false);
   protected readonly policyForm = this.fb.group({
-    name: ['', [Validators.required]],
-    document_type: ['Invoice', [Validators.required]],
-    retention_months: [120, [Validators.required, Validators.min(1)]],
+    name: ['', [Validators.required, Validators.maxLength(190)]],
+    document_type: ['Invoice'],
+    retention_months: [120, [Validators.required, Validators.min(1), Validators.max(1200)]],
     action: ['archive' as const, [Validators.required]],
     is_active: [true],
   });
@@ -179,9 +208,21 @@ export class DmsComponent implements OnInit {
   protected createTagModalVisible = signal<boolean>(false);
   protected tagSubmitting = signal<boolean>(false);
   protected readonly tagForm = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(80)]],
     color: ['#1890ff'],
   });
+
+  protected errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    const key = validationTipKey(control ?? null);
+    if (key) {
+      return this.i18n.translate(key);
+    }
+    return '';
+  }
 
   ngOnInit(): void {
     this.loadFolders();
@@ -239,18 +280,45 @@ export class DmsComponent implements OnInit {
       folder_id: this.selectedFolderId() || '',
       document_type: 'Invoice',
       description: '',
-      original_name: 'document.pdf',
-      file_size: 102400,
-      sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      comment: '',
     });
+    this.docFile.set(null);
+    this.docFileError.set('');
     this.createDocModalVisible.set(true);
   }
 
+  protected onDocFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    this.docFile.set(file);
+    this.docFileError.set(this.fileErrorKey(file, true));
+  }
+
+  protected onCheckInFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    this.checkInFile.set(file);
+    this.checkInFileError.set(this.fileErrorKey(file, false));
+  }
+
+  /** Translation key of the problem of a file picked for upload (API: `file|max:25600|mimes:...`), '' when it is fine. */
+  private fileErrorKey(file: File | null, required: boolean): string {
+    if (!file) {
+      return required ? 'COMMON.VALIDATION.REQUIRED' : '';
+    }
+    if (file.size > DMS_MAX_FILE_BYTES) {
+      return 'DMS.ERR_FILE_TOO_LARGE';
+    }
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    return DMS_FILE_EXTENSIONS.includes(extension) ? '' : 'DMS.ERR_FILE_TYPE';
+  }
+
   protected submitCreateDoc(): void {
-    if (this.docForm.invalid) {
+    const fileError = this.fileErrorKey(this.docFile(), true);
+    this.docFileError.set(fileError);
+    if (this.docForm.invalid || fileError) {
       this.docForm.markAllAsTouched();
       return;
     }
+    const file = this.docFile() as File;
 
     const val = this.docForm.getRawValue();
     const payload: DmsStoreDocumentRequest = {
@@ -258,11 +326,8 @@ export class DmsComponent implements OnInit {
       folder_id: val.folder_id || undefined,
       document_type: val.document_type,
       description: val.description || undefined,
-      file: {
-        original_name: val.original_name,
-        size: val.file_size,
-        sha256: val.sha256,
-      },
+      comment: val.comment || undefined,
+      file,
     };
 
     this.createDocSubmitting.set(true);
@@ -281,7 +346,7 @@ export class DmsComponent implements OnInit {
   }
 
   protected deleteDocument(doc: DmsDocumentResource): void {
-    if (doc.is_legal_hold) {
+    if (doc.legal_hold) {
       this.message.warning(this.translate.instant('DMS.MSG_IMPOSSIBILE_ELIMINARE_UN_DOCUMENTO_PROTETTO_DA'));
       return;
     }
@@ -300,7 +365,7 @@ export class DmsComponent implements OnInit {
   // --- CHECK-OUT / CHECK-IN ---
   protected openCheckOutModal(doc: DmsDocumentResource): void {
     this.checkOutDoc.set(doc);
-    this.checkOutReason.set('');
+    this.checkOutNote.set('');
     this.checkOutModalVisible.set(true);
   }
 
@@ -309,7 +374,7 @@ export class DmsComponent implements OnInit {
     if (!doc) return;
 
     this.checkOutSubmitting.set(true);
-    this.dmsApi.checkOutDocument(doc.id, { reason: this.checkOutReason() }).subscribe({
+    this.dmsApi.checkOutDocument(doc.id, { note: this.checkOutNote() || undefined }).subscribe({
       next: () => {
         this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_ESTRATTO_IN_MODIFICA_CHECK_OUT'));
         this.checkOutModalVisible.set(false);
@@ -325,23 +390,22 @@ export class DmsComponent implements OnInit {
 
   protected openCheckInModal(doc: DmsDocumentResource): void {
     this.checkInDoc.set(doc);
-    this.checkInFileName.set(`v2_${doc.title.toLowerCase().replace(/\s+/g, '_')}.pdf`);
-    this.checkInSha256.set('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9');
-    this.checkInFileSize.set(150000);
+    this.checkInFile.set(null);
+    this.checkInFileError.set('');
+    this.checkInComment.set('');
     this.checkInModalVisible.set(true);
   }
 
   protected submitCheckIn(): void {
     const doc = this.checkInDoc();
     if (!doc) return;
+    const fileError = this.fileErrorKey(this.checkInFile(), false);
+    this.checkInFileError.set(fileError);
+    if (fileError) return;
 
     this.checkInSubmitting.set(true);
     this.dmsApi
-      .checkInDocument(doc.id, {
-        original_name: this.checkInFileName(),
-        sha256: this.checkInSha256(),
-        size: this.checkInFileSize(),
-      })
+      .checkInDocument(doc.id, { file: this.checkInFile(), comment: this.checkInComment() || undefined })
       .subscribe({
         next: () => {
           this.message.success(this.translate.instant('DMS.MSG_NUOVA_VERSIONE_CARICATA_CHECK_IN_COMPLETATO'));
@@ -473,22 +537,24 @@ export class DmsComponent implements OnInit {
 
   protected openLinkModal(): void {
     this.linkForm.reset({
-      target_type: 'Invoice',
-      target_id: '',
-      label: '',
+      linkable_type: 'invoice',
+      linkable_id: '',
     });
     this.linkModalVisible.set(true);
   }
 
   protected submitLink(): void {
     const doc = this.selectedDocument();
-    if (!doc || this.linkForm.invalid) return;
+    if (!doc) return;
+    if (this.linkForm.invalid) {
+      this.linkForm.markAllAsTouched();
+      return;
+    }
 
     const raw = this.linkForm.getRawValue();
     const payload: DmsLinkDocumentRequest = {
-      target_type: raw.target_type,
-      target_id: raw.target_id,
-      label: raw.label || undefined,
+      linkable_type: raw.linkable_type,
+      linkable_id: raw.linkable_id,
     };
 
     this.dmsApi.linkDocument(doc.id, payload).subscribe({
@@ -649,7 +715,10 @@ export class DmsComponent implements OnInit {
   }
 
   protected submitCreateTag(): void {
-    if (this.tagForm.invalid) return;
+    if (this.tagForm.invalid) {
+      this.tagForm.markAllAsTouched();
+      return;
+    }
 
     const payload: DmsStoreTagRequest = this.tagForm.getRawValue();
     this.tagSubmitting.set(true);

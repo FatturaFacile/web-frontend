@@ -50,6 +50,7 @@ const emptyDraft = (): AccountDraft => ({
 /** CRM accounts linked to their contact, with tier, churn risk and health profile. */
 @Component({
   selector: 'app-crm-accounts',
+  styleUrl: './accounts.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

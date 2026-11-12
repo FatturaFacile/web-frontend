@@ -1,6 +1,7 @@
 import { UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -28,6 +29,7 @@ import {
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
+  IntrastatExportChannel,
   IntrastatFlow,
   IntrastatGenerateRequest,
   IntrastatLineRequest,
@@ -36,9 +38,15 @@ import {
   IntrastatProductProfile,
   IntrastatProductProfileRequest,
   IntrastatSubmitRequest,
+  IntrastatSupplyKind,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+
+/** Mirrors `required_if:channel,customs`. */
+function requiredForCustoms(control: AbstractControl) {
+  return control.parent?.get('channel')?.value === 'customs' && (control.value === null || control.value === '') ? { required: true } : null;
+}
 
 /** Used until the code lists of the server arrive (or when they cannot be loaded). */
 const FALLBACK_DELIVERY_TERM_GROUPS: Record<string, string[]> = {
@@ -56,6 +64,7 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
 
 @Component({
   selector: 'app-intrastat',
+  styleUrl: './intrastat.component.scss',
   imports: [
     UpperCasePipe,
     FormsModule,
@@ -159,51 +168,69 @@ export class IntrastatComponent implements OnInit {
   // Forms
   readonly createForm = this.fb.group({
     flow: ['sales' as IntrastatFlow, [Validators.required]],
-    year: [2026, [Validators.required]],
+    year: [2026, [Validators.required, Validators.min(2022), Validators.max(2099)]],
     periodicity: ['M' as IntrastatPeriodicity, [Validators.required]],
-    period: [3, [Validators.required]],
-    reference_number: [1],
+    period: [3, [Validators.required, Validators.min(1), Validators.max(12)]],
+    reference_number: [1, [Validators.min(1), Validators.max(999999)]],
     content_code: [0],
     special_case_code: [0],
     includes_statistical_data: [false],
     has_annual_flows_above_20_million: [false],
-    notes: [''],
+    notes: ['', [Validators.maxLength(2000)]],
   });
 
   readonly generateForm = this.fb.group({
     flow: ['sales' as IntrastatFlow, [Validators.required]],
-    year: [2026, [Validators.required]],
+    year: [2026, [Validators.required, Validators.min(2022), Validators.max(2099)]],
     periodicity: ['M' as IntrastatPeriodicity, [Validators.required]],
-    period: [3, [Validators.required]],
+    period: [3, [Validators.required, Validators.min(1), Validators.max(12)]],
     unclassified_as: ['goods' as 'goods' | 'services'],
     transaction_nature_a: ['1'],
     delivery_terms: ['C'],
     transport_mode: ['3'],
-    province_code: ['MI'],
+    province_code: ['MI', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
 
   readonly submitForm = this.fb.group({
-    protocol_number: ['', [Validators.required]],
+    protocol_number: ['', [Validators.required, Validators.maxLength(30)]],
   });
 
   readonly lineForm = this.fb.group({
-    section: [1, [Validators.required]],
-    partner_country_code: ['DE', [Validators.required]],
-    partner_vat_number: ['123456789'],
-    amount_eur: [1000, [Validators.required]],
-    cn8_code: ['84212100'],
-    net_mass_kg: [50],
+    section: [1, [Validators.required, Validators.min(1), Validators.max(4)]],
+    partner_country_code: ['DE', [Validators.pattern(/^[A-Z]{2}$/)]],
+    partner_vat_number: ['123456789', [Validators.pattern(/^[A-Z0-9]{1,12}$/)]],
+    amount_eur: [1000, [Validators.min(0), Validators.max(9999999999999), Validators.pattern(/^\d+$/)]],
+    cn8_code: ['84212100', [Validators.pattern(/^\d{8}$/)]],
+    net_mass_kg: [50, [Validators.min(0), Validators.max(9999999999), Validators.pattern(/^\d+$/)]],
     delivery_terms: ['C'],
     transport_mode: ['3'],
   });
 
   readonly profileForm = this.fb.group({
     product_id: ['', [Validators.required]],
-    cn8_code: ['', [Validators.required]],
-    cpa_code: [''],
-    origin_country_code: ['IT'],
-    unit_of_measure: ['kg'],
+    cn8_code: ['', [Validators.pattern(/^\d{8}$/)]],
+    supply_kind: ['goods' as IntrastatSupplyKind, [Validators.required]],
+    service_code: ['', [Validators.pattern(/^\d{6}$/)]],
+    origin_country_code: ['IT', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
+
+  readonly exportForm = this.fb.group({
+    channel: ['entratel' as IntrastatExportChannel, [Validators.required]],
+    customs_section_code: ['', [Validators.required, Validators.pattern(/^\d{1,6}$/)]],
+    user_code: ['', [requiredForCustoms, Validators.pattern(/^[A-Za-z0-9]{4}$/)]],
+    site_progressive: [null as number | null, [requiredForCustoms, Validators.min(1), Validators.max(999)]],
+    sender_code: ['', [Validators.maxLength(16), Validators.pattern(/^[A-Za-z0-9]*$/)]],
+    transmission_date: [''],
+    sequence: ['', [Validators.pattern(/^([A-Za-z0-9]{2})?$/)]],
+  });
+
+  private readonly channelSync = this.exportForm.controls.channel.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.exportForm.controls.user_code.updateValueAndValidity();
+    this.exportForm.controls.site_progressive.updateValueAndValidity();
+  });
+
+  readonly exportFormVisible = signal<boolean>(false);
+  private readonly exportTarget = signal<IntrastatDeclaration | null>(null);
 
   ngOnInit(): void {
     this.loadDeclarations();
@@ -322,9 +349,33 @@ export class IntrastatComponent implements OnInit {
   }
 
   exportScdata(d: IntrastatDeclaration): void {
-    this.api.exportDeclaration({ declaration_id: d.id, format: 'scdata' }).subscribe({
+    this.exportTarget.set(d);
+    this.exportFormVisible.set(true);
+  }
+
+  confirmExport(): void {
+    const d = this.exportTarget();
+    if (!d || this.exportForm.invalid) {
+      this.exportForm.markAllAsTouched();
+      return;
+    }
+    const val = this.exportForm.getRawValue();
+    const isCustoms = val.channel === 'customs';
+    this.api
+      .exportDeclaration({
+        declaration_ids: [d.id],
+        channel: val.channel,
+        customs_section_code: val.customs_section_code,
+        user_code: isCustoms ? val.user_code : undefined,
+        site_progressive: isCustoms ? val.site_progressive : undefined,
+        sender_code: val.sender_code || undefined,
+        transmission_date: val.transmission_date || undefined,
+        sequence: val.sequence || undefined,
+      })
+      .subscribe({
       next: (res) => {
-        this.exportResult.set(res?.data || null);
+        this.exportFormVisible.set(false);
+        this.exportResult.set(res);
         this.exportModalVisible.set(true);
       },
       error: () => {
@@ -495,10 +546,10 @@ export class IntrastatComponent implements OnInit {
     this.selectedProductProfile.set(null);
     this.profileForm.reset({
       product_id: '',
+      supply_kind: 'goods',
       cn8_code: '',
-      cpa_code: '',
+      service_code: '',
       origin_country_code: 'IT',
-      unit_of_measure: 'kg',
     });
     this.profileModalVisible.set(true);
   }
@@ -510,10 +561,10 @@ export class IntrastatComponent implements OnInit {
     }
     const val = this.profileForm.getRawValue();
     const payload: IntrastatProductProfileRequest = {
-      cn8_code: val.cn8_code,
-      cpa_code: val.cpa_code || undefined,
+      supply_kind: val.supply_kind,
+      cn8_code: val.cn8_code || undefined,
+      service_code: val.service_code || undefined,
       origin_country_code: val.origin_country_code || undefined,
-      unit_of_measure: val.unit_of_measure || undefined,
     };
 
     this.api.setProductProfile(val.product_id, payload).subscribe({

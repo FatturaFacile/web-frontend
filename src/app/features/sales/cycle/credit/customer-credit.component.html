@@ -65,7 +65,7 @@
 
 @if (heldOrders().length) {
   <nz-card class="section" [nzTitle]="'SC.CREDIT.HELD_ORDERS' | translate">
-    <nz-table [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+    <nz-table [nzScroll]="{ x: '720px' }" [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
           <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
@@ -122,7 +122,7 @@
 
 @if (statement().length) {
   <nz-card class="section" [nzTitle]="'SC.CREDIT.STATEMENT' | translate">
-    <nz-table [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+    <nz-table [nzScroll]="{ x: '720px' }" [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
           <th>{{ 'SC.COMMON.DATE' | translate }}</th>

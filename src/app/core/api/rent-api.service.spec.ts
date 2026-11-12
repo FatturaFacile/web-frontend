@@ -76,7 +76,6 @@ describe('RentApiService', () => {
       mileage: 45200,
       fuel_level: '8/8',
       damage_markers: [],
-      notes: 'Veicolo restituito in perfetto stato con serbatoio pieno',
     };
 
     service.recordCheckInInspection(inPayload).subscribe((res) => {
@@ -93,7 +92,6 @@ describe('RentApiService', () => {
       mileage: 45000,
       fuel_level: '8/8',
       damage_markers: ['graffio paraurti anteriore'],
-      notes: 'Check-out completato',
     };
 
     service.recordCheckOutInspection(outPayload).subscribe((res) => {

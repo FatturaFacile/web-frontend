@@ -18,6 +18,7 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
 /** Meal bookings of a period and the booking of a meal (for yourself or, with the right, for an employee). */
 @Component({
   selector: 'app-time-meals',
+  styleUrl: './time-meals.component.scss',
   imports: [
     ActionFormComponent,
     DatePipe,
@@ -32,12 +33,12 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
     <app-action-form [config]="bookConfig()" [canWrite]="canWrite()" />
 
     <h3 class="mt-4">{{ 'hrmTimeX.mealBookings' | translate }}</h3>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="meal-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="meal-employee"
-         
+          class="w-field-md"
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"
@@ -147,7 +148,7 @@ export class TimeMealsComponent {
         options: () =>
           SOURCES.map((value) => ({ value, labelKey: `hrmTime.sourceValue.${value}` })),
       },
-      { key: 'note', labelKey: 'hrmCommon.notes', type: 'text', nullable: true },
+      { key: 'note', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, maxLength: 1000 },
     ],
     submit: (payload) =>
       this.api.bookMeal(payload as unknown as MealBookingPayload).pipe(

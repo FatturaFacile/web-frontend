@@ -25,9 +25,11 @@ import {
 } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { GlLookupStore } from '../../../general-ledger/shared/gl-lookup.store';
+import { notInFuture } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-tr-cash-registers',
+  styleUrl: './tr-cash-registers.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -65,27 +67,27 @@ export class TrCashRegistersComponent implements OnInit {
   protected readonly formErrors = signal<string[]>([]);
 
   protected readonly registerForm = this.fb.group({
-    code: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    currency: this.fb.control('EUR', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]),
+    code: this.fb.control('', [Validators.required, Validators.maxLength(30)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
+    currency: this.fb.control('EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]),
     gl_account_id: this.fb.control('', Validators.required),
-    opening_balance: this.fb.control<number | null>(null),
+    opening_balance: this.fb.control<number | null>(null, Validators.min(0)),
   });
 
   protected readonly movementForm = this.fb.group({
-    movement_date: this.fb.control('', Validators.required),
+    movement_date: this.fb.control('', [Validators.required, notInFuture]),
     direction: this.fb.control<'in' | 'out'>('in', Validators.required),
     payment_method: this.fb.control<'cash' | 'cheque'>('cash'),
     amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     counter_account_id: this.fb.control('', Validators.required),
     description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    reference: this.fb.control(''),
+    reference: this.fb.control('', Validators.maxLength(100)),
   });
 
   protected readonly closeForm = this.fb.group({
-    closing_date: this.fb.control('', Validators.required),
-    counted_balance: this.fb.control<number | null>(null, Validators.required),
-    notes: this.fb.control(''),
+    closing_date: this.fb.control('', [Validators.required, notInFuture]),
+    counted_balance: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    notes: this.fb.control('', Validators.maxLength(1000)),
   });
 
   ngOnInit(): void {

@@ -11,6 +11,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Leave balances (decimal-string hours) and the monthly accrual run. */
 @Component({
   selector: 'app-leave-balances',
+  styleUrl: './leave-balances.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     <div class="flex justify-between items-center mb-3 gap-2">
@@ -24,7 +25,7 @@ import { reportHttpError } from '../shared/hr-http.util';
             type="number"
             min="1"
             max="12"
-           
+            class="w-field-xs"
             [ngModel]="month()"
             (ngModelChange)="month.set($event)"
           />

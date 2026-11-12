@@ -6,9 +6,18 @@
 >
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="title">{{ "alerts.form.title" | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.titleRequired' | translate">
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input
             nz-input
             id="title"
@@ -20,7 +29,7 @@
 
       <nz-form-item>
         <nz-form-label nzFor="severity">{{ "alerts.form.severity" | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select id="severity" formControlName="severity">
             <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativoBlu' | translate" />
             <nz-option nzValue="warning" [nzLabel]="'alerts.lblAttenzioneArancione' | translate" />
@@ -31,7 +40,7 @@
 
       <nz-form-item>
         <nz-form-label nzFor="message">{{ "alerts.form.message" | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <textarea
             nz-input
             id="message"
@@ -44,7 +53,7 @@
 
       <nz-form-item>
         <nz-form-label nzFor="is_active">{{ "alerts.form.isActive" | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-switch id="is_active" formControlName="is_active" />
         </nz-form-control>
       </nz-form-item>

@@ -1,9 +1,9 @@
 <nz-card>
-  <div>
+  <div class="toolbar">
     <label for="gl-accrual-type">{{ 'GL.ACCRUAL_TYPE' | translate }}</label>
     <nz-select
       id="gl-accrual-type"
-     
+      class="select-md"
       nzAllowClear
       [ngModel]="typeFilter()"
       (ngModelChange)="setType($event)"
@@ -13,13 +13,13 @@
         <nz-option [nzValue]="type" [nzLabel]="'GL.ACCRUAL_' + type.toUpperCase() | translate" />
       }
     </nz-select>
-    <span></span>
+    <span class="spacer"></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.ACCRUAL_NEW' | translate }}</button>
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
+  <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
         <th>{{ 'GL.ACCRUAL_TYPE' | translate }}</th>
@@ -76,16 +76,16 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ac-description">{{ 'GL.COL_DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <input id="ac-description" nz-input formControlName="description" maxlength="500" />
+          <input id="ac-description" nz-input formControlName="description" maxlength="255" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ac-total">{{ 'GL.ACCRUAL_TOTAL' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="form.controls.total_amount.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <nz-input-number id="ac-total" formControlName="total_amount" [nzMin]="0.01" [nzPrecision]="2" />
+          <nz-input-number class="w-full" id="ac-total" formControlName="total_amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired nzFor="ac-start">{{ 'GL.COVERAGE_START' | translate }}</nz-form-label>
           <nz-form-control>
@@ -94,7 +94,7 @@
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired nzFor="ac-end">{{ 'GL.COVERAGE_END' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="form.controls.coverage_end.hasError('endsBeforeStart') ? ('COMMON.VALIDATION.END_AFTER_START' | translate) : ('GL.REQUIRED' | translate)">
             <input id="ac-end" nz-input type="date" formControlName="coverage_end" />
           </nz-form-control>
         </nz-form-item>

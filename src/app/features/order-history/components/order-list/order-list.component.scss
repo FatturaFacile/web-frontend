@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.stats-row {
+  margin-bottom: 24px;
+}
+.order-alert {
+  margin-bottom: 16px;
+}
+.orders-table {
+  margin-top: 16px;
+}
+.selected-row {
+  background-color: var(--bg-selected) !important;
+}
+.select-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.select-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.detail-card {
+  margin-top: 24px;
+}

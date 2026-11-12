@@ -178,7 +178,7 @@ describe('TreasuryComponent', () => {
 
     component.accountForm.patchValue({
       bank_name: 'BPS',
-      iban: 'IT99X123456',
+      iban: 'DE89370400440532013000',
       currency: 'EUR',
       opening_balance: 10000,
     });
@@ -186,6 +186,28 @@ describe('TreasuryComponent', () => {
     component.submitAccount();
     expect(treasuryApiMock.createBankAccount).toHaveBeenCalled();
     expect(component.accountModalVisible()).toBe(false);
+  });
+
+  it('rejects an IBAN with a wrong checksum', () => {
+    component.openAccountModal();
+    component.accountForm.patchValue({ bank_name: 'BPS', iban: 'IT60X0542811101000000123457' });
+    expect(component.accountForm.controls.iban.hasError('iban')).toBe(true);
+    component.submitAccount();
+    expect(treasuryApiMock.createBankAccount).not.toHaveBeenCalled();
+  });
+
+  it('does not create a bank account or a payment batch from an empty form', () => {
+    treasuryApiMock.createBankAccount.mockClear();
+    treasuryApiMock.createPaymentBatch.mockClear();
+    component.openAccountModal();
+    component.submitAccount();
+    component.openBatchModal();
+    component.batchForm.patchValue({ amount: 0 });
+    component.submitBatch();
+
+    expect(treasuryApiMock.createBankAccount).not.toHaveBeenCalled();
+    expect(treasuryApiMock.createPaymentBatch).not.toHaveBeenCalled();
+    expect(component.accountForm.controls.bank_name.touched).toBe(true);
   });
 
   it('deletes bank account', () => {
@@ -203,7 +225,7 @@ describe('TreasuryComponent', () => {
       batch_reference: 'DIST-TEST',
       payment_method: 'sepa_credit_transfer',
       recipient_name: 'Vendor Y',
-      recipient_iban: 'IT88Y123456',
+      recipient_iban: 'IT60X0542811101000000123456',
       amount: 450,
     });
 

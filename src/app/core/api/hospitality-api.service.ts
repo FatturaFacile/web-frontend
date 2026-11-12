@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
+import { toHttpParams } from '../http/laravel-http.utils';
 import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import {
   ApiResponse,
@@ -132,16 +133,16 @@ export class HospitalityApiService {
     );
   }
 
-  cancelOrder(orderId: string): Observable<ApiResponse<{ cancelled: boolean }>> {
+  cancelOrder(orderId: string, payload: HospitalityVoidRequest): Observable<ApiResponse<{ cancelled: boolean }>> {
     return this.http.post<ApiResponse<{ cancelled: boolean }>>(
       `${this.base}/orders/${orderId}/cancel`,
-      {},
+      payload,
     );
   }
 
   voidOrderItem(
     itemId: string,
-    payload?: HospitalityVoidRequest,
+    payload: HospitalityVoidRequest,
   ): Observable<ApiResponse<{ voided: boolean }>> {
     return this.http.post<ApiResponse<{ voided: boolean }>>(
       `${this.base}/order-items/${itemId}/void`,
@@ -180,8 +181,11 @@ export class HospitalityApiService {
   }
 
   // --- RESERVATIONS ---
-  getReservations(): Observable<ApiResponse<HospitalityReservation[]>> {
-    return this.http.get<ApiResponse<HospitalityReservation[]>>(`${this.base}/reservations`);
+  /** The API lists the reservations of one day: `date` (Y-m-d) is required. */
+  getReservations(params: { date: string; room_id?: string; status?: string }): Observable<ApiResponse<HospitalityReservation[]>> {
+    return this.http.get<ApiResponse<HospitalityReservation[]>>(`${this.base}/reservations`, {
+      params: toHttpParams(params),
+    });
   }
 
   createReservation(

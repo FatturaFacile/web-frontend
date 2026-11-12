@@ -211,14 +211,17 @@ export interface PortalSubscription {
   }[];
 }
 
+/** A stock line of `GET /portal/stock/{token}`, grouped by warehouse, item and lot. */
 export interface PortalStockLine {
-  id: string;
-  product_sku: string;
-  product_name: string;
-  warehouse_name: string;
-  available_qty: number;
-  reserved_qty: number;
-  unit_of_measure: string;
+  warehouse_id: string | null;
+  stock_item_id: string;
+  sku: string | null;
+  name: string | null;
+  lot_number: string | null;
+  expiration_date: string | null;
+  quantity_on_hand: string;
+  quantity_reserved: string;
+  quantity_available: string;
 }
 
 export interface PortalMovementRequest {
@@ -232,6 +235,8 @@ export interface PortalMovementRequest {
 }
 
 export interface CreatePortalMovementRequest {
+  warehouse_id: string;
+  stock_item_id: string;
   request_type: 'withdrawal' | 'return' | 'transfer';
   quantity: number | string;
   requested_date?: string | null;

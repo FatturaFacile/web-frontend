@@ -10,7 +10,7 @@
       [nzMessage]="errorMessage()!"
       nzShowIcon
       nzCloseable
-      class="mb-4"
+      class="page-alert"
       (nzOnClose)="errorMessage.set(null)"
     />
   }
@@ -24,7 +24,7 @@
           <div class="provider-body">
             <div class="provider-header">
               <div class="provider-icon google-icon">
-                <i class="fa-brands fa-google text-2xl"></i>
+                <i class="fa-brands fa-google"></i>
               </div>
               <div class="provider-info">
                 <h3 class="provider-name">Google Calendar & Gmail</h3>
@@ -36,7 +36,7 @@
               <div class="connection-status connected">
                 <div class="status-indicator">
                   <nz-tag nzColor="success">
-                    <i class="fa-solid fa-check-circle mr-1"></i>
+                    <i class="fa-solid fa-check-circle btn-icon"></i>
                     {{ 'WORKSPACE.STATUS_CONNECTED' | translate }}
                   </nz-tag>
                 </div>
@@ -56,7 +56,7 @@
                     <span class="meta-label">{{ 'WORKSPACE.SCOPES' | translate }}:</span>
                     <span class="meta-val">
                       @for (s of conn.scopes; track s) {
-                        <nz-tag nzColor="default" class="text-xs">{{ s }}</nz-tag>
+                        <nz-tag nzColor="default" class="scope-tag">{{ s }}</nz-tag>
                       }
                     </span>
                   </div>
@@ -70,7 +70,7 @@
                     [nzLoading]="isSyncing()"
                     (click)="syncConnection(conn)"
                   >
-                    <i class="fa-solid fa-rotate mr-1"></i>
+                    <i class="fa-solid fa-rotate btn-icon"></i>
                     {{ 'WORKSPACE.SYNC_NOW' | translate }}
                   </button>
 
@@ -81,7 +81,7 @@
                     type="button"
                     (click)="revokeConnection(conn)"
                   >
-                    <i class="fa-solid fa-link-slash mr-1"></i>
+                    <i class="fa-solid fa-link-slash btn-icon"></i>
                     {{ 'WORKSPACE.DISCONNECT' | translate }}
                   </button>
                 </div>
@@ -101,7 +101,7 @@
                     type="button"
                     (click)="openAuthorizeModal('google')"
                   >
-                    <i class="fa-solid fa-plug mr-1"></i>
+                    <i class="fa-solid fa-plug btn-icon"></i>
                     {{ 'WORKSPACE.CONNECT_BUTTON' | translate }}
                   </button>
 
@@ -124,7 +124,7 @@
           <div class="provider-body">
             <div class="provider-header">
               <div class="provider-icon ms-icon">
-                <i class="fa-brands fa-microsoft text-2xl"></i>
+                <i class="fa-brands fa-microsoft"></i>
               </div>
               <div class="provider-info">
                 <h3 class="provider-name">Outlook Calendar & Mail</h3>
@@ -136,7 +136,7 @@
               <div class="connection-status connected">
                 <div class="status-indicator">
                   <nz-tag nzColor="success">
-                    <i class="fa-solid fa-check-circle mr-1"></i>
+                    <i class="fa-solid fa-check-circle btn-icon"></i>
                     {{ 'WORKSPACE.STATUS_CONNECTED' | translate }}
                   </nz-tag>
                 </div>
@@ -156,7 +156,7 @@
                     <span class="meta-label">{{ 'WORKSPACE.SCOPES' | translate }}:</span>
                     <span class="meta-val">
                       @for (s of conn.scopes; track s) {
-                        <nz-tag nzColor="default" class="text-xs">{{ s }}</nz-tag>
+                        <nz-tag nzColor="default" class="scope-tag">{{ s }}</nz-tag>
                       }
                     </span>
                   </div>
@@ -170,7 +170,7 @@
                     [nzLoading]="isSyncing()"
                     (click)="syncConnection(conn)"
                   >
-                    <i class="fa-solid fa-rotate mr-1"></i>
+                    <i class="fa-solid fa-rotate btn-icon"></i>
                     {{ 'WORKSPACE.SYNC_NOW' | translate }}
                   </button>
 
@@ -181,7 +181,7 @@
                     type="button"
                     (click)="revokeConnection(conn)"
                   >
-                    <i class="fa-solid fa-link-slash mr-1"></i>
+                    <i class="fa-solid fa-link-slash btn-icon"></i>
                     {{ 'WORKSPACE.DISCONNECT' | translate }}
                   </button>
                 </div>
@@ -201,7 +201,7 @@
                     type="button"
                     (click)="openAuthorizeModal('microsoft')"
                   >
-                    <i class="fa-solid fa-plug mr-1"></i>
+                    <i class="fa-solid fa-plug btn-icon"></i>
                     {{ 'WORKSPACE.CONNECT_BUTTON' | translate }}
                   </button>
 
@@ -224,13 +224,13 @@
     <!-- TAB 2: SYNCED ITEMS -->
     <nz-tab [nzTitle]="'WORKSPACE.TABS.ITEMS' | translate">
       <nz-card>
-        <div class="toolbar mb-4 flex justify-between items-center">
-          <div class="filter-group flex items-center gap-2">
-            <span class="font-medium text-sm">{{ 'WORKSPACE.FILTER_KIND' | translate }}:</span>
+        <div class="items-toolbar">
+          <div class="filter-group">
+            <span class="filter-label">{{ 'WORKSPACE.FILTER_KIND' | translate }}:</span>
             <nz-select
               [ngModel]="itemFilterKind()"
               (ngModelChange)="itemFilterKind.set($event); loadItems()"
-              class="w-48"
+              class="kind-select"
             >
               <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
               <nz-option nzValue="calendar_event" [nzLabel]="'WORKSPACE.KIND_CALENDAR' | translate"></nz-option>
@@ -239,7 +239,7 @@
           </div>
 
           <button nz-button nzType="default" type="button" (click)="loadItems()">
-            <i class="fa-solid fa-rotate mr-1"></i>
+            <i class="fa-solid fa-rotate btn-icon"></i>
             {{ 'COMMON.REFRESH' | translate }}
           </button>
         </div>
@@ -248,6 +248,7 @@
           #itemsTable
           [nzData]="filteredItems()"
           [nzPageSize]="10"
+          [nzScroll]="{ x: '720px' }"
           nzBordered
           nzSize="middle"
         >
@@ -267,13 +268,13 @@
                     {{ (item.kind === 'calendar_event' ? 'WORKSPACE.KIND_CALENDAR' : 'WORKSPACE.KIND_EMAIL') | translate }}
                   </nz-tag>
                 </td>
-                <td class="font-medium">{{ item.subject || '-' }}</td>
+                <td class="cell-subject">{{ item.subject || '-' }}</td>
                 <td>{{ item.counterpart || '-' }}</td>
                 <td>
                   @if (item.starts_at) {
                     <span>{{ item.starts_at | date: 'dd/MM/yyyy HH:mm' }}</span>
                     @if (item.ends_at) {
-                      <span class="text-muted text-xs block">
+                      <span class="cell-until">
                         {{ 'WORKSPACE.UNTIL' | translate }} {{ item.ends_at | date: 'HH:mm' }}
                       </span>
                     }
@@ -299,22 +300,31 @@
   >
     <ng-container *nzModalContent>
       <form [formGroup]="authForm">
-        <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_AUTH_DESC' | translate }}</p>
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <p class="modal-intro">{{ 'WORKSPACE.MODAL_AUTH_DESC' | translate }}</p>
 
         <nz-form-item>
-          <nz-form-label>{{ 'WORKSPACE.SELECT_SCOPES' | translate }}</nz-form-label>
-          <nz-form-control>
-            <div class="flex flex-col gap-3">
-              <div class="flex items-center justify-between">
+          <nz-form-label nzRequired>{{ 'WORKSPACE.SELECT_SCOPES' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <div class="scope-list">
+              <div class="scope-row">
                 <span>
-                  <i class="fa-solid fa-calendar mr-1 text-blue-500"></i>
+                  <i class="fa-solid fa-calendar btn-icon scope-calendar"></i>
                   {{ 'WORKSPACE.SCOPE_CALENDAR' | translate }}
                 </span>
                 <nz-switch formControlName="calendar"></nz-switch>
               </div>
-              <div class="flex items-center justify-between">
+              <div class="scope-row">
                 <span>
-                  <i class="fa-solid fa-envelope mr-1 text-green-500"></i>
+                  <i class="fa-solid fa-envelope btn-icon scope-mail"></i>
                   {{ 'WORKSPACE.SCOPE_MAIL' | translate }}
                 </span>
                 <nz-switch formControlName="mail"></nz-switch>
@@ -323,12 +333,10 @@
           </nz-form-control>
         </nz-form-item>
 
-        <nz-form-item class="mt-4">
-          <nz-form-control>
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-xs">{{ 'WORKSPACE.CONSENT_CHECKBOX' | translate }}</span>
-              <nz-switch formControlName="consent"></nz-switch>
-            </div>
+        <nz-form-item class="consent-item">
+          <nz-form-label nzRequired nzFor="auth-consent">{{ 'WORKSPACE.CONSENT_CHECKBOX' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch nzId="auth-consent" formControlName="consent"></nz-switch>
           </nz-form-control>
         </nz-form-item>
       </form>
@@ -345,11 +353,20 @@
   >
     <ng-container *nzModalContent>
       <form [formGroup]="callbackForm">
-        <p class="text-sm text-gray-600 mb-4">{{ 'WORKSPACE.MODAL_CALLBACK_DESC' | translate }}</p>
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <p class="modal-intro">{{ 'WORKSPACE.MODAL_CALLBACK_DESC' | translate }}</p>
 
         <nz-form-item>
           <nz-form-label nzRequired nzFor="ws-callback-code">{{ 'WORKSPACE.AUTH_CODE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input
               id="ws-callback-code"
               nz-input
@@ -361,7 +378,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired nzFor="ws-callback-state">{{ 'WORKSPACE.STATE_NONCE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input
               id="ws-callback-state"
               nz-input

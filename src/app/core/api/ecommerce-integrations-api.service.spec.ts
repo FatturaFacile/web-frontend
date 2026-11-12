@@ -27,7 +27,7 @@ describe('EcommerceIntegrationsApiService', () => {
     uuid: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
     name: 'Shopify Store',
     driver: 'shopify',
-    store_url: 'https://myshop.myshopify.com',
+    api_url: 'https://myshop.myshopify.com',
     is_active: true,
   };
 
@@ -83,7 +83,8 @@ describe('EcommerceIntegrationsApiService', () => {
     const createReqPayload: CreateEcommerceChannelRequest = {
       name: 'Woo Store',
       driver: 'woocommerce',
-      credentials: { store_url: 'https://woo.example.com' },
+      api_url: 'https://woo.example.com',
+      credentials: { consumer_key: 'ck', consumer_secret: 'cs' },
     };
     service.createChannel(createReqPayload).subscribe((res) => {
       expect(res.data).toEqual(mockChannel);

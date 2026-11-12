@@ -49,6 +49,7 @@ const emptyTerm = (): TermDraft => ({
 /** Catalog master data: payment terms (with schedule preview), brands, categories and units of measure. */
 @Component({
   selector: 'app-catalog-master-data',
+  styleUrl: './catalog-master-data.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -127,7 +128,23 @@ export class CatalogMasterDataComponent {
 
   protected termValid(): boolean {
     const d = this.termDraft;
-    return d.code.trim().length > 0 && d.name.trim().length > 0 && (!d.discount_percent || DECIMAL.test(d.discount_percent));
+    const percent = d.discount_percent.trim();
+    const hasDiscountDays = d.discount_days !== null && d.discount_days !== undefined;
+    const percentValid = !percent || (DECIMAL.test(percent) && Number(percent) > 0 && Number(percent) <= 100);
+    const daysValid = !hasDiscountDays || d.discount_days! >= 0;
+    const daysInRange = d.days === null || d.days === undefined || (d.days >= 0 && d.days <= 365);
+    // The discount percentage and the discount days go together.
+    const discountPaired = !!percent === hasDiscountDays;
+    return (
+      d.code.trim().length > 0 &&
+      d.code.trim().length <= 20 &&
+      d.name.trim().length > 0 &&
+      d.name.trim().length <= 100 &&
+      percentValid &&
+      daysValid &&
+      daysInRange &&
+      discountPaired
+    );
   }
 
   protected saveTerm(): void {

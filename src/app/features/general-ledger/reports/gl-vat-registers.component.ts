@@ -6,23 +6,27 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { AuthStore, GeneralLedgerApiService, VatRegister } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Sales or purchases VAT register of a date range. */
 @Component({
   selector: 'app-gl-vat-registers',
+  styleUrl: './gl-vat-registers.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
-    <div>
-      <nz-select [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
+    <div class="filters">
+      <nz-select class="select-sm" [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
         <nz-option nzValue="sales" [nzLabel]="'GL.VAT_SALES' | translate" />
         <nz-option nzValue="purchases" [nzLabel]="'GL.VAT_PURCHASES' | translate" />
       </nz-select>
       <label for="vr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="vr-from" nz-input type="date" [(ngModel)]="from" />
+      <input class="date-input" id="vr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="vr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="vr-to" nz-input type="date" [(ngModel)]="to" />
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <input class="date-input" id="vr-to" nz-input type="date" [(ngModel)]="to" />
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
     @if (register(); as r) {
       <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50">
@@ -51,7 +55,7 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
           }
         </tbody>
       </nz-table>
-      <p>
+      <p class="totals">
         <strong>{{ 'GL.COL_TAXABLE' | translate }}: {{ r.totals.taxable | money: currency() }} -
           {{ 'GL.COL_VAT' | translate }}: {{ r.totals.tax | money: currency() }}</strong>
       </p>
@@ -64,6 +68,10 @@ export class GlVatRegistersComponent {
   protected readonly register = signal<VatRegister | null>(null);
   protected readonly loading = signal(false);
   protected type: 'sales' | 'purchases' = 'sales';
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
 

@@ -28,6 +28,7 @@ import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/t
 
 @Component({
   selector: 'app-field-service',
+  styleUrl: './field-service.component.scss',
   imports: [
     DatePipe,
     FormsModule,

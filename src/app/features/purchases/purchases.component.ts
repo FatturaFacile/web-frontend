@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormsModule,
   NonNullableFormBuilder,
@@ -41,6 +42,8 @@ import {
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { apiErrorText } from '../sales/cycle/shared/sales-api-helpers';
+import { notInPast } from '@shared/utils/date-validators';
+import { validationTipKey } from '@shared/utils/validation-tip';
 
 /** Approval states of a supplier invoice in which it cannot be paid (the API refuses the payment too). */
 const PAYMENT_BLOCKING_APPROVALS: readonly string[] = ['pending', 'in_approval', 'rejected', 'match_blocked'];
@@ -70,7 +73,7 @@ function receiptLineGroup(fb: NonNullableFormBuilder, lineId: string) {
   return fb.group({
     purchase_order_line_id: fb.control(lineId),
     quantity_received: fb.control<number | null>(null, [Validators.min(0)]),
-    lot_number: fb.control(''),
+    lot_number: fb.control('', [Validators.maxLength(100)]),
   });
 }
 
@@ -84,6 +87,7 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
 
 @Component({
   selector: 'app-purchases',
+  styleUrl: './purchases.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -117,6 +121,12 @@ export class PurchasesComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  /** The error text of a control of the order, receipt or match forms. */
+  tip(control: AbstractControl): string {
+    const key = validationTipKey(control);
+    return key ? this.translate.instant(key) : '';
+  }
 
   readonly activeTabIndex = signal<number>(0);
 
@@ -183,19 +193,20 @@ export class PurchasesComponent implements OnInit {
   // Forms
   readonly orderForm = this.fb.group({
     supplier_id: this.fb.control('', [Validators.required]),
-    currency: this.fb.control<'CHF' | 'EUR'>('EUR', [Validators.required]),
-    expected_delivery_date: this.fb.control<Date | null>(null, [Validators.required]),
-    item_description: this.fb.control('', [Validators.required]),
+    currency: this.fb.control<'CHF' | 'EUR'>('EUR'),
+    // The order date is today and the API requires expected_delivery_date >= order_date.
+    expected_delivery_date: this.fb.control<Date | null>(null, [Validators.required, notInPast]),
+    item_description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
     unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0)]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
   });
 
   readonly receiptForm = this.fb.group({
-    supplier_delivery_note_ref: this.fb.control('', [Validators.required]),
+    supplier_delivery_note_ref: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
     received_date: this.fb.control(toIsoDay(new Date()), [Validators.required]),
     inspection_required: this.fb.control(false),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', [Validators.maxLength(2000)]),
     lines: this.fb.array<ReturnType<typeof receiptLineGroup>>([]),
   });
 

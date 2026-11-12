@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.section-total {
+  font-weight: 600;
+
+  td {
+    background: var(--bg-card-secondary);
+  }
+}

@@ -131,16 +131,25 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="assetForm" nzLayout="vertical">
+    <ng-template #fieldTip let-control>
+      @if (control.errors?.['serverError']) {
+        {{ control.errors['serverError'] }}
+      } @else if (control.hasError('required')) {
+        {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+      } @else {
+        {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+      }
+    </ng-template>
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'assets.lblAssetName' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Name is required">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="name" [placeholder]="'assets.lblEGPrecisionCncMachine' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'assets.lblCategory' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Category is required">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="category_id">
               @for (cat of categories(); track cat.id) {
                 <nz-option [nzValue]="cat.id" [nzLabel]="cat.name"></nz-option>
@@ -153,14 +162,14 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>Acquisition Cost ({{ authStore.activeCurrency() }})</nz-form-label>
-          <nz-form-control nzErrorTip="Valid cost required">
-            <nz-input-number formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number class="w-full" formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>{{ 'assets.lblUsefulLifeYears' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Useful life required">
-            <nz-input-number formControlName="useful_life_years" [nzMin]="1" [nzMax]="50"></nz-input-number>
+          <nz-form-label>{{ 'assets.lblUsefulLifeYears' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number class="w-full" formControlName="useful_life_years" [nzMin]="1" [nzMax]="50"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -194,13 +203,13 @@
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'assets.lblAssetTagNumber' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="asset_number" placeholder="AST-1001" />
+            <input nz-input formControlName="asset_number" maxlength="60" placeholder="AST-1001" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'assets.lblSerialNumber' | translate }}</nz-form-label>
           <nz-form-control>
-            <input nz-input formControlName="serial_number" placeholder="SN-987654" />
+            <input nz-input formControlName="serial_number" maxlength="100" placeholder="SN-987654" />
           </nz-form-control>
         </nz-form-item>
       </div>

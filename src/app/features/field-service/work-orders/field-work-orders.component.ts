@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -28,6 +28,8 @@ import {
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
 
 const LINE_TYPES: readonly FieldWorkOrderLineType[] = ['labor', 'material', 'travel'];
 
@@ -38,6 +40,7 @@ interface ClientOption {
 
 @Component({
   selector: 'app-field-work-orders',
+  styleUrl: './field-work-orders.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -90,11 +93,16 @@ export class FieldWorkOrdersComponent implements OnInit {
     technician_user_id: this.fb.control(''),
     date: this.fb.control('', Validators.required),
     started_at: this.fb.control(''),
-    ended_at: this.fb.control(''),
+    ended_at: this.fb.control('', endsNotBefore('started_at')),
     intervention_address: this.fb.control('', Validators.maxLength(255)),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', Validators.maxLength(5000)),
     lines: this.fb.array([this.newLine()]),
   });
+
+  constructor() {
+    // The API requires ended_at on or after started_at.
+    revalidateOnStartChange(this.form, 'started_at', 'ended_at', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.load();
@@ -116,8 +124,8 @@ export class FieldWorkOrdersComponent implements OnInit {
   protected newLine() {
     return this.fb.group({
       type: this.fb.control<FieldWorkOrderLineType | ''>('labor'),
-      description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-      quantity: this.fb.control<number>(1, [Validators.required, Validators.min(0)]),
+      description: this.fb.control('', [Validators.required, Validators.maxLength(1000)]),
+      quantity: this.fb.control<number>(1, [Validators.required, Validators.min(0.01)]),
       unit_price: this.fb.control<number>(0, [Validators.required, Validators.min(0)]),
       tax_rate: this.fb.control<number>(22, [Validators.required, Validators.min(0), Validators.max(100)]),
     });
@@ -231,6 +239,16 @@ export class FieldWorkOrdersComponent implements OnInit {
   }
 
   protected fieldError(path: string): string | undefined {
+    const control = this.form.get(path);
+    if (control?.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    if (hasSharedRuleError(control ?? null)) {
+      return this.i18n.translate(validationTipKey(control ?? null));
+    }
+    if (control?.hasError('maxlength')) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
     return serverErrorMessage(this.form, path) ?? undefined;
   }
 

@@ -29,6 +29,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 /** Guardian view of the childcare module: children, attendance, daily report, invoices, documents and messages. */
 @Component({
   selector: 'app-family-portal',
+  styleUrl: './family-portal.component.scss',
   imports: [
     DatePipe,
     ReactiveFormsModule,

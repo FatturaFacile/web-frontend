@@ -1,0 +1,32 @@
+// Styles of FieldServiceComponent
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 240px;
+}
+
+.filter-status {
+  width: 170px;
+}
+
+.filter-priority,
+.filter-sla {
+  width: 150px;
+}
+
+.ticket-title {
+  font-weight: 500;
+}
+
+.ticket-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

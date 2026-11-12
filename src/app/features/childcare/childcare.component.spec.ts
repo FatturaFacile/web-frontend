@@ -35,7 +35,7 @@ describe('ChildcareComponent', () => {
     birth_date: '2023-05-12',
     enrolled_on: '2024-09-01',
     allergies: 'Lattosio',
-    status: 'enrolled',
+    status: 'active',
   };
 
   const mockWaitlistChild: ChildcareChild = {
@@ -45,7 +45,7 @@ describe('ChildcareComponent', () => {
     last_name: 'Verdi',
     birth_date: '2024-01-10',
     enrolled_on: '2024-09-01',
-    status: 'waitlist',
+    status: 'waiting',
   };
 
   const mockGroup: ChildcareGroup = {
@@ -70,7 +70,7 @@ describe('ChildcareComponent', () => {
     child_id: 'ch-1-uuid',
     child_name: 'Sofia Bianchi',
     date: '2026-03-02',
-    category: 'nap',
+    category: 'sleep',
     body: 'Ha riposato serenamente',
     visible_to_family: true,
   };
@@ -92,7 +92,7 @@ describe('ChildcareComponent', () => {
   const mockFeePlan: ChildcareFeePlan = {
     id: 'fp-1-uuid',
     name: 'Tempo Pieno 08:00 - 17:00',
-    basis: 'monthly',
+    basis: 'monthly_flat',
     amount: '850.00',
     meal_amount: '120.00',
     tax_rate: '0.00',
@@ -110,7 +110,7 @@ describe('ChildcareComponent', () => {
     id: 'ref-1-uuid',
     child_id: 'ch-1-uuid',
     full_name: 'Giulia Neri',
-    relationship: 'Madre',
+    relationship: 'mother',
     phone: '+39 333 1122334',
     is_guardian: true,
     can_pick_up: true,
@@ -139,7 +139,7 @@ describe('ChildcareComponent', () => {
     getChildren: vi.fn().mockReturnValue(of(mockPaginatedChildren)),
     getChild: vi.fn().mockReturnValue(of({ data: mockChild })),
     enrolChild: vi.fn().mockReturnValue(of({ data: mockChild })),
-    admitChild: vi.fn().mockReturnValue(of({ data: { ...mockWaitlistChild, status: 'enrolled' } })),
+    admitChild: vi.fn().mockReturnValue(of({ data: { ...mockWaitlistChild, status: 'active' } })),
     getGroups: vi.fn().mockReturnValue(of({ data: [mockGroup] })),
     createGroup: vi.fn().mockReturnValue(of({ data: mockGroup })),
     getReferencePersons: vi.fn().mockReturnValue(of({ data: [mockRefPerson] })),
@@ -223,6 +223,20 @@ describe('ChildcareComponent', () => {
     expect(component.childModalVisible()).toBe(false);
   });
 
+  it('should not call the API when the forms are submitted empty or with an invalid temperature', () => {
+    component.openCreateChildModal();
+    component.saveChild();
+    expect(mockChildcareApi.enrolChild).not.toHaveBeenCalled();
+    expect(component.childForm.controls.first_name.touched).toBe(true);
+
+    component.saveGroup();
+    expect(mockChildcareApi.createGroup).not.toHaveBeenCalled();
+
+    component.checkInForm.patchValue({ child_id: 'child-1', temperature: '50' });
+    component.saveCheckIn();
+    expect(mockChildcareApi.checkIn).not.toHaveBeenCalled();
+  });
+
   it('should admit child from waitlist', () => {
     component.admitChild(mockWaitlistChild);
     expect(mockChildcareApi.admitChild).toHaveBeenCalledWith(
@@ -266,7 +280,7 @@ describe('ChildcareComponent', () => {
 
     component.refPersonForm.patchValue({
       full_name: 'Giulia Neri',
-      relationship: 'Madre',
+      relationship: 'mother',
       phone: '+39 333 1122334',
     });
 
@@ -354,17 +368,38 @@ describe('ChildcareComponent', () => {
     component.absenceForm.patchValue({
       child_id: 'ch-1-uuid',
       date: '2026-03-02',
-      reason: 'Influenza',
+      reason: 'sick',
     });
     component.saveAbsence();
     expect(mockChildcareApi.recordAbsence).toHaveBeenCalledWith(
       expect.objectContaining({
         child_id: 'ch-1-uuid',
-        reason: 'Influenza',
+        reason: 'sick',
       }),
     );
     expect(mockMessageService.success).toHaveBeenCalled();
     expect(component.absenceModalVisible()).toBe(false);
+  });
+
+  it('sends the API enum values for the child status and refuses a future birth date or a lowercase canton', () => {
+    component.openCreateChildModal();
+    component.childForm.patchValue({
+      first_name: 'Anna',
+      last_name: 'Verdi',
+      billing_contact_id: 'c-1',
+      birth_date: '2999-01-01',
+      subsidy_canton: 'ti',
+    });
+    component.saveChild();
+    expect(mockChildcareApi.enrolChild).not.toHaveBeenCalled();
+    expect(component.childForm.controls.birth_date.hasError('futureDate')).toBe(true);
+    expect(component.childForm.controls.subsidy_canton.invalid).toBe(true);
+
+    component.childForm.patchValue({ birth_date: '2022-05-01', subsidy_canton: 'TI' });
+    component.saveChild();
+    const sent = mockChildcareApi.enrolChild.mock.calls.at(-1)?.[0];
+    expect(sent?.status).toBe('active');
+    expect(sent?.subsidy_canton).toBe('TI');
   });
 
   it('should create daily note, fee plan, run billing, and create requirement', () => {
@@ -372,7 +407,7 @@ describe('ChildcareComponent', () => {
     expect(component.noteModalVisible()).toBe(true);
     component.noteForm.patchValue({
       child_id: 'ch-1-uuid',
-      category: 'nap',
+      category: 'sleep',
       body: 'Ha dormito 2 ore',
       date: '2026-03-02',
     });
@@ -380,7 +415,7 @@ describe('ChildcareComponent', () => {
     expect(mockChildcareApi.createNote).toHaveBeenCalledWith(
       expect.objectContaining({
         child_id: 'ch-1-uuid',
-        category: 'nap',
+        category: 'sleep',
       }),
     );
     expect(mockMessageService.success).toHaveBeenCalled();
@@ -390,7 +425,7 @@ describe('ChildcareComponent', () => {
     expect(component.feePlanModalVisible()).toBe(true);
     component.feePlanForm.patchValue({
       name: 'Tempo Pieno',
-      basis: 'monthly',
+      basis: 'monthly_flat',
       amount: '850.00',
       currency: 'EUR',
     });

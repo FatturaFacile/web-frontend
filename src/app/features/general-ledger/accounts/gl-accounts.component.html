@@ -1,15 +1,15 @@
 <nz-card>
-  <div>
+  <div class="toolbar">
     <input
+      class="search-input"
       nz-input
       type="search"
-     
       [attr.aria-label]="'GL.SEARCH' | translate"
       [placeholder]="'GL.SEARCH' | translate"
       [(ngModel)]="search"
     />
     <nz-select
-     
+      class="type-filter"
       nzAllowClear
       [attr.aria-label]="'GL.ACCOUNT_TYPE' | translate"
       [nzPlaceHolder]="'GL.ACCOUNT_TYPE' | translate"
@@ -20,13 +20,13 @@
         <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
       }
     </nz-select>
-    <span></span>
+    <span class="spacer"></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'GL.ACCOUNT_NEW' | translate }}</button>
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="filtered()" [nzLoading]="loading()" [nzPageSize]="25">
+  <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="filtered()" [nzLoading]="loading()" [nzPageSize]="25">
     <thead>
       <tr>
         <th>{{ 'GL.COL_CODE' | translate }}</th>
@@ -128,7 +128,7 @@
           </nz-select>
         </nz-form-control>
       </nz-form-item>
-      <div>
+      <div class="checks">
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox formControlName="allows_manual_posting">{{ 'GL.ALLOWS_MANUAL_POSTING' | translate }}</label>
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->

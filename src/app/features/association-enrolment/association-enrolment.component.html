@@ -46,7 +46,7 @@
             </nz-form-item>
             <nz-form-item>
               <nz-form-label nzRequired nzFor="enrol-birth-date">{{ 'ASSOC_ENROL.BIRTH_DATE' | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="person.controls.birth_date.errors?.['serverError'] ?? ('ASSOC_ENROL.REQUIRED' | translate)">
+              <nz-form-control [nzErrorTip]="person.controls.birth_date.errors?.['serverError'] ?? (person.controls.birth_date.hasError('futureDate') ? ('COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate) : ('ASSOC_ENROL.REQUIRED' | translate))">
                 <input nz-input id="enrol-birth-date" type="date" formControlName="birth_date" autocomplete="bday" />
               </nz-form-control>
             </nz-form-item>

@@ -21,6 +21,7 @@ import {
   PermissionsService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { toTimestamp } from '@shared/utils/date-validators';
 
 const STATUSES: CrmCampaignStatus[] = ['planned', 'active', 'completed', 'cancelled'];
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
@@ -54,6 +55,7 @@ const emptyDraft = (): CampaignDraft => ({
 /** Campaigns with members (contacts, leads or a whole segment), email send to opted-in members and ROI. */
 @Component({
   selector: 'app-crm-campaigns',
+  styleUrl: './campaigns.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -113,10 +115,18 @@ export class CampaignsComponent {
     });
   }
 
+  /** Mirrors `end_date: after_or_equal:start_date`. */
+  protected endsBeforeStart(): boolean {
+    const start = toTimestamp(this.draft.start_date);
+    const end = toTimestamp(this.draft.end_date);
+    return start !== null && end !== null && end < start;
+  }
+
   protected validDraft(): boolean {
     const d = this.draft;
     return (
       d.name.trim().length > 0 &&
+      !this.endsBeforeStart() &&
       (!d.budgeted_cost || DECIMAL.test(d.budgeted_cost)) &&
       (!d.expected_revenue || DECIMAL.test(d.expected_revenue))
     );

@@ -31,11 +31,26 @@ export interface AutomotiveVehicle {
   license_plate: string;
   make: string;
   model: string;
-  year?: number;
-  vin?: string;
-  customer_id?: string;
-  customer_name?: string;
-  last_service_date?: string;
+  year?: number | null;
+  /** Fields of `SaveCustomerVehicleRequest` (client_id is required on creation). */
+  client_id?: string;
+  vin_chassis?: string | null;
+  mileage_km?: number;
+  registration_date?: string | null;
+  /** Present only when the API eager-loads the owner (the list does not at the moment). */
+  client?: { id: string; company_name?: string | null; first_name?: string | null; last_name?: string | null } | null;
+}
+
+/** Body of POST/PUT /automotive/vehicles (`SaveCustomerVehicleRequest`); all fields optional on update. */
+export interface AutomotiveVehiclePayload {
+  client_id?: string;
+  license_plate?: string;
+  make?: string;
+  model?: string;
+  year?: number | null;
+  vin_chassis?: string | null;
+  registration_date?: string | null;
+  mileage_km?: number;
 }
 
 /** Laravel paginator nested in the success envelope, as returned by the vehicle list. */

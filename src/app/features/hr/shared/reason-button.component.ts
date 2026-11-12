@@ -1,5 +1,5 @@
 import { Component, input, output, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -15,6 +15,7 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
  */
 @Component({
   selector: 'app-reason-button',
+  styleUrl: './reason-button.component.scss',
   imports: [ReactiveFormsModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <button nz-button nzSize="small" type="button" [nzDanger]="danger()" [nzLoading]="loading()" (click)="open()">
@@ -39,7 +40,7 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
             <input nz-input id="reason-input" type="date" [formControl]="reason" />
           }
           @case ('select') {
-            <nz-select id="reason-input" nzShowSearch [formControl]="reason">
+            <nz-select id="reason-input" class="w-full" nzShowSearch [formControl]="reason">
               @for (option of options(); track option.value) {
                 <nz-option [nzValue]="option.value" [nzLabel]="option.label ?? option.value" />
               }
@@ -51,7 +52,11 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
         }
         @if (reason.touched && reason.invalid) {
           <div class="ant-form-item-explain-error" role="alert">
-            {{ (reason.errors?.['pattern'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required') | translate }}
+            @if (reason.errors?.['minlength']) {
+              {{ 'hrmCommon.tooShort' | translate: { min: effectiveMinLength() } }}
+            } @else {
+              {{ (reason.errors?.['pattern'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required') | translate }}
+            }
           </div>
         }
       </ng-container>
@@ -67,18 +72,31 @@ export class ReasonButtonComponent {
   readonly options = input<CrudOption[]>([]);
   /** An empty value is allowed (emits an empty string). */
   readonly optional = input(false);
+  /** Minimum length of a `reason` prompt (API `min:3`; 5 for reopening a payroll run). */
+  readonly minLength = input(3);
   readonly confirmed = output<string>();
 
   protected readonly visible = signal(false);
   protected readonly reason = new FormControl('', { nonNullable: true });
 
+  protected effectiveMinLength(): number {
+    return this.kind() === 'reason' ? this.minLength() : 0;
+  }
+
   protected open(): void {
     this.reason.setValidators([
       ...(this.optional() ? [] : [Validators.required]),
+      ...(this.effectiveMinLength() > 0 ? [(control: AbstractControl<string>) => this.tooShort(control)] : []),
       ...(this.kind() === 'decimal' ? [Validators.pattern(/^(\d+(\.\d{1,4})?)?$/)] : []),
     ]);
     this.reason.reset();
     this.visible.set(true);
+  }
+
+  /** Mirrors `min:N` on the trimmed text (the emitted value is trimmed). */
+  private tooShort(control: AbstractControl<string>): ValidationErrors | null {
+    const length = control.value.trim().length;
+    return length > 0 && length < this.effectiveMinLength() ? { minlength: true } : null;
   }
 
   protected confirm(): void {

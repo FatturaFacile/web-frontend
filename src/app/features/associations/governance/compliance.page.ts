@@ -10,7 +10,7 @@ const PROTOCOL_FIELDS = [
   req(rf.select('direction', DIRECTIONS)),
   rf.date('registered_on'),
   rf.date('document_date'),
-  req(rf.text('correspondent')),
+  req(rf.text('correspondent', { maxLength: 500 })),
   req(rf.text('subject', { maxLength: 255 })),
   rf.text('category', { maxLength: 100 }),
   rf.uuid('meeting_id'),
@@ -20,7 +20,7 @@ const PROTOCOL_FIELDS = [
 const LEX398_ENTRY_FIELDS = [
   req(rf.date('entry_date')),
   req(rf.text('document_number', { maxLength: 60 })),
-  rf.text('counterparty'),
+  rf.text('counterparty', { maxLength: 255 }),
   rf.text('description', { maxLength: 500 }),
   req(rf.decimal('taxable_amount')),
   rf.decimal('vat_rate'),

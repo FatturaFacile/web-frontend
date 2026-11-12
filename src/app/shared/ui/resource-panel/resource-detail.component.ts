@@ -14,6 +14,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /** Recursive read-only renderer of an API payload (object, list of records or scalar). */
 @Component({
   selector: 'app-resource-detail',
+  styleUrl: './resource-detail.component.scss',
   imports: [NzTagModule, TranslatePipe],
   templateUrl: './resource-detail.component.html',
 })

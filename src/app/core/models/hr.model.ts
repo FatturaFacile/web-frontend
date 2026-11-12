@@ -1,5 +1,5 @@
 export type EmploymentStatus = 'active' | 'probation' | 'terminated' | 'on_leave' | string;
-export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intern' | string;
+export type EmploymentType = 'full_time' | 'part_time' | 'contractor' | 'apprentice' | 'seasonal';
 
 export interface EmployeeResource {
   id: string;
@@ -41,6 +41,8 @@ export interface HireEmployeePayload {
   hire_date?: string;
   department_id?: string | null;
   employment_type?: EmploymentType;
+  /** 'permanent', 'fixed_term', 'apprenticeship', 'contractor' or 'internship'. */
+  contract_type?: string;
   weekly_hours?: number;
   probation_months?: number;
 }

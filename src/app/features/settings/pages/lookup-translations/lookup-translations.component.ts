@@ -25,6 +25,7 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
 /** The items of a lookup list (VAT rates, units, countries, payment methods) and their custom translations for the company. */
 @Component({
   selector: 'app-lookup-translations',
+  styleUrl: './lookup-translations.component.scss',
   imports: [
     ActionFormComponent,
     FormsModule,
@@ -43,12 +44,12 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
       [subtitle]="'lookupTranslations.subtitle' | translate"
     />
     <nz-card>
-      <div class="flex items-end gap-2 mb-3 flex-wrap">
+      <div class="filter-bar">
         <div>
           <label for="lk-category">{{ 'lookupTranslations.category' | translate }}</label>
           <nz-select
             id="lk-category"
-           
+            class="w-field-md"
             nzShowSearch
             nzAllowClear
             [ngModel]="category()"
@@ -155,7 +156,7 @@ export class LookupTranslationsComponent {
           labelKey: 'lookupTranslations.shortLabel',
           type: 'text',
           nullable: true,
-          maxLength: 50,
+          maxLength: 15,
         },
         { key: 'description', labelKey: 'hrmCommon.description', type: 'textarea', nullable: true },
       ],

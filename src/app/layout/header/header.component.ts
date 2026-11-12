@@ -19,6 +19,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-header',
+  styleUrl: './header.component.scss',
   imports: [
     FormsModule,
     RouterLink,

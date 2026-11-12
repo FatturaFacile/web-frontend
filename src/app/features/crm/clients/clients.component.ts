@@ -30,6 +30,7 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
 @Component({
   selector: 'app-crm-clients',
+  styleUrl: './clients.component.scss',
   imports: [
     FormsModule,
     NzTagModule,

@@ -14,10 +14,11 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-pc-milestones',
+  styleUrl: './pc-milestones.component.scss',
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'PRJ.MILESTONE_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" class="mb-4" (click)="openModal(null)">{{ 'PRJ.MILESTONE_NEW' | translate }}</button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -64,12 +65,12 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.MILESTONE_FORM' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ms-name">{{ 'PRJ.NAME' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><input id="ms-name" nz-input formControlName="name" maxlength="255" /></nz-form-control>
+            <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><input id="ms-name" nz-input formControlName="name" maxlength="150" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ms-date">{{ 'PRJ.DATE' | translate }}</nz-form-label>
@@ -87,7 +88,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       </ng-container>
     </nz-modal>
 
-    <nz-modal [nzVisible]="billTarget() !== null" [nzTitle]="'PRJ.BILL' | translate" (nzOnOk)="bill()" (nzOnCancel)="billTarget.set(null)">
+    <nz-modal [nzVisible]="billTarget() !== null" [nzTitle]="'PRJ.BILL' | translate" [nzOkDisabled]="taxRate === null" (nzOnOk)="bill()" (nzOnCancel)="billTarget.set(null)">
       <ng-container *nzModalContent>
         <p>{{ 'PRJ.BILL_HINT' | translate }}</p>
         <label for="ms-tax">{{ 'PRJ.TAX_RATE' | translate }}</label>
@@ -112,11 +113,11 @@ export class PcMilestonesComponent implements OnInit {
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
   protected readonly billTarget = signal<ProjectMilestone | null>(null);
-  protected taxRate = 22;
+  protected taxRate: number | null = 22;
   private editingId: string | null = null;
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
     milestone_date: this.fb.control('', Validators.required),
     billing_amount: this.fb.control<number | null>(null),
     billing_percentage: this.fb.control<number | null>(null),
@@ -182,7 +183,7 @@ export class PcMilestonesComponent implements OnInit {
 
   protected bill(): void {
     const milestone = this.billTarget();
-    if (!milestone) {
+    if (!milestone || this.taxRate === null) {
       return;
     }
     this.api.billMilestone(this.projectId(), milestone.id, { tax_rate: this.taxRate }).subscribe({

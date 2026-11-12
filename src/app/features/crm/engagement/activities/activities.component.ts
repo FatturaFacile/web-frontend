@@ -52,6 +52,7 @@ const emptyDraft = (): ActivityDraft => ({
 /** CRM activities: tasks, calls and meetings with due date and reminder, completed with an outcome. */
 @Component({
   selector: 'app-crm-activities',
+  styleUrl: './activities.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

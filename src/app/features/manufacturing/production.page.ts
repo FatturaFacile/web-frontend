@@ -4,7 +4,7 @@ const ORDER_FIELDS = [
   req(rf.lookup('mfg_item_id', 'mfgItems')),
   req(rf.decimal('target_quantity')),
   req(rf.datetime('planned_start_date')),
-  req(rf.datetime('planned_end_date')),
+  req(rf.datetime('planned_end_date', { notBefore: 'planned_start_date' })),
   rf.uuid('bom_id'),
   rf.uuid('routing_id'),
   rf.uuid('project_id'),
@@ -79,7 +79,7 @@ export const MFG_PRODUCTION_PAGE: ResourcePageConfig = {
       rowActions: [
         act('POST', 'RES.A.release_order', '/manufacturing/production-orders/{id}/release', { confirm: true, visible: whenIn('status', 'planned') }),
         act('POST', 'RES.A.reschedule', '/manufacturing/production-orders/{id}/reschedule', {
-          fields: [req(rf.datetime('planned_start_date')), req(rf.datetime('planned_end_date'))],
+          fields: [req(rf.datetime('planned_start_date')), req(rf.datetime('planned_end_date', { notBefore: 'planned_start_date' }))],
           visible: whenIn('status', 'planned', 'released'),
         }),
         act('POST', 'RES.A.start', '/manufacturing/production-orders/{id}/start', { confirm: true, visible: whenIn('status', 'released') }),
@@ -98,7 +98,7 @@ export const MFG_PRODUCTION_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.finish_order', '/manufacturing/production-orders/{id}/complete', { confirm: true, visible: ACTIVE_ORDER }),
         act('POST', 'RES.A.close_order', '/manufacturing/production-orders/{id}/close', { confirm: true, showResult: true, visible: whenIn('status', 'completed') }),
         act('POST', 'RES.ACTION.CANCEL', '/manufacturing/production-orders/{id}/cancel', {
-          fields: [req(rf.textarea('reason'))],
+          fields: [req(rf.textarea('reason', { maxLength: 1000 }))],
           danger: true,
           visible: whenIn('status', 'planned', 'released'),
         }),
@@ -138,7 +138,7 @@ export const MFG_PRODUCTION_PAGE: ResourcePageConfig = {
           fields: [
             req(rf.decimal('good_units')),
             rf.decimal('scrap_units'),
-            rf.text('scrap_reason'),
+            rf.text('scrap_reason', { maxLength: 255 }),
             rf.decimal('setup_minutes'),
             rf.decimal('labor_minutes'),
             rf.bool('is_final'),
@@ -148,7 +148,7 @@ export const MFG_PRODUCTION_PAGE: ResourcePageConfig = {
           visible: whenIn('status', 'started', 'in_progress', 'running'),
         }),
         act('POST', 'RES.A.report_downtime', '/manufacturing/shop-floor/executions/{id}/downtime', {
-          fields: [req(rf.decimal('downtime_minutes')), req(rf.text('reason'))],
+          fields: [req(rf.decimal('downtime_minutes')), req(rf.text('reason', { maxLength: 255 }))],
         }),
       ],
     },

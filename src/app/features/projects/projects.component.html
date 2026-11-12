@@ -64,7 +64,7 @@
         <th>{{ 'PRJ.LBL_STATUS' | translate }}</th>
         <th>{{ 'PRJ.LBL_HEALTH' | translate }}</th>
         <th>{{ 'PRJ.LBL_PROGRESS' | translate }}</th>
-        <th>{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
+        <th class="num">{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
         <th nzWidth="220px">{{ 'PRJ.LBL_ACTIONS' | translate }}</th>
       </tr>
     </thead>
@@ -86,10 +86,10 @@
           <td>
             <nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag>
           </td>
-          <td>
+          <td class="progress-cell">
             <nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress>
           </td>
-          <td>{{ p.contract_value | money: p.currency }}</td>
+          <td class="num">{{ p.contract_value | money: p.currency }}</td>
           <td>
             <nz-space>
               <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
@@ -133,13 +133,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Project number is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'project_number')">
             <input nz-input formControlName="project_number" placeholder="PRJ-2026-001" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NAME' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Name is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'name')">
             <input nz-input formControlName="name" [placeholder]="'PRJ.LBL_E_G_ERP_IMPLEMENTATION' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -148,13 +148,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_CLIENT_CONTACT_ID_UUID' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Client ID is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'contact_id')">
             <input nz-input formControlName="contact_id" [placeholder]="'PRJ.LBL_CLIENT_CONTACT_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_MANAGER_ID_UUID' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Manager is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'project_manager_user_id')">
             <input nz-input formControlName="project_manager_user_id" [placeholder]="'PRJ.LBL_USER_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -189,13 +189,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_START' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Start date is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'planned_start_date')">
             <input nz-input formControlName="planned_start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_END' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="End date is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'planned_end_date')">
             <input nz-input formControlName="planned_end_date" type="date" />
           </nz-form-control>
         </nz-form-item>
@@ -203,12 +203,12 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>Contract Value ({{ authStore.activeCurrency() }})</nz-form-label>
-        <nz-form-control nzErrorTip="Contract value is required">
+        <nz-form-control [nzErrorTip]="errorTip(projectForm, 'contract_value')">
           <nz-input-number
             formControlName="contract_value"
             [nzMin]="0"
             [nzStep]="1000"
-           
+           class="w-full"
           ></nz-input-number>
         </nz-form-control>
       </nz-form-item>

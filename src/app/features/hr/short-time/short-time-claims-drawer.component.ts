@@ -31,6 +31,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 /** The claims of a case and the steps of one claim: send to the fund, carry into payroll, record the reimbursement, export. */
 @Component({
   selector: 'app-short-time-claims-drawer',
+  styleUrl: './short-time-claims-drawer.component.scss',
   imports: [
     ActionFormComponent,
     MoneyPipe,
@@ -186,7 +187,7 @@ export class ShortTimeClaimsDrawerComponent {
     return {
       submitLabelKey: 'hrmShortTime.claims.recordReimbursement',
       fields: [
-        { key: 'amount', labelKey: 'hrmShortTime.claims.amount', type: 'decimal', required: true },
+        { key: 'amount', labelKey: 'hrmShortTime.claims.amount', type: 'decimal', required: true, min: 0 },
         { key: 'paid_on', labelKey: 'hrmShortTime.claims.paidOn', type: 'date', nullable: true },
       ],
       submit: (payload) =>

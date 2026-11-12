@@ -48,6 +48,7 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
 
 @Component({
   selector: 'app-cycle-orders',
+  styleUrl: './orders.component.scss',
   imports: [
     DatePipe,
     FormsModule,

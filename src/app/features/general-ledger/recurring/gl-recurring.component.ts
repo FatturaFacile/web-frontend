@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -26,11 +26,13 @@ import {
 import { TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 const STATUS_COLORS: Record<RecurringStatus, string> = { active: 'green', paused: 'gold', ended: 'default' };
 
 @Component({
   selector: 'app-gl-recurring',
+  styleUrl: './gl-recurring.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -53,6 +55,7 @@ const STATUS_COLORS: Record<RecurringStatus, string> = { active: 'green', paused
 export class GlRecurringComponent implements OnInit {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   protected readonly lookups = inject(GlLookupStore);
@@ -69,14 +72,19 @@ export class GlRecurringComponent implements OnInit {
   protected scheduledAsOf = '';
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    description: this.fb.control('', [Validators.required, Validators.maxLength(500)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
+    description: this.fb.control('', [Validators.required, Validators.maxLength(450)]),
     frequency: this.fb.control<RecurringFrequency>('monthly', Validators.required),
     start_date: this.fb.control('', Validators.required),
-    end_date: this.fb.control(''),
+    end_date: this.fb.control('', endsNotBefore('start_date')),
     reverse_next_day: this.fb.control(false),
     lines: this.fb.array([this.newLine(), this.newLine()]),
   });
+
+  constructor() {
+    // The API requires end_date on or after start_date.
+    revalidateOnStartChange(this.form, 'start_date', 'end_date', this.destroyRef);
+  }
 
   ngOnInit(): void {
     this.lookups.load();

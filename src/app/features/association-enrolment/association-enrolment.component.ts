@@ -18,6 +18,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { map } from 'rxjs';
+import { beforeToday } from '@shared/utils/date-validators';
 import { saveBlob } from '../association-area/save-blob';
 
 const AGE_OF_MAJORITY = 18;
@@ -28,6 +29,7 @@ const AGE_OF_MAJORITY = 18;
  */
 @Component({
   selector: 'app-association-enrolment',
+  styleUrl: './association-enrolment.component.scss',
   imports: [
     NzAlertModule,
     NzButtonModule,
@@ -59,17 +61,17 @@ export class AssociationEnrolmentComponent implements OnInit {
   protected readonly person = this.fb.group({
     first_name: ['', [Validators.required, Validators.maxLength(255)]],
     last_name: ['', [Validators.required, Validators.maxLength(255)]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: [''],
-    birth_date: ['', [Validators.required]],
-    birth_place: [''],
-    gender: [''],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+    phone: ['', [Validators.maxLength(50)]],
+    birth_date: ['', [Validators.required, beforeToday]],
+    birth_place: ['', [Validators.maxLength(255)]],
+    gender: ['', [Validators.maxLength(20)]],
     tax_code: ['', [Validators.required, Validators.maxLength(30)]],
-    guardian_first_name: [''],
-    guardian_last_name: [''],
-    guardian_email: ['', [Validators.email]],
-    guardian_phone: [''],
-    guardian_relationship: [''],
+    guardian_first_name: ['', [Validators.maxLength(255)]],
+    guardian_last_name: ['', [Validators.maxLength(255)]],
+    guardian_email: ['', [Validators.email, Validators.maxLength(255)]],
+    guardian_phone: ['', [Validators.maxLength(50)]],
+    guardian_relationship: ['', [Validators.maxLength(50)]],
     privacy_accepted: [false, [Validators.requiredTrue]],
   });
   protected readonly extra = new FormGroup<Record<string, AbstractControl>>({});

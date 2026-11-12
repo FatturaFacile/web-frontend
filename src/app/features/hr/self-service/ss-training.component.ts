@@ -9,6 +9,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 
 @Component({
   selector: 'app-ss-training',
+  styleUrl: './ss-training.component.scss',
   imports: [DatePipe, NzTableModule, TranslatePipe, HrStatusTagComponent],
   template: `
     <h3>{{ 'hrmSelfService.trainingRecords' | translate }}</h3>

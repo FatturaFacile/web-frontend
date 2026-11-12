@@ -7,6 +7,7 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 
 @Component({
   selector: 'app-ss-profile',
+  styleUrl: './ss-profile.component.scss',
   imports: [DatePipe, NzDescriptionsModule, TranslatePipe, HrStatusTagComponent],
   template: `
     <nz-descriptions nzBordered [nzColumn]="{ xs: 1, md: 2 }">

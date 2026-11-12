@@ -23,6 +23,7 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
 
 @Component({
   selector: 'app-alerts',
+  styleUrl: './alerts.component.scss',
   imports: [
     FormsModule,
     DatePipe,

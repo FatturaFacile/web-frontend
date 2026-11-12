@@ -51,6 +51,7 @@ const CANTONS = [
 /** Withholding tax statement of a period, by canton: preview with the missing data, then closing (409/422 from the server). */
 @Component({
   selector: 'app-withholding-statements-panel',
+  styleUrl: './withholding-statements-panel.component.scss',
   imports: [
     FormsModule,
     MoneyPipe,
@@ -64,7 +65,7 @@ const CANTONS = [
     TranslatePipe,
   ],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="ws-year">{{ 'hrmCommon.year' | translate }}</label>
         <input
@@ -79,9 +80,9 @@ const CANTONS = [
         <label for="ws-type">{{ 'hrmCompliance.statements.periodType' | translate }}</label>
         <nz-select
           id="ws-type"
-         
+          class="w-field-sm"
           [ngModel]="periodType()"
-          (ngModelChange)="periodType.set($event)"
+          (ngModelChange)="onPeriodTypeChange($event)"
         >
           @for (type of periodTypes; track type) {
             <nz-option
@@ -98,16 +99,21 @@ const CANTONS = [
           id="ws-period"
           type="number"
           min="1"
-          max="12"
+          [attr.max]="periodMax()"
           [ngModel]="period()"
           (ngModelChange)="period.set($event)"
         />
+        @if (!periodValid()) {
+          <div class="ant-form-item-explain-error" role="alert">
+            {{ 'COMMON.VALIDATION.EXCEEDS_LIMIT' | translate }} ({{ periodMax() }})
+          </div>
+        }
       </div>
       <div>
         <label for="ws-canton">{{ 'hrmPayroll.canton' | translate }}</label>
         <nz-select
           id="ws-canton"
-         
+          class="w-field-xs"
           nzAllowClear
           [ngModel]="canton()"
           (ngModelChange)="canton.set($event)"
@@ -117,14 +123,14 @@ const CANTONS = [
           }
         </nz-select>
       </div>
-      <button nz-button type="button" [nzLoading]="loading()" (click)="load()">
+      <button nz-button type="button" [nzLoading]="loading()" [disabled]="!periodValid()" (click)="load()">
         {{ 'hrmCompliance.statements.preview' | translate }}
       </button>
       <button
         nz-button
         nzType="primary"
         type="button"
-        [disabled]="!canWrite() || !report()"
+        [disabled]="!canWrite() || !report() || !canton() || !periodValid()"
         (click)="confirmOpen.set(true)"
       >
         {{ 'hrmCompliance.statements.close' | translate }}
@@ -212,6 +218,17 @@ export class WithholdingStatementsPanelComponent {
   protected readonly year = signal<number>(new Date().getFullYear());
   protected readonly periodType = signal<WithholdingPeriodType>('monthly');
   protected readonly period = signal<number>(1);
+  /** API: the period cannot exceed 12 (monthly), 4 (quarterly) or 1 (annual). */
+  protected readonly periodMax = computed(() => ({ monthly: 12, quarterly: 4, annual: 1 })[this.periodType()]);
+  protected readonly periodValid = computed(() => {
+    const period = this.period();
+    return Number.isInteger(period) && period >= 1 && period <= this.periodMax();
+  });
+
+  protected onPeriodTypeChange(type: WithholdingPeriodType): void {
+    this.periodType.set(type);
+    this.period.set(Math.min(this.period() || 1, this.periodMax()));
+  }
   protected readonly canton = signal<string | null>(null);
   protected readonly report = signal<WithholdingStatementReport | null>(null);
   protected readonly loading = signal(false);
@@ -232,6 +249,9 @@ export class WithholdingStatementsPanelComponent {
   }
 
   protected load(): void {
+    if (!this.periodValid()) {
+      return;
+    }
     this.loading.set(true);
     this.api.getWithholdingStatements(this.query()).subscribe({
       next: (res) => {

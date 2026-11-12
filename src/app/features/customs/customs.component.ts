@@ -17,6 +17,8 @@ import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  ClientApiService,
+  ContactResource,
   AuthStore,
   CustomsApiService,
   CustomsAssessmentDecisionResource,
@@ -38,6 +40,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-customs',
+  styleUrl: './customs.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -65,11 +68,15 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 export class CustomsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly customsApi = inject(CustomsApiService);
+  private readonly clientApi = inject(ClientApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   readonly authStore = inject(AuthStore);
 
   readonly activeTabIndex = signal(0);
+
+  /** Customers a dossier can be opened for (`customer_contact_id` must be a contact of the company). */
+  readonly contacts = signal<ContactResource[]>([]);
 
   // --- DOSSIERS STATE ---
   readonly loadingDossiers = signal(false);
@@ -109,14 +116,14 @@ export class CustomsComponent implements OnInit {
   readonly dossierForm = this.fb.group({
     customer_contact_id: this.fb.control('', [Validators.required]),
     direction: this.fb.control<CustomsDirection>('import', [Validators.required]),
-    service_type: this.fb.control('standard_customs', [Validators.required]),
-    currency: this.fb.control('CHF', [Validators.required]),
-    origin_country: this.fb.control('IT'),
-    destination_country: this.fb.control('CH'),
-    incoterms: this.fb.control('DAP'),
-    gross_weight_kg: this.fb.control(0),
-    volume_m3: this.fb.control(0),
-    packages: this.fb.control(1),
+    service_type: this.fb.control('standard_customs', [Validators.required, Validators.maxLength(40)]),
+    currency: this.fb.control('CHF', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]),
+    origin_country: this.fb.control('IT', [Validators.pattern(/^[A-Za-z]{2}$/)]),
+    destination_country: this.fb.control('CH', [Validators.pattern(/^[A-Za-z]{2}$/)]),
+    incoterms: this.fb.control('DAP', [Validators.pattern(/^[A-Za-z]{3}$/)]),
+    gross_weight_kg: this.fb.control(0, [Validators.min(0)]),
+    volume_m3: this.fb.control(0, [Validators.min(0)]),
+    packages: this.fb.control(1, [Validators.min(0)]),
     notes: this.fb.control(''),
   });
 
@@ -124,11 +131,11 @@ export class CustomsComponent implements OnInit {
   readonly submittingDeclaration = signal(false);
   readonly declarationForm = this.fb.group({
     declaration_type: this.fb.control<CustomsDirection>('import', [Validators.required]),
-    trader_declaration_number: this.fb.control(''),
-    trader_reference: this.fb.control(''),
-    customs_office_number: this.fb.control('CH001234'),
-    dispatch_country: this.fb.control('IT'),
-    destination_country: this.fb.control('CH'),
+    trader_declaration_number: this.fb.control('', [Validators.maxLength(22), Validators.pattern(/^[^/:"?*|\\]*$/)]),
+    trader_reference: this.fb.control('', [Validators.maxLength(35)]),
+    customs_office_number: this.fb.control('CH001234', [Validators.maxLength(8)]),
+    dispatch_country: this.fb.control('IT', [Validators.pattern(/^[A-Za-z]{2}$/)]),
+    destination_country: this.fb.control('CH', [Validators.pattern(/^[A-Za-z]{2}$/)]),
   });
 
   readonly profitabilityModalVisible = signal(false);
@@ -136,6 +143,14 @@ export class CustomsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDossiers();
+    this.clientApi.list({ per_page: 200 }).subscribe({
+      next: (res) => this.contacts.set(res.data),
+      error: () => this.contacts.set([]),
+    });
+  }
+
+  contactLabel(contact: ContactResource): string {
+    return contact.company_name || `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || contact.id;
   }
 
   onTabChange(index: number): void {
@@ -203,12 +218,7 @@ export class CustomsComponent implements OnInit {
 
   submitDossierForm(): void {
     if (this.dossierForm.invalid) {
-      Object.values(this.dossierForm.controls).forEach((ctrl) => {
-        if (ctrl.invalid) {
-          ctrl.markAsDirty();
-          ctrl.updateValueAndValidity({ onlySelf: true });
-        }
-      });
+      this.dossierForm.markAllAsTouched();
       return;
     }
 
@@ -218,14 +228,14 @@ export class CustomsComponent implements OnInit {
       customer_contact_id: val.customer_contact_id,
       direction: val.direction,
       service_type: val.service_type,
-      currency: val.currency,
-      origin_country: val.origin_country,
-      destination_country: val.destination_country,
-      incoterms: val.incoterms,
+      currency: val.currency.toUpperCase(),
+      origin_country: val.origin_country.toUpperCase() || undefined,
+      destination_country: val.destination_country.toUpperCase() || undefined,
+      incoterms: val.incoterms.toUpperCase() || undefined,
       gross_weight_kg: Number(val.gross_weight_kg) || undefined,
       volume_m3: Number(val.volume_m3) || undefined,
       packages: Number(val.packages) || undefined,
-      notes: val.notes,
+      notes: val.notes || undefined,
     };
 
     this.customsApi.createDossier(payload).subscribe({
@@ -303,6 +313,7 @@ export class CustomsComponent implements OnInit {
 
   submitDeclarationForm(): void {
     if (this.declarationForm.invalid) {
+      this.declarationForm.markAllAsTouched();
       return;
     }
 
@@ -310,11 +321,11 @@ export class CustomsComponent implements OnInit {
     const val = this.declarationForm.getRawValue();
     const payload: CustomsDeclarationRequest = {
       declaration_type: val.declaration_type,
-      trader_declaration_number: val.trader_declaration_number,
-      trader_reference: val.trader_reference,
-      customs_office_number: val.customs_office_number,
-      dispatch_country: val.dispatch_country,
-      destination_country: val.destination_country,
+      trader_declaration_number: val.trader_declaration_number || undefined,
+      trader_reference: val.trader_reference || undefined,
+      customs_office_number: val.customs_office_number || undefined,
+      dispatch_country: val.dispatch_country.toUpperCase() || undefined,
+      destination_country: val.destination_country.toUpperCase() || undefined,
     };
 
     this.customsApi.createDeclaration(payload).subscribe({

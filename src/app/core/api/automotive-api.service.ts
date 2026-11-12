@@ -6,6 +6,7 @@ import {
   ApiResponse,
   AutomotiveVehicle,
   AutomotiveVehiclePage,
+  AutomotiveVehiclePayload,
   TireCheckInPayload,
   TireCheckInResult,
   TireHotelRecord,
@@ -24,11 +25,11 @@ export class AutomotiveApiService {
     return this.http.get<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles/${id}`);
   }
 
-  registerVehicle(payload: Partial<AutomotiveVehicle>): Observable<ApiResponse<AutomotiveVehicle>> {
+  registerVehicle(payload: AutomotiveVehiclePayload): Observable<ApiResponse<AutomotiveVehicle>> {
     return this.http.post<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles`, payload);
   }
 
-  updateVehicle(id: string, payload: Partial<AutomotiveVehicle>): Observable<ApiResponse<AutomotiveVehicle>> {
+  updateVehicle(id: string, payload: AutomotiveVehiclePayload): Observable<ApiResponse<AutomotiveVehicle>> {
     return this.http.put<ApiResponse<AutomotiveVehicle>>(`${this.base}/vehicles/${id}`, payload);
   }
 

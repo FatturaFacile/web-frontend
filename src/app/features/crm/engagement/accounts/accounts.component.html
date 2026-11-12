@@ -116,7 +116,7 @@
 >
   <ng-container *nzModalContent>
     <label for="acc-name">{{ 'CRMX.COMMON.NAME' | translate }}</label>
-    <input nz-input id="acc-name" class="field" [(ngModel)]="draft.name" />
+    <input nz-input id="acc-name" class="field" maxlength="200" [(ngModel)]="draft.name" />
     <div class="two-cols">
       <div>
         <label for="acc-tier">{{ 'CRMX.ACCOUNTS.TIER' | translate }}</label>
@@ -138,24 +138,24 @@
       }
       <div>
         <label for="acc-industry">{{ 'CRMX.ACCOUNTS.INDUSTRY' | translate }}</label>
-        <input nz-input id="acc-industry" class="field" [(ngModel)]="draft.industry" />
+        <input nz-input id="acc-industry" class="field" maxlength="100" [(ngModel)]="draft.industry" />
       </div>
       <div>
         <label for="acc-website">{{ 'CRMX.ACCOUNTS.WEBSITE' | translate }}</label>
-        <input nz-input id="acc-website" class="field" [(ngModel)]="draft.website" />
+        <input nz-input id="acc-website" class="field" maxlength="255" [(ngModel)]="draft.website" />
       </div>
       @if (!editing()) {
         <div>
           <label for="acc-vat">{{ 'CRMX.ACCOUNTS.VAT' | translate }}</label>
-          <input nz-input id="acc-vat" class="field" [(ngModel)]="draft.vat_number" />
+          <input nz-input id="acc-vat" class="field" maxlength="30" [(ngModel)]="draft.vat_number" />
         </div>
         <div>
           <label for="acc-email">{{ 'CRMX.COMMON.EMAIL' | translate }}</label>
-          <input nz-input id="acc-email" type="email" class="field" [(ngModel)]="draft.email" />
+          <input nz-input id="acc-email" type="email" class="field" maxlength="255" [(ngModel)]="draft.email" />
         </div>
         <div>
           <label for="acc-phone">{{ 'CRMX.ACCOUNTS.PHONE' | translate }}</label>
-          <input nz-input id="acc-phone" class="field" [(ngModel)]="draft.phone" />
+          <input nz-input id="acc-phone" class="field" maxlength="50" [(ngModel)]="draft.phone" />
         </div>
       }
     </div>

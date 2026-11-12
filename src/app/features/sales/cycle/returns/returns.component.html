@@ -69,7 +69,7 @@
         }
       </nz-descriptions>
 
-      <nz-table [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '720px' }" [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
             <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
@@ -142,7 +142,7 @@
       >
         <ng-container *nzModalContent>
           <label for="reject-reason">{{ 'SC.RETURNS.REJECTION_REASON' | translate }}</label>
-          <textarea nz-input id="reject-reason" rows="3" [(ngModel)]="rejectReason"></textarea>
+          <textarea nz-input id="reject-reason" rows="3" maxlength="1000" [(ngModel)]="rejectReason"></textarea>
         </ng-container>
       </nz-modal>
 

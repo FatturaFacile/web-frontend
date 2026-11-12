@@ -15,6 +15,7 @@ export interface SignatureResult {
 /** Modal that collects the signer details and a touchscreen signature. */
 @Component({
   selector: 'app-signature-dialog',
+  styleUrl: './signature-dialog.component.scss',
   imports: [FormsModule, NzModalModule, NzInputModule, NzButtonModule, SignaturePadComponent, TranslatePipe],
   template: `
     <nz-modal

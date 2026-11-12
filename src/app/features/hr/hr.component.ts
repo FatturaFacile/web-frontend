@@ -1,6 +1,12 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -24,6 +30,8 @@ import {
   FrontierWorkerResource,
   HireEmployeePayload,
   HrApiService,
+  HrLeaveApiService,
+  LeaveTypeResource,
   I18nService,
   LeaveRequestResource,
   PayrollRunResource,
@@ -34,11 +42,22 @@ import {
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { toIsoDate } from '@shared/utils/iso-date';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
 import { reportHttpError } from './shared/hr-http.util';
 import { ReasonButtonComponent } from './shared/reason-button.component';
 
+/** Employment types accepted by the API (HireEmployeeRequest `in:`), with their label key. */
+const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contractor', 'apprentice', 'seasonal'] as const;
+
+/** Contract types accepted by the API (HireEmployeeRequest `in:`), labels in hrmEmp.contractType.*. */
+const CONTRACT_TYPES = ['permanent', 'fixed_term', 'apprenticeship', 'contractor', 'internship'] as const;
+
 @Component({
   selector: 'app-hr',
+  styleUrl: './hr.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -69,6 +88,11 @@ import { ReasonButtonComponent } from './shared/reason-button.component';
 export class HrComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly api = inject(HrApiService);
+  private readonly leaveApi = inject(HrLeaveApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly employmentTypes = EMPLOYMENT_TYPES;
+  protected readonly contractTypes = CONTRACT_TYPES;
+  readonly leaveTypes = signal<LeaveTypeResource[]>([]);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -119,12 +143,13 @@ export class HrComponent implements OnInit {
   readonly isHireModalVisible = signal(false);
   readonly isSubmittingHire = signal(false);
   readonly hireForm = this.fb.group({
-    first_name: ['', [Validators.required]],
-    last_name: ['', [Validators.required]],
-    work_email: ['', [Validators.required, Validators.email]],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    work_email: ['', [Validators.required, Validators.email, Validators.maxLength(180)]],
     base_annual_salary: [30000, [Validators.required, Validators.min(0)]],
-    hire_date: [new Date(), [Validators.required]],
-    employment_type: ['full_time' as EmploymentType, [Validators.required]],
+    hire_date: [new Date() as Date | null],
+    employment_type: ['full_time' as EmploymentType],
+    contract_type: ['permanent' as (typeof CONTRACT_TYPES)[number]],
     weekly_hours: [40, [Validators.min(1), Validators.max(60)]],
     probation_months: [6, [Validators.min(0), Validators.max(12)]],
   });
@@ -132,24 +157,33 @@ export class HrComponent implements OnInit {
   readonly isLeaveModalVisible = signal(false);
   readonly isSubmittingLeave = signal(false);
   readonly leaveForm = this.fb.group({
-    employee_id: ['', [Validators.required]],
-    leave_type_id: ['vacation', [Validators.required]],
+    employee_id: ['', [Validators.required, uuidFormat]],
+    leave_type_id: ['', [Validators.required, uuidFormat]],
     start_date: [new Date(), [Validators.required]],
-    end_date: [new Date(Date.now() + 5 * 86400000), [Validators.required]],
-    total_hours: [40, [Validators.required, Validators.min(0.5)]],
-    reason: [''],
+    end_date: [new Date(Date.now() + 5 * 86400000), [Validators.required, endsNotBefore('start_date')]],
+    total_hours: [40, [Validators.required, Validators.min(0.5), Validators.max(2000)]],
+    reason: ['', Validators.maxLength(1000)],
   });
 
   readonly isTimesheetModalVisible = signal(false);
   readonly isSubmittingTimesheet = signal(false);
   readonly timesheetForm = this.fb.group({
-    employee_id: ['', [Validators.required]],
+    employee_id: ['', [Validators.required, uuidFormat]],
     work_date: [new Date(), [Validators.required]],
     regular_hours: [8, [Validators.required, Validators.min(0), Validators.max(24)]],
     overtime_hours: [0, [Validators.min(0), Validators.max(24)]],
     billable_hours: [8, [Validators.min(0), Validators.max(24)]],
-    description: [''],
+    description: ['', Validators.maxLength(1000)],
   });
+
+  constructor() {
+    revalidateOnStartChange(this.leaveForm, 'start_date', 'end_date', this.destroyRef);
+  }
+
+  /** Error text of a control of one of the modal forms, from the shared validation keys. */
+  fieldError(form: FormGroup, key: string): string {
+    return this.i18n.translate(validationTipKey(form.get(key)) || 'COMMON.VALIDATION.INVALID_VALUE');
+  }
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -191,6 +225,7 @@ export class HrComponent implements OnInit {
 
   openHireModal(): void {
     this.hireForm.reset({
+      contract_type: 'permanent',
       first_name: '',
       last_name: '',
       work_email: '',
@@ -216,11 +251,13 @@ export class HrComponent implements OnInit {
       last_name: val.last_name,
       work_email: val.work_email,
       base_annual_salary: Number(val.base_annual_salary),
-      hire_date:
-        val.hire_date instanceof Date
-          ? val.hire_date.toISOString().split('T')[0]
-          : String(val.hire_date),
-      employment_type: val.employment_type,
+      hire_date: val.hire_date
+        ? val.hire_date instanceof Date
+          ? toIsoDate(val.hire_date)
+          : String(val.hire_date)
+        : undefined,
+      employment_type: val.employment_type || undefined,
+      contract_type: val.contract_type || undefined,
       weekly_hours: Number(val.weekly_hours),
       probation_months: Number(val.probation_months),
     };
@@ -286,7 +323,7 @@ export class HrComponent implements OnInit {
       nzOkText: this.translate.instant('hrmEmp.dlgTerminaRapporto'),
       nzOnOk: () => {
         const payload: TerminateEmployeePayload = {
-          termination_date: new Date().toISOString().split('T')[0],
+          termination_date: toIsoDate(new Date()),
           reason: 'Cessazione consensuale',
         };
         this.api.terminateEmployee(emp.id, payload).subscribe({
@@ -318,13 +355,23 @@ export class HrComponent implements OnInit {
   openLeaveModal(): void {
     this.leaveForm.reset({
       employee_id: this.employees()[0]?.id || '',
-      leave_type_id: 'vacation',
+      leave_type_id: '',
       start_date: new Date(),
       end_date: new Date(Date.now() + 5 * 86400000),
       total_hours: 40,
       reason: '',
     });
     this.isLeaveModalVisible.set(true);
+    this.leaveApi.getLeaveTypes().subscribe({
+      next: (res) => {
+        const types = (res?.data ?? []).filter((type) => type.is_active);
+        this.leaveTypes.set(types);
+        if (!this.leaveForm.controls.leave_type_id.value) {
+          this.leaveForm.controls.leave_type_id.setValue(types[0]?.id ?? '');
+        }
+      },
+      error: () => this.leaveTypes.set([]),
+    });
   }
 
   submitLeaveRequest(): void {
@@ -340,11 +387,11 @@ export class HrComponent implements OnInit {
       leave_type_id: val.leave_type_id,
       start_date:
         val.start_date instanceof Date
-          ? val.start_date.toISOString().split('T')[0]
+          ? toIsoDate(val.start_date)
           : String(val.start_date),
       end_date:
         val.end_date instanceof Date
-          ? val.end_date.toISOString().split('T')[0]
+          ? toIsoDate(val.end_date)
           : String(val.end_date),
       total_hours: Number(val.total_hours),
       reason: val.reason || null,
@@ -434,7 +481,7 @@ export class HrComponent implements OnInit {
       employee_id: val.employee_id,
       work_date:
         val.work_date instanceof Date
-          ? val.work_date.toISOString().split('T')[0]
+          ? toIsoDate(val.work_date)
           : String(val.work_date),
       regular_hours: Number(val.regular_hours),
       overtime_hours: Number(val.overtime_hours),

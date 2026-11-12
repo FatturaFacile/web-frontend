@@ -1,6 +1,14 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -39,6 +47,7 @@ import {
   applyServerErrors,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { formErrorTip } from './form-error-tip';
 
 /** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
 function toIsoDay(date: Date): string {
@@ -47,8 +56,20 @@ function toIsoDay(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/** The API refuses a zero quantity delta (`not_in:0`). */
+function notZero(control: AbstractControl): ValidationErrors | null {
+  return Number(control.value) === 0 ? { notZero: true } : null;
+}
+
+/** The API requires `destination_bin_id` different from `source_bin_id`. */
+function differentFromSourceBin(control: AbstractControl): ValidationErrors | null {
+  const source = control.parent?.get('source_bin_id')?.value;
+  return source && source === control.value ? { sameBin: true } : null;
+}
+
 @Component({
   selector: 'app-inventory',
+  styleUrl: './inventory.component.scss',
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -101,12 +122,12 @@ export class InventoryComponent implements OnInit {
   readonly createModalVisible = signal(false);
 
   readonly productForm = this.fb.group({
-    sku: this.fb.control('', [Validators.required]),
+    sku: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
     name: this.fb.control('', [Validators.required]),
-    warehouse: this.fb.control('Chiasso (CH)', [Validators.required]),
-    quantity: this.fb.control(1, [Validators.required, Validators.min(0)]),
-    unit_of_measure: this.fb.control('Pz', [Validators.required]),
-    price: this.fb.control(0, [Validators.required, Validators.min(0)]),
+    unit_measure: this.fb.control('Pz', [Validators.required, Validators.maxLength(10)]),
+    cost_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
+    sale_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
     hs_code: this.fb.control(''),
   });
 
@@ -133,9 +154,14 @@ export class InventoryComponent implements OnInit {
     warehouse_id: this.fb.control('', [Validators.required]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
     source_bin_id: this.fb.control('', [Validators.required]),
-    destination_bin_id: this.fb.control('', [Validators.required]),
-    notes: this.fb.control(''),
+    destination_bin_id: this.fb.control('', [Validators.required, differentFromSourceBin]),
+    notes: this.fb.control('', [Validators.maxLength(1000)]),
   });
+
+  /** The destination bin must be re-checked when the source bin changes. */
+  private readonly recheckDestinationBin = this.transferForm.controls.source_bin_id.valueChanges.subscribe(() =>
+    this.transferForm.controls.destination_bin_id.updateValueAndValidity(),
+  );
 
   // 4. Adjustments
   readonly adjustments = signal<InventoryAdjustmentItem[]>([]);
@@ -160,9 +186,9 @@ export class InventoryComponent implements OnInit {
     ),
     warehouse_bin_id: this.fb.control('', [Validators.required]),
     stock_item_id: this.fb.control('', [Validators.required]),
-    quantity_delta: this.fb.control(1, [Validators.required]),
+    quantity_delta: this.fb.control(1, [Validators.required, notZero]),
     unit_cost: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', [Validators.maxLength(2000)]),
   });
 
   // 5. Counts (Physical Stocktaking)
@@ -178,7 +204,7 @@ export class InventoryComponent implements OnInit {
       Validators.required,
     ]),
     scheduled_date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', [Validators.maxLength(2000)]),
   });
 
   // 6. Valuation
@@ -186,6 +212,10 @@ export class InventoryComponent implements OnInit {
   readonly valuationDate = signal(toIsoDay(new Date()));
   readonly valuationDateValue = computed(() => new Date(`${this.valuationDate()}T00:00:00`));
   readonly valuationMethod = signal<StockValuationMethod | undefined>(undefined);
+
+  errorTip(form: FormGroup, path: string): string {
+    return formErrorTip(form, path, this.translate);
+  }
 
   ngOnInit(): void {
     this.loadWarehouses();
@@ -647,10 +677,10 @@ export class InventoryComponent implements OnInit {
     this.productForm.reset({
       sku: '',
       name: '',
-      warehouse: this.authStore.activeJurisdiction() === 'CH' ? 'Chiasso (CH)' : 'Milano (IT)',
-      quantity: 1,
-      unit_of_measure: 'Pz',
-      price: 0,
+      unit_measure: 'Pz',
+      cost_price: 0,
+      sale_price: 0,
+      tax_rate: this.authStore.activeJurisdiction() === 'CH' ? 8.1 : 22,
       hs_code: '',
     });
     this.createModalVisible.set(true);
@@ -667,12 +697,11 @@ export class InventoryComponent implements OnInit {
     const payload: CreateProductPayload = {
       sku: formVal.sku,
       name: formVal.name,
-      warehouse: formVal.warehouse,
-      quantity: formVal.quantity,
-      unit_of_measure: formVal.unit_of_measure,
-      price: formVal.price,
-      currency: this.authStore.activeCurrency(),
-      hs_code: formVal.hs_code || undefined,
+      unit_measure: formVal.unit_measure,
+      cost_price: formVal.cost_price,
+      sale_price: formVal.sale_price,
+      tax_rate: formVal.tax_rate,
+      hs_code: formVal.hs_code || null,
     };
 
     this.inventoryApi.createProduct(payload).subscribe({

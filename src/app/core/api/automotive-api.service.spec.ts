@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
-import { AutomotiveVehicle, TireCheckInPayload } from '../models';
+import { AutomotiveVehicle, AutomotiveVehiclePayload, TireCheckInPayload } from '../models';
 import { AutomotiveApiService } from './automotive-api.service';
 
 describe('AutomotiveApiService', () => {
@@ -59,7 +59,11 @@ describe('AutomotiveApiService', () => {
   });
 
   it('registers, gets, updates, and deletes an automotive vehicle', () => {
-    const newVehicle: Partial<AutomotiveVehicle> = {
+    const newVehicle: AutomotiveVehiclePayload = {
+      client_id: 'c-1',
+      vin_chassis: 'ZAR9520000000001',
+      mileage_km: 1200,
+      registration_date: '2024-03-01',
       license_plate: 'MI999ZZ',
       make: 'Alfa Romeo',
       model: 'Giulia',
@@ -80,6 +84,7 @@ describe('AutomotiveApiService', () => {
 
     const postReq = httpMock.expectOne(`${base}/vehicles`);
     expect(postReq.request.method).toBe('POST');
+    expect(postReq.request.body).toEqual(newVehicle);
     postReq.flush({ success: true, data: returnedVehicle });
 
     service.getVehicle('v-2').subscribe((res) => {
@@ -96,6 +101,7 @@ describe('AutomotiveApiService', () => {
 
     const putReq = httpMock.expectOne(`${base}/vehicles/v-2`);
     expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual({ model: 'Giulia Veloce' });
     putReq.flush({ success: true, data: { ...returnedVehicle, model: 'Giulia Veloce' } });
 
     service.deleteVehicle('v-2').subscribe((res) => {

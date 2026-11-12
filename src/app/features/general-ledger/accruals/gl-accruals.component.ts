@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -23,9 +23,11 @@ import {
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-gl-accruals',
+  styleUrl: './gl-accruals.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -47,6 +49,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
 export class GlAccrualsComponent implements OnInit {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   protected readonly lookups = inject(GlLookupStore);
@@ -64,15 +67,20 @@ export class GlAccrualsComponent implements OnInit {
 
   protected readonly form = this.fb.group({
     accrual_type: this.fb.control<AccrualType>('prepaid_expense', Validators.required),
-    description: this.fb.control('', [Validators.required, Validators.maxLength(500)]),
+    description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
     total_amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     coverage_start: this.fb.control('', Validators.required),
-    coverage_end: this.fb.control('', Validators.required),
+    coverage_end: this.fb.control('', [Validators.required, endsNotBefore('coverage_start', { strict: true })]),
     cutoff_date: this.fb.control('', Validators.required),
     income_statement_account_id: this.fb.control('', Validators.required),
     balance_sheet_account_id: this.fb.control('', Validators.required),
     cost_center_id: this.fb.control(''),
   });
+
+  constructor() {
+    // The API requires coverage_end after coverage_start.
+    revalidateOnStartChange(this.form, 'coverage_start', 'coverage_end', this.destroyRef);
+  }
 
   ngOnInit(): void {
     this.lookups.load();

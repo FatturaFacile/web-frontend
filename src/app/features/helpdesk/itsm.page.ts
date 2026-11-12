@@ -3,7 +3,7 @@ import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 const PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 
 const INCIDENT_FIELDS = [
-  req(rf.text('title')),
+  req(rf.text('title', { maxLength: 255 })),
   rf.textarea('description'),
   rf.select('severity', ['low', 'medium', 'high', 'critical', 'catastrophic']),
   rf.select('impact', ['minor', 'moderate', 'significant', 'extensive']),
@@ -13,7 +13,7 @@ const INCIDENT_FIELDS = [
 ];
 
 const CHANGE_FIELDS = [
-  req(rf.text('title')),
+  req(rf.text('title', { maxLength: 255 })),
   rf.textarea('description'),
   rf.select('change_type', ['standard', 'normal', 'emergency']),
   rf.select('risk_level', ['low', 'medium', 'high', 'extreme']),

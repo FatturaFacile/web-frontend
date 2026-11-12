@@ -18,6 +18,7 @@ import { AreaProfileComponent } from './area-profile.component';
  */
 @Component({
   selector: 'app-association-area',
+  styleUrl: './association-area.component.scss',
   imports: [
     AreaActivityComponent,
     AreaInstructorComponent,

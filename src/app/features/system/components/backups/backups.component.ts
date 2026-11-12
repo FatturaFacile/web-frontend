@@ -13,6 +13,7 @@ import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-backups',
+  styleUrl: './backups.component.scss',
   imports: [
     DatePipe,
     NzTagModule,

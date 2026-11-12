@@ -1,9 +1,9 @@
 <nz-card>
   <nz-tabs>
     <nz-tab [nzTitle]="'TR.COLLECTIONS' | translate">
-      <div>
+      <div class="toolbar">
         <nz-select
-         
+          class="status-filter"
           nzAllowClear
           [attr.aria-label]="'TR.STATUS' | translate"
           [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
@@ -109,8 +109,8 @@
 >
   <ng-container *nzModalContent>
     <label for="co-amount">{{ 'TR.AMOUNT' | translate }}</label>
-    <nz-input-number id="co-amount" [(ngModel)]="recordAmount" [nzMin]="0.01" [nzPrecision]="2" />
-    <label for="co-date">{{ 'TR.DATE' | translate }}</label>
+    <nz-input-number class="w-full" id="co-amount" [(ngModel)]="recordAmount" [nzMin]="0.01" [nzPrecision]="2" />
+    <label class="field-label" for="co-date">{{ 'TR.DATE' | translate }}</label>
     <input id="co-date" nz-input type="date" [(ngModel)]="recordDate" />
   </ng-container>
 </nz-modal>

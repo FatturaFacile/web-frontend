@@ -165,8 +165,8 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.code)">
           <input
             nz-input
             id="disable-code"
@@ -178,8 +178,8 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('code')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.recoveryCode)">
           <input
             nz-input
             id="disable-recovery-code"
@@ -233,11 +233,11 @@
       [nzMessage]="'SECURITY.NEW_CODES_WARNING' | translate"
       [nzDescription]="'SECURITY.NEW_CODES_BODY' | translate"
       nzShowIcon
-     
+      class="mb-4"
     ></nz-alert>
-    <div>
+    <div class="recovery-codes">
       @for (code of newRecoveryCodes(); track $index) {
-        <div>
+        <div class="recovery-code">
           {{ code }}
         </div>
       }

@@ -144,7 +144,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="fwo-notes">{{ 'FS_WORK_ORDERS.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldError('notes')">
           <textarea nz-input id="fwo-notes" rows="2" formControlName="notes"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -160,7 +160,7 @@
                 }
               </nz-select>
               <input nz-input formControlName="description" [attr.aria-label]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" [placeholder]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" />
-              <nz-input-number formControlName="quantity" [nzMin]="0" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
+              <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
               <nz-input-number formControlName="unit_price" [nzMin]="0" [nzStep]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_PRICE' | translate" />
               <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [attr.aria-label]="'FS_WORK_ORDERS.LINE_TAX' | translate" />
               <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" [attr.aria-label]="'RES.ACTION.REMOVE_LINE' | translate">

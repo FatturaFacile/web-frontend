@@ -24,6 +24,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-ticket-create-drawer',
+  styleUrl: './ticket-create-drawer.component.scss',
   imports: [
     TranslatePipe,
     ReactiveFormsModule,
@@ -69,6 +70,7 @@ export class TicketCreateDrawerComponent {
 
   protected submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       Object.values(this.form.controls).forEach((ctrl) => {
         ctrl.markAsDirty();
         ctrl.updateValueAndValidity();

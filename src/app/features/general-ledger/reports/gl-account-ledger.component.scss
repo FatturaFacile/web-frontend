@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.date-input {
+  width: 160px;
+}
+
+.account-select {
+  min-width: 320px;
+}
+
+.ledger-summary {
+  margin-bottom: var(--space-4);
+}

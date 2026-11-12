@@ -66,6 +66,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
 
 @Component({
   selector: 'app-invoices',
+  styleUrl: './invoices.component.scss',
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -126,13 +127,22 @@ export class InvoicesComponent {
   readonly savingCreditNote = signal(false);
   readonly creditNoteForm = this.fb.group({
     original_invoice_id: this.fb.control('', [Validators.required]),
-    date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
+    date: this.fb.control(new Date().toISOString().substring(0, 10)),
     notes: this.fb.control(''),
-    description: this.fb.control('Storno parziale / Nota di credito', [Validators.required]),
+    description: this.fb.control('Storno parziale / Nota di credito', [Validators.required, Validators.maxLength(255)]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.001)]),
     unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    tax_rate: this.fb.control(22, [Validators.required]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
   });
+
+  /** Error text of a credit note field: required or out of range. */
+  creditNoteTip(path: string): string {
+    const control = this.creditNoteForm.get(path);
+    if (control?.hasError('required')) {
+      return this.translate.instant('COMMON.VALIDATION.REQUIRED');
+    }
+    return control?.invalid ? this.translate.instant('COMMON.VALIDATION.INVALID_VALUE') : '';
+  }
 
   // Template views
   private readonly numberTpl =
@@ -357,7 +367,7 @@ export class InvoicesComponent {
     const formVal = this.creditNoteForm.getRawValue();
     const payload: CreateCreditNotePayload = {
       original_invoice_id: formVal.original_invoice_id,
-      date: formVal.date,
+      date: formVal.date || undefined,
       notes: formVal.notes || undefined,
       items: [
         {

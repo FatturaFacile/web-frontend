@@ -11,6 +11,7 @@ const READINESS: PositionReadinessLevel[] = ['ready_now', 'ready_1_2_years', 'de
 /** Names the successor of a position and how ready the person is. */
 @Component({
   selector: 'app-position-successor-dialog',
+  styleUrl: './position-successor-dialog.component.scss',
   imports: [ActionFormComponent, NzModalModule, TranslatePipe],
   template: `
     <nz-modal

@@ -117,4 +117,66 @@ describe('CrudTableComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('button[nz-popconfirm]').length).toBe(0);
     expect(fixture.nativeElement.textContent).not.toContain('Add');
   });
+
+  it('does not call the API when the form is saved empty and marks the controls touched', () => {
+    configure();
+    const c = component as unknown as { openForm(r: null): void; form: { get(k: string): { touched: boolean } | null }; save(): void };
+    c.openForm(null);
+    c.save();
+    expect(create).not.toHaveBeenCalled();
+    expect(c.form.get('code')?.touched).toBe(true);
+  });
+
+  it('requires a field only while its requiredIf / requiredWithout condition holds', () => {
+    configure({
+      fields: [
+        { key: 'flag', labelKey: 'hrmCommon.active', type: 'boolean' },
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', requiredIf: 'flag' },
+        { key: 'gross', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'net' },
+        { key: 'net', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'gross' },
+      ],
+    });
+    const c = component as unknown as {
+      openForm(r: null): void;
+      form: { patchValue(v: object): void; get(k: string): { valid: boolean } | null };
+      isRequired(f: unknown): boolean;
+      save(): void;
+    };
+    c.openForm(null);
+    expect(c.form.get('code')?.valid).toBe(true);
+    expect(c.form.get('gross')?.valid).toBe(false);
+    c.form.patchValue({ net: '10' });
+    expect(c.form.get('gross')?.valid).toBe(true);
+    c.form.patchValue({ flag: true });
+    expect(c.form.get('code')?.valid).toBe(false);
+    expect(c.isRequired({ key: 'code', requiredIf: 'flag' })).toBe(true);
+    c.form.patchValue({ flag: false });
+    expect(c.isRequired({ key: 'code', requiredIf: 'flag' })).toBe(false);
+    expect(c.form.get('code')?.valid).toBe(true);
+  });
+
+  it('rejects whitespace-only required text and values over maxLength, below min or off pattern', () => {
+    configure({
+      fields: [
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 3, pattern: '^[A-Z]+$' },
+        { key: 'qty', labelKey: 'hrmEmp.amount', type: 'integer', min: 1, max: 12 },
+      ],
+    });
+    const c = component as unknown as {
+      openForm(r: null): void;
+      form: { patchValue(v: object): void; get(k: string): { errors: Record<string, unknown> | null } | null };
+      save(): void;
+    };
+    c.openForm(null);
+    c.form.patchValue({ code: '   ' });
+    expect(c.form.get('code')?.errors?.['required']).toBeTruthy();
+    c.form.patchValue({ code: 'ABCD' });
+    expect(c.form.get('code')?.errors?.['maxlength']).toBeTruthy();
+    c.form.patchValue({ code: 'ab' });
+    expect(c.form.get('code')?.errors?.['format']).toBeTruthy();
+    c.form.patchValue({ code: 'AB', qty: '13' });
+    expect(c.form.get('qty')?.errors?.['outOfRange']).toBeTruthy();
+    c.save();
+    expect(create).not.toHaveBeenCalled();
+  });
 });

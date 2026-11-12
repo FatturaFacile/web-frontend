@@ -283,6 +283,19 @@ describe('ProfessionalsComponent', () => {
     expect(messageSpy.success).toHaveBeenCalled();
   });
 
+  it('should not call the API when the forms are submitted empty or with an invalid amount', () => {
+    component.openCreateRetainerModal();
+    component.retainerForm.patchValue({ client_id: '' });
+    component.saveRetainer();
+    expect(practiceApiSpy.createRetainer).not.toHaveBeenCalled();
+    expect(component.retainerForm.controls.client_id.touched).toBe(true);
+
+    component.retainerForm.patchValue({ client_id: 'cli-2', amount: '0' });
+    component.saveRetainer();
+    expect(practiceApiSpy.createRetainer).not.toHaveBeenCalled();
+    expect(component.retainerForm.controls.amount.hasError('positive')).toBe(true);
+  });
+
   it('should create retainer and void retainer', () => {
     component.openCreateRetainerModal();
     expect(component.retainerModalVisible()).toBe(true);
@@ -310,6 +323,21 @@ describe('ProfessionalsComponent', () => {
     component.voidRetainer('ret-1');
     expect(practiceApiSpy.voidRetainer).toHaveBeenCalledWith('ret-1');
     expect(messageSpy.success).toHaveBeenCalled();
+  });
+
+  it('does not open a closing whose period ends before it starts (period_end after_or_equal:period_start)', () => {
+    practiceApiSpy.openClosing.mockClear();
+    component.openCreateClosingModal();
+    component.closingForm.patchValue({ client_id: 'cli-1', period_start: '2026-06-01', period_end: '2026-05-01' });
+    component.saveClosing();
+    expect(practiceApiSpy.openClosing).not.toHaveBeenCalled();
+    expect(component.closingForm.controls.period_end.hasError('endsBeforeStart')).toBe(true);
+
+    component.closingForm.patchValue({ period_start: '2026-04-01' });
+    expect(component.closingForm.controls.period_end.hasError('endsBeforeStart')).toBe(false);
+    component.saveClosing();
+    const sent = practiceApiSpy.openClosing.mock.calls[0][0];
+    expect(Object.keys(sent).sort()).toEqual(['checklist', 'client_id', 'notes', 'period_end', 'period_start']);
   });
 
   it('should open closing, toggle checklist, close period and reopen period', () => {

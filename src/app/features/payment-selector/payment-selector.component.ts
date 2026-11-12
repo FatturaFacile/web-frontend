@@ -6,6 +6,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-payment-selector',
+  styleUrl: './payment-selector.component.scss',
   imports: [FormsModule, NzSelectModule, TranslatePipe],
   templateUrl: './payment-selector.component.html',
 })

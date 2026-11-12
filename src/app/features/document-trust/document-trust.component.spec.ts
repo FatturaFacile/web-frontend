@@ -44,7 +44,7 @@ describe('DocumentTrustComponent', () => {
   const mockSignature: DocumentSignature = {
     id: 'sig-1',
     document_type: 'invoice',
-    document_id: 'inv-demo-001',
+    document_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
     format: 'cades-bes-p7m',
     driver: 'cades',
     signature_sha256: 'a1b2c3d4e5f6a1b2c3d4e5f6',
@@ -54,7 +54,7 @@ describe('DocumentTrustComponent', () => {
   const mockPreservation: PreservationRecord = {
     id: 'pres-1',
     document_type: 'invoice',
-    document_id: 'inv-demo-001',
+    document_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
     driver: 'local',
     mode: 'fingerprint_only',
     package_sha256: 'fedcba9876543210fedcba9876543210',
@@ -83,7 +83,7 @@ describe('DocumentTrustComponent', () => {
           data: {
             signature_id: 'sig-1',
             document_type: 'invoice',
-            document_id: 'inv-demo-001',
+            document_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
             driver: 'cades',
             format: 'cades-bes-p7m',
             valid: true,
@@ -136,9 +136,15 @@ describe('DocumentTrustComponent', () => {
     expect(component.networks().length).toBe(3);
     expect(apiMock['getTransmissions']).toHaveBeenCalled();
     expect(component.transmissions().length).toBe(1);
-    expect(apiMock['getSignatures']).toHaveBeenCalledWith('inv-demo-001');
+    // the lookups need a document UUID: nothing is requested until one is typed
+    expect(apiMock['getSignatures']).not.toHaveBeenCalled();
+    component.lookupDocumentId.set('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
+    component.loadSignatures();
+    expect(apiMock['getSignatures']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
     expect(component.signatures().length).toBe(1);
-    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('inv-demo-001');
+    component.preservationLookupDocumentId.set('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
+    component.loadPreservationRecords();
+    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
     expect(component.preservationRecords().length).toBe(1);
     expect(apiMock['getSigningSettings']).toHaveBeenCalled();
     expect(component.signingSettings()?.driver).toBe('cades');
@@ -208,18 +214,18 @@ describe('DocumentTrustComponent', () => {
 
     component.signForm.patchValue({
       document_type: 'invoice',
-      document_id: 'inv-test-new',
+      document_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
     });
 
     component.submitSignDocument();
 
     expect(apiMock['signDocument']).toHaveBeenCalledWith({
       document_type: 'invoice',
-      document_id: 'inv-test-new',
+      document_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isSignModalVisible()).toBe(false);
-    expect(apiMock['getSignatures']).toHaveBeenCalledWith('inv-test-new');
+    expect(apiMock['getSignatures']).toHaveBeenCalledWith('8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69');
   });
 
   it('should verify signature and open verification modal', () => {
@@ -240,18 +246,18 @@ describe('DocumentTrustComponent', () => {
 
     component.preserveForm.patchValue({
       document_type: 'invoice',
-      document_id: 'inv-pres-new',
+      document_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
     });
 
     component.submitPreserveDocument();
 
     expect(apiMock['preserveDocument']).toHaveBeenCalledWith({
       document_type: 'invoice',
-      document_id: 'inv-pres-new',
+      document_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isPreserveModalVisible()).toBe(false);
-    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('inv-pres-new');
+    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d');
   });
 
   it('should update signing settings', () => {
@@ -300,7 +306,7 @@ describe('DocumentTrustComponent', () => {
     component.openSignModal();
     component.signForm.patchValue({
       document_type: 'invoice',
-      document_id: 'inv-fail',
+      document_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b',
     });
     component.submitSignDocument();
     expect(messageMock['error']).toHaveBeenCalledWith('Certificate expired');

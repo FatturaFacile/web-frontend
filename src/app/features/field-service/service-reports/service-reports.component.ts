@@ -23,6 +23,7 @@ const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'ge
 
 @Component({
   selector: 'app-service-reports',
+  styleUrl: './service-reports.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

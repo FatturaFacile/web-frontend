@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   ApiResponse,
   IntrastatCodeList,
@@ -109,10 +109,14 @@ export class IntrastatApiService {
     );
   }
 
-  exportDeclaration(payload: IntrastatExportRequest): Observable<ApiResponse<{ file_name: string; content?: string }>> {
-    return this.http.post<ApiResponse<{ file_name: string; content?: string }>>(
-      `${this.base}/exports`,
-      payload,
+  /** The API answers with the telematic file as plain text; its name is in the Content-Disposition header. */
+  exportDeclaration(payload: IntrastatExportRequest): Observable<{ file_name: string; content: string }> {
+    return this.http.post(`${this.base}/exports`, payload, { observe: 'response', responseType: 'text' }).pipe(
+      map((res) => {
+        const disposition = res.headers.get('Content-Disposition') ?? '';
+        const match = /filename="?([^";]+)"?/i.exec(disposition);
+        return { content: res.body ?? '', file_name: match?.[1] ?? 'intrastat.txt' };
+      }),
     );
   }
 

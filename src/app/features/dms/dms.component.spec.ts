@@ -31,7 +31,7 @@ describe('DmsComponent', () => {
       folder_id: 'fld-1',
       folder_name: 'Fatture Clienti',
       status: 'published',
-      is_legal_hold: false,
+      legal_hold: false,
       latest_version: {
         id: 'ver-1',
         document_id: 'doc-001-uuid',
@@ -67,10 +67,9 @@ describe('DmsComponent', () => {
   const mockLinks: DmsResolvedLink[] = [
     {
       id: 'lnk-1',
-      document_id: 'doc-001-uuid',
-      target_type: 'Invoice',
-      target_id: 'inv-42',
-      target_label: 'Fattura F-2026-42',
+      linkable_type: 'invoice',
+      linkable_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
+      label: 'Fattura F-2026-42',
     },
   ];
 
@@ -123,8 +122,8 @@ describe('DmsComponent', () => {
     deleteDocument: vi.fn().mockReturnValue(of(null)),
     checkOutDocument: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], checked_out_by: 'usr-1' } })),
     checkInDocument: vi.fn().mockReturnValue(of({ success: true, data: mockVersions[0] })),
-    placeLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], is_legal_hold: true } })),
-    releaseLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], is_legal_hold: false } })),
+    placeLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], legal_hold: true } })),
+    releaseLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], legal_hold: false } })),
     getDocumentVersions: vi.fn().mockReturnValue(of({ success: true, data: mockVersions })),
     verifyVersion: vi.fn().mockReturnValue(of({ success: true, data: { is_valid: true } })),
     getDocumentLinks: vi.fn().mockReturnValue(of({ success: true, data: mockLinks })),
@@ -185,11 +184,17 @@ describe('DmsComponent', () => {
       title: 'Nuovo Contratto Partner',
       document_type: 'Contract',
       description: 'Accordo commerciale',
-      original_name: 'partner_agreement.pdf',
     });
 
+    // the API needs a real file: without one the form is not sent
     component.submitCreateDoc();
-    expect(mockDmsApi.createDocument).toHaveBeenCalled();
+    expect(mockDmsApi.createDocument).not.toHaveBeenCalled();
+    expect(component['docFileError']()).toBe('COMMON.VALIDATION.REQUIRED');
+
+    const file = new File(['%PDF'], 'partner_agreement.pdf', { type: 'application/pdf' });
+    component['onDocFileSelected']({ target: { files: { item: () => file } } } as unknown as Event);
+    component.submitCreateDoc();
+    expect(mockDmsApi.createDocument).toHaveBeenCalledWith(expect.objectContaining({ title: 'Nuovo Contratto Partner', file }));
     expect(component.createDocModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
   });
@@ -199,15 +204,17 @@ describe('DmsComponent', () => {
     component.openCheckOutModal(doc);
     expect(component.checkOutModalVisible()).toBe(true);
 
-    component.checkOutReason.set('Revisione clausole');
+    component.checkOutNote.set('Revisione clausole');
     component.submitCheckOut();
-    expect(mockDmsApi.checkOutDocument).toHaveBeenCalledWith(doc.id, { reason: 'Revisione clausole' });
+    expect(mockDmsApi.checkOutDocument).toHaveBeenCalledWith(doc.id, { note: 'Revisione clausole' });
     expect(component.checkOutModalVisible()).toBe(false);
 
     component.openCheckInModal(doc);
     expect(component.checkInModalVisible()).toBe(true);
+    const newVersion = new File(['v2'], 'v2.pdf', { type: 'application/pdf' });
+    component['onCheckInFileSelected']({ target: { files: { item: () => newVersion } } } as unknown as Event);
     component.submitCheckIn();
-    expect(mockDmsApi.checkInDocument).toHaveBeenCalled();
+    expect(mockDmsApi.checkInDocument).toHaveBeenCalledWith(doc.id, { file: newVersion, comment: undefined });
     expect(component.checkInModalVisible()).toBe(false);
   });
 
@@ -268,5 +275,30 @@ describe('DmsComponent', () => {
     component.onTabChange(3);
     expect(mockDmsApi.getTags).toHaveBeenCalled();
     expect(mockDmsApi.getAiSettings).toHaveBeenCalled();
+  });
+
+  it('does not call the API when the forms are submitted empty', () => {
+    mockDmsApi.createDocument.mockClear();
+    mockDmsApi.createFolder.mockClear();
+    mockDmsApi.createRetentionPolicy.mockClear();
+    mockDmsApi.createTag.mockClear();
+
+    component.openCreateDocModal();
+    component.docForm.patchValue({ title: '' });
+    component.submitCreateDoc();
+    expect(mockDmsApi.createDocument).not.toHaveBeenCalled();
+
+    component.openCreateFolderModal();
+    component.submitCreateFolder();
+    expect(mockDmsApi.createFolder).not.toHaveBeenCalled();
+
+    component.openCreatePolicyModal();
+    component.submitCreatePolicy();
+    expect(mockDmsApi.createRetentionPolicy).not.toHaveBeenCalled();
+
+    component.openCreateTagModal();
+    component.submitCreateTag();
+    expect(mockDmsApi.createTag).not.toHaveBeenCalled();
+    expect(component.tagForm.controls.name.touched).toBe(true);
   });
 });

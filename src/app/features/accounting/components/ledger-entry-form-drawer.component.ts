@@ -30,6 +30,7 @@ export function toIsoDay(date: Date): string {
 
 @Component({
   selector: 'app-ledger-entry-form-drawer',
+  styleUrl: './ledger-entry-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
     NzDrawerModule,
@@ -66,9 +67,9 @@ export class LedgerEntryFormDrawerComponent {
   );
 
   protected readonly form = this.fb.group({
-    fiscal_period_id: this.fb.control<string>('', [Validators.required]),
+    fiscal_period_id: this.fb.control<string>(''),
     date: this.fb.control<Date | string>(new Date(), [Validators.required]),
-    description: this.fb.control<string>('', [Validators.required]),
+    description: this.fb.control<string>('', [Validators.required, Validators.maxLength(500)]),
     /** A draft waits for submit/approval; only a draft can be given an automatic reversal date. */
     save_as_draft: this.fb.control<boolean>(true),
     auto_reverse_on: this.fb.control<Date | null>(null),
@@ -156,7 +157,7 @@ export class LedgerEntryFormDrawerComponent {
       description?: string;
     }[];
     const payload: CreateLedgerEntryPayload = {
-      fiscal_period_id: val.fiscal_period_id,
+      fiscal_period_id: val.fiscal_period_id || undefined,
       posting_date: dateStr,
       description: val.description,
       status: val.save_as_draft ? 'draft' : 'posted',

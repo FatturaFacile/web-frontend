@@ -15,6 +15,7 @@ import { WithholdingStatementsPanelComponent } from './withholding-statements-pa
 /** Payroll compliance: Swissdec, legal tables, withholding tax, frontier workers, labour cost reports and hiring simulation. */
 @Component({
   selector: 'app-payroll-compliance',
+  styleUrl: './payroll-compliance.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,

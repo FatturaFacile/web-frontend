@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  margin-bottom: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.status-filter {
+  width: 200px;
+}
+
+.item-row {
+  background: var(--bg-card-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--border-light);
+}
+
+.item-remove {
+  display: flex;
+  align-items: center;
+}
+
+.add-item {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.notes-item {
+  margin-top: var(--space-4);
+}

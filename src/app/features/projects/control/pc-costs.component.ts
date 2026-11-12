@@ -33,15 +33,16 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
 
 @Component({
   selector: 'app-pc-costs',
+  styleUrl: './pc-costs.component.scss',
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div>
-      <nz-select nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
+    <div class="row mb-4">
+      <nz-select class="w-field-md" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
         <nz-option nzValue="pending" [nzLabel]="'PRJ.APPROVAL_PENDING' | translate" />
         <nz-option nzValue="approved" [nzLabel]="'PRJ.APPROVAL_APPROVED' | translate" />
         <nz-option nzValue="rejected" [nzLabel]="'PRJ.APPROVAL_REJECTED' | translate" />
       </nz-select>
-      <span></span>
+      <span class="grow"></span>
       @if (canWrite) {
         <button nz-button nzType="primary" type="button" (click)="openModal()">{{ 'PRJ.EXPENSE_NEW' | translate }}</button>
       }
@@ -70,7 +71,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
             <td>
               <nz-tag>{{ cost.approval_status }}</nz-tag>
               @if (cost.rejection_reason) {
-                <div class="muted">{{ cost.rejection_reason }}</div>
+                <div class="text-muted text-xs">{{ cost.rejection_reason }}</div>
               }
             </td>
             <td>
@@ -87,7 +88,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.EXPENSE_NEW' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -102,7 +103,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ex-description">{{ 'PRJ.DESCRIPTION' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><input id="ex-description" nz-input formControlName="description" maxlength="255" /></nz-form-control>
+            <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><input id="ex-description" nz-input formControlName="description" maxlength="200" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="ex-amount">{{ 'PRJ.AMOUNT' | translate }}</nz-form-label>
@@ -148,7 +149,7 @@ export class PcCostsComponent implements OnInit {
 
   protected readonly form = this.fb.group({
     expense_category: this.fb.control<ProjectExpenseCategory>('expense', Validators.required),
-    description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    description: this.fb.control('', [Validators.required, Validators.maxLength(200)]),
     amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     incurred_date: this.fb.control('', Validators.required),
     is_billable: this.fb.control(false),

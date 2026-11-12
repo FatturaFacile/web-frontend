@@ -16,6 +16,7 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
 /** Monthly payroll runs: calculate / recalculate a month and open the run (approve, finalize, reopen). */
 @Component({
   selector: 'app-payroll-runs',
+  styleUrl: './payroll-runs.component.scss',
   imports: [
     DatePipe,
     FormsModule,
@@ -28,7 +29,7 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
     PayrollRunStatusTagComponent,
   ],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="run-filter-year">{{ 'hrmCommon.year' | translate }}</label>
         <input nz-input id="run-filter-year" type="number" [ngModel]="year()" (ngModelChange)="setYear($event)" />
@@ -119,7 +120,7 @@ export class PayrollRunsComponent implements OnInit {
 
   protected canCalculate(): boolean {
     const month = this.month();
-    return month !== null && month >= 1 && month <= 12 && this.year() > 0;
+    return month !== null && month >= 1 && month <= 12 && this.year() >= 2000 && this.year() <= 2100;
   }
 
   protected closeDetail(): void {

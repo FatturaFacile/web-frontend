@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -21,11 +21,14 @@ import {
   TreasuryOpsApiService,
 } from '@core';
 import { TranslatePipe } from '@shared';
+import { revalidateOnStartChange } from '@shared/utils/date-validators';
+import { atLeastField } from '@shared/utils/decimal-validators';
 
 const nullableNumber = (value: string | null): number | null => (value === null ? null : Number(value));
 
 @Component({
   selector: 'app-tr-reconciliation-rules',
+  styleUrl: './tr-reconciliation-rules.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -64,21 +67,26 @@ export class TrReconciliationRulesComponent implements OnInit {
   private editingId: string | null = null;
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    priority: this.fb.control(100),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(120)]),
+    priority: this.fb.control(100, [Validators.min(1), Validators.max(100000)]),
     is_active: this.fb.control(true),
     direction: this.fb.control<'credit' | 'debit' | null>(null),
-    expected_amount: this.fb.control<number | null>(null),
-    amount_tolerance: this.fb.control(0),
-    min_amount: this.fb.control<number | null>(null),
-    max_amount: this.fb.control<number | null>(null),
-    reference_contains: this.fb.control(''),
-    description_contains: this.fb.control(''),
-    counterparty_iban: this.fb.control(''),
-    counterparty_name_contains: this.fb.control(''),
+    expected_amount: this.fb.control<number | null>(null, Validators.min(0.01)),
+    amount_tolerance: this.fb.control(0, [Validators.min(0), Validators.max(1000000)]),
+    min_amount: this.fb.control<number | null>(null, Validators.min(0)),
+    max_amount: this.fb.control<number | null>(null, [Validators.min(0), atLeastField('min_amount')]),
+    reference_contains: this.fb.control('', Validators.maxLength(140)),
+    description_contains: this.fb.control('', Validators.maxLength(140)),
+    counterparty_iban: this.fb.control('', Validators.pattern(/^([A-Za-z]{2}\d{2}[A-Za-z0-9 ]{11,40})?$/)),
+    counterparty_name_contains: this.fb.control('', Validators.maxLength(140)),
     category: this.fb.control<ReconciliationRuleCategory>('generic_expense', Validators.required),
-    ledger_account_code: this.fb.control(''),
+    ledger_account_code: this.fb.control('', Validators.pattern(/^([A-Za-z0-9.-]{1,20})?$/)),
   });
+
+  constructor() {
+    // The API requires max_amount >= min_amount.
+    revalidateOnStartChange(this.form, 'min_amount', 'max_amount', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.load();

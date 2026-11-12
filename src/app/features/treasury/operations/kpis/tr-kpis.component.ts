@@ -18,16 +18,17 @@ interface KpiTile {
 /** DSO / DPO / cash conversion cycle, liquidity and the cash position of the tenant. */
 @Component({
   selector: 'app-tr-kpis',
+  styleUrl: './tr-kpis.component.scss',
   imports: [FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzStatisticModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
-      <div>
+      <div class="toolbar">
         <label for="kp-date">{{ 'TR.AS_OF' | translate }}</label>
-        <input id="kp-date" nz-input type="date" [(ngModel)]="asOf" />
+        <input class="date-input" id="kp-date" nz-input type="date" [(ngModel)]="asOf" />
         <label for="kp-days">{{ 'TR.PERIOD_DAYS' | translate }}</label>
         <nz-input-number id="kp-days" [(ngModel)]="periodDays" [nzMin]="1" [nzMax]="730" />
         <label for="kp-currency">{{ 'TR.CURRENCY' | translate }}</label>
-        <input id="kp-currency" nz-input maxlength="3" [(ngModel)]="currency" />
+        <input class="currency-input" id="kp-currency" nz-input maxlength="3" [(ngModel)]="currency" />
         <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'TR.RUN_REPORT' | translate }}</button>
       </div>
 
@@ -40,13 +41,13 @@ interface KpiTile {
           }
         </div>
         @if (!k.includes_inventory) {
-          <p>{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
+          <p class="text-muted hint">{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
         }
       }
     </nz-card>
 
     @if (position(); as p) {
-      <nz-card [nzTitle]="'TR.CASH_POSITION' | translate">
+      <nz-card class="position-card" [nzTitle]="'TR.CASH_POSITION' | translate">
         <nz-table #bankTable nzSize="small" [nzData]="p.bank_accounts" [nzShowPagination]="false">
           <thead>
             <tr>
@@ -59,7 +60,7 @@ interface KpiTile {
           <tbody>
             @for (account of bankTable.data; track account.id) {
               <tr>
-                <td>{{ account.bank_name }} <small>{{ account.iban }}</small></td>
+                <td>{{ account.bank_name }} <small class="text-muted">{{ account.iban }}</small></td>
                 <td nzAlign="right">{{ account.current_balance | money: account.currency }}</td>
                 <td nzAlign="right">{{ account.available_balance | money: account.currency }}</td>
                 <td nzAlign="right">{{ account.overdraft_limit | money: account.currency }}</td>
@@ -67,7 +68,7 @@ interface KpiTile {
             }
           </tbody>
         </nz-table>
-        <nz-table #totalTable nzSize="small" [nzData]="p.totals" [nzShowPagination]="false">
+        <nz-table #totalTable class="totals-table" nzSize="small" [nzData]="p.totals" [nzShowPagination]="false">
           <thead>
             <tr>
               <th>{{ 'TR.CURRENCY' | translate }}</th>

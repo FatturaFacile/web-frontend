@@ -11,6 +11,8 @@ import {
   AppointmentApiService,
   AppointmentCalendarItem,
   AppointmentConflictCheckResponse,
+  ClientApiService,
+  SettingsApiService,
   TranslateService,
 } from '@core';
 import { AppointmentsComponent } from './appointments.component';
@@ -97,6 +99,8 @@ describe('AppointmentsComponent', () => {
         { provide: AppointmentApiService, useValue: apiSpy },
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
+        { provide: ClientApiService, useValue: { list: vi.fn().mockReturnValue(of({ data: [{ id: 'c-1', company_name: 'Rossi SA' }] })) } },
+        { provide: SettingsApiService, useValue: { getTenantUsers: vi.fn().mockReturnValue(of({ data: [{ id: 'usr-1', name: 'Luigi Tecnico' }] })) } },
       ],
     }).compileComponents();
 
@@ -127,12 +131,28 @@ describe('AppointmentsComponent', () => {
       address: 'Via Garibaldi 5, Torino',
       description: 'Portare inverter e cavi',
       estimated_duration_minutes: 240,
+      attendee_ids: ['usr-1'],
     });
 
     component.saveAppointment();
-    expect(apiSpy.createAppointment).toHaveBeenCalled();
+    const sent = apiSpy.createAppointment.mock.calls[0][0];
+    expect(sent.contact_id).toBe('c-1');
+    expect(sent.attendees).toEqual([{ user_id: 'usr-1', role: 'technician' }]);
     expect(component.appointmentModalVisible()).toBe(false);
     expect(messageSpy.success).toHaveBeenCalled();
+  });
+
+  it('should not create an appointment without a title or with an end before the start', () => {
+    component.openCreateModal();
+    component.appointmentForm.patchValue({ title: '' });
+    component.saveAppointment();
+    expect(apiSpy.createAppointment).not.toHaveBeenCalled();
+    expect(component.appointmentForm.controls.title.touched).toBe(true);
+
+    component.appointmentForm.patchValue({ title: 'Visita', starts_at: '2026-11-25T13:00', ends_at: '2026-11-25T09:00' });
+    component.saveAppointment();
+    expect(apiSpy.createAppointment).not.toHaveBeenCalled();
+    expect(component.appointmentForm.controls.ends_at.hasError('endsBeforeStart')).toBe(true);
   });
 
   it('should open appointment drawer and load details', () => {
@@ -175,13 +195,13 @@ describe('AppointmentsComponent', () => {
 
   it('should run conflict check tool', () => {
     component.conflictForm.patchValue({
-      user_id: 'usr-1',
+      user_ids: ['usr-1'],
       starts_at: '2026-11-22T08:00',
       ends_at: '2026-11-22T12:00',
     });
 
     component.runConflictCheck();
-    expect(apiSpy.checkConflicts).toHaveBeenCalled();
+    expect(apiSpy.checkConflicts.mock.calls[0][0].user_ids).toEqual(['usr-1']);
     expect(component.conflictResult()).toEqual(mockConflictResponse);
   });
 

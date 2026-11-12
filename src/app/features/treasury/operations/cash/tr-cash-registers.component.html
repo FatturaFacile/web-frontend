@@ -1,8 +1,8 @@
 <nz-card>
   @if (canWrite) {
-    <button nz-button nzType="primary" type="button" (click)="openModal('register')">{{ 'TR.REGISTER_NEW' | translate }}</button>
+    <button class="mb-3" nz-button nzType="primary" type="button" (click)="openModal('register')">{{ 'TR.REGISTER_NEW' | translate }}</button>
   }
-  <nz-table #table nzSize="middle" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
+  <nz-table #table nzSize="middle" [nzScroll]="{ x: '640px' }" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
         <th>{{ 'TR.CODE' | translate }}</th>
@@ -29,10 +29,10 @@
 </nz-card>
 
 @if (selected(); as register) {
-  <nz-card [nzTitle]="register.code + ' ' + register.name">
+  <nz-card class="register-card" [nzTitle]="register.code + ' ' + register.name">
     @if (lastClosing(); as closing) {
       <nz-alert
-       
+        class="closing-alert"
         nzShowIcon
         nzCloseable
         [nzType]="closing.difference === '0.00' ? 'success' : 'warning'"
@@ -43,7 +43,7 @@
     <nz-tabs>
       <nz-tab [nzTitle]="'TR.CASH_BOOK' | translate">
         @if (canWrite) {
-          <button nz-button type="button" (click)="openModal('movement')">{{ 'TR.MOVEMENT_NEW' | translate }}</button>
+          <button class="mb-3" nz-button type="button" (click)="openModal('movement')">{{ 'TR.MOVEMENT_NEW' | translate }}</button>
         }
         <nz-table #movementTable nzSize="small" [nzData]="movements()" [nzPageSize]="20">
           <thead>
@@ -72,9 +72,9 @@
       </nz-tab>
       <nz-tab [nzTitle]="'TR.CLOSINGS' | translate">
         @if (canWrite) {
-          <button nz-button type="button" (click)="openModal('close')">{{ 'TR.DAILY_CLOSE' | translate }}</button>
+          <button class="mb-3" nz-button type="button" (click)="openModal('close')">{{ 'TR.DAILY_CLOSE' | translate }}</button>
         }
-        <nz-table #closingTable nzSize="small" [nzData]="closings()" [nzPageSize]="20">
+        <nz-table #closingTable nzSize="small" [nzScroll]="{ x: '800px' }" [nzData]="closings()" [nzPageSize]="20">
           <thead>
             <tr>
               <th>{{ 'TR.DATE' | translate }}</th>
@@ -120,19 +120,19 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-code">{{ 'TR.CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.code.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-code" nz-input formControlName="code" maxlength="50" />
+          <input id="cr-code" nz-input formControlName="code" maxlength="30" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-name">{{ 'TR.NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-name" nz-input formControlName="name" maxlength="255" />
+          <input id="cr-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-currency">{{ 'TR.CURRENCY' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.currency.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-currency" nz-input formControlName="currency" maxlength="3" />
+          <input class="currency-input" id="cr-currency" nz-input formControlName="currency" maxlength="3" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -148,7 +148,7 @@
       <nz-form-item>
         <nz-form-label nzFor="cr-opening">{{ 'TR.OPENING' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number id="cr-opening" formControlName="opening_balance" [nzPrecision]="2" />
+          <nz-input-number class="w-full" id="cr-opening" formControlName="opening_balance" [nzMin]="0" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -169,7 +169,7 @@
     <form nz-form nzLayout="vertical" [formGroup]="movementForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cm-date">{{ 'TR.DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="movementForm.controls.movement_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="movementForm.controls.movement_date.errors?.['serverError'] ?? (movementForm.controls.movement_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate))">
           <input id="cm-date" nz-input type="date" formControlName="movement_date" />
         </nz-form-control>
       </nz-form-item>
@@ -194,7 +194,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cm-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="movementForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="cm-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
+          <nz-input-number class="w-full" id="cm-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -238,14 +238,14 @@
     <form nz-form nzLayout="vertical" [formGroup]="closeForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cc-date">{{ 'TR.CLOSING_DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="closeForm.controls.closing_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="closeForm.controls.closing_date.errors?.['serverError'] ?? (closeForm.controls.closing_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate))">
           <input id="cc-date" nz-input type="date" formControlName="closing_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cc-counted">{{ 'TR.COUNTED' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="closeForm.controls.counted_balance.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="cc-counted" formControlName="counted_balance" [nzPrecision]="2" />
+          <nz-input-number class="w-full" id="cc-counted" formControlName="counted_balance" [nzMin]="0" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

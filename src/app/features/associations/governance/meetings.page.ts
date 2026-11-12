@@ -10,13 +10,13 @@ const MEETING_FIELDS = [
   req(rf.select('body', BODIES)),
   rf.text('body_name', { maxLength: 255 }),
   req(rf.text('title', { maxLength: 255 })),
-  rf.textarea('subject'),
+  rf.textarea('subject', { maxLength: 10000 }),
   rf.datetime('scheduled_at'),
-  rf.datetime('second_call_at'),
+  rf.datetime('second_call_at', { notBefore: 'scheduled_at', strictlyAfter: true }),
   rf.text('location', { maxLength: 255 }),
   rf.text('online_url', { maxLength: 500 }),
-  rf.decimal('first_call_quorum_percent'),
-  rf.decimal('second_call_quorum_percent'),
+  rf.decimal('first_call_quorum_percent', { positive: true }),
+  rf.decimal('second_call_quorum_percent', { positive: true }),
   rf.bool('proxies_allowed'),
 ];
 
@@ -79,7 +79,7 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
       detailPath: '/associations/meetings/{id}',
       rowActions: [
         act('POST', 'RES.A.assoc_add_agenda_item', '/associations/meetings/{id}/agenda-items', {
-          fields: [req(rf.text('title', { maxLength: 255 })), rf.textarea('description')],
+          fields: [req(rf.text('title', { maxLength: 255 })), rf.textarea('description', { maxLength: 10000 })],
           showResult: true,
         }),
         act('POST', 'RES.A.assoc_add_attachment', '/associations/meetings/{id}/attachments', {
@@ -114,7 +114,7 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
           showResult: true,
         }),
         act('POST', 'RES.A.assoc_grant_proxy', '/associations/meetings/{id}/proxies', {
-          fields: [req(rf.uuid('grantor_participant_id')), req(rf.uuid('holder_participant_id'))],
+          fields: [req(rf.uuid('grantor_participant_id')), req(rf.uuid('holder_participant_id', { differentFrom: 'grantor_participant_id' }))],
           showResult: true,
         }),
         act('GET', 'RES.A.assoc_quorum', '/associations/meetings/{id}/quorum', { showResult: true }),
@@ -128,7 +128,7 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
             rf.tags('options'),
             rf.bool('is_secret'),
             rf.select('majority_rule', MAJORITY_RULES),
-            rf.decimal('qualified_percent'),
+            rf.decimal('qualified_percent', { positive: true }),
             rf.uuid('agenda_item_id'),
           ],
           showResult: true,
@@ -149,7 +149,7 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
       toolbar: [
         act('GET', 'RES.A.assoc_view_minutes', '/associations/minutes/{id}', { fields: MINUTES_ID, showResult: true }),
         act('PUT', 'RES.A.assoc_edit_minutes', '/associations/minutes/{id}', {
-          fields: [...MINUTES_ID, rf.text('title', { maxLength: 255 }), rf.textarea('body')],
+          fields: [...MINUTES_ID, rf.text('title', { maxLength: 255 }), rf.textarea('body', { maxLength: 200000 })],
           showResult: true,
         }),
         act('POST', 'RES.A.assoc_approve_minutes', '/associations/minutes/{id}/approve', { fields: MINUTES_ID, showResult: true }),

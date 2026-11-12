@@ -74,7 +74,7 @@
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="doc-file">{{ 'hrmEmp.file' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzValidateStatus]="fileMissing() ? 'error' : ''" [nzErrorTip]="'hrmCommon.required' | translate">
           <input id="doc-file" type="file" (change)="onFileSelected($event)" />
         </nz-form-control>
       </nz-form-item>
@@ -91,7 +91,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="doc-title">{{ 'hrmCommon.title' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
-          <input nz-input id="doc-title" maxlength="255" formControlName="title" />
+          <input nz-input id="doc-title" maxlength="200" formControlName="title" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

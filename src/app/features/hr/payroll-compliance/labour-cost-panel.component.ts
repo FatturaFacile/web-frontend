@@ -21,6 +21,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Hours and labour cost by department or site, and the family allowance of each child for a month. */
 @Component({
   selector: 'app-labour-cost-panel',
+  styleUrl: './labour-cost-panel.component.scss',
   imports: [
     FormsModule,
     MoneyPipe,
@@ -33,7 +34,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   ],
   template: `
     <h4>{{ 'hrmCompliance.labour.title' | translate }}</h4>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="lc-year">{{ 'hrmCommon.year' | translate }}</label>
         <input
@@ -60,7 +61,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="lc-group">{{ 'hrmCompliance.labour.groupBy' | translate }}</label>
         <nz-select
           id="lc-group"
-         
+          class="w-field-sm"
           nzAllowClear
           [ngModel]="groupBy()"
           (ngModelChange)="groupBy.set($event)"
@@ -116,12 +117,12 @@ import { reportHttpError } from '../shared/hr-http.util';
     }
 
     <h4 class="mt-4">{{ 'hrmCompliance.children.title' | translate }}</h4>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="ch-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="ch-employee"
-         
+          class="w-field-md"
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"

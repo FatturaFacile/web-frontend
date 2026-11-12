@@ -14,6 +14,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-two-factor-setup-modal',
+  styleUrl: './two-factor-setup-modal.component.scss',
   imports: [
     ReactiveFormsModule,
     NzModalModule,

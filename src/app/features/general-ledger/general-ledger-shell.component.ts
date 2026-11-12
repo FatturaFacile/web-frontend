@@ -10,6 +10,7 @@ interface GlNavItem {
 
 @Component({
   selector: 'app-general-ledger-shell',
+  styleUrl: './general-ledger-shell.component.scss',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NzMenuModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header [title]="'GL.TITLE' | translate" [subtitle]="'GL.SUBTITLE' | translate" />

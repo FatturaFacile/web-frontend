@@ -323,7 +323,7 @@
             <form nz-form [formGroup]="settingsForm" (ngSubmit)="submitSettings()" nzLayout="vertical">
               <nz-form-item>
                 <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'driver')">
                   <nz-select formControlName="driver">
                     <nz-option nzValue="local" [nzLabel]="'DOCUMENT_TRUST.DRIVER_LOCAL' | translate"></nz-option>
                     <nz-option nzValue="cades" [nzLabel]="'DOCUMENT_TRUST.DRIVER_CADES' | translate"></nz-option>
@@ -332,8 +332,8 @@
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>{{ 'DOCUMENT_TRUST.PEM_CERTIFICATE' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-label [nzRequired]="isCertificateRequired()">{{ 'DOCUMENT_TRUST.PEM_CERTIFICATE' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'certificate')">
                   <textarea
                     nz-input
                     rows="3"
@@ -344,8 +344,8 @@
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>{{ 'DOCUMENT_TRUST.PRIVATE_KEY' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-label [nzRequired]="isCertificateRequired()">{{ 'DOCUMENT_TRUST.PRIVATE_KEY' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'private_key')">
                   <textarea
                     nz-input
                     rows="3"
@@ -357,7 +357,7 @@
 
               <nz-form-item>
                 <nz-form-label>{{ 'DOCUMENT_TRUST.KEY_PASSPHRASE' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'passphrase')">
                   <input
                     nz-input
                     type="password"
@@ -390,7 +390,7 @@
       <form nz-form [formGroup]="sendForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'network')">
             <nz-select formControlName="network">
               <nz-option nzValue="peppol" nzLabel="Peppol AS4 Network"></nz-option>
               <nz-option nzValue="ebill" [nzLabel]="'DOCUMENT_TRUST.LBL_SWISS_EBILL_SIX' | translate"></nz-option>
@@ -401,7 +401,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'document_reference')">
             <input
               nz-input
               formControlName="document_reference"
@@ -412,7 +412,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.RECIPIENT_IDENTIFIER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'recipient_identifier')">
             <input
               nz-input
               formControlName="recipient_identifier"
@@ -423,7 +423,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_PAYLOAD' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'payload')">
             <textarea
               nz-input
               rows="4"
@@ -448,7 +448,7 @@
       <form nz-form [formGroup]="signForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(signForm, 'document_type')">
             <nz-select formControlName="document_type">
               <nz-option nzValue="invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_INVOICE' | translate"></nz-option>
               <nz-option nzValue="passive_invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_PASSIVE' | translate"></nz-option>
@@ -458,7 +458,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(signForm, 'document_id')">
             <input
               nz-input
               formControlName="document_id"
@@ -482,7 +482,7 @@
       <form nz-form [formGroup]="preserveForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(preserveForm, 'document_type')">
             <nz-select formControlName="document_type">
               <nz-option nzValue="invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_INVOICE' | translate"></nz-option>
               <nz-option nzValue="passive_invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_PASSIVE' | translate"></nz-option>
@@ -492,7 +492,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(preserveForm, 'document_id')">
             <input
               nz-input
               formControlName="document_id"

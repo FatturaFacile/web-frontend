@@ -6,7 +6,6 @@
     <nz-select
       [ngModel]="selectedYear()"
       (ngModelChange)="changeYear($event)"
-     
     >
       <nz-option [nzValue]="2026" nzLabel="2026"></nz-option>
       <nz-option [nzValue]="2025" nzLabel="2025"></nz-option>
@@ -251,17 +250,26 @@
     <nz-tab [nzTitle]="'STS.TAB_SETTINGS' | translate">
       <nz-card class="sub-card" [nzTitle]="'STS.SETTINGS_TITLE' | translate">
         <form nz-form [formGroup]="settingsForm" nzLayout="vertical" (ngSubmit)="saveSettings()">
+          <ng-template #fieldTip let-control>
+            @if (control.errors?.['serverError']) {
+              {{ control.errors['serverError'] }}
+            } @else if (control.hasError('required')) {
+              {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+            } @else {
+              {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+            }
+          </ng-template>
           <nz-form-item>
-            <nz-form-label>{{ 'STS.ENABLE_STS' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-label nzRequired>{{ 'STS.ENABLE_STS' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-switch formControlName="is_enabled"></nz-switch>
             </nz-form-control>
           </nz-form-item>
 
           <div class="form-row-2">
             <nz-form-item>
-              <nz-form-label nzRequired>{{ 'STS.SUBJECT_TYPE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-label>{{ 'STS.SUBJECT_TYPE' | translate }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <nz-select formControlName="subject_type">
                   <nz-option nzValue="professional" [nzLabel]="'STS.TYPE_PROFESSIONAL' | translate"></nz-option>
                   <nz-option nzValue="structure" [nzLabel]="'STS.TYPE_STRUCTURE' | translate"></nz-option>
@@ -271,7 +279,7 @@
 
             <nz-form-item>
               <nz-form-label>{{ 'STS.OWNER_FISCAL_CODE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input formControlName="owner_fiscal_code" placeholder="RSSMRA80A01H501Z" />
               </nz-form-control>
             </nz-form-item>
@@ -280,28 +288,28 @@
           <div class="form-row-3">
             <nz-form-item>
               <nz-form-label>{{ 'STS.REGION_CODE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input formControlName="region_code" [placeholder]="'STS.LBL_030_LOMBARDIA' | translate" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-label>{{ 'STS.ASL_CODE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input formControlName="asl_code" [placeholder]="'STS.LBL_201_MILANO' | translate" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-label>{{ 'STS.SSA_CODE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="fieldTip">
                 <input nz-input formControlName="ssa_code" [placeholder]="'STS.LBL_CODICE_STRUTTURA' | translate" />
               </nz-form-control>
             </nz-form-item>
           </div>
 
           <nz-form-item>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <button nz-button nzType="primary" (click)="saveSettings()">
                 <span nz-icon nzType="check"></span>
                 {{ 'STS.SAVE_SETTINGS' | translate }}
@@ -324,10 +332,19 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="flagForm" nzLayout="vertical">
+          <ng-template #fieldTip let-control>
+            @if (control.errors?.['serverError']) {
+              {{ control.errors['serverError'] }}
+            } @else if (control.hasError('required')) {
+              {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+            } @else {
+              {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+            }
+          </ng-template>
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.DOCUMENT_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="document_type">
               <nz-option nzValue="invoice" [nzLabel]="'STS.DOC_INVOICE' | translate"></nz-option>
               <nz-option nzValue="commercial_document" [nzLabel]="'STS.DOC_COMMERCIAL' | translate"></nz-option>
@@ -337,7 +354,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.DOCUMENT_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="document_id" [placeholder]="'STS.LBL_UUID_DOCUMENTO_O_FATTURA' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -346,11 +363,12 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.EXPENSE_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="expense_type">
               <nz-option nzValue="SV" [nzLabel]="'STS.LBL_SV_VISITA_MEDICA_GENERICA' | translate"></nz-option>
               <nz-option nzValue="SP" [nzLabel]="'STS.LBL_SP_PRESTAZIONE_SPECIALISTICA' | translate"></nz-option>
               <nz-option nzValue="AD" [nzLabel]="'STS.LBL_AD_DISPOSITIVO_MEDICO_CE' | translate"></nz-option>
+              <nz-option nzValue="AS" [nzLabel]="'STS.LBL_AS_ALTRA_SPESA_SANITARIA' | translate"></nz-option>
               <nz-option nzValue="FC" [nzLabel]="'STS.LBL_FC_FARMACO_DA_BANCO_OMEOPATICO' | translate"></nz-option>
               <nz-option nzValue="FV" [nzLabel]="'STS.LBL_FV_FARMACO_VETERINARIO' | translate"></nz-option>
               <nz-option nzValue="TK" [nzLabel]="'STS.LBL_TK_TICKET_SANITARIO' | translate"></nz-option>
@@ -365,7 +383,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'STS.PAYMENT_DATE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="date" formControlName="payment_date" />
           </nz-form-control>
         </nz-form-item>
@@ -373,15 +391,15 @@
 
       <div class="form-row-2">
         <nz-form-item>
-          <nz-form-label nzRequired>{{ 'STS.AMOUNT' | translate }} (€)</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'STS.AMOUNT' | translate }} (€)</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-input-number formControlName="amount" [nzMin]="0.01" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label>{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label [nzRequired]="patientFiscalCodeRequired()">{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="patient_fiscal_code" placeholder="VRDLGI85C10H501K" />
           </nz-form-control>
         </nz-form-item>
@@ -389,8 +407,24 @@
 
       <div class="form-row-2">
         <nz-form-item>
-          <nz-form-label>{{ 'STS.TRACEABLE_PAYMENT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'STS.TAX_RATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzMax]="99.99" [nzStep]="1"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'STS.VAT_NATURE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="vat_nature" maxlength="4" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'STS.TRACEABLE_PAYMENT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-switch formControlName="payment_traceable"></nz-switch>
             <span class="switch-hint">{{ 'STS.TRACEABLE_HINT' | translate }}</span>
           </nz-form-control>
@@ -398,7 +432,7 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'STS.PATIENT_OPPOSITION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-switch formControlName="patient_opposition"></nz-switch>
             <span class="switch-hint">{{ 'STS.OPPOSITION_HINT' | translate }}</span>
           </nz-form-control>

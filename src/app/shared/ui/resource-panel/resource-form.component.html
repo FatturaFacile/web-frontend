@@ -58,7 +58,7 @@
           <div class="rf-line">
             @for (sub of field.fields; track sub.key) {
               <div class="rf-line-field">
-                <label class="rf-line-label" [for]="'rf-' + sub.key">{{ labels.field(sub.key, sub.labelKey) }}</label>
+                <label class="rf-line-label" [for]="'rf-' + sub.key">{{ labels.field(sub.key, sub.labelKey) }}@if (sub.required) {<span class="rf-required" aria-hidden="true"> *</span>}</label>
                 <ng-container *ngTemplateOutlet="control; context: { $implicit: sub, group: line, compact: true }" />
               </div>
             }

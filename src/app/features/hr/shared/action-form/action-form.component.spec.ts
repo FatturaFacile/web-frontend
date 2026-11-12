@@ -7,7 +7,7 @@ import { ActionFormComponent, ActionFormConfig } from './action-form.component';
 interface FormAccess {
   form: {
     patchValue(v: object): void;
-    get(k: string): { errors: { serverError?: string } | null } | null;
+    get(k: string): { errors: ({ serverError?: string } & Record<string, unknown>) | null } | null;
   };
   submit(): void;
 }
@@ -94,5 +94,24 @@ describe('ActionFormComponent', () => {
       'button[type="submit"]',
     ) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
+  });
+
+  it('does not call the action when an empty form is submitted and flags every required field', () => {
+    const component = configure({
+      fields: [
+        { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 5 },
+        { key: 'gross', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'net' },
+        { key: 'net', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'gross' },
+      ],
+    });
+    component.submit();
+    expect(submit).not.toHaveBeenCalled();
+    expect(component.form.get('name')?.errors).toEqual({ required: true });
+    expect(component.form.get('gross')?.errors).toEqual({ required: true });
+    component.form.patchValue({ name: 'toolong', net: '5' });
+    component.submit();
+    expect(submit).not.toHaveBeenCalled();
+    expect(component.form.get('name')?.errors?.['maxlength']).toBeTruthy();
+    expect(component.form.get('gross')?.errors).toBeNull();
   });
 });

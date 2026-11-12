@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -24,11 +24,13 @@ import {
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../../../general-ledger/shared/gl-error-alert.component';
 import { TrLookupStore } from '../tr-lookup.store';
+import { differentFrom, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 type ChargeType = 'bank_fee' | 'interest_income' | 'interest_expense';
 
 @Component({
   selector: 'app-tr-balances',
+  styleUrl: './tr-balances.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -75,7 +77,7 @@ export class TrBalancesComponent implements OnInit {
 
   protected readonly transferForm = this.fb.group({
     from_bank_account_id: this.fb.control('', Validators.required),
-    to_bank_account_id: this.fb.control('', Validators.required),
+    to_bank_account_id: this.fb.control('', [Validators.required, differentFrom('from_bank_account_id')]),
     amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     transfer_date: this.fb.control('', Validators.required),
     description: this.fb.control(''),
@@ -88,6 +90,11 @@ export class TrBalancesComponent implements OnInit {
     movement_date: this.fb.control('', Validators.required),
     description: this.fb.control(''),
   });
+
+  constructor() {
+    // The API requires the two accounts of a transfer to differ.
+    revalidateOnStartChange(this.transferForm, 'from_bank_account_id', 'to_bank_account_id', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.banks.load();

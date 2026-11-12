@@ -9,7 +9,7 @@
     <nz-tab [nzTitle]="'SALES.TABS.QUOTES' | translate">
       <div class="toolbar">
         <nz-select
-         
+          class="status-filter"
           [ngModel]="quoteStatusFilter()"
           (ngModelChange)="quoteStatusFilter.set($event); loadQuotes()"
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
@@ -27,7 +27,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openQuoteModal()">
           <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_QUOTE' | translate }}
@@ -131,7 +131,7 @@
     <nz-tab [nzTitle]="'SALES.TABS.ORDERS' | translate">
       <div class="toolbar">
         <nz-select
-         
+          class="status-filter"
           [ngModel]="orderStatusFilter()"
           (ngModelChange)="orderStatusFilter.set($event); loadOrders()"
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
@@ -149,7 +149,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openOrderModal()">
           <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_ORDER' | translate }}
@@ -260,7 +260,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openDdtModal()">
           <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_DDT' | translate }}
@@ -363,7 +363,7 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'SALES.COL_CLIENT' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
               <nz-select formControlName="contact_id" nzShowSearch>
                 @for (c of clients(); track c.id) {
                   <nz-option [nzValue]="c.id" [nzLabel]="contactLabel(c)"></nz-option>
@@ -374,7 +374,7 @@
         </nz-col>
         <nz-col [nzSpan]="6">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
+            <nz-form-label>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input type="date" formControlName="date" />
             </nz-form-control>
@@ -382,8 +382,8 @@
         </nz-col>
         <nz-col [nzSpan]="6">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'SALES.COL_VALID_UNTIL' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-label>{{ 'SALES.COL_VALID_UNTIL' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.END_AFTER_START' | translate">
               <input nz-input type="date" formControlName="valid_until" />
             </nz-form-control>
           </nz-form-item>
@@ -400,18 +400,18 @@
                 <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO_SERVIZIO' | translate" />
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzPlaceHolder]="'IVA %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'IVA %'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
               </nz-col>
-              <nz-col [nzSpan]="2">
+              <nz-col class="item-remove" [nzSpan]="2">
                 <button nz-button nzType="text" nzDanger (click)="removeQuoteItem($index)">
                   <nz-icon nzType="delete" />
                 </button>
@@ -421,11 +421,11 @@
         }
       </div>
 
-      <button nz-button nzType="dashed" (click)="addQuoteItem()">
+      <button class="add-item" nz-button nzType="dashed" (click)="addQuoteItem()">
         <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
       </button>
 
-      <nz-form-item>
+      <nz-form-item class="notes-item">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
         <nz-form-control>
           <textarea nz-input formControlName="notes" rows="2" [placeholder]="'SALES.LBL_NOTE_COMMERCIALI_O_CONDIZIONI_DI_PAGAMENTO' | translate"></textarea>
@@ -450,7 +450,7 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'SALES.COL_CLIENT' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
               <nz-select formControlName="contact_id" nzShowSearch>
                 @for (c of clients(); track c.id) {
                   <nz-option [nzValue]="c.id" [nzLabel]="contactLabel(c)"></nz-option>
@@ -470,7 +470,7 @@
         <nz-col [nzSpan]="6">
           <nz-form-item>
             <nz-form-label>{{ 'SALES.COL_DUE_DATE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.END_AFTER_START' | translate">
               <input nz-input type="date" formControlName="due_date" />
             </nz-form-control>
           </nz-form-item>
@@ -487,18 +487,18 @@
                 <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO' | translate" />
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzPlaceHolder]="'IVA %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'IVA %'"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
               </nz-col>
-              <nz-col [nzSpan]="2">
+              <nz-col class="item-remove" [nzSpan]="2">
                 <button nz-button nzType="text" nzDanger (click)="removeOrderItem($index)">
                   <nz-icon nzType="delete" />
                 </button>
@@ -508,11 +508,11 @@
         }
       </div>
 
-      <button nz-button nzType="dashed" (click)="addOrderItem()">
+      <button class="add-item" nz-button nzType="dashed" (click)="addOrderItem()">
         <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
       </button>
 
-      <nz-form-item>
+      <nz-form-item class="notes-item">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
         <nz-form-control>
           <textarea nz-input formControlName="notes" rows="2" [placeholder]="'SALES.LBL_NOTE_PER_LA_CONSEGNA_O_RIF' | translate"></textarea>
@@ -537,7 +537,7 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'SALES.COL_ORDER_REF' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
               <nz-select formControlName="sales_order_id" nzShowSearch>
                 @for (o of orders(); track o.id) {
                   <nz-option [nzValue]="o.id" [nzLabel]="o.order_number + ' - ' + (o.contact?.name || '')"></nz-option>
@@ -563,7 +563,7 @@
       <nz-row [nzGutter]="16">
         <nz-col [nzSpan]="8">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
+            <nz-form-label>{{ 'SALES.COL_DATE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input type="date" formControlName="date" />
             </nz-form-control>
@@ -571,7 +571,7 @@
         </nz-col>
         <nz-col [nzSpan]="8">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'SALES.COL_REASON' | translate }}</nz-form-label>
+            <nz-form-label>{{ 'SALES.COL_REASON' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="transport_reason">
                 <nz-option nzValue="Vendita" [nzLabel]="'SALES.LBL_VENDITA' | translate"></nz-option>
@@ -584,9 +584,9 @@
         </nz-col>
         <nz-col [nzSpan]="8">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'SALES.COL_PACKAGES' | translate }}</nz-form-label>
+            <nz-form-label>{{ 'SALES.COL_PACKAGES' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="packages_count" [nzMin]="1"></nz-input-number>
+              <nz-input-number class="w-full" formControlName="packages_count" [nzMin]="1"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -597,7 +597,7 @@
           <nz-form-item>
             <nz-form-label>{{ 'SALES.COL_WEIGHT' | translate }} (Kg)</nz-form-label>
             <nz-form-control>
-              <nz-input-number formControlName="gross_weight_kg" [nzMin]="0"></nz-input-number>
+              <nz-input-number class="w-full" formControlName="gross_weight_kg" [nzMin]="0"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>

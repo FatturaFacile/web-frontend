@@ -13,6 +13,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 /** Public page of a mailed payslip link: the PDF opens against the date of birth of the employee. */
 @Component({
   selector: 'app-payslip-link',
+  styleUrl: './payslip-link.component.scss',
   imports: [ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzIconModule, NzInputModule, TranslatePipe],
   template: `
     <nz-card class="payslip-card" [nzTitle]="'PAYSLIP_LINK.TITLE' | translate">

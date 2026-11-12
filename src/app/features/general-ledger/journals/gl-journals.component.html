@@ -3,7 +3,7 @@
     <label for="gl-journal-status">{{ 'GL.STATUS' | translate }}</label>
     <nz-select
       id="gl-journal-status"
-     
+      class="select-lg"
       nzAllowClear
       [ngModel]="statusFilter()"
       (ngModelChange)="setStatus($event)"
@@ -15,7 +15,7 @@
     </nz-select>
   </div>
 
-  <nz-table
+  <nz-table [nzScroll]="{ x: '800px' }"
     #table
     nzSize="middle"
     [nzData]="items()"

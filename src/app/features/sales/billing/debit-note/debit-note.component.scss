@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.banner {
+  margin-bottom: var(--space-4);
+}
+
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: var(--space-4);
+}
+
+.section {
+  margin-top: var(--space-4);
+}

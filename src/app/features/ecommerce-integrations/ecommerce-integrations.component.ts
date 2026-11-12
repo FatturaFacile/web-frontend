@@ -1,6 +1,16 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -37,9 +47,13 @@ import {
   UpdatePaymentGatewayRequest,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { inFuture } from '@shared/utils/date-validators';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Component({
   selector: 'app-ecommerce-integrations',
+  styleUrl: './ecommerce-integrations.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -103,11 +117,11 @@ export class EcommerceIntegrationsComponent implements OnInit {
 
   // Forms
   readonly channelForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
     driver: ['shopify', [Validators.required]],
-    store_url: [''],
-    api_key: [''],
-    api_secret: [''],
+    store_url: ['', [Validators.maxLength(255), this.storeUrlValidator()]],
+    api_key: ['', [Validators.maxLength(500), this.driverCredentialValidator(['woocommerce', 'prestashop'])]],
+    api_secret: ['', [Validators.maxLength(500), this.driverCredentialValidator(['woocommerce', 'shopify'])]],
     auto_sync_orders: [true],
     stock_push_enabled: [true],
     is_active: [true],
@@ -120,21 +134,28 @@ export class EcommerceIntegrationsComponent implements OnInit {
   });
 
   readonly apiKeyForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required]],
-    scope_reporting: [true],
-    expires_at: [''],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    scope_reporting: [true, [Validators.requiredTrue]],
+    expires_at: ['', [inFuture]],
   });
 
   readonly gatewayForm: FormGroup = this.fb.group({
     provider: ['stripe' as PaymentGatewayProvider, [Validators.required]],
-    secret_key: [''],
-    webhook_secret: [''],
+    secret_key: ['', [Validators.maxLength(255)]],
+    webhook_secret: ['', [Validators.maxLength(255)]],
     publishable_key: [''],
   });
 
   readonly paymentLinkForm: FormGroup = this.fb.group({
-    invoice_id: ['', [Validators.required]],
+    invoice_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
   });
+
+  constructor() {
+    this.channelForm
+      .get('driver')!
+      .valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(() => this.revalidateChannelCredentials());
+  }
 
   ngOnInit(): void {
     this.loadChannels();
@@ -158,6 +179,59 @@ export class EcommerceIntegrationsComponent implements OnInit {
     });
   }
 
+  /**
+   * Mirrors the credential rules of StoreEcommerceChannelRequest: WooCommerce needs the store URL, key and secret,
+   * Shopify the shop domain and the access token (secret field), PrestaShop the store URL and the key. When editing,
+   * the stored credentials are kept, so the secrets may stay empty (the store URL of WooCommerce/PrestaShop is
+   * prefilled and cannot be cleared).
+   */
+  private driverCredentialValidator(drivers: readonly string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const driver = control.parent?.get('driver')?.value as string | undefined;
+      if (this.isEditingChannel() || !driver || !drivers.includes(driver)) {
+        return null;
+      }
+      return String(control.value ?? '').trim() === '' ? { required: true } : null;
+    };
+  }
+
+  private storeUrlValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const driver = control.parent?.get('driver')?.value as string | undefined;
+      const value = String(control.value ?? '').trim();
+      if (!driver) {
+        return null;
+      }
+      if (value === '') {
+        const needed = driver !== 'shopify' || !this.isEditingChannel();
+        return needed ? { required: true } : null;
+      }
+      if (driver === 'shopify') {
+        const host = value.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+        return /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i.test(host) ? null : { pattern: true };
+      }
+      return /^https?:\/\/[^\s/]+\.[^\s/]+/i.test(value) ? null : { pattern: true };
+    };
+  }
+
+  /** Whether the channel field is mandatory for the chosen driver (drives the required marker of the label). */
+  isChannelFieldRequired(field: 'store_url' | 'api_key' | 'api_secret'): boolean {
+    const driver = this.channelForm.get('driver')?.value as string;
+    if (field === 'store_url') {
+      return driver !== 'shopify' || !this.isEditingChannel();
+    }
+    if (this.isEditingChannel()) {
+      return false;
+    }
+    return field === 'api_key' ? ['woocommerce', 'prestashop'].includes(driver) : ['woocommerce', 'shopify'].includes(driver);
+  }
+
+  private revalidateChannelCredentials(): void {
+    for (const name of ['store_url', 'api_key', 'api_secret']) {
+      this.channelForm.get(name)?.updateValueAndValidity();
+    }
+  }
+
   openCreateChannelModal(): void {
     this.isEditingChannel.set(false);
     this.channelForm.reset({
@@ -170,6 +244,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
       stock_push_enabled: true,
       is_active: true,
     });
+    this.revalidateChannelCredentials();
     this.isChannelModalVisible.set(true);
   }
 
@@ -179,13 +254,14 @@ export class EcommerceIntegrationsComponent implements OnInit {
     this.channelForm.patchValue({
       name: ch.name,
       driver: ch.driver,
-      store_url: ch.store_url || (ch.credentials?.['store_url'] as string) || '',
-      api_key: (ch.credentials?.['api_key'] as string) || '',
+      store_url: ch.api_url || '',
+      api_key: '',
       api_secret: '',
-      auto_sync_orders: ch.settings?.auto_sync_orders ?? true,
-      stock_push_enabled: ch.settings?.stock_push_enabled ?? true,
+      auto_sync_orders: ch.sync_orders_enabled ?? true,
+      stock_push_enabled: ch.sync_stock_enabled ?? true,
       is_active: ch.is_active,
     });
+    this.revalidateChannelCredentials();
     this.isChannelModalVisible.set(true);
   }
 
@@ -201,27 +277,17 @@ export class EcommerceIntegrationsComponent implements OnInit {
     }
 
     const val = this.channelForm.value;
-    const credentials: Record<string, unknown> = {
-      store_url: val.store_url,
-    };
-    if (val.api_key) {
-      credentials['api_key'] = val.api_key;
-    }
-    if (val.api_secret) {
-      credentials['api_secret'] = val.api_secret;
-    }
-
-    const settings: Record<string, unknown> = {
-      auto_sync_orders: val.auto_sync_orders,
-      stock_push_enabled: val.stock_push_enabled,
-    };
+    const credentials = this.credentialsOf(val.driver, val.store_url, val.api_key, val.api_secret);
+    const apiUrl = val.driver === 'shopify' ? null : val.store_url || null;
 
     this.loading.set(true);
     if (this.isEditingChannel() && this.selectedChannel()) {
       const updateReq: UpdateEcommerceChannelRequest = {
         name: val.name,
+        api_url: apiUrl,
         credentials,
-        settings,
+        sync_orders_enabled: val.auto_sync_orders,
+        sync_stock_enabled: val.stock_push_enabled,
         is_active: val.is_active,
       };
       this.api.updateChannel(this.selectedChannel()!.id, updateReq).subscribe({
@@ -241,8 +307,11 @@ export class EcommerceIntegrationsComponent implements OnInit {
       const createReq: CreateEcommerceChannelRequest = {
         name: val.name,
         driver: val.driver,
+        api_url: apiUrl,
         credentials,
-        settings,
+        sync_orders_enabled: val.auto_sync_orders,
+        sync_stock_enabled: val.stock_push_enabled,
+        is_active: val.is_active,
       };
       this.api.createChannel(createReq).subscribe({
         next: () => {
@@ -258,6 +327,26 @@ export class EcommerceIntegrationsComponent implements OnInit {
         },
       });
     }
+  }
+
+  /** Credentials each driver needs (StoreEcommerceChannelRequest): WooCommerce key and secret, Shopify token and shop domain, PrestaShop key. */
+  private credentialsOf(driver: string, storeUrl: string, apiKey: string, apiSecret: string): Record<string, string> {
+    const credentials: Record<string, string> = {};
+    const set = (key: string, value: string): void => {
+      if (value) {
+        credentials[key] = value;
+      }
+    };
+    if (driver === 'woocommerce') {
+      set('consumer_key', apiKey);
+      set('consumer_secret', apiSecret);
+    } else if (driver === 'shopify') {
+      set('access_token', apiSecret);
+      set('shop_domain', storeUrl.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase());
+    } else if (driver === 'prestashop') {
+      set('api_key', apiKey);
+    }
+    return credentials;
   }
 
   deleteChannel(ch: EcommerceChannel): void {

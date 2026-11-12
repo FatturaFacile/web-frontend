@@ -1,15 +1,15 @@
-export type EcommerceDriver = 'shopify' | 'woocommerce' | 'prestashop' | 'amazon' | 'magento' | 'custom' | string;
+export type EcommerceDriver = 'shopify' | 'woocommerce' | 'prestashop' | string;
 
 export interface EcommerceChannel {
   id: string;
   uuid?: string;
   name: string;
   driver: EcommerceDriver;
-  store_url?: string;
+  api_url?: string | null;
+  sync_orders_enabled?: boolean;
+  sync_stock_enabled?: boolean;
   credentials?: Record<string, unknown>;
   settings?: {
-    auto_sync_orders?: boolean;
-    stock_push_enabled?: boolean;
     price_list_id?: string;
     warehouse_id?: string;
     webhook_secret?: string;
@@ -22,16 +22,24 @@ export interface EcommerceChannel {
   last_sync_status?: 'success' | 'failed' | 'in_progress' | null;
 }
 
+/** Body of `POST /ecommerce/channels` (StoreEcommerceChannelRequest): credentials by driver, flags at top level. */
 export interface CreateEcommerceChannelRequest {
   name: string;
   driver: string;
-  credentials?: Record<string, unknown>;
+  api_url?: string | null;
+  credentials: Record<string, string>;
+  is_active?: boolean;
+  sync_orders_enabled?: boolean;
+  sync_stock_enabled?: boolean;
   settings?: Record<string, unknown>;
 }
 
 export interface UpdateEcommerceChannelRequest {
   name?: string;
-  credentials?: Record<string, unknown>;
+  api_url?: string | null;
+  credentials?: Record<string, string>;
+  sync_orders_enabled?: boolean;
+  sync_stock_enabled?: boolean;
   settings?: Record<string, unknown>;
   is_active?: boolean;
 }

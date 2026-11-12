@@ -27,6 +27,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
 /** Construction wage under a collective agreement: parameter versions, planned hours calendar, hours account and joint commission report. */
 @Component({
   selector: 'app-construction-panel',
+  styleUrl: './construction-panel.component.scss',
   imports: [
     ActionFormComponent,
     FormsModule,
@@ -47,7 +48,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
     }
 
     <h4 class="mt-4">{{ 'hrmShortTime.construction.reportsTitle' | translate }}</h4>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="cn-code">{{ 'hrmShortTime.construction.agreementCode' | translate }}</label>
         <input
@@ -71,7 +72,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
         <label for="cn-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="cn-employee"
-         
+          class="w-field-md"
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"
@@ -204,12 +205,16 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmShortTime.construction.annualHours',
         type: 'decimal',
         required: true,
+        min: 1,
+        max: 3000,
       },
       {
         key: 'accounting_year_start_month',
         labelKey: 'hrmShortTime.construction.yearStartMonth',
         type: 'integer',
         required: true,
+        min: 1,
+        max: 12,
         defaultValue: '1',
       },
       {
@@ -217,6 +222,7 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmShortTime.construction.source',
         type: 'text',
         required: true,
+        minLength: 5,
         maxLength: 2000,
       },
       {
@@ -259,14 +265,20 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmCommon.year',
         type: 'integer',
         required: true,
+        min: 2000,
+        max: 2100,
         defaultValue: String(new Date().getFullYear()),
       },
       ...MONTHS.map((month): CrudField => ({
         key: `m${month}`,
         labelKey: `hrmShortTime.construction.months.m${month}`,
         type: 'decimal',
+        min: 0,
+        max: 400,
       })),
     ],
+    // API: `months` needs at least one entry
+    validate: (payload) => (MONTHS.some((month) => payload[`m${month}`] !== undefined) ? null : 'hrmShortTime.construction.atLeastOneMonth'),
     submit: (payload) =>
       this.api.saveConstructionCalendar({
         agreement_code: String(payload['agreement_code']),

@@ -127,6 +127,18 @@ describe('SettingsComponent', () => {
     expect(mockMessage.success).toHaveBeenCalledWith('settings.messages.saved');
   });
 
+  it('does not call the API while the name is empty or a field breaks an API rule', () => {
+    fixture.detectChanges();
+    mockSettingsApi.updateTenantSettings.mockClear();
+
+    component['tenantForm'].patchValue({ name: '' });
+    component.saveTenantSettings();
+    component['tenantForm'].patchValue({ name: 'Acme', sdi_code: 'ABC', pec_email: 'not-an-email' });
+    component.saveTenantSettings();
+
+    expect(mockSettingsApi.updateTenantSettings).not.toHaveBeenCalled();
+  });
+
   it('handles update failure gracefully with error notification', () => {
     mockSettingsApi.updateTenantSettings.mockReturnValueOnce(
       throwError(() => ({ message: 'Failed to update' })),

@@ -41,6 +41,18 @@ describe('ResourceFormComponent', () => {
     expect(saveFn).not.toHaveBeenCalled();
   });
 
+  it('does not submit a required lines field left without rows', () => {
+    const saveFn = vi.fn(() => of({}));
+    fixture.componentRef.setInput('fields', [req(rf.lines('lines', [rf.decimal('quantity')]))]);
+    fixture.componentRef.setInput('saveFn', saveFn);
+    fixture.detectChanges();
+    const internals = fixture.componentInstance as unknown as FormInternals;
+    internals.form.get('lines.0.quantity').setValue('1');
+    (internals.form as unknown as { get: (p: string) => { removeAt: (i: number) => void } }).get('lines').removeAt(0);
+    internals.submit();
+    expect(saveFn).not.toHaveBeenCalled();
+  });
+
   it('submits the cleaned body, decimals as strings and lines included', () => {
     const saveFn = vi.fn(() => of({}));
     fixture.componentRef.setInput('saveFn', saveFn);

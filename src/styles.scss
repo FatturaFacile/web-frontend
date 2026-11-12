@@ -1,0 +1,5 @@
+// Global styles. Everything else lives in the SCSS file of each component.
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/ng-zorro';
+@use 'styles/utilities';

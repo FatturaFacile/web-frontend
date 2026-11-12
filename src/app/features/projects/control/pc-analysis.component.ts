@@ -19,11 +19,12 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 /** Profitability, forecast, closure checks and schedule (Gantt, critical path, baseline) of a project. */
 @Component({
   selector: 'app-pc-analysis',
+  styleUrl: './pc-analysis.component.scss',
   imports: [NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (closure(); as checks) {
       <nz-alert
-       
+        class="mb-4"
         nzShowIcon
         [nzType]="checks.can_close ? 'success' : 'warning'"
         [nzMessage]="(checks.can_close ? 'PRJ.CAN_CLOSE' : 'PRJ.CANNOT_CLOSE') | translate"
@@ -40,7 +41,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     }
 
     @if (profit(); as p) {
-      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small">
+      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small" class="mb-4">
         <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }">
           <nz-descriptions-item [nzTitle]="'PRJ.CONTRACT_VALUE' | translate">{{ p.contract_value | money: p.currency }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'PRJ.BUDGET_REVENUE' | translate">{{ p.budget.revenue | money: p.currency }}</nz-descriptions-item>
@@ -66,7 +67,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     @if (gantt(); as g) {
       <nz-card [nzTitle]="'PRJ.SCHEDULE' | translate" nzSize="small">
         @if (canWrite) {
-          <button nz-button type="button" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
+          <button nz-button type="button" class="mb-3" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
         }
         <p>{{ 'PRJ.SCHEDULE_FINISH' | translate }}: {{ g.schedule_finish ?? '-' }} - {{ 'PRJ.PROGRESS' | translate }}: {{ g.progress_percentage }}%</p>
         <nz-table #ganttTable nzSize="small" [nzData]="g.tasks" [nzPageSize]="20">

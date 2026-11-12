@@ -163,6 +163,16 @@ describe('PipelineComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('does not create an opportunity from an empty form', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+
+    component.submitCreateOpportunity();
+
+    expect(mockCrmApi.createOpportunity).not.toHaveBeenCalled();
+    expect(component.errorTip(component.oppForm.controls.name)).not.toBe('');
+  });
+
   it('changes opportunity stage', () => {
     fixture.detectChanges();
     component.changeStage(mockOpportunities[0], 'proposal');

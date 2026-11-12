@@ -16,6 +16,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
  */
 @Component({
   selector: 'app-invoice-detail-modal',
+  styleUrl: './invoice-detail-modal.component.scss',
   imports: [
     DatePipe,
     MoneyPipe,

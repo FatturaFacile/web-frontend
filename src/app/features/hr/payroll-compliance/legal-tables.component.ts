@@ -32,6 +32,7 @@ function parseJsonObject(text: unknown): Record<string, unknown> | null {
 /** Legal parameters by topic and year, and the annual payroll parameters by country and year (company overrides). */
 @Component({
   selector: 'app-legal-tables',
+  styleUrl: './legal-tables.component.scss',
   imports: [NzAlertModule, TranslatePipe, CrudTableComponent],
   template: `
     <nz-alert
@@ -91,6 +92,7 @@ export class LegalTablesComponent {
         labelKey: 'hrmCompliance.legal.source',
         type: 'text',
         required: true,
+        minLength: 5,
         maxLength: 2000,
       },
       {

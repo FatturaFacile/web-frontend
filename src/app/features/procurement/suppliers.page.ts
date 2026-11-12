@@ -2,7 +2,7 @@ import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const QUALIFICATION_STATUSES = ['prospect', 'in_qualification', 'qualified', 'conditional', 'expired', 'disqualified'] as const;
 const RATINGS = ['A', 'B', 'C', 'D'] as const;
-const PERIOD_FILTERS = [rf.date('from'), rf.date('to'), rf.select('dimension', ['supplier', 'category', 'cost_center'])];
+const PERIOD_FILTERS = [rf.date('from'), rf.date('to', { notBefore: 'from' }), rf.select('dimension', ['supplier', 'category', 'cost_center'])];
 
 const SUPPLIER_FIELDS = [
   req(rf.text('supplier_code')),
@@ -21,7 +21,7 @@ const SUPPLIER_FIELDS = [
 
 const EVALUATION_FIELDS = [
   req(rf.datetime('evaluation_period_start')),
-  req(rf.datetime('evaluation_period_end')),
+  req(rf.datetime('evaluation_period_end', { notBefore: 'evaluation_period_start' })),
   req(rf.decimal('on_time_delivery_rate')),
   req(rf.decimal('quality_acceptance_rate')),
   req(rf.decimal('price_competitiveness_score')),
@@ -61,23 +61,23 @@ export const SUPPLIERS_PAGE: ResourcePageConfig = {
             rf.date('review_date'),
             rf.decimal('over_receipt_tolerance_percent'),
             rf.decimal('price_tolerance_percent'),
-            rf.textarea('notes'),
+            rf.textarea('notes', { maxLength: 2000 }),
           ],
         }),
         act('GET', 'RES.A.documents', '/procurement/suppliers/{id}/documents', { showResult: true }),
         act('POST', 'RES.A.add_document', '/procurement/suppliers/{id}/documents', {
           fields: [
-            req(rf.text('document_type')),
-            rf.text('reference'),
+            req(rf.text('document_type', { maxLength: 50 })),
+            rf.text('reference', { maxLength: 150 }),
             rf.date('issued_at'),
-            rf.date('expires_at'),
+            rf.date('expires_at', { notBefore: 'issued_at' }),
             rf.bool('is_mandatory'),
-            rf.textarea('notes'),
+            rf.textarea('notes', { maxLength: 2000 }),
           ],
         }),
         act('GET', 'RES.A.performance', '/procurement/suppliers/{id}/performance', { fields: PERIOD_FILTERS, showResult: true }),
         act('POST', 'RES.A.compute_evaluation', '/procurement/suppliers/{id}/evaluations/compute', {
-          fields: [...PERIOD_FILTERS, rf.textarea('comments')],
+          fields: [...PERIOD_FILTERS, rf.textarea('comments', { maxLength: 2000 })],
           showResult: true,
         }),
         act('GET', 'RES.A.scorecard', '/procurement/suppliers/{supplierId}/scorecard', { showResult: true }),

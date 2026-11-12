@@ -3,21 +3,21 @@ import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 const VISIBILITY = ['internal', 'public'] as const;
 
 const CATEGORY_FIELDS = [
-  req(rf.text('name')),
+  req(rf.text('name', { maxLength: 150 })),
   rf.lookup('parent_id', 'kbCategories'),
   rf.select('visibility', VISIBILITY),
   rf.integer('position', { min: 0 }),
 ];
 
 const ARTICLE_FIELDS = [
-  req(rf.text('title')),
-  rf.textarea('summary'),
-  req(rf.textarea('content')),
+  req(rf.text('title', { maxLength: 200 })),
+  rf.textarea('summary', { maxLength: 2000 }),
+  req(rf.textarea('content', { maxLength: 200000 })),
   rf.lookup('knowledge_category_id', 'kbCategories'),
   rf.select('visibility', VISIBILITY),
   rf.bool('is_published'),
   rf.tags('tags'),
-  rf.text('change_note'),
+  rf.text('change_note', { maxLength: 500 }),
 ];
 
 /** Knowledge base: categories, articles with their version history. */

@@ -7,6 +7,7 @@ import { EaRegisterComponent } from './ea-register.component';
 
 @Component({
   selector: 'app-asset-operations',
+  styleUrl: './asset-operations.component.scss',
   imports: [NzTabsModule, PageHeaderComponent, TranslatePipe, EaMaintenanceComponent, EaLocationsClassesComponent, EaRegisterComponent],
   template: `
     <app-page-header [title]="'EA.TITLE' | translate" [subtitle]="'EA.SUBTITLE' | translate" />

@@ -64,8 +64,10 @@ export interface WorkflowDefinitionResource {
   description?: string | null;
   version: number;
   is_active: boolean;
-  is_published: boolean;
-  approvable_type: string;
+  /** 'draft' or 'published'. */
+  status: string;
+  /** Alias of the approvable type the workflow applies to (config/workflow.php). */
+  target_entity_type: string;
   nodes?: WorkflowNodeResource[];
   transitions?: WorkflowTransitionResource[];
   created_at?: string;
@@ -76,7 +78,7 @@ export interface WorkflowSaveDefinitionRequest {
   code: string;
   name: string;
   description?: string | null;
-  approvable_type: string;
+  target_entity_type: string;
 }
 
 export interface WorkflowNodeResource {
@@ -159,7 +161,7 @@ export interface WorkflowStartWorkflowRequest {
   workflow_code: string;
   approvable_type: string;
   approvable_id: string;
-  context?: Record<string, unknown>;
+  context_snapshot?: Record<string, unknown>;
 }
 
 export interface WorkflowRecordDecisionRequest {
@@ -173,7 +175,7 @@ export interface WorkflowDelegationModel {
   delegator_user_id: string;
   delegate_user_id: string;
   delegate_user_name?: string;
-  workflow_code?: string | null;
+  scope?: string;
   starts_at?: string | null;
   ends_at?: string | null;
   is_active: boolean;
@@ -183,31 +185,30 @@ export interface WorkflowDelegationModel {
 
 export interface WorkflowCreateDelegationRequest {
   delegate_user_id: string;
-  workflow_code?: string | null;
-  starts_at?: string | null;
-  ends_at?: string | null;
+  scope: string;
+  starts_at: string;
+  ends_at: string;
   reason?: string | null;
 }
 
 export interface WorkflowEscalationRule {
   id: string;
   name: string;
-  workflow_code?: string | null;
   reminder_hours: number;
   escalation_hours: number;
+  /** 'reporting_manager', 'specific_role' or 'specific_user'. */
   escalate_to_type: string;
-  escalate_to_target?: string | null;
-  is_active: boolean;
+  escalate_to_id?: string | null;
+  auto_action?: string | null;
 }
 
 export interface WorkflowSaveEscalationRuleRequest {
   name: string;
-  workflow_code?: string | null;
   reminder_hours: number;
   escalation_hours: number;
   escalate_to_type: string;
-  escalate_to_target?: string | null;
-  is_active: boolean;
+  escalate_to_id?: string | null;
+  auto_action?: string | null;
 }
 
 export interface WorkflowAuditVerification {

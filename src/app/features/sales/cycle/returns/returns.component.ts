@@ -42,6 +42,7 @@ interface ReceiveDraft {
 
 @Component({
   selector: 'app-cycle-returns',
+  styleUrl: './returns.component.scss',
   imports: [
     DatePipe,
     FormsModule,

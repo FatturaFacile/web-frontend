@@ -11,13 +11,17 @@ import {
   AssociationDonationParams,
   AssociationDonationRequest,
   AssociationFeeAssignment,
+  AssociationFeeAssignmentRequest,
   AssociationFeeParams,
+  AssociationFeePlan,
   AssociationMeeting,
   AssociationMeetingRequest,
   AssociationMember,
   AssociationMemberParams,
   AssociationMemberRequest,
+  AssociationPaymentRequest,
   AssociationReimbursement,
+  AssociationReimbursementRequest,
   AssociationVolunteer,
   PaginatedResponse,
 } from '../models';
@@ -70,13 +74,14 @@ export class AssociationsApiService {
     );
   }
 
-  createFeeAssignment(payload: {
-    member_id: string;
-    fee_type: string;
-    year: number;
-    amount: string;
-    due_date: string;
-  }): Observable<ApiResponse<AssociationFeeAssignment>> {
+  /** Fee plans to pick from when assigning a fee (`fee_plan_id` is required by the API). */
+  getFeePlans(): Observable<PaginatedResponse<AssociationFeePlan>> {
+    return this.http.get<PaginatedResponse<AssociationFeePlan>>(`${this.base}/associations/catalogs/fee-plans`, {
+      params: { per_page: 100 },
+    });
+  }
+
+  createFeeAssignment(payload: AssociationFeeAssignmentRequest): Observable<ApiResponse<AssociationFeeAssignment>> {
     return this.http.post<ApiResponse<AssociationFeeAssignment>>(
       `${this.base}/associations/fee-assignments`,
       payload,
@@ -92,7 +97,7 @@ export class AssociationsApiService {
 
   recordFeePayment(
     instalmentId: string,
-    payload: { amount: string; payment_date: string; payment_method: string },
+    payload: AssociationPaymentRequest,
   ): Observable<ApiResponse<{ success: boolean }>> {
     return this.http.post<ApiResponse<{ success: boolean }>>(
       `${this.base}/associations/instalments/${instalmentId}/payments`,
@@ -156,10 +161,11 @@ export class AssociationsApiService {
     );
   }
 
-  getFivePerMille(year?: number): Observable<ApiResponse<{ year: number; total_received: string; allocated: string }>> {
-    return this.http.get<ApiResponse<{ year: number; total_received: string; allocated: string }>>(
+  /** Allocations of the 5 per mille received (paginated list; the year is only a client-side filter). */
+  getFivePerMille(): Observable<PaginatedResponse<{ id: string; reference_year: string; received_on: string; amount: string }>> {
+    return this.http.get<PaginatedResponse<{ id: string; reference_year: string; received_on: string; amount: string }>>(
       `${this.base}/associations/five-per-mille`,
-      { params: year ? { year } : undefined },
+      { params: { per_page: 100 } },
     );
   }
 
@@ -190,12 +196,7 @@ export class AssociationsApiService {
     return this.http.get<ApiResponse<AssociationReimbursement[]>>(`${this.base}/associations/reimbursements`);
   }
 
-  createReimbursement(payload: {
-    volunteer_id: string;
-    amount: string;
-    description: string;
-    expense_date: string;
-  }): Observable<ApiResponse<AssociationReimbursement>> {
+  createReimbursement(payload: AssociationReimbursementRequest): Observable<ApiResponse<AssociationReimbursement>> {
     return this.http.post<ApiResponse<AssociationReimbursement>>(
       `${this.base}/associations/reimbursements`,
       payload,
@@ -212,10 +213,13 @@ export class AssociationsApiService {
     );
   }
 
-  payReimbursement(id: string): Observable<ApiResponse<{ success: boolean }>> {
+  payReimbursement(
+    id: string,
+    payload: { paid_on: string; payment_method: 'cash' | 'bank' },
+  ): Observable<ApiResponse<{ success: boolean }>> {
     return this.http.post<ApiResponse<{ success: boolean }>>(
       `${this.base}/associations/reimbursements/${id}/pay`,
-      {},
+      payload,
     );
   }
 }

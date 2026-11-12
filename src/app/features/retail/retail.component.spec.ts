@@ -47,8 +47,8 @@ describe('RetailComponent', () => {
 
   const mockCard: LoyaltyCard = {
     id: 'card-1',
-    customer_id: 'cust-101',
-    customer_name: 'Mario Rossi',
+    contact_id: '7b3c1f4e-1111-4222-8333-944455556666',
+    type: 'loyalty',
     card_number: 'LOY-123456',
     balance: 200,
     status: 'active',
@@ -75,7 +75,7 @@ describe('RetailComponent', () => {
     loyaltyApiService = {
       getCards: vi.fn().mockReturnValue(of({ data: [mockCard], meta: { total: 1 } })),
       createCard: vi.fn().mockReturnValue(of({ data: mockCard })),
-      updateCard: vi.fn().mockReturnValue(of({ data: { ...mockCard, status: 'suspended' } })),
+      updateCard: vi.fn().mockReturnValue(of({ data: { ...mockCard, status: 'blocked' } })),
       deleteCard: vi.fn().mockReturnValue(of({ success: true })),
       getTransactions: vi.fn().mockReturnValue(of({ data: [mockTx] })),
       recordTransaction: vi.fn().mockReturnValue(of({ data: mockTx })),
@@ -134,11 +134,15 @@ describe('RetailComponent', () => {
       description: 'Caffè e Cornetto',
       quantity: 2,
       unit_price: 2.5,
-      vat_rate: 10,
+      tax_rate: 10,
     });
 
     component.submitDocument();
-    expect(apiService.createCommercialDocument).toHaveBeenCalled();
+    expect(apiService.createCommercialDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lines: [{ description: 'Caffè e Cornetto', quantity: 2, unit_price: 2.5, tax_rate: 10 }],
+      }),
+    );
     expect(component.isCreateModalVisible()).toBe(false);
   });
 
@@ -152,7 +156,8 @@ describe('RetailComponent', () => {
     expect(component.isIssueCardModalVisible()).toBe(true);
 
     component.issueCardForm.patchValue({
-      customer_id: 'cust-202',
+      contact_id: '7b3c1f4e-2222-4222-8333-944455556666',
+      type: 'prepaid',
       card_number: 'LOY-999999',
       initial_balance: 100,
     });
@@ -160,7 +165,8 @@ describe('RetailComponent', () => {
     component.submitIssueCard();
     expect(loyaltyApiService.createCard).toHaveBeenCalledWith(
       expect.objectContaining({
-        customer_id: 'cust-202',
+        contact_id: '7b3c1f4e-2222-4222-8333-944455556666',
+        type: 'prepaid',
         card_number: 'LOY-999999',
         initial_balance: 100,
       })
@@ -194,7 +200,7 @@ describe('RetailComponent', () => {
     expect(loyaltyApiService.recordTransaction).toHaveBeenCalledWith(
       'card-1',
       expect.objectContaining({
-        type: 'spend',
+        type: 'redeem',
         amount: 30,
         description: 'Sconto cassa',
       })
@@ -204,9 +210,31 @@ describe('RetailComponent', () => {
 
   it('toggles card status and deletes loyalty card', () => {
     component.toggleCardStatus(mockCard);
-    expect(loyaltyApiService.updateCard).toHaveBeenCalledWith('card-1', { status: 'suspended' });
+    expect(loyaltyApiService.updateCard).toHaveBeenCalledWith('card-1', { status: 'blocked' });
 
     component.deleteLoyaltyCard(mockCard);
     expect(loyaltyApiService.deleteCard).toHaveBeenCalledWith('card-1');
+  });
+  describe('validation', () => {
+    it('does not issue a document without line descriptions', () => {
+      component.openCreateModal();
+
+      component.submitDocument();
+
+      expect(apiService.createCommercialDocument).not.toHaveBeenCalled();
+      expect(component.errorTip(component.docForm, 'lines.0.description')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('does not record a transaction without amount', () => {
+      component.recordTxForm.patchValue({ amount: null as unknown as number });
+
+      component.submitRecordTx();
+
+      expect(loyaltyApiService.recordTransaction).not.toHaveBeenCalled();
+    });
+
+    it('does not require the customer to issue a card: the API makes it optional', () => {
+      expect(component.issueCardForm.controls.contact_id.hasError('required')).toBe(false);
+    });
   });
 });

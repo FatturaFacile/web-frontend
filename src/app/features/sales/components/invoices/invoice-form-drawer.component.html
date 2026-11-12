@@ -120,7 +120,7 @@
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
-              <nz-form-label [nzFor]="'qty' + i">{{
+              <nz-form-label [nzFor]="'qty' + i" nzRequired>{{
                 "SALES.INVOICES.ITEM.QTY" | translate
               }}</nz-form-label>
               <nz-form-control
@@ -131,7 +131,7 @@
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
-              <nz-form-label [nzFor]="'price' + i">{{
+              <nz-form-label [nzFor]="'price' + i" nzRequired>{{
                 "SALES.INVOICES.ITEM.PRICE" | translate
               }}</nz-form-label>
               <nz-form-control
@@ -147,7 +147,7 @@
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
-              <nz-form-label [nzFor]="'vat' + i">{{
+              <nz-form-label [nzFor]="'vat' + i" nzRequired>{{
                 "SALES.INVOICES.ITEM.TAX_RATE" | translate
               }}</nz-form-label>
               <nz-form-control

@@ -1,0 +1,4 @@
+.alert { display: block; margin-bottom: 12px; }
+.field { display: block; width: 100%; margin: 4px 0 12px; }
+.hint { color: var(--text-secondary); }
+.row { display: grid; grid-template-columns: 1.5fr 110px 150px auto; gap: 8px; align-items: center; margin-bottom: 6px; }

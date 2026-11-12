@@ -58,7 +58,7 @@
   <ng-template #numberTpl let-inv>
     <strong>{{ inv.invoice_number }}</strong>
     @if (inv.has_swiss_qr) {
-      <nz-tag nzColor="red">QR</nz-tag>
+      <nz-tag class="qr-tag" nzColor="red">QR</nz-tag>
     }
   </ng-template>
 
@@ -201,9 +201,9 @@
 >
   <ng-container *nzModalContent>
     @if (currentQrBill(); as qr) {
-      <div>
+      <div class="qr-modal">
         <nz-qrcode [nzValue]="qr.payload || ''" [nzSize]="220"></nz-qrcode>
-        <div>
+        <div class="qr-details">
           <div><strong>{{ 'SALES.LBL_IBAN' | translate }}</strong> {{ qr.iban }}</div>
           <div><strong>{{ 'SALES.LBL_IMPORTO' | translate }}</strong> {{ qr.amount | money: qr.currency }}</div>
           <div><strong>{{ 'SALES.LBL_TIPO_RIFERIMENTO' | translate }}</strong> {{ qr.reference_type }}</div>
@@ -292,34 +292,34 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="creditNoteForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'SALES.LBL_DATA_EMISSIONE' | translate }}</nz-form-label>
+        <nz-form-label>{{ 'SALES.LBL_DATA_EMISSIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <input nz-input type="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'SALES.LBL_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_RIGA_NOTA_DI_CREDITO' | translate" />
+        <nz-form-control [nzErrorTip]="creditNoteTip('description')">
+          <input nz-input maxlength="255" formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_RIGA_NOTA_DI_CREDITO' | translate" />
         </nz-form-control>
       </nz-form-item>
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_QUANTITA' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="quantity" [nzMin]="0.01"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('quantity')">
+            <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.01"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="unit_price" [nzMin]="0"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('unit_price')">
+            <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="tax_rate" [nzMin]="0"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('tax_rate')">
+            <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>

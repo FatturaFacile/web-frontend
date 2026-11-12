@@ -27,6 +27,7 @@ const KINDS = ['short_time', 'bad_weather'];
 /** Short-time work and bad weather cases with their monthly claims, and the construction wage (Swiss companies). */
 @Component({
   selector: 'app-short-time',
+  styleUrl: './short-time.component.scss',
   imports: [
     NzAlertModule,
     NzCardModule,
@@ -130,7 +131,7 @@ export class ShortTimeComponent implements OnInit {
         column: false,
       },
       { key: 'starts_on', labelKey: 'hrmShortTime.startsOn', type: 'date', required: true },
-      { key: 'ends_on', labelKey: 'hrmShortTime.endsOn', type: 'date', nullable: true },
+      { key: 'ends_on', labelKey: 'hrmShortTime.endsOn', type: 'date', nullable: true, notBefore: 'starts_on' },
       {
         key: 'notified_on',
         labelKey: 'hrmShortTime.notifiedOn',
@@ -153,6 +154,7 @@ export class ShortTimeComponent implements OnInit {
         labelKey: 'hrmShortTime.authorityReference',
         type: 'text',
         nullable: true,
+        maxLength: 120,
       },
       { key: 'claims_count', labelKey: 'hrmShortTime.claimsCount', type: 'text', noForm: true },
     ],

@@ -1,0 +1,22 @@
+@use '../../auth-shell';
+
+.login-box {
+  max-width: 560px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: var(--space-4);
+}
+
+.section-hint {
+  margin: 0 0 var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.alternate {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+}

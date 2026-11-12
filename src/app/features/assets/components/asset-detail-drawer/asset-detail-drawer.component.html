@@ -28,7 +28,7 @@
               <strong>{{ asset().acquisition_cost | money: asset().currency }}</strong>
             </nz-descriptions-item>
             <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblCarryingAmount' | translate">
-              <strong>
+              <strong class="text-primary">
                 {{ asset().carrying_amount ? (asset().carrying_amount | money: asset().currency) : (asset().acquisition_cost | money: asset().currency) }}
               </strong>
             </nz-descriptions-item>
@@ -118,7 +118,7 @@
                   <td><strong>{{ s.period_code }}</strong></td>
                   <td><nz-tag [nzColor]="getLedgerTypeColor(s.ledger_type)">{{ s.ledger_type }}</nz-tag></td>
                   <td>{{ s.opening_book_value | money: asset().currency }}</td>
-                  <td><strong>{{ s.depreciation_amount | money: asset().currency }}</strong></td>
+                  <td><strong class="text-danger">{{ s.depreciation_amount | money: asset().currency }}</strong></td>
                   <td>{{ s.closing_book_value | money: asset().currency }}</td>
                   <td>{{ s.accumulated_depreciation | money: asset().currency }}</td>
                   <td>

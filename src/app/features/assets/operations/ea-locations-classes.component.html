@@ -2,7 +2,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'EA.LOCATIONS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
+        <button nz-button nzType="primary" class="mb-4" type="button" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
       }
       <nz-table #locationTable nzSize="middle" [nzData]="locations()" [nzPageSize]="20">
         <thead>
@@ -38,7 +38,7 @@
 
     <nz-tab [nzTitle]="'EA.CLASSES' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
+        <button nz-button nzType="primary" class="mb-4" type="button" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
       }
       <nz-table #classTable nzSize="middle" [nzData]="classes()" [nzPageSize]="20">
         <thead>
@@ -75,19 +75,28 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+      <nz-alert class="mb-3" nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="locationForm">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="lo-code">{{ 'EA.CODE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="locationForm.controls.code.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
-          <input id="lo-code" nz-input formControlName="code" maxlength="50" />
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input id="lo-code" nz-input formControlName="code" maxlength="60" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="lo-name">{{ 'EA.NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="locationForm.controls.name.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
-          <input id="lo-name" nz-input formControlName="name" maxlength="255" />
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input id="lo-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -112,11 +121,11 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="lo-address">{{ 'EA.ADDRESS' | translate }}</nz-form-label>
-        <nz-form-control><input id="lo-address" nz-input formControlName="address" /></nz-form-control>
+        <nz-form-control><input id="lo-address" nz-input formControlName="address" maxlength="255" /></nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="lo-city">{{ 'EA.CITY' | translate }}</nz-form-label>
-        <nz-form-control><input id="lo-city" nz-input formControlName="city" /></nz-form-control>
+        <nz-form-control><input id="lo-city" nz-input formControlName="city" maxlength="100" /></nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="lo-active">{{ 'EA.ACTIVE' | translate }}</nz-form-label>
@@ -135,19 +144,28 @@
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+      <nz-alert class="mb-3" nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="classForm">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cl-code">{{ 'EA.CODE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="classForm.controls.code.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
-          <input id="cl-code" nz-input formControlName="code" maxlength="50" />
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input id="cl-code" nz-input formControlName="code" maxlength="60" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cl-name">{{ 'EA.NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="classForm.controls.name.errors?.['serverError'] ?? ('EA.REQUIRED' | translate)">
-          <input id="cl-name" nz-input formControlName="name" maxlength="255" />
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input id="cl-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -162,7 +180,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="cl-interval">{{ 'EA.MAINTENANCE_INTERVAL' | translate }}</nz-form-label>
-        <nz-form-control><nz-input-number id="cl-interval" formControlName="default_maintenance_interval_days" [nzMin]="1" /></nz-form-control>
+        <nz-form-control><nz-input-number id="cl-interval" formControlName="default_maintenance_interval_days" [nzMin]="1" [nzMax]="3650" /></nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="cl-custodian">{{ 'EA.REQUIRES_CUSTODIAN' | translate }}</nz-form-label>

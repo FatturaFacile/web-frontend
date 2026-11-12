@@ -14,6 +14,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
 /** List with create/edit modal of cost centres or profit centres. */
 @Component({
   selector: 'app-gl-dimension-table',
+  styleUrl: './gl-dimension-table.component.scss',
   imports: [
     ReactiveFormsModule,
     NzButtonModule,
@@ -27,7 +28,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   ],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openModal(null)">
+      <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)">
         {{ 'GL.DIMENSION_NEW' | translate }}
       </button>
     }

@@ -267,6 +267,16 @@ describe('PurchasesComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('does not create a purchase order from an empty form', () => {
+    component.openCreateModal();
+    component.orderForm.reset({ currency: 'EUR', quantity: 1, unit_price: 0, tax_rate: 22 });
+
+    component.submitCreateOrder();
+
+    expect(procurementApiMock.createPurchaseOrder).not.toHaveBeenCalled();
+    expect(component.tip(component.orderForm.controls.supplier_id)).not.toBe('');
+  });
+
   it('registers a goods receipt line by line for a sent purchase order', () => {
     component.openGoodsReceiptModal(mockOrder);
     expect(procurementApiMock.getPurchaseOrder).toHaveBeenCalledWith('po-1');

@@ -118,7 +118,7 @@ export interface ProjectTaskResource {
 export interface StoreProjectTaskPayload {
   title: string;
   description?: string | null;
-  task_number?: string;
+  task_number: string;
   status?: string;
   priority?: string;
   planned_start_date?: string;
@@ -149,7 +149,8 @@ export interface ProjectTimesheetResource {
 }
 
 export interface StoreProjectTimesheetPayload {
-  project_task_id?: string | null;
+  /** API field name (the resource returns it as `project_task_id`). */
+  task_id?: string | null;
   user_id: string;
   work_date: string;
   hours_worked: number;

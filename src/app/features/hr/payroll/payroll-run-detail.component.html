@@ -27,7 +27,7 @@
         </button>
       }
       @if (canWrite() && canReopen()) {
-        <app-reason-button labelKey="hrmPayroll.reopen" [danger]="true" [loading]="busy()" (confirmed)="reopen($event)" />
+        <app-reason-button labelKey="hrmPayroll.reopen" [danger]="true" [minLength]="5" [loading]="busy()" (confirmed)="reopen($event)" />
       }
       <button nz-button type="button" (click)="downloadLabourBook()">{{ 'hrmPayroll.labourBook' | translate }}</button>
     </div>

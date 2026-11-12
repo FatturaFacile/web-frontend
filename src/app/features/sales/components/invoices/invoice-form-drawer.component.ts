@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -28,6 +28,8 @@ import {
   switchMap,
 } from 'rxjs';
 import { TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
 import {
   applyServerErrors,
   CatalogApiService,
@@ -66,6 +68,7 @@ function toIsoDate(d: Date): string {
 
 @Component({
   selector: 'app-invoice-form-drawer',
+  styleUrl: './invoice-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
     CurrencyPipe,
@@ -115,11 +118,11 @@ export class InvoiceFormDrawerComponent {
     contact_id: this.fb.control('', Validators.required),
     invoice_type: this.fb.control<InvoiceType>('standard', Validators.required),
     date: new FormControl<Date | null>(null, Validators.required),
-    due_date: new FormControl<Date | null>(null),
+    due_date: new FormControl<Date | null>(null, endsNotBefore('date', { dateOnly: true })),
     payment_term_id: this.fb.control(''),
     currency: this.fb.control('CHF', Validators.required),
     jurisdiction: this.fb.control<Jurisdiction>('CH', Validators.required),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', Validators.maxLength(2000)),
     items: this.fb.array<ItemGroup>([]),
   });
 
@@ -178,6 +181,8 @@ export class InvoiceFormDrawerComponent {
   });
 
   constructor() {
+    // The API requires due_date >= date (after_or_equal:date): re-check it when the invoice date changes.
+    revalidateOnStartChange(this.form, 'date', 'due_date', inject(DestroyRef));
     effect(() => {
       if (this.open()) {
         this.reset();
@@ -209,14 +214,14 @@ export class InvoiceFormDrawerComponent {
   addItem(item?: InvoiceItemResource): void {
     this.form.controls.items.push(
       this.fb.group({
-        description: this.fb.control(item?.description ?? '', Validators.required),
+        description: this.fb.control(item?.description ?? '', [Validators.required, Validators.maxLength(1000)]),
         quantity: this.fb.control(item?.quantity ?? 1, [Validators.required, Validators.min(0.01)]),
         unit_price: this.fb.control(item?.unit_price ?? 0, [
           Validators.required,
           Validators.min(0),
         ]),
-        tax_rate: this.fb.control(item?.tax_rate ?? 8.1, [Validators.required, Validators.min(0)]),
-        discount_percentage: this.fb.control(item?.discount_percentage ?? 0),
+        tax_rate: this.fb.control(item?.tax_rate ?? 8.1, [Validators.required, Validators.min(0), Validators.max(100)]),
+        discount_percentage: this.fb.control(item?.discount_percentage ?? 0, [Validators.min(0), Validators.max(100)]),
       }),
     );
   }
@@ -229,7 +234,10 @@ export class InvoiceFormDrawerComponent {
     if (control?.hasError('required')) {
       return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
     }
-    if (control?.hasError('min')) {
+    if (hasSharedRuleError(control)) {
+      return this.i18n.translate(validationTipKey(control));
+    }
+    if (control?.hasError('min') || control?.hasError('max') || control?.hasError('maxlength')) {
       return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
     }
     return serverErrorMessage(this.form, path) ?? '';

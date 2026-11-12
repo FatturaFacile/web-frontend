@@ -59,6 +59,7 @@ const emptyDraft = (): RuleDraft => ({
 /** Lead scoring rules (field or activity based) and the recalculation of every lead score. */
 @Component({
   selector: 'app-lead-scoring-rules',
+  styleUrl: './scoring-rules.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -132,6 +133,9 @@ export class ScoringRulesComponent {
   protected valid(): boolean {
     const d = this.draft;
     if (!d.name.trim() || d.points === null || Number.isNaN(d.points)) {
+      return false;
+    }
+    if (d.points < -100 || d.points > 100 || (d.max_points !== null && (d.max_points < 0 || d.max_points > 100)) || (d.sequence !== null && d.sequence < 0)) {
       return false;
     }
     return d.rule_type === 'field' ? !!d.field && !!d.operator : !!d.activity_type;

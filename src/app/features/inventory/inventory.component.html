@@ -24,7 +24,7 @@
               <nz-statistic
                 [nzValue]="totalAvailable()"
                 [nzTitle]="'INVENTORY.METRICS.AVAILABLE' | translate"
-                [nzValueStyle]="{ color: '#52c41a' }"
+                [nzValueStyle]="{ color: 'var(--status-success)' }"
                 [nzPrefix]="iconCheck"
               ></nz-statistic>
               <ng-template #iconCheck><nz-icon nzType="check-circle" /></ng-template>
@@ -35,7 +35,7 @@
               <nz-statistic
                 [nzValue]="totalReserved()"
                 [nzTitle]="'INVENTORY.METRICS.RESERVED' | translate"
-                [nzValueStyle]="{ color: '#faad14' }"
+                [nzValueStyle]="{ color: 'var(--status-warning)' }"
                 [nzPrefix]="iconLock"
               ></nz-statistic>
               <ng-template #iconLock><nz-icon nzType="lock" /></ng-template>
@@ -46,7 +46,7 @@
               <nz-statistic
                 [nzValue]="totalShortfall()"
                 [nzTitle]="'INVENTORY.METRICS.SHORTFALL' | translate"
-                [nzValueStyle]="{ color: '#f5222d' }"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
                 [nzPrefix]="iconWarn"
               ></nz-statistic>
               <ng-template #iconWarn><nz-icon nzType="warning" /></ng-template>
@@ -57,7 +57,7 @@
 
       <div class="toolbar">
         <nz-select
-         
+          class="filter-select"
           [ngModel]="selectedWarehouseFilter()"
           (ngModelChange)="onWarehouseFilterChange($event)"
           [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
@@ -72,7 +72,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openTransferModal()">
           <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.TRANSFER' | translate }}
@@ -83,6 +83,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #stockTable
         [nzData]="stockLevels()"
         [nzLoading]="loading()"
@@ -145,7 +146,7 @@
     <nz-tab [nzTitle]="'INVENTORY.TABS.MOVEMENTS' | translate">
       <div class="toolbar">
         <nz-select
-         
+          class="filter-select"
           [ngModel]="movementTypeFilter()"
           (ngModelChange)="movementTypeFilter.set($event); loadMovements()"
           [nzPlaceHolder]="'INVENTORY.FILTER_MOVEMENT_TYPE' | translate"
@@ -163,7 +164,7 @@
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openTransferModal()">
           <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.NEW_TRANSFER' | translate }}
@@ -171,6 +172,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #movementsTable
         [nzData]="movements()"
         [nzLoading]="loading()"
@@ -247,7 +249,7 @@
           <nz-icon nzType="plus" /> {{ 'INVENTORY.ACTIONS.NEW_ADJUSTMENT' | translate }}
         </button>
         <nz-select
-         
+          class="filter-select"
           [ngModel]="adjustmentStatusFilter()"
           (ngModelChange)="adjustmentStatusFilter.set($event); adjustmentsPage.set(1); loadAdjustments()"
           [nzPlaceHolder]="'INVENTORY.FILTER_ADJUSTMENT_STATUS' | translate"
@@ -267,6 +269,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #adjTable
         [nzData]="adjustments()"
         [nzLoading]="loading()"
@@ -353,6 +356,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #cntTable
         [nzData]="counts()"
         [nzLoading]="loading()"
@@ -423,7 +427,7 @@
     <nz-tab [nzTitle]="'INVENTORY.TABS.VALUATION' | translate">
       <div class="toolbar">
         <nz-select
-         
+          class="filter-select"
           [ngModel]="selectedWarehouseFilter()"
           (ngModelChange)="onWarehouseFilterChange($event); loadValuation()"
           [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
@@ -444,7 +448,7 @@
         ></nz-date-picker>
 
         <nz-select
-         
+          class="filter-select-sm"
           [ngModel]="valuationMethod()"
           (ngModelChange)="valuationMethod.set($event); loadValuation()"
           [nzPlaceHolder]="'INVENTORY.VALUATION.METHOD' | translate"
@@ -461,7 +465,7 @@
       </div>
 
       @if (valuation(); as v) {
-        <nz-row [nzGutter]="16">
+        <nz-row class="valuation-metrics" [nzGutter]="16">
           <nz-col [nzSpan]="8">
             <nz-card nzSize="small">
               <nz-statistic
@@ -491,7 +495,7 @@
           </nz-col>
         </nz-row>
 
-        <nz-table #valTable [nzData]="v.items" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+        <nz-table #valTable [nzScroll]="{ x: '800px' }" [nzData]="v.items" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
           <thead>
             <tr>
               <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
@@ -548,7 +552,7 @@
           (input)="onSearch($event)"
         />
 
-        <div></div>
+        <div class="spacer"></div>
 
         <button nz-button nzType="primary" (click)="openCreateModal()">
           <nz-icon nzType="plus" /> {{ 'COMMON.ADD' | translate }}
@@ -556,6 +560,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #sTable
         [nzData]="products()"
         [nzFrontPagination]="false"
@@ -570,10 +575,10 @@
           <tr>
             <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
             <th>{{ 'INVENTORY.COL_DESC' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_QTY' | translate }}</th>
+            <th>{{ 'INVENTORY.LBL_UDM' | translate }}</th>
             <th>{{ 'INVENTORY.COL_HS' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_PRICE' | translate }}</th>
+            <th>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
+            <th>{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -590,18 +595,16 @@
                 }
               </td>
               <td>
-                <nz-tag [nzColor]="it.warehouse.includes('CH') ? 'red' : 'blue'">{{
-                  it.warehouse
-                }}</nz-tag>
-              </td>
-              <td>
-                <strong>{{ it.quantity }} {{ it.unit_of_measure }}</strong>
+                <strong>{{ it.unit_measure }}</strong>
               </td>
               <td>
                 <code>{{ it.hs_code || '-' }}</code>
               </td>
               <td>
-                {{ it.price | money: it.currency || authStore.activeCurrency() }}
+                {{ +it.cost_price | money: authStore.activeCurrency() }}
+              </td>
+              <td>
+                {{ +it.sale_price | money: authStore.activeCurrency() }}
               </td>
               <td nzAlign="right">
                 <button
@@ -645,7 +648,7 @@
     <form nz-form [formGroup]="transferForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'warehouse_id')">
           <nz-select formControlName="warehouse_id" (ngModelChange)="onTransferWarehouseChange($event)">
             @for (w of warehouses(); track w.id) {
               <nz-option [nzValue]="w.id" [nzLabel]="w.name + ' (' + w.code + ')'"></nz-option>
@@ -656,7 +659,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'stock_item_id')">
           <nz-input-wrapper>
             <nz-icon nzInputPrefix nzType="search" />
             <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
@@ -668,15 +671,15 @@
         <nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="quantity" [nzMin]="0.0001"></nz-input-number>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'quantity')">
+              <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.0001"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
         <nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_SOURCE_BIN' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'source_bin_id')">
               <nz-select formControlName="source_bin_id" nzShowSearch>
                 @for (b of bins(); track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
@@ -688,7 +691,7 @@
         <nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_DESTINATION_BIN' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'destination_bin_id')">
               <nz-select formControlName="destination_bin_id" nzShowSearch>
                 @for (b of bins(); track b.id) {
                   <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
@@ -702,7 +705,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'notes')">
           <textarea nz-input formControlName="notes" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -725,7 +728,7 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'warehouse_id')">
               <nz-select formControlName="warehouse_id" (ngModelChange)="onAdjustmentWarehouseChange($event)">
                 @for (w of warehouses(); track w.id) {
                   <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
@@ -737,7 +740,7 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_REASON' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'reason')">
               <nz-select formControlName="reason">
                 <nz-option nzValue="cycle_count_variance" [nzLabel]="'INVENTORY.LBL_CYCLE_COUNT_VARIANCE' | translate"></nz-option>
                 <nz-option nzValue="damage_loss" [nzLabel]="'INVENTORY.LBL_DAMAGE_LOSS' | translate"></nz-option>
@@ -752,14 +755,14 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'stock_item_id')">
           <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_BIN' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'warehouse_bin_id')">
           <nz-select formControlName="warehouse_bin_id" nzShowSearch>
             @for (b of bins(); track b.id) {
               <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
@@ -773,16 +776,16 @@
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY_DELTA' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="quantity_delta"></nz-input-number>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'quantity_delta')">
+              <nz-input-number class="w-full" formControlName="quantity_delta"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
         <nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="unit_cost" [nzMin]="0"></nz-input-number>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'unit_cost')">
+              <nz-input-number class="w-full" formControlName="unit_cost" [nzMin]="0"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
@@ -790,7 +793,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'notes')">
           <textarea nz-input formControlName="notes" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -838,7 +841,7 @@
     <form nz-form [formGroup]="countForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'warehouse_id')">
           <nz-select formControlName="warehouse_id">
             @for (w of warehouses(); track w.id) {
               <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
@@ -849,7 +852,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'count_type')">
           <nz-select formControlName="count_type">
             <nz-option nzValue="full_physical" [nzLabel]="'INVENTORY.LBL_FULL_PHYSICAL_INVENTORY' | translate"></nz-option>
             <nz-option nzValue="cycle_count_abc" [nzLabel]="'INVENTORY.LBL_ABC_CYCLE_COUNT' | translate"></nz-option>
@@ -861,14 +864,14 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_SCHEDULED_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'scheduled_date')">
           <input nz-input type="date" formControlName="scheduled_date" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'notes')">
           <textarea nz-input formControlName="notes" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -888,43 +891,24 @@
     <form nz-form [formGroup]="productForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_SKU' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="SKU is required">
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'sku')">
           <input nz-input formControlName="sku" placeholder="es. ART-001" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_DESC' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Name is required">
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'INVENTORY.LBL_DESCRIZIONE_PRODOTTO' | translate" />
-        </nz-form-control>
-      </nz-form-item>
-
-      <nz-form-item>
-        <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-select formControlName="warehouse">
-            <nz-option nzValue="Milano (IT)" nzLabel="Milano (IT)"></nz-option>
-            <nz-option nzValue="Chiasso (CH)" nzLabel="Chiasso (CH)"></nz-option>
-            <nz-option nzValue="Lugano (CH)" nzLabel="Lugano (CH)"></nz-option>
-          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-row [nzGutter]="16">
         <nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="quantity" [nzMin]="0"></nz-input-number>
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-        <nz-col [nzSpan]="12">
-          <nz-form-item>
             <nz-form-label nzRequired>{{ 'INVENTORY.LBL_UDM' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-select formControlName="unit_of_measure">
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'unit_measure')">
+              <nz-select formControlName="unit_measure">
                 <nz-option nzValue="Pz" [nzLabel]="'INVENTORY.LBL_PEZZI_PZ' | translate"></nz-option>
                 <nz-option nzValue="Kg" [nzLabel]="'INVENTORY.LBL_CHILOGRAMMI_KG' | translate"></nz-option>
                 <nz-option nzValue="M" [nzLabel]="'INVENTORY.LBL_METRI_M' | translate"></nz-option>
@@ -933,26 +917,41 @@
             </nz-form-control>
           </nz-form-item>
         </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.INVOICES.ITEM.TAX_RATE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'tax_rate')">
+              <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.1"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
       </nz-row>
 
       <nz-row [nzGutter]="16">
         <nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRICE' | translate }}</nz-form-label>
-            <nz-form-control>
-              <nz-input-number formControlName="price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'cost_price')">
+              <nz-input-number class="w-full" formControlName="cost_price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
         <nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label>{{ 'INVENTORY.COL_HS' | translate }}</nz-form-label>
-            <nz-form-control>
-              <input nz-input formControlName="hs_code" placeholder="es. 8471.3000" />
+            <nz-form-label nzRequired>{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'sale_price')">
+              <nz-input-number class="w-full" formControlName="sale_price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
         </nz-col>
       </nz-row>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY.COL_HS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'hs_code')">
+          <input nz-input formControlName="hs_code" placeholder="es. 8471.3000" />
+        </nz-form-control>
+      </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>

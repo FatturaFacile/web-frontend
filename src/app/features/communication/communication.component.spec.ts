@@ -33,7 +33,7 @@ describe('CommunicationComponent', () => {
       id: 'del-2',
       message_type: 'message',
       channel: 'whatsapp',
-      driver: 'whatsapp_cloud',
+      driver: 'twilio',
       recipient: '+393339999999',
       status: 'failed',
       error: 'Recipient number not registered on WhatsApp',
@@ -54,7 +54,7 @@ describe('CommunicationComponent', () => {
     },
     {
       channel: 'whatsapp',
-      driver: 'whatsapp_cloud',
+      driver: 'twilio',
       is_enabled: false,
       settings: {},
     },
@@ -326,5 +326,27 @@ describe('CommunicationComponent', () => {
     component.openTestChannelModal(mockChannels[0]);
     component.runChannelTest();
     expect(messageSpy.error).toHaveBeenCalledWith('COMMUNICATION.TEST_FAILED');
+  });
+
+  it('does not call the API when the quick send and template forms are submitted empty', () => {
+    component.sendQuickCommunication();
+    expect(apiSpy.sendMessage).not.toHaveBeenCalled();
+    expect(component.quickSendForm.controls.recipient.touched).toBe(true);
+
+    component.quickSendForm.patchValue({ mode: 'document', channel: 'email', recipient: '' });
+    component.sendQuickCommunication();
+    expect(apiSpy.sendDocument).not.toHaveBeenCalled();
+    expect(component.quickSendForm.controls.document_id.hasError('required')).toBe(true);
+    expect(component.quickSendForm.controls.recipient.hasError('required')).toBe(false);
+
+    component.quickSendForm.patchValue({ mode: 'message', channel: 'sms', recipient: 'not-a-phone', template_code: 'a.b' });
+    expect(component.quickSendForm.controls.recipient.hasError('recipientFormat')).toBe(true);
+
+    component.openCreateTemplateModal();
+    component.saveTemplate();
+    expect(apiSpy.createTemplate).not.toHaveBeenCalled();
+    expect(component.templateForm.controls.subject.hasError('required')).toBe(true);
+    component.templateForm.patchValue({ channel: 'sms' });
+    expect(component.templateForm.controls.subject.hasError('required')).toBe(false);
   });
 });

@@ -1,6 +1,16 @@
 import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -40,14 +50,27 @@ import {
   PageHeaderComponent,
   TranslatePipe,
 } from '@shared';
+import { formErrorTip } from '../inventory/form-error-tip';
 import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
 
 /** Roles that may activate a BOM revision (the API answers 403 to anyone else). */
 const BOM_MANAGER_ROLES: readonly string[] = ['owner', 'admin', 'production'];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** The control may not be earlier than the sibling control `startKey` (`after_or_equal` in the API). */
+function notBefore(startKey: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const start = control.parent?.get(startKey)?.value;
+    if (!start || !control.value) {
+      return null;
+    }
+    return new Date(control.value).getTime() < new Date(start).getTime() ? { dateOrder: true } : null;
+  };
+}
+
 @Component({
   selector: 'app-manufacturing',
+  styleUrl: './manufacturing.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -138,13 +161,18 @@ export class ManufacturingComponent implements OnInit {
   readonly isCreateOrderModalVisible = signal(false);
   readonly isSubmittingOrder = signal(false);
   readonly orderForm = this.fb.group({
-    mfg_item_id: ['', [Validators.required]],
+    mfg_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
     target_quantity: [1, [Validators.required, Validators.min(0.001)]],
     planned_start_date: [new Date(), [Validators.required]],
-    planned_end_date: [new Date(Date.now() + 7 * 86400000), [Validators.required]],
+    planned_end_date: [new Date(Date.now() + 7 * 86400000), [Validators.required, notBefore('planned_start_date')]],
     bom_id: [''],
-    notes: [''],
+    notes: ['', [Validators.maxLength(5000)]],
   });
+
+  /** The end date must be re-checked when the start date changes. */
+  private readonly recheckOrderEnd = this.orderForm.controls.planned_start_date.valueChanges.subscribe(() =>
+    this.orderForm.controls.planned_end_date.updateValueAndValidity(),
+  );
 
   /** Active BOM revisions of the item typed in the order form (empty list: the API will refuse the order). */
   readonly orderBoms = signal<MfgBomResource[]>([]);
@@ -158,19 +186,19 @@ export class ManufacturingComponent implements OnInit {
   readonly isCreateBomModalVisible = signal(false);
   readonly isSubmittingBom = signal(false);
   readonly bomForm = this.fb.group({
-    mfg_item_id: ['', [Validators.required]],
-    bom_number: ['', [Validators.required]],
-    name: ['', [Validators.required]],
-    revision: ['A', [Validators.required]],
+    mfg_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
+    bom_number: ['', [Validators.maxLength(50)]],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
+    revision: ['A', [Validators.maxLength(20)]],
     bom_type: ['standard' as BomType],
-    base_quantity: [1, [Validators.required, Validators.min(0.001)]],
-    uom: ['PZ', [Validators.required]],
-    notes: [''],
+    base_quantity: [1, [Validators.min(0.001)]],
+    uom: ['PZ', [Validators.maxLength(20)]],
+    notes: ['', [Validators.maxLength(5000)]],
     components: this.fb.array([
       this.fb.group({
-        component_item_id: ['', [Validators.required]],
+        component_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
         quantity_per: [1, [Validators.required, Validators.min(0.001)]],
-        notes: [''],
+        notes: ['', [Validators.maxLength(1000)]],
       }),
     ]),
   });
@@ -179,19 +207,24 @@ export class ManufacturingComponent implements OnInit {
   readonly isSubmittingMrp = signal(false);
   readonly mrpForm = this.fb.group({
     horizon_start_date: [new Date(), [Validators.required]],
-    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required]],
-    run_type: ['regenerative' as MrpRunType, [Validators.required]],
+    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required, notBefore('horizon_start_date')]],
+    run_type: ['regenerative' as MrpRunType],
   });
+
+  /** The end of the horizon must be re-checked when its start changes. */
+  private readonly recheckMrpEnd = this.mrpForm.controls.horizon_start_date.valueChanges.subscribe(() =>
+    this.mrpForm.controls.horizon_end_date.updateValueAndValidity(),
+  );
 
   readonly isCreateWorkCenterModalVisible = signal(false);
   readonly isSubmittingWorkCenter = signal(false);
   readonly workCenterForm = this.fb.group({
-    work_center_code: ['', [Validators.required]],
-    name: ['', [Validators.required]],
-    department_code: ['PROD'],
-    capacity_hours_per_day: [8, [Validators.required, Validators.min(0), Validators.max(24)]],
-    hourly_cost_rate: [50, [Validators.required, Validators.min(0)]],
-    description: [''],
+    work_center_code: ['', [Validators.required, Validators.maxLength(50)]],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
+    department_code: ['PROD', [Validators.maxLength(50)]],
+    capacity_hours_per_day: [8 as number | null, [Validators.min(0), Validators.max(24)]],
+    hourly_cost_rate: [50 as number | null, [Validators.min(0)]],
+    description: ['', [Validators.maxLength(5000)]],
   });
 
   // Explode BOM modal
@@ -201,6 +234,10 @@ export class ManufacturingComponent implements OnInit {
 
   get bomComponentsFormArray(): FormArray {
     return this.bomForm.get('components') as FormArray;
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    return formErrorTip(form, path, this.translate);
   }
 
   ngOnInit(): void {
@@ -277,10 +314,7 @@ export class ManufacturingComponent implements OnInit {
 
   submitCreateOrder(): void {
     if (this.orderForm.invalid) {
-      Object.values(this.orderForm.controls).forEach((c) => {
-        c.markAsDirty();
-        c.updateValueAndValidity();
-      });
+      this.orderForm.markAllAsTouched();
       return;
     }
 
@@ -460,9 +494,9 @@ export class ManufacturingComponent implements OnInit {
   addComponentRow(): void {
     this.bomComponentsFormArray.push(
       this.fb.group({
-        component_item_id: ['', [Validators.required]],
+        component_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
         quantity_per: [1, [Validators.required, Validators.min(0.001)]],
-        notes: [''],
+        notes: ['', [Validators.maxLength(1000)]],
       })
     );
   }
@@ -489,12 +523,12 @@ export class ManufacturingComponent implements OnInit {
 
     const payload: CreateBomPayload = {
       mfg_item_id: val.mfg_item_id,
-      bom_number: val.bom_number,
+      bom_number: val.bom_number || null,
       name: val.name,
-      revision: val.revision,
+      revision: val.revision || null,
       bom_type: val.bom_type,
-      base_quantity: Number(val.base_quantity),
-      uom: val.uom,
+      base_quantity: val.base_quantity === null ? null : Number(val.base_quantity),
+      uom: val.uom || null,
       notes: val.notes || null,
       components: rawComps.map((c, idx) => ({
         component_item_id: c.component_item_id,
@@ -625,7 +659,10 @@ export class ManufacturingComponent implements OnInit {
   }
 
   submitRunMrp(): void {
-    if (this.mrpForm.invalid) return;
+    if (this.mrpForm.invalid) {
+      this.mrpForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmittingMrp.set(true);
     const val = this.mrpForm.getRawValue();
@@ -723,8 +760,8 @@ export class ManufacturingComponent implements OnInit {
       work_center_code: val.work_center_code,
       name: val.name,
       department_code: val.department_code || null,
-      capacity_hours_per_day: Number(val.capacity_hours_per_day),
-      hourly_cost_rate: Number(val.hourly_cost_rate),
+      capacity_hours_per_day: val.capacity_hours_per_day === null ? undefined : Number(val.capacity_hours_per_day),
+      hourly_cost_rate: val.hourly_cost_rate === null ? undefined : Number(val.hourly_cost_rate),
       description: val.description || null,
       status: 'active',
     };

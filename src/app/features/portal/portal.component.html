@@ -60,7 +60,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.pending_quotes"
                 [nzTitle]="'PORTAL.PENDING_QUOTES' | translate"
-                [nzValueStyle]="{ color: '#fa8c16' }"
+                [nzValueStyle]="{ color: 'var(--status-warning)' }"
                 [nzPrefix]="quoteIcon"
               ></nz-statistic>
               <ng-template #quoteIcon><span nz-icon nzType="file-text"></span></ng-template>
@@ -70,7 +70,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.unpaid_invoices"
                 [nzTitle]="'PORTAL.UNPAID_INVOICES' | translate"
-                [nzValueStyle]="{ color: '#f5222d' }"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
                 [nzPrefix]="invIcon"
               ></nz-statistic>
               <ng-template #invIcon><span nz-icon nzType="dollar"></span></ng-template>
@@ -80,7 +80,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.open_tickets"
                 [nzTitle]="'PORTAL.OPEN_TICKETS' | translate"
-                [nzValueStyle]="{ color: '#1890ff' }"
+                [nzValueStyle]="{ color: 'var(--status-info)' }"
                 [nzPrefix]="ticketIcon"
               ></nz-statistic>
               <ng-template #ticketIcon><span nz-icon nzType="team"></span></ng-template>
@@ -90,7 +90,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.upcoming_appointments"
                 [nzTitle]="'PORTAL.UPCOMING_APPOINTMENTS' | translate"
-                [nzValueStyle]="{ color: '#52c41a' }"
+                [nzValueStyle]="{ color: 'var(--status-success)' }"
                 [nzPrefix]="calendarIcon"
               ></nz-statistic>
               <ng-template #calendarIcon><span nz-icon nzType="calendar"></span></ng-template>
@@ -463,19 +463,19 @@
             <tr>
               <th>{{ 'PORTAL.SKU' | translate }}</th>
               <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th>{{ 'PORTAL.WAREHOUSE' | translate }}</th>
+              <th>{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
               <th>{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
               <th>{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (s of stkTable.data; track s.id) {
+            @for (s of stkTable.data; track stockLineKey(s) + s.lot_number) {
               <tr>
-                <td><code>{{ s.product_sku }}</code></td>
-                <td><strong>{{ s.product_name }}</strong></td>
-                <td>{{ s.warehouse_name }}</td>
-                <td>{{ s.available_qty }} {{ s.unit_of_measure }}</td>
-                <td>{{ s.reserved_qty }} {{ s.unit_of_measure }}</td>
+                <td><code>{{ s.sku }}</code></td>
+                <td><strong>{{ s.name }}</strong></td>
+                <td>{{ s.lot_number || '-' }}</td>
+                <td>{{ s.quantity_available }}</td>
+                <td>{{ s.quantity_reserved }}</td>
               </tr>
             }
           </tbody>
@@ -582,16 +582,25 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="approveForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SIGNER_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="signer_name" [placeholder]="'PORTAL.ENTER_SIGNER_NAME' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="notes" rows="3" [placeholder]="'PORTAL.ENTER_NOTES' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -609,9 +618,18 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="rejectForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.REJECTION_REASON' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="reason" rows="3" [placeholder]="'PORTAL.ENTER_REJECTION_REASON' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -629,16 +647,25 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="ticketForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SUBJECT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="subject" [placeholder]="'PORTAL.ENTER_SUBJECT' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.DESCRIPTION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="description" rows="4" [placeholder]="'PORTAL.ENTER_DESCRIPTION' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -683,9 +710,18 @@
         </div>
 
         <form nz-form [formGroup]="replyForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.REPLY_MESSAGE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <textarea nz-input formControlName="message" rows="3" [placeholder]="'PORTAL.ENTER_REPLY' | translate"></textarea>
             </nz-form-control>
           </nz-form-item>
@@ -708,16 +744,25 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="csatForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SCORE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-rate formControlName="score"></nz-rate>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.FEEDBACK' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="feedback" rows="3" [placeholder]="'PORTAL.ENTER_FEEDBACK' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -757,9 +802,31 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="movementForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('inPast')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.PRODUCT_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="line" nzShowSearch>
+              @for (line of movementLines(); track line.key) {
+                <nz-option [nzValue]="line.key" [nzLabel]="line.label"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.REQUEST_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="request_type">
               <nz-option nzValue="withdrawal" [nzLabel]="'PORTAL.TYPE_WITHDRAWAL' | translate"></nz-option>
               <nz-option nzValue="return" [nzLabel]="'PORTAL.TYPE_RETURN' | translate"></nz-option>
@@ -770,15 +837,22 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.QUANTITY' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="quantity" [nzMin]="1" class="w-100"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="quantity" [nzMin]="0.0001" class="w-100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.REQUESTED_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="requested_date" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
-            <textarea nz-input formControlName="notes" rows="2"></textarea>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <textarea nz-input formControlName="notes" rows="2" maxlength="1000"></textarea>
           </nz-form-control>
         </nz-form-item>
       </form>
@@ -795,9 +869,18 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="shipmentForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SERVICE_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="service_type" />
           </nz-form-control>
         </nz-form-item>
@@ -805,14 +888,14 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.ORIGIN_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="origin_country" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.DESTINATION_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="destination_country" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -821,14 +904,14 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.GROSS_WEIGHT_KG' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number formControlName="gross_weight_kg" [nzMin]="0.1" class="w-100"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.PACKAGES' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number formControlName="packages" [nzMin]="1" class="w-100"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -836,7 +919,7 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="notes" rows="2"></textarea>
           </nz-form-control>
         </nz-form-item>

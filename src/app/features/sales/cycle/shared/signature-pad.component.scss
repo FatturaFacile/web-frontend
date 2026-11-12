@@ -1,0 +1,10 @@
+.pad {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: var(--space-2);
+  border: 1px dashed var(--border-input);
+  border-radius: var(--radius-sm);
+  background: var(--qr-paper);
+  touch-action: none;
+}

@@ -59,7 +59,7 @@ describe('RetailApiService', () => {
     // Create document
     const payload: StoreCommercialDocumentPayload = {
       payment_method: 'card',
-      lines: [{ description: 'Articolo Test', quantity: 1, unit_price: 25, vat_rate: 22 }],
+      lines: [{ description: 'Articolo Test', quantity: 1, unit_price: 25, tax_rate: 22 }],
     };
     service.createCommercialDocument(payload).subscribe((res) => {
       expect(res.data.id).toBe('doc-new');

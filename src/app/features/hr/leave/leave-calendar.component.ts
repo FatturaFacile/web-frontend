@@ -13,9 +13,10 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 /** Leave calendar of a period (from / to are mandatory, Y-m-d). */
 @Component({
   selector: 'app-leave-calendar',
+  styleUrl: './leave-calendar.component.scss',
   imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe, HrStatusTagComponent],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="cal-from">{{ 'hrmCommon.from' | translate }}</label>
         <input nz-input id="cal-from" type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" />

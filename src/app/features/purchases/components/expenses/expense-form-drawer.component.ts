@@ -8,11 +8,20 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { ExpensesApiService, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
+import {
+  CreateExpensePayload,
+  ExpensesApiService,
+  ExpenseResource,
+  ExpenseStatus,
+  LookupItemDto,
+  LookupService,
+  TranslateService,
+} from '@core';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-expense-form-drawer',
+  styleUrl: './expense-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
     NzDrawerModule,
@@ -31,41 +40,47 @@ export class ExpenseFormDrawerComponent {
   private readonly api = inject(ExpensesApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly lookups = inject(LookupService);
 
   readonly open = model.required<boolean>();
   readonly expense = input<ExpenseResource | null>(null);
   readonly saved = output<void>();
 
   protected readonly isSaving = signal(false);
+  protected readonly categories = signal<LookupItemDto[]>([]);
 
   protected readonly form = this.fb.group({
+    category_id: this.fb.control<string>('', [Validators.required]),
     date: this.fb.control<Date | string>(new Date(), [Validators.required]),
-    amount: this.fb.control<number>(0, [Validators.required, Validators.min(0.01)]),
+    amount_gross: this.fb.control<number>(0, [Validators.required, Validators.min(0.01)]),
     currency: this.fb.control<'EUR' | 'CHF'>('EUR', [Validators.required]),
-    description: this.fb.control<string>('', [Validators.required]),
-    merchant: this.fb.control<string>(''),
+    notes: this.fb.control<string>('', [Validators.maxLength(5000)]),
+    merchant_name: this.fb.control<string>('', [Validators.maxLength(255)]),
     status: this.fb.control<ExpenseStatus>('draft'),
   });
 
   constructor() {
+    void this.lookups.getLookup('expense_category').then((items) => this.categories.set(items));
     effect(() => {
       const exp = this.expense();
       if (exp) {
         this.form.patchValue({
+          category_id: exp.category_id ?? '',
           date: exp.date ? new Date(exp.date) : new Date(),
-          amount: exp.amount,
+          amount_gross: exp.amount_gross,
           currency: (exp.currency as 'EUR' | 'CHF') || 'EUR',
-          description: exp.description || '',
-          merchant: exp.merchant || '',
+          notes: exp.notes || '',
+          merchant_name: exp.merchant_name || '',
           status: exp.status || 'draft',
         });
       } else {
         this.form.reset({
+          category_id: '',
           date: new Date(),
-          amount: 0,
+          amount_gross: 0,
           currency: 'EUR',
-          description: '',
-          merchant: '',
+          notes: '',
+          merchant_name: '',
           status: 'draft',
         });
       }
@@ -83,12 +98,13 @@ export class ExpenseFormDrawerComponent {
     const dateStr =
       val.date instanceof Date ? val.date.toISOString().split('T')[0] : String(val.date);
 
-    const payload = {
+    const payload: CreateExpensePayload = {
+      category_id: val.category_id,
       date: dateStr,
-      amount: val.amount,
+      amount_gross: val.amount_gross,
       currency: val.currency,
-      description: val.description,
-      merchant: val.merchant || undefined,
+      notes: val.notes || null,
+      merchant_name: val.merchant_name || null,
       status: val.status,
     };
 

@@ -15,9 +15,10 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 /** Budget of a project: category report, versions, revision, approval and baseline. */
 @Component({
   selector: 'app-pc-budget',
+  styleUrl: './pc-budget.component.scss',
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div>
+    <div class="row mb-4">
       @if (canWrite) {
         <button nz-button nzType="primary" type="button" (click)="openRevision()">{{ 'PRJ.BUDGET_REVISE' | translate }}</button>
         @if (budget(); as b) {
@@ -74,7 +75,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
         </nz-table>
       }
       @if (b.versions && b.versions.length > 0) {
-        <h4>{{ 'PRJ.BUDGET_VERSIONS' | translate }}</h4>
+        <h4 class="mt-4">{{ 'PRJ.BUDGET_VERSIONS' | translate }}</h4>
         <nz-table #versionTable nzSize="small" [nzData]="b.versions" [nzShowPagination]="false">
           <thead>
             <tr>
@@ -105,7 +106,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     <nz-modal [nzVisible]="revisionOpen()" [nzTitle]="'PRJ.BUDGET_REVISE' | translate" [nzOkLoading]="saving()" (nzOnOk)="saveRevision()" (nzOnCancel)="revisionOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           @for (field of fields; track field.control) {

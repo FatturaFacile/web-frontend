@@ -12,6 +12,7 @@ type Row = { id: string } & Record<string, unknown>;
 /** Collective agreements (CCNL) with their levels. Generic agreements are read-only. */
 @Component({
   selector: 'app-collective-agreements',
+  styleUrl: './collective-agreements.component.scss',
   imports: [NzCardModule, NzDrawerModule, PageHeaderComponent, TranslatePipe, CrudTableComponent],
   template: `
     <app-page-header
@@ -57,7 +58,7 @@ export class CollectiveAgreementsComponent {
     isReadonly: (row) => row['is_generic'] === true,
     rowActions: [{ labelKey: 'hrmCcnl.levels', run: (row) => this.selected.set(row as never) }],
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 30 },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
       { key: 'weekly_hours', labelKey: 'hrmCcnl.weeklyHours', type: 'decimal' },
       { key: 'installments', labelKey: 'hrmCcnl.installments', type: 'integer' },
@@ -81,8 +82,8 @@ export class CollectiveAgreementsComponent {
       update: (levelId, payload) => this.api.updateLevel(agreement.id, levelId, payload as never),
       remove: (levelId) => this.api.deleteLevel(agreement.id, levelId),
       fields: [
-        { key: 'level', labelKey: 'hrmCcnl.level', type: 'text', required: true, maxLength: 50 },
-        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', nullable: true },
+        { key: 'level', labelKey: 'hrmCcnl.level', type: 'text', required: true, maxLength: 30 },
+        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', nullable: true, maxLength: 255 },
         { key: 'monthly_minimum', labelKey: 'hrmCcnl.monthlyMinimum', type: 'decimal', required: true },
       ],
     };

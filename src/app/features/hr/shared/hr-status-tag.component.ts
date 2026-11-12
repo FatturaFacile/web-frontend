@@ -28,6 +28,7 @@ const COLORS: Record<string, string> = {
 /** Status tag: translates `hrmCommon.status.<value>`, falls back to the raw value. */
 @Component({
   selector: 'app-hr-status-tag',
+  styleUrl: './hr-status-tag.component.scss',
   imports: [NzTagModule],
   template: `<nz-tag [nzColor]="color()">{{ label() }}</nz-tag>`,
 })

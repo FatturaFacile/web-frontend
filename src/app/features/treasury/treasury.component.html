@@ -69,8 +69,8 @@
 
     <!-- TAB 2: CONTI BANCARI -->
     <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
-      <div>
-        <span>{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
         <button nz-button nzType="primary" (click)="openAccountModal()">
           <nz-icon nzType="plus" /> {{ 'treasury.lblNuovoContoBancario' | translate }}
         </button>
@@ -118,20 +118,20 @@
 
     <!-- TAB 4: DISTINTE DI PAGAMENTO (SEPA / PAIN.001 / RIBA) -->
     <nz-tab [nzTitle]="'treasury.lblDistinteDiPagamentoBonificiAndRiba' | translate">
-      <div>
-        <span>{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
         <button nz-button nzType="primary" (click)="openBatchModal()">
           <nz-icon nzType="plus" /> {{ 'treasury.lblNuovaDistintaPagamento' | translate }}
         </button>
       </div>
 
-      <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+      <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
             <th>{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
             <th>{{ 'treasury.lblMetodoPagamento' | translate }}</th>
             <th>{{ 'treasury.lblDataEsecuzione' | translate }}</th>
-            <th>{{ 'treasury.lblImportoTotale' | translate }}</th>
+            <th class="num">{{ 'treasury.lblImportoTotale' | translate }}</th>
             <th>{{ 'treasury.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'treasury.lblAzioni' | translate }}</th>
           </tr>
@@ -142,12 +142,12 @@
               <td><strong>{{ b.batch_reference }}</strong></td>
               <td><code>{{ b.payment_method }}</code></td>
               <td>{{ b.execution_date | date: 'dd.MM.yyyy' }}</td>
-              <td><strong>{{ b.total_amount | money: b.currency }}</strong></td>
+              <td class="num"><strong>{{ b.total_amount | money: b.currency }}</strong></td>
               <td>
                 <nz-tag [nzColor]="batchStatusColor(b.status)">{{ b.status }}</nz-tag>
               </td>
               <td nzAlign="right">
-                <div>
+                <div class="row-actions">
                   @if (b.status === 'draft') {
                     <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
                       {{ 'treasury.lblInviaAppr' | translate }}
@@ -183,9 +183,9 @@
 
     <!-- TAB 5: PREVISIONI FLUSSI DI CASSA (CASH FORECASTS) -->
     <nz-tab [nzTitle]="'treasury.lblPrevisioneFlussiDiCassa' | translate">
-      <div>
-        <span>{{ 'treasury.lblAnalisiDellaLiquiditaProspetticaESimulazione' | translate }}</span>
-        <div>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblAnalisiDellaLiquiditaProspetticaESimulazione' | translate }}</span>
+        <div class="row-actions">
           <button nz-button nzType="default" (click)="generateForecast(30)">
             <nz-icon nzType="sync" /> {{ 'treasury.lblPrevisione30gg' | translate }}
           </button>
@@ -195,15 +195,15 @@
         </div>
       </div>
 
-      <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+      <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
             <th>{{ 'treasury.lblDataAnalisi' | translate }}</th>
             <th>{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
-            <th>{{ 'treasury.lblCassaIniziale' | translate }}</th>
-            <th>{{ 'treasury.lblEntratePreviste' | translate }}</th>
-            <th>{{ 'treasury.lblUscitePreviste' | translate }}</th>
-            <th>{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
+            <th class="num">{{ 'treasury.lblCassaIniziale' | translate }}</th>
+            <th class="num">{{ 'treasury.lblEntratePreviste' | translate }}</th>
+            <th class="num">{{ 'treasury.lblUscitePreviste' | translate }}</th>
+            <th class="num">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
             <th>{{ 'treasury.lblRischioDeficit' | translate }}</th>
           </tr>
         </thead>
@@ -212,10 +212,10 @@
             <tr>
               <td>{{ cf.forecast_date | date: 'dd.MM.yyyy' }}</td>
               <td>{{ cf.horizon_days }} giorni</td>
-              <td>{{ cf.opening_cash | money: cf.currency }}</td>
-              <td>+{{ cf.expected_inflows | money: cf.currency }}</td>
-              <td>-{{ cf.expected_outflows | money: cf.currency }}</td>
-              <td><strong>{{ cf.projected_cash | money: cf.currency }}</strong></td>
+              <td class="num">{{ cf.opening_cash | money: cf.currency }}</td>
+              <td class="num positive">+{{ cf.expected_inflows | money: cf.currency }}</td>
+              <td class="num negative">-{{ cf.expected_outflows | money: cf.currency }}</td>
+              <td class="num"><strong>{{ cf.projected_cash | money: cf.currency }}</strong></td>
               <td>
                 <nz-tag [nzColor]="cf.deficit_identified ? 'error' : 'success'">
                   {{ cf.deficit_identified ? 'Rischio Deficit' : 'Copertura OK' }}
@@ -242,22 +242,22 @@
     <form nz-form [formGroup]="accountForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'treasury.lblNomeIstitutoBanca' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.bank_name) | translate">
           <input nz-input formControlName="bank_name" [placeholder]="'treasury.lblEsIntesaSanpaoloUbsSwitzerland' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'treasury.lblCodiceIban' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.iban) | translate">
           <input nz-input formControlName="iban" placeholder="IT... o CH..." />
         </nz-form-control>
       </nz-form-item>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblValuta' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.currency) | translate">
             <nz-select formControlName="currency">
               <nz-option nzValue="EUR" nzLabel="EUR (€)" />
               <nz-option nzValue="CHF" nzLabel="CHF (Fr.)" />
@@ -267,16 +267,16 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'treasury.lblBicSwift' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.bic_swift) | translate">
             <input nz-input formControlName="bic_swift" [placeholder]="'treasury.lblEsBcititmm' | translate" />
           </nz-form-control>
         </nz-form-item>
       </div>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label>{{ 'treasury.lblFilialeSede' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.branch_name) | translate">
             <input nz-input formControlName="branch_name" [placeholder]="'treasury.lblFilialeDiLuganoOMilano' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -284,7 +284,7 @@
         <nz-form-item>
           <nz-form-label>{{ 'treasury.lblSaldoIniziale' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number formControlName="opening_balance" />
+            <nz-input-number class="w-full" formControlName="opening_balance" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -305,7 +305,7 @@
     <form nz-form [formGroup]="batchForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'treasury.lblContoOrdinante' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.bank_account_id) | translate">
           <nz-select formControlName="bank_account_id">
             @for (acc of bankAccounts(); track acc.id) {
               <nz-option [nzValue]="acc.id" [nzLabel]="acc.bank_name + ' (' + acc.iban + ')'" />
@@ -314,10 +314,10 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblMetodoDispositivo' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.payment_method) | translate">
             <nz-select formControlName="payment_method">
               <nz-option nzValue="sepa_credit_transfer" [nzLabel]="'treasury.lblSepaCreditTransferPain001' | translate" />
               <nz-option nzValue="sepa_instant" nzLabel="SEPA Instant" />
@@ -328,8 +328,8 @@
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label nzRequired>{{ 'treasury.lblRiferimentoDistinta' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'treasury.lblRiferimentoDistinta' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.batch_reference) | translate">
             <input nz-input formControlName="batch_reference" />
           </nz-form-control>
         </nz-form-item>
@@ -339,29 +339,29 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'treasury.lblNomeBeneficiario' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.recipient_name) | translate">
           <input nz-input formControlName="recipient_name" [placeholder]="'treasury.lblFornitoreOCreditore' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'treasury.lblIbanBeneficiario' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.recipient_iban) | translate">
           <input nz-input formControlName="recipient_iban" [placeholder]="'treasury.lblIbanBeneficiario2' | translate" />
         </nz-form-control>
       </nz-form-item>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'treasury.lblImportoBonifico' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="amount" [nzMin]="0.01" />
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.amount) | translate">
+            <nz-input-number class="w-full" formControlName="amount" [nzMin]="0.01" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'treasury.lblCausaleRiferimento' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.remittance_reference) | translate">
             <input nz-input formControlName="remittance_reference" [placeholder]="'treasury.lblEsSaldFatt44' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -380,7 +380,7 @@
 >
   <ng-container *nzModalContent>
     <p>{{ 'treasury.modal.description' | translate }}</p>
-    <div>
+    <div class="format-options">
       <label>
         <input
           type="radio"
@@ -412,7 +412,7 @@
 </ng-template>
 
 <ng-template #currencyTpl let-item let-val="value">
-  <strong [style.color]="val < 0 ? '#cf1322' : '#389e0d'">
+  <strong [style.color]="val < 0 ? 'var(--status-danger)' : 'var(--status-success)'">
     {{ val | currency: item.currency || "EUR" : "symbol" : "1.2-2" }}
   </strong>
 </ng-template>

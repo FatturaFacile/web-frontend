@@ -11,12 +11,14 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { CrmApiService, CrmForecast, CrmReport, I18nService, PermissionsService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { toTimestamp } from '@shared/utils/date-validators';
 
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
 
 /** CRM reports (pipeline, conversion, activities) and sales forecasts that can be locked. */
 @Component({
   selector: 'app-crm-reports',
+  styleUrl: './crm-reports.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -55,7 +57,17 @@ export class CrmReportsComponent {
     this.loadForecasts();
   }
 
+  /** Mirrors `to: after_or_equal:from` of the report endpoints. */
+  protected endsBeforeStart(): boolean {
+    const start = toTimestamp(this.from);
+    const end = toTimestamp(this.to);
+    return start !== null && end !== null && end < start;
+  }
+
   protected runReports(): void {
+    if (this.endsBeforeStart()) {
+      return;
+    }
     const params = { from: this.from || null, to: this.to || null };
     this.loading.set(true);
     this.api.getPipelineReport(params).subscribe({

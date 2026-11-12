@@ -25,6 +25,7 @@ import { ResourceLabelsService } from './resource-labels.service';
 import { ResourceLookupService, ResourceOption } from './resource-lookup.service';
 import { ResourceField } from './resource-panel.types';
 import { buildRequestBody, initialFormValue } from './resource-panel.utils';
+import { differentFrom, endsNotBefore, inFuture, notInFuture } from '../../utils/date-validators';
 
 function jsonValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -39,9 +40,18 @@ function jsonValidator(control: AbstractControl): ValidationErrors | null {
   }
 }
 
+function positiveValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return Number(value) > 0 ? null : { notPositive: true };
+}
+
 /** Dynamic reactive form generated from a list of `ResourceField`s. */
 @Component({
   selector: 'app-resource-form',
+  styleUrl: './resource-form.component.scss',
   imports: [
     NgTemplateOutlet,
     ReactiveFormsModule,
@@ -80,6 +90,12 @@ export class ResourceFormComponent implements OnInit {
     const value = initialFormValue(fields, this.initial());
     this.form = new FormGroup(Object.fromEntries(fields.map((f) => [f.key, this.createControl(f, value[f.key])])));
     for (const field of fields) {
+      const startKey = field.notBefore;
+      if (startKey) {
+        this.form.get(startKey)?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+          this.form.get(field.key)?.updateValueAndValidity({ emitEvent: false });
+        });
+      }
       this.loadLookups(field, true);
       for (const sub of field.fields ?? []) {
         this.loadLookups(sub, false);
@@ -137,6 +153,21 @@ export class ResourceFormComponent implements OnInit {
     if (errors['json']) {
       return this.labels.text('RES.ERR.JSON');
     }
+    if (errors['endsBeforeStart']) {
+      return this.labels.text('COMMON.VALIDATION.END_AFTER_START');
+    }
+    if (errors['futureDate']) {
+      return this.labels.text('COMMON.VALIDATION.DATE_NOT_IN_FUTURE');
+    }
+    if (errors['pastDate']) {
+      return this.labels.text('COMMON.VALIDATION.DATE_NOT_IN_PAST');
+    }
+    if (errors['sameAsOther']) {
+      return this.labels.text('COMMON.VALIDATION.MUST_DIFFER');
+    }
+    if (errors['notPositive']) {
+      return this.labels.text('COMMON.VALIDATION.GREATER_THAN_ZERO');
+    }
     return this.labels.text('RES.ERR.INVALID');
   }
 
@@ -170,7 +201,10 @@ export class ResourceFormComponent implements OnInit {
     if (field.type === 'lines') {
       const lines = (Array.isArray(value) ? value : []) as ResourceRow[];
       const rows = lines.length > 0 || !field.required ? lines : [{}];
-      return new FormArray(rows.map((line) => this.createLineGroup(field.fields ?? [], line)));
+      return new FormArray(
+        rows.map((line) => this.createLineGroup(field.fields ?? [], line)),
+        field.required ? [Validators.required] : [],
+      );
     }
     return new FormControl(value, this.validatorsOf(field));
   }
@@ -193,6 +227,21 @@ export class ResourceFormComponent implements OnInit {
     }
     if (field.type === 'json') {
       validators.push(jsonValidator);
+    }
+    if (field.notBefore) {
+      validators.push(endsNotBefore(field.notBefore, { strict: field.strictlyAfter }));
+    }
+    if (field.notInFuture) {
+      validators.push(notInFuture);
+    }
+    if (field.inFuture) {
+      validators.push(inFuture);
+    }
+    if (field.differentFrom) {
+      validators.push(differentFrom(field.differentFrom));
+    }
+    if (field.positive) {
+      validators.push(positiveValidator);
     }
     return validators;
   }

@@ -25,6 +25,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-gl-period-close',
+  styleUrl: './gl-period-close.component.scss',
   imports: [
     FormsModule,
     NzAlertModule,

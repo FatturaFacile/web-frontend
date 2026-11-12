@@ -156,6 +156,36 @@ describe('TesseraSanitariaComponent', () => {
     expect(component.flagModalVisible()).toBe(false);
   });
 
+  it('should not flag an expense without document or patient fiscal code unless the patient opposes', () => {
+    component.openFlagModal();
+    component.flagForm.patchValue({ document_id: '', patient_fiscal_code: '', patient_opposition: false });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).not.toHaveBeenCalled();
+    expect(component.flagForm.controls.document_id.touched).toBe(true);
+
+    component.flagForm.patchValue({ document_id: 'inv-300', patient_fiscal_code: '' });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).not.toHaveBeenCalled();
+    expect(component.flagForm.controls.patient_fiscal_code.hasError('required')).toBe(true);
+
+    component.flagForm.patchValue({ patient_opposition: true });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends either tax_rate or vat_nature, never both (tax_rate prohibits vat_nature)', () => {
+    component.openFlagModal();
+    component.flagForm.patchValue({ document_id: 'inv-1', patient_opposition: true, vat_nature: 'N4' });
+    expect(component.flagForm.controls.tax_rate.value).toBeNull();
+    component.submitFlagExpense();
+    const sent = apiSpy.flagExpense.mock.calls.at(-1)?.[0];
+    expect(sent?.vat_nature).toBe('N4');
+    expect(sent?.tax_rate).toBeUndefined();
+
+    component.flagForm.patchValue({ tax_rate: 22 });
+    expect(component.flagForm.controls.vat_nature.value).toBe('');
+  });
+
   it('should remove expense flag', () => {
     component.removeExpenseFlag('exp-1');
     expect(apiSpy.removeExpenseFlag).toHaveBeenCalledWith('exp-1');
@@ -223,6 +253,7 @@ describe('TesseraSanitariaComponent', () => {
       expense_type: 'SV',
       payment_date: '2026-03-01',
       amount: 100,
+      patient_fiscal_code: 'RSSMRA80A01H501Z',
     });
     component.submitFlagExpense();
     expect(messageSpy.error).toHaveBeenCalledWith('STS.ACTION_ERROR');

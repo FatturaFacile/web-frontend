@@ -13,10 +13,11 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-pc-change-orders',
+  styleUrl: './pc-change-orders.component.scss',
   imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openModal()">{{ 'PRJ.CHANGE_ORDER_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" class="mb-4" (click)="openModal()">{{ 'PRJ.CHANGE_ORDER_NEW' | translate }}</button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -41,7 +42,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
             <td>
               <nz-tag>{{ order.status }}</nz-tag>
               @if (order.rejection_reason) {
-                <div class="muted">{{ order.rejection_reason }}</div>
+                <div class="text-muted text-xs">{{ order.rejection_reason }}</div>
               }
             </td>
             <td>
@@ -58,7 +59,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.CHANGE_ORDER_NEW' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -71,7 +72,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="co-scope">{{ 'PRJ.SCOPE' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="form.controls.scope_description.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><textarea id="co-scope" nz-input rows="3" formControlName="scope_description"></textarea></nz-form-control>
+            <nz-form-control [nzErrorTip]="form.controls.scope_description.errors?.['serverError'] ?? ('PRJ.REQUIRED' | translate)"><textarea id="co-scope" nz-input rows="3" maxlength="5000" formControlName="scope_description"></textarea></nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired nzFor="co-cost">{{ 'PRJ.COST_IMPACT' | translate }}</nz-form-label>
@@ -116,7 +117,7 @@ export class PcChangeOrdersComponent implements OnInit {
   protected readonly form = this.fb.group({
     order_number: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
     title: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    scope_description: this.fb.control('', Validators.required),
+    scope_description: this.fb.control('', [Validators.required, Validators.maxLength(5000)]),
     cost_impact_amount: this.fb.control<number | null>(null, Validators.required),
     revenue_impact_amount: this.fb.control<number | null>(null),
     schedule_impact_days: this.fb.control<number | null>(null),

@@ -211,7 +211,7 @@
               nzAllowClear
             >
               <nz-option nzValue="" [nzLabel]="'WORKSHOP.ALL_STATUSES' | translate"></nz-option>
-              <nz-option nzValue="available" [nzLabel]="'WORKSHOP.STOCK_AVAILABLE' | translate"></nz-option>
+              <nz-option nzValue="in_stock" [nzLabel]="'WORKSHOP.STOCK_AVAILABLE' | translate"></nz-option>
               <nz-option nzValue="reserved" [nzLabel]="'WORKSHOP.STOCK_RESERVED' | translate"></nz-option>
               <nz-option nzValue="sold" [nzLabel]="'WORKSHOP.STOCK_SOLD' | translate"></nz-option>
             </nz-select>
@@ -265,10 +265,10 @@
                   </nz-tag>
                 </td>
                 <td>
-                  {{ unit.year || '-' }} / {{ unit.mileage ? (unit.mileage | number) + ' km' : '-' }}
+                  {{ unit.year || '-' }} / {{ unit.mileage_km ? (unit.mileage_km | number) + ' km' : '-' }}
                 </td>
                 <td>
-                  {{ unit.purchase_cost ? (unit.purchase_cost | money: unit.currency) : '-' }}
+                  {{ unit.purchase_price ? (unit.purchase_price | money: unit.currency) : '-' }}
                 </td>
                 <td>
                   <strong>{{ unit.list_price | money: unit.currency }}</strong>
@@ -570,43 +570,82 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="folderForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_VEH_001_TARGA' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKSHOP.FIELD_CONTACT_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="contact_id" [placeholder]="'WORKSHOP.LBL_ID_CLIENTE' | translate" />
+        <nz-form-label>{{ 'WORKSHOP.FIELD_CLIENT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="contact_id"
+            nzShowSearch
+            nzServerSearch
+            nzAllowClear
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_KIND' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="kind">
-            <nz-option nzValue="repair" [nzLabel]="'WORKSHOP.KIND_REPAIR' | translate"></nz-option>
-            <nz-option nzValue="maintenance" [nzLabel]="'WORKSHOP.KIND_MAINTENANCE' | translate"></nz-option>
+            <nz-option nzValue="mechanics" [nzLabel]="'WORKSHOP.KIND_MECHANICS' | translate"></nz-option>
             <nz-option nzValue="bodywork" [nzLabel]="'WORKSHOP.KIND_BODYWORK' | translate"></nz-option>
+            <nz-option nzValue="tyres" [nzLabel]="'WORKSHOP.KIND_TYRES' | translate"></nz-option>
             <nz-option nzValue="inspection" [nzLabel]="'WORKSHOP.KIND_INSPECTION' | translate"></nz-option>
+            <nz-option nzValue="other" [nzLabel]="'WORKSHOP.KIND_OTHER' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_RECEIVED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="received_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_PROMISED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="promised_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE_IN' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-input-number formControlName="mileage_in" [nzMin]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="3"></textarea>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea nz-input formControlName="complaint" rows="3"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -622,9 +661,20 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="lineForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LINE_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="line_type">
             <nz-option nzValue="part" [nzLabel]="'WORKSHOP.TYPE_PART' | translate"></nz-option>
             <nz-option nzValue="labour" [nzLabel]="'WORKSHOP.TYPE_LABOUR' | translate"></nz-option>
@@ -637,7 +687,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="description" [placeholder]="'WORKSHOP.LBL_DESCRIZIONE_RICAMBIO_O_INTERVENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -645,14 +695,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_QTY' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-input-number formControlName="quantity" [nzMin]="0.01"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="unit_price" placeholder="0.00" />
           </nz-form-control>
         </nz-form-item>
@@ -660,7 +710,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="tax_rate" placeholder="22.00" />
         </nz-form-control>
       </nz-form-item>
@@ -677,23 +727,34 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="timeBillForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_HOURLY_RATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="hourly_rate" placeholder="50.00" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="tax_rate" placeholder="22.00" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="description" />
         </nz-form-control>
       </nz-form-item>
@@ -710,17 +771,28 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="stockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_STOCK_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="stock_number" placeholder="STK-2026-001" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_CONDITION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="condition">
               <nz-option nzValue="used" [nzLabel]="'WORKSHOP.CONDITION_USED' | translate"></nz-option>
               <nz-option nzValue="new" [nzLabel]="'WORKSHOP.CONDITION_NEW' | translate"></nz-option>
@@ -732,14 +804,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MAKE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="make" placeholder="Fiat, BMW, Audi..." />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MODEL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="model" placeholder="Panda, Serie 3, Golf..." />
           </nz-form-control>
         </nz-form-item>
@@ -748,15 +820,15 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_YEAR' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2050"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="mileage" [nzMin]="0"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="mileage_km" [nzMin]="0"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -764,14 +836,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_PURCHASE_COST' | translate }}</nz-form-label>
-          <nz-form-control>
-            <input nz-input formControlName="purchase_cost" placeholder="0.00" />
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="purchase_price" placeholder="0.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LIST_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="list_price" placeholder="15000.00" />
           </nz-form-control>
         </nz-form-item>
@@ -789,16 +861,34 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="sellStockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="buyer_contact_id" [placeholder]="'WORKSHOP.LBL_ID_ACQUIRENTE_CLIENTE' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="buyer_contact_id"
+            nzShowSearch
+            nzServerSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input type="date" formControlName="sale_date" />
         </nz-form-control>
       </nz-form-item>
@@ -806,14 +896,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="sale_price" placeholder="15000.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="tax_rate" placeholder="22.00" />
           </nz-form-control>
         </nz-form-item>
@@ -831,16 +921,43 @@
 >
   <ng-container *nzModalContent>
     <form [formGroup]="recurringForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_TARGA_O_ID_VEICOLO' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="service_type">
+            @for (type of recurringTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'WORKSHOP.SERVICE_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="name" [placeholder]="'WORKSHOP.LBL_ES_TAGLIANDO_30_000_KM_REVISIONE' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -848,14 +965,18 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_INTERVAL' | translate }}</nz-form-label>
-          <nz-form-control>
-            <input nz-input formControlName="interval" [placeholder]="'WORKSHOP.LBL_1_YEAR_15000_KM' | translate" />
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="interval">
+              @for (interval of recurringIntervals; track interval) {
+                <nz-option [nzValue]="interval" [nzLabel]="'WORKSHOP.INTERVAL_' + interval.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_START_DATE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="date" formControlName="start_date" />
           </nz-form-control>
         </nz-form-item>
@@ -864,14 +985,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="unit_price" placeholder="150.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="tax_rate" placeholder="22.00" />
           </nz-form-control>
         </nz-form-item>

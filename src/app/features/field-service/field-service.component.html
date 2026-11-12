@@ -5,8 +5,8 @@
 
 <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
   <!-- Filter bar -->
-  <div>
-    <div>
+  <div class="filters">
+    <div class="filter-search">
       <nz-input-wrapper>
         <nz-icon nzInputPrefix nzType="search" />
         <input
@@ -20,11 +20,11 @@
       </nz-input-wrapper>
     </div>
 
-    <div>
+    <div class="filter-status">
       <nz-select
         [ngModel]="filterStatus()"
         (ngModelChange)="filterStatus.set($event); onSearch()"
-       
+       class="w-full"
         nzPlaceHolder="Stato (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
@@ -37,11 +37,11 @@
       </nz-select>
     </div>
 
-    <div>
+    <div class="filter-priority">
       <nz-select
         [ngModel]="filterPriority()"
         (ngModelChange)="filterPriority.set($event); onSearch()"
-       
+       class="w-full"
         nzPlaceHolder="Priorità (Tutte)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
@@ -52,11 +52,11 @@
       </nz-select>
     </div>
 
-    <div>
+    <div class="filter-sla">
       <nz-select
         [ngModel]="filterSlaState()"
         (ngModelChange)="filterSlaState.set($event); onSearch()"
-       
+       class="w-full"
         nzPlaceHolder="SLA (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
@@ -121,9 +121,9 @@
             <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
           </td>
           <td>
-            <div>{{ tk.title || tk.subject }}</div>
+            <div class="ticket-title">{{ tk.title || tk.subject }}</div>
             @if (tk.contact_email) {
-              <div>{{ tk.contact_email }}</div>
+              <div class="ticket-sub">{{ tk.contact_email }}</div>
             }
           </td>
           <td>{{ tk.channel || '-' }}</td>
@@ -136,7 +136,7 @@
           <td>
             <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
             @if (tk.resolution_due_at) {
-              <div>
+              <div class="ticket-sub">
                 Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}
               </div>
             }

@@ -51,7 +51,7 @@ const COURSES_PANEL: ResourcePanelConfig = {
       ],
     }),
     act('POST', 'RES.A.add_suspension', '/associations/courses/{id}/suspensions', {
-      fields: [req(rf.date('starts_on')), req(rf.date('ends_on')), rf.text('reason')],
+      fields: [req(rf.date('starts_on')), req(rf.date('ends_on', { notBefore: 'starts_on' })), rf.text('reason', { maxLength: 500 })],
     }),
     act('POST', 'RES.A.add_instructor', '/associations/courses/{id}/instructors', { fields: [req(rf.uuid('member_id'))] }),
     act('GET', 'RES.A.attendance', '/associations/courses/{id}/attendance', { showResult: true }),
@@ -60,11 +60,11 @@ const COURSES_PANEL: ResourcePanelConfig = {
       showResult: true,
     }),
     act('POST', 'RES.A.book_lessons', '/associations/courses/{id}/book-lessons', {
-      fields: [req(rf.datetime('from')), req(rf.datetime('to'))],
+      fields: [req(rf.datetime('from')), req(rf.datetime('to', { notBefore: 'from' }))],
       showResult: true,
     }),
     act('POST', 'RES.A.add_ticket_type', '/associations/courses/{id}/ticket-types', {
-      fields: [req(rf.text('name')), rf.decimal('price'), rf.integer('quantity', { min: 0 })],
+      fields: [req(rf.text('name', { maxLength: 255 })), rf.decimal('price'), rf.integer('quantity', { min: 0 })],
       visible: whenIn('kind', 'event', 'big_event'),
     }),
     act('GET', 'RES.A.registrations', '/associations/courses/{id}/registrations', {
@@ -72,7 +72,7 @@ const COURSES_PANEL: ResourcePanelConfig = {
       visible: whenIn('kind', 'event', 'big_event'),
     }),
     act('POST', 'RES.A.check_in', '/associations/courses/{id}/check-in', {
-      fields: [req(rf.text('ticket_code'))],
+      fields: [req(rf.text('ticket_code', { maxLength: 40 }))],
       showResult: true,
       visible: whenIn('kind', 'event', 'big_event'),
     }),
@@ -114,10 +114,10 @@ const BOOKINGS_PANEL: ResourcePanelConfig = {
     fields: [
       req(rf.uuid('resource_id')),
       req(rf.datetime('starts_at')),
-      req(rf.datetime('ends_at')),
+      req(rf.datetime('ends_at', { notBefore: 'starts_at', strictlyAfter: true })),
       rf.uuid('member_id'),
       rf.uuid('course_id'),
-      rf.text('title'),
+      rf.text('title', { maxLength: 255 }),
     ],
   }),
   rowActions: [

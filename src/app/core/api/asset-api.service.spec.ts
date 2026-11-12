@@ -220,8 +220,8 @@ describe('AssetApiService', () => {
 
     const runPayload = {
       period_code: '2026-02',
-      ledger_type: 'statutory',
-      post_to_gl: true,
+      ledger_type: 'statutory' as const,
+      auto_post_to_gl: true,
     };
 
     service.createDepreciationRun(runPayload).subscribe((res) => {
@@ -230,6 +230,7 @@ describe('AssetApiService', () => {
 
     const reqRun = httpMock.expectOne(`${baseUrl}/depreciation/runs`);
     expect(reqRun.request.method).toBe('POST');
+    expect(reqRun.request.body).toEqual({ period_code: '2026-02', ledger_type: 'statutory', auto_post_to_gl: true });
     reqRun.flush({
       success: true,
       data: {
@@ -241,5 +242,13 @@ describe('AssetApiService', () => {
         assets_processed_count: 1,
       },
     });
+  });
+
+  it('disposes an asset with the disposal_type the API requires', () => {
+    service.disposeAsset('asset-1', { disposal_type: 'sale', disposal_date: '2026-03-01', proceeds_amount: 100 }).subscribe();
+    const req = httpMock.expectOne(`${baseUrl}/assets/asset-1/dispose`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ disposal_type: 'sale', disposal_date: '2026-03-01', proceeds_amount: 100 });
+    req.flush({ success: true, data: { id: 'asset-1' } });
   });
 });

@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hint,
+.note {
+  margin: 0 0 var(--space-3);
+  color: var(--text-secondary);
+}
+
+.search {
+  width: 160px;
+}
+
+.filter-select,
+.status-filter {
+  min-width: 200px;
+}
+

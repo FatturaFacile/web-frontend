@@ -250,6 +250,19 @@ describe('PortalComponent', () => {
     expect(component.approveModalVisible()).toBe(false);
   });
 
+  it('should not call the API when the approve and shipment forms are submitted empty or invalid', () => {
+    component.openApproveModal(mockQuote);
+    component.approveForm.patchValue({ signer_name: '' });
+    component.submitApproveQuote();
+    expect(apiMock.approveQuote).not.toHaveBeenCalled();
+    expect(component.approveForm.controls['signer_name'].touched).toBe(true);
+
+    component.openShipmentModal();
+    component.shipmentForm.patchValue({ service_type: '', packages: 0 });
+    component.submitShipmentRequest();
+    expect(apiMock.createCustomsShipmentRequest).not.toHaveBeenCalled();
+  });
+
   it('should open reject quote modal and reject quote', () => {
     component.openRejectModal(mockQuote);
     expect(component.rejectModalVisible()).toBe(true);
@@ -375,6 +388,7 @@ describe('PortalComponent', () => {
     expect(component.movementModalVisible()).toBe(true);
 
     component.movementForm.patchValue({
+      line: 'wh-1|item-1',
       request_type: 'withdrawal',
       quantity: 5,
       notes: 'Pick up for production',
@@ -384,6 +398,8 @@ describe('PortalComponent', () => {
     expect(apiMock.createMovementRequest).toHaveBeenCalledWith(
       'test-token-777',
       expect.objectContaining({
+        warehouse_id: 'wh-1',
+        stock_item_id: 'item-1',
         request_type: 'withdrawal',
         quantity: 5,
         notes: 'Pick up for production',
@@ -391,6 +407,14 @@ describe('PortalComponent', () => {
     );
     expect(msgMock.success).toHaveBeenCalledWith('PORTAL.MOVEMENT_REQUEST_CREATED');
     expect(component.movementModalVisible()).toBe(false);
+  });
+
+  it('rejects a movement request dated in the past', () => {
+    component.openMovementModal();
+    component.movementForm.patchValue({ line: 'wh-1|item-1', requested_date: '2020-01-01' });
+    expect(component.movementForm.controls['requested_date'].hasError('inPast')).toBe(true);
+    component.submitMovementRequest();
+    expect(apiMock.createMovementRequest).not.toHaveBeenCalled();
   });
 
   it('should submit customs shipment request', () => {

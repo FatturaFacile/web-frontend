@@ -31,13 +31,14 @@ import {
   SalesCycleApiService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
-import { DECIMAL_PATTERN } from '../../cycle/shared/document-lines-editor.component';
+import { DECIMAL_PATTERN, maxNumber } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { statusColor, todayIso } from '../../cycle/shared/sales-status';
 
 /** Billing plans of sales orders: milestones invoiced one by one or run for every item due. */
 @Component({
   selector: 'app-billing-plans',
+  styleUrl: './billing-plans.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -131,8 +132,8 @@ export class BillingPlansComponent implements OnInit {
   protected addItem(): void {
     this.items.push(
       this.fb.group({
-        name: ['', Validators.required],
-        percentage: ['', [Validators.pattern(DECIMAL_PATTERN)]],
+        name: ['', [Validators.required, Validators.maxLength(150)]],
+        percentage: ['', [Validators.pattern(DECIMAL_PATTERN), maxNumber(100)]],
         amount: ['', [Validators.pattern(DECIMAL_PATTERN)]],
         target_date: [todayIso(), Validators.required],
       }),

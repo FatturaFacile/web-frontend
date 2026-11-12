@@ -1,6 +1,15 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -20,6 +29,8 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  I18nService,
+  serverErrorMessage,
   WorkflowApiService,
   WorkflowAuditEntryResource,
   WorkflowAuditVerification,
@@ -37,9 +48,44 @@ import {
   TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, inFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
+
+/** Document types a workflow can approve: the aliases of config/workflow.php (approvables) with their label key. */
+const APPROVABLE_TYPES: { value: string; labelKey: string }[] = [
+  { value: 'sales_quote', labelKey: 'WORKFLOWS.LBL_PREVENTIVO_QUOTE' },
+  { value: 'opportunity', labelKey: 'WORKFLOWS.LBL_OPPORTUNITA' },
+  { value: 'purchase_order', labelKey: 'WORKFLOWS.LBL_ORDINE_D_ACQUISTO' },
+  { value: 'purchase_requisition', labelKey: 'WORKFLOWS.LBL_RICHIESTA_D_ACQUISTO' },
+  { value: 'passive_invoice', labelKey: 'WORKFLOWS.LBL_FATTURA_PASSIVA' },
+  { value: 'inventory_adjustment', labelKey: 'WORKFLOWS.LBL_RETTIFICA_INVENTARIO' },
+  { value: 'project', labelKey: 'WORKFLOWS.LBL_PROGETTO' },
+  { value: 'project_budget', labelKey: 'WORKFLOWS.LBL_BUDGET_PROGETTO' },
+  { value: 'project_change_order', labelKey: 'WORKFLOWS.LBL_VARIANTE_PROGETTO' },
+  { value: 'project_cost_entry', labelKey: 'WORKFLOWS.LBL_COSTO_PROGETTO' },
+  { value: 'leave_request', labelKey: 'WORKFLOWS.LBL_FERIE_PERMESSO' },
+];
+
+/** Scopes of a delegation accepted by the API (`in:all,procurement,expenses,invoicing,hr,custom`). */
+const DELEGATION_SCOPES = ['all', 'procurement', 'expenses', 'invoicing', 'hr', 'custom'] as const;
+
+/** Targets of an escalation accepted by the API. */
+const ESCALATION_TARGETS: { value: string; labelKey: string }[] = [
+  { value: 'reporting_manager', labelKey: 'WORKFLOWS.LBL_MANAGER' },
+  { value: 'specific_role', labelKey: 'WORKFLOWS.LBL_RUOLO_SPECIFICO' },
+  { value: 'specific_user', labelKey: 'WORKFLOWS.LBL_UTENTE_SPECIFICO' },
+];
+
+/** API rule `gt:reminder_hours` on the escalation hours. */
+function escalationAfterReminderValidator(control: AbstractControl<number>): ValidationErrors | null {
+  const reminder = control.parent?.get('reminder_hours')?.value as number | null | undefined;
+  return reminder != null && control.value != null && control.value <= reminder ? { escalationBeforeReminder: true } : null;
+}
 
 @Component({
   selector: 'app-workflows',
+  styleUrl: './workflows.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -68,6 +114,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 })
 export class WorkflowsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly workflowApi = inject(WorkflowApiService);
   private readonly message = inject(NzMessageService);
@@ -102,10 +149,15 @@ export class WorkflowsComponent implements OnInit {
   // Start Instance Modal
   protected startModalVisible = signal<boolean>(false);
   protected startSubmitting = signal<boolean>(false);
+  protected readonly approvableTypes = APPROVABLE_TYPES;
+  protected readonly delegationScopes = DELEGATION_SCOPES;
+  protected readonly escalationTargets = ESCALATION_TARGETS;
+  private readonly destroyRef = inject(DestroyRef);
+
   protected readonly startForm = this.fb.group({
-    workflow_code: ['', [Validators.required]],
-    approvable_type: ['Invoice', [Validators.required]],
-    approvable_id: ['', [Validators.required]],
+    workflow_code: ['', [Validators.required, Validators.maxLength(100)]],
+    approvable_type: ['sales_quote', [Validators.required]],
+    approvable_id: ['', [Validators.required, uuidFormat]],
     context_note: [''],
   });
 
@@ -128,10 +180,10 @@ export class WorkflowsComponent implements OnInit {
   protected createDefModalVisible = signal<boolean>(false);
   protected createDefSubmitting = signal<boolean>(false);
   protected readonly defForm = this.fb.group({
-    code: ['', [Validators.required, Validators.pattern(/^[a-z0-9_-]+$/)]],
-    name: ['', [Validators.required]],
-    description: [''],
-    approvable_type: ['Invoice', [Validators.required]],
+    code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Z][A-Z0-9_]*$/)]],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    description: ['', [Validators.maxLength(5000)]],
+    target_entity_type: ['sales_quote', [Validators.required, Validators.maxLength(255)]],
   });
 
   // --- TAB 4: DELEGATIONS & ESCALATION RULES ---
@@ -140,11 +192,11 @@ export class WorkflowsComponent implements OnInit {
   protected createDelegationVisible = signal<boolean>(false);
   protected delegationSubmitting = signal<boolean>(false);
   protected readonly delegationForm = this.fb.group({
-    delegate_user_id: ['', [Validators.required]],
-    workflow_code: [''],
-    starts_at: [''],
-    ends_at: [''],
-    reason: [''],
+    delegate_user_id: ['', [Validators.required, uuidFormat, (control: AbstractControl<string>) => this.notSelfDelegate(control)]],
+    scope: ['all', [Validators.required]],
+    starts_at: ['', [Validators.required]],
+    ends_at: ['', [Validators.required, endsNotBefore('starts_at', { strict: true }), inFuture]],
+    reason: ['', [Validators.maxLength(1000)]],
   });
 
   protected readonly escalationRules = signal<WorkflowEscalationRule[]>([]);
@@ -152,14 +204,43 @@ export class WorkflowsComponent implements OnInit {
   protected createRuleVisible = signal<boolean>(false);
   protected ruleSubmitting = signal<boolean>(false);
   protected readonly ruleForm = this.fb.group({
-    name: ['', [Validators.required]],
-    workflow_code: [''],
-    reminder_hours: [24, [Validators.required, Validators.min(1)]],
-    escalation_hours: [48, [Validators.required, Validators.min(1)]],
-    escalate_to_type: ['manager', [Validators.required]],
-    escalate_to_target: [''],
-    is_active: [true],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    reminder_hours: [24, [Validators.required, Validators.min(1), Validators.max(8760)]],
+    escalation_hours: [48, [Validators.required, Validators.min(1), Validators.max(8760), escalationAfterReminderValidator]],
+    escalate_to_type: ['reporting_manager', [Validators.required]],
+    escalate_to_id: ['', [Validators.maxLength(255)]],
   });
+
+  constructor() {
+    revalidateOnStartChange(this.delegationForm, 'starts_at', 'ends_at', this.destroyRef);
+    this.ruleForm.controls.reminder_hours.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.ruleForm.controls.escalation_hours.updateValueAndValidity({ emitEvent: false }));
+  }
+
+  /** API rule `not_in:<current user>` on the delegate. */
+  private notSelfDelegate(control: AbstractControl<string>): ValidationErrors | null {
+    const own = this.authStore.user()?.id;
+    return own && control.value === own ? { sameAsOther: true } : null;
+  }
+
+  /** Forces the definition code to the uppercase the API requires (`regex:/^[A-Z][A-Z0-9_]*$/`). */
+  protected uppercaseDefinitionCode(): void {
+    const control = this.defForm.controls.code;
+    const upper = control.value.toUpperCase();
+    if (upper !== control.value) {
+      control.setValue(upper);
+    }
+  }
+
+  protected errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    const key = validationTipKey(control ?? null);
+    return key ? this.i18n.translate(key) : '';
+  }
 
   // --- TAB 5: SLA REPORT ---
   protected readonly slaReport = signal<WorkflowSlaReport | null>(null);
@@ -282,7 +363,7 @@ export class WorkflowsComponent implements OnInit {
   protected openStartModal(): void {
     this.startForm.reset({
       workflow_code: this.definitions()[0]?.code || '',
-      approvable_type: 'Invoice',
+      approvable_type: 'sales_quote',
       approvable_id: '',
       context_note: '',
     });
@@ -300,7 +381,7 @@ export class WorkflowsComponent implements OnInit {
       workflow_code: val.workflow_code,
       approvable_type: val.approvable_type,
       approvable_id: val.approvable_id,
-      context: val.context_note ? { note: val.context_note } : undefined,
+      context_snapshot: val.context_note ? { note: val.context_note } : undefined,
     };
 
     this.startSubmitting.set(true);
@@ -389,7 +470,7 @@ export class WorkflowsComponent implements OnInit {
       code: '',
       name: '',
       description: '',
-      approvable_type: 'Invoice',
+      target_entity_type: 'sales_quote',
     });
     this.createDefModalVisible.set(true);
   }
@@ -458,7 +539,7 @@ export class WorkflowsComponent implements OnInit {
   protected openCreateDelegationModal(): void {
     this.delegationForm.reset({
       delegate_user_id: '',
-      workflow_code: '',
+      scope: 'all',
       starts_at: '',
       ends_at: '',
       reason: '',
@@ -475,9 +556,9 @@ export class WorkflowsComponent implements OnInit {
     const raw = this.delegationForm.getRawValue();
     const payload: WorkflowCreateDelegationRequest = {
       delegate_user_id: raw.delegate_user_id,
-      workflow_code: raw.workflow_code || undefined,
-      starts_at: raw.starts_at || undefined,
-      ends_at: raw.ends_at || undefined,
+      scope: raw.scope,
+      starts_at: raw.starts_at,
+      ends_at: raw.ends_at,
       reason: raw.reason || undefined,
     };
 
@@ -525,12 +606,10 @@ export class WorkflowsComponent implements OnInit {
   protected openCreateRuleModal(): void {
     this.ruleForm.reset({
       name: '',
-      workflow_code: '',
       reminder_hours: 24,
       escalation_hours: 48,
-      escalate_to_type: 'manager',
-      escalate_to_target: '',
-      is_active: true,
+      escalate_to_type: 'reporting_manager',
+      escalate_to_id: '',
     });
     this.createRuleVisible.set(true);
   }
@@ -541,7 +620,14 @@ export class WorkflowsComponent implements OnInit {
       return;
     }
 
-    const payload: WorkflowSaveEscalationRuleRequest = this.ruleForm.getRawValue();
+    const raw = this.ruleForm.getRawValue();
+    const payload: WorkflowSaveEscalationRuleRequest = {
+      name: raw.name,
+      reminder_hours: raw.reminder_hours,
+      escalation_hours: raw.escalation_hours,
+      escalate_to_type: raw.escalate_to_type,
+      escalate_to_id: raw.escalate_to_type === 'reporting_manager' ? null : raw.escalate_to_id || null,
+    };
     this.ruleSubmitting.set(true);
     this.workflowApi.createEscalationRule(payload).subscribe({
       next: () => {

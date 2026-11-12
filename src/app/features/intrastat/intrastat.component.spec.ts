@@ -80,7 +80,7 @@ describe('IntrastatComponent', () => {
     product_id: 'prod-1',
     product_name: 'Filtro Industriale',
     cn8_code: '84212100',
-    cpa_code: '282912',
+    supply_kind: 'goods',
     origin_country_code: 'IT',
   };
 
@@ -95,7 +95,7 @@ describe('IntrastatComponent', () => {
     submitDeclaration: vi.fn().mockReturnValue(of({ data: { ...mockDeclaration, status: 'submitted' } })),
     addLine: vi.fn().mockReturnValue(of({ data: mockLine })),
     deleteLine: vi.fn().mockReturnValue(of({ message: 'Deleted' })),
-    exportDeclaration: vi.fn().mockReturnValue(of({ data: { file_name: 'SCINTR26.001', content: 'RAW' } })),
+    exportDeclaration: vi.fn().mockReturnValue(of({ file_name: 'SCINTR26.001', content: 'RAW' })),
     getCodes: vi.fn().mockReturnValue(
       of({
         data: {
@@ -189,6 +189,18 @@ describe('IntrastatComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('should not call the API when the forms are submitted empty or with an invalid period', () => {
+    component.openCreateModal();
+    component.createForm.patchValue({ period: 13 });
+    component.submitCreateDeclaration();
+    expect(apiSpy.createDeclaration).not.toHaveBeenCalled();
+    expect(component.createForm.controls.period.touched).toBe(true);
+
+    component.submitForm.patchValue({ protocol_number: '' });
+    component.confirmSubmit();
+    expect(apiSpy.submitDeclaration).not.toHaveBeenCalled();
+  });
+
   it('should execute auto-generation from invoices', () => {
     component.generateForm.patchValue({
       flow: 'purchases',
@@ -234,12 +246,37 @@ describe('IntrastatComponent', () => {
 
   it('should export declaration to SC-DATA format', () => {
     component.exportScdata(mockDeclaration);
+    expect(component.exportFormVisible()).toBe(true);
+    component.confirmExport();
+    expect(apiSpy.exportDeclaration).not.toHaveBeenCalled();
+
+    component.exportForm.patchValue({ customs_section_code: '123456' });
+    component.confirmExport();
     expect(apiSpy.exportDeclaration).toHaveBeenCalledWith({
-      declaration_id: 'dec-1',
-      format: 'scdata',
+      declaration_ids: ['dec-1'],
+      channel: 'entratel',
+      customs_section_code: '123456',
+      user_code: undefined,
+      site_progressive: undefined,
+      sender_code: undefined,
+      transmission_date: undefined,
+      sequence: undefined,
     });
     expect(component.exportModalVisible()).toBe(true);
     expect(component.exportResult()).toEqual({ file_name: 'SCINTR26.001', content: 'RAW' });
+  });
+
+  it('requires user code and site progressive when exporting through customs', () => {
+    component.exportScdata(mockDeclaration);
+    component.exportForm.patchValue({ channel: 'customs', customs_section_code: '123456' });
+    component.confirmExport();
+    expect(apiSpy.exportDeclaration).not.toHaveBeenCalled();
+    expect(component.exportForm.controls.user_code.hasError('required')).toBe(true);
+    expect(component.exportForm.controls.site_progressive.hasError('required')).toBe(true);
+
+    component.exportForm.patchValue({ user_code: 'AB12', site_progressive: 2 });
+    component.confirmExport();
+    expect(apiSpy.exportDeclaration.mock.calls.at(-1)?.[0]).toMatchObject({ channel: 'customs', user_code: 'AB12', site_progressive: 2 });
   });
 
   it('should delete a draft declaration', () => {
@@ -285,15 +322,17 @@ describe('IntrastatComponent', () => {
     component.profileForm.patchValue({
       product_id: 'prod-42',
       cn8_code: '84713000',
-      cpa_code: '262011',
+      supply_kind: 'services',
+      service_code: '262011',
     });
     component.saveProductProfile();
 
     expect(apiSpy.setProductProfile).toHaveBeenCalledWith(
       'prod-42',
       expect.objectContaining({
+        supply_kind: 'services',
         cn8_code: '84713000',
-        cpa_code: '262011',
+        service_code: '262011',
       }),
     );
     expect(messageSpy.success).toHaveBeenCalledWith('INTRASTAT.PROFILE_SAVED');

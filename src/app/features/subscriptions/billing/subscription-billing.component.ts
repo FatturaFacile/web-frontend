@@ -26,6 +26,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 /** Subscription contract changes, metered usage, billing runs and revenue recognition. */
 @Component({
   selector: 'app-subscription-billing',
+  styleUrl: './subscription-billing.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -59,6 +60,8 @@ export class SubscriptionBillingComponent {
   // Billing runs
   protected readonly runs = signal<SubscriptionBillingRun[]>([]);
   protected readonly selectedRun = signal<SubscriptionBillingRun | null>(null);
+  /** Today (YYYY-MM-DD): the API accepts run_date and period_date up to today (before_or_equal:today). */
+  protected readonly today = new Date().toLocaleDateString('en-CA');
   protected runDate = '';
   protected lookaheadDays = '';
 
@@ -104,7 +107,18 @@ export class SubscriptionBillingComponent {
     this.api.getBillingRuns({ per_page: 25 }).subscribe({ next: (res) => this.runs.set(res.data ?? []) });
   }
 
+  protected get runDateInvalid(): boolean {
+    return this.runDate > this.today;
+  }
+
+  protected get periodDateInvalid(): boolean {
+    return this.periodDate > this.today;
+  }
+
   protected runBilling(): void {
+    if (this.runDateInvalid) {
+      return;
+    }
     this.api
       .runBilling({
         run_date: this.runDate || null,
@@ -144,6 +158,9 @@ export class SubscriptionBillingComponent {
   }
 
   protected recognize(): void {
+    if (this.periodDateInvalid) {
+      return;
+    }
     this.api.recognizeRevenue(this.periodDate || undefined).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('SUBX.REVENUE.RECOGNIZED'));

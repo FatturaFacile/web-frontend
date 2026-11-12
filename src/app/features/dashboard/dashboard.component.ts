@@ -23,6 +23,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-dashboard',
+  styleUrl: './dashboard.component.scss',
   imports: [
     RouterLink,
     CurrencyPipe,

@@ -12,6 +12,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Summary of the imported ESTV withholding tax tariffs and the import of a tariff file (or its pasted text). */
 @Component({
   selector: 'app-tariffs-panel',
+  styleUrl: './tariffs-panel.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table
@@ -42,7 +43,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 
     @if (canWrite()) {
       <h4>{{ 'hrmCompliance.tariffs.importTitle' | translate }}</h4>
-      <div class="flex items-end gap-2 flex-wrap mb-2">
+      <div class="filter-bar">
         <div>
           <label for="tariff-file">{{ 'hrmCompliance.tariffs.file' | translate }}</label>
           <input id="tariff-file" type="file" accept=".txt,.csv,.xml" (change)="pickFile($event)" />

@@ -28,6 +28,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-workspace',
+  styleUrl: './workspace.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -95,8 +96,8 @@ export class WorkspaceComponent implements OnInit {
 
   // Callback Form
   readonly callbackForm = this.fb.group({
-    code: ['', [Validators.required]],
-    state: ['', [Validators.required]],
+    code: ['', [Validators.required, Validators.maxLength(4096)]],
+    state: ['', [Validators.required, Validators.maxLength(128)]],
   });
 
   ngOnInit(): void {

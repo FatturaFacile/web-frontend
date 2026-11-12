@@ -22,6 +22,7 @@ type Row = { id: string } & Record<string, unknown>;
 /** Talent and training: performance reviews, courses, assignments, certifications. */
 @Component({
   selector: 'app-hr-talent',
+  styleUrl: './talent.component.scss',
   imports: [NzButtonModule, NzCardModule, NzTabsModule, PageHeaderComponent, TranslatePipe, CrudTableComponent],
   template: `
     <app-page-header [title]="'hrmTalent.title' | translate" [subtitle]="'hrmTalent.subtitle' | translate" />
@@ -82,7 +83,7 @@ export class TalentComponent implements OnInit {
     fields: [
       { key: 'review_number', labelKey: 'hrmTalent.reviewNumber', type: 'text', noForm: true },
       { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'select', required: true, options: () => this.employeeOptions() },
-      { key: 'review_period', labelKey: 'hrmTalent.reviewPeriod', type: 'text', required: true, maxLength: 50 },
+      { key: 'review_period', labelKey: 'hrmTalent.reviewPeriod', type: 'text', required: true, maxLength: 30 },
       {
         key: 'review_type',
         labelKey: 'hrmCommon.type',
@@ -156,7 +157,7 @@ export class TalentComponent implements OnInit {
       { key: 'course_id', labelKey: 'hrmTalent.course', type: 'select', required: true, options: () => this.courseOptions() },
       { key: 'scheduled_date', labelKey: 'hrmSelfService.scheduledDate', type: 'date', nullable: true, column: false },
       { key: 'override_cost', labelKey: 'hrmTalent.overrideCost', type: 'decimal', nullable: true, column: false },
-      { key: 'notes', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, column: false },
+      { key: 'notes', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, column: false, maxLength: 1000 },
       { key: 'status', labelKey: 'hrmCommon.statusCol', type: 'text', noForm: true },
       { key: 'assigned_date', labelKey: 'hrmTalent.assignedDate', type: 'text', noForm: true },
       { key: 'score', labelKey: 'hrmTalent.score', type: 'text', noForm: true },

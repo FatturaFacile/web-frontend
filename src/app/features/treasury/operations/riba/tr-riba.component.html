@@ -106,9 +106,9 @@
   <ng-container *nzModalContent>
     <label for="rb-unpaid-at">{{ 'TR.UNPAID_AT' | translate }}</label>
     <input id="rb-unpaid-at" nz-input type="date" [(ngModel)]="unpaidAt" />
-    <label for="rb-unpaid-reason">{{ 'TR.REASON' | translate }}</label>
+    <label class="field-label" for="rb-unpaid-reason">{{ 'TR.REASON' | translate }}</label>
     <input id="rb-unpaid-reason" nz-input maxlength="255" [(ngModel)]="unpaidReason" />
-    <label for="rb-unpaid-fee">{{ 'TR.FEE' | translate }}</label>
-    <nz-input-number id="rb-unpaid-fee" [(ngModel)]="unpaidFee" [nzMin]="0" [nzPrecision]="2" />
+    <label class="field-label" for="rb-unpaid-fee">{{ 'TR.FEE' | translate }}</label>
+    <nz-input-number class="w-full" id="rb-unpaid-fee" [(ngModel)]="unpaidFee" [nzMin]="0" [nzPrecision]="2" />
   </ng-container>
 </nz-modal>

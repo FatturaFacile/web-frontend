@@ -29,6 +29,7 @@ interface TemplateRow {
 
 @Component({
   selector: 'app-document-templates',
+  styleUrl: './document-templates.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

@@ -17,6 +17,7 @@ type VerificationState = 'loading' | 'verified' | 'expired' | 'invalid' | 'faile
  */
 @Component({
   selector: 'app-verify-email',
+  styleUrl: './verify-email.component.scss',
   imports: [
     RouterLink,
     NzAlertModule,

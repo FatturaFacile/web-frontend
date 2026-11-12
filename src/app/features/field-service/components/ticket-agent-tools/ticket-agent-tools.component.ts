@@ -33,6 +33,7 @@ interface Option {
 /** Agent tools of a ticket: macros, canned responses, watchers, auto-assignment, merge, split and knowledge links. */
 @Component({
   selector: 'app-ticket-agent-tools',
+  styleUrl: './ticket-agent-tools.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

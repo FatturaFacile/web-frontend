@@ -24,7 +24,7 @@
         </button>
       </div>
       @if (register(); as r) {
-        <nz-table [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()">
+        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()">
           <thead>
             <tr>
               <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
@@ -84,7 +84,7 @@
         </button>
       </div>
       @if (aging(); as a) {
-        <nz-table [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()">
+        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()">
           <thead>
             <tr>
               <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>

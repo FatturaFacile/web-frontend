@@ -24,6 +24,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-ai-assistant',
+  styleUrl: './ai-assistant.component.scss',
   imports: [
     ReactiveFormsModule,
     NzTabsModule,

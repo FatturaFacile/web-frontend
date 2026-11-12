@@ -35,13 +35,13 @@
 <!-- Top KPI cards & Main Dashboard Sections deferred on idle -->
 @defer (on idle) {
   <nz-spin [nzSpinning]="loading()">
-    <div nz-row [nzGutter]="16" class="stats-grid">
+    <div nz-row [nzGutter]="[16, 16]" class="stats-grid">
       <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
         <nz-card>
           <nz-statistic
             [nzValue]="revenueDisplay()"
             [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
-            [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
+            [nzValueStyle]="{ color: 'var(--kpi-revenue)' }"
           />
         </nz-card>
       </div>
@@ -50,7 +50,7 @@
           <nz-statistic
             [nzValue]="receivablesDisplay()"
             [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
-            [nzValueStyle]="{ color: 'var(--kpi-pending, #b45309)' }"
+            [nzValueStyle]="{ color: 'var(--kpi-pending)' }"
           />
         </nz-card>
       </div>
@@ -59,7 +59,7 @@
           <nz-statistic
             [nzValue]="pendingCount()"
             [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
-            [nzValueStyle]="{ color: 'var(--kpi-orders, #047857)' }"
+            [nzValueStyle]="{ color: 'var(--kpi-orders)' }"
           />
         </nz-card>
       </div>
@@ -68,7 +68,7 @@
           <nz-statistic
             [nzValue]="alertsCount()"
             [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
-            [nzValueStyle]="{ color: 'var(--kpi-compliance, #6d28d9)' }"
+            [nzValueStyle]="{ color: 'var(--kpi-compliance)' }"
           />
         </nz-card>
       </div>
@@ -76,7 +76,7 @@
   </nz-spin>
 
   <!-- Quick Shortcuts & Recent Activity -->
-  <div nz-row [nzGutter]="16">
+  <div nz-row [nzGutter]="[16, 16]">
     <div nz-col [nzXs]="24" [nzLg]="14">
       <nz-card [nzTitle]="'DASHBOARD.RECENT_DOCS' | translate" [nzExtra]="refreshTpl">
         <ng-template #refreshTpl>
@@ -162,7 +162,7 @@
     </div>
   </div>
 } @placeholder {
-  <div nz-row [nzGutter]="16" class="stats-grid">
+  <div nz-row [nzGutter]="[16, 16]" class="stats-grid">
     @for (i of [1, 2, 3, 4]; track i) {
       <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
         <nz-card>
@@ -171,7 +171,7 @@
       </div>
     }
   </div>
-  <div nz-row [nzGutter]="16">
+  <div nz-row [nzGutter]="[16, 16]">
     <div nz-col [nzXs]="24" [nzLg]="14">
       <nz-card>
         <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 5 }" [nzTitle]="true" />

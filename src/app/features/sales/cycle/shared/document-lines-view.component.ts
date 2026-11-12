@@ -6,6 +6,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 /** Read-only lines table of a sales document with delivered / invoiced quantities when present. */
 @Component({
   selector: 'app-document-lines-view',
+  styleUrl: './document-lines-view.component.scss',
   imports: [NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-table #table [nzData]="lines()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">

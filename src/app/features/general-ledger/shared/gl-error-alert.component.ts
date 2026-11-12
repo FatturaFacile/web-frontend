@@ -10,6 +10,7 @@ import { TranslatePipe } from '@shared';
  */
 @Component({
   selector: 'app-gl-error-alert',
+  styleUrl: './gl-error-alert.component.scss',
   imports: [NzAlertModule, RouterLink, TranslatePipe],
   template: `
     @if (message(); as text) {

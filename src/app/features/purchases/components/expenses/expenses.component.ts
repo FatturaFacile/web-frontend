@@ -25,15 +25,14 @@ import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 // Labels come from the expenses.statuses.* translations
 const STATUS_COLOR: Record<ExpenseStatus, string> = {
   draft: 'default',
-  pending_approval: 'processing',
+  submitted: 'processing',
   approved: 'success',
   rejected: 'error',
-  reimbursed: 'cyan',
-  paid: 'green',
 };
 
 @Component({
   selector: 'app-expenses',
+  styleUrl: './expenses.component.scss',
   imports: [
     FormsModule,
     CurrencyPipe,
@@ -68,18 +67,17 @@ export class ExpensesComponent implements OnInit {
 
   protected readonly filterStatuses: readonly ExpenseStatus[] = [
     'draft',
-    'pending_approval',
+    'submitted',
     'approved',
-    'reimbursed',
-    'paid',
+    'rejected',
   ];
 
   protected readonly totalAmount = computed(() => {
-    return this.items().reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    return this.items().reduce((acc, curr) => acc + (Number(curr.amount_gross) || 0), 0);
   });
 
   protected readonly pendingCount = computed(() => {
-    return this.items().filter((i) => i.status === 'pending_approval' || i.status === 'draft')
+    return this.items().filter((i) => i.status === 'submitted' || i.status === 'draft')
       .length;
   });
 
@@ -89,6 +87,8 @@ export class ExpensesComponent implements OnInit {
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('amountTpl');
   private readonly statusTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('statusTpl');
+  private readonly categoryTpl =
+    viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('categoryTpl');
   private readonly merchantTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('merchantTpl');
 
@@ -101,24 +101,25 @@ export class ExpensesComponent implements OnInit {
       customCellTemplate: this.dateTpl(),
     },
     {
-      key: 'description',
+      key: 'notes',
       header: 'expenses.columns.description',
       width: '280px',
       sortable: true,
     },
     {
-      key: 'merchant',
+      key: 'merchant_name',
       header: 'expenses.columns.merchant',
       width: '180px',
       customCellTemplate: this.merchantTpl(),
     },
     {
-      key: 'category_name',
+      key: 'category',
+      customCellTemplate: this.categoryTpl(),
       header: 'expenses.columns.category',
       width: '150px',
     },
     {
-      key: 'amount',
+      key: 'amount_gross',
       header: 'expenses.columns.amount',
       width: '140px',
       align: 'right',
@@ -152,45 +153,6 @@ export class ExpensesComponent implements OnInit {
         this.tableState.setLoading(false);
       },
       error: () => {
-        // Fallback demo items if backend endpoint is unavailable in sandbox
-        if (this.items().length === 0) {
-          this.items.set([
-            {
-              id: 'exp-1',
-              expense_number: 'EXP-2026-001',
-              date: '2026-10-20',
-              description: 'Pranzo di lavoro con delegazione CH',
-              merchant: 'Ristorante Bellavista Lugano',
-              category_name: 'Pasti & Rappresentanza',
-              amount: 145.5,
-              currency: 'CHF',
-              status: 'approved',
-            },
-            {
-              id: 'exp-2',
-              expense_number: 'EXP-2026-002',
-              date: '2026-10-22',
-              description: 'Biglietto treno Milano Centrale - Zurigo HB',
-              merchant: 'Trenitalia / SBB',
-              category_name: 'Trasporti & Viaggi',
-              amount: 89.0,
-              currency: 'EUR',
-              status: 'paid',
-            },
-            {
-              id: 'exp-3',
-              expense_number: 'EXP-2026-003',
-              date: '2026-10-24',
-              description: 'Materiale di consumo ufficio',
-              merchant: 'Staples IT',
-              category_name: 'Cancelleria',
-              amount: 54.2,
-              currency: 'EUR',
-              status: 'draft',
-            },
-          ]);
-          this.tableState.setTotal(3);
-        }
         this.tableState.setLoading(false);
       },
     });

@@ -192,6 +192,16 @@ describe('SubscriptionsComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('does not create a contract from an empty form', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+
+    component.submitCreateContract();
+
+    expect(mockSubApi.createContract).not.toHaveBeenCalled();
+    expect(component.contractForm.controls.customer_id.hasError('required')).toBe(true);
+  });
+
   it('triggers lifecycle actions on contracts (bill now, pause, reactivate)', () => {
     fixture.detectChanges();
     component.billNow(mockContracts[0]);

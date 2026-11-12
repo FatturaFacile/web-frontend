@@ -23,6 +23,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
   selector: 'app-gl-settings',
+  styleUrl: './gl-settings.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,

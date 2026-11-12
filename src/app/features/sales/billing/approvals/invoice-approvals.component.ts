@@ -28,6 +28,7 @@ const APPROVER_ROLES = ['owner', 'admin', 'accountant', 'sales_manager', 'sales'
 /** Approval matrices of sales invoices: amount tiers approved by a role or a user. */
 @Component({
   selector: 'app-invoice-approvals',
+  styleUrl: './invoice-approvals.component.scss',
   imports: [
     ReactiveFormsModule,
     NzButtonModule,
