@@ -32,131 +32,155 @@
   </ng-template>
 </nz-alert>
 
-<!-- Top KPI cards -->
-<nz-spin [nzSpinning]="loading()">
-  <div nz-row [nzGutter]="16" class="stats-grid">
-    <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
-      <nz-card>
-        <nz-statistic
-          [nzValue]="revenueDisplay()"
-          [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
-          [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
-        />
-      </nz-card>
+<!-- Top KPI cards & Main Dashboard Sections deferred on idle -->
+@defer (on idle) {
+  <nz-spin [nzSpinning]="loading()">
+    <div nz-row [nzGutter]="16" class="stats-grid">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="revenueDisplay()"
+            [nzTitle]="'DASHBOARD.KPI_REVENUE' | translate"
+            [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="receivablesDisplay()"
+            [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
+            [nzValueStyle]="{ color: 'var(--kpi-pending, #b45309)' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="pendingCount()"
+            [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
+            [nzValueStyle]="{ color: 'var(--kpi-orders, #047857)' }"
+          />
+        </nz-card>
+      </div>
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="alertsCount()"
+            [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
+            [nzValueStyle]="{ color: 'var(--kpi-compliance, #6d28d9)' }"
+          />
+        </nz-card>
+      </div>
     </div>
-    <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
-      <nz-card>
-        <nz-statistic
-          [nzValue]="receivablesDisplay()"
-          [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
-          [nzValueStyle]="{ color: 'var(--kpi-pending, #b45309)' }"
-        />
-      </nz-card>
-    </div>
-    <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
-      <nz-card>
-        <nz-statistic
-          [nzValue]="pendingCount()"
-          [nzTitle]="'DASHBOARD.KPI_ORDERS' | translate"
-          [nzValueStyle]="{ color: 'var(--kpi-orders, #047857)' }"
-        />
-      </nz-card>
-    </div>
-    <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
-      <nz-card>
-        <nz-statistic
-          [nzValue]="alertsCount()"
-          [nzTitle]="'DASHBOARD.KPI_COMPLIANCE' | translate"
-          [nzValueStyle]="{ color: 'var(--kpi-compliance, #6d28d9)' }"
-        />
-      </nz-card>
-    </div>
-  </div>
-</nz-spin>
+  </nz-spin>
 
-<!-- Quick Shortcuts & Recent Activity -->
-<div nz-row [nzGutter]="16">
-  <div nz-col [nzXs]="24" [nzLg]="14">
-    <nz-card [nzTitle]="'DASHBOARD.RECENT_DOCS' | translate" [nzExtra]="refreshTpl">
-      <ng-template #refreshTpl>
-        <button nz-button nzType="text" nzSize="small" (click)="loadData()">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
-      </ng-template>
+  <!-- Quick Shortcuts & Recent Activity -->
+  <div nz-row [nzGutter]="16">
+    <div nz-col [nzXs]="24" [nzLg]="14">
+      <nz-card [nzTitle]="'DASHBOARD.RECENT_DOCS' | translate" [nzExtra]="refreshTpl">
+        <ng-template #refreshTpl>
+          <button nz-button nzType="text" nzSize="small" (click)="loadData()">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </ng-template>
 
-      <nz-table
-        #recentTable
-        [nzData]="recentInvoices()"
-        [nzFrontPagination]="false"
-        [nzShowPagination]="false"
-        [nzLoading]="loading()"
-        nzSize="small"
-      >
-        <thead>
-          <tr>
-            <th>{{ "DASHBOARD.COL_REF" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_TYPE" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_STATUS" | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of recentTable.data; track item.id) {
+        <nz-table
+          #recentTable
+          [nzData]="recentInvoices()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+          [nzLoading]="loading()"
+          nzSize="small"
+        >
+          <thead>
             <tr>
-              <td>
-                <strong>{{ item.invoice_number }}</strong>
-                @if (item.has_swiss_qr) {
-                  <nz-tag nzColor="red" style="margin-left: 4px">QR</nz-tag>
-                }
-              </td>
-              <td>{{ item.invoice_type }}</td>
-              <td>{{ contactName(item) }}</td>
-              <td>
-                <strong>{{
-                  item.total
-                    | currency: item.currency || authStore.activeCurrency() : "symbol" : "1.2-2"
-                }}</strong>
-              </td>
-              <td>
-                <nz-tag [nzColor]="statusColor(item.payment_status || item.status)">
-                  {{ item.payment_status || item.status }}
-                </nz-tag>
-              </td>
+              <th>{{ "DASHBOARD.COL_REF" | translate }}</th>
+              <th>{{ "DASHBOARD.COL_TYPE" | translate }}</th>
+              <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
+              <th>{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
+              <th>{{ "DASHBOARD.COL_STATUS" | translate }}</th>
             </tr>
-          } @empty {
-            @if (!loading()) {
+          </thead>
+          <tbody>
+            @for (item of recentTable.data; track item.id) {
               <tr>
-                <td colspan="5">
-                  <nz-empty nzNotFoundImage="simple" />
+                <td>
+                  <strong>{{ item.invoice_number }}</strong>
+                  @if (item.has_swiss_qr) {
+                    <nz-tag nzColor="red" style="margin-left: 4px">QR</nz-tag>
+                  }
+                </td>
+                <td>{{ item.invoice_type }}</td>
+                <td>{{ contactName(item) }}</td>
+                <td>
+                  <strong>{{
+                    item.total
+                      | currency: item.currency || authStore.activeCurrency() : "symbol" : "1.2-2"
+                  }}</strong>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="statusColor(item.payment_status || item.status)">
+                    {{ item.payment_status || item.status }}
+                  </nz-tag>
                 </td>
               </tr>
+            } @empty {
+              @if (!loading()) {
+                <tr>
+                  <td colspan="5">
+                    <nz-empty nzNotFoundImage="simple" />
+                  </td>
+                </tr>
+              }
             }
-          }
-        </tbody>
-      </nz-table>
-    </nz-card>
-  </div>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </div>
 
-  <div nz-col [nzXs]="24" [nzLg]="10">
-    <nz-card [nzTitle]="'DASHBOARD.SHOWCASE_TITLE' | translate">
-      <div class="shortcut-list">
-        <a nz-button nzType="primary" nzBlock routerLink="/sales/qr-bill" class="shortcut-btn">
-          <i class="fa-solid fa-qrcode fa-icon-spaced"></i> {{ "DASHBOARD.BTN_QR" | translate }}
-        </a>
-        <a nz-button nzType="default" nzBlock routerLink="/sales/invoices" class="shortcut-btn">
-          <i class="fa-solid fa-file-invoice fa-icon-spaced"></i>
-          {{ "SALES.INVOICES.TITLE" | translate }}
-        </a>
-        <a nz-button nzType="default" nzBlock routerLink="/crm/clients" class="shortcut-btn">
-          <i class="fa-solid fa-address-book fa-icon-spaced"></i>
-          {{ "DASHBOARD.BTN_CLIENTS" | translate }}
-        </a>
-        <a nz-button nzType="default" nzBlock routerLink="/inventory" class="shortcut-btn">
-          <i class="fa-solid fa-boxes-stacked fa-icon-spaced"></i>
-          {{ "INVENTORY.TITLE" | translate }}
-        </a>
-      </div>
-    </nz-card>
+    <div nz-col [nzXs]="24" [nzLg]="10">
+      <nz-card [nzTitle]="'DASHBOARD.SHOWCASE_TITLE' | translate">
+        <div class="shortcut-list">
+          <a nz-button nzType="primary" nzBlock routerLink="/sales/qr-bill" class="shortcut-btn">
+            <i class="fa-solid fa-qrcode fa-icon-spaced"></i> {{ "DASHBOARD.BTN_QR" | translate }}
+          </a>
+          <a nz-button nzType="default" nzBlock routerLink="/sales/invoices" class="shortcut-btn">
+            <i class="fa-solid fa-file-invoice fa-icon-spaced"></i>
+            {{ "SALES.INVOICES.TITLE" | translate }}
+          </a>
+          <a nz-button nzType="default" nzBlock routerLink="/crm/clients" class="shortcut-btn">
+            <i class="fa-solid fa-address-book fa-icon-spaced"></i>
+            {{ "DASHBOARD.BTN_CLIENTS" | translate }}
+          </a>
+          <a nz-button nzType="default" nzBlock routerLink="/inventory" class="shortcut-btn">
+            <i class="fa-solid fa-boxes-stacked fa-icon-spaced"></i>
+            {{ "INVENTORY.TITLE" | translate }}
+          </a>
+        </div>
+      </nz-card>
+    </div>
   </div>
-</div>
+} @placeholder {
+  <div nz-row [nzGutter]="16" class="stats-grid">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card>
+          <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 2 }" [nzTitle]="true" />
+        </nz-card>
+      </div>
+    }
+  </div>
+  <div nz-row [nzGutter]="16">
+    <div nz-col [nzXs]="24" [nzLg]="14">
+      <nz-card>
+        <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 5 }" [nzTitle]="true" />
+      </nz-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="10">
+      <nz-card>
+        <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 5 }" [nzTitle]="true" />
+      </nz-card>
+    </div>
+  </div>
+}

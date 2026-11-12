@@ -6,6 +6,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -33,6 +34,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     NzButtonModule,
     NzAlertModule,
     NzSpinModule,
+    NzSkeletonModule,
     NzEmptyModule,
     PageHeaderComponent,
     TranslatePipe,
