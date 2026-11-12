@@ -40,6 +40,7 @@
         <nz-card>
           <nz-statistic
             [nzValue]="revenueDisplay()"
+            [nzValueTemplate]="rawValue"
             [nzTitle]="'ORDERS.REVENUE' | translate"
             [nzValueStyle]="{ color: 'var(--kpi-revenue, #0f766e)' }"
           />
@@ -49,6 +50,7 @@
         <nz-card>
           <nz-statistic
             [nzValue]="receivablesDisplay()"
+            [nzValueTemplate]="rawValue"
             [nzTitle]="'DASHBOARD.KPI_PENDING' | translate"
             [nzValueStyle]="{ color: 'var(--kpi-pending, #b45309)' }"
           />
@@ -64,6 +66,8 @@
         </nz-card>
       </div>
     </div>
+    <!-- nz-statistic splits string values on the LOCALE_ID decimal symbol, which breaks preformatted amounts -->
+    <ng-template #rawValue let-value>{{ value }}</ng-template>
   </nz-spin>
 
   <!-- Quick Shortcuts & Recent Activity -->

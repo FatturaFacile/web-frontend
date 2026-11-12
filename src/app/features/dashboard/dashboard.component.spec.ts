@@ -178,6 +178,25 @@ describe('DashboardComponent', () => {
     expect(component.revenueDisplay()).toMatch(/^CHF 25['’]000\.00$/);
   });
 
+  it('renders EUR amounts with several group separators verbatim', async () => {
+    await setup(of({ data: withKpis({ total_revenue: 1234567.89, total_unpaid: 9876543.21 }) }));
+
+    const stats = statistics(await renderDeferred());
+    expect(stats[0].value).toBe('€ 1.234.567,89');
+    expect(stats[1].value).toBe('€ 9.876.543,21');
+  });
+
+  it('renders CHF amounts with several group separators verbatim', async () => {
+    await setup(
+      of({ data: withKpis({ total_revenue: 1234567.89, total_unpaid: 9876543.21 }) }),
+      'CHF',
+    );
+
+    const stats = statistics(await renderDeferred());
+    expect(stats[0].value).toMatch(/^CHF 1['’]234['’]567\.89$/);
+    expect(stats[1].value).toMatch(/^CHF 9['’]876['’]543\.21$/);
+  });
+
   it('shows a genuine zero instead of the placeholder', async () => {
     await setup(of({ data: withKpis({ total_revenue: 0, total_unpaid: 0, invoices_count: 0 }) }));
 
