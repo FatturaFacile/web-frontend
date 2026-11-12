@@ -13,12 +13,22 @@ import {
   InvoiceApiService,
   InvoiceResource,
   KpiSummary,
+  KpiSummaryKpis,
 } from '@core';
 import { DashboardComponent } from './dashboard.component';
 
 const PLACEHOLDER = '—';
 
 // Same keys and value types as GET /api/v1/dashboard/kpi-summary; only the values are invented.
+function kpis(): KpiSummaryKpis {
+  return {
+    total_revenue: 25000,
+    total_unpaid: 12000.5,
+    invoices_count: 42,
+    active_currency: 'EUR',
+  };
+}
+
 function kpiSummaryResponse(): KpiSummary {
   return {
     tenant: {
@@ -27,19 +37,13 @@ function kpiSummaryResponse(): KpiSummary {
       country: 'IT',
       currency: 'EUR',
     },
-    kpis: {
-      total_revenue: 25000,
-      total_unpaid: 12000.5,
-      invoices_count: 42,
-      active_currency: 'EUR',
-    },
+    kpis: kpis(),
     metrics_timestamp: '2026-11-12T10:00:00+00:00',
   };
 }
 
-function withKpis(overrides: Partial<NonNullable<KpiSummary['kpis']>>): KpiSummary {
-  const data = kpiSummaryResponse();
-  return { ...data, kpis: { ...data.kpis!, ...overrides } };
+function withKpis(overrides: Partial<KpiSummaryKpis>): KpiSummary {
+  return { ...kpiSummaryResponse(), kpis: { ...kpis(), ...overrides } };
 }
 
 describe('DashboardComponent', () => {
@@ -194,12 +198,16 @@ describe('DashboardComponent', () => {
 
       expectAllPlaceholders();
       expect(component.recentInvoices().length).toBe(1);
+      const stats = statistics(await renderDeferred());
+      expect(stats.map((s) => s.value)).toEqual([PLACEHOLDER, PLACEHOLDER, PLACEHOLDER]);
     });
 
     it('shows placeholders when data is undefined', async () => {
       await setup(of({ data: undefined }));
 
       expectAllPlaceholders();
+      const stats = statistics(await renderDeferred());
+      expect(stats.map((s) => s.value)).toEqual([PLACEHOLDER, PLACEHOLDER, PLACEHOLDER]);
     });
 
     it('shows placeholders when tenant, kpis and timestamp are null', async () => {
