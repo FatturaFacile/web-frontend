@@ -36,7 +36,7 @@
 @defer (on idle) {
   <nz-spin [nzSpinning]="loading()">
     <div nz-row [nzGutter]="16" class="stats-grid">
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+      <div nz-col [nzXs]="24" [nzSm]="8" [nzLg]="8">
         <nz-card>
           <nz-statistic
             [nzValue]="revenueDisplay()"
@@ -45,7 +45,7 @@
           />
         </nz-card>
       </div>
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+      <div nz-col [nzXs]="24" [nzSm]="8" [nzLg]="8">
         <nz-card>
           <nz-statistic
             [nzValue]="receivablesDisplay()"
@@ -54,7 +54,7 @@
           />
         </nz-card>
       </div>
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+      <div nz-col [nzXs]="24" [nzSm]="8" [nzLg]="8">
         <nz-card>
           <nz-statistic
             [nzValue]="invoicesCount()"
@@ -155,7 +155,7 @@
 } @placeholder {
   <div nz-row [nzGutter]="16" class="stats-grid">
     @for (i of [1, 2, 3]; track i) {
-      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+      <div nz-col [nzXs]="24" [nzSm]="8" [nzLg]="8">
         <nz-card>
           <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 2 }" [nzTitle]="true" />
         </nz-card>

@@ -156,6 +156,18 @@ describe('DashboardComponent', () => {
       expect(stats.map((s) => s.value)).toEqual(['€ 25.000,00', '€ 12.000,50', '42']);
       expect(el.textContent).not.toContain('DASHBOARD.KPI_COMPLIANCE');
     });
+
+    it('keeps the three KPI cards on one row from the sm breakpoint upward', async () => {
+      const el = await renderDeferred();
+      const columns = Array.from(el.querySelectorAll('.stats-grid > [nz-col]'));
+
+      expect(columns.length).toBe(3);
+      for (const column of columns) {
+        expect(column.classList).toContain('ant-col-xs-24');
+        expect(column.classList).toContain('ant-col-sm-8');
+        expect(column.classList).toContain('ant-col-lg-8');
+      }
+    });
   });
 
   it('formats CHF amounts with the de-CH locale', async () => {
