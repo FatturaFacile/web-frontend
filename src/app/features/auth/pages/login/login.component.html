@@ -95,7 +95,9 @@
           </nz-form-item>
 
           <div class="options">
-            <label nz-checkbox formControlName="remember">{{ "AUTH.REMEMBER" | translate }}</label>
+            <!-- nz-checkbox renders its own input inside the label -->
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+            <label nz-checkbox id="remember" formControlName="remember">{{ "AUTH.REMEMBER" | translate }}</label>
             <a routerLink="/forgot-password">{{ "AUTH.FORGOT" | translate }}</a>
           </div>
 
@@ -177,7 +179,7 @@
         <!-- FOOTER INFO E SUPPORTO -->
         <p class="auth-footer-info">
           © {{ currentYear }} Fattura Facile &nbsp;|&nbsp;
-          <a href="mailto:support@fatturafacile.eu">support@fatturafacile.eu</a>
+          <a href="mailto:support@fatturafacile.eu">support&#64;fatturafacile.eu</a>
         </p>
       }
 
