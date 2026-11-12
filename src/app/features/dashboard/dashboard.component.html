@@ -9,7 +9,7 @@
     ')'
   "
 >
-  <a header-actions nz-button routerLink="/dashboard/customize">{{ 'DASHBOARD_BUILDER.CUSTOMIZE' | translate }}</a>
+  <!--  <a header-actions nz-button routerLink="/dashboard/customize">{{ 'DASHBOARD_BUILDER.CUSTOMIZE' | translate }}</a>-->
 </app-page-header>
 
 <nz-alert
@@ -22,10 +22,10 @@
   <ng-template #alertTitle>
     {{ "DASHBOARD.ACTIVE_REGIME" | translate }}
     <strong>{{
-      authStore.activeJurisdiction() === "IT"
-        ? ("DASHBOARD.REGIME_IT_LABEL" | translate)
-        : ("DASHBOARD.REGIME_CH_LABEL" | translate)
-    }}</strong>
+        authStore.activeJurisdiction() === "IT"
+          ? ("DASHBOARD.REGIME_IT_LABEL" | translate)
+          : ("DASHBOARD.REGIME_CH_LABEL" | translate)
+      }}</strong>
   </ng-template>
   <ng-template #alertDesc>
     {{ "DASHBOARD.REGIME_DESC" | translate }}
@@ -94,13 +94,13 @@
           nzSize="small"
         >
           <thead>
-            <tr>
-              <th>{{ "DASHBOARD.COL_REF" | translate }}</th>
-              <th>{{ "DASHBOARD.COL_TYPE" | translate }}</th>
-              <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
-              <th>{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
-              <th>{{ "DASHBOARD.COL_STATUS" | translate }}</th>
-            </tr>
+          <tr>
+            <th>{{ "DASHBOARD.COL_REF" | translate }}</th>
+            <th>{{ "DASHBOARD.COL_TYPE" | translate }}</th>
+            <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
+            <th>{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
+            <th>{{ "DASHBOARD.COL_STATUS" | translate }}</th>
+          </tr>
           </thead>
           <tbody>
             @for (item of recentTable.data; track item.id) {
@@ -115,9 +115,9 @@
                 <td>{{ contactName(item) }}</td>
                 <td>
                   <strong>{{
-                    item.total
-                      | currency: item.currency || authStore.activeCurrency() : "symbol" : "1.2-2"
-                  }}</strong>
+                      item.total
+                        | currency: item.currency || authStore.activeCurrency() : "symbol" : "1.2-2"
+                    }}</strong>
                 </td>
                 <td>
                   <nz-tag [nzColor]="statusColor(item.payment_status || item.status)">

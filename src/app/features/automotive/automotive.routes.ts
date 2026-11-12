@@ -10,7 +10,7 @@ export const AUTOMOTIVE_ROUTES: Routes = [
   },
   {
     path: 'tire-hotel',
-    data: { breadcrumb: 'BREADCRUMB.HOTEL_PNEUMATICI', title: 'Hotel Pneumatici' },
+    data: { breadcrumb: 'BREADCRUMB.HOTEL_PNEUMATICI', title: 'PAGE_TITLE.HOTEL_PNEUMATICI' },
     loadComponent: () =>
       import('./tire-hotel.component').then((m) => m.TireHotelComponent),
   },
@@ -21,7 +21,7 @@ export const AUTOMOTIVE_ROUTES: Routes = [
   },
   {
     path: 'workshop',
-    data: { breadcrumb: 'BREADCRUMB.OFFICINA_AND_SCHEDE', title: 'Officina' },
+    data: { breadcrumb: 'BREADCRUMB.OFFICINA_AND_SCHEDE', title: 'PAGE_TITLE.OFFICINA' },
     loadComponent: () =>
       import('./workshop/workshop.component').then((m) => m.WorkshopComponent),
   },

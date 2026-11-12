@@ -6,7 +6,7 @@ export const HOSPITALITY_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_COMANDE', title: 'Ristorazione & Hospitality' },
+    data: { breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_COMANDE', title: 'PAGE_TITLE.RISTORAZIONE_HOSPITALITY' },
     loadComponent: () =>
       import('./hospitality.component').then((m) => m.HospitalityComponent),
   },

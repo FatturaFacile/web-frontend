@@ -372,6 +372,11 @@ html.dark .ant-tag:not(.ant-tag-has-color),
   border-color: var(--border-color);
   color: var(--text-secondary);
 }
+[data-theme=dark] .ant-tabs-tab-btn,
+html.dark .ant-tabs-tab-btn,
+.dark .ant-tabs-tab-btn {
+  color: white;
+}
 
 .fa-icon-spaced {
   margin-right: 8px;

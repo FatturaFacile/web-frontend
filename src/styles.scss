@@ -359,6 +359,10 @@ html.dark,
     border-color: var(--border-color);
     color: var(--text-secondary);
   }
+
+  .ant-tabs-tab-btn {
+    color: white;
+  }
 }
 
 .fa-icon-spaced {

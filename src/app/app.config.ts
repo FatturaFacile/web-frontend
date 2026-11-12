@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideAppInitializer, inject, isDevMode } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
@@ -13,7 +13,7 @@ import { credentialsInterceptor } from '@core/interceptors/credentials.intercept
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
-import { I18nService } from '@core/i18n';
+import { I18nService, PageTitleStrategy } from '@core/i18n';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -27,6 +27,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    { provide: TitleStrategy, useExisting: PageTitleStrategy },
     provideHttpClient(
       withFetch(),
       withXsrfConfiguration({
