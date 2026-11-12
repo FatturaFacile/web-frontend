@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideAppInitializer, inject, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
@@ -13,6 +13,7 @@ import { credentialsInterceptor } from '@core/interceptors/credentials.intercept
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
+import { I18nService } from '@core/i18n';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -37,6 +38,10 @@ export const appConfig: ApplicationConfig = {
     provideNzIcons(icons),
     provideNzI18n(en_US),
     provideNzDateFnsAdapter(),
+    provideAppInitializer(() => {
+      const i18n = inject(I18nService);
+      return i18n.loadInitialTranslations();
+    }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

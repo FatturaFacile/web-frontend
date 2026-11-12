@@ -58,6 +58,9 @@ export class I18nService {
   // Cache in memoria dei dizionari per lingua
   private readonly dictionaries = signal<Record<string, TranslationDictionary>>({});
 
+  // Richieste HTTP in corso per deduplicare chiamate concorrenti dello stesso tenant
+  private readonly inFlightRequests = new Map<string, Promise<TranslationDictionary>>();
+
   readonly currentDictionary = computed<TranslationDictionary>(() => {
     const lang = this.currentLanguage();
     return this.dictionaries()[lang] ?? {};
@@ -70,12 +73,24 @@ export class I18nService {
     }
     this.syncNzLocale(initialLang);
 
-    // Carica la lingua iniziale dall'API
-    void this.loadDictionary(initialLang);
+    // Carica la lingua iniziale dall'API e precarica l'eventuale fallback
+    void this.loadInitialTranslations();
+  }
+
+  /**
+   * Carica la lingua attiva e l'inglese come fallback (in parallelo se lingua attiva != 'en').
+   * Risolve sempre senza lanciare eccezioni per garantire che il bootstrap dell'app non si blocchi.
+   */
+  loadInitialTranslations(): Promise<TranslationDictionary[]> {
+    const initialLang = this.currentLanguage();
+    const tasks: Promise<TranslationDictionary>[] = [this.loadDictionary(initialLang)];
     if (initialLang !== 'en') {
-      // Precarica l'inglese come lingua di riserva per le chiavi mancanti
-      void this.loadDictionary('en');
+      tasks.push(this.loadDictionary('en'));
     }
+    return Promise.all(tasks).catch((error: unknown) => {
+      console.error('Impossibile completare il caricamento iniziale delle traduzioni', error);
+      return [];
+    });
   }
 
   setTenantId(tenantId: string): void {
@@ -85,12 +100,10 @@ export class I18nService {
       localStorage.setItem('ff_tenant_id', tenantId);
     }
 
-    // Invalida la cache in memoria e riscarica per il nuovo tenant
+    // Invalida la cache in memoria e le richieste in sospeso per il nuovo tenant
+    this.inFlightRequests.clear();
     this.dictionaries.set({});
-    void this.loadDictionary(this.currentLanguage());
-    if (this.currentLanguage() !== 'en') {
-      void this.loadDictionary('en');
-    }
+    void this.loadInitialTranslations();
   }
 
   setLanguage(lang: SupportedLanguage): Promise<TranslationDictionary> {
@@ -109,31 +122,44 @@ export class I18nService {
     return this.loadDictionary(lang);
   }
 
-  async loadDictionary(lang: SupportedLanguage): Promise<TranslationDictionary> {
+  loadDictionary(lang: SupportedLanguage): Promise<TranslationDictionary> {
     const existing = this.dictionaries()[lang];
     if (existing) {
-      return existing;
+      return Promise.resolve(existing);
     }
 
     const tenantId = this.currentTenantId();
+    const flightKey = `${lang}:${tenantId}`;
+    const inFlight = this.inFlightRequests.get(flightKey);
+    if (inFlight) {
+      return inFlight;
+    }
+
     const endpoint = `${this.apiUrl}/translations/${lang}`;
     const params = new HttpParams().set('tenant_id', tenantId);
     const headers = new HttpHeaders({ 'X-Tenant-ID': tenantId });
 
-    try {
-      const res = await firstValueFrom(
-        this.http.get<ApiResponseTranslations | TranslationDictionary>(endpoint, { params, headers })
-      );
+    const requestPromise = (async () => {
+      try {
+        const res = await firstValueFrom(
+          this.http.get<ApiResponseTranslations | TranslationDictionary>(endpoint, { params, headers })
+        );
 
-      // Le traduzioni arrivano solo dall'API (seeders + eventuali override del tenant): il frontend non ne ha una copia
-      const dict = (res as ApiResponseTranslations).translations ?? {};
-      this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
-      return dict;
-    } catch (error) {
-      // Il dizionario non viene memorizzato: la prossima richiesta riprova
-      console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
-      return {};
-    }
+        // Le traduzioni arrivano solo dall'API (seeders + eventuali override del tenant): il frontend non ne ha una copia
+        const dict = (res as ApiResponseTranslations).translations ?? {};
+        this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
+        return dict;
+      } catch (error) {
+        // Il dizionario non viene memorizzato: la prossima richiesta riprova
+        console.error(`Impossibile caricare le traduzioni per la lingua ${lang} e tenant ${tenantId}`, error);
+        return {};
+      } finally {
+        this.inFlightRequests.delete(flightKey);
+      }
+    })();
+
+    this.inFlightRequests.set(flightKey, requestPromise);
+    return requestPromise;
   }
 
   async saveTranslation(key: string, value: string): Promise<void> {
