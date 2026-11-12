@@ -1,5 +1,5 @@
-import { Component, inject, input, OnInit, output, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
+import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -22,20 +22,23 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  I18nService,
   ProjectApiService,
   ProjectFinancialSummary,
   ProjectResource,
   ProjectTaskResource,
   ProjectTimesheetResource,
   StoreProjectTaskPayload,
+  serverErrorMessage,
   StoreProjectTimesheetPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe } from '@shared';
-import { TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe } from '@shared';
+import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-project-detail-drawer',
+  styleUrl: './project-detail-drawer.component.scss',
   imports: [
     TranslatePipe,
     FormsModule,
@@ -65,6 +68,7 @@ import { TranslatePipe } from '@shared';
 })
 export class ProjectDetailDrawerComponent implements OnInit {
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   project = input.required<ProjectResource>();
   visible = input.required<boolean>();
   closed = output<void>();
@@ -90,20 +94,44 @@ export class ProjectDetailDrawerComponent implements OnInit {
   readonly savingTimesheet = signal(false);
 
   readonly taskForm = this.fb.group({
-    title: this.fb.control('', [Validators.required]),
-    estimated_hours: this.fb.control<number>(8, [Validators.required, Validators.min(0.5)]),
-    priority: this.fb.control('medium', [Validators.required]),
+    task_number: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
+    title: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    estimated_hours: this.fb.control<number | null>(8, [Validators.min(0), Validators.max(999999)]),
+    priority: this.fb.control('medium'),
     planned_start_date: this.fb.control('', [Validators.required]),
-    planned_end_date: this.fb.control('', [Validators.required]),
+    planned_end_date: this.fb.control('', [Validators.required, endsNotBefore('planned_start_date')]),
   });
 
   readonly timesheetForm = this.fb.group({
-    project_task_id: this.fb.control<string | null>(null),
-    work_date: this.fb.control('', [Validators.required]),
-    hours_worked: this.fb.control<number>(8, [Validators.required, Validators.min(0.5)]),
+    task_id: this.fb.control<string | null>(null),
+    work_date: this.fb.control('', [Validators.required, notInFuture]),
+    hours_worked: this.fb.control<number>(8, [Validators.required, Validators.min(0.01), Validators.max(24)]),
     is_billable: this.fb.control<boolean>(true),
-    work_summary: this.fb.control(''),
+    work_summary: this.fb.control('', [Validators.maxLength(2000)]),
   });
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    revalidateOnStartChange(this.taskForm, 'planned_start_date', 'planned_end_date', this.destroyRef);
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    if (control?.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    if (control?.hasError('endsBeforeStart')) {
+      return this.i18n.translate('COMMON.VALIDATION.END_AFTER_START');
+    }
+    if (control?.errors) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
+    return '';
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -168,6 +196,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
 
   openCreateTaskModal(): void {
     this.taskForm.reset({
+      task_number: '',
       title: '',
       estimated_hours: 8,
       priority: 'medium',
@@ -186,8 +215,9 @@ export class ProjectDetailDrawerComponent implements OnInit {
     this.savingTask.set(true);
     const formVal = this.taskForm.getRawValue();
     const payload: StoreProjectTaskPayload = {
+      task_number: formVal.task_number.trim(),
       title: formVal.title,
-      estimated_hours: formVal.estimated_hours,
+      estimated_hours: formVal.estimated_hours ?? undefined,
       priority: formVal.priority,
       planned_start_date: formVal.planned_start_date,
       planned_end_date: formVal.planned_end_date,
@@ -207,7 +237,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
 
   openCreateTimesheetModal(): void {
     this.timesheetForm.reset({
-      project_task_id: null,
+      task_id: null,
       work_date: new Date().toISOString().slice(0, 10),
       hours_worked: 8,
       is_billable: true,
@@ -226,7 +256,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
     const formVal = this.timesheetForm.getRawValue();
     const payload: StoreProjectTimesheetPayload = {
       user_id: this.authStore.user()?.id || '',
-      project_task_id: formVal.project_task_id,
+      task_id: formVal.task_id,
       work_date: formVal.work_date,
       hours_worked: formVal.hours_worked,
       is_billable: formVal.is_billable,

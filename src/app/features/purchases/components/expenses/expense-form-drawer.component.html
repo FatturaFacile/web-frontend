@@ -7,21 +7,32 @@
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="date">{{ 'expenses.form.date' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
-          <nz-date-picker id="date" formControlName="date" />
+        <nz-form-label nzRequired nzFor="category_id">{{ 'expenses.columns.category' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-select id="category_id" formControlName="category_id" nzShowSearch>
+            @for (category of categories(); track category.id) {
+              <nz-option [nzValue]="category.id" [nzLabel]="category.label" />
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="amount">{{ 'expenses.form.amount' | translate }}</nz-form-label>
+        <nz-form-label nzRequired nzFor="date">{{ 'expenses.form.date' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
+          <nz-date-picker class="w-full" id="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="amount_gross">{{ 'expenses.form.amount' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'validation.amountRequired' | translate">
           <nz-input-number
-            id="amount"
-            formControlName="amount"
+            id="amount_gross"
+            formControlName="amount_gross"
             [nzMin]="0.01"
             [nzStep]="1"
-           
+            class="w-full"
           />
         </nz-form-control>
       </nz-form-item>
@@ -37,12 +48,12 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="description">{{ 'expenses.form.description' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.descriptionRequired' | translate">
+        <nz-form-label nzFor="notes">{{ 'expenses.form.description' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
           <textarea
             nz-input
-            id="description"
-            formControlName="description"
+            id="notes"
+            formControlName="notes"
             rows="3"
             [placeholder]="'expenses.form.descriptionPlaceholder' | translate"
           ></textarea>
@@ -50,12 +61,12 @@
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzFor="merchant">{{ 'expenses.form.merchant' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label nzFor="merchant_name">{{ 'expenses.form.merchant' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
           <input
             nz-input
-            id="merchant"
-            formControlName="merchant"
+            id="merchant_name"
+            formControlName="merchant_name"
             [placeholder]="'expenses.form.merchantPlaceholder' | translate"
           />
         </nz-form-control>
@@ -66,10 +77,9 @@
         <nz-form-control>
           <nz-select id="status" formControlName="status">
             <nz-option nzValue="draft" [nzLabel]="'expenses.lblBozza' | translate" />
-            <nz-option nzValue="pending_approval" [nzLabel]="'expenses.lblInApprovazione' | translate" />
+            <nz-option nzValue="submitted" [nzLabel]="'expenses.lblInApprovazione' | translate" />
             <nz-option nzValue="approved" [nzLabel]="'expenses.lblApprovata' | translate" />
-            <nz-option nzValue="reimbursed" [nzLabel]="'expenses.lblRimborsata' | translate" />
-            <nz-option nzValue="paid" [nzLabel]="'expenses.lblPagata' | translate" />
+            <nz-option nzValue="rejected" [nzLabel]="'expenses.statuses.rejected' | translate" />
           </nz-select>
         </nz-form-control>
       </nz-form-item>

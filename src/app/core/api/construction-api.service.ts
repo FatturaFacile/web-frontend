@@ -9,6 +9,7 @@ import {
   ConstructionSite,
   ConstructionSiteRequest,
   TradesBid,
+  TradesBidResponse,
   TradesBidPosition,
   TradesBidPositionRequest,
   TradesBidRequest,
@@ -27,6 +28,7 @@ import {
   TradesSiteDocument,
   TradesSiteDocumentRequest,
   TradesSubcontract,
+  TradesSubcontractCertificationRequest,
   TradesSubcontractor,
   TradesSubcontractorRequest,
   TradesSubcontractRequest,
@@ -62,8 +64,8 @@ export class ConstructionApiService {
     return this.http.get<ApiResponse<TradesBid[]>>(`${this.tradesBase}/bids`);
   }
 
-  getBid(id: string): Observable<ApiResponse<TradesBid>> {
-    return this.http.get<ApiResponse<TradesBid>>(`${this.tradesBase}/bids/${id}`);
+  getBid(id: string): Observable<TradesBidResponse> {
+    return this.http.get<TradesBidResponse>(`${this.tradesBase}/bids/${id}`);
   }
 
   createBid(payload: TradesBidRequest): Observable<ApiResponse<TradesBid>> {
@@ -225,7 +227,7 @@ export class ConstructionApiService {
 
   certifySubcontractWork(
     subcontractId: string,
-    payload: { amount: string },
+    payload: TradesSubcontractCertificationRequest,
   ): Observable<ApiResponse<TradesSubcontract>> {
     return this.http.post<ApiResponse<TradesSubcontract>>(
       `${this.tradesBase}/subcontracts/${subcontractId}/certifications`,

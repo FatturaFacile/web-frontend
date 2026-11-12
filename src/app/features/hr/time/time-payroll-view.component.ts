@@ -14,6 +14,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** The working time as payroll sees it (rounding, allowances, night work) and the ArG Art. 17b night work balances of a year. */
 @Component({
   selector: 'app-time-payroll-view',
+  styleUrl: './time-payroll-view.component.scss',
   imports: [
     FormsModule,
     MoneyPipe,
@@ -26,12 +27,12 @@ import { reportHttpError } from '../shared/hr-http.util';
   ],
   template: `
     <h3>{{ 'hrmTimeX.payrollView' | translate }}</h3>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="pv-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="pv-employee"
-         
+          class="w-field-md"
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"
@@ -131,7 +132,7 @@ import { reportHttpError } from '../shared/hr-http.util';
     }
 
     <h3 class="mt-4">{{ 'hrmTimeX.nightBalances' | translate }}</h3>
-    <div class="flex items-end gap-2 mb-3">
+    <div class="filter-bar">
       <div>
         <label for="nb-year">{{ 'hrmCommon.year' | translate }}</label>
         <input

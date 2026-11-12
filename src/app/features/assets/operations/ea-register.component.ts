@@ -14,12 +14,13 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
 /** Asset register of a year and ledger (JSON or CSV) and the warranty and insurance expiry alerts. */
 @Component({
   selector: 'app-ea-register',
+  styleUrl: './ea-register.component.scss',
   imports: [FormsModule, NzButtonModule, NzCardModule, NzInputNumberModule, NzSelectModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
       <nz-tabs>
         <nz-tab [nzTitle]="'EA.ASSET_REGISTER' | translate">
-          <div>
+          <div class="report-toolbar">
             <label for="rg-year">{{ 'EA.YEAR' | translate }}</label>
             <nz-input-number id="rg-year" [(ngModel)]="year" [nzMin]="2000" [nzMax]="2100" />
             <nz-select [attr.aria-label]="'EA.LEDGER' | translate" [(ngModel)]="ledger">

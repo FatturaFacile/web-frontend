@@ -13,6 +13,7 @@ import { LookupItemDto } from './lookup.types';
 
 @Component({
   selector: 'app-lookup-select',
+  styleUrl: './lookup-select.component.scss',
   imports: [FormsModule, NzSelectModule],
   providers: [
     {

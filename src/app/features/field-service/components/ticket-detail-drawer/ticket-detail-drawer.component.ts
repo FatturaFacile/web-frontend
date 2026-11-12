@@ -40,6 +40,7 @@ import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-to
 
 @Component({
   selector: 'app-ticket-detail-drawer',
+  styleUrl: './ticket-detail-drawer.component.scss',
   imports: [
     DatePipe,
     FormsModule,
@@ -103,7 +104,7 @@ export class TicketDetailDrawerComponent {
     priority: this.fb.control<TicketPriority>('medium'),
     impact: this.fb.control<'low' | 'medium' | 'high' | ''>('medium'),
     urgency: this.fb.control<'low' | 'medium' | 'high' | ''>('medium'),
-    contact_name: this.fb.control<string>(''),
+    contact_name: this.fb.control<string>('', [Validators.maxLength(180)]),
     contact_email: this.fb.control<string>('', [Validators.email, Validators.maxLength(180)]),
     contact_phone: this.fb.control<string>('', [Validators.maxLength(50)]),
   });
@@ -256,7 +257,11 @@ export class TicketDetailDrawerComponent {
 
   protected saveDetails(): void {
     const id = this.ticketId();
-    if (!id || this.form.invalid) return;
+    if (!id) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     const val = this.form.getRawValue();
     const payload: UpdateHelpdeskTicketRequest = {

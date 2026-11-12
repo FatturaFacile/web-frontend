@@ -79,8 +79,12 @@
     </nz-tag>
   </ng-template>
 
+  <ng-template #categoryTpl let-exp>
+    <span>{{ exp.category?.name || "-" }}</span>
+  </ng-template>
+
   <ng-template #merchantTpl let-exp>
-    <span>{{ exp.merchant || "-" }}</span>
+    <span>{{ exp.merchant_name || "-" }}</span>
   </ng-template>
 
   <!-- Row Actions Template -->

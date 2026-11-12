@@ -18,6 +18,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Frontier workers (IT-CH): the nights away of a year, the registered commuters and the withholding parameters of the company. */
 @Component({
   selector: 'app-frontier-panel',
+  styleUrl: './frontier-panel.component.scss',
   imports: [ActionFormComponent, NzDescriptionsModule, NzTableModule, TranslatePipe],
   template: `
     <h4>{{ 'hrmCompliance.frontier.nightsTitle' | translate }}</h4>
@@ -82,6 +83,8 @@ export class FrontierPanelComponent implements OnInit {
         labelKey: 'hrmCommon.year',
         type: 'integer',
         required: true,
+        min: 2024,
+        max: 2100,
         defaultValue: String(new Date().getFullYear()),
       },
       {
@@ -89,6 +92,8 @@ export class FrontierPanelComponent implements OnInit {
         labelKey: 'hrmCompliance.frontier.nightsAway',
         type: 'integer',
         required: true,
+        min: 0,
+        max: 366,
       },
     ],
     submit: (payload) =>

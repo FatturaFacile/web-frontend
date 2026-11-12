@@ -17,7 +17,7 @@ const INSTALMENTS_PANEL: ResourcePanelConfig = {
   },
   toolbar: [
     act('POST', 'RES.A.reverse_payment', '/associations/fee-payments/{fee_payment_id}/reverse', {
-      fields: [req(rf.uuid('fee_payment_id')), req(rf.text('reason', { maxLength: 500 })), rf.date('reversed_on')],
+      fields: [req(rf.uuid('fee_payment_id')), req(rf.text('reason', { maxLength: 255 })), rf.date('reversed_on', { notInFuture: true })],
       danger: true,
     }),
   ],
@@ -72,7 +72,7 @@ const COMPENSATIONS_PANEL: ResourcePanelConfig = {
       rf.decimal('withholding_amount'),
       rf.decimal('hours'),
       rf.select('payment_method', PAYMENT_METHODS),
-      rf.textarea('notes'),
+      rf.textarea('notes', { maxLength: 2000 }),
     ],
   }),
   toolbar: [

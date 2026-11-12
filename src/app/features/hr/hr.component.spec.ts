@@ -14,6 +14,7 @@ import {
   EmployeeResource,
   FrontierWorkerResource,
   HrApiService,
+  HrLeaveApiService,
   LeaveRequestResource,
   PayrollRunResource,
   TimesheetResource,
@@ -122,6 +123,10 @@ describe('HrComponent', () => {
         provideNzI18n(en_US),
         provideNzDateFnsAdapter(),
         { provide: HrApiService, useValue: apiService },
+        {
+          provide: HrLeaveApiService,
+          useValue: { getLeaveTypes: vi.fn().mockReturnValue(of({ data: [{ id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d', name: 'Ferie', is_active: true }] })) },
+        },
         { provide: NzMessageService, useValue: messageService },
       ],
     }).compileComponents();
@@ -157,13 +162,16 @@ describe('HrComponent', () => {
       work_email: 'paolo.neri@example.com',
       base_annual_salary: 32000,
       hire_date: new Date('2026-06-01'),
-      employment_type: 'full_time',
+      employment_type: 'apprentice',
+      contract_type: 'fixed_term',
       weekly_hours: 40,
       probation_months: 6,
     });
 
     component.submitHire();
-    expect(apiService.createEmployee).toHaveBeenCalled();
+    expect(apiService.createEmployee).toHaveBeenCalledWith(
+      expect.objectContaining({ employment_type: 'apprentice', contract_type: 'fixed_term', hire_date: '2026-06-01' }),
+    );
     expect(component.isHireModalVisible()).toBe(false);
   });
 
@@ -183,16 +191,19 @@ describe('HrComponent', () => {
     expect(component.isLeaveModalVisible()).toBe(true);
 
     component.leaveForm.patchValue({
-      employee_id: 'emp-1',
-      leave_type_id: 'rol',
-      start_date: new Date('2026-09-01'),
-      end_date: new Date('2026-09-02'),
+      employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      start_date: new Date(2026, 8, 1),
+      end_date: new Date(2026, 8, 2),
       total_hours: 16,
       reason: 'Visita medica',
     });
+    // the leave type comes from the API list (a UUID), not from a fixed category string
+    expect(component.leaveForm.controls.leave_type_id.value).toBe('0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d');
 
     component.submitLeaveRequest();
-    expect(apiService.submitLeaveRequest).toHaveBeenCalled();
+    expect(apiService.submitLeaveRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7', leave_type_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d', start_date: '2026-09-01', end_date: '2026-09-02' }),
+    );
     expect(component.isLeaveModalVisible()).toBe(false);
 
     component.approveLeave(mockLeave);
@@ -207,7 +218,7 @@ describe('HrComponent', () => {
     expect(component.isTimesheetModalVisible()).toBe(true);
 
     component.timesheetForm.patchValue({
-      employee_id: 'emp-1',
+      employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       work_date: new Date('2026-04-15'),
       regular_hours: 8,
       overtime_hours: 2,
@@ -221,5 +232,32 @@ describe('HrComponent', () => {
 
     component.approveTimesheet(mockTimesheet);
     expect(apiService.approveTimesheet).toHaveBeenCalledWith('ts-1');
+  });
+  it('does not call the API when the hire, leave or timesheet form is submitted empty or invalid', () => {
+    vi.mocked(apiService.createEmployee as never).mockClear();
+    component.openHireModal();
+    component.hireForm.patchValue({ first_name: '', last_name: '', work_email: 'not-an-email' });
+    component.submitHire();
+    expect(apiService.createEmployee).not.toHaveBeenCalled();
+    expect(component.hireForm.controls.first_name.touched).toBe(true);
+
+    vi.mocked(apiService.submitLeaveRequest as never).mockClear();
+    component.openLeaveModal();
+    component.leaveForm.patchValue({ employee_id: '' });
+    component.submitLeaveRequest();
+    expect(apiService.submitLeaveRequest).not.toHaveBeenCalled();
+    component.leaveForm.patchValue({
+      employee_id: 'emp-1',
+      start_date: new Date('2026-09-10'),
+      end_date: new Date('2026-09-01'),
+    });
+    component.submitLeaveRequest();
+    expect(apiService.submitLeaveRequest).not.toHaveBeenCalled();
+
+    vi.mocked(apiService.submitTimesheet as never).mockClear();
+    component.openTimesheetModal();
+    component.timesheetForm.patchValue({ employee_id: '' });
+    component.submitTimesheet();
+    expect(apiService.submitTimesheet).not.toHaveBeenCalled();
   });
 });

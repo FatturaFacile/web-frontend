@@ -77,6 +77,12 @@ describe('LedgerEntryFormDrawerComponent', () => {
     expect(api.createLedgerEntry.mock.calls[0][0]).not.toHaveProperty('entry_number');
   });
 
+  it('does not save an empty form', () => {
+    component['submit']();
+    expect(api.createLedgerEntry).not.toHaveBeenCalled();
+    expect(component['form'].controls.description.hasError('required')).toBe(true);
+  });
+
   it('refuses a reversal date that is not after the posting date', () => {
     fill(new Date(2026, 10, 9));
     component['submit']();

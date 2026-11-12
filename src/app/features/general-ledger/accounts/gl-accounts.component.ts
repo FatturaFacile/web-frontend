@@ -34,6 +34,7 @@ const REPORTING_CLASSES = [
 
 @Component({
   selector: 'app-gl-accounts',
+  styleUrl: './gl-accounts.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,

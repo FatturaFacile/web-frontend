@@ -1,4 +1,9 @@
+import type { IntrastatFlow, IntrastatPeriodicity } from './intrastat.model';
+
 export type AccountType = 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+
+/** Side on which the account normally grows (`normal_balance` of the API). */
+export type NormalBalance = 'debit' | 'credit';
 
 export type JournalStatus = 'draft' | 'pending_approval' | 'rejected' | 'posted' | 'reversed';
 
@@ -8,15 +13,23 @@ export type LedgerType = 'statutory' | 'ifrs' | 'management';
 
 export interface ChartOfAccount {
   id: string;
-  code: string;
+  account_code: string;
   name: string;
-  type: AccountType;
-  account_type?: string;
-  parent_id?: string | null;
-  balance: number;
-  currency?: string;
+  account_type: AccountType | string;
+  normal_balance: NormalBalance;
+  currency?: string | null;
   is_active?: boolean;
-  children?: ChartOfAccount[];
+}
+
+/** Body of POST /general-ledger/accounts (StoreChartOfAccountRequest). */
+export interface CreateAccountPayload {
+  account_code: string;
+  name: string;
+  account_type: AccountType;
+  normal_balance: NormalBalance;
+  currency?: string | null;
+  parent_account_id?: string | null;
+  is_active?: boolean;
 }
 
 export interface JournalLine {
@@ -111,13 +124,29 @@ export interface CalculateTaxSettlementPayload {
 
 export interface IntrastatDeclarationResource {
   id: string;
-  declaration_number: string;
+  /** INTRA-1 for the sales flow, INTRA-2 for the purchases. */
+  model: string;
+  flow: IntrastatFlow;
   year: number;
-  month?: number | null;
-  quarter?: number | null;
-  direction: 'dispatch' | 'arrival' | 'both';
-  total_amount: number;
+  periodicity: IntrastatPeriodicity;
+  period: number;
+  reference_number?: number | null;
   status: 'draft' | 'validated' | 'submitted';
+  protocol_number?: string | null;
+  submitted_at?: string | null;
+}
+
+/** Body of POST /intrastat/declarations/generate (GenerateDeclarationRequest). */
+export interface GenerateIntrastatPayload {
+  flow: IntrastatFlow;
+  year: number;
+  periodicity: IntrastatPeriodicity;
+  period: number;
+}
+
+/** Body of POST /intrastat/declarations/{id}/submit (SubmitDeclarationRequest). */
+export interface SubmitIntrastatPayload {
+  protocol_number: string;
   submitted_at?: string | null;
 }
 

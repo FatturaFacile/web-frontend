@@ -44,6 +44,7 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
 /** Platform administration: requests of users to join an existing company (approve, move to another company, reject) and the document quota. */
 @Component({
   selector: 'app-access-requests',
+  styleUrl: './access-requests.component.scss',
   imports: [
     ActionFormComponent,
     DatePipe,
@@ -74,7 +75,7 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
         <label for="ar-status">{{ 'hrmCommon.statusCol' | translate }}</label>
         <nz-select
           id="ar-status"
-         
+          class="w-field-sm"
           nzAllowClear
           [ngModel]="status()"
           (ngModelChange)="setStatus($event)"

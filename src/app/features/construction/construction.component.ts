@@ -1,6 +1,9 @@
 import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -20,34 +23,61 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  ClientApiService,
   ConstructionApiService,
   ConstructionProgressBilling,
   ConstructionProgressBillingPayload,
   ConstructionSite,
   ConstructionSiteRequest,
+  ConstructionSiteStatus,
+  ContactResource,
   TradesBid,
   TradesBidPosition,
-  TradesBidPositionRequest,
   TradesBidRequest,
   TradesBidStatus,
   TradesBilling,
-  TradesBillingRequest,
+  TradesBillingBasis,
+  TradesBillingKind,
   TradesBudgetControl,
-  TradesMeasurementRequest,
+  TradesDocumentKind,
+  TradesLanguage,
   TradesSiteDiaryEntry,
-  TradesSiteDiaryRequest,
   TradesSiteDocument,
-  TradesSiteDocumentRequest,
   TradesSubcontract,
   TradesSubcontractor,
-  TradesSubcontractorRequest,
-  TradesSubcontractRequest,
+  TradesSubcontractorStatus,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
+const today = (): string => new Date().toISOString().substring(0, 10);
+
+/** Mirrors `required_if`: the control is required while `isRequired()` holds. */
+function requiredWhen(isRequired: (group: AbstractControl) => boolean): ValidatorFn {
+  return (control: AbstractControl) =>
+    control.parent && isRequired(control.parent) && (control.value === null || control.value === '') ? { required: true } : null;
+}
+
+/** Mirrors `decimal:0,4` with `max:100` for a percentage. */
+function percentageUpTo(limit: number): ValidatorFn {
+  return (control: AbstractControl) => {
+    const value = control.value;
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    return Number(value) <= limit ? null : { invalid: true };
+  };
+}
+
+/** Mirrors `not_in:0`. */
+const notZero: ValidatorFn = (control: AbstractControl) => {
+  const value = control.value;
+  return value === null || value === undefined || value === '' || Number(value) !== 0 ? null : { invalid: true };
+};
+
 @Component({
   selector: 'app-construction',
+  styleUrl: './construction.component.scss',
   imports: [
     CurrencyPipe,
     DatePipe,
@@ -79,11 +109,29 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 })
 export class ConstructionComponent implements OnInit {
   private readonly api = inject(ConstructionApiService);
+  private readonly clientApi = inject(ClientApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly siteStatuses: readonly ConstructionSiteStatus[] = ['planning', 'active', 'paused', 'completed'];
+  readonly languages: readonly TradesLanguage[] = ['it', 'de', 'fr', 'en'];
+  readonly documentKinds: readonly TradesDocumentKind[] = [
+    'safety_plan',
+    'risk_assessment',
+    'insurance',
+    'compliance_certificate',
+    'training_certificate',
+    'permit',
+    'other',
+  ];
+  readonly subcontractorStatuses: readonly TradesSubcontractorStatus[] = ['active', 'suspended'];
 
   readonly selectedTabIndex = signal<number>(0);
+
+  /** Customers of the company: the committer of a site, the customer of a bid, the contact of a subcontractor. */
+  readonly contacts = signal<ContactResource[]>([]);
 
   // --- TAB 1: SITES & PROGRESS BILLINGS (SAL) ---
   readonly sites = signal<ConstructionSite[]>([]);
@@ -99,6 +147,7 @@ export class ConstructionComponent implements OnInit {
   // Bid Detail Drawer
   readonly drawerVisible = signal<boolean>(false);
   readonly selectedBid = signal<TradesBid | null>(null);
+  readonly bidNetTotal = signal<string | null>(null);
   readonly bidPositions = signal<TradesBidPosition[]>([]);
   readonly bidBillings = signal<TradesBilling[]>([]);
   readonly budgetControl = signal<TradesBudgetControl | null>(null);
@@ -135,93 +184,158 @@ export class ConstructionComponent implements OnInit {
 
   // --- FORMS ---
   readonly siteForm = this.fb.group({
-    code: ['', [Validators.required]],
-    client: ['', [Validators.required]],
-    location: ['', [Validators.required]],
-    regime: ['CH', [Validators.required]],
+    code: ['', [Validators.required, Validators.maxLength(50)]],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    client_id: ['', [Validators.required]],
+    address: ['', [Validators.required, Validators.maxLength(255)]],
+    sia_norm_reference: ['', [Validators.maxLength(50)]],
+    npk_code: ['', [Validators.maxLength(50)]],
+    start_date: [''],
+    estimated_end_date: ['', [endsNotBefore('start_date')]],
+    status: ['planning' as ConstructionSiteStatus],
   });
 
   readonly salForm = this.fb.group({
     construction_site_id: ['', [Validators.required]],
     sal_number: ['', [Validators.required]],
-    period_start: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    period_end: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    gross_certified_amount: [100000, [Validators.required, Validators.min(1)]],
-    retention_percentage: [10],
+    period_start: [today(), [Validators.required]],
+    period_end: [today(), [Validators.required, endsNotBefore('period_start')]],
+    gross_certified_amount: [100000, [Validators.required, Validators.min(0)]],
+    retention_percentage: [10, [Validators.min(0), Validators.max(50)]],
   });
 
   readonly bidForm = this.fb.group({
-    code: ['', [Validators.required]],
-    title: ['', [Validators.required]],
-    site_id: [''],
-    client_name: [''],
-    currency: ['CHF', [Validators.required]],
+    title: ['', [Validators.required, Validators.maxLength(200)]],
+    construction_site_id: [''],
+    contact_id: ['', [Validators.required]],
+    language: ['it' as TradesLanguage, [Validators.required]],
+    currency: ['CHF', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
+    tax_rate: ['8.10', [Validators.required, decimalPattern(2), percentageUpTo(100)]],
+    valid_until: [''],
+    notes: ['', [Validators.maxLength(5000)]],
   });
 
   readonly positionForm = this.fb.group({
-    code: [''],
-    description: ['', [Validators.required]],
-    unit: ['m²', [Validators.required]],
-    quantity: [1, [Validators.required, Validators.min(0.01)]],
-    unit_price: ['0.00', [Validators.required]],
+    position_code: ['', [Validators.required, Validators.maxLength(40)]],
+    description: ['', [Validators.required, Validators.maxLength(4000)]],
+    unit: ['m²', [Validators.required, Validators.maxLength(10)]],
+    quantity: ['1', [Validators.required, decimalPattern(4), positiveNumber]],
+    unit_price: ['0.00', [Validators.required, decimalPattern(4)]],
   });
 
   readonly measurementForm = this.fb.group({
-    position_id: [''],
-    date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    description: ['', [Validators.required]],
-    quantity: [1, [Validators.required, Validators.min(0.01)]],
-    notes: [''],
+    bid_position_id: ['', [Validators.required]],
+    measured_on: [today(), [Validators.required]],
+    quantity: ['1', [Validators.required, notZero]],
+    note: ['', [Validators.maxLength(500)]],
   });
 
   readonly bidBillingForm = this.fb.group({
-    sal_number: ['SAL-1', [Validators.required]],
-    date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    amount: ['50000.00', [Validators.required]],
-    retention_amount: ['5000.00'],
+    kind: ['partial' as TradesBillingKind, [Validators.required]],
+    basis: ['percentage' as TradesBillingBasis | '', [requiredWhen((group) => group.get('kind')?.value === 'partial')]],
+    percentage: [
+      '',
+      [
+        requiredWhen(
+          (group) => group.get('kind')?.value === 'partial' && group.get('basis')?.value === 'percentage',
+        ),
+        decimalPattern(4),
+        positiveNumber,
+        percentageUpTo(100),
+      ],
+    ],
+    date: [today(), [Validators.required]],
   });
 
   readonly diaryForm = this.fb.group({
     site_id: ['', [Validators.required]],
-    date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    weather_condition: ['Sereno 18°C', [Validators.required]],
-    workers_count: [6, [Validators.required, Validators.min(1)]],
-    equipment_notes: ['Gru a torre, betoniera, escavatore'],
-    work_performed: ['', [Validators.required]],
-    director_notes: [''],
+    entry_date: [today(), [Validators.required]],
+    weather: ['', [Validators.maxLength(100)]],
+    workers_present: [6, [Validators.required, Validators.min(0), Validators.max(5000)]],
+    work_performed: ['', [Validators.required, Validators.maxLength(5000)]],
+    incidents: ['', [Validators.maxLength(5000)]],
   });
 
   readonly documentForm = this.fb.group({
     site_id: ['', [Validators.required]],
-    title: ['', [Validators.required]],
-    category: ['pos' as 'pos' | 'psc' | 'durc' | 'insurance' | 'compliance' | 'other', [Validators.required]],
-    expires_at: [''],
+    kind: ['safety_plan' as TradesDocumentKind, [Validators.required]],
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    subcontractor_id: [''],
+    issued_on: [''],
+    expires_on: ['', [endsNotBefore('issued_on')]],
+    notes: ['', [Validators.maxLength(500)]],
   });
 
   readonly subcontractorForm = this.fb.group({
-    company_name: ['', [Validators.required]],
-    vat_number: ['', [Validators.required]],
-    contact_email: [''],
-    phone: [''],
-    qualification: ['Opere di finitura e cartongesso'],
+    name: ['', [Validators.required, Validators.maxLength(190)]],
+    contact_id: [''],
+    tax_id: ['', [Validators.maxLength(40)]],
+    trade: ['', [Validators.maxLength(100)]],
+    status: ['active' as TradesSubcontractorStatus],
+    notes: ['', [Validators.maxLength(500)]],
   });
 
   readonly subcontractForm = this.fb.group({
     site_id: ['', [Validators.required]],
     subcontractor_id: ['', [Validators.required]],
-    scope_of_work: ['', [Validators.required]],
-    contract_amount: ['25000.00', [Validators.required]],
+    bid_id: [''],
+    description: ['', [Validators.required, Validators.maxLength(500)]],
+    contract_amount: ['25000.00', [Validators.required, decimalPattern(2), positiveNumber]],
+    starts_on: [''],
+    ends_on: ['', [endsNotBefore('starts_on')]],
   });
 
   readonly certifyForm = this.fb.group({
-    amount: ['5000.00', [Validators.required]],
+    certified_on: [today(), [Validators.required]],
+    amount: ['5000.00', [Validators.required, decimalPattern(2), positiveNumber]],
+    description: ['', [Validators.required, Validators.maxLength(500)]],
   });
 
+  constructor() {
+    revalidateOnStartChange(this.siteForm, 'start_date', 'estimated_end_date', this.destroyRef);
+    revalidateOnStartChange(this.salForm, 'period_start', 'period_end', this.destroyRef);
+    revalidateOnStartChange(this.documentForm, 'issued_on', 'expires_on', this.destroyRef);
+    revalidateOnStartChange(this.subcontractForm, 'starts_on', 'ends_on', this.destroyRef);
+    this.bidBillingForm.controls.kind.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.bidBillingForm.controls.basis.updateValueAndValidity();
+      this.bidBillingForm.controls.percentage.updateValueAndValidity();
+    });
+    this.bidBillingForm.controls.basis.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.bidBillingForm.controls.percentage.updateValueAndValidity();
+    });
+  }
+
   ngOnInit(): void {
+    this.loadContacts();
     this.loadSites();
     this.loadBids();
     this.loadDocuments();
     this.loadSubcontractors();
+  }
+
+  // --- CONTACTS ---
+  loadContacts(): void {
+    this.clientApi.list({ per_page: 200 }).subscribe({
+      next: (res) => this.contacts.set(res.data),
+      error: () => this.contacts.set([]),
+    });
+  }
+
+  contactLabel(contact: ContactResource): string {
+    return contact.company_name || `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || contact.id;
+  }
+
+  contactNameOf(contactId: string | null | undefined): string {
+    const contact = this.contacts().find((candidate) => candidate.id === contactId);
+    return contact ? this.contactLabel(contact) : '-';
+  }
+
+  siteLabel(site: ConstructionSite): string {
+    return `${site.code} - ${site.name}`;
+  }
+
+  positionLabel(position: TradesBidPosition): string {
+    return `${position.position_code} - ${position.description}`;
   }
 
   // --- SITES & SAL METHODS ---
@@ -254,9 +368,14 @@ export class ConstructionComponent implements OnInit {
   openCreateSiteModal(): void {
     this.siteForm.reset({
       code: '',
-      client: '',
-      location: '',
-      regime: 'CH',
+      name: '',
+      client_id: '',
+      address: '',
+      sia_norm_reference: '',
+      npk_code: '',
+      start_date: '',
+      estimated_end_date: '',
+      status: 'planning',
     });
     this.siteModalVisible.set(true);
   }
@@ -268,10 +387,15 @@ export class ConstructionComponent implements OnInit {
     }
     const val = this.siteForm.getRawValue();
     const payload: ConstructionSiteRequest = {
+      client_id: val.client_id,
       code: val.code,
-      client: val.client,
-      location: val.location,
-      regime: val.regime,
+      name: val.name,
+      address: val.address,
+      sia_norm_reference: val.sia_norm_reference || null,
+      npk_code: val.npk_code || null,
+      start_date: val.start_date || null,
+      estimated_end_date: val.estimated_end_date || null,
+      status: val.status,
     };
 
     this.api.createSite(payload).subscribe({
@@ -290,8 +414,8 @@ export class ConstructionComponent implements OnInit {
     this.salForm.reset({
       construction_site_id: this.sites()[0]?.id || '',
       sal_number: 'SAL 1',
-      period_start: new Date().toISOString().substring(0, 10),
-      period_end: new Date().toISOString().substring(0, 10),
+      period_start: today(),
+      period_end: today(),
       gross_certified_amount: 100000,
       retention_percentage: 10,
     });
@@ -339,9 +463,9 @@ export class ConstructionComponent implements OnInit {
         if (search) {
           list = list.filter(
             (b) =>
-              b.code.toLowerCase().includes(search) ||
+              b.bid_number.toLowerCase().includes(search) ||
               b.title.toLowerCase().includes(search) ||
-              (b.client_name && b.client_name.toLowerCase().includes(search)),
+              this.contactNameOf(b.contact_id).toLowerCase().includes(search),
           );
         }
         this.bids.set(list);
@@ -355,11 +479,14 @@ export class ConstructionComponent implements OnInit {
 
   openCreateBidModal(): void {
     this.bidForm.reset({
-      code: '',
       title: '',
-      site_id: this.sites()[0]?.id || '',
-      client_name: '',
+      construction_site_id: this.sites()[0]?.id || '',
+      contact_id: '',
+      language: 'it',
       currency: 'CHF',
+      tax_rate: '8.10',
+      valid_until: '',
+      notes: '',
     });
     this.bidModalVisible.set(true);
   }
@@ -371,12 +498,14 @@ export class ConstructionComponent implements OnInit {
     }
     const val = this.bidForm.getRawValue();
     const payload: TradesBidRequest = {
-      code: val.code,
+      construction_site_id: val.construction_site_id || null,
+      contact_id: val.contact_id,
       title: val.title,
-      site_id: val.site_id || undefined,
-      client_name: val.client_name || undefined,
-      currency: val.currency,
-      status: 'submitted',
+      language: val.language,
+      currency: val.currency.toUpperCase(),
+      tax_rate: val.tax_rate,
+      valid_until: val.valid_until || null,
+      notes: val.notes || null,
     };
 
     this.api.createBid(payload).subscribe({
@@ -416,6 +545,7 @@ export class ConstructionComponent implements OnInit {
   closeBidDrawer(): void {
     this.drawerVisible.set(false);
     this.selectedBid.set(null);
+    this.bidNetTotal.set(null);
     this.bidPositions.set([]);
     this.bidBillings.set([]);
     this.budgetControl.set(null);
@@ -426,6 +556,7 @@ export class ConstructionComponent implements OnInit {
     this.api.getBid(bidId).subscribe({
       next: (res) => {
         this.selectedBid.set(res.data);
+        this.bidNetTotal.set(res.meta?.net_total ?? null);
         this.bidPositions.set(res.data.positions || []);
         this.drawerLoading.set(false);
       },
@@ -449,10 +580,10 @@ export class ConstructionComponent implements OnInit {
 
   openAddPositionModal(): void {
     this.positionForm.reset({
-      code: '',
+      position_code: '',
       description: '',
       unit: 'm²',
-      quantity: 1,
+      quantity: '1',
       unit_price: '0.00',
     });
     this.positionModalVisible.set(true);
@@ -465,34 +596,34 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.positionForm.getRawValue();
-    const payload: TradesBidPositionRequest = {
-      code: val.code || undefined,
-      description: val.description,
-      unit: val.unit,
-      quantity: Number(val.quantity),
-      unit_price: val.unit_price,
-    };
 
-    this.api.addBidPosition(bid.id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.POSITION_ADDED'));
-        this.positionModalVisible.set(false);
-        this.loadBidDetails(bid.id);
-        this.loadBids();
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .addBidPosition(bid.id, {
+        position_code: val.position_code,
+        description: val.description,
+        unit: val.unit,
+        quantity: val.quantity,
+        unit_price: val.unit_price,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.POSITION_ADDED'));
+          this.positionModalVisible.set(false);
+          this.loadBidDetails(bid.id);
+          this.loadBids();
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   openAddMeasurementModal(positionId?: string): void {
     this.measurementForm.reset({
-      position_id: positionId || '',
-      date: new Date().toISOString().substring(0, 10),
-      description: '',
-      quantity: 1,
-      notes: '',
+      bid_position_id: positionId || '',
+      measured_on: today(),
+      quantity: '1',
+      note: '',
     });
     this.measurementModalVisible.set(true);
   }
@@ -504,23 +635,23 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.measurementForm.getRawValue();
-    const payload: TradesMeasurementRequest = {
-      position_id: val.position_id || undefined,
-      date: val.date,
-      description: val.description,
-      quantity: Number(val.quantity),
-      notes: val.notes || undefined,
-    };
 
-    this.api.recordMeasurement(bid.id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.MEASUREMENT_RECORDED'));
-        this.measurementModalVisible.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .recordMeasurement(bid.id, {
+        bid_position_id: val.bid_position_id,
+        measured_on: val.measured_on,
+        quantity: val.quantity,
+        note: val.note || null,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.MEASUREMENT_RECORDED'));
+          this.measurementModalVisible.set(false);
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   openIssueBidBillingModal(bid?: TradesBid): void {
@@ -528,10 +659,10 @@ export class ConstructionComponent implements OnInit {
       this.selectedBid.set(bid);
     }
     this.bidBillingForm.reset({
-      sal_number: `SAL-${(this.bidBillings().length || 0) + 1}`,
-      date: new Date().toISOString().substring(0, 10),
-      amount: '50000.00',
-      retention_amount: '5000.00',
+      kind: 'partial',
+      basis: 'percentage',
+      percentage: '',
+      date: today(),
     });
     this.bidBillingModalVisible.set(true);
   }
@@ -543,24 +674,27 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.bidBillingForm.getRawValue();
-    const payload: TradesBillingRequest = {
-      sal_number: val.sal_number,
-      date: val.date,
-      amount: val.amount,
-      retention_amount: val.retention_amount || undefined,
-    };
+    const isPartial = val.kind === 'partial';
+    const hasPercentage = isPartial && val.basis === 'percentage';
 
-    this.api.issueBidBilling(bid.id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.BILLING_ISSUED'));
-        this.bidBillingModalVisible.set(false);
-        this.loadBidDetails(bid.id);
-        this.loadBids();
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .issueBidBilling(bid.id, {
+        kind: val.kind,
+        basis: isPartial && val.basis !== '' ? val.basis : null,
+        percentage: hasPercentage ? val.percentage : null,
+        date: val.date,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.BILLING_ISSUED'));
+          this.bidBillingModalVisible.set(false);
+          this.loadBidDetails(bid.id);
+          this.loadBids();
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   // --- DIARY METHODS ---
@@ -581,12 +715,11 @@ export class ConstructionComponent implements OnInit {
   openCreateDiaryModal(): void {
     this.diaryForm.reset({
       site_id: this.selectedDiarySiteId() || this.sites()[0]?.id || '',
-      date: new Date().toISOString().substring(0, 10),
-      weather_condition: 'Sereno 18°C',
-      workers_count: 6,
-      equipment_notes: 'Gru a torre, betoniera, escavatore',
+      entry_date: today(),
+      weather: '',
+      workers_present: 6,
       work_performed: '',
-      director_notes: '',
+      incidents: '',
     });
     this.diaryModalVisible.set(true);
   }
@@ -597,25 +730,25 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.diaryForm.getRawValue();
-    const payload: TradesSiteDiaryRequest = {
-      date: val.date,
-      weather_condition: val.weather_condition,
-      workers_count: Number(val.workers_count),
-      equipment_notes: val.equipment_notes || undefined,
-      work_performed: val.work_performed,
-      director_notes: val.director_notes || undefined,
-    };
 
-    this.api.writeSiteDiary(val.site_id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.DIARY_SAVED'));
-        this.diaryModalVisible.set(false);
-        this.loadDiary(val.site_id);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .writeSiteDiary(val.site_id, {
+        entry_date: val.entry_date,
+        weather: val.weather || null,
+        workers_present: Number(val.workers_present),
+        work_performed: val.work_performed,
+        incidents: val.incidents || null,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.DIARY_SAVED'));
+          this.diaryModalVisible.set(false);
+          this.loadDiary(val.site_id);
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   // --- DOCUMENTS METHODS ---
@@ -646,9 +779,12 @@ export class ConstructionComponent implements OnInit {
   openCreateDocumentModal(): void {
     this.documentForm.reset({
       site_id: this.selectedDiarySiteId() || this.sites()[0]?.id || '',
+      kind: 'safety_plan',
       title: '',
-      category: 'pos',
-      expires_at: '',
+      subcontractor_id: '',
+      issued_on: '',
+      expires_on: '',
+      notes: '',
     });
     this.documentModalVisible.set(true);
   }
@@ -659,22 +795,26 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.documentForm.getRawValue();
-    const payload: TradesSiteDocumentRequest = {
-      title: val.title,
-      category: val.category,
-      expires_at: val.expires_at || undefined,
-    };
 
-    this.api.addSiteDocument(val.site_id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.DOCUMENT_ADDED'));
-        this.documentModalVisible.set(false);
-        this.loadDocuments();
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .addSiteDocument(val.site_id, {
+        kind: val.kind,
+        title: val.title,
+        subcontractor_id: val.subcontractor_id || null,
+        issued_on: val.issued_on || null,
+        expires_on: val.expires_on || null,
+        notes: val.notes || null,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.DOCUMENT_ADDED'));
+          this.documentModalVisible.set(false);
+          this.loadDocuments();
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   // --- SUBCONTRACTS METHODS ---
@@ -684,6 +824,10 @@ export class ConstructionComponent implements OnInit {
         this.subcontractors.set(res.data || []);
       },
     });
+  }
+
+  subcontractorNameOf(subcontractorId: string): string {
+    return this.subcontractors().find((candidate) => candidate.id === subcontractorId)?.name ?? subcontractorId;
   }
 
   loadSiteSubcontracts(siteId: string): void {
@@ -702,11 +846,12 @@ export class ConstructionComponent implements OnInit {
 
   openCreateSubcontractorModal(): void {
     this.subcontractorForm.reset({
-      company_name: '',
-      vat_number: '',
-      contact_email: '',
-      phone: '',
-      qualification: 'Opere da pittore e cartongessista',
+      name: '',
+      contact_id: '',
+      tax_id: '',
+      trade: '',
+      status: 'active',
+      notes: '',
     });
     this.subcontractorModalVisible.set(true);
   }
@@ -717,32 +862,37 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.subcontractorForm.getRawValue();
-    const payload: TradesSubcontractorRequest = {
-      company_name: val.company_name,
-      vat_number: val.vat_number,
-      contact_email: val.contact_email || undefined,
-      phone: val.phone || undefined,
-      qualification: val.qualification || undefined,
-    };
 
-    this.api.createSubcontractor(payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACTOR_CREATED'));
-        this.subcontractorModalVisible.set(false);
-        this.loadSubcontractors();
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .createSubcontractor({
+        name: val.name,
+        contact_id: val.contact_id || null,
+        tax_id: val.tax_id || null,
+        trade: val.trade || null,
+        status: val.status,
+        notes: val.notes || null,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACTOR_CREATED'));
+          this.subcontractorModalVisible.set(false);
+          this.loadSubcontractors();
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   openCreateSubcontractModal(): void {
     this.subcontractForm.reset({
       site_id: this.selectedDiarySiteId() || this.sites()[0]?.id || '',
       subcontractor_id: this.subcontractors()[0]?.id || '',
-      scope_of_work: '',
+      bid_id: '',
+      description: '',
       contract_amount: '25000.00',
+      starts_on: '',
+      ends_on: '',
     });
     this.subcontractModalVisible.set(true);
   }
@@ -753,28 +903,34 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.subcontractForm.getRawValue();
-    const payload: TradesSubcontractRequest = {
-      subcontractor_id: val.subcontractor_id,
-      scope_of_work: val.scope_of_work,
-      contract_amount: val.contract_amount,
-    };
 
-    this.api.createSiteSubcontract(val.site_id, payload).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CREATED'));
-        this.subcontractModalVisible.set(false);
-        this.loadSiteSubcontracts(val.site_id);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .createSiteSubcontract(val.site_id, {
+        subcontractor_id: val.subcontractor_id,
+        bid_id: val.bid_id || null,
+        description: val.description,
+        contract_amount: val.contract_amount,
+        starts_on: val.starts_on || null,
+        ends_on: val.ends_on || null,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CREATED'));
+          this.subcontractModalVisible.set(false);
+          this.loadSiteSubcontracts(val.site_id);
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   openCertifySubcontractModal(sub: TradesSubcontract): void {
     this.selectedSubcontract.set(sub);
     this.certifyForm.reset({
+      certified_on: today(),
       amount: '5000.00',
+      description: '',
     });
     this.certifySubcontractModalVisible.set(true);
   }
@@ -786,16 +942,22 @@ export class ConstructionComponent implements OnInit {
       return;
     }
     const val = this.certifyForm.getRawValue();
-    this.api.certifySubcontractWork(sub.id, { amount: val.amount }).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CERTIFIED'));
-        this.certifySubcontractModalVisible.set(false);
-        this.loadSiteSubcontracts(sub.site_id);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .certifySubcontractWork(sub.id, {
+        certified_on: val.certified_on,
+        amount: val.amount,
+        description: val.description,
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CERTIFIED'));
+          this.certifySubcontractModalVisible.set(false);
+          this.loadSiteSubcontracts(sub.construction_site_id);
+        },
+        error: () => {
+          this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
+        },
+      });
   }
 
   getBidStatusColor(status: TradesBidStatus): string {
@@ -804,28 +966,26 @@ export class ConstructionComponent implements OnInit {
         return 'default';
       case 'submitted':
         return 'processing';
-      case 'awarded':
+      case 'accepted':
         return 'success';
       case 'rejected':
         return 'error';
-      case 'closed':
-        return 'geekblue';
       default:
         return 'default';
     }
   }
 
-  getCategoryColor(cat: string): string {
-    switch (cat) {
-      case 'pos':
+  getCategoryColor(kind: string): string {
+    switch (kind) {
+      case 'safety_plan':
         return 'blue';
-      case 'psc':
+      case 'risk_assessment':
         return 'cyan';
-      case 'durc':
+      case 'compliance_certificate':
         return 'green';
       case 'insurance':
         return 'purple';
-      case 'compliance':
+      case 'training_certificate':
         return 'geekblue';
       default:
         return 'default';

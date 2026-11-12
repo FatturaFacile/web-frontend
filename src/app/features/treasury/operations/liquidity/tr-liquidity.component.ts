@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -23,9 +23,11 @@ import {
   TreasuryOpsApiService,
 } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-tr-liquidity',
+  styleUrl: './tr-liquidity.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -68,24 +70,29 @@ export class TrLiquidityComponent implements OnInit {
   protected selectedScenarios: string[] = [];
 
   protected readonly scenarioForm = this.fb.group({
-    code: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    description: this.fb.control(''),
-    collection_delay_days: this.fb.control(0),
-    disbursement_acceleration_days: this.fb.control(0),
-    sales_growth_factor: this.fb.control(1),
+    code: this.fb.control('', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[A-Z0-9_]+$/)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
+    description: this.fb.control('', Validators.maxLength(2000)),
+    collection_delay_days: this.fb.control(0, [Validators.min(-365), Validators.max(365)]),
+    disbursement_acceleration_days: this.fb.control(0, [Validators.min(-365), Validators.max(365)]),
+    sales_growth_factor: this.fb.control(1, [Validators.min(0), Validators.max(5)]),
   });
 
   protected readonly recurringForm = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    category: this.fb.control(''),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
+    category: this.fb.control('', Validators.maxLength(50)),
     direction: this.fb.control<RecurringCashDirection>('outflow', Validators.required),
     amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
-    currency: this.fb.control('EUR', Validators.required),
+    currency: this.fb.control('EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]),
     frequency: this.fb.control<RecurringCashFrequency>('monthly', Validators.required),
     next_date: this.fb.control('', Validators.required),
-    end_date: this.fb.control(''),
+    end_date: this.fb.control('', endsNotBefore('next_date')),
   });
+
+  constructor() {
+    // The API requires end_date on or after next_date.
+    revalidateOnStartChange(this.recurringForm, 'next_date', 'end_date', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.loadScenarios();

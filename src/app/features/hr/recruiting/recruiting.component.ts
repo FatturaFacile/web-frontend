@@ -19,6 +19,7 @@ type Row = { id: string } & Record<string, unknown>;
 /** Recruiting: postings, applications through the pipeline, hiring, retention and onboarding. */
 @Component({
   selector: 'app-hr-recruiting',
+  styleUrl: './recruiting.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,
@@ -84,9 +85,9 @@ export class RecruitingComponent implements OnInit {
     ],
     fields: [
       { key: 'title', labelKey: 'hrmCommon.title', type: 'text', required: true, maxLength: 180 },
-      { key: 'description', labelKey: 'hrmCommon.description', type: 'textarea', nullable: true, column: false },
+      { key: 'description', labelKey: 'hrmCommon.description', type: 'textarea', nullable: true, column: false, maxLength: 20000 },
       { key: 'location', labelKey: 'hrmRecruiting.location', type: 'text', nullable: true, maxLength: 120 },
-      { key: 'employment_type', labelKey: 'hrmLeave.employmentType', type: 'text', defaultValue: 'full_time' },
+      { key: 'employment_type', labelKey: 'hrmLeave.employmentType', type: 'text', maxLength: 40, defaultValue: 'full_time' },
       {
         key: 'status',
         labelKey: 'hrmCommon.statusCol',
@@ -95,7 +96,7 @@ export class RecruitingComponent implements OnInit {
         options: () => ['draft', 'open'].map((value) => ({ value, labelKey: `hrmCommon.status.${value}` })),
       },
       { key: 'opens_on', labelKey: 'hrmRecruiting.opensOn', type: 'date', nullable: true },
-      { key: 'closes_on', labelKey: 'hrmRecruiting.closesOn', type: 'date', nullable: true },
+      { key: 'closes_on', labelKey: 'hrmRecruiting.closesOn', type: 'date', nullable: true, notBefore: 'opens_on' },
     ],
   }));
 
@@ -150,13 +151,13 @@ export class RecruitingComponent implements OnInit {
         createOnly: true,
         options: () => this.postingOptions(),
       },
-      { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true },
-      { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', required: true },
-      { key: 'email', labelKey: 'hrmRecruiting.email', type: 'text', required: true },
-      { key: 'phone', labelKey: 'hrmRecruiting.phone', type: 'text', nullable: true, column: false },
-      { key: 'source', labelKey: 'hrmRecruiting.source', type: 'text', nullable: true, column: false },
-      { key: 'cover_note', labelKey: 'hrmRecruiting.coverNote', type: 'textarea', nullable: true, column: false },
-      { key: 'consent_until', labelKey: 'hrmRecruiting.consentUntil', type: 'date', nullable: true, column: false },
+      { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true, maxLength: 100 },
+      { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', required: true, maxLength: 100 },
+      { key: 'email', labelKey: 'hrmRecruiting.email', type: 'text', required: true, maxLength: 180 },
+      { key: 'phone', labelKey: 'hrmRecruiting.phone', type: 'text', nullable: true, maxLength: 50, column: false },
+      { key: 'source', labelKey: 'hrmRecruiting.source', type: 'text', nullable: true, maxLength: 60, column: false },
+      { key: 'cover_note', labelKey: 'hrmRecruiting.coverNote', type: 'textarea', nullable: true, maxLength: 20000, column: false },
+      { key: 'consent_until', labelKey: 'hrmRecruiting.consentUntil', type: 'date', nullable: true, column: false, inFuture: true },
       { key: 'status', labelKey: 'hrmCommon.statusCol', type: 'text', noForm: true },
       { key: 'retention_until', labelKey: 'hrmRecruiting.retentionUntil', type: 'text', noForm: true },
     ],

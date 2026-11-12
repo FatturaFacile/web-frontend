@@ -34,6 +34,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
 
 @Component({
   selector: 'app-login',
+  styleUrl: './login.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,

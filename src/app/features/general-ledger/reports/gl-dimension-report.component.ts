@@ -7,24 +7,28 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DimensionReport, GeneralLedgerApiService, ReportDimension } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Result by cost centre, profit centre or project, in the accounting currency. */
 @Component({
   selector: 'app-gl-dimension-report',
+  styleUrl: './gl-dimension-report.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div>
-      <nz-select [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
+    <div class="filters">
+      <nz-select class="select-md" [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
         @for (option of dimensions; track option) {
           <nz-option [nzValue]="option" [nzLabel]="'GL.DIMENSION_' + option.toUpperCase() | translate" />
         }
       </nz-select>
       <label for="dr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="dr-from" nz-input type="date" [(ngModel)]="from" />
+      <input class="date-input" id="dr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="dr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="dr-to" nz-input type="date" [(ngModel)]="to" />
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <input class="date-input" id="dr-to" nz-input type="date" [(ngModel)]="to" />
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
     @if (report(); as r) {
       <p>
@@ -63,6 +67,10 @@ export class GlDimensionReportComponent {
   protected readonly report = signal<DimensionReport | null>(null);
   protected readonly loading = signal(false);
   protected dimension: ReportDimension = 'cost_center';
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
 

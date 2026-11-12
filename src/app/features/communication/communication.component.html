@@ -56,7 +56,7 @@
             [ngModel]="filterChannel()"
             (ngModelChange)="filterChannel.set($event); loadDeliveries()"
             nzPlaceHolder="Canale"
-           
+           class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>
@@ -69,7 +69,7 @@
             [ngModel]="filterStatus()"
             (ngModelChange)="filterStatus.set($event); loadDeliveries()"
             nzPlaceHolder="Stato"
-           
+           class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="sent" [nzLabel]="'COMMUNICATION.STATUS_SENT' | translate"></nz-option>
@@ -210,7 +210,7 @@
             [ngModel]="filterTemplateChannel()"
             (ngModelChange)="filterTemplateChannel.set($event); loadTemplates()"
             nzPlaceHolder="Canale"
-           
+           class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
             <nz-option nzValue="email" nzLabel="Email"></nz-option>
@@ -316,7 +316,7 @@
         <form nz-form [formGroup]="quickSendForm" (ngSubmit)="sendQuickCommunication()">
           <nz-form-item>
             <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.SEND_TYPE' | translate }}</nz-form-label>
-            <nz-form-control [nzSpan]="12">
+            <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'mode')">
               <nz-select formControlName="mode">
                 <nz-option nzValue="message" [nzLabel]="'COMMUNICATION.SEND_MODE_MESSAGE' | translate"></nz-option>
                 <nz-option nzValue="document" [nzLabel]="'COMMUNICATION.SEND_MODE_DOCUMENT' | translate"></nz-option>
@@ -326,7 +326,7 @@
 
           <nz-form-item>
             <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.CHANNEL' | translate }}</nz-form-label>
-            <nz-form-control [nzSpan]="12">
+            <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'channel')">
               <nz-select formControlName="channel">
                 <nz-option nzValue="email" nzLabel="Email"></nz-option>
                 <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
@@ -337,8 +337,8 @@
           </nz-form-item>
 
           <nz-form-item>
-            <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.RECIPIENT' | translate }}</nz-form-label>
-            <nz-form-control [nzSpan]="12">
+            <nz-form-label [nzSpan]="5" [nzRequired]="isMessageMode()">{{ 'COMMUNICATION.RECIPIENT' | translate }}</nz-form-label>
+            <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'recipient')">
               <input
                 nz-input
                 formControlName="recipient"
@@ -350,7 +350,7 @@
           @if (quickSendForm.get('mode')?.value === 'document') {
             <nz-form-item>
               <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.DOCUMENT_TYPE' | translate }}</nz-form-label>
-              <nz-form-control [nzSpan]="12">
+              <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'document_type')">
                 <nz-select formControlName="document_type">
                   <nz-option nzValue="invoice" [nzLabel]="'COMMUNICATION.DOC_INVOICE' | translate"></nz-option>
                   <nz-option nzValue="quote" [nzLabel]="'COMMUNICATION.DOC_QUOTE' | translate"></nz-option>
@@ -360,7 +360,7 @@
 
             <nz-form-item>
               <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.DOCUMENT_ID' | translate }}</nz-form-label>
-              <nz-form-control [nzSpan]="12">
+              <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'document_id')">
                 <input
                   nz-input
                   formControlName="document_id"
@@ -371,7 +371,7 @@
 
             <nz-form-item>
               <nz-form-label [nzSpan]="5">{{ 'COMMUNICATION.ATTACHMENT_MESSAGE' | translate }}</nz-form-label>
-              <nz-form-control [nzSpan]="12">
+              <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'message')">
                 <textarea
                   nz-input
                   rows="3"
@@ -382,8 +382,8 @@
             </nz-form-item>
           } @else {
             <nz-form-item>
-              <nz-form-label [nzSpan]="5">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
-              <nz-form-control [nzSpan]="12">
+              <nz-form-label [nzSpan]="5" nzRequired>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
+              <nz-form-control [nzSpan]="12" [nzErrorTip]="errorTip(quickSendForm, 'template_code')">
                 <input
                   nz-input
                   formControlName="template_code"
@@ -470,38 +470,34 @@
     <form nz-form [formGroup]="channelConfigForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMUNICATION.DRIVER' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'driver')">
           <nz-select formControlName="driver">
-            <nz-option nzValue="smtp" nzLabel="SMTP"></nz-option>
-            <nz-option nzValue="ses" nzLabel="Amazon SES"></nz-option>
-            <nz-option nzValue="sendgrid" nzLabel="SendGrid"></nz-option>
-            <nz-option nzValue="mailgun" nzLabel="Mailgun"></nz-option>
-            <nz-option nzValue="twilio" nzLabel="Twilio"></nz-option>
-            <nz-option nzValue="whatsapp_cloud" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP_CLOUD_API' | translate"></nz-option>
-            <nz-option nzValue="telegram_bot" nzLabel="Telegram Bot"></nz-option>
-            <nz-option nzValue="log" [nzLabel]="'COMMUNICATION.LBL_LOG_SIMULATOR' | translate"></nz-option>
+            @for (driver of driverOptions(); track driver) {
+              <nz-option [nzValue]="driver" [nzLabel]="'COMMUNICATION.DRIVER_' + driver.toUpperCase() | translate"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMUNICATION.CHANNEL_ENABLED' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'is_enabled')">
           <nz-switch formControlName="is_enabled"></nz-switch>
         </nz-form-control>
       </nz-form-item>
 
+      @if (isSmtpDriver()) {
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.HOST' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'host')">
             <input nz-input formControlName="host" [placeholder]="'COMMUNICATION.LBL_SMTP_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.PORT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'port')">
             <input nz-input formControlName="port" placeholder="587" />
           </nz-form-control>
         </nz-form-item>
@@ -510,7 +506,7 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.ENCRYPTION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'encryption')">
             <nz-select formControlName="encryption">
               <nz-option nzValue="tls" nzLabel="TLS"></nz-option>
               <nz-option nzValue="ssl" nzLabel="SSL"></nz-option>
@@ -521,7 +517,7 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.USERNAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'username')">
             <input nz-input formControlName="username" [placeholder]="'COMMUNICATION.LBL_USER_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -529,7 +525,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMUNICATION.PASSWORD' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'password')">
           <input nz-input type="password" formControlName="password" placeholder="••••••••" />
         </nz-form-control>
       </nz-form-item>
@@ -537,18 +533,49 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.FROM_ADDRESS' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'from_address')">
             <input nz-input formControlName="from_address" [placeholder]="'COMMUNICATION.LBL_BILLING_COMPANY_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.FROM_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'from_name')">
             <input nz-input formControlName="from_name" placeholder="Fattura Facile" />
           </nz-form-control>
         </nz-form-item>
       </div>
+      }
+
+      @if (channelConfigForm.controls.driver.value === 'twilio') {
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.ACCOUNT_SID' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'account_sid')">
+            <input nz-input formControlName="account_sid" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.AUTH_TOKEN' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'auth_token')">
+            <input nz-input type="password" formControlName="auth_token" placeholder="••••••••" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.FROM_NUMBER' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'from')">
+            <input nz-input formControlName="from" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      @if (channelConfigForm.controls.driver.value === 'telegram') {
+        <nz-form-item>
+          <nz-form-label>{{ 'COMMUNICATION.BOT_TOKEN' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(channelConfigForm, 'bot_token')">
+            <input nz-input type="password" formControlName="bot_token" placeholder="••••••••" />
+          </nz-form-control>
+        </nz-form-item>
+      }
     </form>
   </ng-container>
 </nz-modal>
@@ -565,7 +592,7 @@
     <form nz-form [formGroup]="testForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMUNICATION.TEST_RECIPIENT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(testForm, 'recipient')">
           <input
             nz-input
             formControlName="recipient"
@@ -590,14 +617,14 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(templateForm, 'code')">
             <input nz-input formControlName="code" [placeholder]="'COMMUNICATION.LBL_INVOICE_CREATED' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'COMMUNICATION.CHANNEL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(templateForm, 'channel')">
             <nz-select formControlName="channel">
               <nz-option nzValue="email" nzLabel="Email"></nz-option>
               <nz-option nzValue="whatsapp" [nzLabel]="'COMMUNICATION.LBL_WHATSAPP' | translate"></nz-option>
@@ -611,7 +638,7 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'COMMUNICATION.LOCALE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(templateForm, 'locale')">
             <nz-select formControlName="locale">
               <nz-option nzValue="it_IT" nzLabel="Italiano (it_IT)"></nz-option>
               <nz-option nzValue="en_US" nzLabel="English (en_US)"></nz-option>
@@ -623,22 +650,22 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'COMMUNICATION.ACTIVE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(templateForm, 'is_active')">
             <nz-switch formControlName="is_active"></nz-switch>
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <nz-form-item>
-        <nz-form-label>{{ 'COMMUNICATION.SUBJECT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isSubjectRequired()">{{ 'COMMUNICATION.SUBJECT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(templateForm, 'subject')">
           <input nz-input formControlName="subject" placeholder="Nuova Fattura {{ '{' }}{{ '{' }}number{{ '}' }}{{ '}' }}" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMUNICATION.TEMPLATE_BODY' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(templateForm, 'body')">
           <textarea
             nz-input
             rows="6"

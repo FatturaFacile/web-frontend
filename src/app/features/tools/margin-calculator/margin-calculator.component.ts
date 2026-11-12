@@ -13,6 +13,7 @@ type MarginMode = 'from-price' | 'from-margin';
 
 @Component({
   selector: 'app-margin-calculator',
+  styleUrl: './margin-calculator.component.scss',
   imports: [
     ReactiveFormsModule,
     NzCardModule,

@@ -115,12 +115,12 @@
                 <nz-tag [nzColor]="getStatusColor(doc.status)">
                   {{ doc.status | uppercase }}
                 </nz-tag>
-                @if (doc.checked_out_by) {
+                @if (doc.is_checked_out) {
                   <nz-tag nzColor="warning">{{ 'DMS.LBL_CHECK_OUT' | translate }}</nz-tag>
                 }
               </td>
               <td>
-                @if (doc.is_legal_hold) {
+                @if (doc.legal_hold) {
                   <nz-tag nzColor="error">
                     <span nz-icon nzType="lock"></span>
                     {{ 'DMS.LBL_LEGAL_HOLD' | translate }}
@@ -165,7 +165,7 @@
                     </button>
                   }
 
-                  @if (!doc.is_legal_hold) {
+                  @if (!doc.legal_hold) {
                     <button
                       *nzSpaceItem
                       nz-button
@@ -406,14 +406,14 @@
     <form nz-form [formGroup]="docForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.DOC_TITLE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'title')">
           <input nz-input formControlName="title" [placeholder]="'DMS.LBL_ES_FATTURA_FORNITORE_120' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'document_type')">
           <nz-select formControlName="document_type">
             <nz-option nzValue="Invoice" nzLabel="Fattura"></nz-option>
             <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTO' | translate"></nz-option>
@@ -427,7 +427,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'DMS.FOLDER' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'folder_id')">
           <nz-select formControlName="folder_id">
             <nz-option nzValue="" [nzLabel]="'DMS.LBL_CARTELLA_RADICE' | translate"></nz-option>
             @for (folder of folders(); track folder.id) {
@@ -439,15 +439,22 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'description')">
           <textarea nz-input rows="2" formControlName="description"></textarea>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'DMS.ORIGINAL_FILE_NAME' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="original_name" />
+        <nz-form-label nzRequired>{{ 'DMS.FILE' | translate }}</nz-form-label>
+        <nz-form-control [nzValidateStatus]="docFileError() ? 'error' : ''" [nzErrorTip]="docFileError() | translate">
+          <input type="file" [accept]="acceptedFileTypes" (change)="onDocFileSelected($event)" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'DMS.COMMENT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'comment')">
+          <input nz-input formControlName="comment" maxlength="500" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -465,9 +472,9 @@
   <ng-container *nzModalContent>
     <p>{{ 'DMS.CHECK_OUT_CONFIRM' | translate }} <strong>{{ checkOutDoc()?.title }}</strong>?</p>
     <nz-form-item>
-      <nz-form-label>{{ 'DMS.REASON' | translate }}</nz-form-label>
+      <nz-form-label>{{ 'DMS.NOTE' | translate }}</nz-form-label>
       <nz-form-control>
-        <input nz-input [ngModel]="checkOutReason()" (ngModelChange)="checkOutReason.set($event)" />
+        <input nz-input maxlength="500" [ngModel]="checkOutNote()" (ngModelChange)="checkOutNote.set($event)" />
       </nz-form-control>
     </nz-form-item>
   </ng-container>
@@ -484,9 +491,15 @@
   <ng-container *nzModalContent>
     <p>{{ 'DMS.CHECK_IN_CONFIRM' | translate }} <strong>{{ checkInDoc()?.title }}</strong></p>
     <nz-form-item>
-      <nz-form-label nzRequired>{{ 'DMS.UPDATED_FILE_NAME' | translate }}</nz-form-label>
+      <nz-form-label>{{ 'DMS.UPDATED_FILE' | translate }}</nz-form-label>
+      <nz-form-control [nzValidateStatus]="checkInFileError() ? 'error' : ''" [nzErrorTip]="checkInFileError() | translate">
+        <input type="file" [accept]="acceptedFileTypes" (change)="onCheckInFileSelected($event)" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.COMMENT' | translate }}</nz-form-label>
       <nz-form-control>
-        <input nz-input [ngModel]="checkInFileName()" (ngModelChange)="checkInFileName.set($event)" />
+        <input nz-input maxlength="500" [ngModel]="checkInComment()" (ngModelChange)="checkInComment.set($event)" />
       </nz-form-control>
     </nz-form-item>
   </ng-container>
@@ -508,6 +521,7 @@
         <textarea
           nz-input
           rows="2"
+          maxlength="500"
           [ngModel]="legalHoldReason()"
           (ngModelChange)="legalHoldReason.set($event)"
           [placeholder]="'DMS.LBL_ES_ORDINANZA_DI_CUSTODIA_DOCUMENTALE_PER' | translate"
@@ -529,7 +543,7 @@
     <form nz-form [formGroup]="folderForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(folderForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_BILANCI_E_DICHIARAZIONI' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -549,14 +563,14 @@
     <form nz-form [formGroup]="policyForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONSERVAZIONE_10_ANNI_FISCALE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'document_type')">
           <nz-select formControlName="document_type">
             <nz-option nzValue="Invoice" [nzLabel]="'DMS.LBL_INVOICE' | translate"></nz-option>
             <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRACT' | translate"></nz-option>
@@ -568,7 +582,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.RETENTION_MONTHS' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'retention_months')">
           <nz-input-number formControlName="retention_months" [nzMin]="1" [nzMax]="360"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
@@ -588,7 +602,7 @@
     <form nz-form [formGroup]="tagForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(tagForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONFIDENZIALE' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -616,7 +630,7 @@
           <nz-tag [nzColor]="getStatusColor(doc.status)">{{ doc.status | uppercase }}</nz-tag>
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'DMS.PROTECTION' | translate">
-          @if (doc.is_legal_hold) {
+          @if (doc.legal_hold) {
             <nz-tag nzColor="error">{{ 'DMS.LBL_LEGAL_HOLD_ATTIVO' | translate }}</nz-tag>
           } @else {
             <span>{{ 'DMS.LBL_NESSUN_BLOCCO' | translate }}</span>
@@ -732,9 +746,9 @@
             @for (l of docLinks(); track l.id) {
               <tr>
                 <td>
-                  <nz-tag>{{ l.target_type }}</nz-tag>
+                  <nz-tag>{{ 'DMS.LINK_TYPE_' + l.linkable_type.toUpperCase() | translate }}</nz-tag>
                 </td>
-                <td>{{ l.target_label || l.target_id }}</td>
+                <td>{{ l.label || l.linkable_id }}</td>
                 <td nzAlign="right">
                   <button nz-button nzDanger nzSize="small" (click)="removeLink(l)">
                     <span nz-icon nzType="delete"></span>
@@ -785,29 +799,22 @@
     <form nz-form [formGroup]="linkForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.ENTITY_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-select formControlName="target_type">
-            <nz-option nzValue="Invoice" nzLabel="Fattura"></nz-option>
-            <nz-option nzValue="PurchaseOrder" [nzLabel]="'DMS.LBL_ORDINE_D_ACQUISTO' | translate"></nz-option>
-            <nz-option nzValue="Quote" [nzLabel]="'DMS.LBL_PREVENTIVO' | translate"></nz-option>
-            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTO' | translate"></nz-option>
+        <nz-form-control [nzErrorTip]="errorTip(linkForm, 'linkable_type')">
+          <nz-select formControlName="linkable_type">
+            @for (type of linkTargetTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'DMS.LINK_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'DMS.ENTITY_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="target_id" [placeholder]="'DMS.LBL_UUID_DELL_ENTITA' | translate" />
+        <nz-form-control [nzErrorTip]="errorTip(linkForm, 'linkable_id')">
+          <input nz-input formControlName="linkable_id" [placeholder]="'DMS.LBL_UUID_DELL_ENTITA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
-      <nz-form-item>
-        <nz-form-label>{{ 'COMMON.LABEL' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="label" [placeholder]="'DMS.LBL_ES_FATTURA_F_2026_098' | translate" />
-        </nz-form-control>
-      </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>

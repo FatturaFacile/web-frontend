@@ -86,7 +86,7 @@
               [ngModel]="opp.stage?.code"
               (ngModelChange)="changeStage(opp, $event)"
               nzSize="small"
-             
+             class="w-field-sm"
             >
               @for (st of stages(); track st.id) {
                 <nz-option [nzValue]="st.code" [nzLabel]="st.name"></nz-option>
@@ -150,27 +150,27 @@
     <form nz-form [formGroup]="oppForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CRMX.LBL_OPPORTUNITY_NAME' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Name is required">
+        <nz-form-control [nzErrorTip]="errorTip(oppForm.controls.name)">
           <input nz-input formControlName="name" [placeholder]="'CRMX.LBL_E_G_Q4_CLOUD_MIGRATION' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CRMX.LBL_ACCOUNT_ID_UUID' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Account is required">
+        <nz-form-control [nzErrorTip]="errorTip(oppForm.controls.account_id)">
           <input nz-input formControlName="account_id" [placeholder]="'CRMX.LBL_ACCOUNT_UUID' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CRMX.LBL_AMOUNT' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Amount is required">
+        <nz-form-control [nzErrorTip]="errorTip(oppForm.controls.amount)">
           <nz-input-number formControlName="amount" [nzMin]="0" [nzStep]="500"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'CRMX.LBL_STAGE' | translate }}</nz-form-label>
+        <nz-form-label>{{ 'CRMX.LBL_STAGE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="stage_code">
             @for (st of stages(); track st.id) {

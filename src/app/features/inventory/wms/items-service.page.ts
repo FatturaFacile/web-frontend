@@ -96,7 +96,7 @@ export const STOCK_ITEMS_PAGE: ResourcePageConfig = {
           download: true,
           fields: [
             rf.select('layout_mode', ['preset', 'custom']),
-            rf.text('preset'),
+            rf.text('preset', { maxLength: 50 }),
             rf.json('layout'),
             rf.integer('start_offset', { min: 0 }),
             req(rf.lines('items', [req(rf.uuid('product_id')), req(rf.integer('quantity', { min: 1 }))], { required: true })),
@@ -219,8 +219,8 @@ export const INVENTORY_SERVICES_PAGE: ResourcePageConfig = {
       rowActions: [
         act('POST', 'RES.A.second_weighing', '/inventory/weighbridge/tickets/{id}/second-weighing', {
           fields: [
-            req(rf.uuid('weighbridge_vehicle_id')),
-            req(rf.select('direction', ['inbound', 'outbound'])),
+            rf.uuid('weighbridge_vehicle_id'),
+            rf.select('direction', ['inbound', 'outbound']),
             rf.decimal('weight_kg'),
             rf.uuid('reading_id'),
             rf.bool('use_stored_tare'),

@@ -176,13 +176,15 @@ describe('IntrastatApiService', () => {
     expect(req4.request.method).toBe('DELETE');
     req4.flush({ message: 'Deleted' });
 
-    const expReq: IntrastatExportRequest = { declaration_id: 'dec-1', format: 'scdata' };
+    const expReq: IntrastatExportRequest = { declaration_ids: ['dec-1'], channel: 'entratel', customs_section_code: '123456' };
     service.exportDeclaration(expReq).subscribe((res) => {
-      expect(res.data.file_name).toBe('SCINTR26.001');
+      expect(res.file_name).toBe('ZENT1112.I01');
+      expect(res.content).toBe('SC_RAW_CONTENT');
     });
     const req5 = httpMock.expectOne((r) => r.url.endsWith('/intrastat/exports'));
     expect(req5.request.method).toBe('POST');
-    req5.flush({ data: { file_name: 'SCINTR26.001', content: 'SC_RAW_CONTENT' } });
+    expect(req5.request.body).toEqual(expReq);
+    req5.flush('SC_RAW_CONTENT', { headers: { 'Content-Disposition': 'attachment; filename="ZENT1112.I01"' } });
   });
 
   it('should get periodicity and manage product profiles', () => {

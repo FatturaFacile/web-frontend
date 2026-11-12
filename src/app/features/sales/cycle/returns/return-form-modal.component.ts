@@ -31,6 +31,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 /** Records a customer return request against a delivery note. */
 @Component({
   selector: 'app-return-form-modal',
+  styleUrl: './return-form-modal.component.scss',
   imports: [FormsModule, NzAlertModule, NzCheckboxModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <nz-modal
@@ -76,6 +77,8 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
                 inputmode="decimal"
                 [attr.aria-label]="'SC.RETURNS.QUANTITY' | translate"
                 [placeholder]="'SC.RETURNS.QUANTITY' | translate"
+                [class.ant-input-status-error]="exceedsDelivered(draft)"
+                [attr.title]="exceedsDelivered(draft) ? ('COMMON.VALIDATION.EXCEEDS_LIMIT' | translate) : null"
                 [(ngModel)]="draft.quantity"
               />
               <nz-select [(ngModel)]="draft.condition" [attr.aria-label]="'SC.RETURNS.CONDITION' | translate">
@@ -149,17 +152,26 @@ export class ReturnFormModalComponent {
     });
   }
 
+  /** A return cannot give back more than the delivery note line delivered. */
+  protected exceedsDelivered(draft: ReturnLineDraft): boolean {
+    return !!draft.quantity && Number(draft.quantity) > Number(draft.item.quantity);
+  }
+
   protected valid(): boolean {
     const entered = this.drafts().filter((d) => d.quantity);
     return (
       !!this.deliveryNoteId() &&
       this.reason.trim().length > 0 &&
       entered.length > 0 &&
-      entered.every((d) => DECIMAL.test(d.quantity))
+      entered.every((d) => DECIMAL.test(d.quantity) && Number(d.quantity) > 0 && !this.exceedsDelivered(d)) &&
+      this.notes.length <= 2000
     );
   }
 
   protected submit(): void {
+    if (!this.valid()) {
+      return;
+    }
     const payload: SalesReturnPayload = {
       delivery_note_id: this.deliveryNoteId(),
       warehouse_id: this.warehouseId,

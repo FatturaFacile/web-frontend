@@ -18,6 +18,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 /** Courses of an instructor: participants and the attendance sheet of a day. */
 @Component({
   selector: 'app-area-instructor',
+  styleUrl: './area-instructor.component.scss',
   imports: [DatePipe, FormsModule, NzButtonModule, NzEmptyModule, NzRadioModule, NzTableModule, TranslatePipe],
   template: `
     @if (courses().length === 0) {

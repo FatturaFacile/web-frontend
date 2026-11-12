@@ -11,6 +11,7 @@ import { GlVatRegistersComponent } from './gl-vat-registers.component';
 
 @Component({
   selector: 'app-gl-reports',
+  styleUrl: './gl-reports.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,

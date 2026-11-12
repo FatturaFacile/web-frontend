@@ -33,6 +33,7 @@ const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
 
 @Component({
   selector: 'app-gl-journals',
+  styleUrl: './gl-journals.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

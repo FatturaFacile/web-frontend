@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import {
   applyServerErrors,
   HrSelfServiceApiService,
@@ -22,8 +22,26 @@ import { decimalStringValidator } from '../shared/hr-decimal.validator';
 import { reportHttpError } from '../shared/hr-http.util';
 import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 
+/** Leave hours mirror the API rule min:0.5, max:2000 (a malformed decimal is reported by decimalStringValidator). */
+function leaveHoursRangeValidator(control: AbstractControl): ValidationErrors | null {
+  const raw = String(control.value ?? '').trim();
+  if (raw === '' || Number.isNaN(Number(raw))) {
+    return null;
+  }
+  const hours = Number(raw);
+  return hours >= 0.5 && hours <= 2000 ? null : { range: true };
+}
+
+/** End date must not precede the start date (API: after_or_equal:start_date). */
+function endNotBeforeStartValidator(control: AbstractControl): ValidationErrors | null {
+  const start = control.parent?.get('start_date')?.value as string | undefined;
+  const end = control.value as string | undefined;
+  return start && end && end < start ? { dateOrder: true } : null;
+}
+
 @Component({
   selector: 'app-ss-leave',
+  styleUrl: './ss-leave.component.scss',
   imports: [
     DatePipe,
     ReactiveFormsModule,
@@ -59,11 +77,19 @@ export class SsLeaveComponent implements OnInit {
   protected readonly form = this.fb.group({
     leave_type_id: ['', Validators.required],
     start_date: ['', Validators.required],
-    end_date: ['', Validators.required],
-    total_hours: ['', [Validators.required, decimalStringValidator]],
-    reason: ['', Validators.maxLength(500)],
+    end_date: ['', [Validators.required, endNotBeforeStartValidator]],
+    total_hours: ['', [Validators.required, decimalStringValidator, leaveHoursRangeValidator]],
+    reason: ['', Validators.maxLength(1000)],
   });
-  protected readonly cancelReason = this.fb.control('', Validators.required);
+  protected readonly cancelReason = this.fb.control('', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(1000),
+  ]);
+
+  constructor() {
+    this.form.controls.start_date.valueChanges.subscribe(() => this.form.controls.end_date.updateValueAndValidity());
+  }
 
   ngOnInit(): void {
     // The portal endpoint needs no HR role: the employee only labels own balances and requests.
@@ -72,6 +98,26 @@ export class SsLeaveComponent implements OnInit {
       error: () => this.leaveTypes.set([]),
     });
     this.reload();
+  }
+
+  protected errorTip(path: string): string {
+    const errors = this.form.get(path)?.errors;
+    if (errors?.['serverError']) {
+      return String(errors['serverError']);
+    }
+    if (errors?.['required']) {
+      return this.i18n.translate('hrmCommon.required');
+    }
+    if (errors?.['decimal']) {
+      return this.i18n.translate('hrmCommon.invalidDecimal');
+    }
+    return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+  }
+
+  protected cancelReasonTip(): string {
+    return this.i18n.translate(
+      this.cancelReason.errors?.['required'] ? 'hrmCommon.required' : 'COMMON.VALIDATION.INVALID_VALUE',
+    );
   }
 
   protected typeName(id: string): string {

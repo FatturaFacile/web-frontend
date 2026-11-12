@@ -52,7 +52,7 @@ describe('HospitalityApiService', () => {
     party_size: 4,
     starts_at: '2026-03-02T20:00:00Z',
     duration_minutes: 120,
-    status: 'confirmed',
+    status: 'booked',
   };
 
   beforeEach(() => {
@@ -94,7 +94,7 @@ describe('HospitalityApiService', () => {
       data: {
         room: { id: 'room-1', name: 'Sala Principale', width: 1000, height: 600 },
         tables: [
-          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rect', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
+          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rectangle', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
           { id: 'tbl-2', name: 'T2', seats: 2, shape: 'round', pos_x: 90, pos_y: 0, width: 60, height: 60, status: 'free', order_id: null, covers: null },
         ],
       },
@@ -112,7 +112,7 @@ describe('HospitalityApiService', () => {
       data: {
         room: { id: 'room-1', name: 'Sala Principale', width: 1000, height: 600 },
         tables: [
-          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rect', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
+          { id: 'tbl-1', name: 'T1', seats: 4, shape: 'rectangle', pos_x: 0, pos_y: 0, width: 80, height: 80, status: 'occupied', order_id: 'ord-1', covers: '2' },
           { id: 'tbl-2', name: 'T2', seats: 2, shape: 'round', pos_x: 90, pos_y: 0, width: 60, height: 60, status: 'free', order_id: null, covers: null },
         ],
       },
@@ -145,7 +145,7 @@ describe('HospitalityApiService', () => {
 
     service
       .addOrderItems('ord-1', {
-        items: [{ name: 'Spaghetti alle Vongole', quantity: 2, unit_price: '18.00', course: 2 }],
+        items: [{ description: 'Spaghetti alle Vongole', quantity: 2, unit_price: '18.00', tax_rate: 10, course: 2 }],
       })
       .subscribe((res) => {
         expect(res.data.length).toBe(1);
@@ -158,7 +158,7 @@ describe('HospitalityApiService', () => {
         {
           id: 'item-1',
           order_id: 'ord-1',
-          name: 'Spaghetti alle Vongole',
+          description: 'Spaghetti alle Vongole',
           quantity: 2,
           unit_price: '18.00',
           subtotal: '36.00',
@@ -178,12 +178,13 @@ describe('HospitalityApiService', () => {
     reqFire.flush({ data: { status: 'fired' } });
 
     service
-      .payOrder('ord-1', { payment_method: 'card', cash_amount: 96.0 })
+      .payOrder('ord-1', { pos_session_id: 'sess-1', mode: 'equal', ways: 2, payment_method: 'mixed', cash_amount: 96.0 })
       .subscribe((res) => {
         expect(res.data.payment_id).toBe('pay-123');
       });
     const reqPay = httpTesting.expectOne(`${baseUrl}/orders/ord-1/payments`);
     expect(reqPay.request.method).toBe('POST');
+    expect(reqPay.request.body).toEqual({ pos_session_id: 'sess-1', mode: 'equal', ways: 2, payment_method: 'mixed', cash_amount: 96.0 });
     reqPay.flush({ data: { payment_id: 'pay-123' } });
   });
 
@@ -196,11 +197,11 @@ describe('HospitalityApiService', () => {
     expect(reqKds.request.method).toBe('GET');
     reqKds.flush({ data: [mockTicket] });
 
-    service.getReservations().subscribe((res) => {
+    service.getReservations({ date: '2026-11-12' }).subscribe((res) => {
       expect(res.data.length).toBe(1);
       expect(res.data[0].guest_name).toBe('Mario Rossi');
     });
-    const reqRes = httpTesting.expectOne(`${baseUrl}/reservations`);
+    const reqRes = httpTesting.expectOne(`${baseUrl}/reservations?date=2026-11-12`);
     expect(reqRes.request.method).toBe('GET');
     reqRes.flush({ data: [mockReservation] });
   });

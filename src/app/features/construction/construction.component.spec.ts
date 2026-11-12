@@ -5,6 +5,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
+  ClientApiService,
   ConstructionApiService,
   ConstructionProgressBilling,
   ConstructionSite,
@@ -26,11 +27,9 @@ describe('ConstructionComponent', () => {
   const mockSite: ConstructionSite = {
     id: 'site-1-uuid',
     code: 'CANTIERE-001',
-    client: 'Residenza Bellavista SA',
-    location: 'Lugano Centro',
-    regime: 'CH',
-    sal: 'SAL 2',
-    norm: 'SIA 118',
+    name: 'Residenza Bellavista',
+    client_id: 'contact-1',
+    address: 'Lugano Centro',
   };
 
   const mockSal: ConstructionProgressBilling = {
@@ -47,35 +46,37 @@ describe('ConstructionComponent', () => {
 
   const mockBid: TradesBid = {
     id: 'bid-1-uuid',
-    code: 'APP-2026-001',
+    bid_number: 'APP-2026-001',
     title: 'Opere da Muratore e Cemento Armato',
-    site_id: 'site-1-uuid',
-    client_name: 'Residenza Bellavista SA',
+    construction_site_id: 'site-1-uuid',
+    contact_id: 'contact-1',
+    language: 'it',
     currency: 'CHF',
-    total_amount: '450000.00',
+    tax_rate: '8.10',
     status: 'submitted',
   };
 
   const mockPosition: TradesBidPosition = {
     id: 'pos-1-uuid',
     bid_id: 'bid-1-uuid',
-    code: '01.02.03',
+    position_code: '01.02.03',
     description: 'Getto calcestruzzo C25/30',
     unit: 'm³',
-    quantity: 120,
+    quantity: '120',
     unit_price: '210.00',
-    subtotal: '25200.00',
+    total: '25200.00',
   };
 
   const mockBidBilling: TradesBilling = {
     id: 'tb-1-uuid',
     bid_id: 'bid-1-uuid',
-    sal_number: 'SAL-1',
-    date: '2026-03-01',
-    amount: '80000.00',
+    kind: 'partial',
+    basis: 'percentage',
+    sequence: 1,
+    billing_date: '2026-03-01',
+    gross_this: '80000.00',
     retention_amount: '8000.00',
-    net_payable: '72000.00',
-    status: 'certified',
+    amount_invoiced: '72000.00',
   };
 
   const mockBudgetControl: TradesBudgetControl = {
@@ -90,36 +91,34 @@ describe('ConstructionComponent', () => {
 
   const mockDiary: TradesSiteDiaryEntry = {
     id: 'diary-1-uuid',
-    site_id: 'site-1-uuid',
-    date: '2026-03-02',
-    weather_condition: 'Sereno 18°C',
-    workers_count: 8,
+    construction_site_id: 'site-1-uuid',
+    entry_date: '2026-03-02',
+    weather: 'Sereno 18°C',
+    workers_present: 8,
     work_performed: 'Armatura solaio e getto pilastri',
   };
 
   const mockDocument: TradesSiteDocument = {
     id: 'doc-1-uuid',
-    site_id: 'site-1-uuid',
+    construction_site_id: 'site-1-uuid',
     title: 'Piano Operativo di Sicurezza POS',
-    category: 'pos',
-    expires_at: '2026-12-31',
+    kind: 'safety_plan',
+    expires_on: '2026-12-31',
   };
 
   const mockSubcontractor: TradesSubcontractor = {
     id: 'sub-1-uuid',
-    company_name: 'Edilizia Moderna Sagl',
-    vat_number: 'CHE-999.888.777',
-    qualification: 'Opere di finitura',
+    name: 'Edilizia Moderna Sagl',
+    tax_id: 'CHE-999.888.777',
+    trade: 'Opere di finitura',
   };
 
   const mockSubcontract: TradesSubcontract = {
     id: 'sc-1-uuid',
-    site_id: 'site-1-uuid',
+    construction_site_id: 'site-1-uuid',
     subcontractor_id: 'sub-1-uuid',
-    subcontractor_name: 'Edilizia Moderna Sagl',
-    scope_of_work: 'Posa cartongessi e tinteggiatura',
+    description: 'Posa cartongessi e tinteggiatura',
     contract_amount: '35000.00',
-    certified_amount: '10000.00',
     status: 'active',
   };
 
@@ -129,9 +128,9 @@ describe('ConstructionComponent', () => {
     getProgressBillings: vi.fn().mockReturnValue(of({ data: [mockSal] })),
     createProgressBilling: vi.fn().mockReturnValue(of({ data: mockSal })),
     getBids: vi.fn().mockReturnValue(of({ data: [mockBid] })),
-    getBid: vi.fn().mockReturnValue(of({ data: { ...mockBid, positions: [mockPosition] } })),
+    getBid: vi.fn().mockReturnValue(of({ data: { ...mockBid, positions: [mockPosition] }, meta: { net_total: '25200.00' } })),
     createBid: vi.fn().mockReturnValue(of({ data: mockBid })),
-    changeBidStatus: vi.fn().mockReturnValue(of({ data: { ...mockBid, status: 'awarded' } })),
+    changeBidStatus: vi.fn().mockReturnValue(of({ data: { ...mockBid, status: 'accepted' } })),
     addBidPosition: vi.fn().mockReturnValue(of({ data: mockPosition })),
     recordMeasurement: vi.fn().mockReturnValue(of({ data: { id: 'm-1' } })),
     getBidBillings: vi.fn().mockReturnValue(of({ data: [mockBidBilling] })),
@@ -146,7 +145,11 @@ describe('ConstructionComponent', () => {
     createSubcontractor: vi.fn().mockReturnValue(of({ data: mockSubcontractor })),
     getSiteSubcontracts: vi.fn().mockReturnValue(of({ data: [mockSubcontract] })),
     createSiteSubcontract: vi.fn().mockReturnValue(of({ data: mockSubcontract })),
-    certifySubcontractWork: vi.fn().mockReturnValue(of({ data: { ...mockSubcontract, certified_amount: '15000.00' } })),
+    certifySubcontractWork: vi.fn().mockReturnValue(of({ data: mockSubcontract })),
+  };
+
+  const mockClientApi = {
+    list: vi.fn().mockReturnValue(of({ data: [{ id: 'contact-1', company_name: 'Residenza Bellavista SA', first_name: null, last_name: null }] })),
   };
 
   const mockMessageService = {
@@ -164,6 +167,7 @@ describe('ConstructionComponent', () => {
       providers: [
         provideNzIcons(icons),
         { provide: ConstructionApiService, useValue: mockConstructionApi },
+        { provide: ClientApiService, useValue: mockClientApi },
         { provide: NzMessageService, useValue: mockMessageService },
       ],
     }).compileComponents();
@@ -183,193 +187,212 @@ describe('ConstructionComponent', () => {
     expect(component.sites().length).toBe(1);
     expect(component.bids().length).toBe(1);
     expect(component.subcontractors().length).toBe(1);
+    expect(component.contactNameOf('contact-1')).toBe('Residenza Bellavista SA');
   });
 
-  it('should create new construction site and progress billing SAL', () => {
+  it('sends the site fields of the API and blocks an end date before the start', () => {
     component.openCreateSiteModal();
-    expect(component.siteModalVisible()).toBe(true);
-
     component.siteForm.patchValue({
       code: 'CANTIERE-002',
-      client: 'Immobiliare SA',
-      location: 'Bellinzona',
-      regime: 'CH',
+      name: 'Casa Rossi',
+      client_id: 'contact-1',
+      address: 'Bellinzona',
+      start_date: '2026-05-10',
+      estimated_end_date: '2026-05-01',
     });
-
     component.saveSite();
-    expect(mockConstructionApi.createSite).toHaveBeenCalledWith(
-      expect.objectContaining({
-        code: 'CANTIERE-002',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
+    expect(mockConstructionApi.createSite).not.toHaveBeenCalled();
+    expect(component.siteForm.controls.estimated_end_date.hasError('endsBeforeStart')).toBe(true);
+
+    component.siteForm.patchValue({ estimated_end_date: '2026-11-30' });
+    component.saveSite();
+    expect(mockConstructionApi.createSite).toHaveBeenCalledWith({
+      client_id: 'contact-1',
+      code: 'CANTIERE-002',
+      name: 'Casa Rossi',
+      address: 'Bellinzona',
+      sia_norm_reference: null,
+      npk_code: null,
+      start_date: '2026-05-10',
+      estimated_end_date: '2026-11-30',
+      status: 'planning',
+    });
     expect(component.siteModalVisible()).toBe(false);
+  });
 
+  it('creates a SAL and requires the end of the period not before its start', () => {
     component.openCreateSalModal();
-    expect(component.salModalVisible()).toBe(true);
+    component.salForm.patchValue({ construction_site_id: 'site-1-uuid', period_start: '2026-03-10', period_end: '2026-03-01' });
+    component.saveSal();
+    expect(mockConstructionApi.createProgressBilling).not.toHaveBeenCalled();
+    expect(component.salForm.controls.period_end.hasError('endsBeforeStart')).toBe(true);
 
-    component.salForm.patchValue({
+    component.salForm.patchValue({ period_end: '2026-03-31', sal_number: 'SAL 2', gross_certified_amount: 180000, retention_percentage: 10 });
+    component.saveSal();
+    expect(mockConstructionApi.createProgressBilling).toHaveBeenCalledWith({
       construction_site_id: 'site-1-uuid',
       sal_number: 'SAL 2',
+      period_start: '2026-03-10',
+      period_end: '2026-03-31',
       gross_certified_amount: 180000,
+      retention_percentage: 10,
     });
 
-    component.saveSal();
-    expect(mockConstructionApi.createProgressBilling).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sal_number: 'SAL 2',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.salModalVisible()).toBe(false);
+    component.salForm.patchValue({ retention_percentage: 60 });
+    expect(component.salForm.controls.retention_percentage.invalid).toBe(true);
   });
 
-  it('should create bid and award bid', () => {
-    component.openCreateBidModal();
-    expect(component.bidModalVisible()).toBe(true);
-
-    component.bidForm.patchValue({
-      code: 'APP-2026-002',
-      title: 'Opere da Gessista',
-      currency: 'CHF',
-    });
+  it('should not call the API when the forms are submitted empty or with an invalid amount', () => {
+    component.openCreateSiteModal();
+    component.saveSite();
+    expect(mockConstructionApi.createSite).not.toHaveBeenCalled();
+    expect(component.siteForm.controls.code.touched).toBe(true);
 
     component.saveBid();
-    expect(mockConstructionApi.createBid).toHaveBeenCalledWith(
-      expect.objectContaining({
-        code: 'APP-2026-002',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.bidModalVisible()).toBe(false);
+    expect(mockConstructionApi.createBid).not.toHaveBeenCalled();
 
-    component.changeBidStatus(mockBid, 'awarded');
-    expect(mockConstructionApi.changeBidStatus).toHaveBeenCalledWith('bid-1-uuid', { status: 'awarded' });
-    expect(mockMessageService.success).toHaveBeenCalled();
+    component.subcontractForm.patchValue({ site_id: 's1', subcontractor_id: 'x', description: 'Work', contract_amount: '0' });
+    component.saveSubcontract();
+    expect(component.subcontractForm.controls.contract_amount.hasError('positive')).toBe(true);
   });
 
-  it('should open bid drawer, add position, record measurement, and issue SAL', () => {
+  it('sends the bid fields of the API and accepts the bid', () => {
+    component.openCreateBidModal();
+    component.bidForm.patchValue({ title: 'Opere da Gessista', contact_id: 'contact-1', language: 'de', tax_rate: '8.10' });
+    component.saveBid();
+    expect(mockConstructionApi.createBid).toHaveBeenCalledWith({
+      construction_site_id: 'site-1-uuid',
+      contact_id: 'contact-1',
+      title: 'Opere da Gessista',
+      language: 'de',
+      currency: 'CHF',
+      tax_rate: '8.10',
+      valid_until: null,
+      notes: null,
+    });
+    expect(component.bidModalVisible()).toBe(false);
+
+    component.changeBidStatus(mockBid, 'accepted');
+    expect(mockConstructionApi.changeBidStatus).toHaveBeenCalledWith('bid-1-uuid', { status: 'accepted' });
+  });
+
+  it('sends position, measurement and billing with the fields of the API', () => {
     component.openBidDrawer(mockBid);
-    expect(component.drawerVisible()).toBe(true);
-    expect(mockConstructionApi.getBid).toHaveBeenCalledWith('bid-1-uuid');
-    expect(mockConstructionApi.getBidBillings).toHaveBeenCalledWith('bid-1-uuid');
-    expect(mockConstructionApi.getBudgetControl).toHaveBeenCalledWith('bid-1-uuid');
+    expect(component.bidNetTotal()).toBe('25200.00');
 
     component.openAddPositionModal();
-    expect(component.positionModalVisible()).toBe(true);
-    component.positionForm.patchValue({
-      code: '02.01',
-      description: 'Massetto sabbia e cemento',
+    component.positionForm.patchValue({ position_code: '02.01', description: 'Massetto', unit: 'm²', quantity: '300', unit_price: '35.00' });
+    component.savePosition();
+    expect(mockConstructionApi.addBidPosition).toHaveBeenCalledWith('bid-1-uuid', {
+      position_code: '02.01',
+      description: 'Massetto',
       unit: 'm²',
-      quantity: 300,
+      quantity: '300',
       unit_price: '35.00',
     });
-    component.savePosition();
-    expect(mockConstructionApi.addBidPosition).toHaveBeenCalledWith(
-      'bid-1-uuid',
-      expect.objectContaining({
-        description: 'Massetto sabbia e cemento',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.positionModalVisible()).toBe(false);
 
     component.openAddMeasurementModal('pos-1-uuid');
-    expect(component.measurementModalVisible()).toBe(true);
-    component.measurementForm.patchValue({
-      position_id: 'pos-1-uuid',
-      description: 'Misura piano terra',
-      quantity: 80,
-    });
+    component.measurementForm.patchValue({ measured_on: '2026-03-05', quantity: '80', note: 'Piano terra' });
     component.saveMeasurement();
-    expect(mockConstructionApi.recordMeasurement).toHaveBeenCalledWith(
-      'bid-1-uuid',
-      expect.objectContaining({
-        description: 'Misura piano terra',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.measurementModalVisible()).toBe(false);
+    expect(mockConstructionApi.recordMeasurement).toHaveBeenCalledWith('bid-1-uuid', {
+      bid_position_id: 'pos-1-uuid',
+      measured_on: '2026-03-05',
+      quantity: '80',
+      note: 'Piano terra',
+    });
 
     component.openIssueBidBillingModal(mockBid);
-    expect(component.bidBillingModalVisible()).toBe(true);
-    component.bidBillingForm.patchValue({
-      sal_number: 'SAL-2',
-      amount: '60000.00',
-    });
+    component.bidBillingForm.patchValue({ kind: 'partial', basis: 'percentage', percentage: '', date: '2026-03-10' });
     component.saveBidBilling();
-    expect(mockConstructionApi.issueBidBilling).toHaveBeenCalledWith(
-      'bid-1-uuid',
-      expect.objectContaining({
-        sal_number: 'SAL-2',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.bidBillingModalVisible()).toBe(false);
+    expect(mockConstructionApi.issueBidBilling).not.toHaveBeenCalled();
+    component.bidBillingForm.patchValue({ percentage: '30' });
+    component.saveBidBilling();
+    expect(mockConstructionApi.issueBidBilling).toHaveBeenCalledWith('bid-1-uuid', {
+      kind: 'partial',
+      basis: 'percentage',
+      percentage: '30',
+      date: '2026-03-10',
+    });
+
+    component.openIssueBidBillingModal(mockBid);
+    component.bidBillingForm.patchValue({ kind: 'final' });
+    component.saveBidBilling();
+    expect(mockConstructionApi.issueBidBilling).toHaveBeenLastCalledWith('bid-1-uuid', {
+      kind: 'final',
+      basis: null,
+      percentage: null,
+      date: expect.any(String),
+    });
 
     component.closeBidDrawer();
-    expect(component.drawerVisible()).toBe(false);
     expect(component.selectedBid()).toBeNull();
   });
 
-  it('should record site diary entry, add document, create subcontractor, and certify subcontract', () => {
+  it('sends diary, document, subcontractor, subcontract and certification with the fields of the API', () => {
     component.openCreateDiaryModal();
-    expect(component.diaryModalVisible()).toBe(true);
-    component.diaryForm.patchValue({
-      site_id: 'site-1-uuid',
-      work_performed: 'Posa pavimenti piano secondo',
-      weather_condition: 'Soleggiato',
-    });
+    component.diaryForm.patchValue({ site_id: 'site-1-uuid', entry_date: '2026-03-02', work_performed: 'Posa pavimenti', weather: 'Soleggiato', workers_present: 8 });
     component.saveDiary();
-    expect(mockConstructionApi.writeSiteDiary).toHaveBeenCalledWith(
-      'site-1-uuid',
-      expect.objectContaining({
-        work_performed: 'Posa pavimenti piano secondo',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.diaryModalVisible()).toBe(false);
+    expect(mockConstructionApi.writeSiteDiary).toHaveBeenCalledWith('site-1-uuid', {
+      entry_date: '2026-03-02',
+      weather: 'Soleggiato',
+      workers_present: 8,
+      work_performed: 'Posa pavimenti',
+      incidents: null,
+    });
 
     component.openCreateDocumentModal();
-    expect(component.documentModalVisible()).toBe(true);
-    component.documentForm.patchValue({
-      site_id: 'site-1-uuid',
-      title: 'DURC Regolare',
-      category: 'durc',
-    });
+    component.documentForm.patchValue({ site_id: 'site-1-uuid', title: 'DURC', kind: 'insurance', issued_on: '2026-03-10', expires_on: '2026-03-01' });
     component.saveDocument();
-    expect(mockConstructionApi.addSiteDocument).toHaveBeenCalledWith(
-      'site-1-uuid',
-      expect.objectContaining({
-        title: 'DURC Regolare',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.documentModalVisible()).toBe(false);
+    expect(mockConstructionApi.addSiteDocument).not.toHaveBeenCalled();
+    expect(component.documentForm.controls.expires_on.hasError('endsBeforeStart')).toBe(true);
+    component.documentForm.patchValue({ expires_on: '2026-12-31' });
+    component.saveDocument();
+    expect(mockConstructionApi.addSiteDocument).toHaveBeenCalledWith('site-1-uuid', {
+      kind: 'insurance',
+      title: 'DURC',
+      subcontractor_id: null,
+      issued_on: '2026-03-10',
+      expires_on: '2026-12-31',
+      notes: null,
+    });
 
     component.openCreateSubcontractorModal();
-    expect(component.subcontractorModalVisible()).toBe(true);
-    component.subcontractorForm.patchValue({
-      company_name: 'Pavimenti SA',
-      vat_number: 'CHE-111.222.333',
-    });
+    component.subcontractorForm.patchValue({ name: 'Pavimenti SA', tax_id: 'CHE-111.222.333' });
     component.saveSubcontractor();
-    expect(mockConstructionApi.createSubcontractor).toHaveBeenCalledWith(
-      expect.objectContaining({
-        company_name: 'Pavimenti SA',
-      }),
-    );
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.subcontractorModalVisible()).toBe(false);
+    expect(mockConstructionApi.createSubcontractor).toHaveBeenCalledWith({
+      name: 'Pavimenti SA',
+      contact_id: null,
+      tax_id: 'CHE-111.222.333',
+      trade: null,
+      status: 'active',
+      notes: null,
+    });
+
+    component.openCreateSubcontractModal();
+    component.subcontractForm.patchValue({ description: 'Posa', starts_on: '2026-04-10', ends_on: '2026-04-01' });
+    component.saveSubcontract();
+    expect(mockConstructionApi.createSiteSubcontract).not.toHaveBeenCalled();
+    component.subcontractForm.patchValue({ ends_on: '2026-06-30' });
+    component.saveSubcontract();
+    expect(mockConstructionApi.createSiteSubcontract).toHaveBeenCalledWith('site-1-uuid', {
+      subcontractor_id: 'sub-1-uuid',
+      bid_id: null,
+      description: 'Posa',
+      contract_amount: '25000.00',
+      starts_on: '2026-04-10',
+      ends_on: '2026-06-30',
+    });
 
     component.openCertifySubcontractModal(mockSubcontract);
-    expect(component.certifySubcontractModalVisible()).toBe(true);
-    component.certifyForm.patchValue({
-      amount: '7500.00',
-    });
+    component.certifyForm.patchValue({ certified_on: '2026-04-30', amount: '7500.00', description: '' });
     component.saveCertifySubcontract();
-    expect(mockConstructionApi.certifySubcontractWork).toHaveBeenCalledWith('sc-1-uuid', { amount: '7500.00' });
-    expect(mockMessageService.success).toHaveBeenCalled();
-    expect(component.certifySubcontractModalVisible()).toBe(false);
+    expect(mockConstructionApi.certifySubcontractWork).not.toHaveBeenCalled();
+    component.certifyForm.patchValue({ description: 'SAL 1 subappalto' });
+    component.saveCertifySubcontract();
+    expect(mockConstructionApi.certifySubcontractWork).toHaveBeenCalledWith('sc-1-uuid', {
+      certified_on: '2026-04-30',
+      amount: '7500.00',
+      description: 'SAL 1 subappalto',
+    });
   });
 });

@@ -24,6 +24,7 @@ import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-statu
 /** Deferred invoicing: one invoice for several delivery notes of a customer, or a run up to a date. */
 @Component({
   selector: 'app-deferred-billing',
+  styleUrl: './deferred-billing.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -121,6 +122,9 @@ export class DeferredBillingComponent implements OnInit {
   }
 
   protected runDeferred(): void {
+    if (!this.runUpTo) {
+      return;
+    }
     this.saving.set(true);
     this.api
       .runDeferredBilling({

@@ -1,4 +1,4 @@
-export type ChildcareChildStatus = 'waitlist' | 'enrolled' | 'graduated' | 'withdrawn';
+export type ChildcareChildStatus = 'waiting' | 'active' | 'left';
 
 export interface ChildcareGroup {
   id: string;
@@ -72,7 +72,7 @@ export interface ChildcareReferencePersonRequest {
   full_name: string;
   phone?: string;
   email?: string;
-  relationship: string;
+  relationship: ChildcareRelationship;
   is_guardian: boolean;
   can_pick_up: boolean;
   portal_contact_id?: string;
@@ -118,10 +118,14 @@ export interface ChildcareCheckOutRequest {
   picked_up_by: string;
 }
 
+export type ChildcareAbsenceReason = 'sick' | 'holiday' | 'other';
+
+export type ChildcareRelationship = 'mother' | 'father' | 'guardian' | 'grandparent' | 'relative' | 'other';
+
 export interface ChildcareAbsenceRequest {
   child_id: string;
   date: string;
-  reason?: string;
+  reason: ChildcareAbsenceReason;
 }
 
 export interface ChildcareCorrectionRequest {
@@ -150,16 +154,18 @@ export interface ChildcareDailyNote {
   child_id: string;
   child_name?: string | null;
   date: string;
-  category: 'meal' | 'nap' | 'diaper' | 'activity' | 'mood' | 'incident';
+  category: ChildcareNoteCategory;
   body: string;
   visible_to_family: boolean;
   created_at?: string;
 }
 
+export type ChildcareNoteCategory = 'general' | 'meal' | 'sleep' | 'activity' | 'health' | 'behaviour';
+
 export interface ChildcareNoteRequest {
   child_id: string;
   date: string;
-  category: string;
+  category: ChildcareNoteCategory;
   body: string;
   visible_to_family?: boolean;
 }
@@ -215,10 +221,12 @@ export interface ChildcareStaffShiftRequest {
   break_minutes?: number;
 }
 
+export type ChildcareFeeBasis = 'monthly_flat' | 'per_day';
+
 export interface ChildcareFeePlan {
   id: string;
   name: string;
-  basis: 'monthly' | 'daily' | 'hourly';
+  basis: ChildcareFeeBasis;
   amount: string;
   meal_amount?: string | null;
   tax_rate: string;
@@ -227,7 +235,7 @@ export interface ChildcareFeePlan {
 
 export interface ChildcareFeePlanRequest {
   name: string;
-  basis: string;
+  basis: ChildcareFeeBasis;
   amount: string;
   meal_amount?: string;
   tax_rate: string;
@@ -236,7 +244,7 @@ export interface ChildcareFeePlanRequest {
 
 export interface ChildcareBillingRunRequest {
   period: string;
-  date?: string;
+  date: string;
 }
 
 export interface ChildcareBill {

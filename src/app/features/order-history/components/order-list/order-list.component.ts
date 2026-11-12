@@ -12,6 +12,7 @@ import { OrderStore } from '../../state/order.store';
 
 @Component({
   selector: 'app-order-list',
+  styleUrl: './order-list.component.scss',
   imports: [
     DatePipe,
     NzTableModule,

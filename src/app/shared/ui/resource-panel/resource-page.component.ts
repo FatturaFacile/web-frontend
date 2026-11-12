@@ -11,6 +11,7 @@ import { ResourcePageConfig } from './resource-panel.types';
  */
 @Component({
   selector: 'app-resource-page',
+  styleUrl: './resource-page.component.scss',
   imports: [NzTabsModule, PageHeaderComponent, ResourcePanelComponent, TranslatePipe],
   template: `
     <app-page-header [title]="page().titleKey | translate" />

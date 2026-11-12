@@ -19,6 +19,7 @@ const DOCUMENT_TYPES = ['TD01', 'TD02', 'TD03', 'TD04', 'TD05', 'TD06', 'TD16', 
 /** Sales register of a period and receivables aging at a date. */
 @Component({
   selector: 'app-billing-reports',
+  styleUrl: './billing-reports.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

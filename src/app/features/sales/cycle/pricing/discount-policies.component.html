@@ -9,7 +9,7 @@
       </button>
     }
   </div>
-  <nz-table [nzData]="policies()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzScroll]="{ x: '720px' }" [nzData]="policies()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
     <thead>
       <tr>
         <th>{{ 'SC.PRICING.CODE' | translate }}</th>
@@ -178,7 +178,7 @@
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="dp-to">{{ 'SC.PRICING.VALID_TO' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="serverError('valid_to')">
+          <nz-form-control [nzErrorTip]="form.controls.valid_to.hasError('endsBeforeStart') ? ('COMMON.VALIDATION.END_AFTER_START' | translate) : serverError('valid_to')">
             <input nz-input id="dp-to" type="date" formControlName="valid_to" />
           </nz-form-control>
         </nz-form-item>

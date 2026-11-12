@@ -12,12 +12,15 @@ export interface DmsDocumentResource {
   description?: string | null;
   document_type?: string | null;
   status: DmsDocumentStatus;
-  is_legal_hold: boolean;
-  current_version_id?: string | null;
+  legal_hold: boolean;
+  legal_hold_reason?: string | null;
+  current_version?: number;
+  retention_until?: string | null;
+  is_checked_out?: boolean;
+  checkout_note?: string | null;
   checked_out_by?: string | null;
-  checked_out_by_name?: string | null;
   checked_out_at?: string | null;
-  tags?: string[];
+  tags?: { id: string; name: string }[];
   metadata?: Record<string, unknown>;
   latest_version?: DmsDocumentVersionResource;
   created_at?: string;
@@ -84,11 +87,11 @@ export interface DmsAuditEntry {
 
 export interface DmsResolvedLink {
   id: string;
-  document_id: string;
-  target_type: string;
-  target_id: string;
-  target_label?: string;
-  created_at?: string;
+  linkable_type: string;
+  linkable_id: string;
+  label?: string | null;
+  record_exists?: boolean;
+  created_at?: string | null;
 }
 
 export interface DmsStoreDocumentRequest {
@@ -96,14 +99,10 @@ export interface DmsStoreDocumentRequest {
   folder_id?: string | null;
   description?: string | null;
   document_type?: string | null;
-  tags?: string[];
-  metadata?: Record<string, unknown>;
-  file?: {
-    original_name: string;
-    mime_type?: string;
-    size: number;
-    sha256: string;
-  };
+  comment?: string;
+  allow_duplicate?: boolean;
+  /** The real file, sent as multipart `file`. */
+  file: File;
 }
 
 export interface DmsUpdateDocumentRequest {
@@ -135,13 +134,24 @@ export interface DmsStoreRetentionPolicyRequest {
 }
 
 export interface DmsLinkDocumentRequest {
-  target_type: string;
-  target_id: string;
-  label?: string;
+  /** Alias of the linked record type (contact, invoice, quote...). */
+  linkable_type: string;
+  linkable_id: string;
 }
 
 export interface DmsCheckOutRequest {
-  reason?: string;
+  note?: string;
+}
+
+export interface DmsCheckInRequest {
+  /** Optional new file, sent as multipart `file`. */
+  file?: File | null;
+  comment?: string;
+}
+
+export interface DmsStoreVersionRequest {
+  file: File;
+  comment?: string;
 }
 
 export interface DmsPlaceLegalHoldRequest {

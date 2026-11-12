@@ -45,10 +45,10 @@ describe('AccountingComponent', () => {
 
   const mockAccount: ChartOfAccount = {
     id: 'acc-1',
-    code: '10.01.001',
+    account_code: '10.01.001',
     name: 'Banca Popolare c/c',
-    type: 'asset',
-    balance: 50000,
+    account_type: 'asset',
+    normal_balance: 'debit',
   };
 
   const mockVat: TaxSettlementResource = {
@@ -74,11 +74,11 @@ describe('AccountingComponent', () => {
 
   const mockIntra: IntrastatDeclarationResource = {
     id: 'intra-1',
-    declaration_number: 'INTRA-2026-10',
+    model: 'INTRA-1',
+    flow: 'sales',
     year: 2026,
-    month: 10,
-    direction: 'dispatch',
-    total_amount: 45000,
+    periodicity: 'M',
+    period: 10,
     status: 'draft',
   };
 
@@ -178,15 +178,39 @@ describe('AccountingComponent', () => {
     expect(component['accountModalVisible']()).toBe(true);
 
     component.accountForm.patchValue({
-      code: '10.02.001',
+      account_code: '10.02.001',
       name: 'Banca Secondaria',
-      type: 'asset',
+      account_type: 'liability',
       currency: 'EUR',
     });
 
     component.submitAccount();
-    expect(apiMock.createAccount).toHaveBeenCalled();
+    expect(apiMock.createAccount).toHaveBeenCalledWith({
+      account_code: '10.02.001',
+      name: 'Banca Secondaria',
+      account_type: 'liability',
+      normal_balance: 'credit',
+      currency: 'EUR',
+    });
     expect(component['accountModalVisible']()).toBe(false);
+  });
+
+  it('keeps the purchases list monthly and limits a quarterly period to 1-4', () => {
+    component.openIntrastatModal();
+    component.intrastatForm.patchValue({ periodicity: 'T', period: 5 });
+    expect(component.intrastatForm.controls.period.invalid).toBe(true);
+    component.intrastatForm.patchValue({ flow: 'purchases' });
+    expect(component.intrastatForm.controls.periodicity.value).toBe('M');
+  });
+
+  it('does not create an account from an empty form', () => {
+    component.openAccountModal();
+    component.accountForm.patchValue({ account_code: '', name: '' });
+
+    component.submitAccount();
+
+    expect(apiMock.createAccount).not.toHaveBeenCalled();
+    expect(component.tip(component.accountForm.controls.account_code)).not.toBe('');
   });
 
   it('calculates, posts and pays tax/VAT settlement', () => {
@@ -223,20 +247,25 @@ describe('AccountingComponent', () => {
     expect(component['intrastatModalVisible']()).toBe(true);
 
     component.intrastatForm.patchValue({
+      flow: 'sales',
       year: 2026,
+      periodicity: 'M',
       period: 10,
-      direction: 'dispatch',
     });
 
     component.submitGenerateIntrastat();
-    expect(apiMock.generateIntrastatDeclaration).toHaveBeenCalled();
+    expect(apiMock.generateIntrastatDeclaration).toHaveBeenCalledWith({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 });
     expect(component['intrastatModalVisible']()).toBe(false);
 
     component.validateIntrastat(mockIntra);
     expect(apiMock.validateIntrastatDeclaration).toHaveBeenCalledWith('intra-1');
 
     component.submitIntrastat(mockIntra);
-    expect(apiMock.submitIntrastatDeclaration).toHaveBeenCalledWith('intra-1');
+    component.confirmSubmitIntrastat();
+    expect(apiMock.submitIntrastatDeclaration).not.toHaveBeenCalled();
+    component.intrastatSubmitForm.patchValue({ protocol_number: 'PROT-1' });
+    component.confirmSubmitIntrastat();
+    expect(apiMock.submitIntrastatDeclaration).toHaveBeenCalledWith('intra-1', { protocol_number: 'PROT-1', submitted_at: null });
   });
 
   it('reloads trial balance successfully', () => {

@@ -23,6 +23,7 @@ const READINESS = ['ready_now', 'ready_1_2_years', 'developing'];
 /** Org chart: departments (tree, no cycles: server 422) and positions. */
 @Component({
   selector: 'app-hr-organization',
+  styleUrl: './organization.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,
@@ -90,8 +91,8 @@ export class OrganizationComponent implements OnInit {
     create: (payload) => this.api.createDepartment(payload as never),
     update: (id, payload) => this.api.updateDepartment(id, payload as never),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 60 },
+      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 150 },
       {
         key: 'parent_id',
         labelKey: 'hrmOrg.parent',
@@ -126,8 +127,8 @@ export class OrganizationComponent implements OnInit {
       create: (payload) => this.api.createPosition(payload as never),
       update: (id, payload) => this.api.updatePosition(id, payload as never),
       fields: [
-        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-        { key: 'title', labelKey: 'hrmCommon.title', type: 'text', required: true, maxLength: 255 },
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 60 },
+        { key: 'title', labelKey: 'hrmCommon.title', type: 'text', required: true, maxLength: 150 },
         {
           key: 'department_id',
           labelKey: 'hrmOrg.department',

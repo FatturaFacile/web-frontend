@@ -7,6 +7,7 @@ import { TranslatePipe } from '@shared';
 /** Language choice for the pages reached before signing in: it applies at once and is remembered in the browser. */
 @Component({
   selector: 'app-language-selector',
+  styleUrl: './language-selector.component.scss',
   imports: [FormsModule, NzSelectModule, TranslatePipe],
   template: `
     <nz-select

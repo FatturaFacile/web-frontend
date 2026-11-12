@@ -2,6 +2,8 @@ import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { decimalPattern } from '@shared/utils/decimal-validators';
+import { notInFuture } from '@shared/utils/date-validators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -46,11 +48,16 @@ import {
   ChildcareRequirementRequest,
   isValidationError,
   TranslateService,
+  ChildcareAbsenceReason,
+  ChildcareFeeBasis,
+  ChildcareNoteCategory,
+  ChildcareRelationship,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-childcare',
+  styleUrl: './childcare.component.scss',
   imports: [
     DatePipe,
     DecimalPipe,
@@ -153,28 +160,31 @@ export class ChildcareComponent implements OnInit {
   readonly refPersonModalVisible = signal<boolean>(false);
 
   // --- FORMS ---
+  protected readonly absenceReasons: readonly ChildcareAbsenceReason[] = ['sick', 'holiday', 'other'];
+  protected readonly relationships: readonly ChildcareRelationship[] = ['mother', 'father', 'guardian', 'grandparent', 'relative', 'other'];
+
   readonly childForm = this.fb.group({
-    first_name: ['', [Validators.required]],
-    last_name: ['', [Validators.required]],
-    birth_date: ['', [Validators.required]],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    birth_date: ['', [notInFuture]],
     group_id: [''],
     billing_contact_id: ['', [Validators.required]],
     enrolled_on: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    allergies: [''],
-    dietary_notes: [''],
-    health_notes: [''],
-    subsidy_canton: [''],
+    allergies: ['', [Validators.maxLength(2000)]],
+    dietary_notes: ['', [Validators.maxLength(2000)]],
+    health_notes: ['', [Validators.maxLength(5000)]],
+    subsidy_canton: ['', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
 
   readonly groupForm = this.fb.group({
-    name: ['', [Validators.required]],
-    capacity: [15, [Validators.required, Validators.min(1)]],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    capacity: [15, [Validators.min(0), Validators.max(1000)]],
   });
 
   readonly checkInForm = this.fb.group({
     child_id: ['', [Validators.required]],
     at: [new Date().toISOString().substring(0, 16)],
-    temperature: ['36.5'],
+    temperature: ['36.5', [decimalPattern(1, 2), Validators.min(34), Validators.max(43)]],
   });
 
   readonly checkOutForm = this.fb.group({
@@ -186,24 +196,24 @@ export class ChildcareComponent implements OnInit {
   readonly absenceForm = this.fb.group({
     child_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    reason: ['Malattia / Febbre'],
+    reason: ['sick' as ChildcareAbsenceReason, [Validators.required]],
   });
 
   readonly noteForm = this.fb.group({
     child_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    category: ['nap', [Validators.required]],
-    body: ['', [Validators.required]],
+    category: ['general' as ChildcareNoteCategory, [Validators.required]],
+    body: ['', [Validators.required, Validators.maxLength(5000)]],
     visible_to_family: [true],
   });
 
   readonly feePlanForm = this.fb.group({
-    name: ['', [Validators.required]],
-    basis: ['monthly', [Validators.required]],
-    amount: ['850.00', [Validators.required]],
-    meal_amount: ['120.00'],
-    tax_rate: ['0.00', [Validators.required]],
-    currency: ['EUR', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(150)]],
+    basis: ['monthly_flat' as ChildcareFeeBasis, [Validators.required]],
+    amount: ['850.00', [Validators.required, decimalPattern(2)]],
+    meal_amount: ['120.00', [decimalPattern(2)]],
+    tax_rate: ['0.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    currency: ['EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
   });
 
   readonly billingRunForm = this.fb.group({
@@ -212,16 +222,16 @@ export class ChildcareComponent implements OnInit {
   });
 
   readonly requirementForm = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(150)]],
     requires_signature: [true],
     is_mandatory: [true],
   });
 
   readonly refPersonForm = this.fb.group({
-    full_name: ['', [Validators.required]],
-    relationship: ['Genitore', [Validators.required]],
-    phone: [''],
-    email: [''],
+    full_name: ['', [Validators.required, Validators.maxLength(150)]],
+    relationship: ['mother' as ChildcareRelationship, [Validators.required]],
+    phone: ['', [Validators.maxLength(40)]],
+    email: ['', [Validators.email, Validators.maxLength(180)]],
     is_guardian: [true],
     can_pick_up: [true],
   });
@@ -305,7 +315,7 @@ export class ChildcareComponent implements OnInit {
     const payload: ChildcareChildRequest = {
       first_name: val.first_name,
       last_name: val.last_name,
-      birth_date: val.birth_date,
+      birth_date: val.birth_date || undefined,
       group_id: val.group_id || undefined,
       billing_contact_id: val.billing_contact_id,
       enrolled_on: val.enrolled_on,
@@ -313,7 +323,7 @@ export class ChildcareComponent implements OnInit {
       dietary_notes: val.dietary_notes || undefined,
       health_notes: val.health_notes || undefined,
       subsidy_canton: val.subsidy_canton || undefined,
-      status: 'enrolled',
+      status: 'active',
     };
 
     this.api.enrolChild(payload).subscribe({
@@ -414,7 +424,7 @@ export class ChildcareComponent implements OnInit {
   openAddRefPersonModal(): void {
     this.refPersonForm.reset({
       full_name: '',
-      relationship: 'Genitore',
+      relationship: 'mother',
       phone: '',
       email: '',
       is_guardian: true,
@@ -568,7 +578,7 @@ export class ChildcareComponent implements OnInit {
     this.absenceForm.reset({
       child_id: childId || '',
       date: new Date().toISOString().substring(0, 10),
-      reason: 'Malattia / Febbre',
+      reason: 'sick',
     });
     this.absenceModalVisible.set(true);
   }
@@ -615,7 +625,7 @@ export class ChildcareComponent implements OnInit {
     this.noteForm.reset({
       child_id: '',
       date: new Date().toISOString().substring(0, 10),
-      category: 'nap',
+      category: 'general',
       body: '',
       visible_to_family: true,
     });
@@ -673,7 +683,7 @@ export class ChildcareComponent implements OnInit {
   openCreateFeePlanModal(): void {
     this.feePlanForm.reset({
       name: '',
-      basis: 'monthly',
+      basis: 'monthly_flat',
       amount: '850.00',
       meal_amount: '120.00',
       tax_rate: '0.00',
@@ -798,13 +808,11 @@ export class ChildcareComponent implements OnInit {
   // Status colors
   getChildStatusColor(status: ChildcareChildStatus | string): string {
     switch (status) {
-      case 'enrolled':
+      case 'active':
         return 'success';
-      case 'waitlist':
+      case 'waiting':
         return 'warning';
-      case 'graduated':
-        return 'blue';
-      case 'withdrawn':
+      case 'left':
         return 'default';
       default:
         return 'default';
@@ -828,18 +836,18 @@ export class ChildcareComponent implements OnInit {
 
   getCategoryColor(cat: string): string {
     switch (cat) {
-      case 'nap':
+      case 'sleep':
         return 'cyan';
+      case 'general':
+        return 'default';
       case 'meal':
         return 'orange';
-      case 'diaper':
+      case 'health':
         return 'blue';
       case 'activity':
         return 'green';
-      case 'mood':
+      case 'behaviour':
         return 'purple';
-      case 'incident':
-        return 'red';
       default:
         return 'default';
     }

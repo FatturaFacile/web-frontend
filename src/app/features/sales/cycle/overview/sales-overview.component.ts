@@ -24,6 +24,7 @@ import { todayIso } from '../shared/sales-status';
 /** Sales KPIs of a period and the backorder (open order lines still to be delivered). */
 @Component({
   selector: 'app-sales-overview',
+  styleUrl: './sales-overview.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

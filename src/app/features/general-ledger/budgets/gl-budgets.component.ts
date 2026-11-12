@@ -28,6 +28,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
   selector: 'app-gl-budgets',
+  styleUrl: './gl-budgets.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -67,8 +68,8 @@ export class GlBudgetsComponent implements OnInit {
   protected readonly isDraft = computed(() => this.selected()?.status === 'draft');
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    notes: this.fb.control(''),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
+    notes: this.fb.control('', [Validators.maxLength(5000)]),
   });
   protected readonly lines = this.fb.array([this.newLine()]);
 
@@ -214,7 +215,7 @@ export class GlBudgetsComponent implements OnInit {
     return this.fb.group({
       account_id: this.fb.control('', Validators.required),
       cost_center_id: this.fb.control(''),
-      period_number: this.fb.control(1, [Validators.required, Validators.min(1), Validators.max(14)]),
+      period_number: this.fb.control(1, [Validators.required, Validators.min(1), Validators.max(12)]),
       amount: this.fb.control(0, Validators.required),
     });
   }

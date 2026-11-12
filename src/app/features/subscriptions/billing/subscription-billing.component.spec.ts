@@ -136,9 +136,19 @@ describe('Subscription billing pages', () => {
 
   it('recognizes revenue up to a period date', () => {
     const component = TestBed.createComponent(SubscriptionBillingComponent).componentInstance;
-    component['periodDate'] = '2026-11-30';
+    component['periodDate'] = '2026-10-31';
     api.recognizeRevenue.mockReturnValue(ok({}));
     component['recognize']();
-    expect(api.recognizeRevenue).toHaveBeenCalledWith('2026-11-30');
+    expect(api.recognizeRevenue).toHaveBeenCalledWith('2026-10-31');
+  });
+
+  it('does not recognize revenue or run billing for a date in the future', () => {
+    const component = TestBed.createComponent(SubscriptionBillingComponent).componentInstance;
+    component['periodDate'] = '2999-01-01';
+    component['runDate'] = '2999-01-01';
+    component['recognize']();
+    component['runBilling']();
+    expect(api.recognizeRevenue).not.toHaveBeenCalled();
+    expect(api.runBilling).not.toHaveBeenCalled();
   });
 });

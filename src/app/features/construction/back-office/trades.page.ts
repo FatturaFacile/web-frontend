@@ -12,29 +12,29 @@ const SITE_FIELDS: readonly ResourceField[] = [
   req(rf.text('code', { maxLength: 40 })),
   req(rf.text('name', { maxLength: 190 })),
   req(rf.text('address', { maxLength: 255 })),
-  rf.text('sia_norm_reference'),
-  rf.text('npk_code'),
+  rf.text('sia_norm_reference', { maxLength: 50 }),
+  rf.text('npk_code', { maxLength: 50 }),
   rf.date('start_date'),
-  rf.date('estimated_end_date'),
+  rf.date('estimated_end_date', { notBefore: 'start_date' }),
   rf.select('status', SITE_STATUSES),
 ];
 
 const PRICE_LIST_FIELDS: readonly ResourceField[] = [
-  req(rf.text('name', { maxLength: 190 })),
+  req(rf.text('name', { maxLength: 150 })),
   req(rf.select('source', PRICE_SOURCES)),
-  rf.text('edition'),
-  rf.text('license_reference'),
+  rf.text('edition', { maxLength: 40 }),
+  rf.text('license_reference', { maxLength: 150 }),
   req(rf.text('currency', { maxLength: 3 })),
   req(rf.tags('languages')),
   rf.date('valid_from'),
-  rf.date('valid_to'),
+  rf.date('valid_to', { notBefore: 'valid_from' }),
   rf.bool('is_active'),
 ];
 
 const WORK_STEP_FIELDS: readonly ResourceField[] = [
   rf.uuid('price_item_id'),
-  rf.json('descriptions', { defaultValue: DESCRIPTIONS_TEMPLATE }),
-  rf.decimal('quantity_factor'),
+  req(rf.json('descriptions', { defaultValue: DESCRIPTIONS_TEMPLATE })),
+  rf.decimal('quantity_factor', { positive: true }),
   req(rf.decimal('unit_price')),
   rf.integer('labour_minutes', { min: 0 }),
   rf.decimal('material_cost'),
@@ -86,7 +86,7 @@ export const CONSTRUCTION_TRADES_PAGE: ResourcePageConfig = {
           fields: [
             req(rf.text('position_code', { maxLength: 40 })),
             rf.text('parent_code', { maxLength: 40 }),
-            req(rf.text('unit', { maxLength: 20 })),
+            req(rf.text('unit', { maxLength: 10 })),
             req(rf.decimal('unit_price')),
             rf.integer('labour_minutes', { min: 0 }),
             rf.decimal('material_cost'),
@@ -109,8 +109,8 @@ export const CONSTRUCTION_TRADES_PAGE: ResourcePageConfig = {
       list: { path: '/construction-trades/work-cycles', columns: [...cols('name', 'unit'), col('is_active', 'bool')] },
       create: act('POST', 'RES.A.new_work_cycle', '/construction-trades/work-cycles', {
         fields: [
-          req(rf.text('name', { maxLength: 190 })),
-          req(rf.text('unit', { maxLength: 20 })),
+          req(rf.text('name', { maxLength: 150 })),
+          req(rf.text('unit', { maxLength: 10 })),
           req(rf.json('descriptions', { defaultValue: DESCRIPTIONS_TEMPLATE })),
           rf.bool('is_active', { defaultValue: true }),
           req(rf.lines('steps', WORK_STEP_FIELDS, { required: true })),

@@ -1,4 +1,4 @@
-export type WorkshopFolderKind = 'repair' | 'maintenance' | 'bodywork' | 'inspection';
+export type WorkshopFolderKind = 'mechanics' | 'bodywork' | 'tyres' | 'inspection' | 'other';
 
 export type WorkshopFolderStatus = 'draft' | 'open' | 'in_progress' | 'completed' | 'delivered' | 'cancelled';
 
@@ -29,7 +29,10 @@ export interface WorkshopFolder {
   status: WorkshopFolderStatus;
   mileage_in?: number | null;
   mileage_out?: number | null;
-  notes?: string | null;
+  received_at?: string | null;
+  promised_at?: string | null;
+  complaint?: string | null;
+  diagnosis?: string | null;
   currency: string;
   total_labour: string;
   total_parts: string;
@@ -45,8 +48,10 @@ export interface WorkshopFolderRequest {
   contact_id?: string;
   kind: WorkshopFolderKind;
   currency: string;
+  received_at?: string;
+  promised_at?: string;
   mileage_in?: number;
-  notes?: string;
+  complaint?: string;
 }
 
 export interface WorkshopFolderLineRequest {
@@ -104,11 +109,11 @@ export interface WorkshopVehicleStockUnit {
   model: string;
   vin?: string | null;
   year?: number | null;
-  mileage?: number | null;
-  purchase_cost?: string | null;
+  mileage_km?: number | null;
+  purchase_price?: string | null;
   list_price: string;
   currency: string;
-  status: 'available' | 'reserved' | 'sold';
+  status: 'in_stock' | 'reserved' | 'sold';
   sold_at?: string | null;
   buyer_name?: string | null;
   created_at?: string;
@@ -121,8 +126,8 @@ export interface WorkshopStockUnitRequest {
   model: string;
   vin?: string;
   year?: number;
-  mileage?: number;
-  purchase_cost?: string;
+  mileage_km?: number;
+  purchase_price?: string;
   list_price: string;
   currency: string;
 }
@@ -133,6 +138,10 @@ export interface WorkshopSellRequest {
   sale_price: string;
   tax_rate: string;
 }
+
+export type WorkshopRecurringServiceType = 'tyre_storage' | 'maintenance_plan' | 'other';
+
+export type WorkshopRecurringInterval = 'monthly' | 'quarterly' | 'semiannual' | 'yearly';
 
 export interface WorkshopRecurringService {
   id: string;
@@ -150,9 +159,9 @@ export interface WorkshopRecurringService {
 
 export interface WorkshopRecurringServiceRequest {
   vehicle_id: string;
-  service_type: string;
+  service_type: WorkshopRecurringServiceType;
   name: string;
-  interval: string;
+  interval: WorkshopRecurringInterval;
   start_date: string;
   currency: string;
   unit_price: string;
@@ -180,7 +189,7 @@ export interface WorkshopFolderParams {
 
 export interface WorkshopStockParams {
   condition?: 'new' | 'used';
-  status?: 'available' | 'reserved' | 'sold';
+  status?: 'in_stock' | 'reserved' | 'sold';
   search?: string;
   page?: number;
   per_page?: number;

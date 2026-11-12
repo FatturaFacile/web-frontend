@@ -244,21 +244,23 @@ describe('PortalApiService', () => {
     req6.flush({ data: [mockArticle] });
 
     const mockStock: PortalStockLine = {
-      id: 'stk-1',
-      product_sku: 'PROD-A',
-      product_name: 'Hydraulic Valve',
-      warehouse_name: 'Client Hub',
-      available_qty: 40,
-      reserved_qty: 5,
-      unit_of_measure: 'PZ',
+      warehouse_id: 'wh-1',
+      stock_item_id: 'item-1',
+      sku: 'PROD-A',
+      name: 'Hydraulic Valve',
+      lot_number: null,
+      expiration_date: null,
+      quantity_on_hand: '45.0000',
+      quantity_reserved: '5.0000',
+      quantity_available: '40.0000',
     };
     service.getStock('token-123').subscribe((res) => {
-      expect(res.data[0].available_qty).toBe(40);
+      expect(res.data[0].quantity_available).toBe('40.0000');
     });
     const req7 = httpMock.expectOne('/api/v1/portal/stock/token-123');
     req7.flush({ data: [mockStock] });
 
-    const movPayload: CreatePortalMovementRequest = { request_type: 'withdrawal', quantity: 10 };
+    const movPayload: CreatePortalMovementRequest = { warehouse_id: 'wh-1', stock_item_id: 'item-1', request_type: 'withdrawal', quantity: 10 };
     const mockMov: PortalMovementRequest = {
       id: 'mov-1',
       request_type: 'withdrawal',

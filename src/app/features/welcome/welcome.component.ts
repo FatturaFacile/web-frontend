@@ -7,6 +7,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-welcome',
+  styleUrl: './welcome.component.scss',
   imports: [
     RouterLink,
     NzButtonModule,

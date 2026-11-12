@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -41,9 +41,12 @@ import {
   TableStateService,
   TranslatePipe,
 } from '@shared';
+import { ibanValidator } from '@shared/utils/iban-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
 
 @Component({
   selector: 'app-treasury',
+  styleUrl: './treasury.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -128,24 +131,29 @@ export class TreasuryComponent implements OnInit {
 
   // Forms
   readonly accountForm = this.fb.group({
-    bank_name: this.fb.control('', [Validators.required]),
-    iban: this.fb.control('', [Validators.required]),
+    bank_name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
+    iban: this.fb.control('', [Validators.required, Validators.maxLength(34), ibanValidator]),
     currency: this.fb.control<'EUR' | 'CHF'>('EUR', [Validators.required]),
-    branch_name: this.fb.control(''),
-    bic_swift: this.fb.control(''),
+    branch_name: this.fb.control('', [Validators.maxLength(150)]),
+    bic_swift: this.fb.control('', [Validators.pattern(/^([A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?)?$/)]),
     account_type: this.fb.control('checking'),
     opening_balance: this.fb.control(0),
   });
 
   readonly batchForm = this.fb.group({
     bank_account_id: this.fb.control('', [Validators.required]),
-    batch_reference: this.fb.control('DIST-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4)),
+    batch_reference: this.fb.control('DIST-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-4), [Validators.maxLength(50)]),
     payment_method: this.fb.control<PaymentMethodType>('sepa_credit_transfer', [Validators.required]),
-    recipient_name: this.fb.control('', [Validators.required]),
-    recipient_iban: this.fb.control('', [Validators.required]),
+    recipient_name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    recipient_iban: this.fb.control('', [Validators.required, Validators.maxLength(42), ibanValidator]),
     amount: this.fb.control(0, [Validators.required, Validators.min(0.01)]),
-    remittance_reference: this.fb.control(''),
+    remittance_reference: this.fb.control('', [Validators.maxLength(140)]),
   });
+
+  /** Translation key of the error shown under a form control of the account and payment batch forms. */
+  protected errorKey(control: AbstractControl | null): string {
+    return validationTipKey(control) || 'COMMON.VALIDATION.INVALID_VALUE';
+  }
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly currencyTpl = viewChild<TemplateRef<unknown>>('currencyTpl');

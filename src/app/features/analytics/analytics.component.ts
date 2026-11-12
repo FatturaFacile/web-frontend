@@ -18,6 +18,8 @@ import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import {
   AnalyticsApiService,
+  applyServerErrors,
+  isValidationError,
   AnalyticsKpiReport,
   AnalyticsPeriodPreset,
   AnalyticsReportDefinition,
@@ -30,6 +32,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-analytics',
+  styleUrl: './analytics.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -133,7 +136,7 @@ export class AnalyticsComponent implements OnInit {
 
   readonly reportForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
-    description: [''],
+    description: ['', [Validators.maxLength(2000)]],
     kpis: [['sales', 'margin'], [Validators.required]],
     period_preset: ['last_month', [Validators.required]],
     compare: ['previous_year'],
@@ -294,8 +297,12 @@ export class AnalyticsComponent implements OnInit {
           this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_UPDATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
           this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_UPDATE_REPORT'));
         },
       });
@@ -307,8 +314,12 @@ export class AnalyticsComponent implements OnInit {
           this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_CREATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
           this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_CREATE_REPORT'));
         },
       });

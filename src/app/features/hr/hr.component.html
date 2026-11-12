@@ -20,7 +20,7 @@
       <nz-statistic
         [nzValue]="kpiActiveEmployees()"
         [nzTitle]="'Dipendenti Attivi'"
-        [nzValueStyle]="{ color: '#52c41a' }"
+        [nzValueStyle]="{ color: 'var(--status-success)' }"
         [nzPrefix]="iconActive"
       ></nz-statistic>
       <ng-template #iconActive><span nz-icon nzType="user-add"></span></ng-template>
@@ -31,7 +31,7 @@
       <nz-statistic
         [nzValue]="kpiProbationEmployees()"
         [nzTitle]="'In Prova'"
-        [nzValueStyle]="{ color: '#1890ff' }"
+        [nzValueStyle]="{ color: 'var(--status-info)' }"
         [nzPrefix]="iconProbation"
       ></nz-statistic>
       <ng-template #iconProbation><span nz-icon nzType="clock-circle"></span></ng-template>
@@ -42,7 +42,7 @@
       <nz-statistic
         [nzValue]="kpiPendingLeaves()"
         [nzTitle]="'Ferie da Approvare'"
-        [nzValueStyle]="{ color: '#faad14' }"
+        [nzValueStyle]="{ color: 'var(--status-warning)' }"
         [nzPrefix]="iconLeaves"
       ></nz-statistic>
       <ng-template #iconLeaves><span nz-icon nzType="calendar"></span></ng-template>
@@ -56,7 +56,7 @@
     <nz-tab [nzTitle]="'hrmEmp.lblDipendenti' | translate">
       <div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
         <div class="flex items-center gap-2">
-          <nz-input-wrapper>
+          <nz-input-wrapper class="search-box">
             <nz-icon nzInputPrefix nzType="search" />
             <input
               type="text"
@@ -72,7 +72,7 @@
             (ngModelChange)="employeesStatusFilter.set($event); loadEmployees(1)"
             nzPlaceHolder="Tutti gli stati"
             nzAllowClear
-           
+            class="w-field-sm"
           >
             <nz-option nzValue="active" [nzLabel]="'hrmEmp.lblAttivo' | translate"></nz-option>
             <nz-option nzValue="probation" [nzLabel]="'hrmEmp.lblPeriodoDiProva' | translate"></nz-option>
@@ -389,7 +389,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblNome' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Inserire il nome">
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'first_name')">
               <input nz-input formControlName="first_name" [placeholder]="'hrmEmp.lblEsMarco' | translate" />
             </nz-form-control>
           </nz-form-item>
@@ -397,7 +397,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblCognome' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Inserire il cognome">
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'last_name')">
               <input nz-input formControlName="last_name" [placeholder]="'hrmEmp.lblEsVerdi' | translate" />
             </nz-form-control>
           </nz-form-item>
@@ -408,7 +408,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblEmailAziendale' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Inserire un'email valida">
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'work_email')">
               <input nz-input formControlName="work_email" [placeholder]="'hrmEmp.lblMVerdiAziendaIt' | translate" />
             </nz-form-control>
           </nz-form-item>
@@ -416,7 +416,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblRalBaseAnnuaChf' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Inserire la retribuzione annua">
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'base_annual_salary')">
               <nz-input-number formControlName="base_annual_salary" [nzMin]="0" [nzStep]="1000"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -426,21 +426,35 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'hrmEmp.lblDataDiAssunzione' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Selezionare data">
+            <nz-form-label>{{ 'hrmEmp.lblDataDiAssunzione' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'hire_date')">
               <nz-date-picker formControlName="hire_date"></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzSpan]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'hrmEmp.lblTipoDiContratto' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-label>{{ 'hrmLeave.employmentType' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'employment_type')">
               <nz-select formControlName="employment_type">
-                <nz-option nzValue="full_time" [nzLabel]="'hrmEmp.lblTempoPienoFullTime' | translate"></nz-option>
-                <nz-option nzValue="part_time" [nzLabel]="'hrmEmp.lblPartTime' | translate"></nz-option>
-                <nz-option nzValue="contract" [nzLabel]="'hrmEmp.lblTempoDeterminato' | translate"></nz-option>
-                <nz-option nzValue="intern" [nzLabel]="'hrmEmp.lblStageTirocinio' | translate"></nz-option>
+                @for (type of employmentTypes; track type) {
+                  <nz-option [nzValue]="type" [nzLabel]="'hrmEmp.employmentType.' + type | translate"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'hrmEmp.lblTipoDiContratto' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'contract_type')">
+              <nz-select formControlName="contract_type">
+                @for (type of contractTypes; track type) {
+                  <nz-option [nzValue]="type" [nzLabel]="'hrmEmp.contractType.' + type | translate"></nz-option>
+                }
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -451,7 +465,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'hrmEmp.lblOreSettimanali' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'weekly_hours')">
               <nz-input-number formControlName="weekly_hours" [nzMin]="1" [nzMax]="60"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -459,7 +473,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'hrmEmp.lblMesiDiProva' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldError(hireForm, 'probation_months')">
               <nz-input-number formControlName="probation_months" [nzMin]="0" [nzMax]="12"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -482,19 +496,18 @@
     <form nz-form [formGroup]="leaveForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'hrmEmp.lblIdDipendente2' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Inserire l'ID o matricola">
+        <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'employee_id')">
           <input nz-input formControlName="employee_id" [placeholder]="'hrmEmp.lblUuidDipendente' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'hrmEmp.lblTipoDiAssenza' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'leave_type_id')">
           <nz-select formControlName="leave_type_id">
-            <nz-option nzValue="vacation" [nzLabel]="'hrmEmp.lblFerieOrdinarie' | translate"></nz-option>
-            <nz-option nzValue="rol" [nzLabel]="'hrmEmp.lblPermessoRolExFestivita' | translate"></nz-option>
-            <nz-option nzValue="sick_leave" [nzLabel]="'hrmEmp.lblMalattia' | translate"></nz-option>
-            <nz-option nzValue="parental" [nzLabel]="'hrmEmp.lblCongedoParentale' | translate"></nz-option>
+            @for (type of leaveTypes(); track type.id) {
+              <nz-option [nzValue]="type.id" [nzLabel]="type.name"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -503,7 +516,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblDataInizio' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Campo obbligatorio">
+            <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'start_date')">
               <nz-date-picker formControlName="start_date"></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
@@ -511,7 +524,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblDataFine' | translate }}</nz-form-label>
-            <nz-form-control nzErrorTip="Campo obbligatorio">
+            <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'end_date')">
               <nz-date-picker formControlName="end_date"></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
@@ -520,14 +533,14 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'hrmEmp.lblTotaleOreRichieste' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Inserire le ore">
-          <nz-input-number formControlName="total_hours" [nzMin]="1" [nzStep]="1"></nz-input-number>
+        <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'total_hours')">
+          <nz-input-number formControlName="total_hours" [nzMin]="0.5" [nzMax]="2000" [nzStep]="1"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'hrmEmp.lblMotivazioneNote' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldError(leaveForm, 'reason')">
           <textarea nz-input formControlName="reason" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -548,14 +561,14 @@
     <form nz-form [formGroup]="timesheetForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'hrmEmp.lblIdDipendente2' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Inserire l'ID dipendente">
+        <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'employee_id')">
           <input nz-input formControlName="employee_id" [placeholder]="'hrmEmp.lblUuidDipendente' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'hrmEmp.lblDataLavorativa' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Selezionare la data">
+        <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'work_date')">
           <nz-date-picker formControlName="work_date"></nz-date-picker>
         </nz-form-control>
       </nz-form-item>
@@ -564,7 +577,7 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'hrmEmp.lblOreOrdinarie' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'regular_hours')">
               <nz-input-number formControlName="regular_hours" [nzMin]="0" [nzMax]="24"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -572,7 +585,7 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label>{{ 'hrmEmp.lblStraordinari' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'overtime_hours')">
               <nz-input-number formControlName="overtime_hours" [nzMin]="0" [nzMax]="24"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -580,7 +593,7 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label>{{ 'hrmEmp.lblFatturabili' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'billable_hours')">
               <nz-input-number formControlName="billable_hours" [nzMin]="0" [nzMax]="24"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -589,7 +602,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'hrmEmp.lblDescrizioneAttivita' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldError(timesheetForm, 'description')">
           <textarea nz-input formControlName="description" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>

@@ -6,6 +6,7 @@ import { GlDimensionTableComponent } from './gl-dimension-table.component';
 
 @Component({
   selector: 'app-gl-dimensions',
+  styleUrl: './gl-dimensions.component.scss',
   imports: [NzCardModule, NzTabsModule, GlDimensionTableComponent, TranslatePipe],
   template: `
     <nz-card>

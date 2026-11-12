@@ -21,6 +21,7 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
  */
 @Component({
   selector: 'app-payroll-run-detail',
+  styleUrl: './payroll-run-detail.component.scss',
   imports: [
     DatePipe,
     MoneyPipe,

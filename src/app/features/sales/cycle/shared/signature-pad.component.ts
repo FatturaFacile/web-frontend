@@ -5,6 +5,7 @@ import { TranslatePipe } from '@shared';
 /** Minimal pointer-driven signature pad; emits the drawing as a PNG data URL (or null when cleared). */
 @Component({
   selector: 'app-signature-pad',
+  styleUrl: './signature-pad.component.scss',
   imports: [NzButtonModule, TranslatePipe],
   template: `
     <canvas

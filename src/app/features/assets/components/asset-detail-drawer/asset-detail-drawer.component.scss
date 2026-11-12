@@ -1,0 +1,26 @@
+.tab-content {
+  padding: var(--space-4) 0;
+}
+
+.tab-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.desc-box {
+  margin-top: var(--space-5);
+  padding: var(--space-3);
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+
+  h4 {
+    margin-bottom: var(--space-2);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+}

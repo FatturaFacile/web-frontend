@@ -1,0 +1,90 @@
+:host {
+  display: block;
+}
+
+.associations-card {
+  margin-top: var(--space-4);
+}
+
+.tab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  width: 240px;
+}
+
+.filter-select {
+  width: 170px;
+}
+
+.text-muted {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-link);
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.volunteers-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.section-box {
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.fpm-summary-banner {
+  background-color: var(--status-info-bg);
+  border: 1px solid var(--status-info);
+  color: var(--status-info);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.fee-standing-box {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--status-danger-bg);
+  border: 1px solid var(--status-danger);
+  color: var(--status-danger);
+  margin-top: var(--space-4);
+
+  &.in-good-standing {
+    background-color: var(--status-success-bg);
+    border-color: var(--status-success);
+    color: var(--status-success);
+  }
+}
+
+.mb-4 {
+  margin-bottom: var(--space-5);
+}

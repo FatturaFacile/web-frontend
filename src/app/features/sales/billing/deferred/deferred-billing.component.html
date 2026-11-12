@@ -4,7 +4,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'SC.DEFERRED.SINGLE' | translate">
       <p class="hint">{{ 'SC.DEFERRED.SINGLE_HINT' | translate }}</p>
-      <nz-table [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
             <th scope="col"></th>
@@ -64,7 +64,7 @@
         <label for="run-due">{{ 'SC.BILLING.DUE_DATE' | translate }}</label>
         <input nz-input id="run-due" type="date" class="search" [(ngModel)]="runDueDate" />
         @if (canWrite()) {
-          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="runDeferred()">
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!runUpTo" (click)="runDeferred()">
             <nz-icon nzType="sync" /> {{ 'SC.DEFERRED.RUN_NOW' | translate }}
           </button>
         }

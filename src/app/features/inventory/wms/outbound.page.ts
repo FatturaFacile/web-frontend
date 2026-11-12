@@ -86,7 +86,7 @@ export const OUTBOUND_PAGE: ResourcePageConfig = {
           req(rf.lookup('staging_bin_id', 'bins', { dependsOn: 'warehouse_id' })),
           req(rf.tags('sales_order_ids')),
           rf.uuid('assigned_picker_user_id'),
-          rf.textarea('notes'),
+          rf.textarea('notes', { maxLength: 2000 }),
         ],
       }),
       rowActions: [

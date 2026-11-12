@@ -30,7 +30,7 @@
       <nz-statistic
         [nzValue]="store.pendingBillsCount()"
         [nzTitle]="'SWISS_QR.PENDING_COLLECTION' | translate"
-        [nzValueStyle]="{ color: '#f59e0b' }"
+        [nzValueStyle]="{ color: 'var(--status-warning)' }"
       />
     </nz-card>
   </div>
@@ -54,7 +54,7 @@
           <div nz-col [nzSpan]="12">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.DEBTOR_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorName"
@@ -67,7 +67,7 @@
           <div nz-col [nzSpan]="12">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.ADDRESS_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorAddress"
@@ -83,7 +83,7 @@
           <div nz-col [nzSpan]="8">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.POSTAL_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorPostalCode"
@@ -96,7 +96,7 @@
           <div nz-col [nzSpan]="8">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.CITY_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorCity"
@@ -111,12 +111,12 @@
               <nz-form-label nzRequired>{{
                 "SWISS_QR.RAW_AMOUNT_LABEL" | translate
               }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <nz-input-number
                   formControlName="rawAmount"
                   [nzMin]="0.05"
                   [nzStep]="0.01"
-                 
+                  class="amount-input"
                   [attr.aria-label]="'SWISS_QR.RAW_AMOUNT_LABEL' | translate"
                 />
               </nz-form-control>

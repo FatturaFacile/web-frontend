@@ -14,26 +14,27 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
 /** Time and materials billing, billing runs and revenue recognition of a project. */
 @Component({
   selector: 'app-pc-billing',
+  styleUrl: './pc-billing.component.scss',
   imports: [FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
   template: `
     <app-gl-error-alert [error]="error()" />
 
     @if (canWrite) {
-      <nz-card [nzTitle]="'PRJ.BILL_TM' | translate" nzSize="small">
+      <nz-card [nzTitle]="'PRJ.BILL_TM' | translate" nzSize="small" class="mb-4">
         <p>{{ 'PRJ.BILL_TM_HINT' | translate }}</p>
-        <div>
+        <div class="row">
           <label for="bl-tax">{{ 'PRJ.TAX_RATE' | translate }}</label>
           <nz-input-number id="bl-tax" [(ngModel)]="taxRate" [nzMin]="0" [nzMax]="100" [nzPrecision]="2" />
           <label for="bl-upto">{{ 'PRJ.UP_TO_DATE' | translate }}</label>
-          <input id="bl-upto" nz-input type="date" [(ngModel)]="upToDate" />
-          <button nz-button nzType="primary" type="button" (click)="billTimeAndMaterials()">{{ 'PRJ.BILL' | translate }}</button>
+          <input id="bl-upto" nz-input type="date" class="w-field-sm" [(ngModel)]="upToDate" />
+          <button nz-button nzType="primary" type="button" [disabled]="taxRate === null" (click)="billTimeAndMaterials()">{{ 'PRJ.BILL' | translate }}</button>
         </div>
       </nz-card>
 
-      <nz-card [nzTitle]="'PRJ.REVENUE_RECOGNITION' | translate" nzSize="small">
-        <div>
+      <nz-card [nzTitle]="'PRJ.REVENUE_RECOGNITION' | translate" nzSize="small" class="mb-4">
+        <div class="row">
           <label for="rr-date">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</label>
-          <input id="rr-date" nz-input type="date" [(ngModel)]="accountingDate" />
+          <input id="rr-date" nz-input type="date" class="w-field-sm" [(ngModel)]="accountingDate" />
           <label for="rr-override">{{ 'PRJ.OVERRIDE_COMPLETION' | translate }}</label>
           <nz-input-number id="rr-override" [(ngModel)]="overrideCompletion" [nzMin]="0" [nzMax]="100" [nzPrecision]="2" />
           <button nz-button nzType="primary" type="button" [disabled]="!accountingDate" (click)="runRecognition()">{{ 'PRJ.RUN_RECOGNITION' | translate }}</button>
@@ -78,7 +79,7 @@ export class PcBillingComponent implements OnInit {
 
   protected readonly recognitions = signal<ProjectRevenueRecognition[]>([]);
   protected readonly error = signal<unknown>(null);
-  protected taxRate = 22;
+  protected taxRate: number | null = 22;
   protected upToDate = '';
   protected accountingDate = '';
   protected overrideCompletion: number | null = null;
@@ -88,6 +89,9 @@ export class PcBillingComponent implements OnInit {
   }
 
   protected billTimeAndMaterials(): void {
+    if (this.taxRate === null) {
+      return;
+    }
     this.error.set(null);
     this.api.billTimeAndMaterials(this.projectId(), { tax_rate: this.taxRate, up_to_date: this.upToDate || null }).subscribe({
       next: (res) => this.message.success(`${this.i18n.translate('PRJ.INVOICE_CREATED')} ${res.data.invoice_number ?? ''}`),

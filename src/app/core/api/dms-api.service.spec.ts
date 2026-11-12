@@ -43,7 +43,7 @@ describe('DmsApiService', () => {
 
     req.flush({
       success: true,
-      data: [{ id: 'doc-1', title: 'Contratto Fornitura 2026', status: 'published', is_legal_hold: false }],
+      data: [{ id: 'doc-1', title: 'Contratto Fornitura 2026', status: 'published', legal_hold: false }],
       meta: { current_page: 1, total: 1 },
     });
   });
@@ -53,7 +53,7 @@ describe('DmsApiService', () => {
       title: 'Fattura Immediata 102',
       document_type: 'Invoice',
       folder_id: 'folder-1',
-      tags: ['fiscale', '2026'],
+      file: new File(['pdf'], 'fattura.pdf', { type: 'application/pdf' }),
     };
 
     service.createDocument(payload).subscribe((res) => {
@@ -63,28 +63,36 @@ describe('DmsApiService', () => {
 
     const req = httpTesting.expectOne(`${base}/dms/documents`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(payload);
+    const body = req.request.body as FormData;
+    expect(body).toBeInstanceOf(FormData);
+    expect((body.get('file') as File).name).toBe('fattura.pdf');
+    expect(body.get('title')).toBe('Fattura Immediata 102');
+    expect(body.get('folder_id')).toBe('folder-1');
 
-    req.flush({ success: true, data: { id: 'doc-102', ...payload, status: 'draft', is_legal_hold: false } });
+    req.flush({ success: true, data: { id: 'doc-102', title: payload.title, status: 'draft', legal_hold: false } });
   });
 
   it('handles check-out and check-in lifecycle', () => {
-    service.checkOutDocument('doc-1', { reason: 'Aggiornamento clausole' }).subscribe((res) => {
+    service.checkOutDocument('doc-1', { note: 'Aggiornamento clausole' }).subscribe((res) => {
       expect(res.data.checked_out_by).toBe('user-me');
     });
 
     const reqOut = httpTesting.expectOne(`${base}/dms/documents/doc-1/check-out`);
     expect(reqOut.request.method).toBe('POST');
+    expect(reqOut.request.body).toEqual({ note: 'Aggiornamento clausole' });
     reqOut.flush({ success: true, data: { id: 'doc-1', checked_out_by: 'user-me' } });
 
     service
-      .checkInDocument('doc-1', { original_name: 'doc_v2.pdf', sha256: 'sha256-hash', size: 102400 })
+      .checkInDocument('doc-1', { file: new File(['v2'], 'doc_v2.pdf'), comment: 'Seconda versione' })
       .subscribe((res) => {
         expect(res.data.version_number).toBe(2);
       });
 
     const reqIn = httpTesting.expectOne(`${base}/dms/documents/doc-1/check-in`);
     expect(reqIn.request.method).toBe('POST');
+    const inBody = reqIn.request.body as FormData;
+    expect((inBody.get('file') as File).name).toBe('doc_v2.pdf');
+    expect(inBody.get('comment')).toBe('Seconda versione');
     reqIn.flush({
       success: true,
       data: { id: 'v2', document_id: 'doc-1', version_number: 2, sha256: 'sha256-hash' },
@@ -97,20 +105,20 @@ describe('DmsApiService', () => {
     };
 
     service.placeLegalHold('doc-1', payload).subscribe((res) => {
-      expect(res.data.is_legal_hold).toBe(true);
+      expect(res.data.legal_hold).toBe(true);
     });
 
     const reqHold = httpTesting.expectOne(`${base}/dms/documents/doc-1/legal-hold`);
     expect(reqHold.request.method).toBe('POST');
-    reqHold.flush({ success: true, data: { id: 'doc-1', is_legal_hold: true } });
+    reqHold.flush({ success: true, data: { id: 'doc-1', legal_hold: true } });
 
     service.releaseLegalHold('doc-1').subscribe((res) => {
-      expect(res.data.is_legal_hold).toBe(false);
+      expect(res.data.legal_hold).toBe(false);
     });
 
     const reqRelease = httpTesting.expectOne(`${base}/dms/documents/doc-1/legal-hold`);
     expect(reqRelease.request.method).toBe('DELETE');
-    reqRelease.flush({ success: true, data: { id: 'doc-1', is_legal_hold: false } });
+    reqRelease.flush({ success: true, data: { id: 'doc-1', legal_hold: false } });
   });
 
   it('manages folders and retention policies', () => {

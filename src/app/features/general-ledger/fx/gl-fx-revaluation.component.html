@@ -1,12 +1,12 @@
 <app-gl-error-alert [error]="error()" />
 
 <nz-card>
-  <p>{{ 'GL.FX_HINT' | translate }}</p>
-  <div>
+  <p class="text-secondary">{{ 'GL.FX_HINT' | translate }}</p>
+  <div class="toolbar">
     <label for="gl-fx-date">{{ 'GL.FX_DATE' | translate }}</label>
-    <input id="gl-fx-date" nz-input type="date" [(ngModel)]="revaluationDate" (ngModelChange)="load()" />
+    <input class="date-input" id="gl-fx-date" nz-input type="date" [(ngModel)]="revaluationDate" (ngModelChange)="load()" />
     <label for="gl-fx-currency">{{ 'GL.FX_CURRENCY' | translate }}</label>
-    <input id="gl-fx-currency" nz-input maxlength="3" placeholder="USD" [(ngModel)]="currency" />
+    <input class="currency-input" id="gl-fx-currency" nz-input maxlength="3" placeholder="USD" [(ngModel)]="currency" />
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" [nzLoading]="running()" [disabled]="!revaluationDate" (click)="run()">
         {{ 'GL.FX_RUN' | translate }}
@@ -14,7 +14,7 @@
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
+  <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
         <th>{{ 'GL.COL_DATE' | translate }}</th>

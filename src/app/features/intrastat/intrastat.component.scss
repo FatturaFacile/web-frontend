@@ -1,0 +1,119 @@
+:host {
+  display: block;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+
+  nz-select {
+    width: 110px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.sub-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-desc {
+  margin-bottom: var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.advice-alert {
+  margin-bottom: var(--space-5);
+}
+
+.tab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+
+    nz-select {
+      width: 160px;
+    }
+  }
+
+  .toolbar-info {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--space-2);
+  }
+}
+
+.thresholds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+
+  .thresh-card {
+    text-align: center;
+
+    .thresh-amount {
+      margin-bottom: var(--space-1);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-color);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .thresh-limit {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+  }
+}
+
+.drawer-header-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.export-preview-box {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+
+  pre {
+    margin: 0;
+    max-height: 280px;
+    overflow: auto;
+    font-size: var(--font-size-xs);
+    color: var(--text-primary);
+  }
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}

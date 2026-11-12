@@ -8,6 +8,9 @@
         <input nz-input id="crm-from" type="date" class="filter" [(ngModel)]="from" />
         <label for="crm-to">{{ 'CRMX.REPORTS.TO' | translate }}</label>
         <input nz-input id="crm-to" type="date" class="filter" [(ngModel)]="to" />
+        @if (endsBeforeStart()) {
+          <div class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</div>
+        }
         <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="runReports()">
           <nz-icon nzType="reload" /> {{ 'CRMX.REPORTS.RUN' | translate }}
         </button>

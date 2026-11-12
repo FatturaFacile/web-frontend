@@ -41,11 +41,10 @@ describe('InventoryApiService', () => {
       const payload: CreateProductPayload = {
         sku: 'WDG-01',
         name: 'Super Widget',
-        warehouse: 'HQ',
-        quantity: 50,
-        unit_of_measure: 'PZ',
-        price: 15.5,
-        currency: 'EUR',
+        unit_measure: 'PZ',
+        cost_price: 9,
+        sale_price: 15.5,
+        tax_rate: 22,
       };
 
       service.createProduct(payload).subscribe((res) => {
@@ -59,13 +58,13 @@ describe('InventoryApiService', () => {
     });
 
     it('updates a product', () => {
-      service.updateProduct('p-1', { price: 20 }).subscribe((res) => {
-        expect(res.data.price).toBe(20);
+      service.updateProduct('p-1', { sale_price: 20 }).subscribe((res) => {
+        expect(res.data.sale_price).toBe(20);
       });
 
       const req = httpTesting.expectOne(`${baseUrl}/inventory/products/p-1`);
       expect(req.request.method).toBe('PUT');
-      req.flush({ success: true, data: { id: 'p-1', price: 20 } });
+      req.flush({ success: true, data: { id: 'p-1', sale_price: 20 } });
     });
 
     it('deletes a product', () => {

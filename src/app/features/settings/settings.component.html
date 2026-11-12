@@ -11,70 +11,70 @@
         <div class="form-grid">
           <nz-form-item>
             <nz-form-label nzRequired nzFor="name">{{ 'settings.form.companyName' | translate }}</nz-form-label>
-            <nz-form-control [nzErrorTip]="'validation.nameRequired' | translate">
+            <nz-form-control [nzErrorTip]="nameTip">
               <input nz-input id="name" formControlName="name" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="legal_name">{{ 'settings.form.legalName' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="legal_name" formControlName="legal_name" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="fiscal_code">{{ 'settings.form.taxId' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="fiscal_code" formControlName="fiscal_code" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="vat_number">{{ 'settings.form.vatNumber' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="vat_number" formControlName="vat_number" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="uid_number">{{ 'settings.form.uidNumber' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="uid_number" formControlName="uid_number" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="default_currency">{{ 'settings.form.currency' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="default_currency" formControlName="default_currency" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="iban">{{ 'settings.form.iban' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="iban" formControlName="iban" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="qr_iban">{{ 'settings.form.qrIban' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="qr_iban" formControlName="qr_iban" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="sdi_code">{{ 'settings.form.sdiCode' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="sdi_code" formControlName="sdi_code" maxlength="7" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzFor="pec_email">{{ 'settings.form.pecEmail' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="pec_email" formControlName="pec_email" type="email" />
             </nz-form-control>
           </nz-form-item>
@@ -123,7 +123,7 @@
 
     <!-- TAB 5: AUDIT LOG -->
     <nz-tab [nzTitle]="'settings.tabs.audit' | translate">
-      <div>
+      <div class="row-end mb-3">
         <button
           nz-button
           nzType="default"
@@ -145,6 +145,22 @@
 </nz-card>
 
 <!-- Templates -->
+<ng-template #nameTip let-control>
+  @if (control.hasError('maxlength')) {
+    {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+  } @else {
+    {{ 'validation.nameRequired' | translate }}
+  }
+</ng-template>
+
+<ng-template #invalidTip let-control>
+  @if (control.hasError('email')) {
+    {{ 'COMMON.VALIDATION.INVALID_EMAIL' | translate }}
+  } @else {
+    {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+  }
+</ng-template>
+
 <ng-template #dateTpl let-val="value">
   {{ val | date: "dd.MM.yyyy HH:mm" }}
 </ng-template>

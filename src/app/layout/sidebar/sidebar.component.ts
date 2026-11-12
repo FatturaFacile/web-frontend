@@ -30,6 +30,7 @@ interface MenuSection {
 
 @Component({
   selector: 'app-sidebar',
+  styleUrl: './sidebar.component.scss',
   imports: [RouterLink, NzIconModule, NzInputModule, NzMenuModule, NzTooltipModule, TranslatePipe],
   templateUrl: './sidebar.component.html',
 })

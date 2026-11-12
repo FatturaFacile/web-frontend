@@ -13,6 +13,8 @@ import {
   MaintenanceWorkOrderResource,
   PaginatedResponse,
   QueryFilterParams,
+  DisposeAssetPayload,
+  RunDepreciationPayload,
   StoreFixedAssetPayload,
   UpdateFixedAssetPayload,
 } from '../models';
@@ -63,7 +65,7 @@ export class AssetApiService {
 
   disposeAsset(
     id: string,
-    payload: { disposal_date: string; proceeds_amount?: number; reason?: string },
+    payload: DisposeAssetPayload,
   ): Observable<ApiResponse<FixedAssetResource>> {
     return this.http.post<ApiResponse<FixedAssetResource>>(`${this.base}/assets/${id}/dispose`, payload);
   }
@@ -81,15 +83,11 @@ export class AssetApiService {
     return this.http.get<ApiResponse<DepreciationScheduleResource[]>>(`${this.base}/assets/${id}/depreciation-schedules`);
   }
 
-  simulateDepreciation(payload: { period_code: string; ledger_type?: string }): Observable<ApiResponse<unknown>> {
+  simulateDepreciation(payload: RunDepreciationPayload): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/depreciation/simulate`, payload);
   }
 
-  createDepreciationRun(payload: {
-    period_code: string;
-    ledger_type?: string;
-    post_to_gl?: boolean;
-  }): Observable<ApiResponse<DepreciationRunResource>> {
+  createDepreciationRun(payload: RunDepreciationPayload): Observable<ApiResponse<DepreciationRunResource>> {
     return this.http.post<ApiResponse<DepreciationRunResource>>(`${this.base}/depreciation/runs`, payload);
   }
 

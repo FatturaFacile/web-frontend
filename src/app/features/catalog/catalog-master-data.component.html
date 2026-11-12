@@ -217,15 +217,15 @@
     <div class="two-cols">
       <div>
         <label for="term-code">{{ 'CAT.CODE' | translate }}</label>
-        <input nz-input id="term-code" class="field" [(ngModel)]="termDraft.code" />
+        <input nz-input id="term-code" class="field" maxlength="20" [(ngModel)]="termDraft.code" />
       </div>
       <div>
         <label for="term-name">{{ 'CAT.NAME' | translate }}</label>
-        <input nz-input id="term-name" class="field" [(ngModel)]="termDraft.name" />
+        <input nz-input id="term-name" class="field" maxlength="100" [(ngModel)]="termDraft.name" />
       </div>
       <div>
         <label for="term-days">{{ 'CAT.DAYS' | translate }}</label>
-        <input nz-input id="term-days" type="number" min="0" class="field" [(ngModel)]="termDraft.days" />
+        <input nz-input id="term-days" type="number" min="0" max="365" class="field" [(ngModel)]="termDraft.days" />
       </div>
       <div>
         <label for="term-sdi">SDI</label>
@@ -275,10 +275,10 @@
   <ng-container *nzModalContent>
     @if (simpleOpen() === 'unit') {
       <label for="simple-code">{{ 'CAT.CODE' | translate }}</label>
-      <input nz-input id="simple-code" class="field" [(ngModel)]="simpleCode" />
+      <input nz-input id="simple-code" class="field" maxlength="10" [(ngModel)]="simpleCode" />
     }
     <label for="simple-name">{{ 'CAT.NAME' | translate }}</label>
-    <input nz-input id="simple-name" class="field" [(ngModel)]="simpleName" />
+    <input nz-input id="simple-name" class="field" [attr.maxlength]="simpleOpen() === 'unit' ? 50 : 100" [(ngModel)]="simpleName" />
     @if (simpleOpen() === 'category') {
       <label for="simple-parent">{{ 'CAT.PARENT' | translate }}</label>
       <nz-select nzId="simple-parent" class="field" nzAllowClear [(ngModel)]="simpleParent">

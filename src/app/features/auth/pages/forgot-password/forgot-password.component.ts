@@ -15,6 +15,7 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
 /** The backend answers the same way for every address, and so does this page. */
 @Component({
   selector: 'app-forgot-password',
+  styleUrl: './forgot-password.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -91,7 +92,7 @@ export class ForgotPasswordComponent {
   protected readonly errorKey = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
-    email: this.fb.control('', [Validators.required, Validators.email]),
+    email: this.fb.control('', [Validators.required, Validators.email, Validators.maxLength(255)]),
   });
 
   protected onSubmit(): void {

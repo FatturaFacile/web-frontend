@@ -26,6 +26,7 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
 /** Applies one action to the selected tickets and reports what worked for each of them. */
 @Component({
   selector: 'app-ticket-bulk-modal',
+  styleUrl: './ticket-bulk-modal.component.scss',
   imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <nz-modal

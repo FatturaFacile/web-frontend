@@ -1,5 +1,6 @@
 import { DatePipe, SlicePipe, UpperCasePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
@@ -26,18 +27,22 @@ import {
   EDocumentNetworkStatus,
   EDocumentNetworkType,
   EDocumentTransmission,
+  I18nService,
   PreservationRecord,
   PreserveDocumentRequest,
   SendEDocumentRequest,
+  serverErrorMessage,
   SignDocumentRequest,
   TranslateService,
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { uuidFormat } from '@shared/utils/uuid-validator';
 
 @Component({
   selector: 'app-document-trust',
+  styleUrl: './document-trust.component.scss',
   imports: [
     DatePipe,
     SlicePipe,
@@ -70,6 +75,7 @@ export class DocumentTrustComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
 
   readonly loading = signal<boolean>(false);
   readonly selectedTabIndex = signal<number>(0);
@@ -86,13 +92,13 @@ export class DocumentTrustComponent implements OnInit {
   readonly filterRef = signal<string>('');
 
   // Signatures
-  readonly lookupDocumentId = signal<string>('inv-demo-001');
+  readonly lookupDocumentId = signal<string>('');
   readonly signatures = signal<DocumentSignature[]>([]);
   readonly verificationResult = signal<VerifySignatureResult | null>(null);
   readonly isVerificationModalVisible = signal<boolean>(false);
 
   // Preservation
-  readonly preservationLookupDocumentId = signal<string>('inv-demo-001');
+  readonly preservationLookupDocumentId = signal<string>('');
   readonly preservationRecords = signal<PreservationRecord[]>([]);
 
   // Settings
@@ -105,27 +111,60 @@ export class DocumentTrustComponent implements OnInit {
 
   readonly sendForm: FormGroup = this.fb.group({
     network: ['peppol', [Validators.required]],
-    document_reference: ['', [Validators.required]],
-    recipient_identifier: ['', [Validators.required]],
+    document_reference: ['', [Validators.required, Validators.maxLength(190)]],
+    recipient_identifier: ['', [Validators.required, Validators.maxLength(190)]],
     payload: ['', [Validators.required]],
   });
 
   readonly signForm: FormGroup = this.fb.group({
     document_type: ['invoice' as DocumentTrustType, [Validators.required]],
-    document_id: ['', [Validators.required]],
+    document_id: ['', [Validators.required, uuidFormat]],
   });
 
   readonly preserveForm: FormGroup = this.fb.group({
     document_type: ['invoice' as DocumentTrustType, [Validators.required]],
-    document_id: ['', [Validators.required]],
+    document_id: ['', [Validators.required, uuidFormat]],
   });
 
   readonly settingsForm: FormGroup = this.fb.group({
     driver: ['local', [Validators.required]],
-    certificate: [''],
-    private_key: [''],
-    passphrase: [''],
+    certificate: ['', [Validators.maxLength(20000)]],
+    private_key: ['', [Validators.maxLength(20000)]],
+    passphrase: ['', [Validators.maxLength(255)]],
   });
+
+  constructor() {
+    this.settingsForm.controls['driver'].valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncSigningRequirements());
+  }
+
+  /** API rule `required_if:driver,cades` on the certificate and the private key. */
+  readonly isCertificateRequired = (): boolean => this.settingsForm.controls['driver'].value === 'cades';
+
+  private syncSigningRequirements(): void {
+    for (const key of ['certificate', 'private_key']) {
+      const control = this.settingsForm.controls[key];
+      if (this.isCertificateRequired()) {
+        control.addValidators(Validators.required);
+      } else {
+        control.removeValidators(Validators.required);
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    if (control?.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    if (control?.errors) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
+    return '';
+  }
 
   ngOnInit(): void {
     this.loadNetworks();

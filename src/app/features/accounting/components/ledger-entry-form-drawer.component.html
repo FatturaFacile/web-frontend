@@ -7,10 +7,10 @@
   <ng-container *nzDrawerContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="fiscal_period_id">{{
+        <nz-form-label nzFor="fiscal_period_id">{{
           "accounting.form.fiscalPeriod" | translate
         }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'accounting.form.fiscalPeriodRequired' | translate">
+        <nz-form-control>
           <nz-select id="fiscal_period_id" formControlName="fiscal_period_id">
             @for (period of openPeriods(); track period.id) {
               <nz-option [nzValue]="period.id" [nzLabel]="period.name" />
@@ -24,7 +24,7 @@
           "accounting.form.date" | translate
         }}</nz-form-label>
         <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
-          <nz-date-picker id="date" formControlName="date" />
+          <nz-date-picker class="w-full" id="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
 
@@ -32,7 +32,9 @@
         <nz-form-label nzRequired nzFor="description">{{
           "accounting.form.description" | translate
         }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'validation.descriptionRequired' | translate">
+        <nz-form-control
+          [nzErrorTip]="(form.controls.description.hasError('required') ? 'validation.descriptionRequired' : 'COMMON.VALIDATION.INVALID_VALUE') | translate"
+        >
           <input
             nz-input
             id="description"
@@ -64,7 +66,7 @@
               nzFormat="yyyy-MM-dd"
               nzAllowClear
               [nzDisabledDate]="disableReverseDate"
-             
+              class="w-full"
             />
           </nz-form-control>
         </nz-form-item>
@@ -93,7 +95,7 @@
                 formControlName="debit"
                 [nzPlaceHolder]="'accounting.form.debitPlaceholder' | translate"
                 [nzMin]="0"
-               
+                class="w-full"
               />
             </div>
             <div class="field-amount">
@@ -101,7 +103,7 @@
                 formControlName="credit"
                 [nzPlaceHolder]="'accounting.form.creditPlaceholder' | translate"
                 [nzMin]="0"
-               
+                class="w-full"
               />
             </div>
             <button

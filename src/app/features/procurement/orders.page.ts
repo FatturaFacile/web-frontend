@@ -79,7 +79,7 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.submit_approval', '/procurement/purchase-orders/{id}/submit-approval', { visible: whenIn('status', 'draft') }),
         act('POST', 'RES.A.approve', '/procurement/purchase-orders/{id}/approve', { confirm: true, visible: whenIn('status', 'pending_approval') }),
         act('POST', 'RES.A.reject', '/procurement/purchase-orders/{id}/reject', {
-          fields: [rf.textarea('reason'), rf.textarea('notes'), rf.uuid('delegate_to_user_id')],
+          fields: [rf.textarea('reason', { maxLength: 1000 }), rf.textarea('notes', { maxLength: 2000 }), rf.uuid('delegate_to_user_id')],
           danger: true,
           visible: whenIn('status', 'pending_approval'),
         }),
@@ -132,7 +132,7 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
       list: { path: '/procurement/returns', columns: [...cols('return_number', 'purchase_order_id', 'supplier_id'), col('return_date', 'date'), tagCol('status'), col('total_amount')] },
       rowActions: [
         act('POST', 'RES.A.link_credit_note', '/procurement/returns/{id}/credit-note', {
-          fields: [rf.uuid('passive_invoice_id'), rf.text('credit_note_reference'), rf.textarea('reason')],
+          fields: [rf.uuid('passive_invoice_id'), rf.text('credit_note_reference', { maxLength: 100 }), rf.textarea('reason', { maxLength: 2000 })],
           showResult: true,
         }),
       ],
@@ -163,7 +163,7 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
       },
       rowActions: [
         act('POST', 'RES.A.approve_variance', '/procurement/three-way-match/{id}/approve-variance', {
-          fields: [rf.textarea('reason')],
+          fields: [req(rf.textarea('reason', { maxLength: 2000 }))],
           showResult: true,
         }),
       ],

@@ -4,31 +4,35 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { GeneralLedgerApiService, LedgerStatementReport } from '@core';
 import { TranslatePipe } from '@shared';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 import { GlStatementViewComponent } from './gl-statement-view.component';
 
 /** Balance sheet (as of a date) or income statement (range), with an optional comparison period. */
 @Component({
   selector: 'app-gl-statements',
+  styleUrl: './gl-statements.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, GlStatementViewComponent, TranslatePipe],
   template: `
-    <div>
+    <div class="filters">
       @if (mode() === 'balance-sheet') {
         <label for="st-asof">{{ 'GL.AS_OF' | translate }}</label>
-        <input id="st-asof" nz-input type="date" [(ngModel)]="asOf" />
+        <input class="date-input" id="st-asof" nz-input type="date" [(ngModel)]="asOf" />
         <label for="st-casof">{{ 'GL.COMPARE_AS_OF' | translate }}</label>
-        <input id="st-casof" nz-input type="date" [(ngModel)]="compareAsOf" />
+        <input class="date-input" id="st-casof" nz-input type="date" [(ngModel)]="compareAsOf" />
       } @else {
         <label for="st-from">{{ 'GL.FROM' | translate }}</label>
-        <input id="st-from" nz-input type="date" [(ngModel)]="from" />
+        <input class="date-input" id="st-from" nz-input type="date" [(ngModel)]="from" />
         <label for="st-to">{{ 'GL.TO' | translate }}</label>
-        <input id="st-to" nz-input type="date" [(ngModel)]="to" />
+        <input class="date-input" id="st-to" nz-input type="date" [(ngModel)]="to" />
         <label for="st-cfrom">{{ 'GL.COMPARE_FROM' | translate }}</label>
-        <input id="st-cfrom" nz-input type="date" [(ngModel)]="compareFrom" />
+        <input class="date-input" id="st-cfrom" nz-input type="date" [(ngModel)]="compareFrom" />
         <label for="st-cto">{{ 'GL.COMPARE_TO' | translate }}</label>
-        <input id="st-cto" nz-input type="date" [(ngModel)]="compareTo" />
+        <input class="date-input" id="st-cto" nz-input type="date" [(ngModel)]="compareTo" />
       }
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
     <app-gl-statement-view [report]="report()" />
   `,
@@ -42,6 +46,10 @@ export class GlStatementsComponent {
 
   protected asOf = currentYearEnd();
   protected compareAsOf = '';
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to) || rangeEndsBeforeStart(this.compareFrom, this.compareTo);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
   protected compareFrom = '';

@@ -34,7 +34,7 @@
   </div>
 }
 
-<nz-card>
+<nz-card class="list-card">
   <div class="filter-bar">
     <div class="search-box">
       <nz-input-wrapper>
@@ -161,14 +161,14 @@
     <form nz-form [formGroup]="contractForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'subscriptions.lblCustomerIdUuid' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Customer ID required">
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
           <input nz-input formControlName="customer_id" [placeholder]="'subscriptions.lblCustomerContactUuid' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'subscriptions.lblSubscriptionPlan' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Plan is required">
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
           <nz-select formControlName="plan_id">
             @for (p of plans(); track p.id) {
               <nz-option [nzValue]="p.id" [nzLabel]="p.name + ' (' + (p.base_price | money: p.currency) + '/' + p.billing_interval + ')'"></nz-option>
@@ -179,22 +179,22 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'subscriptions.lblContractLabel' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="name" [placeholder]="'subscriptions.lblEGSaasAnnualCommitment' | translate" />
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <input nz-input formControlName="name" maxlength="255" [placeholder]="'subscriptions.lblEGSaasAnnualCommitment' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'subscriptions.lblStartDate' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Start date required">
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
             <input nz-input formControlName="start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>{{ 'subscriptions.lblQuantitySeats' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Quantity required">
-            <nz-input-number formControlName="quantity" [nzMin]="1" [nzStep]="1"></nz-input-number>
+          <nz-form-label>{{ 'subscriptions.lblQuantitySeats' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number class="w-full" formControlName="quantity" [nzMin]="1" [nzMax]="1000000" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -202,8 +202,8 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'subscriptions.lblTrialDays' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="trial_days" [nzMin]="0" [nzStep]="7"></nz-input-number>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number class="w-full" formControlName="trial_days" [nzMin]="0" [nzMax]="730" [nzStep]="7"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">

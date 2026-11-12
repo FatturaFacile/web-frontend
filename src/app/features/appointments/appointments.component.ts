@@ -1,6 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCalendarModule } from 'ng-zorro-antd/calendar';
@@ -27,13 +35,29 @@ import {
   AppointmentCalendarItem,
   AppointmentConflictCheckResponse,
   CancelAppointmentRequest,
+  ClientApiService,
+  ContactResource,
+  contactDisplayName,
   CreateAppointmentRequest,
+  SettingsApiService,
   TranslateService,
+  UserResource,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
+/** Mirrors the API rule `ends_at: after:starts_at`. */
+function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
+  const startsAt = control.parent?.get('starts_at')?.value;
+  const endsAt = control.value;
+  if (!startsAt || !endsAt) {
+    return null;
+  }
+  return new Date(endsAt).getTime() > new Date(startsAt).getTime() ? null : { endsBeforeStart: true };
+}
+
 @Component({
   selector: 'app-appointments',
+  styleUrl: './appointments.component.scss',
   imports: [
     DatePipe,
     FormsModule,
@@ -67,6 +91,12 @@ export class AppointmentsComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly clientApi = inject(ClientApiService);
+  private readonly settingsApi = inject(SettingsApiService);
+
+  readonly contacts = signal<ContactResource[]>([]);
+  readonly users = signal<UserResource[]>([]);
+  protected readonly contactName = contactDisplayName;
 
   readonly selectedTabIndex = signal<number>(0);
 
@@ -109,27 +139,35 @@ export class AppointmentsComponent implements OnInit {
 
   // Forms
   readonly appointmentForm = this.fb.group({
-    title: ['', [Validators.required]],
-    contact_id: [''],
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    contact_id: ['', [Validators.required]],
     ticket_id: [''],
+    attendee_ids: [[] as string[]],
     starts_at: [new Date().toISOString().substring(0, 16), [Validators.required]],
-    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required]],
-    address: [''],
+    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required, endsAfterStarts]],
+    address: ['', [Validators.maxLength(255)]],
     description: [''],
     estimated_duration_minutes: [120, [Validators.min(15)]],
   });
 
   readonly cancelForm = this.fb.group({
-    reason: ['', [Validators.required]],
+    reason: ['', [Validators.required, Validators.maxLength(255)]],
   });
 
   readonly conflictForm = this.fb.group({
-    user_id: ['', [Validators.required]],
+    user_ids: [[] as string[], [Validators.required]],
     starts_at: [new Date().toISOString().substring(0, 16), [Validators.required]],
-    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required]],
+    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required, endsAfterStarts]],
   });
 
+  private readonly startsChangeSync = [this.appointmentForm, this.conflictForm].map((group) =>
+    group.controls.starts_at.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => group.controls.ends_at.updateValueAndValidity({ emitEvent: false })),
+  );
+
   ngOnInit(): void {
+    this.settingsApi.getTenantUsers().subscribe({ next: (res) => this.users.set(res.data), error: () => this.users.set([]) });
     this.loadAppointments();
     this.loadCalendar();
   }
@@ -174,12 +212,14 @@ export class AppointmentsComponent implements OnInit {
       title: '',
       contact_id: '',
       ticket_id: '',
+      attendee_ids: [],
       starts_at: new Date().toISOString().substring(0, 16),
       ends_at: new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16),
       address: '',
       description: '',
       estimated_duration_minutes: 120,
     });
+    this.clientApi.list({ per_page: 100 }).subscribe({ next: (res) => this.contacts.set(res.data), error: () => this.contacts.set([]) });
     this.appointmentModalVisible.set(true);
   }
 
@@ -193,8 +233,9 @@ export class AppointmentsComponent implements OnInit {
       title: val.title,
       starts_at: new Date(val.starts_at).toISOString(),
       ends_at: new Date(val.ends_at).toISOString(),
-      contact_id: val.contact_id || undefined,
+      contact_id: val.contact_id,
       ticket_id: val.ticket_id || undefined,
+      attendees: val.attendee_ids.length > 0 ? val.attendee_ids.map((userId) => ({ user_id: userId, role: 'technician' as const })) : undefined,
       address: val.address || undefined,
       description: val.description || undefined,
       estimated_duration_minutes: val.estimated_duration_minutes ? Number(val.estimated_duration_minutes) : undefined,
@@ -309,7 +350,7 @@ export class AppointmentsComponent implements OnInit {
       .checkConflicts({
         starts_at: new Date(val.starts_at).toISOString(),
         ends_at: new Date(val.ends_at).toISOString(),
-        user_ids: [val.user_id],
+        user_ids: val.user_ids,
       })
       .subscribe({
         next: (res) => {

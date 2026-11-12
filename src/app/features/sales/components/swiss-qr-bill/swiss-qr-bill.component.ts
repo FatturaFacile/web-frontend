@@ -20,6 +20,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
 
 @Component({
   selector: 'app-swiss-qr-bill',
+  styleUrl: './swiss-qr-bill.component.scss',
   imports: [
     ReactiveFormsModule,
     DecimalPipe,
@@ -82,6 +83,7 @@ export class SwissQrBillComponent implements OnInit {
   }
 
   onCreateBill(): void {
+    this.billForm.markAllAsTouched();
     if (this.billForm.valid) {
       const formVal = this.billForm.getRawValue();
       const rounded = Math.round(formVal.rawAmount * 20) / 20;

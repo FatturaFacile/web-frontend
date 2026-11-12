@@ -31,10 +31,10 @@ export const RETAIL_POS_ADMIN_PAGE: ResourcePageConfig = {
       list: { path: '/retail/pos/terminals', columns: [...cols('terminal_code', 'name', 'hardware_serial', 'rt_serial_number'), col('is_active', 'bool')] },
       create: act('POST', 'RES.A.new_terminal', '/retail/pos/terminals', {
         fields: [
-          req(rf.text('terminal_code', { maxLength: 40 })),
-          req(rf.text('name', { maxLength: 120 })),
-          rf.text('hardware_serial'),
-          rf.text('rt_serial_number'),
+          req(rf.text('terminal_code', { maxLength: 50 })),
+          req(rf.text('name', { maxLength: 255 })),
+          rf.text('hardware_serial', { maxLength: 100 }),
+          rf.text('rt_serial_number', { maxLength: 50 }),
           rf.bool('is_active', { defaultValue: true }),
         ],
       }),

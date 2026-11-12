@@ -15,6 +15,7 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
 /** Monthly time closings: close a month, reopen it with a mandatory reason. */
 @Component({
   selector: 'app-time-closings',
+  styleUrl: './time-closings.component.scss',
   imports: [
     DatePipe,
     FormsModule,
@@ -27,7 +28,7 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
     ReasonButtonComponent,
   ],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="closing-year">{{ 'hrmCommon.year' | translate }}</label>
         <input nz-input id="closing-year" type="number" [ngModel]="year()" (ngModelChange)="setYear($event)" />
@@ -124,7 +125,7 @@ export class TimeClosingsComponent implements OnInit {
 
   protected canClose(): boolean {
     const month = this.month();
-    return month !== null && month >= 1 && month <= 12 && this.year() > 0;
+    return month !== null && month >= 1 && month <= 12 && this.year() >= 2000 && this.year() <= 2100;
   }
 
   protected reload(): void {

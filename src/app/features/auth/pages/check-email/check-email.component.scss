@@ -1,0 +1,6 @@
+@use '../../auth-shell';
+
+.resend-title {
+  font-size: var(--font-size-md);
+  margin: var(--space-4) 0 var(--space-2);
+}

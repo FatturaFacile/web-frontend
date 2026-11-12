@@ -1,7 +1,7 @@
 <nz-card>
   <p>{{ 'TR.RULES_HINT' | translate }}</p>
   @if (canWrite) {
-    <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'TR.RULE_NEW' | translate }}</button>
+    <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'TR.RULE_NEW' | translate }}</button>
   }
   <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
@@ -62,20 +62,20 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rl-name">{{ 'TR.NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="rl-name" nz-input formControlName="name" maxlength="255" />
+          <input id="rl-name" nz-input formControlName="name" maxlength="120" />
         </nz-form-control>
       </nz-form-item>
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzFor="rl-priority">{{ 'TR.PRIORITY' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number id="rl-priority" formControlName="priority" [nzMin]="0" />
+            <nz-input-number class="w-full" id="rl-priority" formControlName="priority" [nzMin]="1" [nzMax]="100000" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="rl-direction">{{ 'TR.DIRECTION' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-select id="rl-direction" formControlName="direction" nzAllowClear>
+            <nz-select class="w-full" id="rl-direction" formControlName="direction" nzAllowClear>
               <nz-option nzValue="credit" [nzLabel]="'TR.DIRECTION_CREDIT' | translate" />
               <nz-option nzValue="debit" [nzLabel]="'TR.DIRECTION_DEBIT' | translate" />
             </nz-select>
@@ -88,54 +88,54 @@
           </nz-form-control>
         </nz-form-item>
       </div>
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzFor="rl-expected">{{ 'TR.EXPECTED_AMOUNT' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number id="rl-expected" formControlName="expected_amount" [nzPrecision]="2" />
+            <nz-input-number class="w-full" id="rl-expected" formControlName="expected_amount" [nzMin]="0.01" [nzPrecision]="2" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="rl-tolerance">{{ 'TR.AMOUNT_TOLERANCE' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number id="rl-tolerance" formControlName="amount_tolerance" [nzMin]="0" [nzPrecision]="2" />
+            <nz-input-number class="w-full" id="rl-tolerance" formControlName="amount_tolerance" [nzMin]="0" [nzMax]="1000000" [nzPrecision]="2" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="rl-min">{{ 'TR.MIN_AMOUNT' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-input-number id="rl-min" formControlName="min_amount" [nzPrecision]="2" />
+            <nz-input-number class="w-full" id="rl-min" formControlName="min_amount" [nzMin]="0" [nzPrecision]="2" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="rl-max">{{ 'TR.MAX_AMOUNT' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number id="rl-max" formControlName="max_amount" [nzPrecision]="2" />
+          <nz-form-control [nzErrorTip]="form.controls.max_amount.errors?.['serverError'] ?? ('COMMON.VALIDATION.BELOW_LIMIT' | translate)">
+            <nz-input-number class="w-full" id="rl-max" formControlName="max_amount" [nzMin]="0" [nzPrecision]="2" />
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
         <nz-form-label nzFor="rl-reference">{{ 'TR.REFERENCE_CONTAINS' | translate }}</nz-form-label>
         <nz-form-control>
-          <input id="rl-reference" nz-input formControlName="reference_contains" />
+          <input id="rl-reference" nz-input formControlName="reference_contains" maxlength="140" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="rl-description">{{ 'TR.DESCRIPTION_CONTAINS' | translate }}</nz-form-label>
         <nz-form-control>
-          <input id="rl-description" nz-input formControlName="description_contains" />
+          <input id="rl-description" nz-input formControlName="description_contains" maxlength="140" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="rl-iban">{{ 'TR.COUNTERPARTY_IBAN' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="form.controls.counterparty_iban.errors?.['serverError'] ?? ('COMMON.VALIDATION.INVALID_VALUE' | translate)">
           <input id="rl-iban" nz-input formControlName="counterparty_iban" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="rl-cpname">{{ 'TR.COUNTERPARTY_NAME_CONTAINS' | translate }}</nz-form-label>
         <nz-form-control>
-          <input id="rl-cpname" nz-input formControlName="counterparty_name_contains" />
+          <input id="rl-cpname" nz-input formControlName="counterparty_name_contains" maxlength="140" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -151,10 +151,10 @@
       <nz-form-item>
         <nz-form-label nzFor="rl-ledger">{{ 'TR.LEDGER_ACCOUNT_CODE' | translate }}</nz-form-label>
         <nz-form-control
-          [nzErrorTip]="form.controls.ledger_account_code.errors?.['serverError'] ?? ''"
+          [nzErrorTip]="form.controls.ledger_account_code.errors?.['serverError'] ?? ('COMMON.VALIDATION.INVALID_VALUE' | translate)"
           [nzExtra]="'TR.LEDGER_ACCOUNT_CODE_HINT' | translate"
         >
-          <input id="rl-ledger" nz-input formControlName="ledger_account_code" maxlength="50" />
+          <input id="rl-ledger" nz-input formControlName="ledger_account_code" maxlength="20" />
         </nz-form-control>
       </nz-form-item>
     </form>

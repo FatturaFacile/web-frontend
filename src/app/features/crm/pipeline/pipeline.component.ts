@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -29,6 +29,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-crm-pipeline',
+  styleUrl: './pipeline.component.scss',
   imports: [
     TranslatePipe,
     FormsModule,
@@ -78,10 +79,10 @@ export class PipelineComponent implements OnInit {
   readonly checkingDuplicates = signal(false);
 
   readonly oppForm = this.fb.group({
-    name: this.fb.control('', [Validators.required]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(200)]),
     account_id: this.fb.control('', [Validators.required]),
     amount: this.fb.control<number>(0, [Validators.required, Validators.min(0)]),
-    stage_code: this.fb.control('discovery', [Validators.required]),
+    stage_code: this.fb.control('discovery', [Validators.maxLength(50)]),
     forecast_category: this.fb.control<'pipeline' | 'best_case' | 'commit' | 'closed' | 'omitted'>('pipeline'),
   });
 
@@ -148,6 +149,14 @@ export class PipelineComponent implements OnInit {
       forecast_category: 'pipeline',
     });
     this.createModalVisible.set(true);
+  }
+
+  /** The error text of a control of the opportunity form. */
+  errorTip(control: AbstractControl): string {
+    if (control.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    return control.invalid ? this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE') : '';
   }
 
   submitCreateOpportunity(): void {

@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.metrics-grid {
+  margin-bottom: var(--space-4);
+}
+
+.valuation-metrics {
+  margin-bottom: var(--space-5);
+}
+
+.toolbar {
+  margin-bottom: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.search-input {
+  max-width: 280px;
+}
+
+.filter-select {
+  width: 240px;
+  max-width: 100%;
+}
+
+.filter-select-sm {
+  width: 200px;
+  max-width: 100%;
+}
+
+.desc-text {
+  color: var(--text-muted);
+  display: block;
+}
+
+.text-danger {
+  color: var(--status-danger);
+  font-weight: 600;
+}
+
+.text-success {
+  color: var(--status-success);
+  font-weight: 600;
+}

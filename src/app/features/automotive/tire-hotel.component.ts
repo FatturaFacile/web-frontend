@@ -14,6 +14,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tire-hotel',
+  styleUrl: './tire-hotel.component.scss',
   imports: [
     NzTableModule,
     NzTagModule,

@@ -12,6 +12,7 @@ import { recordText, saveBlob } from './save-blob';
 /** Fees with the online payment link and the receipts of the selected person. */
 @Component({
   selector: 'app-area-money',
+  styleUrl: './area-money.component.scss',
   imports: [MoneyPipe, NzAlertModule, NzButtonModule, NzEmptyModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     @if (fees(); as standing) {

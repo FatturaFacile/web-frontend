@@ -138,12 +138,12 @@ describe('ProjectsComponent', () => {
     component.projectForm.patchValue({
       project_number: 'PRJ-2026-999',
       name: 'Cloud Native Migration',
-      contact_id: 'c-2',
+      contact_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
       project_type: 'fixed_price',
       billing_method: 'milestone',
       planned_start_date: '2026-03-01',
       planned_end_date: '2026-09-01',
-      project_manager_user_id: 'u-1',
+      project_manager_user_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
       contract_value: 60000,
     });
 
@@ -153,7 +153,7 @@ describe('ProjectsComponent', () => {
       expect.objectContaining({
         project_number: 'PRJ-2026-999',
         name: 'Cloud Native Migration',
-        contact_id: 'c-2',
+        contact_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
         contract_value: 60000,
         currency: 'CHF',
       }),
@@ -184,5 +184,22 @@ describe('ProjectsComponent', () => {
     component.closeDetail();
     expect(component.drawerVisible()).toBe(false);
     expect(component.selectedProject()).toBeNull();
+  });
+
+  it('does not call the API when the create form is submitted empty', () => {
+    component.openCreateModal();
+    component.projectForm.patchValue({ project_number: '', name: '', contact_id: '', project_manager_user_id: '' });
+    component.submitCreateProject();
+    expect(mockProjectApi.createProject).not.toHaveBeenCalled();
+    expect(component.projectForm.controls.name.touched).toBe(true);
+    expect(component.errorTip(component.projectForm, 'name')).toBe('COMMON.VALIDATION.REQUIRED');
+  });
+
+  it('rejects non-UUID ids and an end date before the start', () => {
+    component.openCreateModal();
+    component.projectForm.patchValue({ contact_id: 'c-2', project_manager_user_id: 'u-1', planned_start_date: '2026-05-10', planned_end_date: '2026-05-01' });
+    expect(component.projectForm.controls.contact_id.hasError('uuid')).toBe(true);
+    expect(component.projectForm.controls.project_manager_user_id.hasError('uuid')).toBe(true);
+    expect(component.errorTip(component.projectForm, 'planned_end_date')).toBe('COMMON.VALIDATION.END_AFTER_START');
   });
 });

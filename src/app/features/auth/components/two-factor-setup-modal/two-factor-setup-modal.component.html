@@ -69,7 +69,8 @@
 
         <div class="qrcode-wrapper">
           @if (otpauthUri()) {
-            <nz-qrcode [nzValue]="otpauthUri()" [nzSize]="180"></nz-qrcode>
+            <!-- A QR code must stay black on white to be scannable, whatever the theme -->
+            <nz-qrcode [nzValue]="otpauthUri()" [nzSize]="180" nzColor="#000000" nzBgColor="#ffffff"></nz-qrcode>
           }
           @if (secretKey()) {
             <div class="manual-key">

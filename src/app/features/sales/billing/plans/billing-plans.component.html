@@ -33,7 +33,7 @@
     }
   </div>
 
-  <nz-table
+  <nz-table [nzScroll]="{ x: '900px' }"
     [nzData]="plans()"
     [nzLoading]="loading()"
     [nzFrontPagination]="false"
@@ -88,7 +88,7 @@
         <nz-descriptions-item [nzTitle]="'SC.PLANS.BILLED' | translate">{{ p.billed_amount | money: p.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'SC.PLANS.REMAINING' | translate">{{ p.remaining_amount | money: p.currency }}</nz-descriptions-item>
       </nz-descriptions>
-      <nz-table [nzData]="p.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="p.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
             <th>{{ 'SC.PRICING.NAME' | translate }}</th>
@@ -156,7 +156,7 @@
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="plan-order">{{ 'SC.PLANS.ORDER' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
           <nz-select nzId="plan-order" formControlName="sales_order_id" nzShowSearch>
             @for (o of orders(); track o.id) {
               <nz-option [nzValue]="o.id" [nzLabel]="o.order_number + ' - ' + o.currency + ' ' + (o.total_gross ?? '')"></nz-option>
@@ -168,7 +168,7 @@
     <p class="hint">{{ 'SC.PLANS.ITEMS_HINT' | translate }}</p>
     @for (item of items.controls; track item; let i = $index) {
       <div class="plan-row" [formGroup]="$any(item)">
-        <input nz-input formControlName="name" [placeholder]="'SC.PRICING.NAME' | translate" [attr.aria-label]="'SC.PRICING.NAME' | translate" />
+        <input nz-input maxlength="150" formControlName="name" [placeholder]="'SC.PRICING.NAME' | translate" [attr.aria-label]="'SC.PRICING.NAME' | translate" />
         <input nz-input inputmode="decimal" formControlName="percentage" placeholder="%" [attr.aria-label]="'SC.BILLING.PERCENTAGE' | translate" />
         <input nz-input inputmode="decimal" formControlName="amount" [placeholder]="'SC.BILLING.AMOUNT' | translate" [attr.aria-label]="'SC.BILLING.AMOUNT' | translate" />
         <input nz-input type="date" formControlName="target_date" [attr.aria-label]="'SC.PLANS.TARGET_DATE' | translate" />

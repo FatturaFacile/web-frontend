@@ -160,11 +160,11 @@
     <div class="two-cols">
       <div>
         <label for="camp-name">{{ 'CRMX.COMMON.NAME' | translate }}</label>
-        <input nz-input id="camp-name" class="field" maxlength="255" [(ngModel)]="draft.name" />
+        <input nz-input id="camp-name" class="field" maxlength="200" [(ngModel)]="draft.name" />
       </div>
       <div>
         <label for="camp-code">{{ 'CRMX.COMMON.CODE' | translate }}</label>
-        <input nz-input id="camp-code" class="field" [(ngModel)]="draft.code" />
+        <input nz-input id="camp-code" class="field" maxlength="50" [(ngModel)]="draft.code" />
       </div>
       <div>
         <label for="camp-status">{{ 'CRMX.COMMON.STATUS' | translate }}</label>
@@ -182,6 +182,9 @@
       <div>
         <label for="camp-end">{{ 'CRMX.CAMPAIGNS.END' | translate }}</label>
         <input nz-input id="camp-end" type="date" class="field" [(ngModel)]="draft.end_date" />
+        @if (endsBeforeStart()) {
+          <div class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</div>
+        }
       </div>
       <div>
         <label for="camp-budget">{{ 'CRMX.CAMPAIGNS.BUDGET' | translate }}</label>
@@ -193,15 +196,15 @@
       </div>
       <div>
         <label for="camp-utm-source">{{ 'CRMX.LBL_UTM_SOURCE' | translate }}</label>
-        <input nz-input id="camp-utm-source" class="field" [(ngModel)]="draft.utm_source" />
+        <input nz-input id="camp-utm-source" class="field" maxlength="100" [(ngModel)]="draft.utm_source" />
       </div>
       <div>
         <label for="camp-utm-medium">{{ 'CRMX.LBL_UTM_MEDIUM' | translate }}</label>
-        <input nz-input id="camp-utm-medium" class="field" [(ngModel)]="draft.utm_medium" />
+        <input nz-input id="camp-utm-medium" class="field" maxlength="100" [(ngModel)]="draft.utm_medium" />
       </div>
       <div>
         <label for="camp-utm-campaign">{{ 'CRMX.LBL_UTM_CAMPAIGN' | translate }}</label>
-        <input nz-input id="camp-utm-campaign" class="field" [(ngModel)]="draft.utm_campaign" />
+        <input nz-input id="camp-utm-campaign" class="field" maxlength="100" [(ngModel)]="draft.utm_campaign" />
       </div>
     </div>
   </ng-container>

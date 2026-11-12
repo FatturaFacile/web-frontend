@@ -28,6 +28,7 @@ interface AllocationRow {
 /** After the run is final: mail the payslip links to the employees and create the payment batches of the net pay (Treasury). */
 @Component({
   selector: 'app-payroll-run-delivery',
+  styleUrl: './payroll-run-delivery.component.scss',
   imports: [
     FormsModule,
     MoneyPipe,
@@ -111,10 +112,10 @@ interface AllocationRow {
             <div class="flex-1">
               <label [attr.for]="'alloc-bank-' + i">{{
                 'hrmPayroll.deliver.bankAccount' | translate
-              }}</label>
+              }}<span class="required-mark" aria-hidden="true">*</span></label>
               <nz-select
                 [id]="'alloc-bank-' + i"
-               
+                class="w-full"
                 nzShowSearch
                 [ngModel]="row.bankAccountId"
                 (ngModelChange)="update(i, { bankAccountId: $event })"
@@ -128,7 +129,7 @@ interface AllocationRow {
               <label [attr.for]="'alloc-dep-' + i">{{ 'hrmOrg.department' | translate }}</label>
               <nz-select
                 [id]="'alloc-dep-' + i"
-               
+                class="w-full"
                 nzAllowClear
                 [ngModel]="row.departmentId"
                 (ngModelChange)="update(i, { departmentId: $event })"

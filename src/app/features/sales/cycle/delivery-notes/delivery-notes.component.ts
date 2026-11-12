@@ -23,6 +23,7 @@ const DDT_STATUSES = ['draft', 'issued', 'dispatched', 'delivered', 'invoiced'];
 
 @Component({
   selector: 'app-cycle-delivery-notes',
+  styleUrl: './delivery-notes.component.scss',
   imports: [
     DatePipe,
     FormsModule,

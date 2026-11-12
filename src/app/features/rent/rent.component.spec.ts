@@ -58,8 +58,8 @@ describe('RentComponent', () => {
     make: 'Fiat',
     model: '500',
     year: 2022,
-    vin: 'ZFA312000...',
-    customer_name: 'Mario Rossi',
+    vin_chassis: 'ZFA312000...',
+    client_id: 'cl-1',
   };
 
   beforeEach(async () => {
@@ -162,7 +162,6 @@ describe('RentComponent', () => {
     component.checkOutForm.patchValue({
       mileage: 45050,
       fuel_level: '8/8',
-      notes: 'Handover complete',
     });
 
     component.submitCheckOutInspection();
@@ -172,7 +171,6 @@ describe('RentComponent', () => {
       mileage: 45050,
       fuel_level: '8/8',
       damage_markers: ['Small rock chip'],
-      notes: 'Handover complete',
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isCheckOutModalVisible()).toBe(false);
@@ -185,7 +183,6 @@ describe('RentComponent', () => {
     component.checkInForm.patchValue({
       mileage: 45400,
       fuel_level: '7/8',
-      notes: 'Returned with 7/8 fuel',
     });
 
     component.submitCheckInInspection();
@@ -195,7 +192,6 @@ describe('RentComponent', () => {
       mileage: 45400,
       fuel_level: '7/8',
       damage_markers: [],
-      notes: 'Returned with 7/8 fuel',
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isCheckInModalVisible()).toBe(false);
@@ -211,8 +207,8 @@ describe('RentComponent', () => {
       make: 'BMW',
       model: 'Serie 3',
       year: 2023,
-      vin: 'WBA...',
-      customer_name: 'Giuseppe Verdi',
+      vin_chassis: 'WBA...',
+      client_id: 'cl-9',
     });
 
     component.submitVehicle();
@@ -222,10 +218,25 @@ describe('RentComponent', () => {
         license_plate: 'MI888ZZ',
         make: 'BMW',
         model: 'Serie 3',
+        client_id: 'cl-9',
+        vin_chassis: 'WBA...',
       }),
     );
+    const sent = autoApiMock['registerVehicle']!.mock.calls[0][0] as Record<string, unknown>;
+    expect(Object.keys(sent).sort()).toEqual(['client_id', 'license_plate', 'make', 'mileage_km', 'model', 'vin_chassis', 'year']);
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isVehicleModalVisible()).toBe(false);
+  });
+
+  it('should not call the API when the vehicle form is submitted empty or with a too long plate', () => {
+    component.openRegisterVehicleModal();
+    component.submitVehicle();
+    expect(autoApiMock['registerVehicle']).not.toHaveBeenCalled();
+    expect(component.vehicleForm.controls['license_plate'].touched).toBe(true);
+
+    component.vehicleForm.patchValue({ license_plate: 'X'.repeat(21), make: 'BMW', model: 'Serie 3', client_id: 'cl-9' });
+    component.submitVehicle();
+    expect(autoApiMock['registerVehicle']).not.toHaveBeenCalled();
   });
 
   it('should edit an existing automotive vehicle', () => {
@@ -236,6 +247,7 @@ describe('RentComponent', () => {
 
     component.vehicleForm.patchValue({
       model: '500 Hybrid',
+      client_id: 'cl-1',
     });
 
     component.submitVehicle();
@@ -285,6 +297,7 @@ describe('RentComponent', () => {
       license_plate: 'AA123BB',
       make: 'Fiat',
       model: '500',
+      client_id: 'cl-1',
     });
     component.submitVehicle();
     expect(messageMock['error']).toHaveBeenCalledWith('Duplicate license plate');

@@ -29,7 +29,7 @@ describe('EcommerceIntegrationsComponent', () => {
     uuid: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
     name: 'Shopify Store',
     driver: 'shopify',
-    store_url: 'https://myshop.myshopify.com',
+    api_url: 'https://myshop.myshopify.com',
     is_active: true,
     last_sync_at: '2026-11-09T10:00:00Z',
     last_sync_status: 'success',
@@ -153,18 +153,96 @@ describe('EcommerceIntegrationsComponent', () => {
     expect(apiMock['createChannel']).toHaveBeenCalledWith({
       name: 'WooCommerce B2B',
       driver: 'woocommerce',
+      api_url: 'https://b2b.store.com',
       credentials: {
-        store_url: 'https://b2b.store.com',
-        api_key: 'ck_123',
-        api_secret: 'cs_456',
+        consumer_key: 'ck_123',
+        consumer_secret: 'cs_456',
       },
-      settings: {
-        auto_sync_orders: true,
-        stock_push_enabled: true,
-      },
+      sync_orders_enabled: true,
+      sync_stock_enabled: true,
+      is_active: true,
     });
+  });
+
+  it('sends the Shopify credentials the API expects and rejects a past expiry date', () => {
+    component.openCreateChannelModal();
+    component.channelForm.patchValue({
+      name: 'Shopify',
+      driver: 'shopify',
+      store_url: 'https://myshop.myshopify.com/admin',
+      api_secret: 'shpat_1',
+    });
+    component.submitChannel();
+    expect(apiMock['createChannel']).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        api_url: null,
+        credentials: { access_token: 'shpat_1', shop_domain: 'myshop.myshopify.com' },
+      }),
+    );
+
+    component.openCreateApiKeyModal();
+    component.apiKeyForm.patchValue({ name: 'Key', expires_at: '2020-01-01' });
+    expect(component.apiKeyForm.controls['expires_at'].hasError('pastDate')).toBe(true);
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isChannelModalVisible()).toBe(false);
+  });
+
+  it('should not call the API when the forms are submitted empty or with invalid values', () => {
+    component.openCreateChannelModal();
+    component.channelForm.patchValue({ name: '' });
+    component.submitChannel();
+    expect(apiMock['createChannel']).not.toHaveBeenCalled();
+    expect(component.channelForm.controls['name'].touched).toBe(true);
+
+    component.openCreatePaymentLinkModal();
+    component.paymentLinkForm.patchValue({ invoice_id: 'not-a-uuid' });
+    component.submitCreatePaymentLink();
+    expect(apiMock['createPaymentLink']).not.toHaveBeenCalled();
+
+    component.openCreateApiKeyModal();
+    component.apiKeyForm.patchValue({ name: 'Key', scope_reporting: false });
+    component.submitApiKey();
+    expect(apiMock['createApiKey']).not.toHaveBeenCalled();
+  });
+
+  it('requires the credentials of the chosen driver on creation, like the API', () => {
+    component.openCreateChannelModal();
+    const controls = component.channelForm.controls;
+
+    // Shopify (default): shop domain and access token.
+    expect(controls['store_url'].hasError('required')).toBe(true);
+    expect(controls['api_secret'].hasError('required')).toBe(true);
+    expect(controls['api_key'].valid).toBe(true);
+
+    // WooCommerce: store URL, key and secret.
+    controls['driver'].setValue('woocommerce');
+    expect(controls['api_key'].hasError('required')).toBe(true);
+    expect(controls['api_secret'].hasError('required')).toBe(true);
+    controls['store_url'].setValue('store.com');
+    expect(controls['store_url'].hasError('pattern')).toBe(true);
+    controls['store_url'].setValue('https://store.com');
+    expect(controls['store_url'].valid).toBe(true);
+
+    // PrestaShop: store URL and key only.
+    controls['driver'].setValue('prestashop');
+    expect(controls['api_key'].hasError('required')).toBe(true);
+    expect(controls['api_secret'].valid).toBe(true);
+
+    component.channelForm.patchValue({ name: 'Presta' });
+    component.submitChannel();
+    expect(apiMock['createChannel']).not.toHaveBeenCalled();
+
+    controls['api_key'].setValue('KEY');
+    component.submitChannel();
+    expect(apiMock['createChannel']).toHaveBeenLastCalledWith(
+      expect.objectContaining({ driver: 'prestashop', api_url: 'https://store.com', credentials: { api_key: 'KEY' } }),
+    );
+  });
+
+  it('does not require the stored credentials again when editing a channel', () => {
+    component.openEditChannelModal(mockChannel);
+    expect(component.channelForm.controls['api_secret'].valid).toBe(true);
+    expect(component.channelForm.valid).toBe(true);
   });
 
   it('should open edit channel modal and update existing channel', () => {
@@ -291,10 +369,10 @@ describe('EcommerceIntegrationsComponent', () => {
     component.openCreatePaymentLinkModal();
     expect(component.isPaymentLinkModalVisible()).toBe(true);
 
-    component.paymentLinkForm.patchValue({ invoice_id: 'inv-456' });
+    component.paymentLinkForm.patchValue({ invoice_id: '11111111-2222-3333-4444-555555555555' });
     component.submitCreatePaymentLink();
 
-    expect(apiMock['createPaymentLink']).toHaveBeenCalledWith({ invoice_id: 'inv-456' });
+    expect(apiMock['createPaymentLink']).toHaveBeenCalledWith({ invoice_id: '11111111-2222-3333-4444-555555555555' });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isPaymentLinkModalVisible()).toBe(false);
 
@@ -330,7 +408,7 @@ describe('EcommerceIntegrationsComponent', () => {
 
   it('should handle API errors gracefully', () => {
     apiMock['createChannel']!.mockReturnValue(throwError(() => ({ error: { message: 'Invalid store credentials' } })));
-    component.openCreateChannelModal();
+    component.channelForm.patchValue({ name: 'Fail Store', driver: 'shopify', store_url: 'fail.myshopify.com', api_secret: 'shpat_1' });
     component.channelForm.patchValue({ name: 'Fail Store', driver: 'shopify' });
     component.submitChannel();
     expect(messageMock['error']).toHaveBeenCalledWith('Invalid store credentials');

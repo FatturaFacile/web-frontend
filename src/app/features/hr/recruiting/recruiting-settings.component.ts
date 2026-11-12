@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTalentApiService, I18nService, OnboardingChecklistRecord } from '@core';
 import { TranslatePipe } from '@shared';
@@ -12,16 +12,17 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Candidate data retention, onboarding templates and the onboarding checklists in progress. */
 @Component({
   selector: 'app-recruiting-settings',
+  styleUrl: './recruiting-settings.component.scss',
   imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     @if (canWrite()) {
       <h3>{{ 'hrmRecruiting.retention' | translate }}</h3>
-      <div class="flex items-end gap-2 mb-4">
+      <div class="filter-bar">
         <div>
           <label for="retention-days">{{ 'hrmRecruiting.retentionDays' | translate }}</label>
-          <input nz-input id="retention-days" type="number" min="1" [ngModel]="retentionDays()" (ngModelChange)="retentionDays.set($event)" />
+          <input nz-input id="retention-days" type="number" min="1" max="3650" [ngModel]="retentionDays()" (ngModelChange)="retentionDays.set($event)" />
         </div>
-        <button nz-button nzType="primary" type="button" [disabled]="!retentionDays()" (click)="saveRetention()">
+        <button nz-button nzType="primary" type="button" [disabled]="!retentionValid()" (click)="saveRetention()">
           {{ 'hrmCommon.save' | translate }}
         </button>
       </div>
@@ -51,7 +52,7 @@ import { reportHttpError } from '../shared/hr-http.util';
           <tr>
             <td>{{ list.employee_id.slice(0, 8) }}</td>
             <td>
-              <ul class="m-0 p-0">
+              <ul class="task-list">
                 @for (task of list.tasks ?? []; track task.id) {
                   <li>
                     {{ task.title }}
@@ -83,6 +84,10 @@ export class RecruitingSettingsComponent implements OnInit {
   private readonly i18n = inject(I18nService);
 
   protected readonly retentionDays = signal<number | null>(null);
+  protected readonly retentionValid = computed(() => {
+    const days = this.retentionDays();
+    return days !== null && Number.isInteger(days) && days >= 1 && days <= 3650;
+  });
   protected readonly templateName = signal('');
   protected readonly templateTasks = signal('');
   protected readonly checklists = signal<OnboardingChecklistRecord[]>([]);

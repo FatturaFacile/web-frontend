@@ -100,28 +100,28 @@
       <i class="fa-solid fa-bell" aria-hidden="true"></i>
     </a>
 
-    <!--    &lt;!&ndash; Dark/Light Theme Toggle &ndash;&gt;-->
-    <!--    <button-->
-    <!--      type="button"-->
-    <!--      class="action-btn theme-toggle"-->
-    <!--      (click)="authStore.toggleTheme()"-->
-    <!--      [title]="-->
-    <!--        authStore.isDarkMode()-->
-    <!--          ? ('HEADER.THEME_LIGHT' | translate)-->
-    <!--          : ('HEADER.THEME_DARK' | translate)-->
-    <!--      "-->
-    <!--      [attr.aria-label]="-->
-    <!--        authStore.isDarkMode()-->
-    <!--          ? ('HEADER.THEME_LIGHT' | translate)-->
-    <!--          : ('HEADER.THEME_DARK' | translate)-->
-    <!--      "-->
-    <!--    >-->
-    <!--      @if (authStore.isDarkMode()) {-->
-    <!--        <i class="fa-solid fa-sun"></i>-->
-    <!--      } @else {-->
-    <!--        <i class="fa-solid fa-moon"></i>-->
-    <!--      }-->
-    <!--    </button>-->
+    <!-- Dark/Light theme toggle -->
+    <button
+      type="button"
+      class="action-btn theme-toggle"
+      (click)="authStore.toggleTheme()"
+      [title]="
+        authStore.isDarkMode()
+          ? ('HEADER.THEME_LIGHT' | translate)
+          : ('HEADER.THEME_DARK' | translate)
+      "
+      [attr.aria-label]="
+        authStore.isDarkMode()
+          ? ('HEADER.THEME_LIGHT' | translate)
+          : ('HEADER.THEME_DARK' | translate)
+      "
+    >
+      @if (authStore.isDarkMode()) {
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+      } @else {
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      }
+    </button>
 
     <!-- User profile dropdown -->
     <div class="user-profile">
@@ -137,7 +137,7 @@
       </a>
       <nz-dropdown-menu #userMenu="nzDropdownMenu">
         <ul nz-menu class="user-menu-dropdown">
-          <li nz-menu-item disabled class="cursor-default">
+          <li nz-menu-item disabled>
             <div class="user-info-panel">
               <strong>{{ authStore.user()?.name }}</strong>
               <span class="user-role">{{ authStore.activeRole() }}</span>

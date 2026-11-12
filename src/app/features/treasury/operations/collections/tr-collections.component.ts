@@ -15,6 +15,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tr-collections',
+  styleUrl: './tr-collections.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

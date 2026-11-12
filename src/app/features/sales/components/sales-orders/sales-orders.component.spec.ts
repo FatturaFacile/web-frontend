@@ -337,4 +337,23 @@ describe('SalesOrdersComponent', () => {
     expect(mockSalesApi.createDeliveryNote).toHaveBeenCalled();
     expect(component.ddtModalVisible()).toBe(false);
   });
+
+  it('does not call the API when the quote, order or delivery note forms are submitted empty', () => {
+    fixture.detectChanges();
+    mockSalesApi.createQuote.mockClear();
+    mockSalesApi.createOrder.mockClear();
+    mockSalesApi.createDeliveryNote.mockClear();
+    component.openQuoteModal();
+    component.openOrderModal();
+    component.openDdtModal();
+
+    component.submitQuote();
+    component.submitOrder();
+    component.submitDdt();
+
+    expect(mockSalesApi.createQuote).not.toHaveBeenCalled();
+    expect(mockSalesApi.createOrder).not.toHaveBeenCalled();
+    expect(mockSalesApi.createDeliveryNote).not.toHaveBeenCalled();
+    expect(component.quoteForm.controls.contact_id.touched).toBe(true);
+  });
 });

@@ -30,6 +30,7 @@ interface ActiveForm {
 /** Generic list / report panel with create form, row actions and toolbar actions driven by a config. */
 @Component({
   selector: 'app-resource-panel',
+  styleUrl: './resource-panel.component.scss',
   imports: [
     FormsModule,
     RouterLink,

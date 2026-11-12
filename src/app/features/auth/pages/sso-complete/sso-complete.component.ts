@@ -34,6 +34,7 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
  */
 @Component({
   selector: 'app-sso-complete',
+  styleUrl: './sso-complete.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,

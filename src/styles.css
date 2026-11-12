@@ -1,8 +1,0 @@
-/*
- * Global styles: the layout utilities (Tailwind CSS v4 without preflight, so it does not reset the NG-ZORRO base
- * styles), the icon font and nothing else. Colours, density and radius come from the NG-ZORRO theme (theme.less).
- */
-@layer theme, base, components, utilities;
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
-@import '@fortawesome/fontawesome-free/css/all.min.css';

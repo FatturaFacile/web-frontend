@@ -55,8 +55,8 @@ describe('WorkflowsComponent', () => {
         name: 'Approvazione Fattura Fornitore',
         version: 1,
         is_active: true,
-        is_published: true,
-        approvable_type: 'Invoice',
+        status: 'published',
+        target_entity_type: 'sales_quote',
       },
     },
   ];
@@ -69,8 +69,8 @@ describe('WorkflowsComponent', () => {
       description: 'Controllo conformità e budget',
       version: 1,
       is_active: true,
-      is_published: false,
-      approvable_type: 'Invoice',
+      status: 'draft',
+      target_entity_type: 'sales_quote',
     },
   ];
 
@@ -80,7 +80,7 @@ describe('WorkflowsComponent', () => {
       delegator_user_id: 'usr-admin',
       delegate_user_id: 'usr-deputy',
       delegate_user_name: 'Laura Bianchi',
-      workflow_code: null,
+      scope: 'all',
       starts_at: '2026-12-01T00:00:00Z',
       ends_at: '2026-12-15T23:59:59Z',
       is_active: true,
@@ -92,12 +92,11 @@ describe('WorkflowsComponent', () => {
     {
       id: 'rule-1',
       name: 'Sollecito 24h ed escalation CFO a 48h',
-      workflow_code: 'purchase_approval',
       reminder_hours: 24,
       escalation_hours: 48,
-      escalate_to_type: 'role',
-      escalate_to_target: 'cfo',
-      is_active: true,
+      escalate_to_type: 'specific_role',
+      escalate_to_id: 'cfo',
+      auto_action: 'none',
     },
   ];
 
@@ -147,7 +146,7 @@ describe('WorkflowsComponent', () => {
     verifyInstanceAuditTrail: vi.fn().mockReturnValue(of({ success: true, data: mockVerification })),
     getDefinitions: vi.fn().mockReturnValue(of({ success: true, data: mockDefinitions, meta: { total: 1 } })),
     createDefinition: vi.fn().mockReturnValue(of({ success: true, data: mockDefinitions[0] })),
-    publishDefinition: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDefinitions[0], is_published: true } })),
+    publishDefinition: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDefinitions[0], status: 'published' } })),
     deleteDefinition: vi.fn().mockReturnValue(of(null)),
     getDelegations: vi.fn().mockReturnValue(of({ success: true, data: mockDelegations })),
     createDelegation: vi.fn().mockReturnValue(of({ success: true, data: mockDelegations[0] })),
@@ -213,12 +212,17 @@ describe('WorkflowsComponent', () => {
     expect(component.startModalVisible()).toBe(true);
     component.startForm.patchValue({
       workflow_code: 'purchase_approval',
-      approvable_type: 'Invoice',
-      approvable_id: 'INV-1234',
+      approvable_type: 'purchase_order',
+      approvable_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
       context_note: 'Richiesta urgente',
     });
     component.submitStartWorkflow();
-    expect(mockWorkflowApi.startInstance).toHaveBeenCalled();
+    expect(mockWorkflowApi.startInstance).toHaveBeenCalledWith({
+      workflow_code: 'purchase_approval',
+      approvable_type: 'purchase_order',
+      approvable_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
+      context_snapshot: { note: 'Richiesta urgente' },
+    });
     expect(component.startModalVisible()).toBe(false);
 
     // Audit trail & hash verify
@@ -237,13 +241,18 @@ describe('WorkflowsComponent', () => {
     component.openCreateDefModal();
     expect(component.createDefModalVisible()).toBe(true);
     component.defForm.patchValue({
-      code: 'customs_approval',
+      code: 'CUSTOMS_APPROVAL',
       name: 'Customs Clearance Process',
       description: 'Approval of cross-border customs declarations',
-      approvable_type: 'CustomsDossier',
+      target_entity_type: 'project',
     });
     component.submitCreateDefinition();
-    expect(mockWorkflowApi.createDefinition).toHaveBeenCalled();
+    expect(mockWorkflowApi.createDefinition).toHaveBeenCalledWith({
+      code: 'CUSTOMS_APPROVAL',
+      name: 'Customs Clearance Process',
+      description: 'Approval of cross-border customs declarations',
+      target_entity_type: 'project',
+    });
     expect(component.createDefModalVisible()).toBe(false);
 
     const def = component.definitions()[0];
@@ -257,16 +266,75 @@ describe('WorkflowsComponent', () => {
     expect(mockWorkflowApi.getEscalationRules).toHaveBeenCalled();
 
     component.openCreateDelegationModal();
+    const year = new Date().getFullYear() + 1;
     component.delegationForm.patchValue({
-      delegate_user_id: 'usr-colleague',
+      delegate_user_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b',
+      scope: 'hr',
+      starts_at: `${year}-12-01T00:00`,
+      ends_at: `${year}-12-15T00:00`,
       reason: 'Congedo parentale',
     });
     component.submitCreateDelegation();
-    expect(mockWorkflowApi.createDelegation).toHaveBeenCalled();
+    expect(mockWorkflowApi.createDelegation).toHaveBeenCalledWith({
+      delegate_user_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b',
+      scope: 'hr',
+      starts_at: `${year}-12-01T00:00`,
+      ends_at: `${year}-12-15T00:00`,
+      reason: 'Congedo parentale',
+    });
+
+    component.openCreateRuleModal();
+    component.ruleForm.patchValue({ name: 'Escalation CFO', escalate_to_type: 'specific_role', escalate_to_id: 'cfo' });
+    component.submitCreateRule();
+    expect(mockWorkflowApi.createEscalationRule).toHaveBeenCalledWith({
+      name: 'Escalation CFO',
+      reminder_hours: 24,
+      escalation_hours: 48,
+      escalate_to_type: 'specific_role',
+      escalate_to_id: 'cfo',
+    });
 
     // Tab 4: SLA
     component.onTabChange(4);
     expect(mockWorkflowApi.getSlaReport).toHaveBeenCalled();
     expect(component.slaReport()?.figures.sla_compliance_rate_percent).toBe(98.2);
+  });
+
+  it('does not call the API when the forms are submitted empty', () => {
+    mockWorkflowApi.startInstance.mockClear();
+    mockWorkflowApi.createDefinition.mockClear();
+    mockWorkflowApi.createDelegation.mockClear();
+    mockWorkflowApi.createEscalationRule.mockClear();
+    component.openStartModal();
+    component.startForm.patchValue({ workflow_code: '' });
+    component.submitStartWorkflow();
+    expect(mockWorkflowApi.startInstance).not.toHaveBeenCalled();
+
+    component.openCreateDefModal();
+    component.submitCreateDefinition();
+    expect(mockWorkflowApi.createDefinition).not.toHaveBeenCalled();
+
+    component.openCreateDelegationModal();
+    component.submitCreateDelegation();
+    expect(mockWorkflowApi.createDelegation).not.toHaveBeenCalled();
+    expect(component.delegationForm.controls.starts_at.touched).toBe(true);
+    expect(component.delegationForm.controls.ends_at.hasError('required')).toBe(true);
+
+    component.openCreateDefModal();
+    component.defForm.patchValue({ code: 'lower_case', name: 'x' });
+    expect(component.defForm.controls.code.hasError('pattern')).toBe(true);
+    component.defForm.patchValue({ code: 'UPPER_CASE' });
+    expect(component.defForm.controls.code.hasError('pattern')).toBe(false);
+
+    component.openCreateDelegationModal();
+    component.delegationForm.patchValue({ starts_at: '2030-01-10T10:00', ends_at: '2030-01-09T10:00' });
+    expect(component.delegationForm.controls.ends_at.hasError('endsBeforeStart')).toBe(true);
+    component.delegationForm.patchValue({ starts_at: '2020-01-01T10:00', ends_at: '2020-01-09T10:00' });
+    expect(component.delegationForm.controls.ends_at.hasError('pastDate')).toBe(true);
+
+    component.openCreateRuleModal();
+    component.ruleForm.patchValue({ name: '' });
+    component.submitCreateRule();
+    expect(mockWorkflowApi.createEscalationRule).not.toHaveBeenCalled();
   });
 });

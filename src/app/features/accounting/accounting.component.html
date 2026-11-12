@@ -38,7 +38,7 @@
       />
 
       <ng-template #ledgerActionsTpl let-entry>
-        <div>
+        <div class="row-actions">
           @if (entry.status === 'draft') {
             <button nz-button nzSize="small" nzType="primary" (click)="postJournal(entry)">
               {{ 'accounting.lblContabilizza' | translate }}
@@ -55,14 +55,14 @@
       <!-- Detail row expandable template -->
       <ng-template #ledgerDetailTpl let-entry>
         <div class="expandable-detail-wrapper">
-          <h5>Dettaglio Righe Scrittura N. {{ entry.entry_number }}</h5>
+          <h5 class="detail-title">Dettaglio Righe Scrittura N. {{ entry.entry_number }}</h5>
           <table class="nested-lines-table">
             <thead>
               <tr>
                 <th>{{ 'accounting.lblContoMastro' | translate }}</th>
                 <th>{{ 'accounting.lblDescrizione' | translate }}</th>
-                <th>{{ 'accounting.lblDare' | translate }}</th>
-                <th>{{ 'accounting.lblAvere' | translate }}</th>
+                <th class="num">{{ 'accounting.lblDare' | translate }}</th>
+                <th class="num">{{ 'accounting.lblAvere' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -73,10 +73,10 @@
                     {{ line.account_name || 'Conto' }}
                   </td>
                   <td>{{ line.description || "-" }}</td>
-                  <td>
+                  <td class="num">
                     {{ line.debit_amount > 0 ? (line.debit_amount | money: 'EUR') : "-" }}
                   </td>
-                  <td>
+                  <td class="num">
                     {{ line.credit_amount > 0 ? (line.credit_amount | money: 'EUR') : "-" }}
                   </td>
                 </tr>
@@ -89,8 +89,8 @@
 
     <!-- TAB 2: PIANO DEI CONTI (CHART OF ACCOUNTS) -->
     <nz-tab [nzTitle]="'accounting.chartOfAccounts' | translate">
-      <div>
-        <span>{{ 'accounting.lblPianoDeiContiMultiLivelloIt' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'accounting.lblPianoDeiContiMultiLivelloIt' | translate }}</span>
         <button nz-button nzType="primary" (click)="openAccountModal()">
           <nz-icon nzType="plus" /> {{ 'accounting.lblNuovoContoMastro' | translate }}
         </button>
@@ -107,9 +107,9 @@
 
     <!-- TAB 3: LIQUIDAZIONI IVA E IMPOSTE -->
     <nz-tab [nzTitle]="'accounting.vatSettlement' | translate">
-      <div>
-        <span>{{ 'accounting.lblLiquidazioniPeriodicheIvaMensiliTrimestraliO' | translate }}</span>
-        <div>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'accounting.lblLiquidazioniPeriodicheIvaMensiliTrimestraliO' | translate }}</span>
+        <div class="row-actions">
           <button nz-button nzType="default" (click)="loadVatAnnualReconciliation()">
             {{ 'accounting.lblRiconciliazioneAnnualeIvaArt72Liva' | translate }}
           </button>
@@ -129,7 +129,7 @@
       />
 
       <ng-template #vatActionsTpl let-vs>
-        <div>
+        <div class="row-actions">
           @if (vs.status === 'calculated' || vs.status === 'draft') {
             <button nz-button nzSize="small" nzType="default" (click)="postVatSettlement(vs)">
               {{ 'accounting.lblRegistraALibroGiornale' | translate }}
@@ -147,22 +147,22 @@
       </ng-template>
 
       @if (vatAnnualReconciliation(); as recon) {
-        <nz-card [nzTitle]="'accounting.lblRiconciliazioneAnnualeIvaSvizzeraArt72' | translate">
-          <pre>{{ recon | json }}</pre>
+        <nz-card class="recon-card" [nzTitle]="'accounting.lblRiconciliazioneAnnualeIvaSvizzeraArt72' | translate">
+          <pre class="recon-json">{{ recon | json }}</pre>
         </nz-card>
       }
     </nz-tab>
 
     <!-- TAB 4: PERIODI FISCALI (FISCAL PERIODS) -->
     <nz-tab [nzTitle]="'accounting.lblPeriodiFiscali' | translate">
-      <div>
-        <span>{{ 'accounting.lblControlloStatoPeriodiDiChiusuraContabile' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'accounting.lblControlloStatoPeriodiDiChiusuraContabile' | translate }}</span>
         <button nz-button nzType="default" (click)="loadFiscalPeriods()">
           <nz-icon nzType="sync" /> {{ 'accounting.lblAggiorna' | translate }}
         </button>
       </div>
 
-      <nz-table #fpTable [nzData]="fiscalPeriods()" [nzLoading]="loadingPeriods()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+      <nz-table #fpTable [nzData]="fiscalPeriods()" [nzLoading]="loadingPeriods()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '720px' }">
         <thead>
           <tr>
             <th>{{ 'accounting.lblNomePeriodo' | translate }}</th>
@@ -207,20 +207,19 @@
 
     <!-- TAB 5: INTRASTAT (MODELLI INTRA) -->
     <nz-tab [nzTitle]="'accounting.lblDichiarazioniIntrastat' | translate">
-      <div>
-        <span>{{ 'accounting.lblElenchiRiepilogativiCessioniEAcquistiIntracomunitari' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'accounting.lblElenchiRiepilogativiCessioniEAcquistiIntracomunitari' | translate }}</span>
         <button nz-button nzType="primary" (click)="openIntrastatModal()">
           <nz-icon nzType="plus" /> {{ 'accounting.lblNuovaDichiarazioneIntrastat' | translate }}
         </button>
       </div>
 
-      <nz-table #intraTable [nzData]="intrastatDeclarations()" [nzLoading]="loadingIntrastat()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+      <nz-table #intraTable [nzData]="intrastatDeclarations()" [nzLoading]="loadingIntrastat()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '720px' }">
         <thead>
           <tr>
             <th>{{ 'accounting.lblProtocolloDichiarazione' | translate }}</th>
             <th>{{ 'accounting.lblAnnoPeriodo' | translate }}</th>
             <th>{{ 'accounting.lblFlusso' | translate }}</th>
-            <th>{{ 'accounting.lblImportoTotale' | translate }}</th>
             <th>{{ 'accounting.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'accounting.lblAzioni' | translate }}</th>
           </tr>
@@ -228,21 +227,20 @@
         <tbody>
           @for (intra of intraTable.data; track intra.id) {
             <tr>
-              <td><strong>{{ intra.declaration_number }}</strong></td>
-              <td>{{ intra.year }} / {{ intra.month || intra.quarter }}</td>
+              <td><strong>{{ intrastatLabel(intra) }}</strong></td>
+              <td>{{ intra.year }} / {{ intra.period }}</td>
               <td>
-                <nz-tag [nzColor]="intra.direction === 'dispatch' ? 'blue' : 'orange'">
-                  {{ intra.direction === 'dispatch' ? 'Cessioni (Intra-1)' : 'Acquisti (Intra-2)' }}
+                <nz-tag [nzColor]="intra.flow === 'sales' ? 'blue' : 'orange'">
+                  {{ (intra.flow === 'sales' ? 'accounting.lblCessioniComunitarieIntra1' : 'accounting.lblAcquistiComunitariIntra2') | translate }}
                 </nz-tag>
               </td>
-              <td><strong>{{ intra.total_amount | money: 'EUR' }}</strong></td>
               <td>
                 <nz-tag [nzColor]="intra.status === 'submitted' ? 'success' : intra.status === 'validated' ? 'processing' : 'default'">
                   {{ intra.status }}
                 </nz-tag>
               </td>
               <td nzAlign="right">
-                <div>
+                <div class="row-actions">
                   @if (intra.status === 'draft') {
                     <button nz-button nzSize="small" nzType="default" (click)="validateIntrastat(intra)">
                       {{ 'accounting.lblValida' | translate }}
@@ -263,24 +261,24 @@
 
     <!-- TAB 6: BILANCIO DI VERIFICA (TRIAL BALANCE) -->
     <nz-tab [nzTitle]="'accounting.lblBilancioDiVerifica' | translate">
-      <div>
-        <span>{{ 'accounting.lblSituazioneContabileDiVerificaEQuadratura' | translate }}</span>
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'accounting.lblSituazioneContabileDiVerificaEQuadratura' | translate }}</span>
         <button nz-button nzType="default" (click)="loadTrialBalance()">
           <nz-icon nzType="sync" /> {{ 'accounting.lblRicaricaBilancio' | translate }}
         </button>
       </div>
 
       @if (trialBalance(); as tb) {
-        <nz-table #tbTable [nzData]="tb.items || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="15">
+        <nz-table #tbTable [nzData]="tb.items || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="15" [nzScroll]="{ x: '720px' }">
           <thead>
             <tr>
               <th>{{ 'accounting.lblCodiceConto' | translate }}</th>
               <th>{{ 'accounting.lblDenominazioneConto' | translate }}</th>
               <th>{{ 'accounting.lblNatura' | translate }}</th>
-              <th>{{ 'accounting.lblSaldoIniziale' | translate }}</th>
-              <th>{{ 'accounting.lblMovimentiDare' | translate }}</th>
-              <th>{{ 'accounting.lblMovimentiAvere' | translate }}</th>
-              <th>{{ 'accounting.lblSaldoFinale' | translate }}</th>
+              <th class="num">{{ 'accounting.lblSaldoIniziale' | translate }}</th>
+              <th class="num">{{ 'accounting.lblMovimentiDare' | translate }}</th>
+              <th class="num">{{ 'accounting.lblMovimentiAvere' | translate }}</th>
+              <th class="num">{{ 'accounting.lblSaldoFinale' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -289,15 +287,15 @@
                 <td><code>{{ row.account_code }}</code></td>
                 <td>{{ row.account_name }}</td>
                 <td><nz-tag>{{ row.account_type }}</nz-tag></td>
-                <td>{{ row.opening_balance | money: 'EUR' }}</td>
-                <td>{{ row.debit_movement | money: 'EUR' }}</td>
-                <td>{{ row.credit_movement | money: 'EUR' }}</td>
-                <td><strong>{{ row.closing_balance | money: 'EUR' }}</strong></td>
+                <td class="num">{{ row.opening_balance | money: 'EUR' }}</td>
+                <td class="num debit">{{ row.debit_movement | money: 'EUR' }}</td>
+                <td class="num credit">{{ row.credit_movement | money: 'EUR' }}</td>
+                <td class="num"><strong>{{ row.closing_balance | money: 'EUR' }}</strong></td>
               </tr>
             }
           </tbody>
         </nz-table>
-        <div>
+        <div class="totals">
           <div>{{ 'accounting.lblTotaleDare' | translate }} <strong>{{ tb.total_debit | money: 'EUR' }}</strong></div>
           <div>{{ 'accounting.lblTotaleAvere' | translate }} <strong>{{ tb.total_credit | money: 'EUR' }}</strong></div>
         </div>
@@ -325,23 +323,23 @@
     <form nz-form [formGroup]="accountForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'accounting.lblCodiceContoEs1001001' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="code" [placeholder]="'accounting.lblCodiceMastroUnivoco' | translate" />
+        <nz-form-control [nzErrorTip]="tip(accountForm.controls.account_code)">
+          <input nz-input formControlName="account_code" [placeholder]="'accounting.lblCodiceMastroUnivoco' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'accounting.lblDenominazioneConto' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(accountForm.controls.name)">
           <input nz-input formControlName="name" [placeholder]="'accounting.lblNomeConto' | translate" />
         </nz-form-control>
       </nz-form-item>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'accounting.lblNaturaContabile' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-select formControlName="type">
+          <nz-form-control [nzErrorTip]="tip(accountForm.controls.account_type)">
+            <nz-select formControlName="account_type">
               <nz-option nzValue="asset" [nzLabel]="'accounting.lblAttivoAsset' | translate" />
               <nz-option nzValue="liability" [nzLabel]="'accounting.lblPassivoLiability' | translate" />
               <nz-option nzValue="equity" [nzLabel]="'accounting.lblPatrimonioNettoEquity' | translate" />
@@ -352,8 +350,18 @@
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label nzRequired>{{ 'accounting.lblValuta' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label nzRequired>{{ 'accounting.lblSaldoNormale' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="tip(accountForm.controls.normal_balance)">
+            <nz-select formControlName="normal_balance">
+              <nz-option nzValue="debit" [nzLabel]="'accounting.lblDare' | translate" />
+              <nz-option nzValue="credit" [nzLabel]="'accounting.lblAvere' | translate" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'accounting.lblValuta' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="tip(accountForm.controls.currency)">
             <nz-select formControlName="currency">
               <nz-option nzValue="EUR" nzLabel="EUR" />
               <nz-option nzValue="CHF" nzLabel="CHF" />
@@ -377,8 +385,8 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="calcVatForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'accounting.lblPeriodicitaLiquidazione' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label>{{ 'accounting.lblPeriodicitaLiquidazione' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="tip(calcVatForm.controls.period_type)">
           <nz-select formControlName="period_type">
             <nz-option nzValue="monthly" [nzLabel]="'accounting.lblMensile' | translate" />
             <nz-option nzValue="quarterly" [nzLabel]="'accounting.lblTrimestrale' | translate" />
@@ -386,18 +394,18 @@
         </nz-form-control>
       </nz-form-item>
 
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'accounting.lblAnnoFiscale' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="year" [nzMin]="2000" />
+          <nz-form-control [nzErrorTip]="tip(calcVatForm.controls.year)">
+            <nz-input-number class="w-full" formControlName="year" [nzMin]="2000" [nzMax]="2100" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'accounting.lblPeriodoMeseTrimestre' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="period" [nzMin]="1" [nzMax]="12" />
+          <nz-form-control [nzErrorTip]="tip(calcVatForm.controls.period)">
+            <nz-input-number class="w-full" formControlName="period" [nzMin]="1" [nzMax]="12" />
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -416,30 +424,71 @@
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="intrastatForm" nzLayout="vertical">
-      <div>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'accounting.lblFlussoOperazioni' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="tip(intrastatForm.controls.flow)">
+          <nz-select formControlName="flow">
+            <nz-option nzValue="sales" [nzLabel]="'accounting.lblCessioniComunitarieIntra1' | translate" />
+            <nz-option nzValue="purchases" [nzLabel]="'accounting.lblAcquistiComunitariIntra2' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'accounting.lblPeriodicitaIntrastat' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="tip(intrastatForm.controls.periodicity)">
+          <nz-select formControlName="periodicity">
+            <nz-option nzValue="M" [nzLabel]="'accounting.lblMensile' | translate" />
+            <nz-option
+              nzValue="T"
+              [nzDisabled]="intrastatForm.controls.flow.value === 'purchases'"
+              [nzLabel]="'accounting.lblTrimestraleSoloCessioni' | translate"
+            />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'accounting.lblAnno' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="year" />
+          <nz-form-control [nzErrorTip]="tip(intrastatForm.controls.year)">
+            <nz-input-number class="w-full" formControlName="year" [nzMin]="2022" [nzMax]="2099" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'accounting.lblMesePeriodo' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="period" [nzMin]="1" [nzMax]="12" />
+          <nz-form-control [nzErrorTip]="tip(intrastatForm.controls.period)">
+            <nz-input-number class="w-full" formControlName="period" [nzMin]="1" [nzMax]="intrastatForm.controls.periodicity.value === 'T' ? 4 : 12" />
           </nz-form-control>
         </nz-form-item>
       </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Trasmissione Intrastat (protocollo) -->
+<nz-modal
+  [nzVisible]="intrastatSubmitTarget() !== null"
+  [nzTitle]="'accounting.lblTrasmetti' | translate"
+  [nzOkText]="'accounting.lblTrasmetti' | translate"
+  [nzCancelText]="'accounting.lblAnnulla' | translate"
+  (nzOnCancel)="intrastatSubmitTarget.set(null)"
+  (nzOnOk)="confirmSubmitIntrastat()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="intrastatSubmitForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INTRASTAT.PROTOCOL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="tip(intrastatSubmitForm.controls.protocol_number)">
+          <input nz-input formControlName="protocol_number" maxlength="30" />
+        </nz-form-control>
+      </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'accounting.lblFlussoOperazioni' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-select formControlName="direction">
-            <nz-option nzValue="dispatch" [nzLabel]="'accounting.lblCessioniComunitarieIntra1' | translate" />
-            <nz-option nzValue="arrival" [nzLabel]="'accounting.lblAcquistiComunitariIntra2' | translate" />
-            <nz-option nzValue="both" [nzLabel]="'accounting.lblEntrambiIFlussi' | translate" />
-          </nz-select>
+        <nz-form-label>{{ 'accounting.columns.date' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="tip(intrastatSubmitForm.controls.submitted_at)">
+          <nz-date-picker class="w-full" formControlName="submitted_at" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -453,6 +502,10 @@
 
 <ng-template #currencyTpl let-val="value">
   <strong>{{ val | money: 'EUR' }}</strong>
+</ng-template>
+
+<ng-template #normalBalanceTpl let-val="value">
+  {{ (val === 'debit' ? 'accounting.lblDare' : 'accounting.lblAvere') | translate }}
 </ng-template>
 
 <ng-template #accountTypeTpl let-val="value">

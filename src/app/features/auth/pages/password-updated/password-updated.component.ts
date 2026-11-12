@@ -8,6 +8,7 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
 
 @Component({
   selector: 'app-password-updated',
+  styleUrl: './password-updated.component.scss',
   imports: [
     RouterLink,
     NzAlertModule,

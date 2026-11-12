@@ -21,7 +21,7 @@
 }
 
 <nz-spin [nzSpinning]="store.isLoading()">
-  <nz-table
+  <nz-table [nzScroll]="{ x: '760px' }"
     #orderTable
     [nzData]="store.orders()"
     [nzFrontPagination]="true"

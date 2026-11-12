@@ -93,4 +93,18 @@ describe('InvoiceFormDrawerComponent', () => {
     expect(message.error.mock.calls[0][0]).toBe('SALES.INVOICES.ERRORS.NO_EXCHANGE_RATE');
     expect(component.saving()).toBe(false);
   });
+
+  it('does not call the API when submitted empty', () => {
+    component.submit();
+    expect(invoiceApi.create).not.toHaveBeenCalled();
+    expect(component.form.controls.contact_id.touched).toBe(true);
+  });
+
+  it('rejects a tax rate above 100', () => {
+    fillValidForm();
+    component.form.controls.items.at(0).patchValue({ tax_rate: 120 });
+    component.submit();
+    expect(invoiceApi.create).not.toHaveBeenCalled();
+    expect(component.errorTip('items.0.tax_rate')).toBe('COMMON.VALIDATION.INVALID_VALUE');
+  });
 });

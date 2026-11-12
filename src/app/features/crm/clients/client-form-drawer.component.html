@@ -19,9 +19,22 @@
         </nz-form-control>
       </nz-form-item>
 
-      @for (f of textFields; track f.key) {
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="legal_type">{{
+          "CRM.CLIENTS.FORM.LEGAL_TYPE" | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="legal_type" formControlName="legal_type">
+            @for (o of legalTypeOptions; track o.value) {
+              <nz-option [nzValue]="o.value" [nzLabel]="o.label | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      @for (f of visibleTextFields(); track f.key) {
         <nz-form-item>
-          <nz-form-label [nzFor]="f.key">{{ f.label | translate }}</nz-form-label>
+          <nz-form-label [nzFor]="f.key" [nzRequired]="isRequiredField(f.key)">{{ f.label | translate }}</nz-form-label>
           <nz-form-control
             nzHasFeedback
             [nzValidateStatus]="form.controls[f.key]"
@@ -49,7 +62,7 @@
         <h4>{{ "CRM.CLIENTS.FORM.ADDRESS" | translate }}</h4>
         @for (a of addressFields; track a.key) {
           <nz-form-item>
-            <nz-form-label [nzFor]="'address_' + a.key" [nzRequired]="a.required">{{
+            <nz-form-label [nzFor]="'address_' + a.key" [nzRequired]="a.required && addressStarted()">{{
               a.label | translate
             }}</nz-form-label>
             <nz-form-control

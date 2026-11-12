@@ -1,6 +1,8 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
@@ -44,6 +46,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-professionals',
+  styleUrl: './professionals.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -145,16 +148,16 @@ export class ProfessionalsComponent implements OnInit {
   readonly feeNoteForm = this.fb.group({
     client_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    cpa_rate: ['4.00', [Validators.required]],
-    ritenuta_rate: ['20.00', [Validators.required]],
-    vat_rate: ['22.00', [Validators.required]],
-    note_number: [''],
+    cpa_rate: ['4.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    ritenuta_rate: ['20.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    vat_rate: ['22.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    note_number: ['', [Validators.maxLength(50)]],
   });
 
   readonly timeLogForm = this.fb.group({
     legal_case_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    duration_minutes: [60, [Validators.required, Validators.min(5)]],
+    duration_minutes: [60, [Validators.required, Validators.min(1)]],
     hourly_rate: [120, [Validators.required, Validators.min(0)]],
     description: ['', [Validators.required]],
   });
@@ -163,23 +166,25 @@ export class ProfessionalsComponent implements OnInit {
     client_id: ['', [Validators.required]],
     legal_case_id: [''],
     received_on: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    amount: ['1000.00', [Validators.required]],
-    reference: [''],
-    notes: [''],
+    amount: ['1000.00', [Validators.required, decimalPattern(2), positiveNumber]],
+    reference: ['', [Validators.maxLength(100)]],
+    notes: ['', [Validators.maxLength(500)]],
   });
 
   readonly applyRetainerForm = this.fb.group({
     retainer_id: ['', [Validators.required]],
     fee_note_id: ['', [Validators.required]],
-    amount: ['500.00', [Validators.required]],
+    amount: ['500.00', [Validators.required, decimalPattern(2), positiveNumber]],
   });
 
   readonly closingForm = this.fb.group({
     client_id: ['', [Validators.required]],
     period_start: [new Date(new Date().getFullYear(), 0, 1).toISOString().substring(0, 10), [Validators.required]],
-    period_end: [new Date(new Date().getFullYear(), 11, 31).toISOString().substring(0, 10), [Validators.required]],
-    notes: [''],
+    period_end: [new Date(new Date().getFullYear(), 11, 31).toISOString().substring(0, 10), [Validators.required, endsNotBefore('period_start')]],
+    notes: ['', [Validators.maxLength(5000)]],
   });
+
+  private readonly closingPeriodSync = revalidateOnStartChange(this.closingForm, 'period_start', 'period_end', inject(DestroyRef));
 
   ngOnInit(): void {
     this.loadCases();

@@ -1,5 +1,6 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -36,6 +37,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tessera-sanitaria',
+  styleUrl: './tessera-sanitaria.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -117,28 +119,61 @@ export class TesseraSanitariaComponent implements OnInit {
     expense_type: ['SV' as TesseraSanitariaExpenseType, [Validators.required]],
     expense_flag: [''],
     payment_date: ['2026-03-15', [Validators.required]],
-    amount: [100.0, [Validators.required, Validators.min(0.01)]],
-    tax_rate: [22.0],
-    vat_nature: [''],
-    patient_fiscal_code: [''],
+    amount: [100.0, [Validators.min(0.01), Validators.max(99999.99)]],
+    tax_rate: [22.0 as number | null, [Validators.min(0), Validators.max(99.99)]],
+    vat_nature: ['', [Validators.maxLength(4)]],
+    patient_fiscal_code: ['', [Validators.pattern(/^[A-Za-z0-9]{16}$/)]],
     patient_opposition: [false],
     payment_traceable: [true],
   });
 
   readonly settingsForm = this.fb.group({
     is_enabled: [true],
-    subject_type: ['professional' as TesseraSanitariaSubjectType, [Validators.required]],
-    owner_fiscal_code: ['RSSMRA80A01H501Z'],
-    region_code: ['030'],
-    asl_code: ['201'],
-    ssa_code: [''],
+    subject_type: ['professional' as TesseraSanitariaSubjectType],
+    owner_fiscal_code: ['RSSMRA80A01H501Z', [Validators.pattern(/^[A-Za-z0-9]{11,16}$/)]],
+    region_code: ['030', [Validators.maxLength(3)]],
+    asl_code: ['201', [Validators.maxLength(3)]],
+    ssa_code: ['', [Validators.maxLength(6)]],
   });
 
   readonly exportForm = this.fb.group({
     format: ['json' as 'json' | 'csv'],
   });
 
+  /** `tax_rate` prohibits `vat_nature`: filling one clears the other. */
+  private readonly vatNatureSync = this.flagForm.controls.vat_nature.valueChanges.pipe(takeUntilDestroyed()).subscribe((nature) => {
+    if (nature) {
+      this.flagForm.controls.tax_rate.setValue(null, { emitEvent: false });
+    }
+  });
+
+  private readonly taxRateSync = this.flagForm.controls.tax_rate.valueChanges.pipe(takeUntilDestroyed()).subscribe((rate) => {
+    if (rate !== null && this.flagForm.controls.vat_nature.value) {
+      this.flagForm.controls.vat_nature.setValue('', { emitEvent: false });
+    }
+  });
+
+  private readonly oppositionSync = this.flagForm.controls.patient_opposition.valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.syncPatientFiscalCodeValidator());
+
+  /** The patient fiscal code is mandatory unless the patient opposes the transmission (required_unless). */
+  protected patientFiscalCodeRequired(): boolean {
+    return !this.flagForm.controls.patient_opposition.value;
+  }
+
+  private syncPatientFiscalCodeValidator(): void {
+    const control = this.flagForm.controls.patient_fiscal_code;
+    if (this.patientFiscalCodeRequired()) {
+      control.addValidators(Validators.required);
+    } else {
+      control.removeValidators(Validators.required);
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
   ngOnInit(): void {
+    this.syncPatientFiscalCodeValidator();
     this.loadExpenses();
     this.loadSummary();
     this.loadSettings();
@@ -180,6 +215,7 @@ export class TesseraSanitariaComponent implements OnInit {
   }
 
   submitFlagExpense(): void {
+    this.syncPatientFiscalCodeValidator();
     if (this.flagForm.invalid) {
       this.flagForm.markAllAsTouched();
       return;
@@ -192,7 +228,7 @@ export class TesseraSanitariaComponent implements OnInit {
       expense_flag: val.expense_flag || undefined,
       payment_date: val.payment_date,
       amount: val.amount,
-      tax_rate: val.tax_rate ?? undefined,
+      tax_rate: val.vat_nature ? undefined : (val.tax_rate ?? undefined),
       vat_nature: val.vat_nature || undefined,
       patient_fiscal_code: val.patient_fiscal_code || undefined,
       patient_opposition: val.patient_opposition,

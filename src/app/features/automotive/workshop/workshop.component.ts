@@ -1,6 +1,10 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { catchError, debounceTime, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -20,6 +24,9 @@ import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  AutomotiveApiService,
+  ClientApiService,
+  contactDisplayName,
   TranslateService,
   WorkshopApiService,
   WorkshopFolder,
@@ -30,7 +37,9 @@ import {
   WorkshopFolderStatus,
   WorkshopLineType,
   WorkshopRecurringService,
+  WorkshopRecurringInterval,
   WorkshopRecurringServiceRequest,
+  WorkshopRecurringServiceType,
   WorkshopSellRequest,
   WorkshopStockUnitRequest,
   WorkshopTimeBillRequest,
@@ -39,9 +48,11 @@ import {
   WorkshopVehicleStockUnit,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-workshop',
+  styleUrl: './workshop.component.scss',
   imports: [
     DatePipe,
     DecimalPipe,
@@ -73,6 +84,8 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 })
 export class WorkshopComponent implements OnInit {
   private readonly api = inject(WorkshopApiService);
+  private readonly automotiveApi = inject(AutomotiveApiService);
+  private readonly clientApi = inject(ClientApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -114,67 +127,108 @@ export class WorkshopComponent implements OnInit {
   readonly stockLoading = signal<boolean>(false);
   readonly stockPageIndex = signal<number>(1);
   readonly stockPageSize = signal<number>(10);
-  readonly filterStockStatus = signal<'available' | 'reserved' | 'sold' | ''>('');
+  readonly filterStockStatus = signal<'in_stock' | 'reserved' | 'sold' | ''>('');
   readonly selectedStockUnit = signal<WorkshopVehicleStockUnit | null>(null);
 
   // --- TAB 4: RECURRING SERVICES (TAGLIANDI / REVISIONI) ---
   readonly recurringServices = signal<WorkshopRecurringService[]>([]);
   readonly recurringLoading = signal<boolean>(false);
 
+  // --- LOOKUPS (vehicle and contact selects) ---
+  /** Vehicles of the registry: the API list has no search filter, so the select filters the loaded page on the client. */
+  protected readonly vehicleOptions = toSignal(
+    this.automotiveApi.getVehicles().pipe(
+      map((res) =>
+        (res.data?.data ?? []).map((v) => ({
+          label: [v.license_plate, [v.make, v.model].filter(Boolean).join(' ')].filter(Boolean).join(' - '),
+          value: v.id,
+        })),
+      ),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
+
+  protected readonly contactSearch = signal('');
+  /** Contacts matching the typed text, searched on the server. */
+  protected readonly contactOptions = toSignal(
+    toObservable(this.contactSearch).pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      startWith(''),
+      switchMap((search) =>
+        this.clientApi.list({ search, per_page: 20 }).pipe(
+          map((res) => res.data.map((c) => ({ label: contactDisplayName(c), value: c.id }))),
+          catchError(() => of([])),
+        ),
+      ),
+    ),
+    { initialValue: [] },
+  );
+
   // --- FORMS ---
   readonly folderForm = this.fb.group({
-    vehicle_id: ['', [Validators.required]],
-    contact_id: [''],
-    kind: ['repair' as WorkshopFolderKind, [Validators.required]],
-    currency: ['EUR', [Validators.required]],
-    mileage_in: [0],
-    notes: [''],
+    vehicle_id: ['', [Validators.required, uuidFormat]],
+    contact_id: ['', [uuidFormat]],
+    kind: ['mechanics' as WorkshopFolderKind, [Validators.required]],
+    currency: ['EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
+    received_at: [new Date().toISOString().substring(0, 10)],
+    promised_at: ['', [endsNotBefore('received_at')]],
+    mileage_in: [0, [Validators.min(0)]],
+    complaint: ['', [Validators.maxLength(5000)]],
   });
 
   readonly lineForm = this.fb.group({
     line_type: ['part' as WorkshopLineType, [Validators.required]],
-    description: ['', [Validators.required]],
+    description: ['', [Validators.required, Validators.maxLength(500)]],
     quantity: [1, [Validators.required, Validators.min(0.01)]],
-    unit_price: ['0.00', [Validators.required]],
-    tax_rate: ['22.00', [Validators.required]],
+    unit_price: ['0.00', [Validators.required, decimalPattern(4)]],
+    tax_rate: ['22.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
   });
 
   readonly timeBillForm = this.fb.group({
-    hourly_rate: ['50.00', [Validators.required]],
-    tax_rate: ['22.00', [Validators.required]],
-    description: ['Manodopera e collaudo'],
+    hourly_rate: ['50.00', [Validators.required, decimalPattern(4), positiveNumber]],
+    tax_rate: ['22.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    description: ['Manodopera e collaudo', [Validators.maxLength(500)]],
   });
 
   readonly stockForm = this.fb.group({
-    stock_number: ['', [Validators.required]],
+    stock_number: ['', [Validators.required, Validators.maxLength(40)]],
     condition: ['used' as 'new' | 'used', [Validators.required]],
-    make: ['', [Validators.required]],
-    model: ['', [Validators.required]],
-    vin: [''],
-    year: [new Date().getFullYear()],
-    mileage: [0],
-    purchase_cost: ['0.00'],
-    list_price: ['0.00', [Validators.required]],
-    currency: ['EUR', [Validators.required]],
+    make: ['', [Validators.required, Validators.maxLength(50)]],
+    model: ['', [Validators.required, Validators.maxLength(50)]],
+    vin: ['', [Validators.maxLength(30)]],
+    year: [new Date().getFullYear(), [Validators.min(1900), Validators.max(2100)]],
+    mileage_km: [0, [Validators.min(0)]],
+    purchase_price: ['0.00', [decimalPattern(2)]],
+    list_price: ['0.00', [Validators.required, decimalPattern(2)]],
+    currency: ['EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
   });
 
   readonly sellStockForm = this.fb.group({
-    buyer_contact_id: ['', [Validators.required]],
+    buyer_contact_id: ['', [Validators.required, uuidFormat]],
     sale_date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    sale_price: ['0.00', [Validators.required]],
-    tax_rate: ['22.00', [Validators.required]],
+    sale_price: ['0.00', [Validators.required, decimalPattern(2), positiveNumber]],
+    tax_rate: ['22.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
   });
 
   readonly recurringForm = this.fb.group({
-    vehicle_id: ['', [Validators.required]],
-    service_type: ['scheduled_maintenance', [Validators.required]],
-    name: ['', [Validators.required]],
-    interval: ['1 year', [Validators.required]],
+    vehicle_id: ['', [Validators.required, uuidFormat]],
+    service_type: ['maintenance_plan' as WorkshopRecurringServiceType, [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    interval: ['yearly' as WorkshopRecurringInterval, [Validators.required]],
     start_date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    unit_price: ['150.00', [Validators.required]],
-    tax_rate: ['22.00', [Validators.required]],
-    currency: ['EUR', [Validators.required]],
+    unit_price: ['150.00', [Validators.required, decimalPattern(4), positiveNumber]],
+    tax_rate: ['22.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    currency: ['EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
   });
+
+  protected readonly recurringTypes: readonly WorkshopRecurringServiceType[] = ['tyre_storage', 'maintenance_plan', 'other'];
+  protected readonly recurringIntervals: readonly WorkshopRecurringInterval[] = ['monthly', 'quarterly', 'semiannual', 'yearly'];
+
+  constructor() {
+    revalidateOnStartChange(this.folderForm, 'received_at', 'promised_at', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.loadFolders();
@@ -219,10 +273,12 @@ export class WorkshopComponent implements OnInit {
     this.folderForm.reset({
       vehicle_id: '',
       contact_id: '',
-      kind: 'repair',
+      kind: 'mechanics',
       currency: 'EUR',
+      received_at: new Date().toISOString().substring(0, 10),
+      promised_at: '',
       mileage_in: 0,
-      notes: '',
+      complaint: '',
     });
     this.folderModalVisible.set(true);
   }
@@ -238,8 +294,10 @@ export class WorkshopComponent implements OnInit {
       contact_id: val.contact_id || undefined,
       kind: val.kind,
       currency: val.currency,
+      received_at: val.received_at || undefined,
+      promised_at: val.promised_at || undefined,
       mileage_in: val.mileage_in ? Number(val.mileage_in) : undefined,
-      notes: val.notes || undefined,
+      complaint: val.complaint || undefined,
     };
 
     this.api.createFolder(payload).subscribe({
@@ -519,8 +577,8 @@ export class WorkshopComponent implements OnInit {
       model: '',
       vin: '',
       year: new Date().getFullYear(),
-      mileage: 0,
-      purchase_cost: '0.00',
+      mileage_km: 0,
+      purchase_price: '0.00',
       list_price: '0.00',
       currency: 'EUR',
     });
@@ -540,8 +598,8 @@ export class WorkshopComponent implements OnInit {
       model: val.model,
       vin: val.vin || undefined,
       year: val.year ? Number(val.year) : undefined,
-      mileage: val.mileage ? Number(val.mileage) : undefined,
-      purchase_cost: val.purchase_cost || undefined,
+      mileage_km: val.mileage_km ? Number(val.mileage_km) : undefined,
+      purchase_price: val.purchase_price || undefined,
       list_price: val.list_price,
       currency: val.currency,
     };
@@ -613,9 +671,9 @@ export class WorkshopComponent implements OnInit {
   openCreateRecurringModal(): void {
     this.recurringForm.reset({
       vehicle_id: '',
-      service_type: 'scheduled_maintenance',
+      service_type: 'maintenance_plan',
       name: '',
-      interval: '1 year',
+      interval: 'yearly',
       start_date: new Date().toISOString().substring(0, 10),
       unit_price: '150.00',
       tax_rate: '22.00',
@@ -685,9 +743,9 @@ export class WorkshopComponent implements OnInit {
     }
   }
 
-  getStockStatusColor(status: 'available' | 'reserved' | 'sold'): string {
+  getStockStatusColor(status: 'in_stock' | 'reserved' | 'sold'): string {
     switch (status) {
-      case 'available':
+      case 'in_stock':
         return 'success';
       case 'reserved':
         return 'warning';

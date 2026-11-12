@@ -1,6 +1,15 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -22,6 +31,9 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  AuthStore,
+  I18nService,
+  serverErrorMessage,
   TranslateService,
   VisitorsApiService,
   VisitorsCheckInRequest,
@@ -36,9 +48,27 @@ import {
   VisitorsVisitorRequest,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
+
+const BADGE_PATTERN = /^[A-Za-z0-9._-]+$/;
+
+/** Start of the next hour as ISO 8601 (UTC), the default arrival of an announced visit. */
+function nextHourIso(): string {
+  const next = new Date();
+  next.setHours(next.getHours() + 1, 0, 0, 0);
+  return next.toISOString();
+}
+
+/** API rule `date` on a free text date-time input. */
+function dateTimeValidator(control: AbstractControl<string>): ValidationErrors | null {
+  return !control.value || !Number.isNaN(Date.parse(control.value)) ? null : { date: true };
+}
 
 @Component({
   selector: 'app-visitors',
+  styleUrl: './visitors.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -72,7 +102,9 @@ export class VisitorsComponent implements OnInit {
   private readonly api = inject(VisitorsApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly authStore = inject(AuthStore);
 
   readonly selectedTabIndex = signal<number>(0);
 
@@ -121,30 +153,31 @@ export class VisitorsComponent implements OnInit {
   // Forms
   readonly announceVisitForm = this.fb.group({
     mode: ['new' as 'new' | 'existing'],
-    visitor_id: [''],
-    first_name: [''],
-    last_name: [''],
-    company_name: [''],
-    email: [''],
-    phone: [''],
-    document_number: [''],
-    host_user_id: ['usr-1', [Validators.required]],
-    expected_at: ['2026-11-20T10:00:00Z', [Validators.required]],
-    expected_until: ['2026-11-20T12:00:00Z'],
-    purpose: ['Meeting commerciale'],
+    visitor_id: ['', [uuidFormat]],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    company_name: ['', [Validators.maxLength(150)]],
+    email: ['', [Validators.email, Validators.maxLength(255)]],
+    phone: ['', [Validators.maxLength(40)]],
+    document_number: ['', [Validators.maxLength(50)]],
+    host_user_id: ['', [Validators.required, uuidFormat]],
+    expected_at: ['', [Validators.required, dateTimeValidator]],
+    // API: expected_until must be after expected_at
+    expected_until: ['', [dateTimeValidator, endsNotBefore('expected_at', { strict: true })]],
+    purpose: ['', [Validators.maxLength(500)]],
   });
 
   readonly checkInForm = this.fb.group({
-    badge_number: ['', [Validators.required, Validators.maxLength(30)]],
+    badge_number: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(BADGE_PATTERN)]],
   });
 
   readonly visitorForm = this.fb.group({
-    first_name: ['', [Validators.required]],
-    last_name: ['', [Validators.required]],
-    company_name: [''],
-    email: [''],
-    phone: [''],
-    document_number: [''],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    company_name: ['', [Validators.maxLength(150)]],
+    email: ['', [Validators.email, Validators.maxLength(255)]],
+    phone: ['', [Validators.maxLength(40)]],
+    document_number: ['', [Validators.maxLength(50)]],
   });
 
   readonly kioskForm = this.fb.group({
@@ -152,13 +185,49 @@ export class VisitorsComponent implements OnInit {
   });
 
   readonly selfServiceCheckInForm = this.fb.group({
-    visit_id: ['', [Validators.required]],
-    badge_number: ['B-001', [Validators.required]],
+    visit_id: ['', [Validators.required, uuidFormat]],
+    badge_number: ['B-001', [Validators.required, Validators.maxLength(30), Validators.pattern(BADGE_PATTERN)]],
   });
 
   readonly selfServiceCheckOutForm = this.fb.group({
-    badge_number: ['', [Validators.required]],
+    badge_number: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(BADGE_PATTERN)]],
   });
+
+  constructor() {
+    revalidateOnStartChange(this.announceVisitForm, 'expected_at', 'expected_until', inject(DestroyRef));
+    this.announceVisitForm.controls.mode.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncAnnounceRequirements());
+    this.syncAnnounceRequirements();
+  }
+
+  /** API rules `required_without` / `required_with`: the visitor is either picked or described. */
+  isNewVisitor(): boolean {
+    return this.announceVisitForm.controls.mode.value === 'new';
+  }
+
+  private syncAnnounceRequirements(): void {
+    const { visitor_id, first_name, last_name } = this.announceVisitForm.controls;
+    for (const [control, required] of [
+      [visitor_id, !this.isNewVisitor()],
+      [first_name, this.isNewVisitor()],
+      [last_name, this.isNewVisitor()],
+    ] as const) {
+      if (required) {
+        control.addValidators(Validators.required);
+      } else {
+        control.removeValidators(Validators.required);
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    const key = validationTipKey(control ?? null);
+    return key ? this.i18n.translate(key) : '';
+  }
 
   ngOnInit(): void {
     this.loadOnSite();
@@ -214,9 +283,9 @@ export class VisitorsComponent implements OnInit {
       email: '',
       phone: '',
       document_number: '',
-      host_user_id: 'usr-1',
-      expected_at: '2026-11-20T10:00:00Z',
-      expected_until: '2026-11-20T12:00:00Z',
+      host_user_id: this.authStore.user()?.id ?? '',
+      expected_at: nextHourIso(),
+      expected_until: '',
       purpose: '',
     });
     this.announceModalVisible.set(true);
@@ -224,18 +293,7 @@ export class VisitorsComponent implements OnInit {
 
   saveAnnouncedVisit(): void {
     const val = this.announceVisitForm.getRawValue();
-    if (val.mode === 'new' && (!val.first_name || !val.last_name)) {
-      this.announceVisitForm.get('first_name')?.setErrors({ required: true });
-      this.announceVisitForm.get('last_name')?.setErrors({ required: true });
-      this.announceVisitForm.markAllAsTouched();
-      return;
-    }
-    if (val.mode === 'existing' && !val.visitor_id) {
-      this.announceVisitForm.get('visitor_id')?.setErrors({ required: true });
-      this.announceVisitForm.markAllAsTouched();
-      return;
-    }
-    if (!val.host_user_id || !val.expected_at) {
+    if (this.announceVisitForm.invalid) {
       this.announceVisitForm.markAllAsTouched();
       return;
     }

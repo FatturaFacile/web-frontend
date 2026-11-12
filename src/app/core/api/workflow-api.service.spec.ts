@@ -69,8 +69,8 @@ describe('WorkflowApiService', () => {
     const payload: WorkflowStartWorkflowRequest = {
       workflow_code: 'sales_discount_approval',
       approvable_type: 'Quote',
-      approvable_id: 'quote-456',
-      context: { requested_discount: 15 },
+      approvable_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
+      context_snapshot: { requested_discount: 15 },
     };
 
     service.startInstance(payload).subscribe((res) => {
@@ -119,7 +119,7 @@ describe('WorkflowApiService', () => {
     const payload: WorkflowSaveDefinitionRequest = {
       code: 'expense_policy',
       name: 'Expense Policy Approval',
-      approvable_type: 'Expense',
+      target_entity_type: 'purchase_order',
     };
 
     service.createDefinition(payload).subscribe((res) => {
@@ -131,17 +131,18 @@ describe('WorkflowApiService', () => {
     req1.flush({ success: true, data: { id: 'def-1', code: 'expense_policy' } });
 
     service.publishDefinition('def-1').subscribe((res) => {
-      expect(res.data.is_published).toBe(true);
+      expect(res.data.status).toBe('published');
     });
 
     const req2 = httpTesting.expectOne(`${base}/workflows/definitions/def-1/publish`);
     expect(req2.request.method).toBe('POST');
-    req2.flush({ success: true, data: { id: 'def-1', is_published: true } });
+    req2.flush({ success: true, data: { id: 'def-1', status: 'published' } });
   });
 
   it('manages delegations', () => {
     const payload: WorkflowCreateDelegationRequest = {
       delegate_user_id: 'user-2',
+      scope: 'all',
       starts_at: '2026-08-01T00:00:00Z',
       ends_at: '2026-08-15T23:59:59Z',
       reason: 'Summer vacation',
@@ -153,7 +154,8 @@ describe('WorkflowApiService', () => {
 
     const req = httpTesting.expectOne(`${base}/workflows/delegations`);
     expect(req.request.method).toBe('POST');
-    req.flush({ success: true, data: { id: 'del-1', ...payload } });
+    expect(req.request.body).toEqual(payload);
+    req.flush({ id: 'del-1', ...payload });
 
     service.deleteDelegation('del-1').subscribe();
     const reqDel = httpTesting.expectOne(`${base}/workflows/delegations/del-1`);

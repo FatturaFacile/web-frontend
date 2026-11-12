@@ -104,7 +104,7 @@
                 }
               </td>
               <td>
-                <strong>{{ c.total_value | money: c.currency }}</strong>
+                <strong>{{ c.contract_value | money: c.currency }}</strong>
               </td>
               <td>
                 <nz-tag [nzColor]="getStatusColor(c.status)">
@@ -214,8 +214,8 @@
               <td>{{ ob.due_date | date: 'dd/MM/yyyy' }}</td>
               <td>{{ ob.responsible_party || '-' }}</td>
               <td>
-                @if (ob.penalty_amount) {
-                  <span class="text-danger">{{ ob.penalty_amount | money: 'CHF' }}</span>
+                @if (ob.amount) {
+                  <span class="text-danger">{{ ob.amount | money: ob.currency }}</span>
                 } @else {
                   <span class="text-muted">-</span>
                 }
@@ -331,7 +331,7 @@
     <form nz-form [formGroup]="contractForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.KIND' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'kind')">
           <nz-select formControlName="kind">
             <nz-option nzValue="customer" [nzLabel]="'CONTRACTS.LBL_CONTRATTO_ATTIVO_CLIENTE' | translate"></nz-option>
             <nz-option nzValue="supplier" [nzLabel]="'CONTRACTS.LBL_CONTRATTO_PASSIVO_FORNITORE' | translate"></nz-option>
@@ -341,50 +341,50 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="contract_number" />
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'contract_number')">
+          <input nz-input formControlName="contract_number" maxlength="60" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'title')">
           <input nz-input formControlName="title" [placeholder]="'CONTRACTS.LBL_ES_FORNITURA_E_MANUTENZIONE_IT' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.COUNTERPARTY_ID' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'counterparty_id')">
           <input nz-input formControlName="counterparty_id" [placeholder]="'CONTRACTS.LBL_UUID_CLIENTE_O_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.START_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'start_date')">
           <input nz-input type="date" formControlName="start_date" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'CONTRACTS.END_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isEndDateRequired()">{{ 'CONTRACTS.END_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'end_date')">
           <input nz-input type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'CONTRACTS.NOTICE_DAYS' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'notice_period_days')">
           <nz-input-number formControlName="notice_period_days" [nzMin]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="total_value" placeholder="10000.00" />
+        <nz-form-control [nzErrorTip]="errorTip(contractForm, 'contract_value')">
+          <input nz-input formControlName="contract_value" placeholder="10000.00" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -402,25 +402,12 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="renewForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'CONTRACTS.NEW_END_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label>{{ 'CONTRACTS.NEW_END_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(renewForm, 'new_end_date')">
           <input nz-input type="date" formControlName="new_end_date" />
         </nz-form-control>
       </nz-form-item>
 
-      <nz-form-item>
-        <nz-form-label nzRequired>{{ 'CONTRACTS.RENEWAL_MONTHS' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-input-number formControlName="renewal_term_months" [nzMin]="1"></nz-input-number>
-        </nz-form-control>
-      </nz-form-item>
-
-      <nz-form-item>
-        <nz-form-label>{{ 'CONTRACTS.REVISED_VALUE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="revised_value" [placeholder]="'CONTRACTS.LBL_IMPORTO_RINEGOZIATO' | translate" />
-        </nz-form-control>
-      </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>
@@ -430,22 +417,16 @@
   [nzVisible]="noticeModalVisible()"
   [nzTitle]="'CONTRACTS.NOTICE_TITLE' | translate"
   [nzOkLoading]="noticeSubmitting()"
+  [nzOkDisabled]="!noticeDate() || noticeDate() > today"
   (nzOnCancel)="noticeModalVisible.set(false)"
   (nzOnOk)="submitNotice()"
 >
   <ng-container *nzModalContent>
     <p>{{ 'CONTRACTS.NOTICE_CONFIRM' | translate }} <strong>{{ noticeContractTarget()?.contract_number }}</strong>?</p>
     <nz-form-item>
-      <nz-form-label nzRequired>{{ 'CONTRACTS.NOTICE_DATE' | translate }}</nz-form-label>
+      <nz-form-label>{{ 'CONTRACTS.NOTICE_DATE' | translate }}</nz-form-label>
       <nz-form-control>
-        <input nz-input type="date" [ngModel]="noticeDate()" (ngModelChange)="noticeDate.set($event)" />
-      </nz-form-control>
-    </nz-form-item>
-
-    <nz-form-item>
-      <nz-form-label>{{ 'CONTRACTS.REASON' | translate }}</nz-form-label>
-      <nz-form-control>
-        <textarea nz-input rows="2" [ngModel]="noticeReason()" (ngModelChange)="noticeReason.set($event)"></textarea>
+        <input nz-input type="date" [max]="today" [ngModel]="noticeDate()" (ngModelChange)="noticeDate.set($event)" />
       </nz-form-control>
     </nz-form-item>
   </ng-container>
@@ -463,7 +444,7 @@
     <nz-form-item>
       <nz-form-label>{{ 'CONTRACTS.NOTES' | translate }}</nz-form-label>
       <nz-form-control>
-        <textarea nz-input rows="2" [ngModel]="completeNotes()" (ngModelChange)="completeNotes.set($event)"></textarea>
+        <textarea nz-input rows="2" maxlength="1000" [ngModel]="completeNotes()" (ngModelChange)="completeNotes.set($event)"></textarea>
       </nz-form-control>
     </nz-form-item>
   </ng-container>
@@ -481,7 +462,7 @@
     <nz-form-item>
       <nz-form-label>{{ 'CONTRACTS.REASON' | translate }}</nz-form-label>
       <nz-form-control>
-        <textarea nz-input rows="2" [ngModel]="waiveReason()" (ngModelChange)="waiveReason.set($event)"></textarea>
+        <textarea nz-input rows="2" maxlength="1000" [ngModel]="waiveReason()" (ngModelChange)="waiveReason.set($event)"></textarea>
       </nz-form-control>
     </nz-form-item>
   </ng-container>
@@ -506,7 +487,7 @@
           </nz-tag>
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'CONTRACTS.TOTAL_VALUE' | translate">
-          <strong>{{ c.total_value | money: c.currency }}</strong>
+          <strong>{{ c.contract_value | money: c.currency }}</strong>
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
           <nz-tag [nzColor]="getStatusColor(c.status)">{{ c.status | uppercase }}</nz-tag>
@@ -538,7 +519,7 @@
                 <nz-tag>{{ p.role }}</nz-tag>
               </td>
               <td>{{ p.name }}</td>
-              <td>{{ p.contact_email || '-' }}</td>
+              <td>{{ p.email || '-' }}</td>
               <td nzAlign="right">
                 <button nz-button nzDanger nzSize="small" (click)="deleteParty(p)">
                   <span nz-icon nzType="delete"></span>
@@ -625,23 +606,54 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="partyForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'CONTRACTS.ROLE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="role" [placeholder]="'CONTRACTS.LBL_ES_CONTRAENTE_GARANTE_SUBAPPALTATORE' | translate" />
+        <nz-form-label nzRequired>{{ 'CONTRACTS.PARTY_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(partyForm, 'party_type')">
+          <nz-select formControlName="party_type">
+            @for (type of partyTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'CONTRACTS.PARTY_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="name" [placeholder]="'CONTRACTS.LBL_RAGIONE_SOCIALE_O_NOMINATIVO' | translate" />
+        <nz-form-label nzRequired>{{ 'CONTRACTS.ROLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(partyForm, 'role')">
+          <nz-select formControlName="role">
+            @for (role of partyRoles; track role) {
+              <nz-option [nzValue]="role" [nzLabel]="'CONTRACTS.ROLE_' + role.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
+
+      @if (isExternalParty()) {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(partyForm, 'name')">
+            <input nz-input formControlName="name" [placeholder]="'CONTRACTS.LBL_RAGIONE_SOCIALE_O_NOMINATIVO' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CONTRACTS.PARTY_ID' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(partyForm, 'party_id')">
+            <input nz-input formControlName="party_id" />
+          </nz-form-control>
+        </nz-form-item>
+      }
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMON.EMAIL' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="contact_email" />
+        <nz-form-control [nzErrorTip]="errorTip(partyForm, 'email')">
+          <input nz-input formControlName="email" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMON.NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(partyForm, 'notes')">
+          <textarea nz-input rows="2" maxlength="2000" formControlName="notes"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -659,7 +671,7 @@
     <form nz-form [formGroup]="obligationForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'type')">
           <nz-select formControlName="type">
             <nz-option nzValue="obligation" [nzLabel]="'CONTRACTS.LBL_OBBLIGAZIONE_CONTRATTUALE' | translate"></nz-option>
             <nz-option nzValue="milestone" [nzLabel]="'CONTRACTS.LBL_MILESTONE_DI_CONSEGNA_COLLAUDO' | translate"></nz-option>
@@ -669,22 +681,47 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'title')">
           <input nz-input formControlName="title" [placeholder]="'CONTRACTS.LBL_ES_RILASCIO_CERTIFICAZIONE_CONFORMITA' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CONTRACTS.DUE_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'due_date')">
           <input nz-input type="date" formControlName="due_date" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'CONTRACTS.PENALTY' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="penalty_amount" [placeholder]="'CONTRACTS.LBL_IMPORTO_PENALE_IN_CASO_DI_INADEMPIENZA' | translate" />
+        <nz-form-label>{{ 'CONTRACTS.RESPONSIBLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'responsible_party')">
+          <nz-select formControlName="responsible_party">
+            <nz-option nzValue="own" [nzLabel]="'CONTRACTS.RESPONSIBLE_OWN' | translate"></nz-option>
+            <nz-option nzValue="counterparty" [nzLabel]="'CONTRACTS.RESPONSIBLE_COUNTERPARTY' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-row">
+        <nz-form-item class="modal-col">
+          <nz-form-label>{{ 'COMMON.AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'amount')">
+            <input nz-input formControlName="amount" [placeholder]="'CONTRACTS.LBL_IMPORTO_PENALE_IN_CASO_DI_INADEMPIENZA' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="modal-col">
+          <nz-form-label>{{ 'CONTRACTS.CURRENCY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'currency')">
+            <input nz-input formControlName="currency" maxlength="3" placeholder="CHF" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CONTRACTS.REMIND_DAYS_BEFORE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(obligationForm, 'remind_days_before')">
+          <nz-input-number formControlName="remind_days_before" [nzMin]="0" [nzMax]="365" [nzPrecision]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
     </form>

@@ -19,6 +19,7 @@ const SOURCES = ['badge', 'terminal'];
 /** Imports the punches of a badge reader or terminal. One punch per line: `external_id;badge_code;occurred_at;punch_type;meal_type`. */
 @Component({
   selector: 'app-time-punch-import',
+  styleUrl: './time-punch-import.component.scss',
   imports: [ActionFormComponent, NzAlertModule, NzTableModule, TranslatePipe],
   template: `
     <nz-alert
@@ -74,7 +75,7 @@ export class TimePunchImportComponent {
         labelKey: 'hrmTimeX.readerId',
         type: 'text',
         required: true,
-        maxLength: 100,
+        maxLength: 120,
       },
       {
         key: 'source',

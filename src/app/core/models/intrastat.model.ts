@@ -126,27 +126,43 @@ export interface IntrastatLineRequest {
 
 export interface IntrastatSubmitRequest {
   protocol_number: string;
+  submitted_at?: string | null;
 }
 
+export type IntrastatExportChannel = 'entratel' | 'customs';
+
+/** Body of `POST /intrastat/exports` (ExportRequest): the answer is the telematic text file. */
 export interface IntrastatExportRequest {
-  declaration_id: string;
-  format?: 'scdata' | 'edi' | 'json';
+  declaration_ids: string[];
+  channel: IntrastatExportChannel;
+  customs_section_code: string;
+  user_code?: string | null;
+  sender_code?: string | null;
+  site_progressive?: number | null;
+  transmission_date?: string | null;
+  sequence?: string | null;
 }
+
+export type IntrastatSupplyKind = 'goods' | 'services';
 
 export interface IntrastatProductProfile {
   product_id: string;
   product_name?: string;
-  cn8_code: string;
-  cpa_code?: string | null;
+  supply_kind?: IntrastatSupplyKind;
+  cn8_code?: string | null;
+  service_code?: string | null;
   origin_country_code?: string | null;
-  unit_of_measure?: string | null;
 }
 
+/** Body of `PUT /intrastat/product-profiles/{productId}` (ProductProfileRequest): supply_kind is required. */
 export interface IntrastatProductProfileRequest {
-  cn8_code: string;
-  cpa_code?: string | null;
+  supply_kind: IntrastatSupplyKind;
+  cn8_code?: string | null;
+  net_mass_kg?: number | null;
+  supplementary_units_per_unit?: number | null;
+  service_code?: string | null;
   origin_country_code?: string | null;
-  unit_of_measure?: string | null;
+  origin_province_code?: string | null;
 }
 
 export interface IntrastatValidationProblem {

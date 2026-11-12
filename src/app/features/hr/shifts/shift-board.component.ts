@@ -21,9 +21,10 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Planning board of a period, with draft generation, publication, absence plan and the user's own shifts. */
 @Component({
   selector: 'app-shift-board',
+  styleUrl: './shift-board.component.scss',
   imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzPopconfirmModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="board-from">{{ 'hrmCommon.from' | translate }}</label>
         <input nz-input id="board-from" type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" />

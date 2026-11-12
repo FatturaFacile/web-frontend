@@ -32,6 +32,7 @@ import {
 
 @Component({
   selector: 'app-base-table',
+  styleUrl: './base-table.component.scss',
   imports: [
     NgTemplateOutlet,
     FormsModule,

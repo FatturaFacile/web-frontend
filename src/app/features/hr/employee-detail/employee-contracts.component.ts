@@ -15,6 +15,7 @@ type Row = { id: string } & Record<string, unknown>;
  */
 @Component({
   selector: 'app-employee-contracts',
+  styleUrl: './employee-contracts.component.scss',
   imports: [NzAlertModule, NzDrawerModule, TranslatePipe, CrudTableComponent],
   template: `
     <nz-alert nzType="info" nzShowIcon class="mb-3" [nzMessage]="'hrmEmp.supersedeHint' | translate" />
@@ -53,7 +54,7 @@ export class EmployeeContractsComponent {
       isReadonly: (row) => row['is_active'] !== true,
       rowActions: [{ labelKey: 'hrmEmp.salaryComponents', run: (row) => this.componentsOf.set(row as never) }],
       fields: [
-        { key: 'contract_number', labelKey: 'hrmEmp.contractNumber', type: 'text', createOnly: true, maxLength: 50 },
+        { key: 'contract_number', labelKey: 'hrmEmp.contractNumber', type: 'text', createOnly: true, maxLength: 60 },
         {
           key: 'contract_type',
           labelKey: 'hrmCommon.type',
@@ -67,11 +68,11 @@ export class EmployeeContractsComponent {
               labelKey: `hrmEmp.contractType.${value}`,
             })),
         },
-        { key: 'job_title', labelKey: 'hrmEmp.jobTitle', type: 'text', required: true, maxLength: 255 },
+        { key: 'job_title', labelKey: 'hrmEmp.jobTitle', type: 'text', required: true, maxLength: 150 },
         { key: 'start_date', labelKey: 'hrmCommon.from', type: 'date', required: true, createOnly: true },
-        { key: 'end_date', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
-        { key: 'probation_end_date', labelKey: 'hrmEmp.probationEnd', type: 'date', nullable: true, column: false },
-        { key: 'weekly_hours', labelKey: 'hrmEmp.weeklyHours', type: 'decimal', required: true, createOnly: true },
+        { key: 'end_date', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'start_date' },
+        { key: 'probation_end_date', labelKey: 'hrmEmp.probationEnd', type: 'date', nullable: true, column: false, notBefore: 'start_date' },
+        { key: 'weekly_hours', labelKey: 'hrmEmp.weeklyHours', type: 'decimal', required: true, createOnly: true, positive: true, max: 80 },
         {
           key: 'base_annual_salary',
           labelKey: 'hrmEmp.baseAnnualSalary',
@@ -80,7 +81,7 @@ export class EmployeeContractsComponent {
           createOnly: true,
         },
         { key: 'currency', labelKey: 'hrmEmp.currency', type: 'text', createOnly: true, maxLength: 3, defaultValue: 'CHF' },
-        { key: 'notes', labelKey: 'hrmCommon.notes', type: 'textarea', nullable: true, column: false },
+        { key: 'notes', labelKey: 'hrmCommon.notes', type: 'textarea', nullable: true, column: false, maxLength: 5000 },
         { key: 'status', labelKey: 'hrmCommon.statusCol', type: 'text', noForm: true },
       ],
     };
@@ -103,8 +104,8 @@ export class EmployeeContractsComponent {
       update: (id, payload) => this.api.updateSalaryComponent(id, payload as never),
       remove: (id) => this.api.deleteSalaryComponent(id),
       fields: [
-        { key: 'wage_type_code', labelKey: 'hrmEmp.wageTypeCode', type: 'text', required: true, maxLength: 50 },
-        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', required: true, maxLength: 255 },
+        { key: 'wage_type_code', labelKey: 'hrmEmp.wageTypeCode', type: 'text', required: true, maxLength: 20 },
+        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', required: true, maxLength: 150 },
         { key: 'amount', labelKey: 'hrmEmp.amount', type: 'decimal', required: true },
         {
           key: 'frequency',
@@ -114,7 +115,7 @@ export class EmployeeContractsComponent {
           options: () => ['monthly', 'annual'].map((value) => ({ value, labelKey: `hrmEmp.frequencyValue.${value}` })),
         },
         { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date' },
-        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
+        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'valid_from' },
       ],
     };
   });

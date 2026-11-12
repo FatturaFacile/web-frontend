@@ -43,7 +43,7 @@ export const WAREHOUSE_PAGE: ResourcePageConfig = {
       rowActions: [
         act('PATCH', 'RES.ACTION.EDIT', '/inventory/zones/{id}', {
           prefill: true,
-          fields: [req(rf.text('name')), rf.select('zone_type', ZONE_TYPES)],
+          fields: [rf.text('name', { maxLength: 100 }), rf.select('zone_type', ZONE_TYPES)],
         }),
       ],
     },
@@ -67,13 +67,13 @@ export const WAREHOUSE_PAGE: ResourcePageConfig = {
       toolbar: [
         act('POST', 'RES.A.create_location', '/inventory/warehouses/{warehouse_id}/locations', {
           fields: [
-            req(rf.text('zone_code')),
-            rf.text('zone_name'),
+            req(rf.text('zone_code', { maxLength: 50 })),
+            rf.text('zone_name', { maxLength: 100 }),
             rf.select('zone_type', ZONE_TYPES),
-            req(rf.text('aisle_code')),
-            req(rf.text('rack_code')),
-            req(rf.text('bin_code')),
-            req(rf.text('barcode')),
+            req(rf.text('aisle_code', { maxLength: 50 })),
+            req(rf.text('rack_code', { maxLength: 50 })),
+            req(rf.text('bin_code', { maxLength: 50 })),
+            req(rf.text('barcode', { maxLength: 100 })),
             rf.integer('pick_sequence'),
             rf.decimal('max_weight_kg'),
             rf.decimal('max_volume_cbm'),

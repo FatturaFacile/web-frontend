@@ -30,11 +30,10 @@ describe('InventoryComponent', () => {
       id: 'prod-1',
       sku: 'SKU-001',
       name: 'Widget A',
-      warehouse: 'Milano (IT)',
-      quantity: 50,
-      unit_of_measure: 'Pz',
-      price: 19.99,
-      currency: 'EUR',
+      unit_measure: 'Pz',
+      cost_price: '10.0000',
+      sale_price: '19.9900',
+      tax_rate: '22.00',
       hs_code: '84713000',
     },
   ];
@@ -436,10 +435,10 @@ describe('InventoryComponent', () => {
     component.productForm.patchValue({
       sku: 'SKU-002',
       name: 'Widget B',
-      warehouse: 'Milano (IT)',
-      quantity: 10,
-      unit_of_measure: 'Pz',
-      price: 25.5,
+      unit_measure: 'Pz',
+      cost_price: 12,
+      sale_price: 25.5,
+      tax_rate: 22,
     });
 
     component.submitCreateProduct();
@@ -447,12 +446,11 @@ describe('InventoryComponent', () => {
     expect(mockInventoryApi.createProduct).toHaveBeenCalledWith({
       sku: 'SKU-002',
       name: 'Widget B',
-      warehouse: 'Milano (IT)',
-      quantity: 10,
-      unit_of_measure: 'Pz',
-      price: 25.5,
-      currency: 'EUR',
-      hs_code: undefined,
+      unit_measure: 'Pz',
+      cost_price: 12,
+      sale_price: 25.5,
+      tax_rate: 22,
+      hs_code: null,
     });
     expect(mockMessage.success).toHaveBeenCalledWith('inventory.messages.created');
     expect(component.createModalVisible()).toBe(false);
@@ -464,5 +462,40 @@ describe('InventoryComponent', () => {
 
     expect(mockInventoryApi.deleteProduct).toHaveBeenCalledWith('prod-1');
     expect(mockMessage.success).toHaveBeenCalledWith('inventory.messages.deleted');
+  });
+  describe('validation', () => {
+    beforeEach(() => fixture.detectChanges());
+
+    it('does not call the API when the product form is empty', () => {
+      component.productForm.reset({ sku: '', name: '' });
+
+      component.submitCreateProduct();
+
+      expect(mockInventoryApi.createProduct).not.toHaveBeenCalled();
+      expect(component.errorTip(component.productForm, 'sku')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('does not call the API when the transfer, adjustment or count forms are empty', () => {
+      component.transferForm.reset({ quantity: 1 });
+      component.submitTransfer();
+      component.adjustmentForm.reset({ quantity_delta: 1 });
+      component.submitAdjustment();
+      component.countForm.reset({ scheduled_date: '' });
+      component.submitCount();
+
+      expect(mockInventoryApi.transferStock).not.toHaveBeenCalled();
+      expect(mockInventoryApi.createAdjustment).not.toHaveBeenCalled();
+      expect(mockInventoryApi.createCount).not.toHaveBeenCalled();
+    });
+
+    it('refuses the same source and destination bin, and a zero quantity delta', () => {
+      component.transferForm.patchValue({ source_bin_id: 'bin-a', destination_bin_id: 'bin-a' });
+      expect(component.transferForm.controls.destination_bin_id.hasError('sameBin')).toBe(true);
+      component.transferForm.patchValue({ source_bin_id: 'bin-b' });
+      expect(component.transferForm.controls.destination_bin_id.hasError('sameBin')).toBe(false);
+
+      component.adjustmentForm.patchValue({ quantity_delta: 0 });
+      expect(component.adjustmentForm.controls.quantity_delta.hasError('notZero')).toBe(true);
+    });
   });
 });

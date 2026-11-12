@@ -25,6 +25,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-ea-locations-classes',
+  styleUrl: './ea-locations-classes.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -67,21 +68,21 @@ export class EaLocationsClassesComponent implements OnInit {
   private editingLocationId: string | null = null;
 
   protected readonly locationForm = this.fb.group({
-    code: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    code: this.fb.control('', [Validators.required, Validators.maxLength(60)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
     parent_id: this.fb.control(''),
     location_type: this.fb.control<AssetLocationType | null>(null),
-    address: this.fb.control(''),
-    city: this.fb.control(''),
-    country: this.fb.control(''),
+    address: this.fb.control('', [Validators.maxLength(255)]),
+    city: this.fb.control('', [Validators.maxLength(100)]),
+    country: this.fb.control('', [Validators.pattern(/^[A-Za-z]{2}$/)]),
     is_active: this.fb.control(true),
   });
 
   protected readonly classForm = this.fb.group({
-    code: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    code: this.fb.control('', [Validators.required, Validators.maxLength(60)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(150)]),
     criticality: this.fb.control<AssetCriticality | null>(null),
-    default_maintenance_interval_days: this.fb.control<number | null>(null),
+    default_maintenance_interval_days: this.fb.control<number | null>(null, [Validators.min(1), Validators.max(3650)]),
     requires_custodian: this.fb.control(false),
     requires_calibration: this.fb.control(false),
   });

@@ -1,0 +1,243 @@
+:host {
+  display: block;
+}
+
+.stats-row {
+  margin-bottom: 20px;
+}
+
+.generator-card {
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.table-card {
+  border-radius: 8px;
+}
+
+.rounding-callout {
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.rounded-value {
+  color: var(--status-success);
+  font-size: 15px;
+  margin-left: 6px;
+}
+
+.rounding-diff {
+  color: var(--status-success);
+  font-size: 11px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: var(--bg-hover);
+}
+
+.selected-row {
+  background-color: var(--bg-selected) !important;
+}
+
+.select-action-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-action-btn:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+// Swiss QR voucher
+.voucher-card {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card-secondary);
+}
+
+.qr-voucher-container {
+  background: var(--bg-card);
+  border: 1px dashed var(--border-input);
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.voucher-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.voucher-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.voucher-grid {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.qr-box {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.qr-graphic {
+  width: 140px;
+  height: 140px;
+  background: var(--qr-ink);
+  position: relative;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-pattern {
+  width: 128px;
+  height: 128px;
+  background: repeating-conic-gradient(var(--qr-paper) 0% 25%, var(--qr-ink) 0% 50%) 50% / 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.swiss-cross-badge {
+  width: 28px;
+  height: 28px;
+  background: var(--swiss-red);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+}
+
+.cross-v {
+  position: absolute;
+  width: 6px;
+  height: 18px;
+  background: var(--qr-paper);
+}
+
+.cross-h {
+  position: absolute;
+  width: 18px;
+  height: 6px;
+  background: var(--qr-paper);
+}
+
+.qr-amount-box {
+  margin-top: 12px;
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 8px;
+}
+
+.amount-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.amount-col .lbl {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.amount-col .val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.amount-main {
+  font-size: 16px !important;
+  color: var(--primary-color) !important;
+}
+
+.qr-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.info-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.info-val {
+  color: var(--text-primary);
+}
+
+.info-val.strong {
+  font-weight: 700;
+}
+
+.scor-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: 0.5px;
+}
+
+.receipt-part {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.receipt-part h4 {
+  font-size: 12px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.receipt-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.receipt-amount {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.amount-input {
+  width: 100%;
+}

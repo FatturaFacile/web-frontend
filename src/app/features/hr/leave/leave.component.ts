@@ -30,6 +30,7 @@ const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contractor', 'apprentice', 
 /** Leave administration: types, accrual policies, balances and the leave calendar. */
 @Component({
   selector: 'app-hr-leave',
+  styleUrl: './leave.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,
@@ -80,8 +81,8 @@ export class LeaveComponent {
     create: (payload) => this.api.createLeaveType(payload as never),
     update: (id, payload) => this.api.updateLeaveType(id, payload as never),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 60 },
+      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 150 },
       {
         key: 'category',
         labelKey: 'hrmLeave.category',
@@ -121,8 +122,8 @@ export class LeaveComponent {
     update: (id, payload) => this.api.updateAccrualPolicy(id, payload as never),
     remove: (id) => this.api.deleteAccrualPolicy(id),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 40 },
+      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 150 },
       {
         key: 'leave_type_id',
         labelKey: 'hrmCommon.type',
@@ -149,7 +150,7 @@ export class LeaveComponent {
       { key: 'max_balance_hours', labelKey: 'hrmLeave.maxBalance', type: 'decimal', nullable: true, column: false },
       { key: 'max_carryover_hours', labelKey: 'hrmLeave.maxCarryover', type: 'decimal', nullable: true, column: false },
       { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date', required: true },
-      { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
+      { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'valid_from' },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
     ],
   }));

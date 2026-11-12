@@ -1,0 +1,18 @@
+.tat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.tat-select {
+  min-width: 240px;
+  flex: 1;
+}
+.tat-preview {
+  white-space: pre-wrap;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}

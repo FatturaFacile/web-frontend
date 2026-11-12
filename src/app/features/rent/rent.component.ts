@@ -23,6 +23,10 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AutomotiveApiService,
   AutomotiveVehicle,
+  AutomotiveVehiclePayload,
+  ClientApiService,
+  ContactResource,
+  contactDisplayName,
   CheckInInspectionPayload,
   CheckOutInspectionPayload,
   RentalBooking,
@@ -34,6 +38,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-rent',
+  styleUrl: './rent.component.scss',
   imports: [
     UpperCasePipe,
     FormsModule,
@@ -65,6 +70,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 export class RentComponent implements OnInit {
   private readonly rentApi = inject(RentApiService);
   private readonly autoApi = inject(AutomotiveApiService);
+  private readonly clientApi = inject(ClientApiService);
   private readonly fb = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
@@ -83,6 +89,8 @@ export class RentComponent implements OnInit {
 
   // Automotive Vehicle Registry
   readonly automotiveVehicles = signal<AutomotiveVehicle[]>([]);
+  readonly contacts = signal<ContactResource[]>([]);
+  protected readonly contactName = contactDisplayName;
   readonly isVehicleModalVisible = signal<boolean>(false);
   readonly isEditingVehicle = signal<boolean>(false);
   readonly editingVehicleId = signal<string | null>(null);
@@ -101,31 +109,29 @@ export class RentComponent implements OnInit {
     rental_booking_id: ['', [Validators.required]],
     mileage: [45000, [Validators.required, Validators.min(0)]],
     fuel_level: ['8/8', [Validators.required]],
-    notes: [''],
   });
 
   readonly checkInForm: FormGroup = this.fb.group({
     rental_booking_id: ['', [Validators.required]],
     mileage: [45250, [Validators.required, Validators.min(0)]],
     fuel_level: ['8/8', [Validators.required]],
-    notes: [''],
   });
 
   readonly vehicleForm: FormGroup = this.fb.group({
-    license_plate: ['', [Validators.required]],
-    make: ['', [Validators.required]],
-    model: ['', [Validators.required]],
-    year: [2024],
-    vin: [''],
-    mileage_km: [0],
-    customer_id: [''],
-    customer_name: [''],
+    license_plate: ['', [Validators.required, Validators.maxLength(20)]],
+    make: ['', [Validators.required, Validators.maxLength(50)]],
+    model: ['', [Validators.required, Validators.maxLength(50)]],
+    year: [2024, [Validators.min(1900), Validators.max(2100)]],
+    vin_chassis: ['', [Validators.maxLength(30)]],
+    mileage_km: [0, [Validators.min(0)]],
+    client_id: ['', [Validators.required]],
   });
 
   ngOnInit(): void {
     this.loadVehicles();
     this.loadBookings();
     this.loadAutomotiveVehicles();
+    this.clientApi.list({ per_page: 100 }).subscribe({ next: (res) => this.contacts.set(res.data), error: () => this.contacts.set([]) });
   }
 
   // --- Rental Fleet Vehicles ---
@@ -176,7 +182,6 @@ export class RentComponent implements OnInit {
       rental_booking_id: booking.id,
       mileage: booking.check_out_mileage || 45000,
       fuel_level: '8/8',
-      notes: '',
     });
     this.isCheckOutModalVisible.set(true);
   }
@@ -197,7 +202,6 @@ export class RentComponent implements OnInit {
       mileage: val.mileage,
       fuel_level: val.fuel_level,
       damage_markers: this.currentDamageMarkers(),
-      notes: val.notes,
     };
 
     this.loading.set(true);
@@ -225,7 +229,6 @@ export class RentComponent implements OnInit {
       rental_booking_id: booking.id,
       mileage: (booking.check_out_mileage || 45000) + 150,
       fuel_level: '8/8',
-      notes: '',
     });
     this.isCheckInModalVisible.set(true);
   }
@@ -246,7 +249,6 @@ export class RentComponent implements OnInit {
       mileage: val.mileage,
       fuel_level: val.fuel_level,
       damage_markers: this.currentDamageMarkers(),
-      notes: val.notes,
     };
 
     this.loading.set(true);
@@ -298,12 +300,17 @@ export class RentComponent implements OnInit {
       make: '',
       model: '',
       year: 2024,
-      vin: '',
+      vin_chassis: '',
       mileage_km: 0,
-      customer_id: '',
-      customer_name: '',
+      client_id: '',
     });
     this.isVehicleModalVisible.set(true);
+  }
+
+  /** Owner shown in the vehicle table: the list does not embed it, so it is resolved from the loaded contacts. */
+  protected ownerName(v: AutomotiveVehicle): string {
+    const contact = this.contacts().find((c) => c.id === v.client_id);
+    return contact ? contactDisplayName(contact) : '-';
   }
 
   openEditVehicleModal(v: AutomotiveVehicle): void {
@@ -314,9 +321,9 @@ export class RentComponent implements OnInit {
       make: v.make,
       model: v.model,
       year: v.year || 2024,
-      vin: v.vin || '',
-      customer_id: v.customer_id || '',
-      customer_name: v.customer_name || '',
+      vin_chassis: v.vin_chassis || '',
+      mileage_km: v.mileage_km ?? 0,
+      client_id: v.client_id || '',
     });
     this.isVehicleModalVisible.set(true);
   }
@@ -332,14 +339,14 @@ export class RentComponent implements OnInit {
       return;
     }
     const val = this.vehicleForm.value;
-    const payload: Partial<AutomotiveVehicle> = {
+    const payload: AutomotiveVehiclePayload = {
       license_plate: (val.license_plate || '').toUpperCase(),
       make: val.make,
       model: val.model,
       year: val.year,
-      vin: val.vin || null,
-      customer_id: val.customer_id || null,
-      customer_name: val.customer_name || null,
+      vin_chassis: val.vin_chassis || null,
+      mileage_km: Number(val.mileage_km ?? 0),
+      client_id: val.client_id,
     };
 
     this.loading.set(true);

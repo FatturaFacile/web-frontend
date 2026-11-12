@@ -25,7 +25,7 @@
       <nz-card>
         <form nz-form nzLayout="inline" [formGroup]="viewForm" (ngSubmit)="loadChildView()">
           <nz-form-item>
-            <nz-form-label nzFor="family-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select id="family-child" formControlName="child_id" class="family-select">
                 @for (child of children(); track child.id) {
@@ -35,13 +35,13 @@
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzFor="family-month">{{ 'FAMILY_PORTAL.MONTH' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-month">{{ 'FAMILY_PORTAL.MONTH' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="family-month" type="month" formControlName="month" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzFor="family-date">{{ 'FAMILY_PORTAL.DATE' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-date">{{ 'FAMILY_PORTAL.DATE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="family-date" type="date" formControlName="date" />
             </nz-form-control>

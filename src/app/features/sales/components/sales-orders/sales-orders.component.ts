@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -36,9 +36,11 @@ import {
   contactDisplayName,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-sales-orders',
+  styleUrl: './sales-orders.component.scss',
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -95,7 +97,7 @@ export class SalesOrdersComponent implements OnInit {
     date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
     valid_until: this.fb.control(
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-      [Validators.required],
+      endsNotBefore('date', { dateOnly: true }),
     ),
     currency: this.fb.control(this.authStore.activeCurrency(), [Validators.required]),
     notes: this.fb.control(''),
@@ -113,7 +115,7 @@ export class SalesOrdersComponent implements OnInit {
   readonly orderForm = this.fb.group({
     contact_id: this.fb.control('', [Validators.required]),
     date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
-    due_date: this.fb.control(''),
+    due_date: this.fb.control('', endsNotBefore('date', { dateOnly: true })),
     currency: this.fb.control(this.authStore.activeCurrency(), [Validators.required]),
     notes: this.fb.control(''),
     items: this.fb.array([this.createItemFormGroup()]),
@@ -129,10 +131,10 @@ export class SalesOrdersComponent implements OnInit {
   readonly ddtForm = this.fb.group({
     sales_order_id: this.fb.control('', [Validators.required]),
     warehouse_id: this.fb.control<string | null>(null),
-    date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
-    transport_reason: this.fb.control('Vendita', [Validators.required]),
+    date: this.fb.control(new Date().toISOString().substring(0, 10)),
+    transport_reason: this.fb.control('Vendita'),
     goods_appearance: this.fb.control('A vista'),
-    packages_count: this.fb.control(1, [Validators.required, Validators.min(1)]),
+    packages_count: this.fb.control<number | null>(1, [Validators.min(1)]),
     gross_weight_kg: this.fb.control(0),
     carrier_name: this.fb.control(''),
     carrier_license_plate: this.fb.control(''),
@@ -152,6 +154,13 @@ export class SalesOrdersComponent implements OnInit {
     return this.ddtForm.get('items') as FormArray;
   }
 
+  constructor() {
+    // The API requires valid_until / due_date on or after the document date (after_or_equal:date).
+    const destroyRef = inject(DestroyRef);
+    revalidateOnStartChange(this.quoteForm, 'date', 'valid_until', destroyRef);
+    revalidateOnStartChange(this.orderForm, 'date', 'due_date', destroyRef);
+  }
+
   ngOnInit(): void {
     this.loadLookups();
     this.loadQuotes();
@@ -164,11 +173,13 @@ export class SalesOrdersComponent implements OnInit {
   createItemFormGroup() {
     return this.fb.group({
       product_id: this.fb.control<string | null>(null),
-      description: this.fb.control('', [Validators.required]),
+      description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
       quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
       unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
       tax_rate: this.fb.control(this.authStore.activeJurisdiction() === 'CH' ? 8.1 : 22, [
         Validators.required,
+        Validators.min(0),
+        Validators.max(100),
       ]),
       discount_percentage: this.fb.control(0),
     });
@@ -285,8 +296,8 @@ export class SalesOrdersComponent implements OnInit {
     const formVal = this.quoteForm.getRawValue();
     const payload: CreateSalesQuotePayload = {
       contact_id: formVal.contact_id,
-      date: formVal.date,
-      valid_until: formVal.valid_until,
+      date: formVal.date || undefined,
+      valid_until: formVal.valid_until || undefined,
       currency: formVal.currency,
       notes: formVal.notes || undefined,
       items: formVal.items.map((it) => ({
@@ -544,10 +555,10 @@ export class SalesOrdersComponent implements OnInit {
     const payload: CreateDeliveryNotePayload = {
       sales_order_id: formVal.sales_order_id,
       warehouse_id: formVal.warehouse_id,
-      date: formVal.date,
-      transport_reason: formVal.transport_reason,
+      date: formVal.date || undefined,
+      transport_reason: formVal.transport_reason || undefined,
       goods_appearance: formVal.goods_appearance || undefined,
-      packages_count: Number(formVal.packages_count),
+      packages_count: formVal.packages_count ? Number(formVal.packages_count) : undefined,
       gross_weight_kg: Number(formVal.gross_weight_kg || 0),
       carrier_name: formVal.carrier_name || undefined,
       carrier_license_plate: formVal.carrier_license_plate || undefined,

@@ -21,6 +21,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-asset-detail-drawer',
+  styleUrl: './asset-detail-drawer.component.scss',
   imports: [
     TranslatePipe,
     NzDrawerModule,

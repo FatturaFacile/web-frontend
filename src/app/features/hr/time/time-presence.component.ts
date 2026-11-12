@@ -11,6 +11,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Who is in now: the state of every employee from the last punch. */
 @Component({
   selector: 'app-time-presence',
+  styleUrl: './time-presence.component.scss',
   imports: [DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <div class="flex justify-between items-center mb-3">

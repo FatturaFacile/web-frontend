@@ -28,12 +28,12 @@ export const CHILDCARE_CARE_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.set_weekly_plan', '/childcare/children/{id}/weekly-plans', {
           fields: [
             req(rf.date('valid_from')),
-            rf.date('valid_to'),
+            rf.date('valid_to', { notBefore: 'valid_from' }),
             req(rf.json('days', { defaultValue: WEEKLY_PLAN_TEMPLATE })),
           ],
         }),
         act('POST', 'RES.A.assign_fee_plan', '/childcare/children/{id}/fees', {
-          fields: [req(rf.uuid('fee_plan_id')), req(rf.date('valid_from')), rf.date('valid_to')],
+          fields: [req(rf.uuid('fee_plan_id')), req(rf.date('valid_from')), rf.date('valid_to', { notBefore: 'valid_from' })],
         }),
         act('GET', 'RES.A.view_documents', '/childcare/children/{id}/documents', { showResult: true }),
       ],
@@ -51,7 +51,7 @@ export const CHILDCARE_CARE_PAGE: ResourcePageConfig = {
       list: { path: '/childcare/activities', columns: cols('name', 'weekday', 'starts_at', 'ends_at', 'capacity', 'monthly_fee') },
       rowActions: [
         act('POST', 'RES.A.enrol_child', '/childcare/activities/{id}/enrolments', {
-          fields: [req(rf.uuid('child_id')), req(rf.date('valid_from')), rf.date('valid_to')],
+          fields: [req(rf.uuid('child_id')), req(rf.date('valid_from')), rf.date('valid_to', { notBefore: 'valid_from' })],
         }),
       ],
     },
@@ -70,7 +70,7 @@ export const CHILDCARE_CARE_PAGE: ResourcePageConfig = {
           req(rf.select('method', ['fixed_per_day', 'income_brackets_per_day', 'income_brackets_percentage'])),
           req(rf.json('parameters', { defaultValue: SUBSIDY_PARAMETERS_TEMPLATE })),
           req(rf.date('valid_from')),
-          rf.date('valid_to'),
+          rf.date('valid_to', { notBefore: 'valid_from' }),
           rf.text('source_reference', { maxLength: 500 }),
         ],
       }),

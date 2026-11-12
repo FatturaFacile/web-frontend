@@ -16,3 +16,8 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   link.click();
   URL.revokeObjectURL(url);
 }
+
+/** Mirrors `after_or_equal:from` of the report requests: true when both ISO dates are set and `to` is before `from`. */
+export function rangeEndsBeforeStart(from: string, to: string): boolean {
+  return !!from && !!to && to < from;
+}

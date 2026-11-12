@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   ApiResponse,
   PaginatedResponse,
@@ -210,14 +210,20 @@ export class WorkflowApiService {
   }
 
   // --- DELEGATIONS ---
+  /** The API answers with the bare list of delegations (no envelope): both shapes are accepted. */
   getDelegations(): Observable<ApiResponse<WorkflowDelegationModel[]>> {
-    return this.http.get<ApiResponse<WorkflowDelegationModel[]>>(`${this.base}/workflows/delegations`);
+    return this.http
+      .get<ApiResponse<WorkflowDelegationModel[]> | WorkflowDelegationModel[]>(`${this.base}/workflows/delegations`)
+      .pipe(map((res) => (Array.isArray(res) ? ({ success: true, data: res } as ApiResponse<WorkflowDelegationModel[]>) : res)));
   }
 
+  /** The API answers with the bare delegation (no envelope): both shapes are accepted. */
   createDelegation(
     payload: WorkflowCreateDelegationRequest,
   ): Observable<ApiResponse<WorkflowDelegationModel>> {
-    return this.http.post<ApiResponse<WorkflowDelegationModel>>(`${this.base}/workflows/delegations`, payload);
+    return this.http
+      .post<ApiResponse<WorkflowDelegationModel> | WorkflowDelegationModel>(`${this.base}/workflows/delegations`, payload)
+      .pipe(map((res) => ('data' in res ? res : ({ success: true, data: res } as ApiResponse<WorkflowDelegationModel>))));
   }
 
   deleteDelegation(id: string): Observable<void> {

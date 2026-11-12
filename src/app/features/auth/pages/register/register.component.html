@@ -179,6 +179,8 @@
         <ng-template #requiredError let-control>
           @if (control.hasError("serverError")) {
             {{ control.getError("serverError") }}
+          } @else if (control.hasError("maxlength")) {
+            {{ "COMMON.VALIDATION.INVALID_VALUE" | translate }}
           } @else {
             {{ "COMMON.VALIDATION.REQUIRED" | translate }}
           }

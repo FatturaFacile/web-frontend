@@ -176,6 +176,18 @@ describe('AssetsComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('does not call the API when the create asset form is submitted empty', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+    component.assetForm.patchValue({ name: '', category_id: '' });
+
+    component.submitCreateAsset();
+
+    expect(mockAssetApi.createAsset).not.toHaveBeenCalled();
+    expect(component.assetForm.controls.name.touched).toBe(true);
+    expect(component.assetForm.controls.category_id.touched).toBe(true);
+  });
+
   it('capitalizes and commissions asset', () => {
     fixture.detectChanges();
     component.capitalize(mockAssets[0]);

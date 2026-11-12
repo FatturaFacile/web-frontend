@@ -23,6 +23,7 @@ import { TrLookupStore } from '../tr-lookup.store';
 
 @Component({
   selector: 'app-tr-riba',
+  styleUrl: './tr-riba.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

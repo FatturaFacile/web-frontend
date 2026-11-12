@@ -27,11 +27,13 @@ import {
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { downloadBlob } from '../../../general-ledger/shared/gl-dates';
 import { TrLookupStore } from '../tr-lookup.store';
+import { notInPast } from '@shared/utils/date-validators';
 
 const STATUS_COLORS: Record<PaymentProposalStatus, string> = { draft: 'gold', converted: 'green', rejected: 'red' };
 
 @Component({
   selector: 'app-tr-payment-proposals',
+  styleUrl: './tr-payment-proposals.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -74,7 +76,7 @@ export class TrPaymentProposalsComponent implements OnInit {
 
   protected readonly form = this.fb.group({
     bank_account_id: this.fb.control('', Validators.required),
-    execution_date: this.fb.control('', Validators.required),
+    execution_date: this.fb.control('', [Validators.required, notInPast]),
     due_until: this.fb.control('', Validators.required),
     include_discounts: this.fb.control(false),
     format: this.fb.control<PaymentProposalFormat>('sepa_pain_001_it', Validators.required),

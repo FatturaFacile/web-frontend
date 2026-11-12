@@ -28,11 +28,12 @@ interface SwissPermitAlertRow {
 }
 
 const KINDS = ['Earning', 'NonCash', 'Expense', 'Deduction', 'Employer', 'Information'];
-const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ'];
+const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ', 'TG', 'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH'];
 
 /** Payroll workbench: runs, payslips and certificates, wage types, family allowances, settings, permit alerts and exports. */
 @Component({
   selector: 'app-hr-payroll',
+  styleUrl: './payroll.component.scss',
   imports: [
     NzAlertModule,
     NzButtonModule,
@@ -71,7 +72,7 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <app-payroll-settings [country]="'italian'" [canWrite]="canWrite()" />
         </nz-tab>
         <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
-          <div>
+          <div class="mb-3">
             <button nz-button type="button" (click)="loadPermitAlerts()">Aggiorna Scadenze Permessi</button>
           </div>
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
@@ -137,7 +138,7 @@ export class PayrollComponent implements OnInit {
     update: (id, payload) => this.api.updateWageType(id, payload as never),
     remove: (id) => this.api.deleteWageType(id),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 10 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 6, pattern: '^[0-9A-Z]{1,6}$' },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
       {
         key: 'kind',
@@ -153,7 +154,7 @@ export class PayrollComponent implements OnInit {
       { key: 'subject_to_bvg', labelKey: 'hrmPayroll.subjectBvg', type: 'boolean', column: false },
       { key: 'subject_to_withholding_tax', labelKey: 'hrmPayroll.subjectWithholding', type: 'boolean', column: false },
       { key: 'is_irregular', labelKey: 'hrmPayroll.irregular', type: 'boolean', column: false },
-      { key: 'certificate_box', labelKey: 'hrmPayroll.certificateBox', type: 'text', nullable: true },
+      { key: 'certificate_box', labelKey: 'hrmPayroll.certificateBox', type: 'text', nullable: true, maxLength: 10 },
       { key: 'sort_order', labelKey: 'hrmTime.priority', type: 'integer', column: false },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
     ],
@@ -175,8 +176,8 @@ export class PayrollComponent implements OnInit {
         options: () => CANTONS.map((value) => ({ value, label: value })),
       },
       { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date', required: true },
-      { key: 'child_allowance', labelKey: 'hrmPayroll.childAllowance', type: 'decimal', required: true },
-      { key: 'education_allowance', labelKey: 'hrmPayroll.educationAllowance', type: 'decimal', required: true },
+      { key: 'child_allowance', labelKey: 'hrmPayroll.childAllowance', type: 'decimal', required: true, min: 215 },
+      { key: 'education_allowance', labelKey: 'hrmPayroll.educationAllowance', type: 'decimal', required: true, min: 268 },
     ],
   }));
 }

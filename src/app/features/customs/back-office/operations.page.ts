@@ -46,7 +46,7 @@ export const CUSTOMS_OPERATIONS_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.quote_spot', '/customs/dossiers/{id}/quotes/spot', {
           fields: [
             rf.date('valid_until'),
-            req(rf.lines('lines', [req(rf.text('description')), req(rf.decimal('quantity')), req(rf.decimal('unit_price'))], { required: true })),
+            req(rf.lines('lines', [req(rf.text('description', { maxLength: 255 })), req(rf.decimal('quantity', { positive: true })), req(rf.decimal('unit_price'))], { required: true })),
           ],
         }),
       ],
@@ -116,7 +116,7 @@ export const CUSTOMS_OPERATIONS_PAGE: ResourcePageConfig = {
       module: 'customs',
       list: { path: '/customs/service-discounts', columns: cols('contact_id', 'service_type', 'discount_percent') },
       create: act('PUT', 'RES.A.set_discount', '/customs/service-discounts', {
-        fields: [req(rf.uuid('contact_id')), req(rf.text('service_type')), req(rf.decimal('discount_percent'))],
+        fields: [req(rf.uuid('contact_id')), req(rf.text('service_type', { maxLength: 40 })), req(rf.decimal('discount_percent'))],
       }),
     },
     {

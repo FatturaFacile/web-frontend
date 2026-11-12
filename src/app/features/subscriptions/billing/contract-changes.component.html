@@ -42,7 +42,10 @@
   @if (kind === 'suspend') {
     <div>
       <label for="chg-resume">{{ 'SUBX.CHANGES.RESUME_ON' | translate }}</label>
-      <input nz-input id="chg-resume" type="date" class="field" [(ngModel)]="resumeOn" />
+      <input nz-input id="chg-resume" type="date" class="field" [attr.min]="today" [class.ant-input-status-error]="!!resumeOn && resumeOn <= today" [(ngModel)]="resumeOn" />
+      @if (resumeOn && resumeOn <= today) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.DATE_MUST_BE_FUTURE' | translate }}</span>
+      }
     </div>
   }
   @if (kind === 'collection') {

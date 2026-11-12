@@ -17,7 +17,7 @@
   <thead>
     <tr>
       @for (col of columns(); track col.key) {
-        <th>{{ col.labelKey | translate }}</th>
+        <th [class.num]="col.type === 'decimal' || col.type === 'integer'">{{ col.labelKey | translate }}</th>
       }
       @if (config().canWrite || config().rowActions) {
         <th>{{ 'hrmCommon.actions' | translate }}</th>
@@ -28,7 +28,7 @@
     @for (row of table.data; track row.id) {
       <tr>
         @for (col of columns(); track col.key) {
-          <td>{{ cell(row, col) }}</td>
+          <td [class.num]="col.type === 'decimal' || col.type === 'integer'">{{ cell(row, col) }}</td>
         }
         @if (config().canWrite || config().rowActions) {
           <td>
@@ -57,7 +57,7 @@
                 </button>
               }
               @if (config().remove && config().removeWithReason) {
-                <app-reason-button labelKey="hrmCommon.delete" [danger]="true" (confirmed)="remove(row, $event)" />
+                <app-reason-button labelKey="hrmCommon.delete" [danger]="true" [minLength]="config().removeReasonMinLength ?? 3" (confirmed)="remove(row, $event)" />
               } @else if (config().remove) {
                 <button
                   nz-button
@@ -100,7 +100,7 @@
           </nz-form-item>
         } @else {
           <nz-form-item>
-            <nz-form-label [nzRequired]="field.required ?? false" [nzFor]="'crud-' + field.key">
+            <nz-form-label [nzRequired]="isRequired(field)" [nzFor]="'crud-' + field.key">
               {{ field.labelKey | translate }}
             </nz-form-label>
             <nz-form-control [nzErrorTip]="errorTip(field.key)">

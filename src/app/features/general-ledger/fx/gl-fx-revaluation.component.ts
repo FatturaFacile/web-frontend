@@ -13,6 +13,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
   selector: 'app-gl-fx-revaluation',
+  styleUrl: './gl-fx-revaluation.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

@@ -28,6 +28,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 /** Personnel file: documents with health flag, visibility to the employee and retention date. */
 @Component({
   selector: 'app-employee-documents',
+  styleUrl: './employee-documents.component.scss',
   imports: [
     DatePipe,
     ReactiveFormsModule,
@@ -60,11 +61,12 @@ export class EmployeeDocumentsComponent implements OnInit {
   protected readonly saving = signal(false);
   protected readonly formOpen = signal(false);
   protected readonly file = signal<File | null>(null);
+  protected readonly fileMissing = signal(false);
   protected readonly typeOptions = EMPLOYEE_DOCUMENT_TYPES;
 
   protected readonly form = this.fb.group({
     document_type: ['other' as EmployeeDocumentType, Validators.required],
-    title: ['', [Validators.required, Validators.maxLength(255)]],
+    title: ['', [Validators.required, Validators.maxLength(200)]],
     issue_date: [''],
     expiry_date: [''],
     retention_until: [''],
@@ -94,16 +96,20 @@ export class EmployeeDocumentsComponent implements OnInit {
   protected openForm(): void {
     this.form.reset();
     this.file.set(null);
+    this.fileMissing.set(false);
     this.formOpen.set(true);
   }
 
   protected onFileSelected(event: Event): void {
-    this.file.set((event.target as HTMLInputElement).files?.item(0) ?? null);
+    const selected = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    this.file.set(selected);
+    this.fileMissing.set(selected === null);
   }
 
   protected upload(): void {
     const file = this.file();
     if (this.form.invalid || !file) {
+      this.fileMissing.set(!file);
       this.form.markAllAsTouched();
       return;
     }

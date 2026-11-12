@@ -64,13 +64,13 @@ const MEMBERS_PANEL: ResourcePanelConfig = {
   rowActions: [
     act('POST', 'RES.A.issue_qr', '/associations/members/{id}/qr', { showResult: true }),
     act('POST', 'RES.A.assign_badge', '/associations/members/{id}/badges', {
-      fields: [req(rf.text('uid')), rf.datetime('expires_at')],
+      fields: [req(rf.text('uid', { maxLength: 128 })), rf.datetime('expires_at', { inFuture: true })],
     }),
     act('POST', 'RES.A.add_registry_type', '/associations/members/{id}/registry-types', {
-      fields: [req(rf.uuid('registry_type_id')), rf.uuid('year_id'), rf.date('valid_from'), rf.date('valid_to'), rf.textarea('notes')],
+      fields: [req(rf.uuid('registry_type_id')), rf.uuid('year_id'), rf.date('valid_from'), rf.date('valid_to', { notBefore: 'valid_from' }), rf.textarea('notes', { maxLength: 500 })],
     }),
     act('POST', 'RES.A.add_social_role', '/associations/members/{id}/social-roles', {
-      fields: [req(rf.uuid('social_role_id')), req(rf.date('valid_from')), rf.date('valid_to'), rf.textarea('notes')],
+      fields: [req(rf.uuid('social_role_id')), req(rf.date('valid_from')), rf.date('valid_to', { notBefore: 'valid_from' }), rf.textarea('notes', { maxLength: 500 })],
     }),
     act('POST', 'RES.A.send_area_link', '/associations/contacts/{contact_id}/area-link', {
       confirm: true,
@@ -103,17 +103,17 @@ const CERTIFICATE_FIELDS = [
   rf.uuid('discipline_id'),
   rf.date('issued_on'),
   req(rf.date('expires_on')),
-  rf.text('physician'),
-  rf.textarea('notes'),
+  rf.text('physician', { maxLength: 255 }),
+  rf.textarea('notes', { maxLength: 2000 }),
   rf.file('file'),
 ];
 
 const GUARDIAN_FIELDS = [
   rf.uuid('contact_id'),
-  rf.text('first_name'),
-  rf.text('last_name'),
-  rf.text('email'),
-  rf.text('phone'),
+  rf.text('first_name', { maxLength: 255 }),
+  rf.text('last_name', { maxLength: 255 }),
+  rf.text('email', { maxLength: 255 }),
+  rf.text('phone', { maxLength: 50 }),
   rf.text('relationship', { maxLength: 50 }),
   rf.bool('is_primary'),
   rf.date('valid_from'),
@@ -141,7 +141,7 @@ export const MEMBER_FILE_PANELS: readonly ResourcePanelConfig[] = [
       columns: [...cols('title'), tagCol('status'), col('valid_until', 'date'), col('signed_at', 'datetime')],
     },
     create: act('POST', 'RES.A.new_authorization', '/associations/members/{id}/authorizations', {
-      fields: [req(rf.text('title')), req(rf.textarea('body')), rf.date('valid_until')],
+      fields: [req(rf.text('title', { maxLength: 255 })), req(rf.textarea('body', { maxLength: 20000 })), rf.date('valid_until', { inFuture: true })],
     }),
     rowActions: [
       act('POST', 'RES.A.revoke', '/associations/authorizations/{id}/revoke', {

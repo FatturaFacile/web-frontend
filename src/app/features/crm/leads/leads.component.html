@@ -196,8 +196,11 @@
   <ng-container *nzDrawerContent>
     <form nz-form [formGroup]="leadForm" nzLayout="vertical" (ngSubmit)="submitCreateLead()">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'crmLeadScore.lblCompanyName' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Company name is required">
+        <nz-form-label>{{ 'crmLeadScore.lblCompanyName' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="identityInvalid('company_name') ? 'error' : leadForm.controls.company_name"
+          [nzErrorTip]="errorTip('company_name')"
+        >
           <input nz-input formControlName="company_name" placeholder="Acme Inc." />
         </nz-form-control>
       </nz-form-item>
@@ -205,13 +208,16 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'crmLeadScore.lblFirstName' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip('first_name')">
             <input nz-input formControlName="first_name" placeholder="John" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'crmLeadScore.lblLastName' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control
+            [nzValidateStatus]="identityInvalid('last_name') ? 'error' : leadForm.controls.last_name"
+            [nzErrorTip]="errorTip('last_name')"
+          >
             <input nz-input formControlName="last_name" placeholder="Doe" />
           </nz-form-control>
         </nz-form-item>
@@ -219,7 +225,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'crmLeadScore.lblTitleRole' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip('title')">
           <input nz-input formControlName="title" [placeholder]="'crmLeadScore.lblManagingDirector' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -227,13 +233,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label>Email</nz-form-label>
-          <nz-form-control nzErrorTip="Enter a valid email">
+          <nz-form-control [nzErrorTip]="errorTip('email')">
             <input nz-input formControlName="email" type="email" [placeholder]="'crmLeadScore.lblJohnExampleCom' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'crmLeadScore.lblPhone' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip('phone')">
             <input nz-input formControlName="phone" placeholder="+41 91 123 4567" />
           </nz-form-control>
         </nz-form-item>
@@ -241,8 +247,8 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label nzRequired>{{ 'crmLeadScore.lblCountry' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'crmLeadScore.lblCountry' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('country')">
             <nz-select formControlName="country">
               <nz-option nzValue="CH" nzLabel="Switzerland (CH)"></nz-option>
               <nz-option nzValue="IT" nzLabel="Italy (IT)"></nz-option>
@@ -253,12 +259,12 @@
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip('estimated_budget')">
             <nz-input-number
               formControlName="estimated_budget"
               [nzMin]="0"
               [nzStep]="1000"
-             
+             class="w-full"
             ></nz-input-number>
           </nz-form-control>
         </nz-form-item>

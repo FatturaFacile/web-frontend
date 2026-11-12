@@ -36,6 +36,7 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
 /** Credit profile of a customer (limit, exposure, hold), its ledger statement and aging buckets. */
 @Component({
   selector: 'app-customer-credit',
+  styleUrl: './customer-credit.component.scss',
   imports: [
     FormsModule,
     NzAlertModule,

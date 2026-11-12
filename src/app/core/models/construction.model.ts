@@ -1,22 +1,34 @@
+import { ApiResponse } from './api.models';
+
+export type ConstructionSiteStatus = 'planning' | 'active' | 'paused' | 'completed';
+
 export interface ConstructionSite {
-  id?: string;
+  id: string;
   code: string;
-  client: string;
-  location: string;
-  regime: 'CH' | 'IT' | string;
-  sal?: string;
-  norm?: string;
-  vatRegime?: string;
-  status?: 'active' | 'planned' | 'completed' | 'suspended';
+  name: string;
+  address: string;
+  client_id: string;
+  sia_norm_reference?: string | null;
+  npk_code?: string | null;
+  start_date?: string | null;
+  estimated_end_date?: string | null;
+  status?: ConstructionSiteStatus;
 }
 
+/** Body of `POST /construction/sites` (SaveConstructionSiteRequest). */
 export interface ConstructionSiteRequest {
+  client_id: string;
   code: string;
-  client: string;
-  location: string;
-  regime?: string;
+  name: string;
+  address: string;
+  sia_norm_reference?: string | null;
+  npk_code?: string | null;
+  start_date?: string | null;
+  estimated_end_date?: string | null;
+  status?: ConstructionSiteStatus;
 }
 
+/** Body of `POST /construction/sal` (StoreSalRequest). */
 export interface ConstructionProgressBillingPayload {
   construction_site_id: string;
   sal_number: string;
@@ -39,101 +51,122 @@ export interface ConstructionProgressBilling {
 }
 
 // --- CONSTRUCTION TRADES MODELS ---
-export type TradesBidStatus = 'draft' | 'submitted' | 'awarded' | 'rejected' | 'closed';
+export type TradesBidStatus = 'draft' | 'submitted' | 'accepted' | 'rejected';
+export type TradesLanguage = 'de' | 'fr' | 'it' | 'en';
 
 export interface TradesBid {
   id: string;
-  site_id?: string | null;
-  site_name?: string | null;
-  code: string;
+  bid_number: string;
+  construction_site_id?: string | null;
+  contact_id: string;
   title: string;
-  client_name?: string | null;
+  language: TradesLanguage;
   currency: string;
-  total_amount: string;
+  tax_rate: string;
+  valid_until?: string | null;
+  notes?: string | null;
   status: TradesBidStatus;
   created_at?: string;
   updated_at?: string;
   positions?: TradesBidPosition[];
 }
 
+/** Bid with the net total the API returns beside it (`meta.net_total`). */
+export type TradesBidResponse = ApiResponse<TradesBid> & { meta?: { net_total?: string } };
+
+/** Body of `POST /construction-trades/bids` (SaveBidRequest). */
 export interface TradesBidRequest {
-  site_id?: string;
-  code: string;
+  construction_site_id?: string | null;
+  contact_id: string;
   title: string;
-  client_name?: string;
+  language: TradesLanguage;
   currency: string;
-  status?: TradesBidStatus;
+  tax_rate: string;
+  valid_until?: string | null;
+  notes?: string | null;
 }
 
 export interface TradesBidPosition {
   id: string;
   bid_id: string;
-  code?: string | null;
+  position_code: string;
   description: string;
   unit: string;
-  quantity: number;
+  quantity: string;
   unit_price: string;
-  subtotal: string;
+  total: string;
 }
 
+/** Body of `POST /construction-trades/bids/{id}/positions` (StorePositionRequest). */
 export interface TradesBidPositionRequest {
-  code?: string;
+  position_code: string;
   description: string;
   unit: string;
-  quantity: number;
+  quantity: string;
   unit_price: string;
 }
 
 export interface TradesMeasurement {
   id: string;
   bid_id: string;
-  position_id?: string | null;
-  date: string;
-  description: string;
-  quantity: number;
-  notes?: string | null;
+  bid_position_id: string;
+  measured_on: string;
+  quantity: string;
+  note?: string | null;
 }
 
+/** Body of `POST /construction-trades/bids/{id}/measurements`. */
 export interface TradesMeasurementRequest {
-  position_id?: string;
-  date: string;
-  description: string;
-  quantity: number;
-  notes?: string;
+  bid_position_id: string;
+  measured_on: string;
+  quantity: string;
+  note?: string | null;
 }
+
+export type TradesBillingKind = 'partial' | 'final';
+export type TradesBillingBasis = 'percentage' | 'measured';
 
 export interface TradesBilling {
   id: string;
   bid_id: string;
-  sal_number: string;
-  date: string;
-  amount: string;
+  kind: TradesBillingKind;
+  basis?: TradesBillingBasis | null;
+  sequence: number;
+  billing_date: string;
+  percentage?: string | null;
+  gross_this: string;
   retention_amount: string;
-  net_payable: string;
-  status: 'draft' | 'certified' | 'invoiced';
+  amount_invoiced: string;
 }
 
+/** Body of `POST /construction-trades/bids/{id}/billings`. */
 export interface TradesBillingRequest {
-  sal_number: string;
+  kind: TradesBillingKind;
+  basis?: TradesBillingBasis | null;
+  percentage?: string | null;
   date: string;
-  amount: string;
-  retention_amount?: string;
 }
+
+export type TradesCostType = 'labour' | 'material' | 'machine' | 'other';
 
 export interface TradesSiteCost {
   id: string;
   bid_id: string;
-  date: string;
-  category: 'material' | 'labour' | 'sublet' | 'equipment' | 'other';
+  cost_date: string;
+  cost_type: TradesCostType;
   description: string;
   amount: string;
 }
 
+/** Body of `POST /construction-trades/bids/{id}/site-costs`. */
 export interface TradesSiteCostRequest {
-  date: string;
-  category: 'material' | 'labour' | 'sublet' | 'equipment' | 'other';
+  bid_position_id?: string | null;
+  cost_type: TradesCostType;
+  cost_date: string;
+  worker_user_id?: string | null;
   description: string;
-  amount: string;
+  quantity: string;
+  unit_cost: string;
 }
 
 export interface TradesBudgetControl {
@@ -148,83 +181,120 @@ export interface TradesBudgetControl {
 
 export interface TradesPriceList {
   id: string;
-  code: string;
   name: string;
-  edition_year?: number | null;
+  source?: string;
+  edition?: string | null;
+  currency?: string;
   items_count?: number;
 }
 
+/** Body of `POST /construction-trades/price-lists` (SavePriceListRequest). */
 export interface TradesPriceListRequest {
-  code: string;
   name: string;
-  edition_year?: number;
+  source: 'own' | 'npk' | 'crb' | 'asip' | 'other';
+  edition?: string | null;
+  license_reference?: string | null;
+  currency: string;
+  languages: TradesLanguage[];
+  valid_from?: string | null;
+  valid_to?: string | null;
+  is_active?: boolean;
 }
 
 export interface TradesSiteDiaryEntry {
   id: string;
-  site_id: string;
-  date: string;
-  weather_condition: string;
-  workers_count: number;
-  equipment_notes?: string | null;
+  construction_site_id: string;
+  entry_date: string;
+  weather?: string | null;
+  workers_present: number;
   work_performed: string;
-  director_notes?: string | null;
+  incidents?: string | null;
 }
 
+/** Body of `POST /construction-trades/sites/{id}/diary`. */
 export interface TradesSiteDiaryRequest {
-  date: string;
-  weather_condition: string;
-  workers_count: number;
-  equipment_notes?: string;
+  entry_date: string;
+  weather?: string | null;
+  workers_present: number;
   work_performed: string;
-  director_notes?: string;
+  incidents?: string | null;
 }
+
+export type TradesDocumentKind =
+  | 'safety_plan'
+  | 'risk_assessment'
+  | 'insurance'
+  | 'compliance_certificate'
+  | 'training_certificate'
+  | 'permit'
+  | 'other';
 
 export interface TradesSiteDocument {
   id: string;
-  site_id: string;
+  construction_site_id: string;
   title: string;
-  category: 'pos' | 'psc' | 'durc' | 'insurance' | 'compliance' | 'other';
-  expires_at?: string | null;
-  is_expired?: boolean;
+  kind: TradesDocumentKind;
+  issued_on?: string | null;
+  expires_on?: string | null;
 }
 
+/** Body of `POST /construction-trades/sites/{id}/documents`. */
 export interface TradesSiteDocumentRequest {
+  kind: TradesDocumentKind;
   title: string;
-  category: 'pos' | 'psc' | 'durc' | 'insurance' | 'compliance' | 'other';
-  expires_at?: string;
+  subcontractor_id?: string | null;
+  issued_on?: string | null;
+  expires_on?: string | null;
+  notes?: string | null;
 }
+
+export type TradesSubcontractorStatus = 'active' | 'suspended';
 
 export interface TradesSubcontractor {
   id: string;
-  company_name: string;
-  vat_number: string;
-  contact_email?: string | null;
-  phone?: string | null;
-  qualification?: string | null;
+  name: string;
+  contact_id?: string | null;
+  tax_id?: string | null;
+  trade?: string | null;
+  status?: TradesSubcontractorStatus;
+  notes?: string | null;
 }
 
+/** Body of `POST /construction-trades/subcontractors` (SiteManagementRequest). */
 export interface TradesSubcontractorRequest {
-  company_name: string;
-  vat_number: string;
-  contact_email?: string;
-  phone?: string;
-  qualification?: string;
+  name: string;
+  contact_id?: string | null;
+  tax_id?: string | null;
+  trade?: string | null;
+  status?: TradesSubcontractorStatus;
+  notes?: string | null;
 }
 
 export interface TradesSubcontract {
   id: string;
-  site_id: string;
+  construction_site_id: string;
   subcontractor_id: string;
-  subcontractor_name?: string | null;
-  scope_of_work: string;
+  bid_id?: string | null;
+  description: string;
   contract_amount: string;
-  certified_amount?: string | null;
-  status: 'active' | 'certified' | 'closed';
+  starts_on?: string | null;
+  ends_on?: string | null;
+  status: 'active' | 'completed' | 'cancelled';
 }
 
+/** Body of `POST /construction-trades/sites/{id}/subcontracts`. */
 export interface TradesSubcontractRequest {
   subcontractor_id: string;
-  scope_of_work: string;
+  bid_id?: string | null;
+  description: string;
   contract_amount: string;
+  starts_on?: string | null;
+  ends_on?: string | null;
+}
+
+/** Body of `POST /construction-trades/subcontracts/{id}/certifications`. */
+export interface TradesSubcontractCertificationRequest {
+  certified_on: string;
+  amount: string;
+  description: string;
 }

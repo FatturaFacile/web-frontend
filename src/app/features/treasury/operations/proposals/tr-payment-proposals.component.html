@@ -1,7 +1,7 @@
 <nz-card>
-  <div>
+  <div class="toolbar">
     <nz-select
-     
+      class="status-filter"
       nzAllowClear
       [attr.aria-label]="'TR.STATUS' | translate"
       [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
@@ -12,14 +12,14 @@
         <nz-option [nzValue]="status" [nzLabel]="'TR.PROPOSAL_STATUS_' + status.toUpperCase() | translate" />
       }
     </nz-select>
-    <span></span>
+    <span class="spacer"></span>
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'TR.PROPOSAL_NEW' | translate }}</button>
     }
   </div>
 
   @if (excluded().length > 0) {
-    <nz-alert nzType="warning" nzShowIcon nzCloseable [nzMessage]="'TR.PROPOSAL_EXCLUDED' | translate" [nzDescription]="excludedList" (nzOnClose)="excluded.set([])" />
+    <nz-alert class="excluded-alert" nzType="warning" nzShowIcon nzCloseable [nzMessage]="'TR.PROPOSAL_EXCLUDED' | translate" [nzDescription]="excludedList" (nzOnClose)="excluded.set([])" />
     <ng-template #excludedList>
       @for (item of excluded(); track item.invoice_id) {
         <div>{{ item.invoice_number }}: {{ item.reason }}</div>
@@ -96,7 +96,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="pp-exec">{{ 'TR.EXECUTION_DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="form.controls.execution_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="form.controls.execution_date.errors?.['serverError'] ?? (form.controls.execution_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate))">
           <input id="pp-exec" nz-input type="date" formControlName="execution_date" />
         </nz-form-control>
       </nz-form-item>

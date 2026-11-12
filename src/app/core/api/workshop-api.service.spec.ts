@@ -50,10 +50,10 @@ describe('WorkshopApiService', () => {
   it('creates a new repair folder and adds a line', () => {
     const folderPayload: WorkshopFolderRequest = {
       vehicle_id: 'veh-123',
-      kind: 'repair',
+      kind: 'mechanics',
       currency: 'CHF',
       mileage_in: 85400,
-      notes: 'Sostituzione pastiglie freni anteriori',
+      complaint: 'Sostituzione pastiglie freni anteriori',
     };
 
     service.createFolder(folderPayload).subscribe((res) => {
@@ -62,6 +62,7 @@ describe('WorkshopApiService', () => {
 
     const reqFolder = httpTesting.expectOne(`${base}/folders`);
     expect(reqFolder.request.method).toBe('POST');
+    expect(Object.keys(reqFolder.request.body as object).sort()).toEqual(['complaint', 'currency', 'kind', 'mileage_in', 'vehicle_id']);
     reqFolder.flush({ success: true, data: { id: 'fld-101', ...folderPayload, status: 'open' } });
 
     const linePayload: WorkshopFolderLineRequest = {
@@ -125,6 +126,6 @@ describe('WorkshopApiService', () => {
 
     const reqStock = httpTesting.expectOne(`${base}/vehicle-stock`);
     expect(reqStock.request.method).toBe('POST');
-    reqStock.flush({ success: true, data: { id: 'stk-1', ...stockPayload, status: 'available' } });
+    reqStock.flush({ success: true, data: { id: 'stk-1', ...stockPayload, status: 'in_stock' } });
   });
 });

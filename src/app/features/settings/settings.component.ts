@@ -21,6 +21,7 @@ import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-settings',
+  styleUrl: './settings.component.scss',
   imports: [
     ReactiveFormsModule,
     DatePipe,
@@ -62,16 +63,16 @@ export class SettingsComponent implements OnInit {
   private readonly hqTpl = viewChild<TemplateRef<unknown>>('hqTpl');
 
   protected readonly tenantForm = this.fb.group({
-    name: this.fb.control<string>('Rossi Impianti S.r.l.', [Validators.required]),
-    legal_name: this.fb.control<string>('Rossi Impianti Società a Responsabilità Limitata'),
-    fiscal_code: this.fb.control<string>('RSSMRA85M01H501Q'),
-    vat_number: this.fb.control<string>('IT12345678901'),
-    uid_number: this.fb.control<string>('CHE-114.892.451 IVA'),
-    default_currency: this.fb.control<string>('EUR'),
-    iban: this.fb.control<string>('IT60X0569601600000001234567'),
-    qr_iban: this.fb.control<string>('CH4431999123000889012'),
-    sdi_code: this.fb.control<string>('M5UXCR1'),
-    pec_email: this.fb.control<string>('rossiimpianti@pec.it'),
+    name: this.fb.control<string>('Rossi Impianti S.r.l.', [Validators.required, Validators.maxLength(255)]),
+    legal_name: this.fb.control<string>('Rossi Impianti Società a Responsabilità Limitata', [Validators.maxLength(255)]),
+    fiscal_code: this.fb.control<string>('RSSMRA85M01H501Q', [Validators.maxLength(16)]),
+    vat_number: this.fb.control<string>('IT12345678901', [Validators.maxLength(30)]),
+    uid_number: this.fb.control<string>('CHE-114.892.451 IVA', [Validators.maxLength(20)]),
+    default_currency: this.fb.control<string>('EUR', [Validators.minLength(3), Validators.maxLength(3)]),
+    iban: this.fb.control<string>('IT60X0569601600000001234567', [Validators.maxLength(34)]),
+    qr_iban: this.fb.control<string>('CH4431999123000889012', [Validators.maxLength(34)]),
+    sdi_code: this.fb.control<string>('M5UXCR1', [Validators.minLength(7), Validators.maxLength(7)]),
+    pec_email: this.fb.control<string>('rossiimpianti@pec.it', [Validators.email]),
   });
 
   readonly branchColumns = computed<TableColumnDef<BranchResource>[]>(() => [

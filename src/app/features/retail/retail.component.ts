@@ -1,6 +1,6 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -24,6 +24,7 @@ import {
   DailyCorrispettivoResource,
   LoyaltyApiService,
   LoyaltyCard,
+  LoyaltyCardType,
   LoyaltyTransaction,
   RecordLoyaltyTransactionPayload,
   RetailApiService,
@@ -32,10 +33,14 @@ import {
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { formErrorTip } from '../inventory/form-error-tip';
+import { positiveNumber } from '@shared/utils/decimal-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-retail',
+  styleUrl: './retail.component.scss',
   imports: [
     TranslatePipe,
     FormsModule,
@@ -110,33 +115,39 @@ export class RetailComponent implements OnInit {
   readonly isCreateModalVisible = signal(false);
   readonly isSubmitting = signal(false);
   readonly docForm = this.fb.group({
-    payment_method: ['electronic', [Validators.required]],
-    cashier_name: ['Cassa 1', [Validators.required]],
+    payment_method: ['electronic', [Validators.maxLength(30)]],
+    cashier_name: ['Cassa 1'],
     lines: this.fb.array([
       this.fb.group({
-        description: ['', [Validators.required]],
+        description: ['', [Validators.required, Validators.maxLength(255)]],
         quantity: [1, [Validators.required, Validators.min(1)]],
         unit_price: [10, [Validators.required, Validators.min(0.01)]],
-        vat_rate: [22, [Validators.required]],
+        tax_rate: [22, [Validators.required, Validators.min(0), Validators.max(100)]],
       }),
     ]),
   });
 
   // Loyalty card forms
   readonly issueCardForm = this.fb.group({
-    customer_id: ['', [Validators.required]],
-    card_number: [''],
+    contact_id: ['', [uuidFormat]],
+    type: ['loyalty' as LoyaltyCardType, [Validators.required]],
+    card_number: ['', [Validators.maxLength(50)]],
     initial_balance: [0, [Validators.min(0)]],
   });
 
   readonly recordTxForm = this.fb.group({
+    // The UI offers credit or spend; "spend" is sent to the API as `redeem`.
     type: ['topup' as 'topup' | 'spend', [Validators.required]],
-    amount: [10, [Validators.required, Validators.min(1)]],
-    description: [''],
+    amount: [10, [Validators.required, positiveNumber]],
+    description: ['', [Validators.maxLength(255)]],
   });
 
   get linesArray(): FormArray {
     return this.docForm.get('lines') as FormArray;
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    return formErrorTip(form, path, this.translate);
   }
 
   ngOnInit(): void {
@@ -205,10 +216,10 @@ export class RetailComponent implements OnInit {
   addLine(): void {
     this.linesArray.push(
       this.fb.group({
-        description: ['', [Validators.required]],
+        description: ['', [Validators.required, Validators.maxLength(255)]],
         quantity: [1, [Validators.required, Validators.min(1)]],
         unit_price: [10, [Validators.required, Validators.min(0.01)]],
-        vat_rate: [22, [Validators.required]],
+        tax_rate: [22, [Validators.required, Validators.min(0), Validators.max(100)]],
       })
     );
   }
@@ -231,7 +242,7 @@ export class RetailComponent implements OnInit {
       description: string;
       quantity: number;
       unit_price: number;
-      vat_rate: number;
+      tax_rate: number;
     }[];
 
     const payload: StoreCommercialDocumentPayload = {
@@ -241,7 +252,7 @@ export class RetailComponent implements OnInit {
         description: l.description,
         quantity: Number(l.quantity),
         unit_price: Number(l.unit_price),
-        vat_rate: Number(l.vat_rate),
+        tax_rate: Number(l.tax_rate),
       })),
     };
 
@@ -283,7 +294,8 @@ export class RetailComponent implements OnInit {
 
   openIssueCardModal(): void {
     this.issueCardForm.reset({
-      customer_id: '',
+      contact_id: '',
+      type: 'loyalty',
       card_number: `LOY-${Math.floor(100000 + Math.random() * 900000)}`,
       initial_balance: 0,
     });
@@ -299,7 +311,8 @@ export class RetailComponent implements OnInit {
     this.isSubmittingLoyalty.set(true);
     const val = this.issueCardForm.getRawValue();
     const payload: CreateLoyaltyCardPayload = {
-      customer_id: val.customer_id,
+      contact_id: val.contact_id || null,
+      type: val.type,
       card_number: val.card_number || undefined,
       initial_balance: Number(val.initial_balance) || 0,
     };
@@ -357,7 +370,7 @@ export class RetailComponent implements OnInit {
     const cardId = this.selectedLoyaltyCard()!.id;
     const val = this.recordTxForm.getRawValue();
     const payload: RecordLoyaltyTransactionPayload = {
-      type: val.type,
+      type: val.type === 'spend' ? 'redeem' : 'topup',
       amount: Number(val.amount),
       description: val.description || undefined,
     };
@@ -382,7 +395,7 @@ export class RetailComponent implements OnInit {
   }
 
   toggleCardStatus(card: LoyaltyCard): void {
-    const newStatus = card.status === 'active' ? 'suspended' : 'active';
+    const newStatus = card.status === 'active' ? 'blocked' : 'active';
     const payload: UpdateLoyaltyCardPayload = { status: newStatus };
 
     this.loyaltyApi.updateCard(card.id, payload).subscribe({

@@ -52,14 +52,13 @@ describe('AssociationsApiService', () => {
       first_name: 'Elena',
       last_name: 'Ferrari',
       email: 'elena.ferrari@example.ch',
-      fiscal_code: 'FRRLNE85M41L123X',
+      tax_code: 'FRRLNE85M41L123X',
       joined_on: '2026-01-15',
-      member_number: 'SOC-2026-088',
     };
 
     service.createMember(payload).subscribe((res) => {
       expect(res.data.id).toBe('mem-88');
-      expect(res.data.member_number).toBe('SOC-2026-088');
+      expect(res.data.tax_code).toBe('FRRLNE85M41L123X');
     });
 
     const req = httpTesting.expectOne(`${base}/associations/members`);
@@ -71,10 +70,10 @@ describe('AssociationsApiService', () => {
 
   it('manages courses and enrolment', () => {
     const payload: AssociationCourseRequest = {
-      name: 'Yoga Dinamico Principianti',
-      discipline: 'Ginnastica Posturale',
-      max_participants: 15,
-      season: '2025/2026',
+      title: 'Yoga Dinamico Principianti',
+      starts_on: '2025-09-01',
+      ends_on: '2026-06-30',
+      capacity: 15,
     };
 
     service.createCourse(payload).subscribe((res) => {
@@ -83,6 +82,7 @@ describe('AssociationsApiService', () => {
 
     const reqCreate = httpTesting.expectOne(`${base}/associations/courses`);
     expect(reqCreate.request.method).toBe('POST');
+    expect(Object.keys(reqCreate.request.body as object).sort()).toEqual(['capacity', 'ends_on', 'starts_on', 'title']);
     reqCreate.flush({ success: true, data: { id: 'crs-1', ...payload, status: 'active' } });
 
     service.enrolInCourse('crs-1', { member_id: 'mem-88' }).subscribe((res) => {
@@ -96,11 +96,10 @@ describe('AssociationsApiService', () => {
 
   it('registers a donation and generates receipt', () => {
     const payload: AssociationDonationRequest = {
-      donor_name: 'Fondazione Benefica Ticino',
+      kind: 'money',
       amount: '5000.00',
-      currency: 'CHF',
-      donation_date: '2026-02-10',
-      is_cash: false,
+      received_on: '2026-02-10',
+      payment_method: 'bank',
     };
 
     service.createDonation(payload).subscribe((res) => {
@@ -129,7 +128,7 @@ describe('AssociationsApiService', () => {
     expect(reqVol.request.method).toBe('GET');
     reqVol.flush({
       success: true,
-      data: [{ id: 'vol-1', member_id: 'mem-1', name: 'Mario Rossi', is_registered_in_runts_book: true }],
+      data: [{ id: 'vol-1', member_id: 'mem-1', activity: 'Trasporto' }],
     });
 
     service
@@ -140,6 +139,7 @@ describe('AssociationsApiService', () => {
 
     const reqDec = httpTesting.expectOne(`${base}/associations/reimbursements/reimb-1/decision`);
     expect(reqDec.request.method).toBe('POST');
+    expect(reqDec.request.body).toEqual({ approved: true });
     reqDec.flush({ success: true, data: { id: 'reimb-1', status: 'approved' } });
   });
 });

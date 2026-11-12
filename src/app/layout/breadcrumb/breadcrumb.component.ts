@@ -12,6 +12,7 @@ interface BreadcrumbItem {
 
 @Component({
   selector: 'app-breadcrumb',
+  styleUrl: './breadcrumb.component.scss',
   imports: [RouterLink, NzBreadCrumbModule, TranslatePipe],
   templateUrl: './breadcrumb.component.html',
 })

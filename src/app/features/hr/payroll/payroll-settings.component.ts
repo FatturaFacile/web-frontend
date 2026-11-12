@@ -53,6 +53,7 @@ const FIELDS: Record<'swiss' | 'italian', SettingsField[]> = {
 /** Payroll settings of a country (Swiss or INPS/INAIL): load, edit, save. Decimal fields stay strings. */
 @Component({
   selector: 'app-payroll-settings',
+  styleUrl: './payroll-settings.component.scss',
   imports: [ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzSkeletonModule, TranslatePipe],
   template: `
     @if (loading()) {

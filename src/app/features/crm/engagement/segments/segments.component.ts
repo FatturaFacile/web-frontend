@@ -42,6 +42,7 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
 /** Segments: saved filters on contacts or leads, used to target campaigns. */
 @Component({
   selector: 'app-crm-segments',
+  styleUrl: './segments.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,

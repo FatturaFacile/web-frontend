@@ -182,6 +182,17 @@ describe('LeadsComponent', () => {
     expect(component.createDrawerVisible()).toBe(false);
   });
 
+  it('does not create a lead from an empty form: the name is required', () => {
+    fixture.detectChanges();
+    component.openCreateDrawer();
+
+    component.submitCreateLead();
+
+    expect(mockCrmApi.createLead).not.toHaveBeenCalled();
+    expect(component.identityInvalid('company_name')).toBe(true);
+    expect(component.errorTip('company_name')).not.toBe('');
+  });
+
   it('recalculates lead score', () => {
     fixture.detectChanges();
     component.recalculateScore(mockLeads[0]);

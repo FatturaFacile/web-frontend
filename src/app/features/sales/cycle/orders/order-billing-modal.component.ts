@@ -20,9 +20,14 @@ export type OrderBillingMode = 'partial' | 'down-payment' | 'deposit';
 
 const DECIMAL = /^\d+(\.\d{1,4})?$/;
 
+/** A decimal text that is greater than zero and at most 100 (a percentage the API accepts). */
+const isValidPercentage = (value: string): boolean =>
+  DECIMAL.test(value) && Number(value) > 0 && Number(value) <= 100;
+
 /** Partial billing (quantities per order line), down-payment invoice (TD02) and deposit invoice of an order. */
 @Component({
   selector: 'app-order-billing-modal',
+  styleUrl: './order-billing-modal.component.scss',
   imports: [FormsModule, NzAlertModule, NzInputModule, NzModalModule, TranslatePipe],
   template: `
     <nz-modal
@@ -105,16 +110,19 @@ export class OrderBillingModalComponent {
   protected valid(): boolean {
     if (this.mode() === 'partial') {
       const entered = Object.values(this.quantities()).filter(Boolean);
-      return entered.length > 0 && entered.every((q) => DECIMAL.test(q));
+      return entered.length > 0 && entered.every((q) => DECIMAL.test(q) && Number(q) > 0);
     }
-    const percentageOk = DECIMAL.test(this.percentage);
+    const percentageOk = isValidPercentage(this.percentage);
     if (this.mode() === 'deposit') {
       return percentageOk;
     }
-    return percentageOk !== DECIMAL.test(this.amount);
+    return percentageOk !== (DECIMAL.test(this.amount) && Number(this.amount) > 0);
   }
 
   protected submit(): void {
+    if (!this.valid()) {
+      return;
+    }
     const order = this.order();
     let request: Observable<ApiResponse<unknown>>;
     if (this.mode() === 'partial') {

@@ -44,8 +44,8 @@
               <tr>
                 <td>
                   <strong>{{ ch.name }}</strong>
-                  @if (ch.store_url) {
-                    <div class="store-url">{{ ch.store_url }}</div>
+                  @if (ch.api_url) {
+                    <div class="store-url">{{ ch.api_url }}</div>
                   }
                 </td>
                 <td>
@@ -129,7 +129,7 @@
                 <p><strong>{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}:</strong> {{ ch.driver }}</p>
                 <p>
                   <strong>{{ 'ECOMMERCE_INTEGRATIONS.AUTO_SYNC_ORDERS' | translate }}:</strong>
-                  {{ (ch.settings?.auto_sync_orders ? 'ECOMMERCE_INTEGRATIONS.ENABLED' : 'ECOMMERCE_INTEGRATIONS.DISABLED') | translate }}
+                  {{ (ch.sync_orders_enabled ? 'ECOMMERCE_INTEGRATIONS.ENABLED' : 'ECOMMERCE_INTEGRATIONS.DISABLED') | translate }}
                 </p>
               </div>
             </nz-card>
@@ -221,9 +221,20 @@
           <!-- Gateway Settings -->
           <nz-card class="gateway-card" [nzTitle]="'ECOMMERCE_INTEGRATIONS.GATEWAY_SETTINGS' | translate">
             <form nz-form [formGroup]="gatewayForm" (ngSubmit)="submitPaymentGateway()" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
               <nz-form-item>
                 <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_PROVIDER' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="fieldTip">
                   <nz-select formControlName="provider">
                     <nz-option nzValue="stripe" nzLabel="Stripe Payments"></nz-option>
                     <nz-option nzValue="local" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_LOCAL_OFFLINE_DRIVER' | translate"></nz-option>
@@ -233,7 +244,7 @@
 
               <nz-form-item>
                 <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STRIPE_SECRET_KEY' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="fieldTip">
                   <input
                     nz-input
                     type="password"
@@ -245,7 +256,7 @@
 
               <nz-form-item>
                 <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.WEBHOOK_SECRET' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="fieldTip">
                   <input
                     nz-input
                     type="password"
@@ -257,7 +268,7 @@
 
               <nz-form-item>
                 <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.PUBLISHABLE_KEY' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="fieldTip">
                   <input
                     nz-input
                     formControlName="publishable_key"
@@ -372,43 +383,52 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="channelForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_SHOPIFY_STORE_MAIN' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="driver">
               <nz-option nzValue="shopify" nzLabel="Shopify"></nz-option>
               <nz-option nzValue="woocommerce" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_WOOCOMMERCE' | translate"></nz-option>
               <nz-option nzValue="prestashop" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_PRESTASHOP' | translate"></nz-option>
-              <nz-option nzValue="amazon" nzLabel="Amazon Seller Central"></nz-option>
-              <nz-option nzValue="custom" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_CUSTOM_API_CONNECTOR' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('store_url')">{{ 'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="store_url" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_HTTPS_STORE_EXAMPLE_COM' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.API_KEY' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('api_key')">{{ 'ECOMMERCE_INTEGRATIONS.API_KEY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="api_key" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_KEY_CLIENT_ID' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.API_SECRET' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('api_secret')">{{ 'ECOMMERCE_INTEGRATIONS.API_SECRET' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="password" formControlName="api_secret" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_SECRET_ACCESS_TOKEN' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -416,21 +436,21 @@
         <div class="switches-group">
           <nz-form-item>
             <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.AUTO_SYNC_ORDERS' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-switch formControlName="auto_sync_orders"></nz-switch>
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STOCK_PUSH' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-switch formControlName="stock_push_enabled"></nz-switch>
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.IS_ACTIVE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-switch formControlName="is_active"></nz-switch>
             </nz-form-control>
           </nz-form-item>
@@ -452,19 +472,19 @@
         <p>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_MODAL_DESC' | translate }}</p>
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_PRODUCTS' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-switch formControlName="sync_products"></nz-switch>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_ORDERS' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-switch formControlName="sync_orders"></nz-switch>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_STOCK' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-switch formControlName="sync_stock"></nz-switch>
           </nz-form-control>
         </nz-form-item>
@@ -482,16 +502,27 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="apiKeyForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_BI_ANALYTICS_SYNC' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
-          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SCOPES' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.SCOPES' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <div class="scope-switch-row">
               <nz-switch formControlName="scope_reporting"></nz-switch>
               <span class="switch-label">reporting.read ({{ 'ECOMMERCE_INTEGRATIONS.SCOPE_REPORTING_DESC' | translate }})</span>
@@ -501,7 +532,7 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="date" formControlName="expires_at" />
           </nz-form-control>
         </nz-form-item>
@@ -546,9 +577,20 @@
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="paymentLinkForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.INVOICE_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input
               nz-input
               formControlName="invoice_id"
@@ -582,7 +624,7 @@
             </nz-tag>
           </nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate">
-            {{ ch.store_url || '-' }}
+            {{ ch.api_url || '-' }}
           </nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.WEBHOOK_UUID' | translate">
             <code>{{ ch.uuid || ch.id }}</code>

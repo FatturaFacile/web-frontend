@@ -57,6 +57,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #pTable
         [nzData]="orders()"
         [nzFrontPagination]="false"
@@ -72,7 +73,7 @@
             <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
             <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
             <th>{{ "PURCHASES.COL_ORDER_TYPE" | translate }}</th>
-            <th>{{ "COMMON.AMOUNT" | translate }}</th>
+            <th nzAlign="right">{{ "COMMON.AMOUNT" | translate }}</th>
             <th>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</th>
             <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
             <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
@@ -88,7 +89,7 @@
               <td>
                 <nz-tag>{{ ('PURCHASES.ORDER_TYPE.' + (item.order_type || 'standard')) | translate }}</nz-tag>
               </td>
-              <td>
+              <td nzAlign="right">
                 <strong>{{ item.total_amount | money: item.currency }}</strong>
               </td>
               <td>{{ item.expected_delivery_date ? (item.expected_delivery_date | date: "dd.MM.yyyy") : "-" }}</td>
@@ -153,6 +154,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #grTable
         [nzData]="goodsReceipts()"
         [nzLoading]="loadingReceipts()"
@@ -205,6 +207,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #twmTable
         [nzData]="threeWayMatches()"
         [nzLoading]="loadingMatches()"
@@ -217,9 +220,9 @@
             <th>{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_STATO_CONCILIAZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
+            <th nzAlign="right">{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
+            <th nzAlign="right">{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
+            <th nzAlign="right">{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -233,9 +236,9 @@
                   {{ ('PURCHASES.MATCH.' + m.match_status) | translate }}
                 </nz-tag>
               </td>
-              <td>{{ m.po_total_amount | money: 'EUR' }}</td>
-              <td>{{ m.invoice_total_amount | money: 'EUR' }}</td>
-              <td>
+              <td nzAlign="right">{{ m.po_total_amount | money: 'EUR' }}</td>
+              <td nzAlign="right">{{ m.invoice_total_amount | money: 'EUR' }}</td>
+              <td nzAlign="right">
                 <span [class.negative]="m.variance_amount !== 0">
                   {{ m.variance_amount | money: 'EUR' }} ({{ m.variance_percentage }}%)
                 </span>
@@ -263,6 +266,7 @@
       </div>
 
       <nz-table
+        [nzScroll]="{ x: '900px' }"
         #siTable
         [nzData]="supplierInvoices()"
         [nzLoading]="loadingInvoices()"
@@ -276,7 +280,7 @@
             <th>{{ 'PURCHASES.LBL_FORNITORE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_SCADENZA' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
+            <th nzAlign="right">{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
             <th>{{ 'PURCHASES.COL_PAYMENT' | translate }}</th>
             <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
@@ -289,7 +293,7 @@
               <td>{{ invoiceSupplierName(inv) }}</td>
               <td>{{ inv.date | date: 'dd.MM.yyyy' }}</td>
               <td>{{ inv.due_date ? (inv.due_date | date: 'dd.MM.yyyy') : '-' }}</td>
-              <td><strong>{{ inv.total_amount | money: inv.currency }}</strong></td>
+              <td nzAlign="right"><strong>{{ inv.total_amount | money: inv.currency }}</strong></td>
               <td>
                 <nz-tag [nzColor]="inv.payment_status === 'paid' ? 'success' : 'default'">
                   {{ ('PURCHASES.PAYMENT.' + (inv.payment_status || 'unpaid')) | translate }}
@@ -343,7 +347,7 @@
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ "PURCHASES.COL_VENDOR" | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(orderForm.controls.supplier_id)">
           <nz-select formControlName="supplier_id" nzShowSearch [nzPlaceHolder]="'purchases.form.supplierPlaceholder' | translate">
             @for (s of suppliers(); track s.id) {
               <nz-option [nzValue]="s.id" [nzLabel]="s.company_name" />
@@ -355,14 +359,14 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.expected_delivery_date)">
             <nz-date-picker formControlName="expected_delivery_date" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_VALUTA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'PURCHASES.LBL_VALUTA' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.currency)">
             <nz-select formControlName="currency">
               <nz-option nzValue="CHF" [nzLabel]="'PURCHASES.LBL_CHF_SVIZZERA' | translate" />
               <nz-option nzValue="EUR" [nzLabel]="'PURCHASES.LBL_EUR_ITALIA_UE' | translate" />
@@ -373,7 +377,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ARTICOLO_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(orderForm.controls.item_description)">
           <input nz-input formControlName="item_description" [placeholder]="'PURCHASES.LBL_DESCRIZIONE_MATERIALE_O_SERVIZIO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -381,21 +385,21 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_QUANTITA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.quantity)">
             <nz-input-number formControlName="quantity" [nzMin]="0.0001" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.unit_price)">
             <nz-input-number formControlName="unit_price" [nzMin]="0" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.tax_rate)">
             <nz-input-number formControlName="tax_rate" [nzMin]="0" class="full-width" />
           </nz-form-control>
         </nz-form-item>
@@ -420,14 +424,14 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_RIFERIMENTO_DDT_FORNITORE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(receiptForm.controls.supplier_delivery_note_ref)">
             <input nz-input formControlName="supplier_delivery_note_ref" placeholder="Es. DDT-2026/8841" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_DATA_RICEZIONE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(receiptForm.controls.received_date)">
             <input nz-input type="date" formControlName="received_date" />
           </nz-form-control>
         </nz-form-item>
@@ -460,7 +464,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'PURCHASES.LBL_NOTE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(receiptForm.controls.notes)">
           <textarea nz-input rows="2" formControlName="notes" [placeholder]="'PURCHASES.LBL_NOTE_SU_IMBALLO_O_VERIFICA' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -520,28 +524,28 @@
     <form nz-form [formGroup]="matchForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_ORDINE_DI_ACQUISTO_PO' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.purchase_order_id)">
           <input nz-input formControlName="purchase_order_id" [placeholder]="'PURCHASES.LBL_ID_O_UUID_ORDINE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_RICEZIONE_MERCE_GRN' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.purchase_receipt_id)">
           <input nz-input formControlName="purchase_receipt_id" [placeholder]="'PURCHASES.LBL_ID_RICEZIONE_MERCE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_FATTURA_FORNITORE_AP' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.passive_invoice_id)">
           <input nz-input formControlName="passive_invoice_id" [placeholder]="'PURCHASES.LBL_ID_FATTURA_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_TOTALE_FATTURA_FORNITORE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.invoice_total_amount)">
           <nz-input-number formControlName="invoice_total_amount" [nzMin]="0.01" class="full-width" />
         </nz-form-control>
       </nz-form-item>

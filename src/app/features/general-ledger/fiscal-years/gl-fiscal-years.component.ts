@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -21,9 +21,11 @@ import {
 import { TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dates';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-gl-fiscal-years',
+  styleUrl: './gl-fiscal-years.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -45,6 +47,7 @@ export class GlFiscalYearsComponent implements OnInit {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
@@ -71,8 +74,13 @@ export class GlFiscalYearsComponent implements OnInit {
   protected readonly form = this.fb.group({
     year_code: this.fb.control('', [Validators.required, Validators.maxLength(20)]),
     start_date: this.fb.control('', Validators.required),
-    end_date: this.fb.control('', Validators.required),
+    end_date: this.fb.control('', [Validators.required, endsNotBefore('start_date', { strict: true })]),
   });
+
+  constructor() {
+    // The API requires end_date after start_date.
+    revalidateOnStartChange(this.form, 'start_date', 'end_date', this.destroyRef);
+  }
 
   ngOnInit(): void {
     this.load();

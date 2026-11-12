@@ -234,6 +234,14 @@ describe('AnalyticsComponent', () => {
     expect(analyticsApiSpy.updateReportDefinition).toHaveBeenCalled();
   });
 
+  it('should not save a custom report submitted without name or KPIs', () => {
+    component.openCreateReportModal();
+    component.reportForm.patchValue({ name: '', kpis: [] });
+    component.saveReportDefinition();
+    expect(analyticsApiSpy.createReportDefinition).not.toHaveBeenCalled();
+    expect(component.reportForm.controls['name'].touched).toBe(true);
+  });
+
   it('should run custom report definition and set results', () => {
     component.runReport(mockReportDefs[0]);
     expect(analyticsApiSpy.runReportDefinition).toHaveBeenCalledWith('rep-1');

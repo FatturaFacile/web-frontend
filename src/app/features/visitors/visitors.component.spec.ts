@@ -136,7 +136,7 @@ describe('VisitorsComponent', () => {
       last_name: 'Verdi',
       company_name: 'Solar SpA',
       email: 'giulia@solar.it',
-      host_user_id: 'usr-42',
+      host_user_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
       expected_at: '2026-11-20T14:00:00Z',
       purpose: 'Audit energetico',
     });
@@ -144,7 +144,7 @@ describe('VisitorsComponent', () => {
     component.saveAnnouncedVisit();
     expect(apiSpy.announceVisit).toHaveBeenCalledWith(
       expect.objectContaining({
-        host_user_id: 'usr-42',
+        host_user_id: '8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69',
         expected_at: '2026-11-20T14:00:00Z',
         purpose: 'Audit energetico',
         visitor: expect.objectContaining({
@@ -162,8 +162,8 @@ describe('VisitorsComponent', () => {
     component.openAnnounceModal();
     component.announceVisitForm.patchValue({
       mode: 'existing',
-      visitor_id: 'vis-1',
-      host_user_id: 'usr-1',
+      visitor_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
+      host_user_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
       expected_at: '2026-11-20T15:00:00Z',
       purpose: 'Follow-up',
     });
@@ -171,8 +171,8 @@ describe('VisitorsComponent', () => {
     component.saveAnnouncedVisit();
     expect(apiSpy.announceVisit).toHaveBeenCalledWith(
       expect.objectContaining({
-        visitor_id: 'vis-1',
-        host_user_id: 'usr-1',
+        visitor_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d',
+        host_user_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
         expected_at: '2026-11-20T15:00:00Z',
         purpose: 'Follow-up',
       }),
@@ -287,12 +287,12 @@ describe('VisitorsComponent', () => {
 
   it('should perform self-service kiosk check-in and check-out', () => {
     component.selfServiceCheckInForm.patchValue({
-      visit_id: 'vst-1',
+      visit_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b',
       badge_number: 'B-777',
     });
     component.executeSelfServiceCheckIn();
     expect(apiSpy.kioskCheckIn).toHaveBeenCalledWith({
-      visit_id: 'vst-1',
+      visit_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b',
       badge_number: 'B-777',
     });
     expect(messageSpy.success).toHaveBeenCalledWith('VISITORS.KIOSK_CHECKIN_SUCCESS');
@@ -320,7 +320,7 @@ describe('VisitorsComponent', () => {
     component.announceVisitForm.patchValue({
       first_name: 'Test',
       last_name: 'User',
-      host_user_id: 'usr-1',
+      host_user_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
       expected_at: '2026-11-20T10:00:00Z',
     });
     component.saveAnnouncedVisit();
@@ -329,5 +329,42 @@ describe('VisitorsComponent', () => {
     apiSpy.checkOutVisit.mockReturnValueOnce(throwError(() => new Error('Error')));
     component.executeCheckOut('vst-1');
     expect(messageSpy.error).toHaveBeenCalledWith('VISITORS.ACTION_ERROR');
+  });
+
+  it('does not call the API when the visitor forms are submitted empty', () => {
+    component.openAnnounceModal();
+    component.saveAnnouncedVisit();
+    expect(apiSpy.announceVisit).not.toHaveBeenCalled();
+    expect(component.announceVisitForm.controls.first_name.hasError('required')).toBe(true);
+
+    component.announceVisitForm.patchValue({ mode: 'existing' });
+    expect(component.announceVisitForm.controls.first_name.hasError('required')).toBe(false);
+    expect(component.announceVisitForm.controls.visitor_id.hasError('required')).toBe(true);
+    component.saveAnnouncedVisit();
+    expect(apiSpy.announceVisit).not.toHaveBeenCalled();
+
+    component.executeSelfServiceCheckOut();
+    expect(apiSpy.kioskCheckOut).not.toHaveBeenCalled();
+    component.selfServiceCheckInForm.patchValue({ visit_id: '3f2b1c9a-5d4e-4a67-8b90-1c2d3e4f5a6b', badge_number: 'bad badge!' });
+    component.executeSelfServiceCheckIn();
+    expect(apiSpy.kioskCheckIn).not.toHaveBeenCalled();
+
+    component.openRegisterKioskModal();
+    component.registerKiosk();
+    expect(apiSpy.registerKiosk).not.toHaveBeenCalled();
+  });
+
+  it('requires the end of an announced visit to be after its start and the ids to be UUIDs', () => {
+    component.openAnnounceModal();
+    component.announceVisitForm.patchValue({
+      host_user_id: 'usr-1',
+      expected_at: '2026-11-20T10:00:00Z',
+      expected_until: '2026-11-20T09:00:00Z',
+    });
+    expect(component.announceVisitForm.controls.expected_until.hasError('endsBeforeStart')).toBe(true);
+    expect(component.errorTip(component.announceVisitForm, 'expected_until')).toBe('COMMON.VALIDATION.END_AFTER_START');
+    expect(component.announceVisitForm.controls.host_user_id.hasError('uuid')).toBe(true);
+    component.announceVisitForm.patchValue({ expected_at: '2026-11-20T08:00:00Z' });
+    expect(component.announceVisitForm.controls.expected_until.hasError('endsBeforeStart')).toBe(false);
   });
 });

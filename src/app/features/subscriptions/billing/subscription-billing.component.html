@@ -58,7 +58,10 @@
       @if (canWrite()) {
         <div class="toolbar">
           <label for="run-date">{{ 'SUBX.RUNS.RUN_DATE' | translate }}</label>
-          <input nz-input id="run-date" type="date" class="narrow" [(ngModel)]="runDate" />
+          <input nz-input id="run-date" type="date" class="narrow" [attr.max]="today" [class.ant-input-status-error]="runDateInvalid" [(ngModel)]="runDate" />
+          @if (runDateInvalid) {
+            <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}</span>
+          }
           <label for="run-lookahead">{{ 'SUBX.RUNS.LOOKAHEAD' | translate }}</label>
           <input nz-input id="run-lookahead" type="number" min="0" class="narrow" [(ngModel)]="lookaheadDays" />
           <button
@@ -66,6 +69,7 @@
             nzType="primary"
             type="button"
             nz-popconfirm
+            [disabled]="runDateInvalid"
             [nzPopconfirmTitle]="'SUBX.RUNS.CONFIRM' | translate"
             (nzOnConfirm)="runBilling()"
           >
@@ -103,12 +107,16 @@
       @if (canWrite()) {
         <div class="toolbar">
           <label for="rev-period">{{ 'SUBX.REVENUE.PERIOD_DATE' | translate }}</label>
-          <input nz-input id="rev-period" type="date" class="narrow" [(ngModel)]="periodDate" />
+          <input nz-input id="rev-period" type="date" class="narrow" [attr.max]="today" [class.ant-input-status-error]="periodDateInvalid" [(ngModel)]="periodDate" />
+          @if (periodDateInvalid) {
+            <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}</span>
+          }
           <button
             nz-button
             nzType="primary"
             type="button"
             nz-popconfirm
+            [disabled]="periodDateInvalid"
             [nzPopconfirmTitle]="'SUBX.REVENUE.CONFIRM' | translate"
             (nzOnConfirm)="recognize()"
           >

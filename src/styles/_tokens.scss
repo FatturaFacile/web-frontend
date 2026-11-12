@@ -1,0 +1,169 @@
+// Design tokens. Every colour of the application comes from here: the light values are on :root, the dark ones are
+// swapped by [data-theme='dark'] (set by ThemeService, together with the dark NG-ZORRO stylesheet).
+// Components use only these variables, never a literal colour.
+
+:root {
+  color-scheme: light;
+
+  // Brand
+  --brand-teal: #0f766e;
+  --brand-cyan: #14b8a6;
+  --brand-emerald: #047857;
+  --brand-dark: #0f172a;
+  --brand-slate: #1e293b;
+
+  // Primary action (teal-700: contrast >= 4.5:1 on white)
+  --primary-color: #0f766e;
+  --primary-hover: #115e59;
+  --primary-active: #134e4a;
+  --primary-focus: #0f766e;
+  --primary-light: #ccfbf1;
+  --primary-contrast: #ffffff;
+
+  // Surfaces
+  --bg-primary: #f1f5f9; // page background (slate-100)
+  --bg-card: #ffffff;
+  --bg-card-secondary: #f8fafc; // table headers, toolbars, wells
+  --bg-elevated: #ffffff; // drawers, modals, dropdowns
+  --bg-hover: #f1f5f9;
+  --bg-selected: #e6f4f1;
+  --header-bg: #ffffff;
+  --sidebar-bg: #0f172a;
+  --sidebar-border: #1e293b;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-active: #ffffff;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-item-active: rgba(20, 184, 166, 0.18);
+  --overlay-bg: rgba(15, 23, 42, 0.45);
+
+  // Text
+  --text-primary: #0f172a;
+  --text-secondary: #475569; // slate-600: 7.5:1
+  --text-muted: #64748b; // slate-500: 4.8:1
+  --text-disabled: #94a3b8;
+  --text-link: #0f766e;
+
+  // Borders
+  --border-color: #d5dde8;
+  --border-input: #94a3b8;
+  --border-light: #e8edf3;
+
+  // Status: foreground on its own soft background (>= 4.5:1)
+  --status-success: #047857;
+  --status-success-bg: #dcfce7;
+  --status-warning: #b45309;
+  --status-warning-bg: #fef3c7;
+  --status-danger: #b91c1c;
+  --status-danger-bg: #fee2e2;
+  --status-info: #0369a1;
+  --status-info-bg: #e0f2fe;
+  --status-neutral: #475569;
+  --status-neutral-bg: #e2e8f0;
+
+  // KPI
+  --kpi-revenue: var(--primary-color);
+  --kpi-pending: #b45309;
+  --kpi-orders: #047857;
+  --kpi-compliance: #6d28d9;
+
+  // Printed artefacts that must stay black on white in both themes (Swiss QR bill, signature pad)
+  --qr-ink: #000000;
+  --qr-paper: #ffffff;
+  --swiss-red: #ff0000;
+
+  // Elevation
+  --card-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.08);
+  --elevated-shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.25);
+
+  // Scrollbars
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #cbd5e1;
+
+  // Paper-like surface for content that must stay dark-on-light in both themes (signature pad, QR codes)
+  --paper-surface: #ffffff;
+
+  // Shape and spacing (4px base grid)
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  // Typography
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+
+  // Layout
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+  --header-height: 56px;
+  --content-max-width: 1680px;
+  --z-sidebar: 100;
+  --z-header: 90;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --primary-color: #2dd4bf;
+  --primary-hover: #5eead4;
+  --primary-active: #99f6e4;
+  --primary-focus: #2dd4bf;
+  --primary-light: #134e4a;
+  --primary-contrast: #042f2e;
+
+  --bg-primary: #0b1120;
+  --bg-card: #111a2e;
+  --bg-card-secondary: #16213a;
+  --bg-elevated: #1a2540;
+  --bg-hover: #1b2842;
+  --bg-selected: #12383a;
+  --header-bg: #111a2e;
+  --sidebar-bg: #0a0f1c;
+  --sidebar-border: #1c2740;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #f8fafc;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-item-active: rgba(45, 212, 191, 0.16);
+  --overlay-bg: rgba(2, 6, 23, 0.7);
+
+  --text-primary: #e5ebf5;
+  --text-secondary: #a5b2c7;
+  --text-muted: #8190a8;
+  --text-disabled: #55627a;
+  --text-link: #2dd4bf;
+
+  --border-color: #26334f;
+  --border-input: #475569;
+  --border-light: #1d2943;
+
+  --status-success: #34d399;
+  --status-success-bg: rgba(16, 185, 129, 0.16);
+  --status-warning: #fbbf24;
+  --status-warning-bg: rgba(245, 158, 11, 0.16);
+  --status-danger: #f87171;
+  --status-danger-bg: rgba(239, 68, 68, 0.16);
+  --status-info: #38bdf8;
+  --status-info-bg: rgba(14, 165, 233, 0.16);
+  --status-neutral: #a5b2c7;
+  --status-neutral-bg: rgba(148, 163, 184, 0.16);
+
+  --kpi-pending: #fbbf24;
+  --kpi-orders: #34d399;
+  --kpi-compliance: #a78bfa;
+
+  --card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --elevated-shadow: 0 14px 36px -8px rgba(0, 0, 0, 0.7);
+  --scrollbar-thumb: #334155;
+  --paper-surface: #f8fafc;
+}

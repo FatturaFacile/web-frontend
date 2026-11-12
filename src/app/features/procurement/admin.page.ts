@@ -1,6 +1,6 @@
 import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
-const PERIOD_FILTERS = [rf.date('from'), rf.date('to'), rf.select('dimension', ['supplier', 'category', 'cost_center'])];
+const PERIOD_FILTERS = [rf.date('from'), rf.date('to', { notBefore: 'from' }), rf.select('dimension', ['supplier', 'category', 'cost_center'])];
 
 const SETTINGS_FIELDS = [
   rf.decimal('over_receipt_tolerance_percent'),
@@ -30,7 +30,7 @@ export const PROCUREMENT_ADMIN_PAGE: ResourcePageConfig = {
       create: act('POST', 'RES.A.new_matrix', '/procurement/approval-matrices', {
         fields: [
           req(rf.select('target', ['purchase_order', 'purchase_requisition'])),
-          req(rf.text('name')),
+          req(rf.text('name', { maxLength: 255 })),
           rf.uuid('cost_center_id'),
           req(
             rf.lines(

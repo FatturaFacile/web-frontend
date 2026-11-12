@@ -22,6 +22,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tenant-security-policy',
+  styleUrl: './tenant-security-policy.component.scss',
   imports: [
     FormsModule,
     NzCardModule,

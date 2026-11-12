@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.toolbar-flush {
+  margin-bottom: 0;
+}
+
+.date-input {
+  width: 160px;
+}
+
+.audit-card {
+  margin-top: var(--space-4);
+}
+
+.anhang-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  .field label {
+    display: block;
+    margin-bottom: var(--space-1);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+}

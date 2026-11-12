@@ -18,9 +18,10 @@ const money = (key: string, labelKey: string): CrudField => ({ key, labelKey, ty
 /** Payslips and Swiss salary certificates of a year, with PDF download and certificate generation. */
 @Component({
   selector: 'app-payroll-documents',
+  styleUrl: './payroll-documents.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzTabsModule, TranslatePipe, CrudTableComponent],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="doc-year">{{ 'hrmCommon.year' | translate }}</label>
         <input nz-input id="doc-year" type="number" [ngModel]="year()" (ngModelChange)="year.set($event)" />

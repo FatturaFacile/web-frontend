@@ -9,19 +9,19 @@ const ASSET_KINDS = ['physical', 'digital', 'human'] as const;
 
 const ACTIVITY_FIELDS = [
   req(rf.text('name', { maxLength: 255 })),
-  rf.textarea('description'),
+  rf.textarea('description', { maxLength: 5000 }),
   req(rf.tags('data_subjects')),
   req(rf.tags('data_categories')),
   rf.bool('special_categories'),
   req(rf.tags('purposes')),
   req(rf.multiselect('legal_bases', LEGAL_BASES)),
   rf.tags('collection_methods'),
-  rf.textarea('storage'),
+  rf.textarea('storage', { maxLength: 2000 }),
   req(rf.text('retention', { maxLength: 500 })),
   rf.tags('recipients'),
   rf.text('transfers_outside_eu', { maxLength: 500 }),
-  rf.textarea('security_measures'),
-  rf.textarea('end_of_processing'),
+  rf.textarea('security_measures', { maxLength: 5000 }),
+  rf.textarea('end_of_processing', { maxLength: 2000 }),
 ];
 
 const CONSENT_FIELDS = [
@@ -31,20 +31,20 @@ const CONSENT_FIELDS = [
   req(rf.text('purpose', { maxLength: 500 })),
   req(rf.select('method', CONSENT_METHODS)),
   req(rf.text('text_version', { maxLength: 100 })),
-  req(rf.textarea('proof')),
-  rf.datetime('given_at'),
+  req(rf.textarea('proof', { maxLength: 10000 })),
+  rf.datetime('given_at', { notInFuture: true }),
 ];
 
 const REQUEST_FIELDS = [
   req(rf.select('kind', REQUEST_KINDS)),
   rf.uuid('member_id'),
-  req(rf.text('requester_name')),
-  rf.text('requester_contact'),
-  rf.textarea('details'),
-  rf.datetime('received_at'),
+  req(rf.text('requester_name', { maxLength: 255 })),
+  rf.text('requester_contact', { maxLength: 255 }),
+  rf.textarea('details', { maxLength: 10000 }),
+  rf.datetime('received_at', { notInFuture: true }),
 ];
 
-const OUTCOME = [req(rf.textarea('outcome'))];
+const OUTCOME = [req(rf.textarea('outcome', { maxLength: 10000 }))];
 
 const SUBJECT_FIELDS = [
   req(rf.select('role', SUBJECT_ROLES)),
@@ -54,16 +54,16 @@ const SUBJECT_FIELDS = [
   rf.text('email', { maxLength: 255 }),
   rf.text('address', { maxLength: 500 }),
   rf.uuid('member_id'),
-  rf.textarea('scope'),
+  rf.textarea('scope', { maxLength: 5000 }),
   rf.date('appointed_on'),
-  rf.date('ended_on'),
+  rf.date('ended_on', { notBefore: 'started_on' }),
 ];
 
 const ASSET_FIELDS = [
   req(rf.text('name', { maxLength: 255 })),
   req(rf.select('kind', ASSET_KINDS)),
   rf.text('location', { maxLength: 255 }),
-  rf.textarea('description'),
+  rf.textarea('description', { maxLength: 5000 }),
   req(rf.integer('confidentiality', { min: 1 })),
   req(rf.integer('integrity', { min: 1 })),
   req(rf.integer('availability', { min: 1 })),

@@ -8,6 +8,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
  */
 @Component({
   selector: 'app-signature-pad',
+  styleUrl: './signature-pad.component.scss',
   imports: [NzButtonModule, TranslatePipe],
   template: `
     <canvas

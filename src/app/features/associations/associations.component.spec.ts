@@ -27,7 +27,7 @@ describe('AssociationsComponent', () => {
       first_name: 'Giulia',
       last_name: 'Bernasconi',
       email: 'giulia.bernasconi@example.ch',
-      fiscal_code: 'BRNGLI90A41L123Z',
+      tax_code: 'BRNGLI90A41L123Z',
       status: 'active',
       joined_on: '2026-01-10',
       has_medical_certificate: true,
@@ -39,61 +39,41 @@ describe('AssociationsComponent', () => {
     {
       id: 'fee-1',
       member_id: 'mem-001-uuid',
-      member_name: 'Giulia Bernasconi',
-      fee_type: 'quota_annuale',
-      year: 2026,
-      amount: '50.00',
-      due_date: '2026-02-28',
-      status: 'pending',
+      description: 'Quota annuale',
+      starts_on: '2026-01-01',
+      net_amount: '50.00',
+      status: 'active',
+      instalments: [{ id: 'inst-1', sequence: 1, due_on: '2026-02-28', amount: '50.00', paid_amount: '0.00', status: 'open' }],
     },
   ];
 
   const mockCourses: AssociationCourse[] = [
-    {
-      id: 'crs-1',
-      name: 'Yoga Dinamico Adulti',
-      discipline: 'Posturale',
-      instructor_name: 'Marco Valli',
-      max_participants: 18,
-      enrolled_count: 12,
-      status: 'active',
-      season: '2025/2026',
-    },
+    { id: 'crs-1', title: 'Yoga Dinamico Adulti', starts_on: '2026-01-10', capacity: 18, enrolled_count: 12, status: 'active' },
   ];
 
   const mockDonations: AssociationDonation[] = [
-    {
-      id: 'don-1',
-      donor_name: 'Banca Stato Solidarietà',
-      fiscal_code: 'CHE-999.888.777',
-      amount: '2500.00',
-      currency: 'CHF',
-      donation_date: '2026-01-20',
-      is_cash: false,
-      receipt_number: 'RIC-2026-001',
-    },
+    { id: 'don-1', kind: 'money', amount: '2500.00', received_on: '2026-01-20', payment_method: 'bank', receipts: [{ id: 'r1', number: 'RIC-2026-001' }] },
   ];
 
   const mockVolunteers: AssociationVolunteer[] = [
     {
       id: 'vol-1',
       member_id: 'mem-001-uuid',
-      name: 'Giulia Bernasconi',
-      insurance_policy_number: 'POL-RUNTS-2026',
-      insurance_expiry: '2026-12-31',
-      is_registered_in_runts_book: true,
+      activity: 'Trasporto',
+      started_on: '2026-01-01',
+      member: { contact: { first_name: 'Giulia', last_name: 'Bernasconi' } },
     },
   ];
 
   const mockReimbursements: AssociationReimbursement[] = [
     {
       id: 'reimb-1',
-      volunteer_id: 'vol-1',
-      volunteer_name: 'Giulia Bernasconi',
+      member_id: 'mem-001-uuid',
+      kind: 'expense',
       amount: '35.00',
       description: 'Carburante navetta sociale anziani',
-      expense_date: '2026-02-05',
-      status: 'pending',
+      incurred_on: '2026-02-05',
+      status: 'submitted',
     },
   ];
 
@@ -101,11 +81,9 @@ describe('AssociationsComponent', () => {
     {
       id: 'meet-1',
       title: 'Assemblea Annuale Approvazione Bilancio',
-      meeting_type: 'ordinary',
-      meeting_date: '2026-04-15T18:30:00Z',
+      body: 'assembly',
+      scheduled_at: '2026-04-15T18:30:00Z',
       location: 'Sede Sociale Lugano',
-      is_convoked: true,
-      has_quorum: true,
       status: 'scheduled',
     },
   ];
@@ -115,6 +93,7 @@ describe('AssociationsComponent', () => {
     createMember: vi.fn().mockReturnValue(of({ success: true, data: mockMembers[0] })),
     deleteMember: vi.fn().mockReturnValue(of(null)),
     getMemberFeeStanding: vi.fn().mockReturnValue(of({ success: true, data: { is_in_good_standing: true, outstanding_amount: '0.00' } })),
+    getFeePlans: vi.fn().mockReturnValue(of({ success: true, data: [{ id: 'plan-1', name: 'Quota annuale' }] })),
     getFeeAssignments: vi.fn().mockReturnValue(of({ success: true, data: mockFees, meta: { total: 1 } })),
     createFeeAssignment: vi.fn().mockReturnValue(of({ success: true, data: mockFees[0] })),
     cancelFeeAssignment: vi.fn().mockReturnValue(of({ success: true, data: { success: true } })),
@@ -125,7 +104,7 @@ describe('AssociationsComponent', () => {
     getDonations: vi.fn().mockReturnValue(of({ success: true, data: mockDonations, meta: { total: 1 } })),
     createDonation: vi.fn().mockReturnValue(of({ success: true, data: mockDonations[0] })),
     generateDonationReceipt: vi.fn().mockReturnValue(of({ success: true, data: { receipt_number: 'RIC-2026-002' } })),
-    getFivePerMille: vi.fn().mockReturnValue(of({ success: true, data: { year: 2026, total_received: '12400.00', allocated: '10000.00' } })),
+    getFivePerMille: vi.fn().mockReturnValue(of({ success: true, data: [] })),
     getVolunteers: vi.fn().mockReturnValue(of({ success: true, data: mockVolunteers })),
     getReimbursements: vi.fn().mockReturnValue(of({ success: true, data: mockReimbursements })),
     createReimbursement: vi.fn().mockReturnValue(of({ success: true, data: mockReimbursements[0] })),
@@ -171,15 +150,35 @@ describe('AssociationsComponent', () => {
     component.memberForm.patchValue({
       first_name: 'Paolo',
       last_name: 'Meda',
-      fiscal_code: 'MDAPLA78B12L123K',
+      tax_code: 'MDAPLA78B12L123K',
       email: 'paolo.meda@example.ch',
       joined_on: '2026-02-01',
     });
 
     component.submitCreateMember();
-    expect(mockAssociationApi.createMember).toHaveBeenCalled();
+    expect(mockAssociationApi.createMember).toHaveBeenCalledWith({
+      first_name: 'Paolo',
+      last_name: 'Meda',
+      email: 'paolo.meda@example.ch',
+      tax_code: 'MDAPLA78B12L123K',
+      joined_on: '2026-02-01',
+    });
     expect(component.createMemberModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
+  });
+
+  it('does not call the API when the forms are submitted empty or with an invalid amount', () => {
+    component.openCreateMemberModal();
+    component.memberForm.patchValue({ first_name: '', last_name: '', tax_code: '' });
+    component.submitCreateMember();
+    expect(mockAssociationApi.createMember).not.toHaveBeenCalled();
+    expect(component.memberForm.controls.first_name.touched).toBe(true);
+
+    component.onTabChange(1);
+    component.openPaymentModal(component.fees()[0]);
+    component.paymentAmount.set('abc');
+    component.submitPayment();
+    expect(mockAssociationApi.recordFeePayment).not.toHaveBeenCalled();
   });
 
   it('opens member drawer and loads fee standing', () => {
@@ -199,8 +198,97 @@ describe('AssociationsComponent', () => {
     expect(component.paymentModalVisible()).toBe(true);
 
     component.submitPayment();
-    expect(mockAssociationApi.recordFeePayment).toHaveBeenCalled();
+    expect(mockAssociationApi.recordFeePayment).toHaveBeenCalledWith('inst-1', {
+      amount: '50.00',
+      paid_on: new Date().toISOString().slice(0, 10),
+      method: 'bank_transfer',
+    });
     expect(component.paymentModalVisible()).toBe(false);
+  });
+
+  it('rejects a future payment date', () => {
+    component.onTabChange(1);
+    component.openPaymentModal(component.fees()[0]);
+    component.paymentDate.set('2999-01-01');
+    component.submitPayment();
+    expect(mockAssociationApi.recordFeePayment).not.toHaveBeenCalled();
+  });
+
+  it('assigns a fee with the fee plan the API requires and blocks an end before the start', () => {
+    component.onTabChange(1);
+    component.openCreateFeeModal();
+    component.feeForm.patchValue({ member_id: 'mem-001-uuid', fee_plan_id: 'plan-1', starts_on: '2026-03-01', ends_on: '2026-02-01' });
+    component.submitCreateFee();
+    expect(mockAssociationApi.createFeeAssignment).not.toHaveBeenCalled();
+    expect(component.feeForm.controls.ends_on.hasError('endsBeforeStart')).toBe(true);
+
+    component.feeForm.patchValue({ ends_on: '2026-12-31' });
+    component.submitCreateFee();
+    expect(mockAssociationApi.createFeeAssignment).toHaveBeenCalledWith({
+      member_id: 'mem-001-uuid',
+      fee_plan_id: 'plan-1',
+      starts_on: '2026-03-01',
+      ends_on: '2026-12-31',
+    });
+  });
+
+  it('sends the donation fields of the API and requires the description for an in-kind gift', () => {
+    component.openCreateDonationModal();
+    component.donationForm.patchValue({ kind: 'in_kind', amount: '80.00', received_on: '2026-02-01' });
+    component.submitCreateDonation();
+    expect(mockAssociationApi.createDonation).not.toHaveBeenCalled();
+
+    component.donationForm.patchValue({ in_kind_description: 'Arredi' });
+    component.submitCreateDonation();
+    expect(mockAssociationApi.createDonation).toHaveBeenCalledWith({
+      kind: 'in_kind',
+      amount: '80.00',
+      received_on: '2026-02-01',
+      payment_method: null,
+      in_kind_description: 'Arredi',
+      purpose: null,
+    });
+  });
+
+  it('does not accept a donation dated in the future', () => {
+    component.openCreateDonationModal();
+    component.donationForm.patchValue({ received_on: '2999-01-01' });
+    expect(component.donationForm.controls.received_on.hasError('futureDate')).toBe(true);
+  });
+
+  it('sends the reimbursement fields of the API', () => {
+    component.openCreateReimbModal();
+    component.reimbForm.patchValue({ member_id: 'mem-001-uuid', description: 'Carburante', incurred_on: '2026-02-05', amount: '35.00' });
+    component.submitCreateReimb();
+    expect(mockAssociationApi.createReimbursement).toHaveBeenCalledWith({
+      member_id: 'mem-001-uuid',
+      kind: 'expense',
+      incurred_on: '2026-02-05',
+      description: 'Carburante',
+      amount: '35.00',
+      vehicle: null,
+      plate: null,
+      distance_km: null,
+      unit_price: null,
+    });
+  });
+
+  it('sends the meeting fields of the API and requires the second call after the first', () => {
+    component.openCreateMeetingModal();
+    component.meetingForm.patchValue({ title: 'Assemblea', scheduled_at: '2026-04-15T18:30', second_call_at: '2026-04-15T18:30' });
+    component.submitCreateMeeting();
+    expect(mockAssociationApi.createMeeting).not.toHaveBeenCalled();
+
+    component.meetingForm.patchValue({ second_call_at: '2026-04-15T19:30' });
+    component.submitCreateMeeting();
+    expect(mockAssociationApi.createMeeting).toHaveBeenCalledWith({
+      body: 'assembly',
+      body_name: null,
+      title: 'Assemblea',
+      scheduled_at: '2026-04-15T18:30',
+      second_call_at: '2026-04-15T19:30',
+      location: null,
+    });
   });
 
   it('switches to courses tab, creates course and enrols member', () => {
@@ -210,11 +298,17 @@ describe('AssociationsComponent', () => {
     component.openCreateCourseModal();
     expect(component.createCourseModalVisible()).toBe(true);
     component.courseForm.patchValue({
-      name: 'Pilates Funzionale',
-      max_participants: 12,
+      title: 'Pilates Funzionale',
+      starts_on: '2026-03-01',
+      capacity: 12,
     });
     component.submitCreateCourse();
-    expect(mockAssociationApi.createCourse).toHaveBeenCalled();
+    expect(mockAssociationApi.createCourse).toHaveBeenCalledWith({
+      title: 'Pilates Funzionale',
+      starts_on: '2026-03-01',
+      ends_on: null,
+      capacity: 12,
+    });
 
     const course = component.courses()[0];
     component.openEnrolModal(course);

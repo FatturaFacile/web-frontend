@@ -67,13 +67,13 @@ export const ASSOCIATIONS_STATEMENTS_PAGE: ResourcePageConfig = {
       },
       toolbar: [
         act('POST', 'RES.A.assoc_prepare_filing', '/associations/statements/{year}/filings', {
-          fields: [req(yearScope()), req(rf.select('form', FILING_FORMS)), rf.text('reference')],
+          fields: [req(yearScope()), req(rf.select('form', FILING_FORMS)), rf.text('reference', { maxLength: 255 })],
           showResult: true,
         }),
       ],
       rowActions: [
         act('POST', 'RES.A.assoc_mark_filed', '/associations/statement-filings/{id}/filed', {
-          fields: [req(rf.text('reason', { labelKey: 'RES.F.filing_reference' }))],
+          fields: [req(rf.text('reason', { labelKey: 'RES.F.filing_reference', maxLength: 500 }))],
           visible: whenIn('status', 'prepared'),
         }),
         act('GET', 'RES.A.assoc_filing_csv', '/associations/statement-filings/{id}/csv', { download: true }),

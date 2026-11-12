@@ -12,6 +12,7 @@ interface SectionRow {
 /** Renders a balance sheet or income statement report: sections, accounts, optional comparison, totals. */
 @Component({
   selector: 'app-gl-statement-view',
+  styleUrl: './gl-statement-view.component.scss',
   imports: [NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (report(); as r) {

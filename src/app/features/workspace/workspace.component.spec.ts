@@ -158,6 +158,18 @@ describe('WorkspaceComponent', () => {
     expect(component.isCallbackModalVisible()).toBe(false);
   });
 
+  it('should not call the API when the authorization or callback forms are submitted empty', () => {
+    component.openAuthorizeModal('google');
+    component.submitAuthorize();
+    expect(mockWorkspaceApi.authorize).not.toHaveBeenCalled();
+    expect(component.authForm.controls.consent.touched).toBe(true);
+
+    component.openCallbackModal('google');
+    component.submitCallback();
+    expect(mockWorkspaceApi.callback).not.toHaveBeenCalled();
+    expect(component.callbackForm.controls.code.touched).toBe(true);
+  });
+
   it('should trigger sync on connection', () => {
     component.syncConnection(mockGoogleConn);
     expect(mockWorkspaceApi.sync).toHaveBeenCalledWith('conn-g');

@@ -55,7 +55,7 @@
               </nz-card>
             </div>
 
-            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mt-4">
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblPlannedValuePv' | translate">{{ fin.planned_value | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblCostVarianceCv' | translate">{{ fin.cost_variance | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblScheduleVarianceSv' | translate">{{ fin.schedule_variance | money: project().currency }}</nz-descriptions-item>
@@ -91,8 +91,8 @@
                 <th>{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
+                <th class="num">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
+                <th class="num">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblProgress' | translate }}</th>
               </tr>
             </thead>
@@ -103,9 +103,9 @@
                   <td><strong>{{ t.title }}</strong></td>
                   <td><nz-tag>{{ t.status }}</nz-tag></td>
                   <td><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></td>
-                  <td>{{ t.estimated_hours }}h</td>
-                  <td>{{ t.actual_hours }}h</td>
-                  <td>
+                  <td class="num">{{ t.estimated_hours }}h</td>
+                  <td class="num">{{ t.actual_hours }}h</td>
+                  <td class="progress-cell">
                     <nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress>
                   </td>
                 </tr>
@@ -148,7 +148,7 @@
                 <tr>
                   <td>{{ ts.work_date }}</td>
                   <td>{{ ts.user_id }}</td>
-                  <td><strong>{{ ts.hours_worked }}h</strong></td>
+                  <td class="num"><strong>{{ ts.hours_worked }}h</strong></td>
                   <td>
                     <nz-tag [nzColor]="ts.is_billable ? 'green' : 'default'">
                       {{ ts.is_billable ? 'Billable' : 'Non-Billable' }}
@@ -194,27 +194,33 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="taskForm" nzLayout="vertical">
       <nz-form-item>
+        <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblTaskNumber' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(taskForm, 'task_number')">
+          <input nz-input formControlName="task_number" maxlength="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
         <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblTaskTitle' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Title is required">
+        <nz-form-control [nzErrorTip]="errorTip(taskForm, 'title')">
           <input nz-input formControlName="title" [placeholder]="'projectDetailDrawer.lblEGDatabaseSchemaDesign' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="modal-row">
         <nz-form-item class="modal-col">
-          <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblEstimatedHours' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Estimated hours required">
-            <nz-input-number formControlName="estimated_hours" [nzMin]="0.5" [nzStep]="1"></nz-input-number>
+          <nz-form-label>{{ 'projectDetailDrawer.lblEstimatedHours' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'estimated_hours')">
+            <nz-input-number formControlName="estimated_hours" [nzMin]="0" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
-          <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPriority' | translate }}</nz-form-label>
+          <nz-form-label>{{ 'projectDetailDrawer.lblPriority' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="priority">
               <nz-option nzValue="low" [nzLabel]="'projectDetailDrawer.lblLow' | translate"></nz-option>
               <nz-option nzValue="medium" [nzLabel]="'projectDetailDrawer.lblMedium' | translate"></nz-option>
               <nz-option nzValue="high" [nzLabel]="'projectDetailDrawer.lblHigh' | translate"></nz-option>
-              <nz-option nzValue="critical" [nzLabel]="'projectDetailDrawer.lblCritical' | translate"></nz-option>
+              <nz-option nzValue="urgent" [nzLabel]="'projectDetailDrawer.lblCritical' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -223,13 +229,13 @@
       <div class="modal-row">
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPlannedStart' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Start date required">
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'planned_start_date')">
             <input nz-input formControlName="planned_start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPlannedEnd' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="End date required">
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'planned_end_date')">
             <input nz-input formControlName="planned_end_date" type="date" />
           </nz-form-control>
         </nz-form-item>
@@ -251,21 +257,21 @@
       <div class="modal-row">
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblWorkDate' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Work date is required">
+          <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'work_date')">
             <input nz-input formControlName="work_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblHoursWorked' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Hours worked required">
-            <nz-input-number formControlName="hours_worked" [nzMin]="0.5" [nzMax]="24" [nzStep]="0.5"></nz-input-number>
+          <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'hours_worked')">
+            <nz-input-number formControlName="hours_worked" [nzMin]="0.01" [nzMax]="24" [nzStep]="0.5"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <nz-form-item>
         <nz-form-label>{{ 'projectDetailDrawer.lblWorkSummary' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'work_summary')">
           <textarea nz-input formControlName="work_summary" rows="3" [placeholder]="'projectDetailDrawer.lblSummaryOfWorkCompleted' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>

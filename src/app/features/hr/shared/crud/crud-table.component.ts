@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { applyServerErrors, I18nService, isValidationError } from '@core';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -12,11 +12,11 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { decimalStringValidator } from '../hr-decimal.validator';
 import { reportHttpError } from '../hr-http.util';
 import { ReasonButtonComponent } from '../reason-button.component';
 import { Observable } from 'rxjs';
 import { CrudConfig, CrudField, CrudOption, CrudRowAction } from './crud.types';
+import { fieldErrorTip, fieldValidators, isFieldRequired, wireConditionalRequired } from './crud-validation';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -26,6 +26,7 @@ type Row = { id: string } & Record<string, unknown>;
  */
 @Component({
   selector: 'app-crud-table',
+  styleUrl: './crud-table.component.scss',
   imports: [
     ReactiveFormsModule,
     NzButtonModule,
@@ -121,9 +122,10 @@ export class CrudTableComponent {
           : field.type === 'datetime'
             ? String(raw ?? '').slice(0, 16)
             : String(raw ?? '');
-      controls[field.key] = new FormControl(initial, { nonNullable: true, validators: this.validators(field) });
+      controls[field.key] = new FormControl(initial, { nonNullable: true, validators: fieldValidators(field, row !== null) });
     }
     this.form = new FormGroup(controls);
+    wireConditionalRequired(this.form, this.formFields());
     this.formOpen.set(true);
   }
 
@@ -184,28 +186,11 @@ export class CrudTableComponent {
   }
 
   protected errorTip(key: string): string {
-    const control = this.form.get(key);
-    if (control?.errors?.['serverError']) {
-      return String(control.errors['serverError']);
-    }
-    return this.i18n.translate(control?.errors?.['decimal'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required');
+    return fieldErrorTip(this.form.get(key), this.i18n);
   }
 
-  private validators(field: CrudField): ValidatorFn[] {
-    const list: ValidatorFn[] = [];
-    if (field.required) {
-      list.push(Validators.required);
-    }
-    if (field.maxLength) {
-      list.push(Validators.maxLength(field.maxLength));
-    }
-    if (field.type === 'decimal') {
-      list.push(decimalStringValidator);
-    }
-    if (field.type === 'integer') {
-      list.push(Validators.pattern(/^\d*$/));
-    }
-    return list;
+  protected isRequired(field: CrudField): boolean {
+    return isFieldRequired(field, this.form, this.editing() !== null);
   }
 
   private buildPayload(): Record<string, unknown> {

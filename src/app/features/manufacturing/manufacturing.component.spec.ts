@@ -173,7 +173,7 @@ describe('ManufacturingComponent', () => {
     expect(component.isCreateOrderModalVisible()).toBe(true);
 
     component.orderForm.patchValue({
-      mfg_item_id: 'item-uuid-1',
+      mfg_item_id: '11111111-1111-4111-8111-111111111111',
       target_quantity: 25,
       planned_start_date: new Date('2026-05-01'),
       planned_end_date: new Date('2026-05-10'),
@@ -230,7 +230,7 @@ describe('ManufacturingComponent', () => {
     expect(component.isCreateBomModalVisible()).toBe(true);
 
     component.bomForm.patchValue({
-      mfg_item_id: 'item-uuid-2',
+      mfg_item_id: '22222222-2222-4222-8222-222222222222',
       bom_number: 'BOM-2026-01',
       name: 'Nuova Distinta Test',
       revision: 'A',
@@ -238,7 +238,7 @@ describe('ManufacturingComponent', () => {
       uom: 'PZ',
     });
     component.bomComponentsFormArray.at(0).patchValue({
-      component_item_id: 'comp-uuid-1',
+      component_item_id: '33333333-3333-4333-8333-333333333333',
       quantity_per: 2,
     });
 
@@ -282,5 +282,62 @@ describe('ManufacturingComponent', () => {
     component.submitCreateWorkCenter();
     expect(apiService.createWorkCenter).toHaveBeenCalled();
     expect(component.isCreateWorkCenterModalVisible()).toBe(false);
+  });
+  describe('validation', () => {
+    it('does not call the API when the order form is empty', () => {
+      component.openCreateOrderModal();
+      component.orderForm.patchValue({ mfg_item_id: '' });
+
+      component.submitCreateOrder();
+
+      expect(apiService.createProductionOrder).not.toHaveBeenCalled();
+      expect(component.errorTip(component.orderForm, 'mfg_item_id')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('refuses an item id that is not a UUID and an end date before the start date', () => {
+      component.openCreateOrderModal();
+      component.orderForm.patchValue({
+        mfg_item_id: 'item-1',
+        planned_start_date: new Date('2026-05-10'),
+        planned_end_date: new Date('2026-05-01'),
+      });
+
+      component.submitCreateOrder();
+
+      expect(apiService.createProductionOrder).not.toHaveBeenCalled();
+      expect(component.orderForm.controls.mfg_item_id.hasError('pattern')).toBe(true);
+      expect(component.orderForm.controls.planned_end_date.hasError('dateOrder')).toBe(true);
+    });
+
+    it('does not call the API when the BOM form is empty, and the BOM number stays optional', () => {
+      component.openCreateBomModal();
+
+      component.submitCreateBom();
+
+      expect(apiService.createBom).not.toHaveBeenCalled();
+      expect(component.bomForm.controls.name.hasError('required')).toBe(true);
+      expect(component.bomForm.controls.bom_number.hasError('required')).toBe(false);
+    });
+
+    it('does not call the API when the work center form is empty', () => {
+      component.openCreateWorkCenterModal();
+
+      component.submitCreateWorkCenter();
+
+      expect(apiService.createWorkCenter).not.toHaveBeenCalled();
+      expect(component.errorTip(component.workCenterForm, 'work_center_code')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('does not run MRP when the horizon ends before it starts', () => {
+      component.openRunMrpModal();
+      component.mrpForm.patchValue({
+        horizon_start_date: new Date('2026-06-30'),
+        horizon_end_date: new Date('2026-04-01'),
+      });
+
+      component.submitRunMrp();
+
+      expect(apiService.runMrp).not.toHaveBeenCalled();
+    });
   });
 });

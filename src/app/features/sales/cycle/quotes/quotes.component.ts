@@ -43,6 +43,7 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
 
 @Component({
   selector: 'app-cycle-quotes',
+  styleUrl: './quotes.component.scss',
   imports: [
     DatePipe,
     FormsModule,

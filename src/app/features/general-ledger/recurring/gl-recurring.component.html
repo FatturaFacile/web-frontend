@@ -5,7 +5,7 @@
     nzType="info"
     nzShowIcon
     nzCloseable
-   
+    class="result-alert"
     [nzMessage]="'GL.SCHEDULED_RESULT' | translate: { posted: result.recurring.posted.length, reversed: result.reversals.reversed.length, failed: result.recurring.failed.length + result.reversals.failed.length }"
     [nzDescription]="failures"
     (nzOnClose)="scheduledResult.set(null)"
@@ -21,12 +21,12 @@
 }
 
 <nz-card>
-  <div>
+  <div class="toolbar">
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.RECURRING_NEW' | translate }}</button>
-      <span></span>
+      <span class="spacer"></span>
       <label for="gl-scheduled-as-of">{{ 'GL.AS_OF' | translate }}</label>
-      <input id="gl-scheduled-as-of" nz-input type="date" [(ngModel)]="scheduledAsOf" />
+      <input class="date-input" id="gl-scheduled-as-of" nz-input type="date" [(ngModel)]="scheduledAsOf" />
       <button nz-button type="button" (click)="runScheduled()">{{ 'GL.SCHEDULED_RUN' | translate }}</button>
     }
   </div>
@@ -91,20 +91,20 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rj-name">{{ 'GL.COL_NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <input id="rj-name" nz-input formControlName="name" maxlength="255" />
+          <input id="rj-name" nz-input formControlName="name" maxlength="190" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rj-description">{{ 'GL.COL_DESCRIPTION' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <input id="rj-description" nz-input formControlName="description" maxlength="500" />
+          <input id="rj-description" nz-input formControlName="description" maxlength="450" />
         </nz-form-control>
       </nz-form-item>
-      <div>
+      <div class="form-row">
         <nz-form-item>
           <nz-form-label nzRequired nzFor="rj-frequency">{{ 'GL.COL_FREQUENCY' | translate }}</nz-form-label>
           <nz-form-control>
-            <nz-select id="rj-frequency" formControlName="frequency">
+            <nz-select class="select-sm" id="rj-frequency" formControlName="frequency">
               @for (frequency of frequencies; track frequency) {
                 <nz-option [nzValue]="frequency" [nzLabel]="'GL.FREQUENCY_' + frequency.toUpperCase() | translate" />
               }
@@ -119,7 +119,7 @@
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="rj-end">{{ 'GL.END_DATE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="form.controls.end_date.errors?.['serverError'] ?? ('COMMON.VALIDATION.END_AFTER_START' | translate)">
             <input id="rj-end" nz-input type="date" formControlName="end_date" />
           </nz-form-control>
         </nz-form-item>
@@ -127,14 +127,14 @@
       <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label nz-checkbox formControlName="reverse_next_day">{{ 'GL.REVERSE_NEXT_DAY' | translate }}</label>
 
-      <h4>{{ 'GL.LINES' | translate }}</h4>
+      <h4 class="section-title">{{ 'GL.LINES' | translate }}</h4>
       <div formArrayName="lines">
         @for (line of lines.controls; track line) {
-          <div [formGroupName]="$index">
+          <div class="line-row" [formGroupName]="$index">
             <nz-select
               formControlName="account_id"
               nzShowSearch
-             
+              class="flex-3"
               [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
               [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate"
             >
@@ -142,12 +142,12 @@
                 <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
               }
             </nz-select>
-            <nz-input-number formControlName="debit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_DEBIT' | translate" />
-            <nz-input-number formControlName="credit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_CREDIT' | translate" />
+            <nz-input-number class="flex-1" formControlName="debit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_DEBIT' | translate" />
+            <nz-input-number class="flex-1" formControlName="credit_amount" [nzMin]="0" [nzPrecision]="2" [nzPlaceHolder]="'GL.COL_CREDIT' | translate" />
             <nz-select
               formControlName="cost_center_id"
               nzAllowClear
-             
+              class="flex-2"
               [attr.aria-label]="'GL.COST_CENTER' | translate"
               [nzPlaceHolder]="'GL.COST_CENTER' | translate"
             >

@@ -58,7 +58,7 @@
         <div class="room-selector">
           <span class="label-inline">{{ 'HOSPITALITY.SELECT_ROOM' | translate }}:</span>
           <nz-select
-           
+            class="room-select"
             [ngModel]="selectedRoomId()"
             (ngModelChange)="selectedRoomId.set($event); loadTables($event)"
           >
@@ -126,7 +126,7 @@
       <div class="tab-toolbar">
         <div class="filters">
           <nz-select
-           
+            class="status-filter"
             [ngModel]="filterOrderStatus()"
             (ngModelChange)="filterOrderStatus.set($event); loadOrders()"
             [nzPlaceHolder]="'HOSPITALITY.FILTER_STATUS' | translate"
@@ -247,7 +247,7 @@
                   @for (item of ticket.items; track $index) {
                     <div class="ticket-item-row">
                       <span class="qty">{{ item.quantity }}x</span>
-                      <span class="name">{{ item.name }}</span>
+                      <span class="name">{{ item.description ?? item.name }}</span>
                       @if (item.notes) {
                         <span class="notes">({{ item.notes }})</span>
                       }
@@ -283,6 +283,7 @@
     <!-- TAB 4: RESERVATIONS -->
     <nz-tab [nzTitle]="'HOSPITALITY.TAB_RESERVATIONS' | translate">
       <div class="tab-toolbar">
+        <input nz-input type="date" class="reservation-date" [value]="reservationDate()" (change)="onReservationDateChange($any($event.target).value)" />
         <button nz-button (click)="loadReservations()">
           <span nz-icon nzType="reload"></span>
           {{ 'HOSPITALITY.REFRESH' | translate }}
@@ -321,14 +322,14 @@
               <td>{{ res.starts_at | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td>{{ res.duration_minutes }} min</td>
               <td>
-                <nz-tag [nzColor]="res.status === 'confirmed' ? 'processing' : res.status === 'seated' ? 'success' : 'default'">
+                <nz-tag [nzColor]="res.status === 'booked' ? 'processing' : res.status === 'seated' ? 'success' : 'default'">
                   {{ ('HOSPITALITY.RES_' + (res.status | uppercase)) | translate }}
                 </nz-tag>
               </td>
               <td>{{ res.notes || '-' }}</td>
               <td>
                 <nz-space>
-                  @if (res.status === 'confirmed') {
+                  @if (res.status === 'booked') {
                     <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="seatReservation(res)">
                       {{ 'HOSPITALITY.SEAT_GUESTS' | translate }}
                     </button>
@@ -431,7 +432,7 @@
             @for (item of itemsTable.data; track item.id) {
               <tr [class.item-voided]="item.status === 'voided'">
                 <td>
-                  <strong>{{ item.name }}</strong>
+                  <strong>{{ item.description }}</strong>
                   @if (item.notes) {
                     <div class="item-notes">{{ item.notes }}</div>
                   }
@@ -475,14 +476,14 @@
     <form nz-form [formGroup]="roomForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.ROOM_NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(roomForm.controls.name) | translate">
           <input nz-input formControlName="name" [placeholder]="'HOSPITALITY.ROOM_NAME_PLACEHOLDER' | translate" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.SORT_ORDER' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-input-number formControlName="sort_order" [nzMin]="1" [nzStep]="1"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorKey(roomForm.controls.sort_order) | translate">
+          <nz-input-number class="w-full" formControlName="sort_order" [nzMin]="0" [nzStep]="1"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -500,7 +501,7 @@
     <form nz-form [formGroup]="tableForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.ROOM' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(tableForm.controls.room_id) | translate">
           <nz-select formControlName="room_id">
             @for (room of rooms(); track room.id) {
               <nz-option [nzValue]="room.id" [nzLabel]="room.name"></nz-option>
@@ -510,21 +511,21 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.TABLE_NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(tableForm.controls.name) | translate">
           <input nz-input formControlName="name" [placeholder]="'HOSPITALITY.TABLE_NAME_PLACEHOLDER' | translate" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.SEATS' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="seats" [nzMin]="1" [nzMax]="50"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorKey(tableForm.controls.seats) | translate">
+          <nz-input-number class="w-full" formControlName="seats" [nzMin]="1" [nzMax]="50"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.SHAPE' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="shape">
-            <nz-option nzValue="rect" [nzLabel]="'HOSPITALITY.SHAPE_RECT' | translate"></nz-option>
+            <nz-option nzValue="rectangle" [nzLabel]="'HOSPITALITY.SHAPE_RECT' | translate"></nz-option>
             <nz-option nzValue="round" [nzLabel]="'HOSPITALITY.SHAPE_ROUND' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
@@ -544,7 +545,7 @@
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.TABLE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(orderForm.controls.table_id) | translate">
           <nz-select formControlName="table_id">
             @for (tbl of tables(); track tbl.id) {
               <nz-option [nzValue]="tbl.id" [nzLabel]="tbl.name"></nz-option>
@@ -554,13 +555,13 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.COVERS' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="covers" [nzMin]="1" [nzMax]="100"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorKey(orderForm.controls.covers) | translate">
+          <nz-input-number class="w-full" formControlName="covers" [nzMin]="1" [nzMax]="100"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(orderForm.controls.notes) | translate">
           <textarea nz-input formControlName="notes" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -579,33 +580,39 @@
     <form nz-form [formGroup]="addItemForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.ITEM_NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <input nz-input formControlName="name" [placeholder]="'HOSPITALITY.LBL_ES_SPAGHETTI_ALLA_CARBONARA' | translate" />
+        <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.description) | translate">
+          <input nz-input formControlName="description" [placeholder]="'HOSPITALITY.LBL_ES_SPAGHETTI_ALLA_CARBONARA' | translate" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.QUANTITY' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="quantity" [nzMin]="1" [nzMax]="99"></nz-input-number>
+          <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.quantity) | translate">
+            <nz-input-number class="w-full" formControlName="quantity" [nzMin]="1" [nzMax]="99"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.UNIT_PRICE' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+          <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.unit_price) | translate">
             <input nz-input formControlName="unit_price" placeholder="12.00" />
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
+        <nz-form-label nzRequired>{{ 'SALES.INVOICES.ITEM.TAX_RATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.tax_rate) | translate">
+          <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.5"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.COURSE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-          <nz-input-number formControlName="course" [nzMin]="1" [nzMax]="9"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.course) | translate">
+          <nz-input-number class="w-full" formControlName="course" [nzMin]="1" [nzMax]="9"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(addItemForm.controls.notes) | translate">
           <input nz-input formControlName="notes" [placeholder]="'HOSPITALITY.LBL_ES_SENZA_PEPE_BEN_COTTO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -624,7 +631,7 @@
     <form nz-form [formGroup]="moveOrderForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.DESTINATION_TABLE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(moveOrderForm.controls.table_id) | translate">
           <nz-select formControlName="table_id">
             @for (tbl of tables(); track tbl.id) {
               <nz-option [nzValue]="tbl.id" [nzLabel]="tbl.name"></nz-option>
@@ -646,24 +653,39 @@
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="payForm" nzLayout="vertical">
       <nz-form-item>
+        <nz-form-label nzRequired>{{ 'HOSPITALITY.POS_SESSION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(payForm.controls.pos_session_id) | translate">
+          <nz-select formControlName="pos_session_id">
+            @for (session of openPosSessions(); track session.id) {
+              <nz-option [nzValue]="session.id" [nzLabel]="(session.opened_at | date: 'dd/MM/yyyy HH:mm') ?? session.id"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.PAYMENT_METHOD' | translate }}</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="payment_method">
             <nz-option nzValue="card" [nzLabel]="'HOSPITALITY.METHOD_CARD' | translate"></nz-option>
             <nz-option nzValue="cash" [nzLabel]="'HOSPITALITY.METHOD_CASH' | translate"></nz-option>
-            <nz-option nzValue="voucher" [nzLabel]="'HOSPITALITY.METHOD_VOUCHER' | translate"></nz-option>
-            <nz-option nzValue="room_charge" [nzLabel]="'HOSPITALITY.METHOD_ROOM_CHARGE' | translate"></nz-option>
+            <nz-option nzValue="mixed" [nzLabel]="'HOSPITALITY.METHOD_MIXED' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
-      @if (payForm.get('payment_method')?.value === 'cash') {
+      @if (payForm.get('payment_method')?.value === 'mixed') {
         <nz-form-item>
-          <nz-form-label>{{ 'HOSPITALITY.CASH_AMOUNT' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="cash_amount" [nzMin]="0" [nzStep]="0.5"></nz-input-number>
+          <nz-form-label nzRequired>{{ 'HOSPITALITY.CASH_AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(payForm.controls.cash_amount) | translate">
+            <nz-input-number class="w-full" formControlName="cash_amount" [nzMin]="0" [nzStep]="0.5"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       }
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'HOSPITALITY.PAY_WAYS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(payForm.controls.ways) | translate">
+          <nz-input-number class="w-full" formControlName="ways" [nzMin]="1" [nzMax]="100"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>
@@ -679,33 +701,33 @@
     <form nz-form [formGroup]="reservationForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.GUEST_NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.guest_name) | translate">
           <input nz-input formControlName="guest_name" placeholder="Mario Rossi" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.GUEST_PHONE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.guest_phone) | translate">
           <input nz-input formControlName="guest_phone" placeholder="+39 333 1234567" />
         </nz-form-control>
       </nz-form-item>
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.PARTY_SIZE' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="party_size" [nzMin]="1" [nzMax]="50"></nz-input-number>
+          <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.party_size) | translate">
+            <nz-input-number class="w-full" formControlName="party_size" [nzMin]="1" [nzMax]="100"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'HOSPITALITY.DURATION' | translate }} (min)</nz-form-label>
-          <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
-            <nz-input-number formControlName="duration_minutes" [nzMin]="30" [nzStep]="15"></nz-input-number>
+          <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.duration_minutes) | translate">
+            <nz-input-number class="w-full" formControlName="duration_minutes" [nzMin]="15" [nzMax]="720" [nzStep]="15"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'HOSPITALITY.DATE_TIME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.FIELD_REQUIRED' | translate">
+        <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.starts_at) | translate">
           <input nz-input type="datetime-local" formControlName="starts_at" />
         </nz-form-control>
       </nz-form-item>
@@ -721,7 +743,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label>{{ 'HOSPITALITY.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorKey(reservationForm.controls.notes) | translate">
           <textarea nz-input formControlName="notes" rows="2" [placeholder]="'HOSPITALITY.LBL_ES_TAVOLO_VICINO_ALLA_FINESTRA' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>

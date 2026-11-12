@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -18,19 +18,24 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   AuthStore,
+  I18nService,
   isValidationError,
   ProjectApiService,
   ProjectFilterParams,
   ProjectResource,
+  serverErrorMessage,
   StoreProjectPayload,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
 import { RouterLink } from '@angular/router';
 import { ProjectDetailDrawerComponent } from './components/project-detail-drawer/project-detail-drawer.component';
 
 @Component({
   selector: 'app-projects',
+  styleUrl: './projects.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -58,6 +63,7 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
 })
 export class ProjectsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   private readonly projectApi = inject(ProjectApiService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -80,16 +86,39 @@ export class ProjectsComponent implements OnInit {
   readonly drawerVisible = signal(false);
 
   readonly projectForm = this.fb.group({
-    project_number: this.fb.control('', [Validators.required]),
-    name: this.fb.control('', [Validators.required]),
-    contact_id: this.fb.control('', [Validators.required]),
+    project_number: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    contact_id: this.fb.control('', [Validators.required, uuidFormat]),
     project_type: this.fb.control('fixed_price', [Validators.required]),
     billing_method: this.fb.control('milestone', [Validators.required]),
     planned_start_date: this.fb.control('', [Validators.required]),
-    planned_end_date: this.fb.control('', [Validators.required]),
-    project_manager_user_id: this.fb.control('', [Validators.required]),
-    contract_value: this.fb.control<number>(0, [Validators.required, Validators.min(0)]),
+    planned_end_date: this.fb.control('', [Validators.required, endsNotBefore('planned_start_date')]),
+    project_manager_user_id: this.fb.control('', [Validators.required, uuidFormat]),
+    contract_value: this.fb.control<number>(0, [Validators.required, Validators.min(0), Validators.max(999999999999)]),
   });
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    revalidateOnStartChange(this.projectForm, 'planned_start_date', 'planned_end_date', this.destroyRef);
+  }
+
+  errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    if (control?.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    if (control?.hasError('endsBeforeStart')) {
+      return this.i18n.translate('COMMON.VALIDATION.END_AFTER_START');
+    }
+    if (control?.errors) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
+    return '';
+  }
 
   ngOnInit(): void {
     this.loadProjects();

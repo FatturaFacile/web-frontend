@@ -18,6 +18,7 @@ import { recordText, saveBlob } from './save-blob';
 /** Calendar of lessons, documents shared with the person and authorizations to sign as a guardian. */
 @Component({
   selector: 'app-area-activity',
+  styleUrl: './area-activity.component.scss',
   imports: [FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <h3>{{ 'ASSOC_AREA.CALENDAR' | translate }}</h3>
@@ -96,7 +97,7 @@ import { recordText, saveBlob } from './save-blob';
                   [ngModel]="signedName()"
                   (ngModelChange)="signedName.set($event)"
                 />
-                <button nz-button nzType="primary" type="button" [disabled]="signedName().trim() === ''" (click)="sign(text(authorization, 'id'))">
+                <button nz-button nzType="primary" type="button" [disabled]="signedName().trim().length < 3" (click)="sign(text(authorization, 'id'))">
                   {{ 'ASSOC_AREA.SIGN' | translate }}
                 </button>
               </div>

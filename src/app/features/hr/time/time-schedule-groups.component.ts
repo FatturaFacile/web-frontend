@@ -19,6 +19,7 @@ const ROUNDING_MODES: RoundingMode[] = ['none', 'nearest', 'employee_favour', 'e
 /** Schedule groups (tolerances, rounding and allowances by version), their members and the badges of the employees. */
 @Component({
   selector: 'app-time-schedule-groups',
+  styleUrl: './time-schedule-groups.component.scss',
   imports: [ActionFormComponent, NzModalModule, TranslatePipe, CrudTableComponent],
   template: `
     <app-crud-table [config]="groupsConfig()" />
@@ -83,7 +84,7 @@ export class TimeScheduleGroupsComponent {
       },
     ],
     fields: [
-      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
+      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 120 },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
     ],
   }));
@@ -94,9 +95,9 @@ export class TimeScheduleGroupsComponent {
       submitLabelKey: 'hrmCommon.save',
       fields: [
         { key: 'valid_from', labelKey: 'hrmTimeX.validFrom', type: 'date', required: true },
-        { key: 'tolerance_before_minutes', labelKey: 'hrmTimeX.toleranceBefore', type: 'integer' },
-        { key: 'tolerance_after_minutes', labelKey: 'hrmTimeX.toleranceAfter', type: 'integer' },
-        { key: 'rounding_minutes', labelKey: 'hrmTimeX.roundingMinutes', type: 'integer' },
+        { key: 'tolerance_before_minutes', labelKey: 'hrmTimeX.toleranceBefore', type: 'integer', min: 0, max: 120 },
+        { key: 'tolerance_after_minutes', labelKey: 'hrmTimeX.toleranceAfter', type: 'integer', min: 0, max: 120 },
+        { key: 'rounding_minutes', labelKey: 'hrmTimeX.roundingMinutes', type: 'integer', min: 0, max: 60 },
         {
           key: 'rounding_mode',
           labelKey: 'hrmTimeX.roundingMode',
@@ -109,29 +110,38 @@ export class TimeScheduleGroupsComponent {
           labelKey: 'hrmTimeX.nightPercent',
           type: 'decimal',
           nullable: true,
+          min: 0,
+          max: 300,
         },
         {
           key: 'sunday_allowance_percent',
           labelKey: 'hrmTimeX.sundayPercent',
           type: 'decimal',
           nullable: true,
+          min: 0,
+          max: 300,
         },
         {
           key: 'holiday_allowance_percent',
           labelKey: 'hrmTimeX.holidayPercent',
           type: 'decimal',
           nullable: true,
+          min: 0,
+          max: 300,
         },
         {
           key: 'daily_allowance_amount',
           labelKey: 'hrmTimeX.dailyAmount',
           type: 'decimal',
           nullable: true,
+          min: 0,
         },
         {
           key: 'daily_allowance_minimum_minutes',
           labelKey: 'hrmTimeX.dailyMinimum',
           type: 'integer',
+          min: 0,
+          max: 1440,
         },
       ],
       submit: (payload) =>
@@ -152,7 +162,7 @@ export class TimeScheduleGroupsComponent {
           options: () => this.employees(),
         },
         { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date', required: true },
-        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true },
+        { key: 'valid_to', labelKey: 'hrmCommon.to', type: 'date', nullable: true, notBefore: 'valid_from' },
       ],
       submit: (payload) =>
         this.api.addScheduleGroupMember(groupId, payload as unknown as ScheduleGroupMemberPayload),
@@ -175,7 +185,7 @@ export class TimeScheduleGroupsComponent {
         labelKey: 'hrmTimeX.badgeCode',
         type: 'text',
         required: true,
-        maxLength: 100,
+        maxLength: 120,
       },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
     ],

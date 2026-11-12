@@ -65,7 +65,7 @@
                     class="prompt-chip"
                     (click)="askCatalogueQuestion(entry)"
                   >
-                    <i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i>
+                    <i class="fa-solid fa-lightbulb mr-1 text-warning"></i>
                     {{ entry.description }}
                   </button>
                 }
@@ -242,7 +242,7 @@
               id="log-outcome-select"
               formControlName="outcome"
               (ngModelChange)="loadLogs()"
-              class="w-48"
+              class="log-outcome-select"
             >
               <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
               <nz-option nzValue="answered" [nzLabel]="'ASSISTANT.OUTCOMES.answered' | translate"></nz-option>

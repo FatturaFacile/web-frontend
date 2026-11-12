@@ -23,6 +23,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Swissdec ELM: certification status, what is missing in the data of a year, the declaration and the (unavailable) transmission. */
 @Component({
   selector: 'app-swissdec-panel',
+  styleUrl: './swissdec-panel.component.scss',
   imports: [
     FormsModule,
     NzAlertModule,
@@ -61,7 +62,7 @@ import { reportHttpError } from '../shared/hr-http.util';
       </nz-descriptions>
     }
 
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="sd-year">{{ 'hrmCommon.year' | translate }}</label>
         <input
@@ -76,7 +77,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="sd-version">{{ 'hrmCompliance.swissdec.version' | translate }}</label>
         <nz-select
           id="sd-version"
-         
+          class="w-field-xs"
           [ngModel]="version()"
           (ngModelChange)="version.set($event)"
         >

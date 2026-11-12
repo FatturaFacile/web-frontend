@@ -1,6 +1,7 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -20,6 +21,8 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  I18nService,
+  serverErrorMessage,
   ContractAlertResource,
   ContractKind,
   ContractObligationResource,
@@ -37,9 +40,29 @@ import {
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { decimalPattern } from '@shared/utils/decimal-validators';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
+
+/** Roles of a party accepted by the API (ContractParty::Roles). */
+const PARTY_ROLES = ['signatory', 'guarantor', 'subcontractor', 'witness', 'beneficiary', 'representative', 'other'] as const;
+
+/** Kinds of party accepted by the API (ContractParty::Types). */
+const PARTY_TYPES = ['contact', 'supplier', 'user', 'external'] as const;
+
+/** Mirrors `required_with:<other>`: the control is required when the other control of the group is filled. */
+function requiredWith(otherKey: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const other = control.parent?.get(otherKey)?.value;
+    const filled = (value: unknown): boolean => value !== null && value !== undefined && String(value).trim() !== '';
+    return filled(other) && !filled(control.value) ? { required: true } : null;
+  };
+}
 
 @Component({
   selector: 'app-contract-register',
+  styleUrl: './contract-register.component.scss',
   imports: [
     DatePipe,
     UpperCasePipe,
@@ -69,6 +92,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 })
 export class ContractRegisterComponent implements OnInit {
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly contractApi = inject(ContractRegisterApiService);
   private readonly message = inject(NzMessageService);
@@ -92,16 +116,16 @@ export class ContractRegisterComponent implements OnInit {
   protected createSubmitting = signal<boolean>(false);
   protected readonly contractForm = this.fb.group({
     kind: ['customer' as ContractKind, [Validators.required]],
-    counterparty_id: ['', [Validators.required]],
-    contract_number: ['', [Validators.required]],
-    title: ['', [Validators.required]],
+    counterparty_id: ['', [Validators.required, uuidFormat]],
+    contract_number: ['', [Validators.required, Validators.maxLength(60)]],
+    title: ['', [Validators.required, Validators.maxLength(180)]],
     start_date: ['', [Validators.required]],
-    end_date: [''],
-    notice_period_days: [30, [Validators.min(0)]],
+    end_date: ['', [endsNotBefore('start_date')]],
+    notice_period_days: [30, [Validators.min(0), Validators.max(3650)]],
     auto_renew: [false],
-    renewal_term_months: [12],
-    currency: ['CHF', [Validators.required]],
-    total_value: ['0.00'],
+    renewal_term_months: [12, [Validators.min(1), Validators.max(600)]],
+    currency: ['CHF', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
+    contract_value: ['0.00', [decimalPattern(2)]],
   });
 
   // Renew Contract Modal
@@ -109,16 +133,15 @@ export class ContractRegisterComponent implements OnInit {
   protected renewContractTarget = signal<ContractResource | null>(null);
   protected renewSubmitting = signal<boolean>(false);
   protected readonly renewForm = this.fb.group({
-    new_end_date: ['', [Validators.required]],
-    renewal_term_months: [12, [Validators.required, Validators.min(1)]],
-    revised_value: [''],
+    new_end_date: ['', [(control: AbstractControl<string>) => this.afterCurrentEnd(control)]],
   });
 
   // Send Notice / Disdetta Modal
   protected noticeModalVisible = signal<boolean>(false);
   protected noticeContractTarget = signal<ContractResource | null>(null);
   protected noticeDate = signal<string>('');
-  protected noticeReason = signal<string>('');
+  /** Today (YYYY-MM-DD, local day): a notice cannot be dated in the future. */
+  protected readonly today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   protected noticeSubmitting = signal<boolean>(false);
 
   // Detail Drawer
@@ -131,22 +154,28 @@ export class ContractRegisterComponent implements OnInit {
 
   // Add Party Modal inside Drawer
   protected partyModalVisible = signal<boolean>(false);
+  protected readonly partyRoles = PARTY_ROLES;
+  protected readonly partyTypes = PARTY_TYPES;
   protected readonly partyForm = this.fb.group({
-    role: ['cliente', [Validators.required]],
-    name: ['', [Validators.required]],
-    contact_email: ['', [Validators.email]],
-    vat_number: [''],
+    party_type: ['external' as (typeof PARTY_TYPES)[number], [Validators.required]],
+    party_id: [''],
+    role: ['signatory' as (typeof PARTY_ROLES)[number], [Validators.required]],
+    name: ['', [Validators.maxLength(255)]],
+    email: ['', [Validators.email, Validators.maxLength(255)]],
+    notes: ['', [Validators.maxLength(2000)]],
   });
 
   // Add Obligation Modal inside Drawer
   protected obligationModalVisible = signal<boolean>(false);
   protected readonly obligationForm = this.fb.group({
     type: ['obligation' as const, [Validators.required]],
-    title: ['', [Validators.required]],
-    description: [''],
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    description: ['', [Validators.maxLength(5000)]],
     due_date: ['', [Validators.required]],
-    responsible_party: [''],
-    penalty_amount: ['0.00'],
+    responsible_party: ['own'],
+    amount: ['', [decimalPattern(2), requiredWith('currency')]],
+    currency: ['', [Validators.minLength(3), Validators.maxLength(3), requiredWith('amount')]],
+    remind_days_before: [7, [Validators.min(0), Validators.max(365)]],
   });
 
   // --- TAB 2: GLOBAL OBLIGATIONS ---
@@ -167,6 +196,68 @@ export class ContractRegisterComponent implements OnInit {
   // --- TAB 3: CONTRACT ALERTS ---
   protected readonly alerts = signal<ContractAlertResource[]>([]);
   protected readonly alertsLoading = signal<boolean>(false);
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.contractForm.controls.kind.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncEndDateRequirement());
+    revalidateOnStartChange(this.contractForm, 'start_date', 'end_date', this.destroyRef);
+    this.partyForm.controls.party_type.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncPartyRequirements());
+    this.obligationForm.controls.amount.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.obligationForm.controls.currency.updateValueAndValidity({ emitEvent: false }));
+    this.obligationForm.controls.currency.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.obligationForm.controls.amount.updateValueAndValidity({ emitEvent: false }));
+  }
+
+  /** API rule: a party of the company (contact, supplier, user) needs its id; an external one needs a name. */
+  protected isExternalParty(): boolean {
+    return this.partyForm.controls.party_type.value === 'external';
+  }
+
+  private syncPartyRequirements(): void {
+    const { party_id: partyId, name } = this.partyForm.controls;
+    if (this.isExternalParty()) {
+      partyId.setValidators([]);
+      name.setValidators([Validators.required, Validators.maxLength(255)]);
+    } else {
+      partyId.setValidators([Validators.required, uuidFormat]);
+      name.setValidators([Validators.maxLength(255)]);
+    }
+    partyId.updateValueAndValidity({ emitEvent: false });
+    name.updateValueAndValidity({ emitEvent: false });
+  }
+
+  /** The service refuses a renewal that does not move the end date forward. */
+  private afterCurrentEnd(control: AbstractControl<string>): ValidationErrors | null {
+    const current = this.renewContractTarget()?.end_date;
+    return current && control.value && control.value <= current.slice(0, 10) ? { endsBeforeStart: true } : null;
+  }
+
+  /** API rule: the end date is required for supplier contracts only. */
+  protected isEndDateRequired(): boolean {
+    return this.contractForm.controls.kind.value === 'supplier';
+  }
+
+  private syncEndDateRequirement(): void {
+    const control = this.contractForm.controls.end_date;
+    if (this.isEndDateRequired()) {
+      control.addValidators(Validators.required);
+    } else {
+      control.removeValidators(Validators.required);
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  protected errorTip(form: FormGroup, path: string): string {
+    const control = form.get(path);
+    if (control?.hasError('serverError')) {
+      return serverErrorMessage(form, path) ?? '';
+    }
+    const key = validationTipKey(control ?? null);
+    return key ? this.i18n.translate(key) : '';
+  }
 
   ngOnInit(): void {
     this.loadContracts();
@@ -225,7 +316,7 @@ export class ContractRegisterComponent implements OnInit {
       auto_renew: false,
       renewal_term_months: 12,
       currency: 'CHF',
-      total_value: '0.00',
+      contract_value: '0.00',
     });
     this.createModalVisible.set(true);
   }
@@ -256,19 +347,24 @@ export class ContractRegisterComponent implements OnInit {
   // --- RENEW CONTRACT ---
   protected openRenewModal(contract: ContractResource): void {
     this.renewContractTarget.set(contract);
-    this.renewForm.reset({
-      new_end_date: '',
-      renewal_term_months: contract.renewal_term_months || 12,
-      revised_value: contract.total_value || '',
-    });
+    this.renewForm.reset({ new_end_date: '' });
+    // Without a renewal term the API cannot compute the new end: the user must state it.
+    this.renewForm.controls.new_end_date.setValidators(
+      contract.renewal_term_months ? [(control: AbstractControl<string>) => this.afterCurrentEnd(control)] : [Validators.required, (control: AbstractControl<string>) => this.afterCurrentEnd(control)],
+    );
+    this.renewForm.controls.new_end_date.updateValueAndValidity();
     this.renewModalVisible.set(true);
   }
 
   protected submitRenewContract(): void {
     const contract = this.renewContractTarget();
-    if (!contract || this.renewForm.invalid) return;
+    if (!contract) return;
+    if (this.renewForm.invalid) {
+      this.renewForm.markAllAsTouched();
+      return;
+    }
 
-    const payload: RenewContractRequest = this.renewForm.getRawValue();
+    const payload: RenewContractRequest = { new_end_date: this.renewForm.getRawValue().new_end_date || null };
     this.renewSubmitting.set(true);
 
     this.contractApi.renewContract(contract.kind, contract.id, payload).subscribe({
@@ -288,8 +384,7 @@ export class ContractRegisterComponent implements OnInit {
   // --- SEND NOTICE / DISDETTA ---
   protected openNoticeModal(contract: ContractResource): void {
     this.noticeContractTarget.set(contract);
-    this.noticeDate.set(new Date().toISOString().slice(0, 10));
-    this.noticeReason.set('');
+    this.noticeDate.set(this.today);
     this.noticeModalVisible.set(true);
   }
 
@@ -299,10 +394,7 @@ export class ContractRegisterComponent implements OnInit {
 
     this.noticeSubmitting.set(true);
     this.contractApi
-      .sendNotice(contract.kind, contract.id, {
-        notice_date: this.noticeDate(),
-        reason: this.noticeReason() || undefined,
-      })
+      .sendNotice(contract.kind, contract.id, { notice_given_at: this.noticeDate() })
       .subscribe({
         next: () => {
           this.message.success(this.translate.instant('CONTRACTS.MSG_PREAVVISO_DI_DISDETTA_REGISTRATO'));
@@ -347,19 +439,35 @@ export class ContractRegisterComponent implements OnInit {
 
   protected openPartyModal(): void {
     this.partyForm.reset({
-      role: 'contraente',
+      party_type: 'external',
+      party_id: '',
+      role: 'signatory',
       name: '',
-      contact_email: '',
-      vat_number: '',
+      email: '',
+      notes: '',
     });
+    this.syncPartyRequirements();
     this.partyModalVisible.set(true);
   }
 
   protected submitParty(): void {
     const contract = this.selectedContract();
-    if (!contract || this.partyForm.invalid) return;
+    if (!contract) return;
+    if (this.partyForm.invalid) {
+      this.partyForm.markAllAsTouched();
+      return;
+    }
 
-    const payload: ContractSavePartyRequest = this.partyForm.getRawValue();
+    const raw = this.partyForm.getRawValue();
+    const external = raw.party_type === 'external';
+    const payload: ContractSavePartyRequest = {
+      party_type: raw.party_type,
+      party_id: external ? undefined : raw.party_id,
+      role: raw.role,
+      name: raw.name || undefined,
+      email: raw.email || undefined,
+      notes: raw.notes || undefined,
+    };
     this.contractApi.addParty(contract.kind, contract.id, payload).subscribe({
       next: (res) => {
         this.message.success(this.translate.instant('CONTRACTS.MSG_PARTE_CONTRATTUALE_AGGIUNTA'));
@@ -384,22 +492,39 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   protected openObligationModal(): void {
+    const contract = this.selectedContract();
     this.obligationForm.reset({
       type: 'obligation',
       title: '',
       description: '',
       due_date: new Date().toISOString().slice(0, 10),
-      responsible_party: '',
-      penalty_amount: '0.00',
+      responsible_party: 'own',
+      amount: '',
+      currency: contract?.currency ?? '',
+      remind_days_before: 7,
     });
     this.obligationModalVisible.set(true);
   }
 
   protected submitObligation(): void {
     const contract = this.selectedContract();
-    if (!contract || this.obligationForm.invalid) return;
+    if (!contract) return;
+    if (this.obligationForm.invalid) {
+      this.obligationForm.markAllAsTouched();
+      return;
+    }
 
-    const payload: ContractSaveObligationRequest = this.obligationForm.getRawValue();
+    const raw = this.obligationForm.getRawValue();
+    const payload: ContractSaveObligationRequest = {
+      type: raw.type,
+      title: raw.title,
+      description: raw.description || undefined,
+      due_date: raw.due_date,
+      responsible_party: raw.responsible_party || undefined,
+      amount: raw.amount || undefined,
+      currency: raw.currency ? raw.currency.toUpperCase() : undefined,
+      remind_days_before: raw.remind_days_before,
+    };
     this.contractApi.addObligation(contract.kind, contract.id, payload).subscribe({
       next: (res) => {
         this.message.success(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_AGGIUNTA'));
@@ -450,8 +575,7 @@ export class ContractRegisterComponent implements OnInit {
 
     this.contractApi
       .completeObligation(ob.id, {
-        completed_at: new Date().toISOString(),
-        notes: this.completeNotes() || undefined,
+        note: this.completeNotes() || undefined,
       })
       .subscribe({
         next: () => {
@@ -473,7 +597,7 @@ export class ContractRegisterComponent implements OnInit {
     const ob = this.actionObligationTarget();
     if (!ob) return;
 
-    this.contractApi.waiveObligation(ob.id, { reason: this.waiveReason() || undefined }).subscribe({
+    this.contractApi.waiveObligation(ob.id, { note: this.waiveReason() || undefined }).subscribe({
       next: () => {
         this.message.info(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_CONDONATA_WAIVED'));
         this.waiveModalVisible.set(false);

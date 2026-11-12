@@ -1,15 +1,15 @@
 <nz-card>
   <nz-tabs>
     <nz-tab [nzTitle]="'TR.FORECAST' | translate">
-      <div>
+      <div class="toolbar">
         <label for="lq-horizon">{{ 'TR.HORIZON_DAYS' | translate }}</label>
         <nz-input-number id="lq-horizon" [(ngModel)]="horizonDays" [nzMin]="1" [nzMax]="365" />
         <label for="lq-currency">{{ 'TR.CURRENCY' | translate }}</label>
-        <input id="lq-currency" nz-input maxlength="3" [(ngModel)]="currency" />
+        <input class="currency-input" id="lq-currency" nz-input maxlength="3" [(ngModel)]="currency" />
         <label for="lq-min">{{ 'TR.MINIMUM_BALANCE' | translate }}</label>
         <nz-input-number id="lq-min" [(ngModel)]="minimumBalance" [nzPrecision]="2" />
         <nz-select
-         
+          class="scenario-filter"
           nzMode="multiple"
           nzAllowClear
           [attr.aria-label]="'TR.SCENARIOS' | translate"
@@ -32,7 +32,7 @@
           }
         </p>
         @for (scenario of result.scenarios; track scenario.scenario) {
-          <nz-card nzType="inner" [nzTitle]="scenario.name">
+          <nz-card class="scenario-card" nzType="inner" [nzTitle]="scenario.name">
             <p>
               {{ 'TR.TOTAL_INFLOWS' | translate }}: <strong>{{ scenario.total_inflows | money: result.currency }}</strong> -
               {{ 'TR.TOTAL_OUTFLOWS' | translate }}: <strong>{{ scenario.total_outflows | money: result.currency }}</strong> -
@@ -41,7 +41,7 @@
               ({{ scenario.lowest_balance.date }})
             </p>
             @if (scenario.first_day_below_minimum) {
-              <nz-alert nzType="warning" nzShowIcon [nzMessage]="('TR.FIRST_DAY_BELOW' | translate) + ': ' + scenario.first_day_below_minimum" />
+              <nz-alert class="scenario-alert" nzType="warning" nzShowIcon [nzMessage]="('TR.FIRST_DAY_BELOW' | translate) + ': ' + scenario.first_day_below_minimum" />
             }
             <nz-table #dayTable nzSize="small" [nzData]="scenario.days" [nzPageSize]="15">
               <thead>
@@ -70,7 +70,7 @@
 
     <nz-tab [nzTitle]="'TR.SCENARIOS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" (click)="openModal('scenario')">{{ 'TR.SCENARIO_NEW' | translate }}</button>
+        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('scenario')">{{ 'TR.SCENARIO_NEW' | translate }}</button>
       }
       <nz-table #scenarioTable nzSize="middle" [nzData]="scenarios()" [nzShowPagination]="false">
         <thead>
@@ -98,7 +98,7 @@
 
     <nz-tab [nzTitle]="'TR.RECURRING_ITEMS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" (click)="openModal('recurring')">{{ 'TR.RECURRING_NEW' | translate }}</button>
+        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('recurring')">{{ 'TR.RECURRING_NEW' | translate }}</button>
       }
       <nz-table #recurringTable nzSize="middle" [nzData]="recurring()" [nzShowPagination]="false">
         <thead>
@@ -156,32 +156,32 @@
     <form nz-form nzLayout="vertical" [formGroup]="scenarioForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="sc-code">{{ 'TR.CODE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="scenarioForm.controls.code.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="scenarioForm.controls.code.errors?.['serverError'] ?? (scenarioForm.controls.code.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.INVALID_VALUE' | translate))">
           <input id="sc-code" nz-input formControlName="code" maxlength="50" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="sc-name">{{ 'TR.NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="scenarioForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="sc-name" nz-input formControlName="name" maxlength="255" />
+          <input id="sc-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="sc-delay">{{ 'TR.COLLECTION_DELAY' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number id="sc-delay" formControlName="collection_delay_days" [nzMin]="0" />
+          <nz-input-number id="sc-delay" formControlName="collection_delay_days" [nzMin]="-365" [nzMax]="365" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="sc-accel">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number id="sc-accel" formControlName="disbursement_acceleration_days" [nzMin]="0" />
+          <nz-input-number id="sc-accel" formControlName="disbursement_acceleration_days" [nzMin]="-365" [nzMax]="365" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="sc-growth">{{ 'TR.SALES_GROWTH' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number id="sc-growth" formControlName="sales_growth_factor" [nzMin]="0" [nzStep]="0.05" [nzPrecision]="2" />
+          <nz-input-number id="sc-growth" formControlName="sales_growth_factor" [nzMin]="0" [nzMax]="5" [nzStep]="0.05" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -203,7 +203,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rc-name">{{ 'TR.NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="recurringForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="rc-name" nz-input formControlName="name" maxlength="255" />
+          <input id="rc-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -219,13 +219,13 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rc-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="recurringForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="rc-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
+          <nz-input-number class="w-full" id="rc-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="rc-currency">{{ 'TR.CURRENCY' | translate }}</nz-form-label>
         <nz-form-control>
-          <input id="rc-currency" nz-input formControlName="currency" maxlength="3" />
+          <input class="currency-input" id="rc-currency" nz-input formControlName="currency" maxlength="3" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -246,7 +246,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="rc-end">{{ 'TR.END_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="recurringForm.controls.end_date.errors?.['serverError'] ?? ('COMMON.VALIDATION.END_AFTER_START' | translate)">
           <input id="rc-end" nz-input type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>

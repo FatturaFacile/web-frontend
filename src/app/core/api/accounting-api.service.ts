@@ -6,6 +6,9 @@ import {
   ApiResponse,
   CalculateTaxSettlementPayload,
   ChartOfAccount,
+  CreateAccountPayload,
+  GenerateIntrastatPayload,
+  SubmitIntrastatPayload,
   CreateJournalEntryPayload,
   FiscalPeriodResource,
   IntrastatDeclarationResource,
@@ -35,7 +38,7 @@ export class AccountingApiService {
     return this.http.get<ApiResponse<ChartOfAccount[]>>(`${this.glBase}/accounts-tree`);
   }
 
-  createAccount(payload: Partial<ChartOfAccount>): Observable<ApiResponse<ChartOfAccount>> {
+  createAccount(payload: CreateAccountPayload): Observable<ApiResponse<ChartOfAccount>> {
     return this.http.post<ApiResponse<ChartOfAccount>>(`${this.glBase}/accounts`, payload);
   }
 
@@ -119,20 +122,17 @@ export class AccountingApiService {
     });
   }
 
-  generateIntrastatDeclaration(year: number, period: number, direction: 'dispatch' | 'arrival' | 'both'): Observable<ApiResponse<IntrastatDeclarationResource>> {
-    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/generate`, {
-      year,
-      period,
-      direction,
-    });
+  generateIntrastatDeclaration(payload: GenerateIntrastatPayload): Observable<ApiResponse<IntrastatDeclarationResource>> {
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/generate`, payload);
   }
 
-  validateIntrastatDeclaration(id: string): Observable<ApiResponse<{ is_valid: boolean; errors?: string[] }>> {
-    return this.http.post<ApiResponse<{ is_valid: boolean; errors?: string[] }>>(`${this.intrastatBase}/declarations/${id}/validate`, {});
+  /** 200 when the list is valid (it becomes validated), 422 with the errors otherwise. */
+  validateIntrastatDeclaration(id: string): Observable<ApiResponse<IntrastatDeclarationResource>> {
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/${id}/validate`, {});
   }
 
-  submitIntrastatDeclaration(id: string): Observable<ApiResponse<IntrastatDeclarationResource>> {
-    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/${id}/submit`, {});
+  submitIntrastatDeclaration(id: string, payload: SubmitIntrastatPayload): Observable<ApiResponse<IntrastatDeclarationResource>> {
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/${id}/submit`, payload);
   }
 
   // --- Financial Statements ---

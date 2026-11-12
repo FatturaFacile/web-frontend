@@ -34,7 +34,7 @@ const NC_FIELDS = [
   rf.decimal('quantity'),
 ];
 
-const WINDOW_FILTERS = [req(rf.datetime('from')), req(rf.datetime('to')), rf.uuid('work_center_id')];
+const WINDOW_FILTERS = [req(rf.datetime('from')), req(rf.datetime('to', { notBefore: 'from' })), rf.uuid('work_center_id')];
 
 const ACCOUNT_FIELDS = [
   rf.text('raw_material_account_code'),
@@ -84,7 +84,7 @@ export const MFG_QUALITY_PAGE: ResourcePageConfig = {
       create: act('POST', 'RES.A.new_non_conformance', '/manufacturing/quality/non-conformances', { fields: NC_FIELDS }),
       rowActions: [
         act('POST', 'RES.A.resolve', '/manufacturing/quality/non-conformances/{id}/resolve', {
-          fields: [req(rf.select('disposition', ['use_as_is', 'rework', 'scrap', 'return_to_supplier'])), req(rf.textarea('corrective_action'))],
+          fields: [req(rf.select('disposition', ['use_as_is', 'rework', 'scrap', 'return_to_supplier'])), req(rf.textarea('corrective_action', { maxLength: 5000 }))],
           visible: whenIn('status', 'open'),
         }),
       ],
@@ -106,7 +106,7 @@ export const MFG_PLANNING_PAGE: ResourcePageConfig = {
         columns: [...cols('run_number'), tagCol('run_type'), tagCol('status'), col('horizon_start_date', 'date'), col('horizon_end_date', 'date'), ...cols('total_planned_orders', 'total_shortages')],
       },
       create: act('POST', 'RES.A.run_mrp', '/manufacturing/mrp/runs', {
-        fields: [req(rf.datetime('horizon_start_date')), req(rf.datetime('horizon_end_date')), rf.select('run_type', ['regenerative', 'net_change'])],
+        fields: [req(rf.datetime('horizon_start_date')), req(rf.datetime('horizon_end_date', { notBefore: 'horizon_start_date' })), rf.select('run_type', ['regenerative', 'net_change'])],
         showResult: true,
       }),
     },
@@ -154,7 +154,7 @@ export const MFG_PLANNING_PAGE: ResourcePageConfig = {
       module: 'manufacturing',
       list: { path: '/manufacturing/mrp/forecasts', columns: [...cols('mfg_item_id', 'quantity', 'notes'), col('forecast_date', 'date')] },
       create: act('POST', 'RES.A.new_forecast', '/manufacturing/mrp/forecasts', {
-        fields: [req(rf.lookup('mfg_item_id', 'mfgItems')), req(rf.datetime('forecast_date')), req(rf.decimal('quantity')), rf.textarea('notes')],
+        fields: [req(rf.lookup('mfg_item_id', 'mfgItems')), req(rf.datetime('forecast_date')), req(rf.decimal('quantity')), rf.textarea('notes', { maxLength: 1000 })],
       }),
       rowActions: [act('DELETE', 'RES.ACTION.DELETE', '/manufacturing/mrp/forecasts/{id}', { confirm: true, danger: true })],
     },

@@ -10,6 +10,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 
 @Component({
   selector: 'app-ss-documents',
+  styleUrl: './ss-documents.component.scss',
   imports: [DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">

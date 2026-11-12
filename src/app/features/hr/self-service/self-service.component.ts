@@ -14,6 +14,7 @@ import { SsTrainingComponent } from './ss-training.component';
 /** Employee portal: needs no HR module access, only an employee linked to the user (403 otherwise). */
 @Component({
   selector: 'app-hr-self-service',
+  styleUrl: './self-service.component.scss',
   imports: [
     NzCardModule,
     NzResultModule,

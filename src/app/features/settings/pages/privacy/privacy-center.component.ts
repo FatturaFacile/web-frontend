@@ -1,7 +1,8 @@
 import { DatePipe, JsonPipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
+  I18nService,
   PrivacyApiService,
   PrivacyBreachIncident,
   PrivacyDataSubjectRequest,
@@ -10,7 +11,7 @@ import {
   PrivacySubprocessor,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -22,8 +23,11 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 @Component({
   selector: 'app-privacy-center',
+  styleUrl: './privacy-center.component.scss',
   imports: [
     DatePipe,
     JsonPipe,
@@ -39,30 +43,31 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     NzTabsModule,
     NzTagModule,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <app-page-header
-      title="Privacy Center (GDPR & Swiss nLPD)"
-      subtitle="Registro dei trattamenti (Art. 30 GDPR / Art. 12 nLPD), Sub-responsabili (Art. 16 nLPD), Diritti degli interessati, Data Breach (72h) e Log accessi sensibili (DPOOP Art. 4)"
+      [title]="'privacyCenter.title' | translate"
+      sub[title]="'privacyCenter.subtitle' | translate"
     />
 
     <nz-card>
       <nz-tabs>
         <!-- TAB 1: GDPR / nLPD Data Subject Requests & Portability -->
-        <nz-tab nzTitle="Diritti Interessati (GDPR / nLPD)">
-          <div>
+        <nz-tab [nzTitle]="'privacyCenter.tabRights' | translate">
+          <div class="row mb-4">
             <button nz-button nzType="primary" type="button" (click)="dsrModalOpen.set(true)">
-              Nuova Richiesta (DSR)
+              {{ 'privacyCenter.newRequest' | translate }}
             </button>
-            <select class="ant-input" [(ngModel)]="portabilitySubjectType">
-              <option value="contact">Contatto</option>
-              <option value="employee">Dipendente</option>
-              <option value="user">Utente</option>
+            <select class="ant-input w-field-sm" [(ngModel)]="portabilitySubjectType">
+              <option value="contact">{{ 'privacyCenter.subjectContact' | translate }}</option>
+              <option value="employee">{{ 'privacyCenter.subjectEmployee' | translate }}</option>
+              <option value="user">{{ 'privacyCenter.subjectUser' | translate }}</option>
             </select>
             <input
               nz-input
-             
-              placeholder="UUID Soggetto per export portabilità"
+              class="w-field-md"
+              [placeholder]="'privacyCenter.portabilityUuidPlaceholder' | translate"
               [(ngModel)]="portabilitySubjectId"
             />
             <button
@@ -71,19 +76,19 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
               [disabled]="!portabilitySubjectId"
               (click)="exportDossier()"
             >
-              Esporta Dossier (Art. 20 GDPR / Art. 28 nLPD)
+              {{ 'privacyCenter.exportDossier' | translate }}
             </button>
           </div>
 
           <nz-table #dsrTable [nzData]="requests()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>Normativa</th>
-                <th>Tipo Richiesta</th>
-                <th>Soggetto</th>
-                <th>Scadenza</th>
-                <th>Stato / Blocco Legale CO 958f</th>
-                <th>Azioni</th>
+                <th>{{ 'privacyCenter.regulation' | translate }}</th>
+                <th>{{ 'privacyCenter.requestType' | translate }}</th>
+                <th>{{ 'privacyCenter.subject' | translate }}</th>
+                <th>{{ 'privacyCenter.dueDate' | translate }}</th>
+                <th>{{ 'privacyCenter.statusLegalHold' | translate }}</th>
+                <th>{{ 'privacyCenter.actions' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -101,7 +106,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
                   <td>
                     @if (req.request_type === 'erasure' && req.status === 'open') {
                       <button nz-button nzSize="small" nzDanger type="button" (click)="executeErasure(req)">
-                        Esegui Cancellazione / Anonimizzazione
+                        {{ 'privacyCenter.executeErasure' | translate }}
                       </button>
                     }
                   </td>
@@ -111,27 +116,27 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           </nz-table>
 
           @if (exportedDossier(); as dossier) {
-            <nz-card nzTitle="Dossier Portabilità Esportato">
-              <pre>{{ dossier | json }}</pre>
+            <nz-card [nzTitle]="'privacyCenter.exportedDossier' | translate" class="mt-4">
+              <pre class="dossier">{{ dossier | json }}</pre>
             </nz-card>
           }
         </nz-tab>
 
         <!-- TAB 2: RoPA (Processing Activities) -->
-        <nz-tab nzTitle="Registro Trattamenti (RoPA)">
-          <div>
+        <nz-tab [nzTitle]="'privacyCenter.tabRopa' | translate">
+          <div class="mb-4">
             <button nz-button nzType="primary" type="button" (click)="ropaModalOpen.set(true)">
-              Nuova Attività di Trattamento
+              {{ 'privacyCenter.newActivity' | translate }}
             </button>
           </div>
           <nz-table #ropaTable [nzData]="activities()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>Titolo</th>
-                <th>Finalità</th>
-                <th>Base Giuridica</th>
-                <th>Conservazione</th>
-                <th>Stato</th>
+                <th>{{ 'privacyCenter.titleField' | translate }}</th>
+                <th>{{ 'privacyCenter.purpose' | translate }}</th>
+                <th>{{ 'privacyCenter.legalBasis' | translate }}</th>
+                <th>{{ 'privacyCenter.retention' | translate }}</th>
+                <th>{{ 'privacyCenter.status' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -149,20 +154,20 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
         </nz-tab>
 
         <!-- TAB 3: Subprocessors (Swiss nLPD Art. 16) -->
-        <nz-tab nzTitle="Sub-responsabili Estero (nLPD Art. 16)">
-          <div>
+        <nz-tab [nzTitle]="'privacyCenter.tabSubprocessors' | translate">
+          <div class="mb-4">
             <button nz-button nzType="primary" type="button" (click)="subModalOpen.set(true)">
-              Aggiungi Sub-responsabile
+              {{ 'privacyCenter.addSubprocessor' | translate }}
             </button>
           </div>
           <nz-table #subTable [nzData]="subprocessors()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>Fornitore</th>
-                <th>Servizio</th>
-                <th>Paese</th>
-                <th>Adeguatezza Consiglio Federale</th>
-                <th>Garanzia (SCC / FDPIC)</th>
+                <th>{{ 'privacyCenter.supplier' | translate }}</th>
+                <th>{{ 'privacyCenter.service' | translate }}</th>
+                <th>{{ 'privacyCenter.country' | translate }}</th>
+                <th>{{ 'privacyCenter.adequacy' | translate }}</th>
+                <th>{{ 'privacyCenter.safeguard' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -173,7 +178,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
                   <td><code>{{ sub.country_code }}</code></td>
                   <td>
                     <nz-tag [nzColor]="sub.is_adequate_country_nlpd ? 'green' : 'volcano'">
-                      {{ sub.is_adequate_country_nlpd ? 'Adeguato (Allegato 1 OPDo)' : 'Richiede SCC / FDPIC' }}
+                      {{ sub.is_adequate_country_nlpd ? ('privacyCenter.adequate' | translate) : ('privacyCenter.requiresScc' | translate) }}
                     </nz-tag>
                   </td>
                   <td><code>{{ sub.safeguard_mechanism }}</code></td>
@@ -184,21 +189,21 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
         </nz-tab>
 
         <!-- TAB 4: Data Breach Register (72h) -->
-        <nz-tab nzTitle="Registro Data Breach (72h)">
-          <div>
+        <nz-tab [nzTitle]="'privacyCenter.tabBreach' | translate">
+          <div class="mb-4">
             <button nz-button nzType="primary" nzDanger type="button" (click)="breachModalOpen.set(true)">
-              Segnala Violazione Dati (Data Breach)
+              {{ 'privacyCenter.reportBreach' | translate }}
             </button>
           </div>
           <nz-table #breachTable [nzData]="breaches()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>Titolo</th>
-                <th>Gravità</th>
-                <th>Scoperta</th>
-                <th>Scadenza 72h (IFPDT / Garante)</th>
-                <th>Record Coinvolti</th>
-                <th>Notifica Autorità</th>
+                <th>{{ 'privacyCenter.titleField' | translate }}</th>
+                <th>{{ 'privacyCenter.severity' | translate }}</th>
+                <th>{{ 'privacyCenter.discovered' | translate }}</th>
+                <th>{{ 'privacyCenter.deadline72' | translate }}</th>
+                <th>{{ 'privacyCenter.affectedRecords' | translate }}</th>
+                <th>{{ 'privacyCenter.authorityNotification' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -211,7 +216,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
                   <td>{{ b.affected_records_count }}</td>
                   <td>
                     <nz-tag [nzColor]="b.requires_authority_notification ? 'volcano' : 'default'">
-                      {{ b.requires_authority_notification ? 'Obbligatoria (72h)' : 'Interna' }}
+                      {{ b.requires_authority_notification ? ('privacyCenter.mandatory72' | translate) : ('privacyCenter.internal' | translate) }}
                     </nz-tag>
                   </td>
                 </tr>
@@ -221,18 +226,18 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
         </nz-tab>
 
         <!-- TAB 5: Sensitive Access Logs (DPOOP Art. 4) -->
-        <nz-tab nzTitle="Log Accessi Dati Sensibili (OPDo Art. 4)">
-          <div>
-            <button nz-button type="button" (click)="loadAll()">Aggiorna Log</button>
+        <nz-tab [nzTitle]="'privacyCenter.tabAccessLog' | translate">
+          <div class="mb-4">
+            <button nz-button type="button" (click)="loadAll()">{{ 'privacyCenter.refreshLog' | translate }}</button>
           </div>
           <nz-table #logTable [nzData]="accessLogs()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>Data / Ora</th>
-                <th>Utente (Actor)</th>
-                <th>Azione</th>
-                <th>Soggetto</th>
-                <th>Risorsa</th>
+                <th>{{ 'privacyCenter.dateTime' | translate }}</th>
+                <th>{{ 'privacyCenter.actor' | translate }}</th>
+                <th>{{ 'privacyCenter.action' | translate }}</th>
+                <th>{{ 'privacyCenter.subject' | translate }}</th>
+                <th>{{ 'privacyCenter.resource' | translate }}</th>
                 <th>IP</th>
               </tr>
             </thead>
@@ -256,45 +261,45 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     <!-- Modal: Create DSR -->
     <nz-modal
       [nzVisible]="dsrModalOpen()"
-      nzTitle="Nuova Richiesta Interessato (GDPR / nLPD)"
+      [nzTitle]="'privacyCenter.modalDsr' | translate"
       (nzOnCancel)="dsrModalOpen.set(false)"
       (nzOnOk)="submitDsr()"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="dsrForm">
           <nz-form-item>
-            <nz-form-label nzRequired>Normativa</nz-form-label>
+            <nz-form-label nzRequired>{{ 'privacyCenter.regulation' | translate }}</nz-form-label>
             <nz-form-control>
               <select class="ant-input" formControlName="regulation">
-                <option value="nLPD">nLPD (Svizzera)</option>
-                <option value="GDPR">GDPR (UE)</option>
+                <option value="nLPD">{{ 'privacyCenter.regNlpd' | translate }}</option>
+                <option value="GDPR">{{ 'privacyCenter.regGdpr' | translate }}</option>
               </select>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Tipo Richiesta</nz-form-label>
+            <nz-form-label nzRequired>{{ 'privacyCenter.requestType' | translate }}</nz-form-label>
             <nz-form-control>
               <select class="ant-input" formControlName="request_type">
-                <option value="access">Accesso (Art. 15 GDPR / Art. 25 nLPD)</option>
-                <option value="portability">Portabilità (Art. 20 GDPR / Art. 28 nLPD)</option>
-                <option value="erasure">Cancellazione / Oblio (Art. 17 GDPR / Art. 32 nLPD)</option>
-                <option value="rectification">Rettifica</option>
+                <option value="access">{{ 'privacyCenter.reqAccess' | translate }}</option>
+                <option value="portability">{{ 'privacyCenter.reqPortability' | translate }}</option>
+                <option value="erasure">{{ 'privacyCenter.reqErasure' | translate }}</option>
+                <option value="rectification">{{ 'privacyCenter.reqRectification' | translate }}</option>
               </select>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Tipo Soggetto</nz-form-label>
+            <nz-form-label nzRequired>{{ 'privacyCenter.subjectType' | translate }}</nz-form-label>
             <nz-form-control>
               <select class="ant-input" formControlName="subject_type">
-                <option value="contact">Contatto (Cliente/Fornitore)</option>
-                <option value="employee">Dipendente</option>
-                <option value="user">Utente</option>
+                <option value="contact">{{ 'privacyCenter.subjectContactLong' | translate }}</option>
+                <option value="employee">{{ 'privacyCenter.subjectEmployee' | translate }}</option>
+                <option value="user">{{ 'privacyCenter.subjectUser' | translate }}</option>
               </select>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>UUID Soggetto</nz-form-label>
-            <nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.subjectUuid' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(dsrForm.controls.subject_id)">
               <input nz-input formControlName="subject_id" />
             </nz-form-control>
           </nz-form-item>
@@ -305,23 +310,23 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     <!-- Modal: Create RoPA -->
     <nz-modal
       [nzVisible]="ropaModalOpen()"
-      nzTitle="Nuova Attività di Trattamento (RoPA)"
+      [nzTitle]="'privacyCenter.modalRopa' | translate"
       (nzOnCancel)="ropaModalOpen.set(false)"
       (nzOnOk)="submitRopa()"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="ropaForm">
           <nz-form-item>
-            <nz-form-label nzRequired>Titolo</nz-form-label>
-            <nz-form-control><input nz-input formControlName="title" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.titleField' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(ropaForm.controls.title)"><input nz-input formControlName="title" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Finalità</nz-form-label>
-            <nz-form-control><input nz-input formControlName="purpose" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.purpose' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(ropaForm.controls.purpose)"><input nz-input formControlName="purpose" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Periodo di Conservazione</nz-form-label>
-            <nz-form-control><input nz-input formControlName="retention_period" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.retentionPeriod' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(ropaForm.controls.retention_period)"><input nz-input formControlName="retention_period" /></nz-form-control>
           </nz-form-item>
         </form>
       </ng-container>
@@ -330,23 +335,23 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     <!-- Modal: Create Subprocessor -->
     <nz-modal
       [nzVisible]="subModalOpen()"
-      nzTitle="Nuovo Sub-responsabile (nLPD Art. 16)"
+      [nzTitle]="'privacyCenter.modalSubprocessor' | translate"
       (nzOnCancel)="subModalOpen.set(false)"
       (nzOnOk)="submitSubprocessor()"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="subForm">
           <nz-form-item>
-            <nz-form-label nzRequired>Ragione Sociale</nz-form-label>
-            <nz-form-control><input nz-input formControlName="name" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.companyName' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(subForm.controls.name)"><input nz-input formControlName="name" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Tipo Servizio</nz-form-label>
-            <nz-form-control><input nz-input formControlName="service_type" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.serviceType' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(subForm.controls.service_type)"><input nz-input formControlName="service_type" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Codice Paese ISO-2 (es. CH, DE, US)</nz-form-label>
-            <nz-form-control><input nz-input formControlName="country_code" maxlength="2" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.countryCode' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(subForm.controls.country_code)"><input nz-input formControlName="country_code" maxlength="2" /></nz-form-control>
           </nz-form-item>
         </form>
       </ng-container>
@@ -355,30 +360,30 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     <!-- Modal: Create Breach -->
     <nz-modal
       [nzVisible]="breachModalOpen()"
-      nzTitle="Segnala Data Breach (Art. 33 GDPR / Art. 24 nLPD)"
+      [nzTitle]="'privacyCenter.modalBreach' | translate"
       (nzOnCancel)="breachModalOpen.set(false)"
       (nzOnOk)="submitBreach()"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="breachForm">
           <nz-form-item>
-            <nz-form-label nzRequired>Titolo Incidente</nz-form-label>
-            <nz-form-control><input nz-input formControlName="title" /></nz-form-control>
+            <nz-form-label nzRequired>{{ 'privacyCenter.incidentTitle' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(breachForm.controls.title)"><input nz-input formControlName="title" /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Gravità</nz-form-label>
+            <nz-form-label nzRequired>{{ 'privacyCenter.severity' | translate }}</nz-form-label>
             <nz-form-control>
               <select class="ant-input" formControlName="severity">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="low">{{ 'privacyCenter.severityLow' | translate }}</option>
+                <option value="medium">{{ 'privacyCenter.severityMedium' | translate }}</option>
+                <option value="high">{{ 'privacyCenter.severityHigh' | translate }}</option>
+                <option value="critical">{{ 'privacyCenter.severityCritical' | translate }}</option>
               </select>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzRequired>Numero Record Coinvolti</nz-form-label>
-            <nz-form-control><input nz-input type="number" formControlName="affected_records_count" /></nz-form-control>
+            <nz-form-label>{{ 'privacyCenter.recordCount' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(breachForm.controls.affected_records_count)"><input nz-input type="number" min="0" formControlName="affected_records_count" /></nz-form-control>
           </nz-form-item>
         </form>
       </ng-container>
@@ -390,6 +395,7 @@ export class PrivacyCenterComponent implements OnInit {
   private readonly api = inject(PrivacyApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   protected readonly loading = signal(false);
   protected readonly activities = signal<PrivacyProcessingActivity[]>([]);
@@ -411,30 +417,37 @@ export class PrivacyCenterComponent implements OnInit {
     regulation: this.fb.control<'GDPR' | 'nLPD'>('nLPD', Validators.required),
     request_type: this.fb.control<'access' | 'portability' | 'erasure' | 'rectification' | 'restriction'>('erasure', Validators.required),
     subject_type: this.fb.control<'contact' | 'employee' | 'user'>('contact', Validators.required),
-    subject_id: this.fb.control('', Validators.required),
+    subject_id: this.fb.control('', [Validators.required, Validators.pattern(UUID_PATTERN)]),
   });
 
   protected readonly ropaForm = this.fb.group({
-    title: this.fb.control('', Validators.required),
-    purpose: this.fb.control('', Validators.required),
-    legal_basis: this.fb.control('legal_obligation', Validators.required),
-    retention_period: this.fb.control('10 years (Swiss CO Art. 958f)', Validators.required),
+    title: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
+    purpose: this.fb.control('', [Validators.required, Validators.maxLength(2000)]),
+    legal_basis: this.fb.control('legal_obligation', [Validators.required, Validators.maxLength(60)]),
+    retention_period: this.fb.control('10 years (Swiss CO Art. 958f)', [Validators.required, Validators.maxLength(120)]),
   });
 
   protected readonly subForm = this.fb.group({
-    name: this.fb.control('', Validators.required),
-    service_type: this.fb.control('Infrastructure', Validators.required),
-    country_code: this.fb.control('CH', [Validators.required, Validators.maxLength(2)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
+    service_type: this.fb.control('Infrastructure', [Validators.required, Validators.maxLength(120)]),
+    country_code: this.fb.control('CH', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]),
   });
 
   protected readonly breachForm = this.fb.group({
-    title: this.fb.control('', Validators.required),
+    title: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
     severity: this.fb.control<'low' | 'medium' | 'high' | 'critical'>('high', Validators.required),
-    affected_records_count: this.fb.control(1, Validators.required),
+    affected_records_count: this.fb.control(1, [Validators.min(0)]),
   });
 
   ngOnInit(): void {
     this.loadAll();
+  }
+
+  protected errorTip(control: AbstractControl): string {
+    if (control.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
   }
 
   protected loadAll(): void {
@@ -462,7 +475,10 @@ export class PrivacyCenterComponent implements OnInit {
   }
 
   protected submitDsr(): void {
-    if (this.dsrForm.invalid) return;
+    if (this.dsrForm.invalid) {
+      this.dsrForm.markAllAsTouched();
+      return;
+    }
     this.api.createDataSubjectRequest(this.dsrForm.getRawValue()).subscribe({
       next: () => {
         this.dsrModalOpen.set(false);
@@ -493,7 +509,10 @@ export class PrivacyCenterComponent implements OnInit {
   }
 
   protected submitRopa(): void {
-    if (this.ropaForm.invalid) return;
+    if (this.ropaForm.invalid) {
+      this.ropaForm.markAllAsTouched();
+      return;
+    }
     const raw = this.ropaForm.getRawValue();
     this.api
       .createProcessingActivity({
@@ -511,7 +530,10 @@ export class PrivacyCenterComponent implements OnInit {
   }
 
   protected submitSubprocessor(): void {
-    if (this.subForm.invalid) return;
+    if (this.subForm.invalid) {
+      this.subForm.markAllAsTouched();
+      return;
+    }
     this.api.createSubprocessor(this.subForm.getRawValue()).subscribe({
       next: () => {
         this.subModalOpen.set(false);
@@ -522,7 +544,10 @@ export class PrivacyCenterComponent implements OnInit {
   }
 
   protected submitBreach(): void {
-    if (this.breachForm.invalid) return;
+    if (this.breachForm.invalid) {
+      this.breachForm.markAllAsTouched();
+      return;
+    }
     const raw = this.breachForm.getRawValue();
     this.api
       .createBreach({

@@ -272,11 +272,11 @@
                 }
               </td>
               <td>
-                <nz-tag>{{ def.approvable_type }}</nz-tag>
+                <nz-tag>{{ def.target_entity_type }}</nz-tag>
               </td>
               <td>v{{ def.version }}</td>
               <td>
-                @if (def.is_published) {
+                @if (def.status === 'published') {
                   <nz-tag nzColor="success">{{ 'WORKFLOWS.LBL_PUBBLICATO' | translate }}</nz-tag>
                 } @else {
                   <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_BOZZA' | translate }}</nz-tag>
@@ -289,7 +289,7 @@
               </td>
               <td nzAlign="right">
                 <nz-space>
-                  @if (!def.is_published) {
+                  @if (def.status !== 'published') {
                     <button
                       *nzSpaceItem
                       nz-button
@@ -348,7 +348,7 @@
               @for (del of delegations(); track del.id) {
                 <tr>
                   <td>{{ del.delegate_user_name || del.delegate_user_id }}</td>
-                  <td>{{ del.workflow_code || ('WORKFLOWS.ALL_PROCESSES' | translate) }}</td>
+                  <td>{{ 'WORKFLOWS.SCOPE_' + (del.scope || 'all').toUpperCase() | translate }}</td>
                   <td>
                     {{ del.starts_at | date: 'dd/MM/yyyy' }} - {{ del.ends_at | date: 'dd/MM/yyyy' }}
                   </td>
@@ -386,7 +386,6 @@
             <thead>
               <tr>
                 <th>{{ 'COMMON.NAME' | translate }}</th>
-                <th>{{ 'WORKFLOWS.SCOPE' | translate }}</th>
                 <th>{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
                 <th>{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
                 <th>{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
@@ -399,7 +398,6 @@
                   <td>
                     <strong>{{ rule.name }}</strong>
                   </td>
-                  <td>{{ rule.workflow_code || ('WORKFLOWS.GLOBAL' | translate) }}</td>
                   <td>{{ rule.reminder_hours }} ore</td>
                   <td>{{ rule.escalation_hours }} ore</td>
                   <td>
@@ -452,7 +450,7 @@
               <nz-statistic
                 [nzValue]="rep.figures.breached_steps_count"
                 [nzTitle]="'WORKFLOWS.BREACHED_COUNT' | translate"
-                [nzValueStyle]="{ color: '#cf1322' }"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
               ></nz-statistic>
             </nz-card>
           </div>
@@ -516,6 +514,7 @@
           <textarea
             nz-input
             rows="3"
+            maxlength="2000"
             [placeholder]="'WORKFLOWS.COMMENT_PLACEHOLDER' | translate"
             [ngModel]="decisionComment()"
             (ngModelChange)="decisionComment.set($event)"
@@ -538,34 +537,32 @@
     <form nz-form [formGroup]="startForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.PROCESS_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'workflow_code')">
           <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_ES_PURCHASE_APPROVAL' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'approvable_type')">
           <nz-select formControlName="approvable_type">
-            <nz-option nzValue="Invoice" [nzLabel]="'WORKFLOWS.LBL_FATTURA_INVOICE' | translate"></nz-option>
-            <nz-option nzValue="PurchaseOrder" [nzLabel]="'WORKFLOWS.LBL_ORDINE_D_ACQUISTO' | translate"></nz-option>
-            <nz-option nzValue="Quote" [nzLabel]="'WORKFLOWS.LBL_PREVENTIVO_QUOTE' | translate"></nz-option>
-            <nz-option nzValue="LeaveRequest" [nzLabel]="'WORKFLOWS.LBL_FERIE_PERMESSO' | translate"></nz-option>
-            <nz-option nzValue="CustomsDossier" [nzLabel]="'WORKFLOWS.LBL_DOSSIER_DOGANALE' | translate"></nz-option>
+            @for (type of approvableTypes; track type.value) {
+              <nz-option [nzValue]="type.value" [nzLabel]="type.labelKey | translate"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="approvable_id" [placeholder]="'WORKFLOWS.LBL_UUID_O_CODICE_DEL_DOCUMENTO' | translate" />
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'approvable_id')">
+          <input nz-input formControlName="approvable_id" [placeholder]="'WORKFLOWS.LBL_UUID_DEL_DOCUMENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKFLOWS.NOTE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'context_note')">
           <textarea nz-input rows="2" formControlName="context_note"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -639,34 +636,32 @@
     <form nz-form [formGroup]="defForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.CODE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="code" [placeholder]="'WORKFLOWS.LBL_ES_INVOICE_APPROVAL' | translate" />
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'code')">
+          <input nz-input formControlName="code" maxlength="100" (input)="uppercaseDefinitionCode()" [placeholder]="'WORKFLOWS.LBL_ES_INVOICE_APPROVAL_CODE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_APPROVAZIONE_FATTURE_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'description')">
           <textarea nz-input rows="2" formControlName="description"></textarea>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.TARGET_DOC' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-select formControlName="approvable_type">
-            <nz-option nzValue="Invoice" [nzLabel]="'WORKFLOWS.LBL_INVOICE' | translate"></nz-option>
-            <nz-option nzValue="PurchaseOrder" [nzLabel]="'WORKFLOWS.LBL_PURCHASEORDER' | translate"></nz-option>
-            <nz-option nzValue="Quote" [nzLabel]="'WORKFLOWS.LBL_QUOTE' | translate"></nz-option>
-            <nz-option nzValue="LeaveRequest" [nzLabel]="'WORKFLOWS.LBL_LEAVEREQUEST' | translate"></nz-option>
-            <nz-option nzValue="CustomsDossier" [nzLabel]="'WORKFLOWS.LBL_CUSTOMSDOSSIER' | translate"></nz-option>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'target_entity_type')">
+          <nz-select formControlName="target_entity_type">
+            @for (type of approvableTypes; track type.value) {
+              <nz-option [nzValue]="type.value" [nzLabel]="type.labelKey | translate"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
@@ -686,35 +681,39 @@
     <form nz-form [formGroup]="delegationForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'delegate_user_id')">
           <input nz-input formControlName="delegate_user_id" [placeholder]="'WORKFLOWS.LBL_UUID_UTENTE_DELEGATO' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKFLOWS.SCOPE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_VUOTO_PER_TUTTI_I_WORKFLOW' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.SCOPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'scope')">
+          <nz-select formControlName="scope">
+            @for (scope of delegationScopes; track scope) {
+              <nz-option [nzValue]="scope" [nzLabel]="'WORKFLOWS.SCOPE_' + scope.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKFLOWS.STARTS_AT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.STARTS_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'starts_at')">
           <input nz-input type="datetime-local" formControlName="starts_at" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKFLOWS.ENDS_AT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.ENDS_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'ends_at')">
           <input nz-input type="datetime-local" formControlName="ends_at" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKFLOWS.REASON' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'reason')">
           <input nz-input formControlName="reason" [placeholder]="'WORKFLOWS.LBL_ES_FERIE_ESTIVE' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -734,42 +733,44 @@
     <form nz-form [formGroup]="ruleForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'name')">
           <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_SOLLECITO_24H_ED_ESCALATION_48H' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKFLOWS.PROCESS_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_VUOTO_PER_REGOLA_GLOBALE' | translate" />
-        </nz-form-control>
-      </nz-form-item>
-
-      <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.REMINDER_H' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-input-number formControlName="reminder_hours" [nzMin]="1" [nzMax]="720"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'reminder_hours')">
+          <nz-input-number formControlName="reminder_hours" [nzMin]="1" [nzMax]="8760" [nzPrecision]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.ESCALATION_H' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-input-number formControlName="escalation_hours" [nzMin]="1" [nzMax]="720"></nz-input-number>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalation_hours')">
+          <nz-input-number formControlName="escalation_hours" [nzMin]="1" [nzMax]="8760" [nzPrecision]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalate_to_type')">
           <nz-select formControlName="escalate_to_type">
-            <nz-option nzValue="manager" [nzLabel]="'WORKFLOWS.LBL_MANAGER' | translate"></nz-option>
-            <nz-option nzValue="admin" [nzLabel]="'WORKFLOWS.LBL_AMMINISTRATORE' | translate"></nz-option>
-            <nz-option nzValue="role" [nzLabel]="'WORKFLOWS.LBL_RUOLO_SPECIFICO' | translate"></nz-option>
+            @for (target of escalationTargets; track target.value) {
+              <nz-option [nzValue]="target.value" [nzLabel]="target.labelKey | translate"></nz-option>
+            }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
+
+      @if (ruleForm.controls.escalate_to_type.value !== 'reporting_manager') {
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKFLOWS.ESCALATE_TO_ID' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalate_to_id')">
+            <input nz-input formControlName="escalate_to_id" maxlength="255" />
+          </nz-form-control>
+        </nz-form-item>
+      }
     </form>
   </ng-container>
 </nz-modal>

@@ -39,7 +39,8 @@ describe('LoyaltyApiService', () => {
       data: [
         {
           id: 'card-1',
-          customer_id: 'cust-1',
+          contact_id: 'cust-1',
+          type: 'loyalty',
           card_number: 'LOY-1001',
           balance: 250,
           status: 'active',
@@ -60,13 +61,15 @@ describe('LoyaltyApiService', () => {
 
   it('should create a loyalty card', () => {
     const payload: CreateLoyaltyCardPayload = {
-      customer_id: 'cust-1',
+      contact_id: 'cust-1',
+      type: 'loyalty',
       card_number: 'LOY-1002',
       initial_balance: 50,
     };
     const mockCard: LoyaltyCard = {
       id: 'card-2',
-      customer_id: 'cust-1',
+      contact_id: 'cust-1',
+      type: 'loyalty',
       card_number: 'LOY-1002',
       balance: 50,
       status: 'active',
@@ -85,18 +88,19 @@ describe('LoyaltyApiService', () => {
   });
 
   it('should update loyalty card status', () => {
-    const payload: UpdateLoyaltyCardPayload = { status: 'suspended' };
+    const payload: UpdateLoyaltyCardPayload = { status: 'blocked' };
     const mockCard: LoyaltyCard = {
       id: 'card-1',
-      customer_id: 'cust-1',
+      contact_id: 'cust-1',
+      type: 'loyalty',
       card_number: 'LOY-1001',
       balance: 250,
-      status: 'suspended',
+      status: 'blocked',
       created_at: '2026-11-01',
     };
 
     service.updateCard('card-1', payload).subscribe((res) => {
-      expect(res.data.status).toBe('suspended');
+      expect(res.data.status).toBe('blocked');
     });
 
     const req = httpTesting.expectOne(`${baseUrl}/card-1`);
@@ -135,13 +139,13 @@ describe('LoyaltyApiService', () => {
     req1.flush({ data: mockTransactions });
 
     const newTxPayload: RecordLoyaltyTransactionPayload = {
-      type: 'spend',
+      type: 'redeem',
       amount: 40,
       description: 'Discount coupon redemption',
     };
 
     service.recordTransaction('card-1', newTxPayload).subscribe((res) => {
-      expect(res.data.type).toBe('spend');
+      expect(res.data.type).toBe('redeem');
       expect(res.data.amount).toBe(40);
     });
 

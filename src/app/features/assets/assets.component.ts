@@ -33,6 +33,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-assets',
+  styleUrl: './assets.component.scss',
   imports: [
     TranslatePipe,
     FormsModule,
@@ -87,15 +88,15 @@ export class AssetsComponent implements OnInit {
   readonly loadingTag = signal(false);
 
   readonly assetForm = this.fb.group({
-    name: this.fb.control('', [Validators.required]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
     category_id: this.fb.control('', [Validators.required]),
-    acquisition_cost: this.fb.control<number>(0, [Validators.required, Validators.min(1)]),
+    acquisition_cost: this.fb.control<number>(0, [Validators.required, Validators.min(1), Validators.max(9999999999999.99)]),
     depreciation_method: this.fb.control<'straight_line' | 'declining_balance' | 'double_declining_balance' | 'units_of_production'>('straight_line'),
-    useful_life_years: this.fb.control<number>(5, [Validators.required, Validators.min(1)]),
+    useful_life_years: this.fb.control<number>(5, [Validators.min(1), Validators.max(100)]),
     condition: this.fb.control<'new' | 'excellent' | 'good' | 'fair' | 'poor' | 'damaged'>('new'),
-    asset_number: this.fb.control(''),
-    serial_number: this.fb.control(''),
-    description: this.fb.control(''),
+    asset_number: this.fb.control('', [Validators.maxLength(60)]),
+    serial_number: this.fb.control('', [Validators.maxLength(100)]),
+    description: this.fb.control('', [Validators.maxLength(5000)]),
   });
 
   ngOnInit(): void {

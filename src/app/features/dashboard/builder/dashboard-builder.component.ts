@@ -26,6 +26,7 @@ type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
 /** Dashboard builder: choose the widgets, their position and size, save or restore the factory layout. */
 @Component({
   selector: 'app-dashboard-builder',
+  styleUrl: './dashboard-builder.component.scss',
   imports: [
     FormsModule,
     JsonPipe,

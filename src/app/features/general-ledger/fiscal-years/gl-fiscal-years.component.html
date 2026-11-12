@@ -1,13 +1,13 @@
 <app-gl-error-alert [error]="error()" />
 
 <nz-card>
-  <div>
+  <div class="toolbar">
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.YEAR_NEW' | translate }}</button>
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
+  <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
         <th nzWidth="40px"></th>
@@ -70,12 +70,12 @@
   </nz-table>
 </nz-card>
 
-<nz-card [nzTitle]="'GL.AUDIT_TRAIL' | translate">
-  <div>
+<nz-card class="audit-card" [nzTitle]="'GL.AUDIT_TRAIL' | translate">
+  <div class="toolbar toolbar-flush">
     <label for="at-from">{{ 'GL.FROM' | translate }}</label>
-    <input id="at-from" nz-input type="date" [(ngModel)]="auditFrom" />
+    <input class="date-input" id="at-from" nz-input type="date" [(ngModel)]="auditFrom" />
     <label for="at-to">{{ 'GL.TO' | translate }}</label>
-    <input id="at-to" nz-input type="date" [(ngModel)]="auditTo" />
+    <input class="date-input" id="at-to" nz-input type="date" [(ngModel)]="auditTo" />
     <button nz-button type="button" (click)="exportAuditTrail()">{{ 'GL.EXPORT_AUDIT_TRAIL' | translate }}</button>
   </div>
 </nz-card>
@@ -103,7 +103,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="fy-end">{{ 'GL.END_DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="form.controls.end_date.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="form.controls.end_date.errors?.['serverError'] ?? (form.controls.end_date.hasError('endsBeforeStart') ? ('COMMON.VALIDATION.END_AFTER_START' | translate) : ('GL.REQUIRED' | translate))">
           <input id="fy-end" nz-input type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>
@@ -145,21 +145,21 @@
   (nzOnCancel)="anhangModalOpen.set(false)"
 >
   <ng-container *nzModalContent>
-    <div>
-      <div>
+    <div class="anhang-form">
+      <div class="field">
         <label for="anhang-fte-band">{{ 'GL.LBL_FASCIA_POSTI_A_TEMPO_PIENO_FTE' | translate }}</label>
-        <select id="anhang-fte-band" class="ant-input" [(ngModel)]="anhangFteBand">
+        <select id="anhang-fte-band" class="ant-input w-full" [(ngModel)]="anhangFteBand">
           <option value="up_to_10">{{ 'GL.LBL_FINO_A_10_FTE' | translate }}</option>
           <option value="up_to_50">{{ 'GL.LBL_DA_10_A_50_FTE' | translate }}</option>
           <option value="up_to_250">{{ 'GL.LBL_DA_50_A_250_FTE' | translate }}</option>
           <option value="over_250">{{ 'GL.LBL_OLTRE_250_FTE' | translate }}</option>
         </select>
       </div>
-      <div>
+      <div class="field">
         <label for="anhang-pledged">{{ 'GL.LBL_ATTIVI_COSTITUITI_IN_PEGNO_GARANZIE_CHF' | translate }}</label>
         <input id="anhang-pledged" nz-input [(ngModel)]="anhangPledgedAssets" />
       </div>
-      <div>
+      <div class="field">
         <label for="anhang-leasing">{{ 'GL.LBL_IMPEGNI_DA_LEASING_NON_ISCRITTI_A' | translate }}</label>
         <input id="anhang-leasing" nz-input [(ngModel)]="anhangLeasingCommitments" />
       </div>

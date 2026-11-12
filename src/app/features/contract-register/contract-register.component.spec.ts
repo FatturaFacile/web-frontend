@@ -32,7 +32,7 @@ describe('ContractRegisterComponent', () => {
       auto_renew: true,
       renewal_term_months: 12,
       currency: 'CHF',
-      total_value: '18000.00',
+      contract_value: '18000.00',
       status: 'active',
     },
   ];
@@ -40,10 +40,10 @@ describe('ContractRegisterComponent', () => {
   const mockParties: ContractPartyResource[] = [
     {
       id: 'pty-1',
-      role: 'committente',
+      party_type: 'external',
+      role: 'signatory',
       name: 'Tech Solutions SA',
-      contact_email: 'legal@techsolutions.ch',
-      vat_number: 'CHE-123.456.789',
+      email: 'legal@techsolutions.ch',
     },
   ];
 
@@ -56,8 +56,9 @@ describe('ContractRegisterComponent', () => {
       title: 'Report SLA Trimestrale',
       due_date: '2026-03-31',
       status: 'pending',
-      responsible_party: 'Fornitore',
-      penalty_amount: '1000.00',
+      responsible_party: 'counterparty',
+      amount: '1000.00',
+      currency: 'CHF',
     },
   ];
 
@@ -138,15 +139,19 @@ describe('ContractRegisterComponent', () => {
 
     component.contractForm.patchValue({
       kind: 'supplier',
-      counterparty_id: 'supp-99',
+      counterparty_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       contract_number: 'CTR-SUP-2026-02',
       title: 'Locazione Server Datacenter Lugano',
       start_date: '2026-02-01',
-      total_value: '12000.00',
+      end_date: '2027-02-01',
+      contract_value: '12000.00',
     });
 
     component.submitCreateContract();
-    expect(mockContractApi.createContract).toHaveBeenCalled();
+    expect(mockContractApi.createContract).toHaveBeenCalledWith(
+      expect.objectContaining({ counterparty_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7', contract_value: '12000.00' }),
+    );
+    expect(mockContractApi.createContract.mock.calls[0][0]).not.toHaveProperty('total_value');
     expect(component.createModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
   });
@@ -156,14 +161,10 @@ describe('ContractRegisterComponent', () => {
     component.openRenewModal(contract);
     expect(component.renewModalVisible()).toBe(true);
 
-    component.renewForm.patchValue({
-      new_end_date: '2027-12-31',
-      renewal_term_months: 12,
-      revised_value: '19500.00',
-    });
+    component.renewForm.patchValue({ new_end_date: '2027-12-31' });
 
     component.submitRenewContract();
-    expect(mockContractApi.renewContract).toHaveBeenCalled();
+    expect(mockContractApi.renewContract).toHaveBeenCalledWith(contract.kind, contract.id, { new_end_date: '2027-12-31' });
     expect(component.renewModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
   });
@@ -174,13 +175,9 @@ describe('ContractRegisterComponent', () => {
     expect(component.noticeModalVisible()).toBe(true);
 
     component.noticeDate.set('2026-10-15');
-    component.noticeReason.set('Cessazione attività ramo aziendale');
     component.submitNotice();
 
-    expect(mockContractApi.sendNotice).toHaveBeenCalledWith(contract.kind, contract.id, {
-      notice_date: '2026-10-15',
-      reason: 'Cessazione attività ramo aziendale',
-    });
+    expect(mockContractApi.sendNotice).toHaveBeenCalledWith(contract.kind, contract.id, { notice_given_at: '2026-10-15' });
     expect(component.noticeModalVisible()).toBe(false);
   });
 
@@ -215,5 +212,77 @@ describe('ContractRegisterComponent', () => {
     component.acknowledgeAlert(alert);
     expect(mockContractApi.acknowledgeAlert).toHaveBeenCalledWith(alert.id);
     expect(alert.is_acknowledged).toBe(true);
+  });
+
+  it('does not call the API when the forms are submitted empty and requires the end date of a supplier contract', () => {
+    mockContractApi.createContract.mockClear();
+    mockContractApi.addObligation.mockClear();
+    mockContractApi.addParty.mockClear();
+    component.openCreateModal();
+    component.submitCreateContract();
+    expect(mockContractApi.createContract).not.toHaveBeenCalled();
+    expect(component.contractForm.controls.title.touched).toBe(true);
+
+    component.contractForm.patchValue({ kind: 'supplier' });
+    expect(component.contractForm.controls.end_date.hasError('required')).toBe(true);
+    component.contractForm.patchValue({ kind: 'customer' });
+    expect(component.contractForm.controls.end_date.hasError('required')).toBe(false);
+
+    component.openDrawer(component.contracts()[0]);
+    component.openObligationModal();
+    component.submitObligation();
+    expect(mockContractApi.addObligation).not.toHaveBeenCalled();
+    component.openPartyModal();
+    component.partyForm.patchValue({ name: '' });
+    component.submitParty();
+    expect(mockContractApi.addParty).not.toHaveBeenCalled();
+  });
+
+  it('sends a party with the API field names, the name only for external parties', () => {
+    component.openDrawer(component.contracts()[0]);
+    component.openPartyModal();
+    component.partyForm.patchValue({ party_type: 'external', role: 'guarantor', name: 'Mario Rossi', email: 'mario@example.ch' });
+    component.submitParty();
+    expect(mockContractApi.addParty).toHaveBeenLastCalledWith(
+      'customer',
+      'ctr-001-uuid',
+      expect.objectContaining({ party_type: 'external', role: 'guarantor', name: 'Mario Rossi', email: 'mario@example.ch', party_id: undefined }),
+    );
+
+    component.openPartyModal();
+    component.partyForm.patchValue({ party_type: 'supplier', role: 'witness' });
+    expect(component.partyForm.controls.party_id.hasError('required')).toBe(true);
+    expect(component.partyForm.controls.name.hasError('required')).toBe(false);
+    component.partyForm.patchValue({ party_id: 'not-a-uuid' });
+    expect(component.partyForm.controls.party_id.hasError('uuid')).toBe(true);
+    component.partyForm.patchValue({ party_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7' });
+    component.submitParty();
+    expect(mockContractApi.addParty).toHaveBeenLastCalledWith(
+      'customer',
+      'ctr-001-uuid',
+      expect.objectContaining({ party_type: 'supplier', party_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7', name: undefined }),
+    );
+  });
+
+  it('sends an obligation with amount and currency together and rejects one without the other', () => {
+    component.openDrawer(component.contracts()[0]);
+    component.openObligationModal();
+    component.obligationForm.patchValue({ title: 'Collaudo', due_date: '2026-09-30', amount: '500.00', currency: '' });
+    expect(component.obligationForm.controls.currency.hasError('required')).toBe(true);
+    component.obligationForm.patchValue({ currency: 'chf' });
+    component.submitObligation();
+    expect(mockContractApi.addObligation).toHaveBeenLastCalledWith(
+      'customer',
+      'ctr-001-uuid',
+      expect.objectContaining({ amount: '500.00', currency: 'CHF', responsible_party: 'own', remind_days_before: 7 }),
+    );
+    expect(mockContractApi.addObligation.mock.calls.at(-1)?.[2]).not.toHaveProperty('penalty_amount');
+  });
+
+  it('flags a contract that ends before it starts', () => {
+    component.openCreateModal();
+    component.contractForm.patchValue({ start_date: '2026-05-10', end_date: '2026-05-01' });
+    expect(component.contractForm.controls.end_date.hasError('endsBeforeStart')).toBe(true);
+    expect(component.errorTip(component.contractForm, 'end_date')).toBe('COMMON.VALIDATION.END_AFTER_START');
   });
 });

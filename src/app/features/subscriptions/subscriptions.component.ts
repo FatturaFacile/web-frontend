@@ -33,6 +33,7 @@ import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-subscriptions',
+  styleUrl: './subscriptions.component.scss',
   imports: [
     TranslatePipe,
     FormsModule,
@@ -85,10 +86,10 @@ export class SubscriptionsComponent implements OnInit {
   readonly contractForm = this.fb.group({
     customer_id: this.fb.control('', [Validators.required]),
     plan_id: this.fb.control('', [Validators.required]),
-    name: this.fb.control(''),
+    name: this.fb.control('', [Validators.maxLength(255)]),
     start_date: this.fb.control('', [Validators.required]),
-    quantity: this.fb.control<number>(1, [Validators.required, Validators.min(1)]),
-    trial_days: this.fb.control<number>(0),
+    quantity: this.fb.control<number>(1, [Validators.min(1), Validators.max(1000000)]),
+    trial_days: this.fb.control<number>(0, [Validators.min(0), Validators.max(730)]),
     auto_renew: this.fb.control<boolean>(true),
   });
 

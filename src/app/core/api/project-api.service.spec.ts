@@ -150,6 +150,7 @@ describe('ProjectApiService', () => {
     reqGet.flush({ success: true, data: mockTasks });
 
     const taskPayload: StoreProjectTaskPayload = {
+      task_number: 'TSK-02',
       title: 'UI Design Mockups',
       estimated_hours: 60,
     };
@@ -160,12 +161,14 @@ describe('ProjectApiService', () => {
 
     const reqCreate = httpMock.expectOne(`${baseUrl}/proj-1/tasks`);
     expect(reqCreate.request.method).toBe('POST');
+    expect(reqCreate.request.body).toHaveProperty('task_number', 'TSK-02');
     reqCreate.flush({ success: true, data: { id: 'task-2', project_id: 'proj-1', ...taskPayload } });
   });
 
   it('manages timesheets approval workflow', () => {
     const timesheetPayload: StoreProjectTimesheetPayload = {
       user_id: 'u-1',
+      task_id: 'task-1',
       work_date: '2026-11-08',
       hours_worked: 8,
       is_billable: true,
@@ -178,6 +181,8 @@ describe('ProjectApiService', () => {
 
     const reqCreate = httpMock.expectOne(`${baseUrl}/proj-1/timesheets`);
     expect(reqCreate.request.method).toBe('POST');
+    expect(reqCreate.request.body).toHaveProperty('task_id', 'task-1');
+    expect(reqCreate.request.body).not.toHaveProperty('project_task_id');
     reqCreate.flush({ success: true, data: { id: 'ts-1', ...timesheetPayload, status: 'draft' } });
 
     service.submitTimesheet('ts-1').subscribe((res) => {

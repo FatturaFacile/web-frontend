@@ -8,12 +8,16 @@ export type ContractObligationStatus = 'pending' | 'completed' | 'waived' | 'ove
 
 export type ContractAlertType = 'notice_deadline' | 'expiry';
 
+export type ContractPartyType = 'contact' | 'supplier' | 'user' | 'external';
+
 export interface ContractPartyResource {
   id: string;
+  party_type: ContractPartyType;
+  party_id?: string | null;
   role: string;
-  name: string;
-  contact_email?: string | null;
-  vat_number?: string | null;
+  name: string | null;
+  email?: string | null;
+  notes?: string | null;
 }
 
 export interface ContractObligationResource {
@@ -26,7 +30,10 @@ export interface ContractObligationResource {
   due_date: string;
   status: ContractObligationStatus;
   responsible_party?: string | null;
-  penalty_amount?: string | null;
+  owner_user_id?: string | null;
+  amount?: string | null;
+  currency?: string | null;
+  remind_days_before?: number;
   completed_at?: string | null;
   created_at?: string;
 }
@@ -53,8 +60,8 @@ export interface ContractResource {
   auto_renew?: boolean;
   renewal_term_months?: number | null;
   status: ContractStatus;
-  currency?: string;
-  total_value?: string | null;
+  currency?: string | null;
+  contract_value?: string | null;
   parties?: ContractPartyResource[];
   obligations?: ContractObligationResource[];
   created_at?: string;
@@ -85,20 +92,19 @@ export interface StoreContractRequest {
   auto_renew?: boolean;
   renewal_term_months?: number | null;
   currency?: string;
-  total_value?: string | null;
+  contract_value?: string | null;
 }
 
 export interface UpdateContractTermsRequest {
   notice_period_days?: number | null;
   auto_renew?: boolean;
   renewal_term_months?: number | null;
-  total_value?: string | null;
+  alert_days_before?: number;
 }
 
+/** Without a new end date the API extends the contract by its renewal term. */
 export interface RenewContractRequest {
-  new_end_date: string;
-  renewal_term_months?: number | null;
-  revised_value?: string | null;
+  new_end_date?: string | null;
 }
 
 export interface ContractTransitionRequest {
@@ -111,15 +117,24 @@ export interface ContractSaveObligationRequest {
   title: string;
   description?: string | null;
   due_date: string;
+  /** 'own' or 'counterparty'. */
   responsible_party?: string | null;
-  penalty_amount?: string | null;
+  owner_user_id?: string | null;
+  /** The API requires amount and currency together. */
+  amount?: string | null;
+  currency?: string | null;
+  remind_days_before?: number | null;
 }
 
 export interface ContractSavePartyRequest {
+  party_type: ContractPartyType;
+  /** Required for contact, supplier and user parties; prohibited for external ones. */
+  party_id?: string;
+  /** Required for external parties only. */
+  name?: string;
   role: string;
-  name: string;
-  contact_email?: string | null;
-  vat_number?: string | null;
+  email?: string | null;
+  notes?: string | null;
 }
 
 export interface ContractRegisterParams {

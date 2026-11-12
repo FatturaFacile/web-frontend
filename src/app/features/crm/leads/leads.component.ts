@@ -1,5 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
@@ -26,13 +34,22 @@ import {
   LeadResource,
   LeadScoreBreakdownItem,
   LeadScoreExplanation,
+  serverErrorMessage,
   StoreLeadPayload,
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 
+/** A lead needs a name: the company name or at least the last name. */
+const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  const company = String(group.get('company_name')?.value ?? '').trim();
+  const lastName = String(group.get('last_name')?.value ?? '').trim();
+  return company || lastName ? null : { identityRequired: true };
+};
+
 @Component({
   selector: 'app-crm-leads',
+  styleUrl: './leads.component.scss',
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -84,16 +101,46 @@ export class LeadsComponent implements OnInit {
   readonly scoreModalVisible = signal(false);
   readonly scoreExplanation = signal<LeadScoreExplanation | null>(null);
 
-  readonly leadForm = this.fb.group({
-    first_name: this.fb.control(''),
-    last_name: this.fb.control(''),
-    company_name: this.fb.control('', [Validators.required]),
-    title: this.fb.control(''),
-    email: this.fb.control('', [Validators.email]),
-    phone: this.fb.control(''),
-    country: this.fb.control('CH', [Validators.required]),
-    estimated_budget: this.fb.control<number | null>(null),
-  });
+  /** True after the first attempt to save: the errors of the whole form are then shown. */
+  readonly submitted = signal(false);
+
+  readonly leadForm = this.fb.group(
+    {
+      first_name: this.fb.control('', [Validators.maxLength(100)]),
+      last_name: this.fb.control('', [Validators.maxLength(100)]),
+      company_name: this.fb.control('', [Validators.maxLength(200)]),
+      title: this.fb.control('', [Validators.maxLength(100)]),
+      email: this.fb.control('', [Validators.email, Validators.maxLength(150)]),
+      phone: this.fb.control('', [Validators.maxLength(50)]),
+      country: this.fb.control('CH', [Validators.pattern(/^[A-Za-z]{2}$/)]),
+      estimated_budget: this.fb.control<number | null>(null, [Validators.min(0)]),
+    },
+    { validators: identityRequired },
+  );
+
+  /** Whether the field is one of the two that satisfy the name rule and the form has no name yet. */
+  identityInvalid(key: string): boolean {
+    const { company_name, last_name } = this.leadForm.controls;
+    const shown = this.submitted() || company_name.touched || last_name.touched;
+    return (key === 'company_name' || key === 'last_name') && shown && this.leadForm.hasError('identityRequired');
+  }
+
+  errorTip(path: string): string {
+    const control = this.leadForm.get(path);
+    if (this.identityInvalid(path)) {
+      return this.i18n.translate('CRM.CLIENTS.FORM.NAME_REQUIRED');
+    }
+    if (control?.hasError('email')) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_EMAIL');
+    }
+    if (control?.hasError('maxlength') || control?.hasError('pattern') || control?.hasError('min')) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
+    if (control?.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    return serverErrorMessage(this.leadForm, path) ?? '';
+  }
 
   ngOnInit(): void {
     this.leadForm.patchValue({
@@ -152,6 +199,7 @@ export class LeadsComponent implements OnInit {
   }
 
   openCreateDrawer(): void {
+    this.submitted.set(false);
     this.leadForm.reset({
       first_name: '',
       last_name: '',
@@ -170,6 +218,7 @@ export class LeadsComponent implements OnInit {
   }
 
   submitCreateLead(): void {
+    this.submitted.set(true);
     if (this.leadForm.invalid) {
       this.leadForm.markAllAsTouched();
       return;

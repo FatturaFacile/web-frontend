@@ -1,0 +1,83 @@
+:host {
+  display: block;
+}
+
+.rent-container {
+  display: block;
+
+  .header-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .main-card {
+    margin-top: var(--space-4);
+  }
+
+  .tab-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+
+      .status-select {
+        min-width: 180px;
+      }
+    }
+
+    .description {
+      margin: 0;
+      color: var(--text-secondary);
+    }
+  }
+
+  .sub-text {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .inspection-alert {
+    margin-bottom: var(--space-4);
+  }
+
+  .damage-input-group {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .damage-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
