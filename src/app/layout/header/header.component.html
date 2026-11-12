@@ -39,54 +39,54 @@
 
   <div class="header-right">
     <!-- Jurisdiction Switcher -->
-    <div class="jurisdiction-toggle">
-      <button
-        type="button"
-        class="jurisdiction-pill"
-        [class.active]="authStore.activeJurisdiction() === 'IT'"
-        (click)="authStore.setJurisdiction('IT')"
-        [title]="'HEADER.JURISDICTION_IT' | translate"
-        [attr.aria-label]="'HEADER.JURISDICTION_IT' | translate"
-      >
-        🇮🇹 IT
-      </button>
-      <button
-        type="button"
-        class="jurisdiction-pill"
-        [class.active]="authStore.activeJurisdiction() === 'CH'"
-        (click)="authStore.setJurisdiction('CH')"
-        [title]="'HEADER.JURISDICTION_CH' | translate"
-        [attr.aria-label]="'HEADER.JURISDICTION_CH' | translate"
-      >
-        🇨🇭 CH
-      </button>
-    </div>
+    <!--    <div class="jurisdiction-toggle">-->
+    <!--      <button-->
+    <!--        type="button"-->
+    <!--        class="jurisdiction-pill"-->
+    <!--        [class.active]="authStore.activeJurisdiction() === 'IT'"-->
+    <!--        (click)="authStore.setJurisdiction('IT')"-->
+    <!--        [title]="'HEADER.JURISDICTION_IT' | translate"-->
+    <!--        [attr.aria-label]="'HEADER.JURISDICTION_IT' | translate"-->
+    <!--      >-->
+    <!--        🇮🇹 IT-->
+    <!--      </button>-->
+    <!--      <button-->
+    <!--        type="button"-->
+    <!--        class="jurisdiction-pill"-->
+    <!--        [class.active]="authStore.activeJurisdiction() === 'CH'"-->
+    <!--        (click)="authStore.setJurisdiction('CH')"-->
+    <!--        [title]="'HEADER.JURISDICTION_CH' | translate"-->
+    <!--        [attr.aria-label]="'HEADER.JURISDICTION_CH' | translate"-->
+    <!--      >-->
+    <!--        🇨🇭 CH-->
+    <!--      </button>-->
+    <!--    </div>-->
 
-    <!-- Currency Selector -->
-    <nz-select
-      [ngModel]="authStore.activeCurrency()"
-      (ngModelChange)="authStore.setCurrency($event)"
-      nzSize="small"
-      class="currency-select"
-      [attr.aria-label]="'SWISS_QR.CURRENCY_LBL' | translate"
-    >
-      <nz-option nzValue="EUR" nzLabel="€ EUR" />
-      <nz-option nzValue="CHF" nzLabel="CHF" />
-    </nz-select>
+    <!--    &lt;!&ndash; Currency Selector &ndash;&gt;-->
+    <!--    <nz-select-->
+    <!--      [ngModel]="authStore.activeCurrency()"-->
+    <!--      (ngModelChange)="authStore.setCurrency($event)"-->
+    <!--      nzSize="small"-->
+    <!--      class="currency-select"-->
+    <!--      [attr.aria-label]="'SWISS_QR.CURRENCY_LBL' | translate"-->
+    <!--    >-->
+    <!--      <nz-option nzValue="EUR" nzLabel="€ EUR" />-->
+    <!--      <nz-option nzValue="CHF" nzLabel="CHF" />-->
+    <!--    </nz-select>-->
 
-    <!-- Locale Switcher (en default, it, de, fr) -->
-    <nz-select
-      [ngModel]="authStore.activeLocale()"
-      (ngModelChange)="onLocaleChange($event)"
-      nzSize="small"
-      class="locale-select"
-      aria-label="Language selector"
-    >
-      <nz-option nzValue="en" nzLabel="🇬🇧 EN" />
-      <nz-option nzValue="it" nzLabel="🇮🇹 IT" />
-      <nz-option nzValue="de" nzLabel="🇩🇪 DE" />
-      <nz-option nzValue="fr" nzLabel="🇫🇷 FR" />
-    </nz-select>
+    <!--    &lt;!&ndash; Locale Switcher (en default, it, de, fr) &ndash;&gt;-->
+    <!--    <nz-select-->
+    <!--      [ngModel]="authStore.activeLocale()"-->
+    <!--      (ngModelChange)="onLocaleChange($event)"-->
+    <!--      nzSize="small"-->
+    <!--      class="locale-select"-->
+    <!--      aria-label="Language selector"-->
+    <!--    >-->
+    <!--      <nz-option nzValue="en" nzLabel="🇬🇧 EN" />-->
+    <!--      <nz-option nzValue="it" nzLabel="🇮🇹 IT" />-->
+    <!--      <nz-option nzValue="de" nzLabel="🇩🇪 DE" />-->
+    <!--      <nz-option nzValue="fr" nzLabel="🇫🇷 FR" />-->
+    <!--    </nz-select>-->
 
     <!-- Alerts -->
     <a
@@ -100,28 +100,28 @@
       <i class="fa-solid fa-bell" aria-hidden="true"></i>
     </a>
 
-    <!-- Dark/Light Theme Toggle -->
-    <button
-      type="button"
-      class="action-btn theme-toggle"
-      (click)="authStore.toggleTheme()"
-      [title]="
-        authStore.isDarkMode()
-          ? ('HEADER.THEME_LIGHT' | translate)
-          : ('HEADER.THEME_DARK' | translate)
-      "
-      [attr.aria-label]="
-        authStore.isDarkMode()
-          ? ('HEADER.THEME_LIGHT' | translate)
-          : ('HEADER.THEME_DARK' | translate)
-      "
-    >
-      @if (authStore.isDarkMode()) {
-        <i class="fa-solid fa-sun" style="color: #fadb14"></i>
-      } @else {
-        <i class="fa-solid fa-moon"></i>
-      }
-    </button>
+    <!--    &lt;!&ndash; Dark/Light Theme Toggle &ndash;&gt;-->
+    <!--    <button-->
+    <!--      type="button"-->
+    <!--      class="action-btn theme-toggle"-->
+    <!--      (click)="authStore.toggleTheme()"-->
+    <!--      [title]="-->
+    <!--        authStore.isDarkMode()-->
+    <!--          ? ('HEADER.THEME_LIGHT' | translate)-->
+    <!--          : ('HEADER.THEME_DARK' | translate)-->
+    <!--      "-->
+    <!--      [attr.aria-label]="-->
+    <!--        authStore.isDarkMode()-->
+    <!--          ? ('HEADER.THEME_LIGHT' | translate)-->
+    <!--          : ('HEADER.THEME_DARK' | translate)-->
+    <!--      "-->
+    <!--    >-->
+    <!--      @if (authStore.isDarkMode()) {-->
+    <!--        <i class="fa-solid fa-sun" style="color: #fadb14"></i>-->
+    <!--      } @else {-->
+    <!--        <i class="fa-solid fa-moon"></i>-->
+    <!--      }-->
+    <!--    </button>-->
 
     <!-- User profile dropdown -->
     <div class="user-profile">
@@ -145,21 +145,25 @@
             </div>
           </li>
           <li nz-menu-divider></li>
-          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/profile'])" (keydown.enter)="router.navigate(['/settings/profile'])">
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/profile'])"
+              (keydown.enter)="router.navigate(['/settings/profile'])">
             <i class="fa-solid fa-user fa-icon-spaced"></i>
             {{ "HEADER.PROFILE" | translate }}
           </li>
-          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security'])" (keydown.enter)="router.navigate(['/settings/security'])">
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security'])"
+              (keydown.enter)="router.navigate(['/settings/security'])">
             <i class="fa-solid fa-shield-halved fa-icon-spaced"></i>
             {{ "HEADER.SECURITY" | translate }}
           </li>
           @if (permissions.canWrite('system')) {
-            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security/two-factor'])" (keydown.enter)="router.navigate(['/settings/security/two-factor'])">
+            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security/two-factor'])"
+                (keydown.enter)="router.navigate(['/settings/security/two-factor'])">
               <i class="fa-solid fa-key fa-icon-spaced"></i>
               {{ "HEADER.TWO_FACTOR_POLICY" | translate }}
             </li>
           }
-          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/tenant'])" (keydown.enter)="router.navigate(['/settings/tenant'])">
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/tenant'])"
+              (keydown.enter)="router.navigate(['/settings/tenant'])">
             <i class="fa-solid fa-sliders fa-icon-spaced"></i>
             {{ "HEADER.PREFERENCES" | translate }}
           </li>
