@@ -24,6 +24,9 @@ function milestone(overrides: Partial<ProjectMilestone>): ProjectMilestone {
   };
 }
 
+/** The grid reloads after a short debounce. */
+const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 400));
+
 describe('PcMilestonesComponent', () => {
   const api = {
     getMilestones: vi.fn(),
@@ -43,7 +46,7 @@ describe('PcMilestonesComponent', () => {
 
   async function create(items: ProjectMilestone[]): Promise<Internals> {
     TestBed.resetTestingModule();
-    api.getMilestones.mockReturnValue(of({ success: true, message: '', data: items }));
+    api.getMilestones.mockReturnValue(of({ success: true, message: '', data: items, meta: { total: items.length, current_page: 1, last_page: 1, per_page: 20 } }));
     await TestBed.configureTestingModule({
       imports: [PcMilestonesComponent],
       providers: [
@@ -58,7 +61,7 @@ describe('PcMilestonesComponent', () => {
     fixture = TestBed.createComponent(PcMilestonesComponent);
     fixture.componentRef.setInput('projectId', 'p1');
     fixture.detectChanges();
-    await fixture.whenStable();
+    await settle();
     fixture.detectChanges();
     return fixture.componentInstance as unknown as Internals;
   }
@@ -71,9 +74,10 @@ describe('PcMilestonesComponent', () => {
 
   it('offers the completion of a milestone that is not reached yet and reloads afterwards', async () => {
     const component = await create([milestone({})]);
-    expect(api.getMilestones).toHaveBeenCalledWith('p1');
+    expect(api.getMilestones).toHaveBeenCalledWith('p1', expect.anything());
     component.complete(milestone({}));
     expect(api.completeMilestone).toHaveBeenCalledWith('m1');
+    await settle();
     expect(api.getMilestones).toHaveBeenCalledTimes(2);
   });
 

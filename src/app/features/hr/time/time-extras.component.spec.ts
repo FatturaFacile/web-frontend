@@ -361,7 +361,7 @@ describe('Working time extras', () => {
       expect(api.bookMeal).toHaveBeenCalledWith({ meal_type: 'lunch', source: 'web' });
       fixture.detectChanges();
       // the meal grid loads the period after its first debounce tick
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 450));
       expect(api.getMealBookings).toHaveBeenCalledWith(
         expect.objectContaining({ employee_id: null, from: '2026-03-01', to: '2026-03-31' }),
       );

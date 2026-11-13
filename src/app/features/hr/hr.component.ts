@@ -189,7 +189,7 @@ export class HrComponent implements OnInit {
       { key: 'start_date', header: 'hrmEmp.lblDataInizio', customCellTemplate: this.leaveStartTpl() },
       { key: 'end_date', header: 'hrmEmp.lblDataFine', customCellTemplate: this.leaveEndTpl() },
       { key: 'total_hours', header: 'hrmEmp.lblOreGiorni', align: 'right', customCellTemplate: this.leaveHoursTpl() },
-      { key: 'reason', header: 'hrmEmp.lblMotivazione', customCellTemplate: this.leaveReasonTpl() },
+      { key: 'reason', header: 'hrmEmp.lblMotivazione', sortable: false, filterable: false, groupable: false, customCellTemplate: this.leaveReasonTpl() },
       { key: 'status', header: 'hrmEmp.lblStato', customCellTemplate: this.leaveStatusTpl() },
     ];
   });

@@ -37,7 +37,7 @@
           type="search"
          
           [placeholder]="'treasury.searchPlaceholder' | translate"
-          [ngModel]="tableState.search()"
+          [ngModel]="txGrid.filterParams().search ?? ''"
           (ngModelChange)="onSearchChange($event)"
         />
 
@@ -56,15 +56,7 @@
         </button>
       </div>
 
-      <app-base-table
-        [data]="transactions()"
-        [columns]="txColumns()"
-        [loading]="tableState.loading()"
-        [total]="tableState.total()"
-        [pageIndex]="tableState.pageIndex()"
-        [pageSize]="tableState.pageSize()"
-        (paramsChange)="onParamsChange($event)"
-      />
+      <app-base-table [grid]="txGrid" [columns]="txColumns()" exportFileName="bank-transactions" />
     </nz-tab>
 
     <!-- TAB 2: CONTI BANCARI -->
@@ -75,10 +67,8 @@
       </div>
 
       <app-base-table
-        [data]="bankAccounts()"
+        [grid]="accountsGrid"
         [columns]="accountColumns()"
-        [loading]="loadingAccounts()"
-        [total]="bankAccounts().length"
         [scroll]="{ x: '900px' }"
         [actionsTemplate]="accountActionsTpl"
       />
@@ -91,10 +81,8 @@
     <!-- TAB 3: ESTRATTI CONTO IMPORTATI -->
     <nz-tab [nzTitle]="'treasury.tabs.statements' | translate">
       <app-base-table
-        [data]="statements()"
+        [grid]="statementsGrid"
         [columns]="statementColumns()"
-        [loading]="loadingStatements()"
-        [total]="statements().length"
         [scroll]="{ x: '1000px' }"
         [actionsTemplate]="statementActionsTpl"
       />
@@ -119,60 +107,43 @@
         <button nz-button nzType="primary" appIconAction="create" (click)="openBatchModal()"></button>
       </div>
 
-      <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
-        <thead>
-          <tr>
-            <th [nzSortFn]="'batch_reference' | gridSort" [nzFilters]="'batch_reference' | gridFilterList: pbTable.nzData" [nzFilterFn]="'batch_reference' | gridFilterFn">{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
-            <th [nzSortFn]="'payment_method' | gridSort" [nzFilters]="'payment_method' | gridFilterList: pbTable.nzData" [nzFilterFn]="'payment_method' | gridFilterFn">{{ 'treasury.lblMetodoPagamento' | translate }}</th>
-            <th [nzSortFn]="'execution_date' | gridSort" [nzFilters]="'execution_date' | gridFilterList: pbTable.nzData" [nzFilterFn]="'execution_date' | gridFilterFn">{{ 'treasury.lblDataEsecuzione' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: pbTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'treasury.lblImportoTotale' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: pbTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'treasury.lblStato' | translate }}</th>
-            <th nzAlign="right">{{ 'treasury.lblAzioni' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (b of pbTable.data; track b.id || b.batch_reference) {
-            <tr>
-              <td><strong>{{ b.batch_reference }}</strong></td>
-              <td><code>{{ b.payment_method }}</code></td>
-              <td>{{ b.execution_date | date: 'dd.MM.yyyy' }}</td>
-              <td class="num"><strong>{{ b.total_amount | money: b.currency }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="batchStatusColor(b.status)">{{ b.status }}</nz-tag>
-              </td>
-              <td nzAlign="right">
-                <div class="row-actions">
-                  @if (b.status === 'draft') {
-                    <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
-                      {{ 'treasury.lblInviaAppr' | translate }}
-                    </button>
-                  }
-                  @if (b.status === 'pending_approval') {
-                    <button nz-button nzSize="small" nzType="primary" (click)="approveBatch(b)">
-                      {{ 'treasury.lblApprova' | translate }}
-                    </button>
-                  }
-                  @if (b.status === 'approved') {
-                    <button nz-button nzSize="small" nzType="default" (click)="exportBatchXml(b)">
-                      <nz-icon nzType="upload" /> {{ 'treasury.lblGeneraXml' | translate }}
-                    </button>
-                  }
-                  @if (b.status === 'exported' || b.status === 'approved') {
-                    <button nz-button nzSize="small" nzType="primary" (click)="downloadBatchXml(b)">
-                      <nz-icon nzType="download" /> {{ 'treasury.lblScaricaXml' | translate }}
-                    </button>
-                  }
-                  @if (b.status !== 'cancelled' && b.status !== 'executed') {
-                    <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelBatch(b)">
-                      {{ 'treasury.lblAnnulla' | translate }}
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
+      <app-base-table
+        [grid]="batchesGrid"
+        [columns]="batchColumns()"
+        [scroll]="{ x: '800px' }"
+        [actionsTemplate]="batchActionsTpl"
+        exportFileName="payment-batches"
+      />
+
+      <ng-template #batchActionsTpl let-b>
+        <div class="row-actions">
+          @if (b.status === 'draft') {
+            <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
+              {{ 'treasury.lblInviaAppr' | translate }}
+            </button>
           }
-        </tbody>
-      </nz-table>
+          @if (b.status === 'pending_approval') {
+            <button nz-button nzSize="small" nzType="primary" (click)="approveBatch(b)">
+              {{ 'treasury.lblApprova' | translate }}
+            </button>
+          }
+          @if (b.status === 'approved') {
+            <button nz-button nzSize="small" nzType="default" (click)="exportBatchXml(b)">
+              <nz-icon nzType="upload" /> {{ 'treasury.lblGeneraXml' | translate }}
+            </button>
+          }
+          @if (b.status === 'exported' || b.status === 'approved') {
+            <button nz-button nzSize="small" nzType="primary" (click)="downloadBatchXml(b)">
+              <nz-icon nzType="download" /> {{ 'treasury.lblScaricaXml' | translate }}
+            </button>
+          }
+          @if (b.status !== 'cancelled' && b.status !== 'executed') {
+            <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelBatch(b)">
+              {{ 'treasury.lblAnnulla' | translate }}
+            </button>
+          }
+        </div>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 5: PREVISIONI FLUSSI DI CASSA (CASH FORECASTS) -->
@@ -189,36 +160,7 @@
         </div>
       </div>
 
-      <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
-        <thead>
-          <tr>
-            <th [nzSortFn]="'forecast_date' | gridSort" [nzFilters]="'forecast_date' | gridFilterList: cfTable.nzData" [nzFilterFn]="'forecast_date' | gridFilterFn">{{ 'treasury.lblDataAnalisi' | translate }}</th>
-            <th [nzSortFn]="'horizon_days' | gridSort" [nzFilters]="'horizon_days' | gridFilterList: cfTable.nzData" [nzFilterFn]="'horizon_days' | gridFilterFn">{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
-            <th class="num" [nzSortFn]="'opening_cash' | gridSort" [nzFilters]="'opening_cash' | gridFilterList: cfTable.nzData" [nzFilterFn]="'opening_cash' | gridFilterFn">{{ 'treasury.lblCassaIniziale' | translate }}</th>
-            <th class="num" [nzSortFn]="'expected_inflows' | gridSort" [nzFilters]="'expected_inflows' | gridFilterList: cfTable.nzData" [nzFilterFn]="'expected_inflows' | gridFilterFn">{{ 'treasury.lblEntratePreviste' | translate }}</th>
-            <th class="num" [nzSortFn]="'expected_outflows' | gridSort" [nzFilters]="'expected_outflows' | gridFilterList: cfTable.nzData" [nzFilterFn]="'expected_outflows' | gridFilterFn">{{ 'treasury.lblUscitePreviste' | translate }}</th>
-            <th class="num" [nzSortFn]="'projected_cash' | gridSort" [nzFilters]="'projected_cash' | gridFilterList: cfTable.nzData" [nzFilterFn]="'projected_cash' | gridFilterFn">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
-            <th>{{ 'treasury.lblRischioDeficit' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (cf of cfTable.data; track cf.id || cf.forecast_date) {
-            <tr>
-              <td>{{ cf.forecast_date | date: 'dd.MM.yyyy' }}</td>
-              <td>{{ cf.horizon_days }} giorni</td>
-              <td class="num">{{ cf.opening_cash | money: cf.currency }}</td>
-              <td class="num positive">+{{ cf.expected_inflows | money: cf.currency }}</td>
-              <td class="num negative">-{{ cf.expected_outflows | money: cf.currency }}</td>
-              <td class="num"><strong>{{ cf.projected_cash | money: cf.currency }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="cf.deficit_identified ? 'error' : 'success'">
-                  {{ cf.deficit_identified ? 'Rischio Deficit' : 'Copertura OK' }}
-                </nz-tag>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="forecastsGrid" [columns]="forecastColumns()" [scroll]="{ x: '800px' }" exportFileName="cash-forecasts" />
     </nz-tab>
   </nz-tabs>
 </nz-card>
@@ -427,5 +369,29 @@
     "
   >
     {{ 'treasury.statementStatus.' + val | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #txStatusTpl let-val="value">
+  <nz-tag [nzColor]="val === 'matched' || val === 'manual' ? 'success' : val === 'unmatched' ? 'warning' : 'default'">
+    {{ 'treasury.transactionStatus.' + val | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #batchRefTpl let-val="value"><strong>{{ val }}</strong></ng-template>
+
+<ng-template #batchMethodTpl let-val="value"><code>{{ val }}</code></ng-template>
+
+<ng-template #batchAmountTpl let-b let-val="value"><strong>{{ val | money: b.currency }}</strong></ng-template>
+
+<ng-template #batchStatusTpl let-b let-val="value">
+  <nz-tag [nzColor]="batchStatusColor(b.status)">{{ val }}</nz-tag>
+</ng-template>
+
+<ng-template #forecastAmountTpl let-cf let-val="value">{{ val | money: cf.currency }}</ng-template>
+
+<ng-template #forecastRiskTpl let-cf>
+  <nz-tag [nzColor]="cf.deficit_detected ? 'error' : 'success'">
+    {{ forecastRiskLabel(cf.deficit_detected ? 'deficit' : 'covered') }}
   </nz-tag>
 </ng-template>
