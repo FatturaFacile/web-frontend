@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -41,26 +41,23 @@ describe('TreasuryComponent', () => {
     is_active: true,
   };
 
-  const mockTx: BankTransactionResource = {
+  const mockTx = {
     id: 'tx-1',
     bank_account_id: 'ba-1',
-    transaction_date: '2026-11-09',
     amount: 1500,
     currency: 'EUR',
     description: 'Bonifico Cliente',
-    reconciled: false,
-  };
+  } as unknown as BankTransactionResource;
 
-  const mockStatement: BankStatement = {
+  const mockStatement = {
     id: 'st-1',
-    iban: 'IT60X0569601600000001234567',
     statement_date: '2026-11-01',
     opening_balance: 40000,
     closing_balance: 50000,
     currency: 'EUR',
     status: 'imported',
     source_format: 'camt053',
-  };
+  } as unknown as BankStatement;
 
   const mockBatch: PaymentBatchResource = {
     id: 'pb-1',
@@ -70,7 +67,7 @@ describe('TreasuryComponent', () => {
     execution_date: '2026-11-10',
     currency: 'EUR',
     total_amount: 1200,
-    total_count: 1,
+    item_count: 1,
     status: 'draft',
     lines: [
       {
@@ -81,17 +78,10 @@ describe('TreasuryComponent', () => {
     ],
   };
 
-  const mockForecast: CashForecastResource = {
+  const mockForecast = {
     id: 'cf-1',
-    forecast_date: '2026-11-09',
     horizon_days: 30,
-    opening_cash: 50000,
-    expected_inflows: 20000,
-    expected_outflows: 10000,
-    projected_cash: 60000,
-    deficit_identified: false,
-    currency: 'EUR',
-  };
+  } as unknown as CashForecastResource;
 
   beforeEach(() => {
     billingApiMock = {
@@ -206,8 +196,8 @@ describe('TreasuryComponent', () => {
   });
 
   it('does not create a bank account or a payment batch from an empty form', () => {
-    treasuryApiMock.createBankAccount.mockClear();
-    treasuryApiMock.createPaymentBatch.mockClear();
+    vi.mocked(treasuryApiMock.createBankAccount as never as Mock).mockClear();
+    vi.mocked(treasuryApiMock.createPaymentBatch as never as Mock).mockClear();
     component.openAccountModal();
     component.submitAccount();
     component.openBatchModal();

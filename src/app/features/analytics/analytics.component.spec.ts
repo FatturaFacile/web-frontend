@@ -120,7 +120,7 @@ describe('AnalyticsComponent', () => {
     analyticsApiSpy.getDueCalendar.mockReturnValue(of({ success: true, message: '', data: mockDueEntries }));
     analyticsApiSpy.getRevenueComparison.mockReturnValue(of({ success: true, message: '', data: mockRevenueComp }));
     analyticsApiSpy.getBreakdown.mockReturnValue(of({ success: true, message: '', data: mockBreakdown }));
-    analyticsApiSpy.getReportDefinitions.mockReturnValue(of({ success: true, message: '', data: mockReportDefs, meta: { total: mockReportDefs.length, current_page: 1, last_page: 1, per_page: 10 } }));
+    analyticsApiSpy.getReportDefinitions.mockReturnValue(of({ success: true, message: '', data: mockReportDefs, meta: { total: mockReportDefs.length, current_page: 1, from: 1, to: mockReportDefs.length, last_page: 1, per_page: 10 } }));
     analyticsApiSpy.createReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
     analyticsApiSpy.updateReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
     analyticsApiSpy.deleteReportDefinition.mockReturnValue(of({ success: true, message: '', data: undefined }));

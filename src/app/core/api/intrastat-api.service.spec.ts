@@ -63,7 +63,6 @@ describe('IntrastatApiService', () => {
     product_id: 'prod-1',
     product_name: 'Filtro Industriale',
     cn8_code: '84212100',
-    cpa_code: '282912',
     origin_country_code: 'IT',
   };
 
@@ -202,7 +201,7 @@ describe('IntrastatApiService', () => {
     expect(req2.request.method).toBe('GET');
     req2.flush({ data: [mockProfile] });
 
-    service.setProductProfile('prod-1', { cn8_code: '84212100' }).subscribe((res) => {
+    service.setProductProfile('prod-1', { supply_kind: 'goods', cn8_code: '84212100' }).subscribe((res) => {
       expect(res.data.cn8_code).toBe('84212100');
     });
     const req3 = httpMock.expectOne((r) => r.url.endsWith('/intrastat/product-profiles/prod-1'));

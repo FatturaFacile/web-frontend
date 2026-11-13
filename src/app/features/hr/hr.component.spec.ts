@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -241,14 +241,14 @@ describe('HrComponent', () => {
     expect(apiService.approveTimesheet).toHaveBeenCalledWith('ts-1');
   });
   it('does not call the API when the hire, leave or timesheet form is submitted empty or invalid', () => {
-    vi.mocked(apiService.createEmployee as never).mockClear();
+    vi.mocked(apiService.createEmployee as unknown as Mock).mockClear();
     component.openHireModal();
     component.hireForm.patchValue({ first_name: '', last_name: '', work_email: 'not-an-email' });
     component.submitHire();
     expect(apiService.createEmployee).not.toHaveBeenCalled();
     expect(component.hireForm.controls.first_name.touched).toBe(true);
 
-    vi.mocked(apiService.submitLeaveRequest as never).mockClear();
+    vi.mocked(apiService.submitLeaveRequest as unknown as Mock).mockClear();
     component.openLeaveModal();
     component.leaveForm.patchValue({ employee_id: '' });
     component.submitLeaveRequest();
@@ -261,7 +261,7 @@ describe('HrComponent', () => {
     component.submitLeaveRequest();
     expect(apiService.submitLeaveRequest).not.toHaveBeenCalled();
 
-    vi.mocked(apiService.submitTimesheet as never).mockClear();
+    vi.mocked(apiService.submitTimesheet as unknown as Mock).mockClear();
     component.openTimesheetModal();
     component.timesheetForm.patchValue({ employee_id: '' });
     component.submitTimesheet();

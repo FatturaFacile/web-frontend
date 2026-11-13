@@ -136,32 +136,32 @@ export class WorkflowsComponent {
   // --- TAB 1: INBOX / TASKS ---
   /** Inbox of the user: paging, sorting, column filters and grouping run on the API. */
   protected readonly tasksGrid = new FetchGridModel<WorkflowTask, WorkflowTaskParams>((query) => this.workflowApi.getMyTasks(query));
-  protected readonly tasks = computed(() => this.tasksGrid.items());
+  readonly tasks = computed(() => this.tasksGrid.items());
   protected readonly taskFilterCode = signal<string>('');
 
   // Decision Modal
-  protected decisionModalVisible = signal<boolean>(false);
+  decisionModalVisible = signal<boolean>(false);
   protected selectedTask = signal<WorkflowTask | null>(null);
-  protected decisionType = signal<'approved' | 'rejected'>('approved');
-  protected decisionComment = signal<string>('');
+  decisionType = signal<'approved' | 'rejected'>('approved');
+  decisionComment = signal<string>('');
   protected decisionSubmitting = signal<boolean>(false);
 
   // --- TAB 2: INSTANCES ---
   protected readonly instancesGrid = new FetchGridModel<WorkflowInstanceResource, WorkflowInstanceParams>((query) =>
     this.workflowApi.getInstances(query),
   );
-  protected readonly instances = computed(() => this.instancesGrid.items());
+  readonly instances = computed(() => this.instancesGrid.items());
   protected readonly instanceStatusFilter = signal<WorkflowInstanceStatus | ''>('');
 
   // Start Instance Modal
-  protected startModalVisible = signal<boolean>(false);
+  startModalVisible = signal<boolean>(false);
   protected startSubmitting = signal<boolean>(false);
   protected readonly approvableTypes = APPROVABLE_TYPES;
   protected readonly delegationScopes = DELEGATION_SCOPES;
   protected readonly escalationTargets = ESCALATION_TARGETS;
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly startForm = this.fb.group({
+  readonly startForm = this.fb.group({
     workflow_code: ['', [Validators.required, Validators.maxLength(100)]],
     approvable_type: ['sales_quote', [Validators.required]],
     approvable_id: ['', [Validators.required, uuidFormat]],
@@ -171,7 +171,7 @@ export class WorkflowsComponent {
   // Audit Trail & Verification Modal
   protected auditModalVisible = signal<boolean>(false);
   protected auditEntries = signal<WorkflowAuditEntryResource[]>([]);
-  protected auditVerification = signal<WorkflowAuditVerification | null>(null);
+  auditVerification = signal<WorkflowAuditVerification | null>(null);
   protected auditLoading = signal<boolean>(false);
   protected auditInstanceId = signal<string>('');
 
@@ -179,13 +179,13 @@ export class WorkflowsComponent {
   protected readonly definitionsGrid = new FetchGridModel<WorkflowDefinitionResource, WorkflowDefinitionParams>((query) =>
     this.workflowApi.getDefinitions(query),
   );
-  protected readonly definitions = computed(() => this.definitionsGrid.items());
+  readonly definitions = computed(() => this.definitionsGrid.items());
   protected readonly definitionSearch = signal<string>('');
 
   // Create Definition Modal
-  protected createDefModalVisible = signal<boolean>(false);
+  createDefModalVisible = signal<boolean>(false);
   protected createDefSubmitting = signal<boolean>(false);
-  protected readonly defForm = this.fb.group({
+  readonly defForm = this.fb.group({
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Z][A-Z0-9_]*$/)]],
     name: ['', [Validators.required, Validators.maxLength(255)]],
     description: ['', [Validators.maxLength(5000)]],
@@ -198,7 +198,7 @@ export class WorkflowsComponent {
   );
   protected createDelegationVisible = signal<boolean>(false);
   protected delegationSubmitting = signal<boolean>(false);
-  protected readonly delegationForm = this.fb.group({
+  readonly delegationForm = this.fb.group({
     delegate_user_id: ['', [Validators.required, uuidFormat, (control: AbstractControl<string>) => this.notSelfDelegate(control)]],
     scope: ['all', [Validators.required]],
     starts_at: ['', [Validators.required]],
@@ -211,7 +211,7 @@ export class WorkflowsComponent {
   );
   protected createRuleVisible = signal<boolean>(false);
   protected ruleSubmitting = signal<boolean>(false);
-  protected readonly ruleForm = this.fb.group({
+  readonly ruleForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
     reminder_hours: [24, [Validators.required, Validators.min(1), Validators.max(8760)]],
     escalation_hours: [48, [Validators.required, Validators.min(1), Validators.max(8760), escalationAfterReminderValidator]],
@@ -392,10 +392,10 @@ export class WorkflowsComponent {
   ]);
 
   // --- TAB 5: SLA REPORT ---
-  protected readonly slaReport = signal<WorkflowSlaReport | null>(null);
+  readonly slaReport = signal<WorkflowSlaReport | null>(null);
   protected readonly slaLoading = signal<boolean>(false);
 
-  protected onTabChange(index: number): void {
+  onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
     if (index === 4) {
       this.loadSlaReport();
@@ -407,19 +407,19 @@ export class WorkflowsComponent {
     this.tasksGrid.reload();
   }
 
-  protected onTaskCodeChange(code: string): void {
+  onTaskCodeChange(code: string): void {
     this.taskFilterCode.set(code);
     this.tasksGrid.setFilter({ definition_code: code || undefined });
   }
 
-  protected openDecisionModal(task: WorkflowTask, decision: 'approved' | 'rejected'): void {
+  openDecisionModal(task: WorkflowTask, decision: 'approved' | 'rejected'): void {
     this.selectedTask.set(task);
     this.decisionType.set(decision);
     this.decisionComment.set('');
     this.decisionModalVisible.set(true);
   }
 
-  protected submitDecision(): void {
+  submitDecision(): void {
     const task = this.selectedTask();
     if (!task) return;
 
@@ -460,7 +460,7 @@ export class WorkflowsComponent {
     this.instancesGrid.setFilter({ status: status || undefined });
   }
 
-  protected openStartModal(): void {
+  openStartModal(): void {
     this.startForm.reset({
       workflow_code: this.definitions()[0]?.code || '',
       approvable_type: 'sales_quote',
@@ -470,7 +470,7 @@ export class WorkflowsComponent {
     this.startModalVisible.set(true);
   }
 
-  protected submitStartWorkflow(): void {
+  submitStartWorkflow(): void {
     if (this.startForm.invalid) {
       this.startForm.markAllAsTouched();
       return;
@@ -511,7 +511,7 @@ export class WorkflowsComponent {
     });
   }
 
-  protected openAuditTrail(inst: WorkflowInstanceResource): void {
+  openAuditTrail(inst: WorkflowInstanceResource): void {
     this.auditInstanceId.set(inst.id);
     this.auditModalVisible.set(true);
     this.auditLoading.set(true);
@@ -547,7 +547,7 @@ export class WorkflowsComponent {
     this.definitionsGrid.setFilter({ search: term || undefined });
   }
 
-  protected openCreateDefModal(): void {
+  openCreateDefModal(): void {
     this.defForm.reset({
       code: '',
       name: '',
@@ -557,7 +557,7 @@ export class WorkflowsComponent {
     this.createDefModalVisible.set(true);
   }
 
-  protected submitCreateDefinition(): void {
+  submitCreateDefinition(): void {
     if (this.defForm.invalid) {
       this.defForm.markAllAsTouched();
       return;
@@ -579,7 +579,7 @@ export class WorkflowsComponent {
     });
   }
 
-  protected publishDefinition(def: WorkflowDefinitionResource): void {
+  publishDefinition(def: WorkflowDefinitionResource): void {
     this.workflowApi.publishDefinition(def.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('WORKFLOWS.MSG_WORKFLOW_PUBBLICATO_CON_SUCCESSO', { name: def.name }));
@@ -608,7 +608,7 @@ export class WorkflowsComponent {
     this.delegationsGrid.reload();
   }
 
-  protected openCreateDelegationModal(): void {
+  openCreateDelegationModal(): void {
     this.delegationForm.reset({
       delegate_user_id: '',
       scope: 'all',
@@ -619,7 +619,7 @@ export class WorkflowsComponent {
     this.createDelegationVisible.set(true);
   }
 
-  protected submitCreateDelegation(): void {
+  submitCreateDelegation(): void {
     if (this.delegationForm.invalid) {
       this.delegationForm.markAllAsTouched();
       return;
@@ -665,7 +665,7 @@ export class WorkflowsComponent {
     this.rulesGrid.reload();
   }
 
-  protected openCreateRuleModal(): void {
+  openCreateRuleModal(): void {
     this.ruleForm.reset({
       name: '',
       reminder_hours: 24,
@@ -676,7 +676,7 @@ export class WorkflowsComponent {
     this.createRuleVisible.set(true);
   }
 
-  protected submitCreateRule(): void {
+  submitCreateRule(): void {
     if (this.ruleForm.invalid) {
       this.ruleForm.markAllAsTouched();
       return;

@@ -93,16 +93,16 @@ export class TreasuryComponent implements OnInit {
 
   // Bank accounts (all of them: balance totals and the batch account picker are not paged)
   protected readonly bankAccounts = signal<BankAccountResource[]>([]);
-  protected readonly accountModalVisible = signal(false);
+  readonly accountModalVisible = signal(false);
 
   /** Transactions still to reconcile over the whole dataset (not only the loaded page). */
-  protected readonly unreconciledCount = signal(0);
+  readonly unreconciledCount = signal(0);
 
   // Payment Batches
-  protected readonly batchModalVisible = signal(false);
+  readonly batchModalVisible = signal(false);
 
   // KPIs
-  protected readonly totalEurBalance = computed(() => {
+  readonly totalEurBalance = computed(() => {
     return this.bankAccounts()
       .filter((a) => a.currency === 'EUR')
       .reduce((sum, a) => sum + (Number(a.current_balance) || 0), 0);

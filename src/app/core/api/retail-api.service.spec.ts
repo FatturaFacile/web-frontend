@@ -43,8 +43,10 @@ describe('RetailApiService', () => {
     };
 
     const mockResponse: PaginatedResponse<CommercialDocumentResource> = {
+      success: true,
+      message: '',
       data: [mockDoc],
-      meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 15, to: 1, total: 1 },
     };
 
     service.getCommercialDocuments({ page: 1 }).subscribe((res) => {

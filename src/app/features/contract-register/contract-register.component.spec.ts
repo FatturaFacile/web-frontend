@@ -55,7 +55,7 @@ describe('ContractRegisterComponent', () => {
       type: 'obligation',
       title: 'Report SLA Trimestrale',
       due_date: '2026-03-31',
-      status: 'pending',
+      status: 'open',
       responsible_party: 'counterparty',
       amount: '1000.00',
       currency: 'CHF',

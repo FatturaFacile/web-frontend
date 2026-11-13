@@ -50,8 +50,10 @@ describe('HrApiService', () => {
     };
 
     const mockResponse: PaginatedResponse<EmployeeResource> = {
+      success: true,
+      message: '',
       data: [mockEmployee],
-      meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 15, to: 1, total: 1 },
     };
 
     service.getEmployees({ page: 1 }).subscribe((res) => {

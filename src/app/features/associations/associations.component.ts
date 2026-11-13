@@ -119,14 +119,14 @@ export class AssociationsComponent {
   // --- TAB 1: MEMBERS / LIBRO SOCI ---
   protected readonly membersGrid = new FetchGridModel<AssociationMember, AssociationMemberParams>((query) => this.associationApi.getMembers(query));
   /** Loaded page of the registry: also the lookup of the member names and of the member pickers. */
-  protected readonly members = this.membersGrid.items;
+  readonly members = this.membersGrid.items;
   protected readonly memberSearch = signal<string>('');
   protected readonly memberStatusFilter = signal<AssociationMemberStatus | ''>('');
 
   // Create Member Modal
-  protected createMemberModalVisible = signal<boolean>(false);
+  createMemberModalVisible = signal<boolean>(false);
   protected createMemberSubmitting = signal<boolean>(false);
-  protected readonly memberForm = this.fb.group({
+  readonly memberForm = this.fb.group({
     first_name: ['', [Validators.required, Validators.maxLength(255)]],
     last_name: ['', [Validators.required, Validators.maxLength(255)]],
     email: ['', [Validators.email, Validators.maxLength(255)]],
@@ -135,19 +135,19 @@ export class AssociationsComponent {
   });
 
   // Member Detail Drawer
-  protected memberDrawerVisible = signal<boolean>(false);
+  memberDrawerVisible = signal<boolean>(false);
   protected selectedMember = signal<AssociationMember | null>(null);
   protected memberFeeStanding = signal<{ is_in_good_standing: boolean; outstanding_amount: string } | null>(null);
 
   // --- TAB 2: FEES & PAYMENTS ---
   protected readonly feesGrid = new FetchGridModel<AssociationFeeAssignment, AssociationFeeParams>((query) => this.associationApi.getFeeAssignments(query));
-  protected readonly fees = this.feesGrid.items;
+  readonly fees = this.feesGrid.items;
 
   // Create Fee Modal
   protected createFeeModalVisible = signal<boolean>(false);
   protected createFeeSubmitting = signal<boolean>(false);
   protected readonly feePlans = signal<AssociationFeePlan[]>([]);
-  protected readonly feeForm = this.fb.group({
+  readonly feeForm = this.fb.group({
     member_id: ['', [Validators.required]],
     fee_plan_id: ['', [Validators.required]],
     starts_on: [new Date().toISOString().slice(0, 10)],
@@ -155,21 +155,21 @@ export class AssociationsComponent {
   });
 
   // Record Payment Modal
-  protected paymentModalVisible = signal<boolean>(false);
+  paymentModalVisible = signal<boolean>(false);
   protected paymentFeeTarget = signal<AssociationFeeAssignment | null>(null);
-  protected paymentAmount = signal<string>('50.00');
+  paymentAmount = signal<string>('50.00');
   protected paymentAmountTouched = signal(false);
-  protected paymentDate = signal<string>(new Date().toISOString().slice(0, 10));
+  paymentDate = signal<string>(new Date().toISOString().slice(0, 10));
   protected paymentMethod = signal<AssociationPaymentMethod>('bank_transfer');
   protected readonly paymentMethods: readonly AssociationPaymentMethod[] = ['cash', 'bank_transfer', 'card', 'online', 'cheque'];
   protected paymentSubmitting = signal<boolean>(false);
 
   // --- TAB 3: COURSES ---
   protected readonly coursesGrid = new FetchGridModel<AssociationCourse, AssociationCourseParams>((query) => this.associationApi.getCourses(query));
-  protected readonly courses = this.coursesGrid.items;
-  protected createCourseModalVisible = signal<boolean>(false);
+  readonly courses = this.coursesGrid.items;
+  createCourseModalVisible = signal<boolean>(false);
   protected createCourseSubmitting = signal<boolean>(false);
-  protected readonly courseForm = this.fb.group({
+  readonly courseForm = this.fb.group({
     title: ['', [Validators.required, Validators.maxLength(255)]],
     starts_on: [new Date().toISOString().slice(0, 10), [Validators.required]],
     ends_on: ['', [endsNotBefore('starts_on')]],
@@ -179,17 +179,17 @@ export class AssociationsComponent {
   // Enrol Member in Course Modal
   protected enrolModalVisible = signal<boolean>(false);
   protected enrolCourseTarget = signal<AssociationCourse | null>(null);
-  protected enrolMemberId = signal<string>('');
+  enrolMemberId = signal<string>('');
   protected enrolSubmitted = signal(false);
   protected enrolSubmitting = signal<boolean>(false);
 
   // --- TAB 4: DONATIONS & 5 PER MILLE ---
   protected readonly donationsGrid = new FetchGridModel<AssociationDonation, AssociationDonationParams>((query) => this.associationApi.getDonations(query));
-  protected readonly donations = this.donationsGrid.items;
+  readonly donations = this.donationsGrid.items;
   protected readonly fivePerMille = signal<{ year: number; total_received: string } | null>(null);
   protected createDonationModalVisible = signal<boolean>(false);
   protected createDonationSubmitting = signal<boolean>(false);
-  protected readonly donationForm = this.fb.group({
+  readonly donationForm = this.fb.group({
     kind: ['money' as 'money' | 'in_kind', [Validators.required]],
     amount: ['100.00', [Validators.required, Validators.pattern(DONATION_AMOUNT_PATTERN)]],
     received_on: [new Date().toISOString().slice(0, 10), [Validators.required, notInFuture]],
@@ -202,12 +202,12 @@ export class AssociationsComponent {
   protected readonly volunteers = signal<AssociationVolunteer[]>([]);
   protected readonly volunteersLoading = signal<boolean>(false);
   protected readonly reimbursementsGrid = new FetchGridModel<AssociationReimbursement, AssociationReimbursementParams>((query) => this.associationApi.getReimbursements(query));
-  protected readonly reimbursements = this.reimbursementsGrid.items;
+  readonly reimbursements = this.reimbursementsGrid.items;
 
   // Create Reimbursement Modal
   protected createReimbModalVisible = signal<boolean>(false);
   protected reimbSubmitting = signal<boolean>(false);
-  protected readonly reimbForm = this.fb.group({
+  readonly reimbForm = this.fb.group({
     member_id: ['', [Validators.required]],
     kind: ['expense' as 'expense' | 'mileage', [Validators.required]],
     incurred_on: [new Date().toISOString().slice(0, 10), [Validators.required]],
@@ -221,10 +221,10 @@ export class AssociationsComponent {
 
   // --- TAB 6: MEETINGS ---
   protected readonly meetingsGrid = new FetchGridModel<AssociationMeeting, AssociationMeetingParams>((query) => this.associationApi.getMeetings(query));
-  protected readonly meetings = this.meetingsGrid.items;
+  readonly meetings = this.meetingsGrid.items;
   protected createMeetingModalVisible = signal<boolean>(false);
   protected meetingSubmitting = signal<boolean>(false);
-  protected readonly meetingForm = this.fb.group({
+  readonly meetingForm = this.fb.group({
     title: ['', [Validators.required, Validators.maxLength(255)]],
     body: ['assembly' as 'assembly' | 'board' | 'other', [Validators.required]],
     body_name: ['', [requiredWhen('body', 'other'), Validators.maxLength(255)]],
@@ -251,7 +251,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected onTabChange(index: number): void {
+  onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
     if (index === 3) {
       this.loadFivePerMille();
@@ -273,7 +273,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected openCreateMemberModal(): void {
+  openCreateMemberModal(): void {
     this.memberForm.reset({
       first_name: '',
       last_name: '',
@@ -284,7 +284,7 @@ export class AssociationsComponent {
     this.createMemberModalVisible.set(true);
   }
 
-  protected submitCreateMember(): void {
+  submitCreateMember(): void {
     if (this.memberForm.invalid) {
       this.memberForm.markAllAsTouched();
       return;
@@ -323,7 +323,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected openMemberDrawer(member: AssociationMember): void {
+  openMemberDrawer(member: AssociationMember): void {
     this.selectedMember.set(member);
     this.memberDrawerVisible.set(true);
 
@@ -338,7 +338,7 @@ export class AssociationsComponent {
     this.feesGrid.reload();
   }
 
-  protected openCreateFeeModal(): void {
+  openCreateFeeModal(): void {
     this.feeForm.reset({
       member_id: this.members()[0]?.id || '',
       fee_plan_id: '',
@@ -352,7 +352,7 @@ export class AssociationsComponent {
     this.createFeeModalVisible.set(true);
   }
 
-  protected submitCreateFee(): void {
+  submitCreateFee(): void {
     if (this.feeForm.invalid) {
       this.feeForm.markAllAsTouched();
       return;
@@ -391,7 +391,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected openPaymentModal(fee: AssociationFeeAssignment): void {
+  openPaymentModal(fee: AssociationFeeAssignment): void {
     this.paymentFeeTarget.set(fee);
     this.paymentAmountTouched.set(false);
     const instalment = this.openInstalmentOf(fee);
@@ -416,7 +416,7 @@ export class AssociationsComponent {
     return value !== '' && notInFuture(new FormControl(value)) === null;
   }
 
-  protected submitPayment(): void {
+  submitPayment(): void {
     const fee = this.paymentFeeTarget();
     if (!fee) return;
     this.paymentAmountTouched.set(true);
@@ -449,7 +449,7 @@ export class AssociationsComponent {
     this.coursesGrid.reload();
   }
 
-  protected openCreateCourseModal(): void {
+  openCreateCourseModal(): void {
     this.courseForm.reset({
       title: '',
       starts_on: new Date().toISOString().slice(0, 10),
@@ -459,7 +459,7 @@ export class AssociationsComponent {
     this.createCourseModalVisible.set(true);
   }
 
-  protected submitCreateCourse(): void {
+  submitCreateCourse(): void {
     if (this.courseForm.invalid) {
       this.courseForm.markAllAsTouched();
       return;
@@ -487,14 +487,14 @@ export class AssociationsComponent {
     });
   }
 
-  protected openEnrolModal(course: AssociationCourse): void {
+  openEnrolModal(course: AssociationCourse): void {
     this.enrolCourseTarget.set(course);
     this.enrolSubmitted.set(false);
     this.enrolMemberId.set(this.members()[0]?.id || '');
     this.enrolModalVisible.set(true);
   }
 
-  protected submitEnrol(): void {
+  submitEnrol(): void {
     const course = this.enrolCourseTarget();
     this.enrolSubmitted.set(true);
     if (!course || !this.enrolMemberId()) return;
@@ -534,7 +534,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected openCreateDonationModal(): void {
+  openCreateDonationModal(): void {
     this.donationForm.reset({
       kind: 'money',
       amount: '100.00',
@@ -546,7 +546,7 @@ export class AssociationsComponent {
     this.createDonationModalVisible.set(true);
   }
 
-  protected submitCreateDonation(): void {
+  submitCreateDonation(): void {
     if (this.donationForm.invalid) {
       this.donationForm.markAllAsTouched();
       return;
@@ -577,7 +577,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected generateReceipt(donation: AssociationDonation): void {
+  generateReceipt(donation: AssociationDonation): void {
     this.associationApi.generateDonationReceipt(donation.id).subscribe({
       next: (res) => {
         this.message.success(this.translate.instant('ASSOCIATIONS.MSG_RICEVUTA_FISCALE_N_GENERATA', { receipt_number: res.data.receipt_number }));
@@ -606,7 +606,7 @@ export class AssociationsComponent {
     this.reimbursementsGrid.reload();
   }
 
-  protected openCreateReimbModal(): void {
+  openCreateReimbModal(): void {
     this.reimbForm.reset({
       member_id: this.volunteers()[0]?.member_id || '',
       kind: 'expense',
@@ -621,7 +621,7 @@ export class AssociationsComponent {
     this.createReimbModalVisible.set(true);
   }
 
-  protected submitCreateReimb(): void {
+  submitCreateReimb(): void {
     if (this.reimbForm.invalid) {
       this.reimbForm.markAllAsTouched();
       return;
@@ -656,7 +656,7 @@ export class AssociationsComponent {
     });
   }
 
-  protected decideReimb(reimb: AssociationReimbursement, approved: boolean): void {
+  decideReimb(reimb: AssociationReimbursement, approved: boolean): void {
     const payload = approved ? { approved } : { approved, reason: this.translate.instant('ASSOCIATIONS.LBL_RIMBORSO_RESPINTO') };
     this.associationApi.decideReimbursement(reimb.id, payload).subscribe({
       next: () => {
@@ -682,7 +682,7 @@ export class AssociationsComponent {
     this.meetingsGrid.reload();
   }
 
-  protected openCreateMeetingModal(): void {
+  openCreateMeetingModal(): void {
     this.meetingForm.reset({
       title: '',
       body: 'assembly',
@@ -694,7 +694,7 @@ export class AssociationsComponent {
     this.createMeetingModalVisible.set(true);
   }
 
-  protected submitCreateMeeting(): void {
+  submitCreateMeeting(): void {
     if (this.meetingForm.invalid) {
       this.meetingForm.markAllAsTouched();
       return;
