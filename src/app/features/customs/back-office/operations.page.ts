@@ -95,13 +95,13 @@ export const CUSTOMS_OPERATIONS_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.add_rate', '/customs/tariff-grids/{id}/rates', {
           fields: [
             rf.text('destination_country', { maxLength: 2 }),
-            rf.decimal('min_weight_kg'),
-            rf.decimal('max_weight_kg'),
-            rf.decimal('min_volume_m3'),
-            rf.decimal('max_volume_m3'),
+            rf.decimal('min_weight_kg', { min: 0 }),
+            rf.decimal('max_weight_kg', { atLeastField: 'min_weight_kg' }),
+            rf.decimal('min_volume_m3', { min: 0 }),
+            rf.decimal('max_volume_m3', { atLeastField: 'min_volume_m3' }),
             req(rf.select('basis', ['flat', 'per_kg', 'per_m3'])),
-            req(rf.decimal('rate')),
-            rf.decimal('minimum_charge'),
+            req(rf.decimal('rate', { min: 0 })),
+            rf.decimal('minimum_charge', { min: 0 }),
           ],
         }),
         act('DELETE', 'RES.A.delete_rate', '/customs/tariff-grids/{id}/rates/{rateId}', {

@@ -71,6 +71,11 @@ export class ResourcePanelComponent implements OnInit {
   protected readonly filters = signal<Record<string, unknown>>({});
   protected readonly scopeValue = signal<string | null>(null);
   protected readonly form = signal<ActiveForm | null>(null);
+  /** Fields of the open form: those bound to a scope value (`scopeValues`) only appear while the scope matches. */
+  protected readonly formFields = computed(() => {
+    const scope = this.scopeValue();
+    return (this.form()?.action.fields ?? []).filter((field) => !field.scopeValues || (scope !== null && field.scopeValues.includes(scope)));
+  });
   protected readonly result = signal<unknown>(null);
   protected readonly resultOpen = signal(false);
 

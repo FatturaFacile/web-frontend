@@ -43,12 +43,26 @@ export interface RequisitionFilterParams {
   status?: RequisitionStatus;
 }
 
+/** Body of POST /procurement/requisitions (`StorePurchaseRequisitionRequest`). */
 export interface CreateRequisitionPayload {
-  requested_by: string;
-  department?: string;
-  total_estimated: number;
-  currency: 'EUR' | 'CHF';
-  notes?: string;
+  title: string;
+  /** YYYY-MM-DD, today or later. */
+  required_by_date: string;
+  urgency: 'low' | 'medium' | 'high' | 'emergency';
+  project_id?: string | null;
+  cost_center_id?: string | null;
+  department_id?: string | null;
+  branch_id?: string | null;
+  currency?: string | null;
+  notes?: string | null;
+  lines: {
+    description: string;
+    quantity_requested: number;
+    uom: string;
+    estimated_unit_price: number;
+    supplier_catalog_id?: string | null;
+    suggested_supplier_id?: string | null;
+  }[];
 }
 
 export type GoodsReceiptInspectionStatus = 'pending' | 'passed' | 'failed' | 'conditional';

@@ -180,7 +180,7 @@ describe('HrComponent', () => {
     expect(apiService.completeProbation).toHaveBeenCalledWith('emp-1');
 
     component.promoteEmployee(mockEmployee);
-    expect(apiService.promoteEmployee).toHaveBeenCalledWith('emp-1', { base_annual_salary: 38500 });
+    expect(apiService.promoteEmployee).toHaveBeenCalledWith('emp-1', { new_base_annual_salary: 38500 });
 
     component.terminateEmployee(mockEmployee);
     expect(apiService.terminateEmployee).toHaveBeenCalledWith('emp-1', expect.objectContaining({ reason: 'Cessazione consensuale' }));

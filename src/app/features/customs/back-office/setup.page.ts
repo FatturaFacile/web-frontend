@@ -4,7 +4,7 @@ const MASTER_DATA_TYPES = ['tariff-numbers', 'statistical-keys', 'packaging-type
 
 const MASTER_DATA_FIELDS: readonly ResourceField[] = [
   req(rf.text('code', { maxLength: 12 })),
-  rf.text('tariff_code', { maxLength: 12 }),
+  req(rf.text('tariff_code', { maxLength: 12, scopeValues: ['statistical-keys'] })),
   rf.text('name_de', { maxLength: 500 }),
   rf.text('name_fr', { maxLength: 500 }),
   rf.text('name_it', { maxLength: 500 }),

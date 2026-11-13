@@ -95,8 +95,8 @@ export class TalentComponent implements OnInit {
             labelKey: `hrmTalent.reviewType.${value}`,
           })),
       },
-      { key: 'goals_score', labelKey: 'hrmTalent.goalsScore', type: 'decimal', required: true },
-      { key: 'competencies_score', labelKey: 'hrmTalent.competenciesScore', type: 'decimal', required: true },
+      { key: 'goals_score', labelKey: 'hrmTalent.goalsScore', type: 'decimal', required: true, min: 1, max: 5 },
+      { key: 'competencies_score', labelKey: 'hrmTalent.competenciesScore', type: 'decimal', required: true, min: 1, max: 5 },
       { key: 'overall_rating', labelKey: 'hrmTalent.overallRating', type: 'text', noForm: true },
       { key: 'promotion_recommended', labelKey: 'hrmTalent.promotionRecommended', type: 'boolean' },
       {

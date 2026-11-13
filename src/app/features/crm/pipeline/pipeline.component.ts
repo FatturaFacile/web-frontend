@@ -227,7 +227,7 @@ export class PipelineComponent implements OnInit {
     this.checkingDuplicates.set(true);
     this.crmApi.getDuplicates({ entity: 'contacts' }).subscribe({
       next: (res) => {
-        this.duplicateResult.set(res.data);
+        this.duplicateResult.set(res);
         this.duplicateModalVisible.set(true);
         this.checkingDuplicates.set(false);
       },

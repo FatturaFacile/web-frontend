@@ -1,3 +1,5 @@
+Before anything else read `.ai/rules/index.md` and the rule files it maps to your paths (always `.ai/rules/project.md`).
+
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
 ## TypeScript Best Practices

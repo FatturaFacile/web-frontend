@@ -1,6 +1,34 @@
 import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const WEEKLY_PLAN_TEMPLATE = '{"mon":{"from":"08:00","to":"17:00","meals":["lunch"]}}';
+const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const MEALS = ['breakfast', 'lunch', 'snack', 'dinner'];
+const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Mirrors the `days` rules of the weekly plan: weekday keys (at least one), each with HH:mm `from`/`to` and known meals. */
+function isValidWeeklyPlanDays(parsed: unknown): boolean {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return false;
+  }
+  const entries = Object.entries(parsed as Record<string, unknown>);
+  return (
+    entries.length > 0 &&
+    entries.every(([weekday, day]) => {
+      if (!WEEKDAYS.includes(weekday) || typeof day !== 'object' || day === null) {
+        return false;
+      }
+      const { from, to, meals } = day as Record<string, unknown>;
+      return (
+        typeof from === 'string' &&
+        TIME_OF_DAY.test(from) &&
+        typeof to === 'string' &&
+        TIME_OF_DAY.test(to) &&
+        (meals === undefined || (Array.isArray(meals) && meals.every((m) => typeof m === 'string' && MEALS.includes(m))))
+      );
+    })
+  );
+}
+
 const SUBSIDY_PARAMETERS_TEMPLATE = '{"amount_per_day":"0.00"}';
 
 /** Meals, activity enrolments, family messages, weekly plans, fee assignments, subsidy rules and documents. */
@@ -29,7 +57,7 @@ export const CHILDCARE_CARE_PAGE: ResourcePageConfig = {
           fields: [
             req(rf.date('valid_from')),
             rf.date('valid_to', { notBefore: 'valid_from' }),
-            req(rf.json('days', { defaultValue: WEEKLY_PLAN_TEMPLATE })),
+            req(rf.json('days', { defaultValue: WEEKLY_PLAN_TEMPLATE, jsonCheck: isValidWeeklyPlanDays })),
           ],
         }),
         act('POST', 'RES.A.assign_fee_plan', '/childcare/children/{id}/fees', {

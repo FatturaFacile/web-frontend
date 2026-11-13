@@ -72,7 +72,7 @@ describe('HrApiService', () => {
     probReq.flush({ data: { ...mockEmployee, employment_status: 'active' } });
 
     // Promote
-    service.promoteEmployee('emp-1', { base_annual_salary: 40000 }).subscribe((res) => {
+    service.promoteEmployee('emp-1', { new_base_annual_salary: 40000 }).subscribe((res) => {
       expect(res.data.base_annual_salary).toBe(40000);
     });
     const promReq = httpMock.expectOne(`${hrBase}/employees/emp-1/promote`);

@@ -43,10 +43,10 @@ const COURSES_PANEL: ResourcePanelConfig = {
     act('POST', 'RES.A.add_schedule', '/associations/courses/{id}/schedules', {
       fields: [
         req(rf.select('pattern', ['daily', 'weekday', 'date'])),
-        rf.integer('weekday', { min: 1 }),
-        rf.date('on_date'),
-        req(rf.text('starts_at')),
-        req(rf.text('ends_at')),
+        rf.integer('weekday', { min: 1, max: 7, requiredIf: { field: 'pattern', value: 'weekday' } }),
+        rf.date('on_date', { requiredIf: { field: 'pattern', value: 'date' } }),
+        req(rf.time('starts_at')),
+        req(rf.time('ends_at', { notBefore: 'starts_at', strictlyAfter: true })),
         rf.uuid('resource_id'),
       ],
     }),

@@ -301,4 +301,11 @@ describe('DmsComponent', () => {
     expect(mockDmsApi.createTag).not.toHaveBeenCalled();
     expect(component.tagForm.controls.name.touched).toBe(true);
   });
+
+  it('resolves the folder name from the folder list when the API row has none', () => {
+    const doc: DmsDocumentResource = { ...mockDocuments[0], folder_name: undefined, folder_id: 'fld-1' };
+    const internals = component as unknown as { folderNameOf: (d: DmsDocumentResource) => string };
+    expect(internals.folderNameOf(doc)).toBe('Fatture Clienti');
+    expect(internals.folderNameOf({ ...doc, folder_id: 'unknown' })).toBe('-');
+  });
 });

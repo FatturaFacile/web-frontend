@@ -22,6 +22,7 @@ export const rf = {
   decimal: make('decimal'),
   date: make('date'),
   datetime: make('datetime'),
+  time: make('time'),
   uuid: make('uuid'),
   bool: make('switch'),
   tags: make('tags'),

@@ -146,7 +146,7 @@
   <ng-container *nzModalContent>
     @if (form(); as active) {
       <app-resource-form
-        [fields]="active.action.fields ?? []"
+        [fields]="formFields()"
         [initial]="active.action.prefill ? (active.row ?? undefined) : undefined"
         [submitLabelKey]="active.action.method === 'GET' ? 'RES.ACTION.RUN' : 'RES.ACTION.SAVE'"
         [saveFn]="saveFn()"

@@ -53,10 +53,12 @@ export interface TerminateEmployeePayload {
 }
 
 export interface PromoteEmployeePayload {
-  position_id?: string;
-  job_grade_id?: string;
-  base_annual_salary?: number;
-  effective_date?: string;
+  new_position_id?: string | null;
+  new_job_grade_id?: string | null;
+  new_base_annual_salary: number;
+  /** Y-m-d. */
+  effective_date?: string | null;
+  reason?: string | null;
 }
 
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | string;

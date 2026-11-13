@@ -80,7 +80,7 @@ export class EmployeeContractsComponent {
           required: true,
           createOnly: true,
         },
-        { key: 'currency', labelKey: 'hrmEmp.currency', type: 'text', createOnly: true, maxLength: 3, defaultValue: 'CHF' },
+        { key: 'currency', labelKey: 'hrmEmp.currency', type: 'text', createOnly: true, minLength: 3, maxLength: 3, defaultValue: 'CHF' },
         { key: 'notes', labelKey: 'hrmCommon.notes', type: 'textarea', nullable: true, column: false, maxLength: 5000 },
         { key: 'status', labelKey: 'hrmCommon.statusCol', type: 'text', noForm: true },
       ],

@@ -22,6 +22,7 @@ export interface DmsDocumentResource {
   checked_out_at?: string | null;
   tags?: { id: string; name: string }[];
   metadata?: Record<string, unknown>;
+  /** Present only when the API embeds it (the list does not yet): `folder_name` and `latest_version` fall back to the folder list and `current_version`. */
   latest_version?: DmsDocumentVersionResource;
   created_at?: string;
   updated_at?: string;
@@ -35,7 +36,9 @@ export interface DmsDocumentVersionResource {
   mime_type?: string | null;
   size: number;
   sha256: string;
-  is_attachment?: boolean;
+  is_attachment_reference?: boolean;
+  comment?: string | null;
+  uploaded_by?: string | null;
   created_at?: string;
 }
 

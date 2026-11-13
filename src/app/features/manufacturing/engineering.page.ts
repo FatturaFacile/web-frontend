@@ -17,7 +17,7 @@ const ITEM_FIELDS = [
   rf.decimal('standard_cost'),
   rf.decimal('safety_stock'),
   rf.decimal('min_lot_size'),
-  rf.decimal('max_lot_size'),
+  rf.decimal('max_lot_size', { atLeastField: 'min_lot_size' }),
   rf.decimal('lot_size_multiple'),
   rf.integer('lead_time_days', { min: 0 }),
   rf.bool('is_active', { defaultValue: true }),
@@ -94,7 +94,7 @@ const ECO_FIELDS = [
   req(rf.textarea('reason')),
   rf.textarea('description'),
   rf.select('change_type', ['bom_change', 'component_substitution', 'quantity_change']),
-  rf.datetime('effective_date'),
+  rf.datetime('effective_date', { notBeforeToday: true }),
   rf.text('new_revision'),
   req(
     rf.lines(
