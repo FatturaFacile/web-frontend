@@ -37,13 +37,13 @@
     </div>
 
     <h4 class="section-title">{{ 'GL.CHECKS' | translate }}</h4>
-    <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()">
+    <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()" #gridTbl28>
       <thead>
         <tr>
-          <th [nzSortFn]="'label' | gridSort">{{ 'GL.CHECK' | translate }}</th>
+          <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: gridTbl28.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'GL.CHECK' | translate }}</th>
           <th>{{ 'GL.BLOCKING' | translate }}</th>
           <th>{{ 'GL.STATUS' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'count' | gridSort">{{ 'GL.COUNT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'count' | gridSort" [nzFilters]="'count' | gridFilterList: gridTbl28.nzData" [nzFilterFn]="'count' | gridFilterFn">{{ 'GL.COUNT' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -74,10 +74,10 @@
     @if (list.tasks.length === 0) {
       <nz-empty [nzNotFoundContent]="'GL.NO_TASKS' | translate" />
     } @else {
-      <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false" #gridTbl29>
         <thead>
           <tr>
-            <th [nzSortFn]="'title' | gridSort">{{ 'GL.TASK_TITLE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl29.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'GL.TASK_TITLE' | translate }}</th>
             <th>{{ 'GL.BLOCKING' | translate }}</th>
             <th>{{ 'GL.STATUS' | translate }}</th>
             <th>{{ 'GL.COL_ACTIONS' | translate }}</th>

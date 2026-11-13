@@ -15,11 +15,10 @@
     [nzPageIndex]="pageIndex()"
     [nzPageSize]="15"
     (nzPageIndexChange)="load($event)"
-    nzSize="middle"
-  >
+    nzSize="middle" #gridTbl17>
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl17.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.COMMON.CODE' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'CRMX.CAMPAIGNS.PERIOD' | translate }}</th>

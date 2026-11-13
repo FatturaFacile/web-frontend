@@ -5,7 +5,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { AuthStore, GeneralLedgerApiService, VatRegister } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Sales or purchases VAT register of a date range. */
@@ -14,7 +14,7 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
   styleUrl: './gl-vat-registers.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
@@ -32,16 +32,16 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
       }
     </div>
     @if (register(); as r) {
-      <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50">
+      <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50" #gridTbl34>
         <thead>
           <tr>
-            <th [nzSortFn]="'protocol_number' | gridSort">{{ 'GL.COL_PROTOCOL' | translate }}</th>
-            <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
-            <th [nzSortFn]="'document_number' | gridSort">{{ 'GL.COL_DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'partner_name' | gridSort">{{ 'GL.COL_PARTNER' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'taxable_amount' | gridSort">{{ 'GL.COL_TAXABLE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'vat_rate' | gridSort">{{ 'GL.COL_VAT_RATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'vat_amount' | gridSort">{{ 'GL.COL_VAT' | translate }}</th>
+            <th [nzSortFn]="'protocol_number' | gridSort" [nzFilters]="'protocol_number' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'protocol_number' | gridFilterFn">{{ 'GL.COL_PROTOCOL' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort" [nzFilters]="'posting_date' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'posting_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort" [nzFilters]="'document_number' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'document_number' | gridFilterFn">{{ 'GL.COL_DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'partner_name' | gridSort" [nzFilters]="'partner_name' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'partner_name' | gridFilterFn">{{ 'GL.COL_PARTNER' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'taxable_amount' | gridSort" [nzFilters]="'taxable_amount' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'taxable_amount' | gridFilterFn">{{ 'GL.COL_TAXABLE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_rate' | gridSort" [nzFilters]="'vat_rate' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'vat_rate' | gridFilterFn">{{ 'GL.COL_VAT_RATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_amount' | gridSort" [nzFilters]="'vat_amount' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'vat_amount' | gridFilterFn">{{ 'GL.COL_VAT' | translate }}</th>
           </tr>
         </thead>
         <tbody>

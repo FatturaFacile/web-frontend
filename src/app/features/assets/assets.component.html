@@ -55,10 +55,10 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'assets.lblAssetSerial' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'assets.lblStatus' | translate }}</th>
-        <th [nzSortFn]="'condition' | gridSort">{{ 'assets.lblCondition' | translate }}</th>
-        <th [nzSortFn]="'acquisition_cost' | gridSort">{{ 'assets.lblAcquisitionCost' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: assetsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'assets.lblAssetSerial' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: assetsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'assets.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'condition' | gridSort" [nzFilters]="'condition' | gridFilterList: assetsTable.nzData" [nzFilterFn]="'condition' | gridFilterFn">{{ 'assets.lblCondition' | translate }}</th>
+        <th [nzSortFn]="'acquisition_cost' | gridSort" [nzFilters]="'acquisition_cost' | gridFilterList: assetsTable.nzData" [nzFilterFn]="'acquisition_cost' | gridFilterFn">{{ 'assets.lblAcquisitionCost' | translate }}</th>
         <th>{{ 'assets.lblCarryingAmount' | translate }}</th>
         <th>{{ 'assets.lblDeprRate' | translate }}</th>
         <th nzWidth="240px">{{ 'assets.lblActions' | translate }}</th>

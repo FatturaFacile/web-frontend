@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthStore, HrTimeApiService, I18nService, NightWorkBalance, TimePayrollView } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -17,7 +17,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './time-payroll-view.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     MoneyPipe,
     NzButtonModule,
@@ -110,12 +110,12 @@ import { reportHttpError } from '../shared/hr-http.util';
       <nz-table #daysTable [nzData]="v.days" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'date' | gridSort">{{ 'hrmCommon.date' | translate }}</th>
-            <th [nzSortFn]="'recorded_minutes' | gridSort">{{ 'hrmTimeX.recorded' | translate }}</th>
-            <th [nzSortFn]="'payroll_minutes' | gridSort">{{ 'hrmTimeX.payrollMinutes' | translate }}</th>
-            <th [nzSortFn]="'adjustment_minutes' | gridSort">{{ 'hrmTimeX.adjustment' | translate }}</th>
-            <th [nzSortFn]="'night_minutes' | gridSort">{{ 'hrmTimeX.night' | translate }}</th>
-            <th [nzSortFn]="'daily_allowance_amount' | gridSort">{{ 'hrmTimeX.dailyAllowance' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: daysTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'hrmCommon.date' | translate }}</th>
+            <th [nzSortFn]="'recorded_minutes' | gridSort" [nzFilters]="'recorded_minutes' | gridFilterList: daysTable.nzData" [nzFilterFn]="'recorded_minutes' | gridFilterFn">{{ 'hrmTimeX.recorded' | translate }}</th>
+            <th [nzSortFn]="'payroll_minutes' | gridSort" [nzFilters]="'payroll_minutes' | gridFilterList: daysTable.nzData" [nzFilterFn]="'payroll_minutes' | gridFilterFn">{{ 'hrmTimeX.payrollMinutes' | translate }}</th>
+            <th [nzSortFn]="'adjustment_minutes' | gridSort" [nzFilters]="'adjustment_minutes' | gridFilterList: daysTable.nzData" [nzFilterFn]="'adjustment_minutes' | gridFilterFn">{{ 'hrmTimeX.adjustment' | translate }}</th>
+            <th [nzSortFn]="'night_minutes' | gridSort" [nzFilters]="'night_minutes' | gridFilterList: daysTable.nzData" [nzFilterFn]="'night_minutes' | gridFilterFn">{{ 'hrmTimeX.night' | translate }}</th>
+            <th [nzSortFn]="'daily_allowance_amount' | gridSort" [nzFilters]="'daily_allowance_amount' | gridFilterList: daysTable.nzData" [nzFilterFn]="'daily_allowance_amount' | gridFilterFn">{{ 'hrmTimeX.dailyAllowance' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -154,12 +154,12 @@ import { reportHttpError } from '../shared/hr-http.util';
         <thead>
           <tr>
             <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th [nzSortFn]="'ytd_night_shifts' | gridSort">{{ 'hrmTimeX.nightShifts' | translate }}</th>
+            <th [nzSortFn]="'ytd_night_shifts' | gridSort" [nzFilters]="'ytd_night_shifts' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'ytd_night_shifts' | gridFilterFn">{{ 'hrmTimeX.nightShifts' | translate }}</th>
             <th>{{ 'hrmTimeX.regularNightWorker' | translate }}</th>
-            <th [nzSortFn]="'accrued_rest_minutes' | gridSort">{{ 'hrmTimeX.accruedRest' | translate }}</th>
-            <th [nzSortFn]="'taken_rest_minutes' | gridSort">{{ 'hrmTimeX.takenRest' | translate }}</th>
-            <th [nzSortFn]="'remaining_rest_minutes' | gridSort">{{ 'hrmTimeX.remainingRest' | translate }}</th>
-            <th [nzSortFn]="'cash_supplement_minutes' | gridSort">{{ 'hrmTimeX.cashSupplement' | translate }}</th>
+            <th [nzSortFn]="'accrued_rest_minutes' | gridSort" [nzFilters]="'accrued_rest_minutes' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'accrued_rest_minutes' | gridFilterFn">{{ 'hrmTimeX.accruedRest' | translate }}</th>
+            <th [nzSortFn]="'taken_rest_minutes' | gridSort" [nzFilters]="'taken_rest_minutes' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'taken_rest_minutes' | gridFilterFn">{{ 'hrmTimeX.takenRest' | translate }}</th>
+            <th [nzSortFn]="'remaining_rest_minutes' | gridSort" [nzFilters]="'remaining_rest_minutes' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'remaining_rest_minutes' | gridFilterFn">{{ 'hrmTimeX.remainingRest' | translate }}</th>
+            <th [nzSortFn]="'cash_supplement_minutes' | gridSort" [nzFilters]="'cash_supplement_minutes' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'cash_supplement_minutes' | gridFilterFn">{{ 'hrmTimeX.cashSupplement' | translate }}</th>
           </tr>
         </thead>
         <tbody>

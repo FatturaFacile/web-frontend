@@ -11,7 +11,7 @@ import {
   PrivacySubprocessor,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -30,7 +30,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
   styleUrl: './privacy-center.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -91,11 +91,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #dsrTable [nzData]="requests()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'regulation' | gridSort">{{ 'privacyCenter.regulation' | translate }}</th>
-                <th [nzSortFn]="'request_type' | gridSort">{{ 'privacyCenter.requestType' | translate }}</th>
-                <th [nzSortFn]="'subject_type' | gridSort">{{ 'privacyCenter.subject' | translate }}</th>
-                <th [nzSortFn]="'due_at' | gridSort">{{ 'privacyCenter.dueDate' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'privacyCenter.statusLegalHold' | translate }}</th>
+                <th [nzSortFn]="'regulation' | gridSort" [nzFilters]="'regulation' | gridFilterList: dsrTable.nzData" [nzFilterFn]="'regulation' | gridFilterFn">{{ 'privacyCenter.regulation' | translate }}</th>
+                <th [nzSortFn]="'request_type' | gridSort" [nzFilters]="'request_type' | gridFilterList: dsrTable.nzData" [nzFilterFn]="'request_type' | gridFilterFn">{{ 'privacyCenter.requestType' | translate }}</th>
+                <th [nzSortFn]="'subject_type' | gridSort" [nzFilters]="'subject_type' | gridFilterList: dsrTable.nzData" [nzFilterFn]="'subject_type' | gridFilterFn">{{ 'privacyCenter.subject' | translate }}</th>
+                <th [nzSortFn]="'due_at' | gridSort" [nzFilters]="'due_at' | gridFilterList: dsrTable.nzData" [nzFilterFn]="'due_at' | gridFilterFn">{{ 'privacyCenter.dueDate' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: dsrTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'privacyCenter.statusLegalHold' | translate }}</th>
                 <th>{{ 'privacyCenter.actions' | translate }}</th>
               </tr>
             </thead>
@@ -144,11 +144,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #ropaTable [nzData]="activities()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'title' | gridSort">{{ 'privacyCenter.titleField' | translate }}</th>
-                <th [nzSortFn]="'purpose' | gridSort">{{ 'privacyCenter.purpose' | translate }}</th>
-                <th [nzSortFn]="'legal_basis' | gridSort">{{ 'privacyCenter.legalBasis' | translate }}</th>
-                <th [nzSortFn]="'retention_period' | gridSort">{{ 'privacyCenter.retention' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'privacyCenter.status' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: ropaTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'privacyCenter.titleField' | translate }}</th>
+                <th [nzSortFn]="'purpose' | gridSort" [nzFilters]="'purpose' | gridFilterList: ropaTable.nzData" [nzFilterFn]="'purpose' | gridFilterFn">{{ 'privacyCenter.purpose' | translate }}</th>
+                <th [nzSortFn]="'legal_basis' | gridSort" [nzFilters]="'legal_basis' | gridFilterList: ropaTable.nzData" [nzFilterFn]="'legal_basis' | gridFilterFn">{{ 'privacyCenter.legalBasis' | translate }}</th>
+                <th [nzSortFn]="'retention_period' | gridSort" [nzFilters]="'retention_period' | gridFilterList: ropaTable.nzData" [nzFilterFn]="'retention_period' | gridFilterFn">{{ 'privacyCenter.retention' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ropaTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'privacyCenter.status' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -179,11 +179,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #subTable [nzData]="subprocessors()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'name' | gridSort">{{ 'privacyCenter.supplier' | translate }}</th>
-                <th [nzSortFn]="'service_type' | gridSort">{{ 'privacyCenter.service' | translate }}</th>
-                <th [nzSortFn]="'country_code' | gridSort">{{ 'privacyCenter.country' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: subTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'privacyCenter.supplier' | translate }}</th>
+                <th [nzSortFn]="'service_type' | gridSort" [nzFilters]="'service_type' | gridFilterList: subTable.nzData" [nzFilterFn]="'service_type' | gridFilterFn">{{ 'privacyCenter.service' | translate }}</th>
+                <th [nzSortFn]="'country_code' | gridSort" [nzFilters]="'country_code' | gridFilterList: subTable.nzData" [nzFilterFn]="'country_code' | gridFilterFn">{{ 'privacyCenter.country' | translate }}</th>
                 <th>{{ 'privacyCenter.adequacy' | translate }}</th>
-                <th [nzSortFn]="'safeguard_mechanism' | gridSort">{{ 'privacyCenter.safeguard' | translate }}</th>
+                <th [nzSortFn]="'safeguard_mechanism' | gridSort" [nzFilters]="'safeguard_mechanism' | gridFilterList: subTable.nzData" [nzFilterFn]="'safeguard_mechanism' | gridFilterFn">{{ 'privacyCenter.safeguard' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -214,11 +214,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #breachTable [nzData]="breaches()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'title' | gridSort">{{ 'privacyCenter.titleField' | translate }}</th>
-                <th [nzSortFn]="'severity' | gridSort">{{ 'privacyCenter.severity' | translate }}</th>
-                <th [nzSortFn]="'discovered_at' | gridSort">{{ 'privacyCenter.discovered' | translate }}</th>
-                <th [nzSortFn]="'notification_deadline_at' | gridSort">{{ 'privacyCenter.deadline72' | translate }}</th>
-                <th [nzSortFn]="'affected_records_count' | gridSort">{{ 'privacyCenter.affectedRecords' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: breachTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'privacyCenter.titleField' | translate }}</th>
+                <th [nzSortFn]="'severity' | gridSort" [nzFilters]="'severity' | gridFilterList: breachTable.nzData" [nzFilterFn]="'severity' | gridFilterFn">{{ 'privacyCenter.severity' | translate }}</th>
+                <th [nzSortFn]="'discovered_at' | gridSort" [nzFilters]="'discovered_at' | gridFilterList: breachTable.nzData" [nzFilterFn]="'discovered_at' | gridFilterFn">{{ 'privacyCenter.discovered' | translate }}</th>
+                <th [nzSortFn]="'notification_deadline_at' | gridSort" [nzFilters]="'notification_deadline_at' | gridFilterList: breachTable.nzData" [nzFilterFn]="'notification_deadline_at' | gridFilterFn">{{ 'privacyCenter.deadline72' | translate }}</th>
+                <th [nzSortFn]="'affected_records_count' | gridSort" [nzFilters]="'affected_records_count' | gridFilterList: breachTable.nzData" [nzFilterFn]="'affected_records_count' | gridFilterFn">{{ 'privacyCenter.affectedRecords' | translate }}</th>
                 <th>{{ 'privacyCenter.authorityNotification' | translate }}</th>
               </tr>
             </thead>
@@ -249,12 +249,12 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #logTable [nzData]="accessLogs()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'accessed_at' | gridSort">{{ 'privacyCenter.dateTime' | translate }}</th>
-                <th [nzSortFn]="'actor_user_id' | gridSort">{{ 'privacyCenter.actor' | translate }}</th>
-                <th [nzSortFn]="'action' | gridSort">{{ 'privacyCenter.action' | translate }}</th>
-                <th [nzSortFn]="'subject_type' | gridSort">{{ 'privacyCenter.subject' | translate }}</th>
-                <th [nzSortFn]="'resource' | gridSort">{{ 'privacyCenter.resource' | translate }}</th>
-                <th [nzSortFn]="'ip_address' | gridSort">IP</th>
+                <th [nzSortFn]="'accessed_at' | gridSort" [nzFilters]="'accessed_at' | gridFilterList: logTable.nzData" [nzFilterFn]="'accessed_at' | gridFilterFn">{{ 'privacyCenter.dateTime' | translate }}</th>
+                <th [nzSortFn]="'actor_user_id' | gridSort" [nzFilters]="'actor_user_id' | gridFilterList: logTable.nzData" [nzFilterFn]="'actor_user_id' | gridFilterFn">{{ 'privacyCenter.actor' | translate }}</th>
+                <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: logTable.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'privacyCenter.action' | translate }}</th>
+                <th [nzSortFn]="'subject_type' | gridSort" [nzFilters]="'subject_type' | gridFilterList: logTable.nzData" [nzFilterFn]="'subject_type' | gridFilterFn">{{ 'privacyCenter.subject' | translate }}</th>
+                <th [nzSortFn]="'resource' | gridSort" [nzFilters]="'resource' | gridFilterList: logTable.nzData" [nzFilterFn]="'resource' | gridFilterFn">{{ 'privacyCenter.resource' | translate }}</th>
+                <th [nzSortFn]="'ip_address' | gridSort" [nzFilters]="'ip_address' | gridFilterList: logTable.nzData" [nzFilterFn]="'ip_address' | gridFilterFn">IP</th>
               </tr>
             </thead>
             <tbody>

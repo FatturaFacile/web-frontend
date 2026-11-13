@@ -29,8 +29,8 @@
   <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="filtered()" [nzLoading]="loading()" [nzPageSize]="25">
     <thead>
       <tr>
-        <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_CODE' | translate }}</th>
-        <th [nzSortFn]="'name' | gridSort">{{ 'GL.COL_NAME' | translate }}</th>
+        <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: table.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_CODE' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'GL.COL_NAME' | translate }}</th>
         <th>{{ 'GL.ACCOUNT_TYPE' | translate }}</th>
         <th>{{ 'GL.NORMAL_BALANCE' | translate }}</th>
         <th>{{ 'GL.STATUS' | translate }}</th>

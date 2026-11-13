@@ -17,7 +17,7 @@ import {
   SaveDocumentTemplatePayload,
   SettingsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const MAX_LOGO_BYTES = 512 * 1024;
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
@@ -32,7 +32,7 @@ interface TemplateRow {
   styleUrl: './document-templates.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     IconActionDirective,
     ModalActionsDirective,

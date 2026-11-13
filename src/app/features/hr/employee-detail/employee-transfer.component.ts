@@ -21,7 +21,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 @Component({
   selector: 'app-employee-transfer',
   styleUrl: './employee-transfer.component.scss',
-  imports: [ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  imports: [ModalActionsDirective, ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <button nz-button type="button" (click)="open()">{{ 'hrmEmp.transfer' | translate }}</button>
     <nz-modal

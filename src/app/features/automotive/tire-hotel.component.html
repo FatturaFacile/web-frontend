@@ -47,12 +47,12 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'license_plate' | gridSort">{{ "TIRE_HOTEL.COL_PLATE_MODEL" | translate }}</th>
+        <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: tireTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ "TIRE_HOTEL.COL_PLATE_MODEL" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_SEASON" | translate }}</th>
-        <th [nzSortFn]="'brand' | gridSort">{{ "TIRE_HOTEL.COL_SIZE_BRAND" | translate }}</th>
-        <th [nzSortFn]="'front_left_tread_mm' | gridSort">{{ "TIRE_HOTEL.COL_TREAD" | translate }}</th>
-        <th [nzSortFn]="'warehouse_shelf_location' | gridSort">{{ "TIRE_HOTEL.COL_RACK" | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ "TIRE_HOTEL.COL_STATUS" | translate }}</th>
+        <th [nzSortFn]="'brand' | gridSort" [nzFilters]="'brand' | gridFilterList: tireTable.nzData" [nzFilterFn]="'brand' | gridFilterFn">{{ "TIRE_HOTEL.COL_SIZE_BRAND" | translate }}</th>
+        <th [nzSortFn]="'front_left_tread_mm' | gridSort" [nzFilters]="'front_left_tread_mm' | gridFilterList: tireTable.nzData" [nzFilterFn]="'front_left_tread_mm' | gridFilterFn">{{ "TIRE_HOTEL.COL_TREAD" | translate }}</th>
+        <th [nzSortFn]="'warehouse_shelf_location' | gridSort" [nzFilters]="'warehouse_shelf_location' | gridFilterList: tireTable.nzData" [nzFilterFn]="'warehouse_shelf_location' | gridFilterFn">{{ "TIRE_HOTEL.COL_RACK" | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tireTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ "TIRE_HOTEL.COL_STATUS" | translate }}</th>
         <th>{{ "TIRE_HOTEL.COL_ACTIONS" | translate }}</th>
       </tr>
     </thead>

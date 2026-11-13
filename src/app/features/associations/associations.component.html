@@ -53,12 +53,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'member_number' | gridSort">{{ 'ASSOCIATIONS.MEMBER_NO' | translate }}</th>
-            <th [nzSortFn]="'first_name' | gridSort">{{ 'ASSOCIATIONS.FULL_NAME' | translate }}</th>
-            <th [nzSortFn]="'tax_code' | gridSort">{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</th>
-            <th [nzSortFn]="'joined_on' | gridSort">{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</th>
+            <th [nzSortFn]="'member_number' | gridSort" [nzFilters]="'member_number' | gridFilterList: membersTable.nzData" [nzFilterFn]="'member_number' | gridFilterFn">{{ 'ASSOCIATIONS.MEMBER_NO' | translate }}</th>
+            <th [nzSortFn]="'first_name' | gridSort" [nzFilters]="'first_name' | gridFilterList: membersTable.nzData" [nzFilterFn]="'first_name' | gridFilterFn">{{ 'ASSOCIATIONS.FULL_NAME' | translate }}</th>
+            <th [nzSortFn]="'tax_code' | gridSort" [nzFilters]="'tax_code' | gridFilterList: membersTable.nzData" [nzFilterFn]="'tax_code' | gridFilterFn">{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</th>
+            <th [nzSortFn]="'joined_on' | gridSort" [nzFilters]="'joined_on' | gridFilterList: membersTable.nzData" [nzFilterFn]="'joined_on' | gridFilterFn">{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.MED_CERTIFICATE' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: membersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -147,11 +147,11 @@
         <thead>
           <tr>
             <th>{{ 'ASSOCIATIONS.MEMBER' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'starts_on' | gridSort">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
-            <th [nzSortFn]="'net_amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'ends_on' | gridSort">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: feesTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort" [nzFilters]="'starts_on' | gridFilterList: feesTable.nzData" [nzFilterFn]="'starts_on' | gridFilterFn">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: feesTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'ends_on' | gridSort" [nzFilters]="'ends_on' | gridFilterList: feesTable.nzData" [nzFilterFn]="'ends_on' | gridFilterFn">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: feesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -220,11 +220,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</th>
-            <th [nzSortFn]="'starts_on' | gridSort">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort" [nzFilters]="'starts_on' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'starts_on' | gridFilterFn">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.CAPACITY' | translate }}</th>
-            <th [nzSortFn]="'ends_on' | gridSort">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'ends_on' | gridSort" [nzFilters]="'ends_on' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'ends_on' | gridFilterFn">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -280,9 +280,9 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'purpose' | gridSort">{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'received_on' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+            <th [nzSortFn]="'purpose' | gridSort" [nzFilters]="'purpose' | gridFilterList: donTable.nzData" [nzFilterFn]="'purpose' | gridFilterFn">{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: donTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'received_on' | gridSort" [nzFilters]="'received_on' | gridFilterList: donTable.nzData" [nzFilterFn]="'received_on' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.RECEIPT_NO' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -336,13 +336,13 @@
             </button>
           </div>
 
-          <nz-table [nzData]="volunteers()" [nzFrontPagination]="true" [nzLoading]="volunteersLoading()">
+          <nz-table [nzData]="volunteers()" [nzFrontPagination]="true" [nzLoading]="volunteersLoading()" #gridTbl4>
             <thead>
               <tr>
                 <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
-                <th [nzSortFn]="'activity' | gridSort">{{ 'ASSOCIATIONS.INSURANCE_POLICY' | translate }}</th>
+                <th [nzSortFn]="'activity' | gridSort" [nzFilters]="'activity' | gridFilterList: gridTbl4.nzData" [nzFilterFn]="'activity' | gridFilterFn">{{ 'ASSOCIATIONS.INSURANCE_POLICY' | translate }}</th>
                 <th>{{ 'ASSOCIATIONS.INSURANCE_EXPIRY' | translate }}</th>
-                <th [nzSortFn]="'started_on' | gridSort">{{ 'ASSOCIATIONS.REGISTERED_BOOK' | translate }}</th>
+                <th [nzSortFn]="'started_on' | gridSort" [nzFilters]="'started_on' | gridFilterList: gridTbl4.nzData" [nzFilterFn]="'started_on' | gridFilterFn">{{ 'ASSOCIATIONS.REGISTERED_BOOK' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -366,14 +366,14 @@
             <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateReimbModal()"></button>
           </div>
 
-          <nz-table [nzData]="reimbursements()" [nzFrontPagination]="true" [nzLoading]="reimbursementsLoading()">
+          <nz-table [nzData]="reimbursements()" [nzFrontPagination]="true" [nzLoading]="reimbursementsLoading()" #gridTbl5>
             <thead>
               <tr>
                 <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
-                <th [nzSortFn]="'amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
-                <th [nzSortFn]="'incurred_on' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+                <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th [nzSortFn]="'incurred_on' | gridSort" [nzFilters]="'incurred_on' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'incurred_on' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -420,14 +420,14 @@
         </button>
       </div>
 
-      <nz-table [nzData]="meetings()" [nzFrontPagination]="true" [nzLoading]="meetingsLoading()">
+      <nz-table [nzData]="meetings()" [nzFrontPagination]="true" [nzLoading]="meetingsLoading()" #gridTbl6>
         <thead>
           <tr>
-            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.MEETING_TYPE' | translate }}</th>
-            <th [nzSortFn]="'scheduled_at' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-            <th [nzSortFn]="'location' | gridSort">{{ 'ASSOCIATIONS.LOCATION' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'scheduled_at' | gridSort" [nzFilters]="'scheduled_at' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'scheduled_at' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+            <th [nzSortFn]="'location' | gridSort" [nzFilters]="'location' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'location' | gridFilterFn">{{ 'ASSOCIATIONS.LOCATION' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>

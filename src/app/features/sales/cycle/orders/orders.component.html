@@ -21,14 +21,9 @@
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <ng-template #numberTpl let-o><code>{{ o.order_number }}</code></ng-template>
@@ -166,13 +161,13 @@
 
       @if (availability(); as av) {
         <h4 class="section">{{ 'SC.ORDERS.AVAILABILITY' | translate }}</h4>
-        <nz-table [nzScroll]="{ x: '720px' }" [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table [nzScroll]="{ x: '720px' }" [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl45>
           <thead>
             <tr>
-              <th [nzSortFn]="'description' | gridSort">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-              <th [nzSortFn]="'quantity_open' | gridSort">{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
-              <th [nzSortFn]="'quantity_promisable' | gridSort">{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
-              <th [nzSortFn]="'shortage' | gridSort">{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity_open' | gridSort" [nzFilters]="'quantity_open' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'quantity_open' | gridFilterFn">{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_promisable' | gridSort" [nzFilters]="'quantity_promisable' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'quantity_promisable' | gridFilterFn">{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
+              <th [nzSortFn]="'shortage' | gridSort" [nzFilters]="'shortage' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'shortage' | gridFilterFn">{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

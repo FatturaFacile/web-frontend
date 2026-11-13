@@ -23,7 +23,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const CONSENT_FIELD = 'consent';
 const NO_VALUE_OPERATORS: readonly string[] = ['is_null', 'not_null'];
@@ -44,7 +44,7 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
   styleUrl: './segments.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

@@ -30,15 +30,10 @@
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
     exportFileName="clienti"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <!-- Cell Templates -->

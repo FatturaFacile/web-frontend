@@ -10,7 +10,7 @@ import {
   JointCommissionReport,
   ShortTimeApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -30,7 +30,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
   styleUrl: './construction-panel.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ActionFormComponent,
     FormsModule,
     MoneyPipe,
@@ -114,10 +114,10 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
-            <th [nzSortFn]="'planned_hours' | gridSort">{{ 'hrmShortTime.construction.planned' | translate }}</th>
-            <th [nzSortFn]="'worked_hours' | gridSort">{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th [nzSortFn]="'balance_hours' | gridSort">{{ 'hrmShortTime.construction.balance' | translate }}</th>
+            <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
+            <th [nzSortFn]="'planned_hours' | gridSort" [nzFilters]="'planned_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'planned_hours' | gridFilterFn">{{ 'hrmShortTime.construction.planned' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort" [nzFilters]="'worked_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'worked_hours' | gridFilterFn">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'balance_hours' | gridSort" [nzFilters]="'balance_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'balance_hours' | gridFilterFn">{{ 'hrmShortTime.construction.balance' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -141,14 +141,14 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       <nz-table #reportTable [nzData]="r.rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'qualification' | gridSort">{{ 'hrmShortTime.construction.qualification' | translate }}</th>
-            <th [nzSortFn]="'zone' | gridSort">{{ 'hrmShortTime.construction.zone' | translate }}</th>
-            <th [nzSortFn]="'headcount' | gridSort">{{ 'hrmShortTime.construction.headcount' | translate }}</th>
-            <th [nzSortFn]="'worked_hours' | gridSort">{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th [nzSortFn]="'gross_salary' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
-            <th [nzSortFn]="'average_hourly' | gridSort">{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
-            <th [nzSortFn]="'minimum_hourly' | gridSort">{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
-            <th [nzSortFn]="'below_minimum.length' | gridSort">{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
+            <th [nzSortFn]="'qualification' | gridSort" [nzFilters]="'qualification' | gridFilterList: reportTable.nzData" [nzFilterFn]="'qualification' | gridFilterFn">{{ 'hrmShortTime.construction.qualification' | translate }}</th>
+            <th [nzSortFn]="'zone' | gridSort" [nzFilters]="'zone' | gridFilterList: reportTable.nzData" [nzFilterFn]="'zone' | gridFilterFn">{{ 'hrmShortTime.construction.zone' | translate }}</th>
+            <th [nzSortFn]="'headcount' | gridSort" [nzFilters]="'headcount' | gridFilterList: reportTable.nzData" [nzFilterFn]="'headcount' | gridFilterFn">{{ 'hrmShortTime.construction.headcount' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort" [nzFilters]="'worked_hours' | gridFilterList: reportTable.nzData" [nzFilterFn]="'worked_hours' | gridFilterFn">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort" [nzFilters]="'gross_salary' | gridFilterList: reportTable.nzData" [nzFilterFn]="'gross_salary' | gridFilterFn">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'average_hourly' | gridSort" [nzFilters]="'average_hourly' | gridFilterList: reportTable.nzData" [nzFilterFn]="'average_hourly' | gridFilterFn">{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
+            <th [nzSortFn]="'minimum_hourly' | gridSort" [nzFilters]="'minimum_hourly' | gridFilterList: reportTable.nzData" [nzFilterFn]="'minimum_hourly' | gridFilterFn">{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
+            <th [nzSortFn]="'below_minimum.length' | gridSort" [nzFilters]="'below_minimum.length' | gridFilterList: reportTable.nzData" [nzFilterFn]="'below_minimum.length' | gridFilterFn">{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
           </tr>
         </thead>
         <tbody>

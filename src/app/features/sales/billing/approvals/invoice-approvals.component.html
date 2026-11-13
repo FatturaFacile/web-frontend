@@ -7,11 +7,11 @@
       <button nz-button appIconAction="create" nzType="primary" type="button" (click)="openCreate()"></button>
     }
   </div>
-  <nz-table [nzScroll]="{ x: '760px' }" [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzScroll]="{ x: '760px' }" [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle" #gridTbl37>
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'SC.PRICING.NAME' | translate }}</th>
-        <th [nzSortFn]="'tier_level' | gridSort">{{ 'SC.APPROVALS.TIERS' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl37.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'SC.PRICING.NAME' | translate }}</th>
+        <th [nzSortFn]="'tier_level' | gridSort" [nzFilters]="'tier_level' | gridFilterList: gridTbl37.nzData" [nzFilterFn]="'tier_level' | gridFilterFn">{{ 'SC.APPROVALS.TIERS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>

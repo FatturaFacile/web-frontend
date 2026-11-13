@@ -22,7 +22,7 @@ import {
   SdiTermsCode,
   UnitOfMeasure,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
 
@@ -52,7 +52,7 @@ const emptyTerm = (): TermDraft => ({
   styleUrl: './catalog-master-data.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

@@ -7,10 +7,10 @@
       <button nz-button nzType="primary" type="button" appIconAction="create" (click)="open(null)"></button>
     }
   </div>
-  <nz-table [nzData]="segments()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzData]="segments()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle" #gridTbl20>
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl20.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.SEGMENTS.ENTITY' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>

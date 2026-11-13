@@ -60,12 +60,12 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.LBL_OPPORTUNITY' | translate }}</th>
-        <th [nzSortFn]="'account.name' | gridSort">{{ 'CRMX.LBL_ACCOUNT' | translate }}</th>
-        <th [nzSortFn]="'amount' | gridSort">{{ 'CRMX.LBL_AMOUNT' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: oppTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.LBL_OPPORTUNITY' | translate }}</th>
+        <th [nzSortFn]="'account.name' | gridSort" [nzFilters]="'account.name' | gridFilterList: oppTable.nzData" [nzFilterFn]="'account.name' | gridFilterFn">{{ 'CRMX.LBL_ACCOUNT' | translate }}</th>
+        <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: oppTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'CRMX.LBL_AMOUNT' | translate }}</th>
         <th>{{ 'CRMX.LBL_STAGE' | translate }}</th>
-        <th [nzSortFn]="'forecast_category' | gridSort">{{ 'CRMX.LBL_FORECAST_CATEGORY' | translate }}</th>
-        <th [nzSortFn]="'expected_close_date' | gridSort">{{ 'CRMX.LBL_EXPECTED_CLOSE' | translate }}</th>
+        <th [nzSortFn]="'forecast_category' | gridSort" [nzFilters]="'forecast_category' | gridFilterList: oppTable.nzData" [nzFilterFn]="'forecast_category' | gridFilterFn">{{ 'CRMX.LBL_FORECAST_CATEGORY' | translate }}</th>
+        <th [nzSortFn]="'expected_close_date' | gridSort" [nzFilters]="'expected_close_date' | gridFilterList: oppTable.nzData" [nzFilterFn]="'expected_close_date' | gridFilterFn">{{ 'CRMX.LBL_EXPECTED_CLOSE' | translate }}</th>
         <th nzWidth="180px">{{ 'CRMX.LBL_ACTIONS' | translate }}</th>
       </tr>
     </thead>

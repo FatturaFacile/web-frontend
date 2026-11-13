@@ -10,7 +10,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, PermissionsService, ProjectBudget, ProjectControlApiService } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Budget of a project: category report, versions, revision, approval and baseline. */
 @Component({
@@ -18,7 +18,7 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
   styleUrl: './pc-budget.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
@@ -47,11 +47,11 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
         <nz-table #categoryTable nzSize="small" [nzData]="report.categories" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th [nzSortFn]="'category' | gridSort">{{ 'PRJ.CATEGORY' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'budget' | gridSort">{{ 'PRJ.BUDGET' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'committed' | gridSort">{{ 'PRJ.COMMITTED' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'actual' | gridSort">{{ 'PRJ.ACTUAL' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'available' | gridSort">{{ 'PRJ.AVAILABLE' | translate }}</th>
+              <th [nzSortFn]="'category' | gridSort" [nzFilters]="'category' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'category' | gridFilterFn">{{ 'PRJ.CATEGORY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'budget' | gridSort" [nzFilters]="'budget' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'budget' | gridFilterFn">{{ 'PRJ.BUDGET' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'committed' | gridSort" [nzFilters]="'committed' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'committed' | gridFilterFn">{{ 'PRJ.COMMITTED' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'actual' | gridSort" [nzFilters]="'actual' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'actual' | gridFilterFn">{{ 'PRJ.ACTUAL' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'available' | gridSort" [nzFilters]="'available' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'available' | gridFilterFn">{{ 'PRJ.AVAILABLE' | translate }}</th>
               <th nzAlign="right">{{ 'PRJ.CONSUMED' | translate }}</th>
             </tr>
           </thead>
@@ -82,10 +82,10 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
         <nz-table #versionTable nzSize="small" [nzData]="b.versions" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th [nzSortFn]="'version_number' | gridSort">#</th>
+              <th [nzSortFn]="'version_number' | gridSort" [nzFilters]="'version_number' | gridFilterList: versionTable.nzData" [nzFilterFn]="'version_number' | gridFilterFn">#</th>
               <th>{{ 'PRJ.REASON' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'total_revenue_budget' | gridSort">{{ 'PRJ.BUDGET_REVENUE' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'total_cost_budget' | gridSort">{{ 'PRJ.BUDGET_COST' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_revenue_budget' | gridSort" [nzFilters]="'total_revenue_budget' | gridFilterList: versionTable.nzData" [nzFilterFn]="'total_revenue_budget' | gridFilterFn">{{ 'PRJ.BUDGET_REVENUE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_cost_budget' | gridSort" [nzFilters]="'total_cost_budget' | gridFilterList: versionTable.nzData" [nzFilterFn]="'total_cost_budget' | gridFilterFn">{{ 'PRJ.BUDGET_COST' | translate }}</th>
               <th>{{ 'PRJ.BASELINE' | translate }}</th>
             </tr>
           </thead>

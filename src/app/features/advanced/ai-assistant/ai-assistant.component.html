@@ -201,8 +201,8 @@
         >
           <thead>
             <tr>
-              <th nzWidth="30%" [nzSortFn]="'key' | gridSort">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
-              <th nzWidth="50%" [nzSortFn]="'description' | gridSort">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
+              <th nzWidth="30%" [nzSortFn]="'key' | gridSort" [nzFilters]="'key' | gridFilterList: catalogueTable.nzData" [nzFilterFn]="'key' | gridFilterFn">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
+              <th nzWidth="50%" [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: catalogueTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
               <th nzWidth="20%">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -272,11 +272,11 @@
         >
           <thead>
             <tr>
-              <th nzWidth="15%" [nzSortFn]="'created_at' | gridSort">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
-              <th nzWidth="35%" [nzSortFn]="'question' | gridSort">{{ 'ASSISTANT.QUESTION' | translate }}</th>
-              <th nzWidth="15%" [nzSortFn]="'resolver' | gridSort">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
-              <th nzWidth="15%" [nzSortFn]="'outcome' | gridSort">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
-              <th nzWidth="10%" [nzSortFn]="'row_count' | gridSort">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: logsTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
+              <th nzWidth="35%" [nzSortFn]="'question' | gridSort" [nzFilters]="'question' | gridFilterList: logsTable.nzData" [nzFilterFn]="'question' | gridFilterFn">{{ 'ASSISTANT.QUESTION' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'resolver' | gridSort" [nzFilters]="'resolver' | gridFilterList: logsTable.nzData" [nzFilterFn]="'resolver' | gridFilterFn">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'outcome' | gridSort" [nzFilters]="'outcome' | gridFilterList: logsTable.nzData" [nzFilterFn]="'outcome' | gridFilterFn">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
+              <th nzWidth="10%" [nzSortFn]="'row_count' | gridSort" [nzFilters]="'row_count' | gridFilterList: logsTable.nzData" [nzFilterFn]="'row_count' | gridFilterFn">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
               <th nzWidth="10%">{{ 'COMMON.DETAILS' | translate }}</th>
             </tr>
           </thead>

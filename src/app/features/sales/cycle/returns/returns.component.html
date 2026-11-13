@@ -21,14 +21,9 @@
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <ng-template #numberTpl let-r><code>{{ r.return_number }}</code></ng-template>
@@ -68,12 +63,12 @@
         }
       </nz-descriptions>
 
-      <nz-table [nzScroll]="{ x: '720px' }" [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '720px' }" [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl47>
         <thead>
           <tr>
-            <th [nzSortFn]="'description' | gridSort">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'quantity' | gridSort">{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
-            <th [nzSortFn]="'quantity_received' | gridSort">{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
+            <th [nzSortFn]="'quantity_received' | gridSort" [nzFilters]="'quantity_received' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'quantity_received' | gridFilterFn">{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
             <th>{{ 'SC.RETURNS.CONDITION' | translate }}</th>
             <th>{{ 'SC.RETURNS.RESTOCK' | translate }}</th>
           </tr>

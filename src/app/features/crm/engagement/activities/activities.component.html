@@ -40,11 +40,10 @@
     [nzPageIndex]="pageIndex()"
     [nzPageSize]="15"
     (nzPageIndexChange)="load($event)"
-    nzSize="middle"
-  >
+    nzSize="middle" #gridTbl16>
     <thead>
       <tr>
-        <th [nzSortFn]="'subject' | gridSort">{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</th>
+        <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: gridTbl16.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.TYPE' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.PRIORITY' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.DUE_DATE' | translate }}</th>

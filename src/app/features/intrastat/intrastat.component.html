@@ -89,12 +89,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'model' | gridSort">{{ 'INTRASTAT.MODEL' | translate }}</th>
+            <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'INTRASTAT.MODEL' | translate }}</th>
             <th>{{ 'INTRASTAT.FLOW' | translate }}</th>
-            <th [nzSortFn]="'year' | gridSort">{{ 'INTRASTAT.PERIOD' | translate }}</th>
-            <th [nzSortFn]="'reference_number' | gridSort">{{ 'INTRASTAT.REF_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'INTRASTAT.STATUS' | translate }}</th>
-            <th [nzSortFn]="'protocol_number' | gridSort">{{ 'INTRASTAT.PROTOCOL' | translate }}</th>
+            <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'INTRASTAT.PERIOD' | translate }}</th>
+            <th [nzSortFn]="'reference_number' | gridSort" [nzFilters]="'reference_number' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'reference_number' | gridFilterFn">{{ 'INTRASTAT.REF_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'INTRASTAT.STATUS' | translate }}</th>
+            <th [nzSortFn]="'protocol_number' | gridSort" [nzFilters]="'protocol_number' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'protocol_number' | gridFilterFn">{{ 'INTRASTAT.PROTOCOL' | translate }}</th>
             <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -347,11 +347,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'product_id' | gridSort">{{ 'INTRASTAT.PRODUCT_ID' | translate }}</th>
-            <th [nzSortFn]="'product_name' | gridSort">{{ 'INTRASTAT.PRODUCT_NAME' | translate }}</th>
-            <th [nzSortFn]="'cn8_code' | gridSort">{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
+            <th [nzSortFn]="'product_id' | gridSort" [nzFilters]="'product_id' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'product_id' | gridFilterFn">{{ 'INTRASTAT.PRODUCT_ID' | translate }}</th>
+            <th [nzSortFn]="'product_name' | gridSort" [nzFilters]="'product_name' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'product_name' | gridFilterFn">{{ 'INTRASTAT.PRODUCT_NAME' | translate }}</th>
+            <th [nzSortFn]="'cn8_code' | gridSort" [nzFilters]="'cn8_code' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'cn8_code' | gridFilterFn">{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
             <th>{{ 'INTRASTAT.SUPPLY_KIND' | translate }}</th>
-            <th [nzSortFn]="'origin_country_code' | gridSort">{{ 'INTRASTAT.ORIGIN_COUNTRY' | translate }}</th>
+            <th [nzSortFn]="'origin_country_code' | gridSort" [nzFilters]="'origin_country_code' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'origin_country_code' | gridFilterFn">{{ 'INTRASTAT.ORIGIN_COUNTRY' | translate }}</th>
             <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -596,12 +596,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'line_number' | gridSort">#</th>
-            <th [nzSortFn]="'section' | gridSort">{{ 'INTRASTAT.SECTION' | translate }}</th>
-            <th [nzSortFn]="'partner_country_code' | gridSort">{{ 'INTRASTAT.COUNTRY' | translate }}</th>
-            <th [nzSortFn]="'partner_vat_number' | gridSort">{{ 'INTRASTAT.VAT_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'cn8_code' | gridSort">{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'amount_eur' | gridSort">{{ 'INTRASTAT.AMOUNT_EUR' | translate }}</th>
+            <th [nzSortFn]="'line_number' | gridSort" [nzFilters]="'line_number' | gridFilterList: linesTable.nzData" [nzFilterFn]="'line_number' | gridFilterFn">#</th>
+            <th [nzSortFn]="'section' | gridSort" [nzFilters]="'section' | gridFilterList: linesTable.nzData" [nzFilterFn]="'section' | gridFilterFn">{{ 'INTRASTAT.SECTION' | translate }}</th>
+            <th [nzSortFn]="'partner_country_code' | gridSort" [nzFilters]="'partner_country_code' | gridFilterList: linesTable.nzData" [nzFilterFn]="'partner_country_code' | gridFilterFn">{{ 'INTRASTAT.COUNTRY' | translate }}</th>
+            <th [nzSortFn]="'partner_vat_number' | gridSort" [nzFilters]="'partner_vat_number' | gridFilterList: linesTable.nzData" [nzFilterFn]="'partner_vat_number' | gridFilterFn">{{ 'INTRASTAT.VAT_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'cn8_code' | gridSort" [nzFilters]="'cn8_code' | gridFilterList: linesTable.nzData" [nzFilterFn]="'cn8_code' | gridFilterFn">{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'amount_eur' | gridSort" [nzFilters]="'amount_eur' | gridFilterList: linesTable.nzData" [nzFilterFn]="'amount_eur' | gridFilterFn">{{ 'INTRASTAT.AMOUNT_EUR' | translate }}</th>
             <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
           </tr>
         </thead>

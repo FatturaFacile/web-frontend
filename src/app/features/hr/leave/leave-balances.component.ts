@@ -1,7 +1,7 @@
 import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrLeaveApiService, I18nService, LeaveBalanceResource } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -14,7 +14,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './leave-balances.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     <div class="flex justify-between items-center mb-3 gap-2">
@@ -42,13 +42,13 @@ import { reportHttpError } from '../shared/hr-http.util';
       <thead>
         <tr>
           <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th [nzSortFn]="'fiscal_year' | gridSort">{{ 'hrmCommon.year' | translate }}</th>
-          <th [nzSortFn]="'entitlement_hours' | gridSort">{{ 'hrmSelfService.entitlement' | translate }}</th>
-          <th [nzSortFn]="'carryover_hours' | gridSort">{{ 'hrmSelfService.carryover' | translate }}</th>
-          <th [nzSortFn]="'accrued_hours' | gridSort">{{ 'hrmSelfService.accrued' | translate }}</th>
-          <th [nzSortFn]="'used_hours' | gridSort">{{ 'hrmSelfService.used' | translate }}</th>
-          <th [nzSortFn]="'pending_hours' | gridSort">{{ 'hrmSelfService.pending' | translate }}</th>
-          <th [nzSortFn]="'available_hours' | gridSort">{{ 'hrmSelfService.available' | translate }}</th>
+          <th [nzSortFn]="'fiscal_year' | gridSort" [nzFilters]="'fiscal_year' | gridFilterList: table.nzData" [nzFilterFn]="'fiscal_year' | gridFilterFn">{{ 'hrmCommon.year' | translate }}</th>
+          <th [nzSortFn]="'entitlement_hours' | gridSort" [nzFilters]="'entitlement_hours' | gridFilterList: table.nzData" [nzFilterFn]="'entitlement_hours' | gridFilterFn">{{ 'hrmSelfService.entitlement' | translate }}</th>
+          <th [nzSortFn]="'carryover_hours' | gridSort" [nzFilters]="'carryover_hours' | gridFilterList: table.nzData" [nzFilterFn]="'carryover_hours' | gridFilterFn">{{ 'hrmSelfService.carryover' | translate }}</th>
+          <th [nzSortFn]="'accrued_hours' | gridSort" [nzFilters]="'accrued_hours' | gridFilterList: table.nzData" [nzFilterFn]="'accrued_hours' | gridFilterFn">{{ 'hrmSelfService.accrued' | translate }}</th>
+          <th [nzSortFn]="'used_hours' | gridSort" [nzFilters]="'used_hours' | gridFilterList: table.nzData" [nzFilterFn]="'used_hours' | gridFilterFn">{{ 'hrmSelfService.used' | translate }}</th>
+          <th [nzSortFn]="'pending_hours' | gridSort" [nzFilters]="'pending_hours' | gridFilterList: table.nzData" [nzFilterFn]="'pending_hours' | gridFilterFn">{{ 'hrmSelfService.pending' | translate }}</th>
+          <th [nzSortFn]="'available_hours' | gridSort" [nzFilters]="'available_hours' | gridFilterList: table.nzData" [nzFilterFn]="'available_hours' | gridFilterFn">{{ 'hrmSelfService.available' | translate }}</th>
         </tr>
       </thead>
       <tbody>

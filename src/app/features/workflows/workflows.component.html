@@ -37,12 +37,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'workflow_name' | gridSort">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th [nzSortFn]="'approvable_type' | gridSort">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'step_name' | gridSort">{{ 'WORKFLOWS.STEP' | translate }}</th>
-            <th [nzSortFn]="'initiator_name' | gridSort">{{ 'WORKFLOWS.INITIATOR' | translate }}</th>
-            <th [nzSortFn]="'due_at' | gridSort">{{ 'WORKFLOWS.DUE_AT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'workflow_name' | gridSort" [nzFilters]="'workflow_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'workflow_name' | gridFilterFn">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
+            <th [nzSortFn]="'approvable_type' | gridSort" [nzFilters]="'approvable_type' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'approvable_type' | gridFilterFn">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'step_name' | gridSort" [nzFilters]="'step_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'step_name' | gridFilterFn">{{ 'WORKFLOWS.STEP' | translate }}</th>
+            <th [nzSortFn]="'initiator_name' | gridSort" [nzFilters]="'initiator_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'initiator_name' | gridFilterFn">{{ 'WORKFLOWS.INITIATOR' | translate }}</th>
+            <th [nzSortFn]="'due_at' | gridSort" [nzFilters]="'due_at' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'due_at' | gridFilterFn">{{ 'WORKFLOWS.DUE_AT' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -151,11 +151,11 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th [nzSortFn]="'definition.name' | gridSort">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th [nzSortFn]="'approvable_type' | gridSort">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
-            <th [nzSortFn]="'started_at' | gridSort">{{ 'WORKFLOWS.STARTED_AT' | translate }}</th>
-            <th [nzSortFn]="'completed_at' | gridSort">{{ 'WORKFLOWS.COMPLETED_AT' | translate }}</th>
+            <th [nzSortFn]="'definition.name' | gridSort" [nzFilters]="'definition.name' | gridFilterList: instTable.nzData" [nzFilterFn]="'definition.name' | gridFilterFn">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
+            <th [nzSortFn]="'approvable_type' | gridSort" [nzFilters]="'approvable_type' | gridFilterList: instTable.nzData" [nzFilterFn]="'approvable_type' | gridFilterFn">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: instTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'started_at' | gridSort" [nzFilters]="'started_at' | gridFilterList: instTable.nzData" [nzFilterFn]="'started_at' | gridFilterFn">{{ 'WORKFLOWS.STARTED_AT' | translate }}</th>
+            <th [nzSortFn]="'completed_at' | gridSort" [nzFilters]="'completed_at' | gridFilterList: instTable.nzData" [nzFilterFn]="'completed_at' | gridFilterFn">{{ 'WORKFLOWS.COMPLETED_AT' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -247,10 +247,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'WORKFLOWS.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-            <th [nzSortFn]="'target_entity_type' | gridSort">{{ 'WORKFLOWS.TARGET_DOC' | translate }}</th>
-            <th [nzSortFn]="'version' | gridSort">{{ 'WORKFLOWS.VERSION' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: defsTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'WORKFLOWS.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: defsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'target_entity_type' | gridSort" [nzFilters]="'target_entity_type' | gridFilterList: defsTable.nzData" [nzFilterFn]="'target_entity_type' | gridFilterFn">{{ 'WORKFLOWS.TARGET_DOC' | translate }}</th>
+            <th [nzSortFn]="'version' | gridSort" [nzFilters]="'version' | gridFilterList: defsTable.nzData" [nzFilterFn]="'version' | gridFilterFn">{{ 'WORKFLOWS.VERSION' | translate }}</th>
             <th>{{ 'WORKFLOWS.PUBLISHED' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
@@ -326,13 +326,12 @@
           <nz-table
             [nzData]="delegations()"
             [nzFrontPagination]="true"
-            [nzLoading]="delegationsLoading()"
-          >
+            [nzLoading]="delegationsLoading()" #gridTbl50>
             <thead>
               <tr>
-                <th [nzSortFn]="'delegate_user_name' | gridSort">{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</th>
+                <th [nzSortFn]="'delegate_user_name' | gridSort" [nzFilters]="'delegate_user_name' | gridFilterList: gridTbl50.nzData" [nzFilterFn]="'delegate_user_name' | gridFilterFn">{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</th>
                 <th>{{ 'WORKFLOWS.SCOPE' | translate }}</th>
-                <th [nzSortFn]="'starts_at' | gridSort">{{ 'WORKFLOWS.VALID_PERIOD' | translate }}</th>
+                <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: gridTbl50.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'WORKFLOWS.VALID_PERIOD' | translate }}</th>
                 <th>{{ 'COMMON.STATUS' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
@@ -371,14 +370,13 @@
           <nz-table
             [nzData]="escalationRules()"
             [nzFrontPagination]="true"
-            [nzLoading]="rulesLoading()"
-          >
+            [nzLoading]="rulesLoading()" #gridTbl51>
             <thead>
               <tr>
-                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-                <th [nzSortFn]="'reminder_hours' | gridSort">{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
-                <th [nzSortFn]="'escalation_hours' | gridSort">{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
-                <th [nzSortFn]="'escalate_to_type' | gridSort">{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'reminder_hours' | gridSort" [nzFilters]="'reminder_hours' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'reminder_hours' | gridFilterFn">{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
+                <th [nzSortFn]="'escalation_hours' | gridSort" [nzFilters]="'escalation_hours' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'escalation_hours' | gridFilterFn">{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
+                <th [nzSortFn]="'escalate_to_type' | gridSort" [nzFilters]="'escalate_to_type' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'escalate_to_type' | gridFilterFn">{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -445,12 +443,12 @@
 
           @if (rep.bottlenecks && rep.bottlenecks.length > 0) {
             <h4 class="mt-4">{{ 'WORKFLOWS.BOTTLENECKS' | translate }}</h4>
-            <nz-table [nzData]="rep.bottlenecks" [nzFrontPagination]="false" [nzShowPagination]="false">
+            <nz-table [nzData]="rep.bottlenecks" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl52>
               <thead>
                 <tr>
-                  <th [nzSortFn]="'step_name' | gridSort">{{ 'WORKFLOWS.STEP' | translate }}</th>
-                  <th [nzSortFn]="'average_hours' | gridSort">{{ 'WORKFLOWS.AVG_HOURS' | translate }}</th>
-                  <th [nzSortFn]="'breached_count' | gridSort">{{ 'WORKFLOWS.BREACHED_COUNT' | translate }}</th>
+                  <th [nzSortFn]="'step_name' | gridSort" [nzFilters]="'step_name' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'step_name' | gridFilterFn">{{ 'WORKFLOWS.STEP' | translate }}</th>
+                  <th [nzSortFn]="'average_hours' | gridSort" [nzFilters]="'average_hours' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'average_hours' | gridFilterFn">{{ 'WORKFLOWS.AVG_HOURS' | translate }}</th>
+                  <th [nzSortFn]="'breached_count' | gridSort" [nzFilters]="'breached_count' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'breached_count' | gridFilterFn">{{ 'WORKFLOWS.BREACHED_COUNT' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -584,14 +582,13 @@
       [nzData]="auditEntries()"
       [nzFrontPagination]="false"
       [nzShowPagination]="false"
-      [nzLoading]="auditLoading()"
-    >
+      [nzLoading]="auditLoading()" #gridTbl53>
       <thead>
         <tr>
-          <th [nzSortFn]="'sequence' | gridSort">#</th>
-          <th [nzSortFn]="'event_type' | gridSort">{{ 'WORKFLOWS.EVENT' | translate }}</th>
-          <th [nzSortFn]="'actor_name' | gridSort">{{ 'WORKFLOWS.ACTOR' | translate }}</th>
-          <th [nzSortFn]="'created_at' | gridSort">{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
+          <th [nzSortFn]="'sequence' | gridSort" [nzFilters]="'sequence' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'sequence' | gridFilterFn">#</th>
+          <th [nzSortFn]="'event_type' | gridSort" [nzFilters]="'event_type' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'event_type' | gridFilterFn">{{ 'WORKFLOWS.EVENT' | translate }}</th>
+          <th [nzSortFn]="'actor_name' | gridSort" [nzFilters]="'actor_name' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'actor_name' | gridFilterFn">{{ 'WORKFLOWS.ACTOR' | translate }}</th>
+          <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
           <th>{{ 'WORKFLOWS.LBL_CRYPTOGRAPHIC_HASH' | translate }}</th>
         </tr>
       </thead>

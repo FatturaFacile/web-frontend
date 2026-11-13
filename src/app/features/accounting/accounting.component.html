@@ -161,11 +161,11 @@
       <nz-table #fpTable [nzData]="fiscalPeriods()" [nzLoading]="loadingPeriods()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '720px' }">
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'accounting.lblNomePeriodo' | translate }}</th>
-            <th [nzSortFn]="'year' | gridSort">{{ 'accounting.lblAnnoFiscale' | translate }}</th>
-            <th [nzSortFn]="'period_number' | gridSort">{{ 'accounting.lblMeseRiferimento' | translate }}</th>
-            <th [nzSortFn]="'start_date' | gridSort">{{ 'accounting.lblDataInizio' | translate }}</th>
-            <th [nzSortFn]="'end_date' | gridSort">{{ 'accounting.lblDataFine' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: fpTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'accounting.lblNomePeriodo' | translate }}</th>
+            <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: fpTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'accounting.lblAnnoFiscale' | translate }}</th>
+            <th [nzSortFn]="'period_number' | gridSort" [nzFilters]="'period_number' | gridFilterList: fpTable.nzData" [nzFilterFn]="'period_number' | gridFilterFn">{{ 'accounting.lblMeseRiferimento' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: fpTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'accounting.lblDataInizio' | translate }}</th>
+            <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: fpTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'accounting.lblDataFine' | translate }}</th>
             <th>{{ 'accounting.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'accounting.lblAzioni' | translate }}</th>
           </tr>
@@ -212,9 +212,9 @@
         <thead>
           <tr>
             <th>{{ 'accounting.lblProtocolloDichiarazione' | translate }}</th>
-            <th [nzSortFn]="'year' | gridSort">{{ 'accounting.lblAnnoPeriodo' | translate }}</th>
+            <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: intraTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'accounting.lblAnnoPeriodo' | translate }}</th>
             <th>{{ 'accounting.lblFlusso' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'accounting.lblStato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: intraTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'accounting.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'accounting.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -266,13 +266,13 @@
         <nz-table #tbTable [nzData]="tb.items || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="15" [nzScroll]="{ x: '720px' }">
           <thead>
             <tr>
-              <th [nzSortFn]="'account_code' | gridSort">{{ 'accounting.lblCodiceConto' | translate }}</th>
-              <th [nzSortFn]="'account_name' | gridSort">{{ 'accounting.lblDenominazioneConto' | translate }}</th>
-              <th [nzSortFn]="'account_type' | gridSort">{{ 'accounting.lblNatura' | translate }}</th>
-              <th class="num" [nzSortFn]="'opening_balance' | gridSort">{{ 'accounting.lblSaldoIniziale' | translate }}</th>
-              <th class="num" [nzSortFn]="'debit_movement' | gridSort">{{ 'accounting.lblMovimentiDare' | translate }}</th>
-              <th class="num" [nzSortFn]="'credit_movement' | gridSort">{{ 'accounting.lblMovimentiAvere' | translate }}</th>
-              <th class="num" [nzSortFn]="'closing_balance' | gridSort">{{ 'accounting.lblSaldoFinale' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: tbTable.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'accounting.lblCodiceConto' | translate }}</th>
+              <th [nzSortFn]="'account_name' | gridSort" [nzFilters]="'account_name' | gridFilterList: tbTable.nzData" [nzFilterFn]="'account_name' | gridFilterFn">{{ 'accounting.lblDenominazioneConto' | translate }}</th>
+              <th [nzSortFn]="'account_type' | gridSort" [nzFilters]="'account_type' | gridFilterList: tbTable.nzData" [nzFilterFn]="'account_type' | gridFilterFn">{{ 'accounting.lblNatura' | translate }}</th>
+              <th class="num" [nzSortFn]="'opening_balance' | gridSort" [nzFilters]="'opening_balance' | gridFilterList: tbTable.nzData" [nzFilterFn]="'opening_balance' | gridFilterFn">{{ 'accounting.lblSaldoIniziale' | translate }}</th>
+              <th class="num" [nzSortFn]="'debit_movement' | gridSort" [nzFilters]="'debit_movement' | gridFilterList: tbTable.nzData" [nzFilterFn]="'debit_movement' | gridFilterFn">{{ 'accounting.lblMovimentiDare' | translate }}</th>
+              <th class="num" [nzSortFn]="'credit_movement' | gridSort" [nzFilters]="'credit_movement' | gridFilterList: tbTable.nzData" [nzFilterFn]="'credit_movement' | gridFilterFn">{{ 'accounting.lblMovimentiAvere' | translate }}</th>
+              <th class="num" [nzSortFn]="'closing_balance' | gridSort" [nzFilters]="'closing_balance' | gridFilterList: tbTable.nzData" [nzFilterFn]="'closing_balance' | gridFilterFn">{{ 'accounting.lblSaldoFinale' | translate }}</th>
             </tr>
           </thead>
           <tbody>

@@ -68,11 +68,11 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'full_name' | gridSort">{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'crmLeadScore.lblStatus' | translate }}</th>
-        <th [nzSortFn]="'rating' | gridSort">{{ 'crmLeadScore.lblRating' | translate }}</th>
-        <th [nzSortFn]="'score' | gridSort">{{ 'crmLeadScore.lblScore' | translate }}</th>
-        <th [nzSortFn]="'country' | gridSort">{{ 'crmLeadScore.lblCountry' | translate }}</th>
+        <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'crmLeadScore.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'rating' | gridSort" [nzFilters]="'rating' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'rating' | gridFilterFn">{{ 'crmLeadScore.lblRating' | translate }}</th>
+        <th [nzSortFn]="'score' | gridSort" [nzFilters]="'score' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'score' | gridFilterFn">{{ 'crmLeadScore.lblScore' | translate }}</th>
+        <th [nzSortFn]="'country' | gridSort" [nzFilters]="'country' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'country' | gridFilterFn">{{ 'crmLeadScore.lblCountry' | translate }}</th>
         <th>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</th>
         <th nzWidth="200px">{{ 'crmLeadScore.lblActions' | translate }}</th>
       </tr>

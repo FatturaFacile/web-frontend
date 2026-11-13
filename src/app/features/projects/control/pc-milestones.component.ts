@@ -10,14 +10,14 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectMilestone } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-pc-milestones',
   styleUrl: './pc-milestones.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
@@ -26,10 +26,10 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th [nzSortFn]="'name' | gridSort">{{ 'PRJ.NAME' | translate }}</th>
-          <th [nzSortFn]="'milestone_date' | gridSort">{{ 'PRJ.DATE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'billing_amount' | gridSort">{{ 'PRJ.BILLING_AMOUNT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'billing_percentage' | gridSort">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PRJ.NAME' | translate }}</th>
+          <th [nzSortFn]="'milestone_date' | gridSort" [nzFilters]="'milestone_date' | gridFilterList: table.nzData" [nzFilterFn]="'milestone_date' | gridFilterFn">{{ 'PRJ.DATE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'billing_amount' | gridSort" [nzFilters]="'billing_amount' | gridFilterList: table.nzData" [nzFilterFn]="'billing_amount' | gridFilterFn">{{ 'PRJ.BILLING_AMOUNT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'billing_percentage' | gridSort" [nzFilters]="'billing_percentage' | gridFilterList: table.nzData" [nzFilterFn]="'billing_percentage' | gridFilterFn">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</th>
           <th>{{ 'PRJ.STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>

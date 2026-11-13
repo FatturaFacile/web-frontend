@@ -21,7 +21,7 @@ import {
   TicketStatus,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TicketCreateDrawerComponent } from './components/ticket-create-drawer/ticket-create-drawer.component';
 import { TicketBulkModalComponent } from './components/ticket-bulk-modal/ticket-bulk-modal.component';
 import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/ticket-detail-drawer.component';
@@ -31,7 +31,7 @@ import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/t
   styleUrl: './field-service.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     DatePipe,
     FormsModule,

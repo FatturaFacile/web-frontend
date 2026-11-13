@@ -16,7 +16,7 @@ import {
   FixedAssetResource,
   MaintenanceWorkOrderResource,
 } from '@core';
-import { MoneyPipe, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
@@ -24,7 +24,7 @@ import { TranslatePipe } from '@shared';
   styleUrl: './asset-detail-drawer.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     TranslatePipe,
     NzModalModule,

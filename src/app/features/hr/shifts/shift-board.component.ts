@@ -10,7 +10,7 @@ import {
   ShiftBoard,
   ShiftPeriodPayload,
 } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -43,7 +43,7 @@ function blockingViolations(err: unknown): ShiftViolation[] {
   styleUrl: './shift-board.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     DatePipe, FormsModule, NzButtonModule, NzInputModule, NzPopconfirmModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <div class="filter-bar">
@@ -90,8 +90,8 @@ function blockingViolations(err: unknown): ShiftViolation[] {
       <nz-table #table [nzData]="b.rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
-            <th [nzSortFn]="'work_date' | gridSort">{{ 'hrmShift.shifts' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: table.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'work_date' | gridSort" [nzFilters]="'work_date' | gridFilterList: table.nzData" [nzFilterFn]="'work_date' | gridFilterFn">{{ 'hrmShift.shifts' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -137,9 +137,9 @@ function blockingViolations(err: unknown): ShiftViolation[] {
       <nz-table #abs [nzData]="absences()" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'hrmCommon.date' | translate }}</th>
-            <th [nzSortFn]="'type' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: abs.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: abs.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'hrmCommon.date' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: abs.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'hrmCommon.type' | translate }}</th>
           </tr>
         </thead>
         <tbody>

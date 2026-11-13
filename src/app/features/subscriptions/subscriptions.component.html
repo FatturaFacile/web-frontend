@@ -79,12 +79,12 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'contract_number' | gridSort">{{ 'subscriptions.lblContract' | translate }}</th>
-        <th [nzSortFn]="'customer_name' | gridSort">{{ 'subscriptions.lblCustomer' | translate }}</th>
-        <th [nzSortFn]="'plan_name' | gridSort">{{ 'subscriptions.lblPlan' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'subscriptions.lblStatus' | translate }}</th>
-        <th [nzSortFn]="'mrr' | gridSort">{{ 'subscriptions.lblMrr' | translate }}</th>
-        <th [nzSortFn]="'current_period_start' | gridSort">{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
+        <th [nzSortFn]="'contract_number' | gridSort" [nzFilters]="'contract_number' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'contract_number' | gridFilterFn">{{ 'subscriptions.lblContract' | translate }}</th>
+        <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'subscriptions.lblCustomer' | translate }}</th>
+        <th [nzSortFn]="'plan_name' | gridSort" [nzFilters]="'plan_name' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'plan_name' | gridFilterFn">{{ 'subscriptions.lblPlan' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'subscriptions.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'mrr' | gridSort" [nzFilters]="'mrr' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'mrr' | gridFilterFn">{{ 'subscriptions.lblMrr' | translate }}</th>
+        <th [nzSortFn]="'current_period_start' | gridSort" [nzFilters]="'current_period_start' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'current_period_start' | gridFilterFn">{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
         <th nzWidth="240px">{{ 'subscriptions.lblActions' | translate }}</th>
       </tr>
     </thead>

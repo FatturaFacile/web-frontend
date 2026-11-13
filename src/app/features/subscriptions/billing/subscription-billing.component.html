@@ -37,12 +37,12 @@
           ></button>
         </div>
       }
-      <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl48>
         <thead>
           <tr>
-            <th [nzSortFn]="'metric_code' | gridSort">{{ 'SUBX.USAGE.METRIC' | translate }}</th>
-            <th [nzSortFn]="'subscription_item_id' | gridSort">{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
-            <th class="num" [nzSortFn]="'quantity' | gridSort">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
+            <th [nzSortFn]="'metric_code' | gridSort" [nzFilters]="'metric_code' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'metric_code' | gridFilterFn">{{ 'SUBX.USAGE.METRIC' | translate }}</th>
+            <th [nzSortFn]="'subscription_item_id' | gridSort" [nzFilters]="'subscription_item_id' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'subscription_item_id' | gridFilterFn">{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
+            <th class="num" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
             <th>{{ 'SUBX.USAGE.TIMESTAMP' | translate }}</th>
           </tr>
         </thead>
@@ -129,10 +129,10 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl49>
         <thead>
           <tr>
-            <th [nzSortFn]="'id' | gridSort">ID</th>
+            <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: gridTbl49.nzData" [nzFilterFn]="'id' | gridFilterFn">ID</th>
             <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>

@@ -116,3 +116,22 @@
     background-color: var(--bg-selected);
   }
 }
+
+.group-select {
+  min-width: 160px;
+}
+
+tr[hidden] {
+  display: none !important;
+}
+
+.group-row > td {
+  background: var(--bg-card-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+
+  .group-count {
+    margin-inline-start: var(--space-2);
+    color: var(--text-muted);
+  }
+}

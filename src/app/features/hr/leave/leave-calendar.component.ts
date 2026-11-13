@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrLeaveApiService, I18nService, LeaveCalendarEntry } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -16,7 +16,7 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
   styleUrl: './leave-calendar.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe, HrStatusTagComponent],
   template: `
     <div class="filter-bar">
@@ -35,11 +35,11 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
     <nz-table #table [nzData]="entries()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
-          <th [nzSortFn]="'leave_type_name' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
-          <th [nzSortFn]="'start_date' | gridSort">{{ 'hrmCommon.from' | translate }}</th>
-          <th [nzSortFn]="'end_date' | gridSort">{{ 'hrmCommon.to' | translate }}</th>
-          <th [nzSortFn]="'total_hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
+          <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: table.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+          <th [nzSortFn]="'leave_type_name' | gridSort" [nzFilters]="'leave_type_name' | gridFilterList: table.nzData" [nzFilterFn]="'leave_type_name' | gridFilterFn">{{ 'hrmCommon.type' | translate }}</th>
+          <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: table.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'hrmCommon.from' | translate }}</th>
+          <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: table.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'hrmCommon.to' | translate }}</th>
+          <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: table.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmCommon.hours' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
         </tr>
       </thead>

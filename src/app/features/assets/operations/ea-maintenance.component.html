@@ -7,11 +7,11 @@
       <nz-table #planTable nzSize="middle" [nzData]="plans()" [nzLoading]="loading()" [nzPageSize]="20">
         <thead>
           <tr>
-            <th [nzSortFn]="'plan_code' | gridSort">{{ 'EA.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'plan_code' | gridSort" [nzFilters]="'plan_code' | gridFilterList: planTable.nzData" [nzFilterFn]="'plan_code' | gridFilterFn">{{ 'EA.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: planTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.TRIGGER' | translate }}</th>
             <th>{{ 'EA.NEXT_DUE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'estimated_cost' | gridSort">{{ 'EA.ESTIMATED_COST' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'estimated_cost' | gridSort" [nzFilters]="'estimated_cost' | gridFilterList: planTable.nzData" [nzFilterFn]="'estimated_cost' | gridFilterFn">{{ 'EA.ESTIMATED_COST' | translate }}</th>
             <th>{{ 'EA.STATUS' | translate }}</th>
             <th>{{ 'EA.ACTIONS' | translate }}</th>
           </tr>
@@ -43,7 +43,7 @@
       <nz-table #dueTable nzSize="middle" [nzData]="duePlans()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: dueTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.NEXT_DUE' | translate }}</th>
             <th>{{ 'EA.ACTIONS' | translate }}</th>
           </tr>
@@ -218,9 +218,9 @@
       <nz-table #partTable nzSize="small" [nzData]="detail.parts" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th [nzSortFn]="'product_id' | gridSort">{{ 'EA.PRODUCT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort">{{ 'EA.QUANTITY' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort">{{ 'EA.TOTAL_COST' | translate }}</th>
+            <th [nzSortFn]="'product_id' | gridSort" [nzFilters]="'product_id' | gridFilterList: partTable.nzData" [nzFilterFn]="'product_id' | gridFilterFn">{{ 'EA.PRODUCT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: partTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'EA.QUANTITY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort" [nzFilters]="'total_cost' | gridFilterList: partTable.nzData" [nzFilterFn]="'total_cost' | gridFilterFn">{{ 'EA.TOTAL_COST' | translate }}</th>
           </tr>
         </thead>
         <tbody>

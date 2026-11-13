@@ -65,13 +65,13 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'contract_number' | gridSort">{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th [nzSortFn]="'contract_number' | gridSort" [nzFilters]="'contract_number' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'contract_number' | gridFilterFn">{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
             <th>{{ 'CONTRACTS.KIND' | translate }}</th>
-            <th [nzSortFn]="'counterparty_name' | gridSort">{{ 'CONTRACTS.COUNTERPARTY' | translate }}</th>
-            <th [nzSortFn]="'start_date' | gridSort">{{ 'CONTRACTS.PERIOD' | translate }}</th>
-            <th [nzSortFn]="'contract_value' | gridSort">{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'counterparty_name' | gridSort" [nzFilters]="'counterparty_name' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'counterparty_name' | gridFilterFn">{{ 'CONTRACTS.COUNTERPARTY' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'CONTRACTS.PERIOD' | translate }}</th>
+            <th [nzSortFn]="'contract_value' | gridSort" [nzFilters]="'contract_value' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'contract_value' | gridFilterFn">{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -185,12 +185,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'type' | gridSort">{{ 'CONTRACTS.TYPE' | translate }}</th>
-            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
-            <th [nzSortFn]="'due_date' | gridSort">{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
-            <th [nzSortFn]="'responsible_party' | gridSort">{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'CONTRACTS.PENALTY' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: obTable.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'CONTRACTS.TYPE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: obTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: obTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
+            <th [nzSortFn]="'responsible_party' | gridSort" [nzFilters]="'responsible_party' | gridFilterList: obTable.nzData" [nzFilterFn]="'responsible_party' | gridFilterFn">{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: obTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'CONTRACTS.PENALTY' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: obTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -263,14 +263,13 @@
       <nz-table
         [nzData]="alerts()"
         [nzFrontPagination]="true"
-        [nzLoading]="alertsLoading()"
-      >
+        [nzLoading]="alertsLoading()" #gridTbl11>
         <thead>
           <tr>
             <th>{{ 'CONTRACTS.ALERT_TYPE' | translate }}</th>
-            <th [nzSortFn]="'contract_number' | gridSort">{{ 'CONTRACTS.CONTRACT' | translate }}</th>
-            <th [nzSortFn]="'due_on' | gridSort">{{ 'CONTRACTS.DUE_ON' | translate }}</th>
-            <th [nzSortFn]="'message' | gridSort">{{ 'CONTRACTS.MESSAGE' | translate }}</th>
+            <th [nzSortFn]="'contract_number' | gridSort" [nzFilters]="'contract_number' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'contract_number' | gridFilterFn">{{ 'CONTRACTS.CONTRACT' | translate }}</th>
+            <th [nzSortFn]="'due_on' | gridSort" [nzFilters]="'due_on' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'due_on' | gridFilterFn">{{ 'CONTRACTS.DUE_ON' | translate }}</th>
+            <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'message' | gridFilterFn">{{ 'CONTRACTS.MESSAGE' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -500,12 +499,12 @@
         <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openPartyModal()"></button>
       </div>
 
-      <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl12>
         <thead>
           <tr>
-            <th [nzSortFn]="'role' | gridSort">{{ 'CONTRACTS.LBL_RUOLO' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'CONTRACTS.LBL_NOME' | translate }}</th>
-            <th [nzSortFn]="'email' | gridSort">Email</th>
+            <th [nzSortFn]="'role' | gridSort" [nzFilters]="'role' | gridFilterList: gridTbl12.nzData" [nzFilterFn]="'role' | gridFilterFn">{{ 'CONTRACTS.LBL_RUOLO' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl12.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CONTRACTS.LBL_NOME' | translate }}</th>
+            <th [nzSortFn]="'email' | gridSort" [nzFilters]="'email' | gridFilterList: gridTbl12.nzData" [nzFilterFn]="'email' | gridFilterFn">Email</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -531,13 +530,13 @@
         <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openObligationModal()"></button>
       </div>
 
-      <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl13>
         <thead>
           <tr>
-            <th [nzSortFn]="'type' | gridSort">{{ 'CONTRACTS.LBL_TIPO' | translate }}</th>
-            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.LBL_TITOLO' | translate }}</th>
-            <th [nzSortFn]="'due_date' | gridSort">{{ 'CONTRACTS.LBL_SCADENZA' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'CONTRACTS.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: gridTbl13.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'CONTRACTS.LBL_TIPO' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl13.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONTRACTS.LBL_TITOLO' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: gridTbl13.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'CONTRACTS.LBL_SCADENZA' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl13.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CONTRACTS.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -560,13 +559,13 @@
 
       <!-- STORICO -->
       <h4 class="mt-4">{{ 'CONTRACTS.HISTORY' | translate }}</h4>
-      <nz-table [nzData]="contractHistory()" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="contractHistory()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl14>
         <thead>
           <tr>
-            <th [nzSortFn]="'from_status' | gridSort">Da</th>
-            <th [nzSortFn]="'to_status' | gridSort">A</th>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'CONTRACTS.LBL_DATA' | translate }}</th>
-            <th [nzSortFn]="'reason' | gridSort">{{ 'CONTRACTS.LBL_MOTIVO' | translate }}</th>
+            <th [nzSortFn]="'from_status' | gridSort" [nzFilters]="'from_status' | gridFilterList: gridTbl14.nzData" [nzFilterFn]="'from_status' | gridFilterFn">Da</th>
+            <th [nzSortFn]="'to_status' | gridSort" [nzFilters]="'to_status' | gridFilterList: gridTbl14.nzData" [nzFilterFn]="'to_status' | gridFilterFn">A</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: gridTbl14.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'CONTRACTS.LBL_DATA' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: gridTbl14.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'CONTRACTS.LBL_MOTIVO' | translate }}</th>
           </tr>
         </thead>
         <tbody>

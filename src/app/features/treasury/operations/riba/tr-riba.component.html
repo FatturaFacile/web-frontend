@@ -6,10 +6,10 @@
           <tr>
             <th>{{ 'TR.REFERENCE' | translate }}</th>
             <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th [nzSortFn]="'execution_date' | gridSort">{{ 'TR.EXECUTION_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'item_count' | gridSort">{{ 'TR.ITEMS' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'TR.TOTAL' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'TR.STATUS' | translate }}</th>
+            <th [nzSortFn]="'execution_date' | gridSort" [nzFilters]="'execution_date' | gridFilterList: batchTable.nzData" [nzFilterFn]="'execution_date' | gridFilterFn">{{ 'TR.EXECUTION_DATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'item_count' | gridSort" [nzFilters]="'item_count' | gridFilterList: batchTable.nzData" [nzFilterFn]="'item_count' | gridFilterFn">{{ 'TR.ITEMS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: batchTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'TR.TOTAL' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: batchTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'TR.STATUS' | translate }}</th>
             <th>{{ 'TR.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -46,11 +46,11 @@
         <nz-table #receiptTable nzSize="middle" [nzData]="p.open_receipts" [nzPageSize]="20">
           <thead>
             <tr>
-              <th nzAlign="right" [nzSortFn]="'receipt_number' | gridSort">#</th>
-              <th [nzSortFn]="'debtor_name' | gridSort">{{ 'TR.DEBTOR' | translate }}</th>
-              <th [nzSortFn]="'due_date' | gridSort">{{ 'TR.DUE_DATE' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'TR.STATUS' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'receipt_number' | gridSort" [nzFilters]="'receipt_number' | gridFilterList: receiptTable.nzData" [nzFilterFn]="'receipt_number' | gridFilterFn">#</th>
+              <th [nzSortFn]="'debtor_name' | gridSort" [nzFilters]="'debtor_name' | gridFilterList: receiptTable.nzData" [nzFilterFn]="'debtor_name' | gridFilterFn">{{ 'TR.DEBTOR' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: receiptTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: receiptTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'TR.AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: receiptTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'TR.STATUS' | translate }}</th>
               <th>{{ 'TR.ACTIONS' | translate }}</th>
             </tr>
           </thead>

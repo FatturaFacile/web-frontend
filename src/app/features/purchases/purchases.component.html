@@ -68,10 +68,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'po_number' | gridSort">{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
+            <th [nzSortFn]="'po_number' | gridSort" [nzFilters]="'po_number' | gridFilterList: pTable.nzData" [nzFilterFn]="'po_number' | gridFilterFn">{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
             <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
             <th>{{ "PURCHASES.COL_ORDER_TYPE" | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ "COMMON.AMOUNT" | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: pTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ "COMMON.AMOUNT" | translate }}</th>
             <th>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</th>
             <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
             <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
@@ -160,11 +160,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'receipt_number' | gridSort">{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
-            <th [nzSortFn]="'supplier_delivery_note_ref' | gridSort">{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
+            <th [nzSortFn]="'receipt_number' | gridSort" [nzFilters]="'receipt_number' | gridFilterList: grTable.nzData" [nzFilterFn]="'receipt_number' | gridFilterFn">{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
+            <th [nzSortFn]="'supplier_delivery_note_ref' | gridSort" [nzFilters]="'supplier_delivery_note_ref' | gridFilterList: grTable.nzData" [nzFilterFn]="'supplier_delivery_note_ref' | gridFilterFn">{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_DATA_ARRIVO' | translate }}</th>
-            <th [nzSortFn]="'inspection_status' | gridSort">{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
-            <th [nzSortFn]="'lines.length' | gridSort">{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
+            <th [nzSortFn]="'inspection_status' | gridSort" [nzFilters]="'inspection_status' | gridFilterList: grTable.nzData" [nzFilterFn]="'inspection_status' | gridFilterFn">{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
+            <th [nzSortFn]="'lines.length' | gridSort" [nzFilters]="'lines.length' | gridFilterList: grTable.nzData" [nzFilterFn]="'lines.length' | gridFilterFn">{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -213,12 +213,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'id' | gridSort">{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
-            <th [nzSortFn]="'purchase_order_id' | gridSort">{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
+            <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: twmTable.nzData" [nzFilterFn]="'id' | gridFilterFn">{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
+            <th [nzSortFn]="'purchase_order_id' | gridSort" [nzFilters]="'purchase_order_id' | gridFilterList: twmTable.nzData" [nzFilterFn]="'purchase_order_id' | gridFilterFn">{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_STATO_CONCILIAZIONE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'po_total_amount' | gridSort">{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'invoice_total_amount' | gridSort">{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'variance_amount' | gridSort">{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'po_total_amount' | gridSort" [nzFilters]="'po_total_amount' | gridFilterList: twmTable.nzData" [nzFilterFn]="'po_total_amount' | gridFilterFn">{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'invoice_total_amount' | gridSort" [nzFilters]="'invoice_total_amount' | gridFilterList: twmTable.nzData" [nzFilterFn]="'invoice_total_amount' | gridFilterFn">{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'variance_amount' | gridSort" [nzFilters]="'variance_amount' | gridFilterList: twmTable.nzData" [nzFilterFn]="'variance_amount' | gridFilterFn">{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -272,11 +272,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'invoice_number' | gridSort">{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
+            <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: siTable.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_FORNITORE' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: siTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_SCADENZA' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: siTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
             <th>{{ 'PURCHASES.COL_PAYMENT' | translate }}</th>
             <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
@@ -433,12 +433,12 @@
         </nz-form-item>
       </div>
 
-      <nz-table [nzData]="receiptOrderLines()" [nzFrontPagination]="false" nzSize="small">
+      <nz-table [nzData]="receiptOrderLines()" [nzFrontPagination]="false" nzSize="small" #gridTbl35>
         <thead>
           <tr>
-            <th [nzSortFn]="'line_number' | gridSort">{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'quantity_ordered' | gridSort">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'quantity_received' | gridSort">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'line_number' | gridSort" [nzFilters]="'line_number' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'line_number' | gridFilterFn">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_ordered' | gridSort" [nzFilters]="'quantity_ordered' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'quantity_ordered' | gridFilterFn">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_received' | gridSort" [nzFilters]="'quantity_received' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'quantity_received' | gridFilterFn">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_QTY_NOW' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_N_LOTTO' | translate }}</th>
           </tr>
@@ -481,11 +481,11 @@
   <ng-container *nzModalContent>
     <p class="muted">{{ 'PURCHASES.INSPECT_HINT' | translate }}</p>
     <form nz-form [formGroup]="inspectForm" nzLayout="vertical">
-      <nz-table [nzData]="selectedReceipt()?.lines ?? []" [nzFrontPagination]="false" nzSize="small">
+      <nz-table [nzData]="selectedReceipt()?.lines ?? []" [nzFrontPagination]="false" nzSize="small" #gridTbl36>
         <thead>
           <tr>
-            <th [nzSortFn]="'purchase_order_line_id' | gridSort">{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'quantity_accepted' | gridSort">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
+            <th [nzSortFn]="'purchase_order_line_id' | gridSort" [nzFilters]="'purchase_order_line_id' | gridFilterList: gridTbl36.nzData" [nzFilterFn]="'purchase_order_line_id' | gridFilterFn">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_accepted' | gridSort" [nzFilters]="'quantity_accepted' | gridFilterList: gridTbl36.nzData" [nzFilterFn]="'quantity_accepted' | gridFilterFn">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_RELEASED' | translate }}</th>
             <th>{{ 'COMMON.NOTES' | translate }}</th>
           </tr>

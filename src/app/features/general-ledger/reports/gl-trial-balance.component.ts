@@ -6,7 +6,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DateRangeParams, GeneralLedgerApiService, LedgerTrialBalance } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
@@ -15,7 +15,7 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
   styleUrl: './gl-trial-balance.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
@@ -49,17 +49,17 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
         <nz-tag>{{ 'GL.REPORT_CURRENCY' | translate }}: {{ r.currency }}</nz-tag>
         <nz-tag [nzColor]="r.is_balanced ? 'green' : 'red'">{{ (r.is_balanced ? 'GL.BALANCED' : 'GL.NOT_BALANCED') | translate }}</nz-tag>
       </p>
-      <nz-table nzSize="small" [nzData]="r.accounts" [nzPageSize]="50" [nzLoading]="loading()">
+      <nz-table nzSize="small" [nzData]="r.accounts" [nzPageSize]="50" [nzLoading]="loading()" #gridTbl33>
         <thead>
           <tr>
-            <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'opening_balance' | gridSort">{{ 'GL.COL_OPENING' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'closing_balance' | gridSort">{{ 'GL.COL_CLOSING' | translate }}</th>
+            <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'opening_balance' | gridSort" [nzFilters]="'opening_balance' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'opening_balance' | gridFilterFn">{{ 'GL.COL_OPENING' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'closing_balance' | gridSort" [nzFilters]="'closing_balance' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'closing_balance' | gridFilterFn">{{ 'GL.COL_CLOSING' | translate }}</th>
             @if (r.compare_from) {
-              <th nzAlign="right" [nzSortFn]="'comparison_debit' | gridSort">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
-              <th nzAlign="right" [nzSortFn]="'comparison_credit' | gridSort">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_debit' | gridSort" [nzFilters]="'comparison_debit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'comparison_debit' | gridFilterFn">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_credit' | gridSort" [nzFilters]="'comparison_credit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'comparison_credit' | gridFilterFn">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
             }
           </tr>
         </thead>

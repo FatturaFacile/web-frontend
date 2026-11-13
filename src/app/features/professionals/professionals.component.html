@@ -69,13 +69,13 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'num' | gridSort">{{ 'PRACTICE.CASE_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'client' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'subject' | gridSort">{{ 'PRACTICE.SUBJECT' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th [nzSortFn]="'fee' | gridSort">{{ 'PRACTICE.FEE' | translate }}</th>
+            <th [nzSortFn]="'num' | gridSort" [nzFilters]="'num' | gridFilterList: casesTable.nzData" [nzFilterFn]="'num' | gridFilterFn">{{ 'PRACTICE.CASE_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'client' | gridSort" [nzFilters]="'client' | gridFilterList: casesTable.nzData" [nzFilterFn]="'client' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: casesTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'PRACTICE.SUBJECT' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: casesTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'fee' | gridSort" [nzFilters]="'fee' | gridFilterList: casesTable.nzData" [nzFilterFn]="'fee' | gridFilterFn">{{ 'PRACTICE.FEE' | translate }}</th>
             <th>{{ 'PRACTICE.AML_COMPLIANT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'PRACTICE.STATUS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: casesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRACTICE.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -150,13 +150,13 @@
         <thead>
           <tr>
             <th nzWidth="40px"></th>
-            <th [nzSortFn]="'activity_date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'case_title' | gridSort">{{ 'PRACTICE.CASE' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th [nzSortFn]="'rate' | gridSort">{{ 'PRACTICE.RATE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'activity_date' | gridSort" [nzFilters]="'activity_date' | gridFilterList: actTable.nzData" [nzFilterFn]="'activity_date' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: actTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'case_title' | gridSort" [nzFilters]="'case_title' | gridFilterList: actTable.nzData" [nzFilterFn]="'case_title' | gridFilterFn">{{ 'PRACTICE.CASE' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: actTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: actTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'rate' | gridSort" [nzFilters]="'rate' | gridFilterList: actTable.nzData" [nzFilterFn]="'rate' | gridFilterFn">{{ 'PRACTICE.RATE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: actTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.AMOUNT' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
           </tr>
         </thead>
@@ -209,13 +209,13 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'fee_note_number' | gridSort">{{ 'PRACTICE.FEE_NOTE_NUM' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_id' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'net_amount' | gridSort">{{ 'PRACTICE.NET_AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'social_contribution_rate' | gridSort">{{ 'PRACTICE.CPA_CONTRIBUTION' | translate }}</th>
-            <th [nzSortFn]="'withholding_tax_rate' | gridSort">{{ 'PRACTICE.WITHHOLDING' | translate }}</th>
-            <th [nzSortFn]="'vat_rate' | gridSort">{{ 'PRACTICE.VAT' | translate }}</th>
+            <th [nzSortFn]="'fee_note_number' | gridSort" [nzFilters]="'fee_note_number' | gridFilterList: fnTable.nzData" [nzFilterFn]="'fee_note_number' | gridFilterFn">{{ 'PRACTICE.FEE_NOTE_NUM' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: fnTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_id' | gridSort" [nzFilters]="'client_id' | gridFilterList: fnTable.nzData" [nzFilterFn]="'client_id' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: fnTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'PRACTICE.NET_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'social_contribution_rate' | gridSort" [nzFilters]="'social_contribution_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'social_contribution_rate' | gridFilterFn">{{ 'PRACTICE.CPA_CONTRIBUTION' | translate }}</th>
+            <th [nzSortFn]="'withholding_tax_rate' | gridSort" [nzFilters]="'withholding_tax_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'withholding_tax_rate' | gridFilterFn">{{ 'PRACTICE.WITHHOLDING' | translate }}</th>
+            <th [nzSortFn]="'vat_rate' | gridSort" [nzFilters]="'vat_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'vat_rate' | gridFilterFn">{{ 'PRACTICE.VAT' | translate }}</th>
             <th>{{ 'PRACTICE.GROSS_AMOUNT' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
           </tr>
@@ -305,13 +305,13 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'received_on' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'case_title' | gridSort">{{ 'PRACTICE.CASE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.INITIAL_AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'balance' | gridSort">{{ 'PRACTICE.BALANCE_AVAILABLE' | translate }}</th>
+            <th [nzSortFn]="'received_on' | gridSort" [nzFilters]="'received_on' | gridFilterList: retTable.nzData" [nzFilterFn]="'received_on' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: retTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'case_title' | gridSort" [nzFilters]="'case_title' | gridFilterList: retTable.nzData" [nzFilterFn]="'case_title' | gridFilterFn">{{ 'PRACTICE.CASE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: retTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.INITIAL_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'balance' | gridSort" [nzFilters]="'balance' | gridFilterList: retTable.nzData" [nzFilterFn]="'balance' | gridFilterFn">{{ 'PRACTICE.BALANCE_AVAILABLE' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
-            <th [nzSortFn]="'reference' | gridSort">{{ 'PRACTICE.REFERENCE' | translate }}</th>
+            <th [nzSortFn]="'reference' | gridSort" [nzFilters]="'reference' | gridFilterList: retTable.nzData" [nzFilterFn]="'reference' | gridFilterFn">{{ 'PRACTICE.REFERENCE' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -371,9 +371,9 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'period_start' | gridSort">{{ 'PRACTICE.PERIOD_START' | translate }}</th>
-            <th [nzSortFn]="'period_end' | gridSort">{{ 'PRACTICE.PERIOD_END' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: clsTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'period_start' | gridSort" [nzFilters]="'period_start' | gridFilterList: clsTable.nzData" [nzFilterFn]="'period_start' | gridFilterFn">{{ 'PRACTICE.PERIOD_START' | translate }}</th>
+            <th [nzSortFn]="'period_end' | gridSort" [nzFilters]="'period_end' | gridFilterList: clsTable.nzData" [nzFilterFn]="'period_end' | gridFilterFn">{{ 'PRACTICE.PERIOD_END' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
             <th>{{ 'PRACTICE.CHECKLIST_PROGRESS' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
@@ -462,10 +462,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'activity_date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'activity_date' | gridSort" [nzFilters]="'activity_date' | gridFilterList: drawerActTable.nzData" [nzFilterFn]="'activity_date' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: drawerActTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: drawerActTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: drawerActTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.AMOUNT' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -490,9 +490,9 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'applied_at' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'retainer_id' | gridSort">{{ 'PRACTICE.RETAINER_ID' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.DEDUCTED_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'applied_at' | gridSort" [nzFilters]="'applied_at' | gridFilterList: drawerRetTable.nzData" [nzFilterFn]="'applied_at' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'retainer_id' | gridSort" [nzFilters]="'retainer_id' | gridFilterList: drawerRetTable.nzData" [nzFilterFn]="'retainer_id' | gridFilterFn">{{ 'PRACTICE.RETAINER_ID' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: drawerRetTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.DEDUCTED_AMOUNT' | translate }}</th>
           </tr>
         </thead>
         <tbody>

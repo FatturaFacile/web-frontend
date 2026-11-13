@@ -27,7 +27,6 @@ import {
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
   TranslatePipe,
 } from '@shared';
 import { CycleQuotesFacade } from '../cycle.facades';
@@ -103,24 +102,16 @@ export class CycleQuotesComponent {
     this.i18n.currentLanguage();
     return [
       { key: 'quote_number', header: this.i18n.translate('SC.COMMON.NUMBER'), width: '150px', customCellTemplate: this.numberTpl() },
-      { key: 'contact', header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
+      { key: 'contact', serverKey: 'contact.name', valueGetter: (row) => this.lookups.contactName(row.contact_id, row.contact), header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
       { key: 'date', header: this.i18n.translate('SC.COMMON.DATE'), width: '120px' },
       { key: 'valid_until', header: this.i18n.translate('SC.QUOTES.VALID_UNTIL'), width: '120px' },
-      { key: 'status', header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
+      { key: 'status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
       { key: 'total_gross', header: this.i18n.translate('SC.COMMON.TOTAL'), width: '140px', align: 'right', customCellTemplate: this.totalTpl() },
     ];
   });
 
   constructor() {
     this.lookups.load();
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   protected isOpen(quote: CoreQuote): boolean {

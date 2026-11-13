@@ -44,9 +44,9 @@
     >
       <thead>
         <tr>
-          <th [nzSortFn]="'name' | gridSort">{{ 'TENANT_SECURITY.COL_NAME' | translate }}</th>
-          <th [nzSortFn]="'email' | gridSort">{{ 'TENANT_SECURITY.COL_EMAIL' | translate }}</th>
-          <th [nzSortFn]="'role' | gridSort">{{ 'TENANT_SECURITY.COL_ROLE' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: membersTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'TENANT_SECURITY.COL_NAME' | translate }}</th>
+          <th [nzSortFn]="'email' | gridSort" [nzFilters]="'email' | gridFilterList: membersTable.nzData" [nzFilterFn]="'email' | gridFilterFn">{{ 'TENANT_SECURITY.COL_EMAIL' | translate }}</th>
+          <th [nzSortFn]="'role' | gridSort" [nzFilters]="'role' | gridFilterList: membersTable.nzData" [nzFilterFn]="'role' | gridFilterFn">{{ 'TENANT_SECURITY.COL_ROLE' | translate }}</th>
           <th>{{ 'TENANT_SECURITY.COL_STATUS' | translate }}</th>
           <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
         </tr>

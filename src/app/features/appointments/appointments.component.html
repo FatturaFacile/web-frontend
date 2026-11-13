@@ -102,12 +102,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'title' | gridSort">{{ 'APPOINTMENTS.TITLE_COL' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort">{{ 'APPOINTMENTS.CONTACT' | translate }}</th>
-            <th [nzSortFn]="'starts_at' | gridSort">{{ 'APPOINTMENTS.STARTS_AT' | translate }}</th>
-            <th [nzSortFn]="'ends_at' | gridSort">{{ 'APPOINTMENTS.ENDS_AT' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: appTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'APPOINTMENTS.TITLE_COL' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: appTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'APPOINTMENTS.CONTACT' | translate }}</th>
+            <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: appTable.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'APPOINTMENTS.STARTS_AT' | translate }}</th>
+            <th [nzSortFn]="'ends_at' | gridSort" [nzFilters]="'ends_at' | gridFilterList: appTable.nzData" [nzFilterFn]="'ends_at' | gridFilterFn">{{ 'APPOINTMENTS.ENDS_AT' | translate }}</th>
             <th>{{ 'APPOINTMENTS.STATUS' | translate }}</th>
-            <th [nzSortFn]="'address' | gridSort">{{ 'APPOINTMENTS.ADDRESS' | translate }}</th>
+            <th [nzSortFn]="'address' | gridSort" [nzFilters]="'address' | gridFilterList: appTable.nzData" [nzFilterFn]="'address' | gridFilterFn">{{ 'APPOINTMENTS.ADDRESS' | translate }}</th>
             <th>{{ 'APPOINTMENTS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -298,9 +298,9 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'user.name' | gridSort">{{ 'APPOINTMENTS.USER' | translate }}</th>
-              <th [nzSortFn]="'role' | gridSort">{{ 'APPOINTMENTS.ROLE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'APPOINTMENTS.STATUS' | translate }}</th>
+              <th [nzSortFn]="'user.name' | gridSort" [nzFilters]="'user.name' | gridFilterList: attTable.nzData" [nzFilterFn]="'user.name' | gridFilterFn">{{ 'APPOINTMENTS.USER' | translate }}</th>
+              <th [nzSortFn]="'role' | gridSort" [nzFilters]="'role' | gridFilterList: attTable.nzData" [nzFilterFn]="'role' | gridFilterFn">{{ 'APPOINTMENTS.ROLE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: attTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'APPOINTMENTS.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>

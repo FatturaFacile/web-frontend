@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { LedgerStatementReport, StatementSection } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 interface SectionRow {
   key: string;
@@ -15,7 +15,7 @@ interface SectionRow {
   styleUrl: './gl-statement-view.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (report(); as r) {
@@ -27,14 +27,14 @@ interface SectionRow {
       </p>
       @for (row of rows(); track row.key) {
         <h4>{{ 'GL.SECTION_' + row.key.toUpperCase() | translate }}</h4>
-        <nz-table nzSize="small" [nzData]="row.section.accounts" [nzShowPagination]="false">
+        <nz-table nzSize="small" [nzData]="row.section.accounts" [nzShowPagination]="false" #gridTbl32>
           <thead>
             <tr>
-              <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'GL.COL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: gridTbl32.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: gridTbl32.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'GL.COL_AMOUNT' | translate }}</th>
               @if (hasComparison()) {
-                <th nzAlign="right" [nzSortFn]="'comparison_amount' | gridSort">{{ 'GL.COL_COMPARISON' | translate }}</th>
-                <th nzAlign="right" [nzSortFn]="'variance' | gridSort">{{ 'GL.COL_VARIANCE' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'comparison_amount' | gridSort" [nzFilters]="'comparison_amount' | gridFilterList: gridTbl32.nzData" [nzFilterFn]="'comparison_amount' | gridFilterFn">{{ 'GL.COL_COMPARISON' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'variance' | gridSort" [nzFilters]="'variance' | gridFilterList: gridTbl32.nzData" [nzFilterFn]="'variance' | gridFilterFn">{{ 'GL.COL_VARIANCE' | translate }}</th>
               }
             </tr>
           </thead>

@@ -16,13 +16,13 @@
       <button nz-button nzType="primary" type="button" appIconAction="create" (click)="open(null)"></button>
     }
   </div>
-  <nz-table [nzData]="rules()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzData]="rules()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle" #gridTbl19>
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.SCORING.TYPE' | translate }}</th>
-        <th [nzSortFn]="'field' | gridSort">{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
-        <th class="num" [nzSortFn]="'points' | gridSort">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
+        <th [nzSortFn]="'field' | gridSort" [nzFilters]="'field' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'field' | gridFilterFn">{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
+        <th class="num" [nzSortFn]="'points' | gridSort" [nzFilters]="'points' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'points' | gridFilterFn">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>

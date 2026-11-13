@@ -45,14 +45,14 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'quote_number' | gridSort">{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'quote_number' | gridSort" [nzFilters]="'quote_number' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'quote_number' | gridFilterFn">{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
             <th>{{ 'SALES.COL_VALID_UNTIL' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_tax' | gridSort">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_tax' | gridSort" [nzFilters]="'total_tax' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_tax' | gridFilterFn">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -165,14 +165,14 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'order_number' | gridSort">{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: orderTable.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: orderTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: orderTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
             <th>{{ 'SALES.COL_DUE_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: orderTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: orderTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
             <th nzAlign="center">{{ 'SALES.LBL_STOCK' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: orderTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -272,14 +272,14 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'ddt_number' | gridSort">{{ 'SALES.COL_DDT_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
-            <th [nzSortFn]="'transport_reason' | gridSort">{{ 'SALES.COL_REASON' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'packages_count' | gridSort">{{ 'SALES.COL_PACKAGES' | translate }}</th>
+            <th [nzSortFn]="'ddt_number' | gridSort" [nzFilters]="'ddt_number' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'ddt_number' | gridFilterFn">{{ 'SALES.COL_DDT_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'transport_reason' | gridSort" [nzFilters]="'transport_reason' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'transport_reason' | gridFilterFn">{{ 'SALES.COL_REASON' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'packages_count' | gridSort" [nzFilters]="'packages_count' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'packages_count' | gridFilterFn">{{ 'SALES.COL_PACKAGES' | translate }}</th>
             <th nzAlign="right">{{ 'SALES.COL_WEIGHT' | translate }}</th>
-            <th [nzSortFn]="'carrier_name' | gridSort">{{ 'SALES.COL_CARRIER' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'carrier_name' | gridSort" [nzFilters]="'carrier_name' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'carrier_name' | gridFilterFn">{{ 'SALES.COL_CARRIER' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>

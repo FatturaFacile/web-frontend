@@ -91,12 +91,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'first_name' | gridSort">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
-              <th [nzSortFn]="'group_name' | gridSort">{{ 'CHILDCARE.COL_GROUP' | translate }}</th>
+              <th [nzSortFn]="'first_name' | gridSort" [nzFilters]="'first_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'first_name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
+              <th [nzSortFn]="'group_name' | gridSort" [nzFilters]="'group_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'group_name' | gridFilterFn">{{ 'CHILDCARE.COL_GROUP' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_BIRTH_DATE' | translate }}</th>
-              <th [nzSortFn]="'enrolled_on' | gridSort">{{ 'CHILDCARE.COL_ENROLLED_ON' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'billing_contact_name' | gridSort">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
+              <th [nzSortFn]="'enrolled_on' | gridSort" [nzFilters]="'enrolled_on' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'enrolled_on' | gridFilterFn">{{ 'CHILDCARE.COL_ENROLLED_ON' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'billing_contact_name' | gridSort" [nzFilters]="'billing_contact_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'billing_contact_name' | gridFilterFn">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
               <th nzRight>{{ 'CHILDCARE.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -180,14 +180,14 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'date' | gridSort">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
-              <th [nzSortFn]="'child_name' | gridSort">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_CHECK_IN' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_TEMP' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_CHECK_OUT' | translate }}</th>
-              <th [nzSortFn]="'picked_up_by' | gridSort">{{ 'CHILDCARE.COL_PICKED_UP_BY' | translate }}</th>
-              <th [nzSortFn]="'absence_reason' | gridSort">{{ 'CHILDCARE.COL_NOTES' | translate }}</th>
+              <th [nzSortFn]="'picked_up_by' | gridSort" [nzFilters]="'picked_up_by' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'picked_up_by' | gridFilterFn">{{ 'CHILDCARE.COL_PICKED_UP_BY' | translate }}</th>
+              <th [nzSortFn]="'absence_reason' | gridSort" [nzFilters]="'absence_reason' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'absence_reason' | gridFilterFn">{{ 'CHILDCARE.COL_NOTES' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -223,10 +223,10 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'date' | gridSort">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
-              <th [nzSortFn]="'child_name' | gridSort">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'category' | gridSort">{{ 'CHILDCARE.COL_CATEGORY' | translate }}</th>
-              <th [nzSortFn]="'body' | gridSort">{{ 'CHILDCARE.COL_BODY' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: notesTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: notesTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'category' | gridSort" [nzFilters]="'category' | gridFilterList: notesTable.nzData" [nzFilterFn]="'category' | gridFilterFn">{{ 'CHILDCARE.COL_CATEGORY' | translate }}</th>
+              <th [nzSortFn]="'body' | gridSort" [nzFilters]="'body' | gridFilterList: notesTable.nzData" [nzFilterFn]="'body' | gridFilterFn">{{ 'CHILDCARE.COL_BODY' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_FAMILY_VISIBLE' | translate }}</th>
             </tr>
           </thead>
@@ -301,13 +301,13 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'period' | gridSort">{{ 'CHILDCARE.COL_PERIOD' | translate }}</th>
-              <th [nzSortFn]="'child_name' | gridSort">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'contact_name' | gridSort">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
-              <th [nzSortFn]="'gross_amount' | gridSort">{{ 'CHILDCARE.COL_GROSS_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'subsidy_amount' | gridSort">{{ 'CHILDCARE.COL_SUBSIDY_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'net_amount' | gridSort">{{ 'CHILDCARE.COL_NET_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'period' | gridSort" [nzFilters]="'period' | gridFilterList: billsTable.nzData" [nzFilterFn]="'period' | gridFilterFn">{{ 'CHILDCARE.COL_PERIOD' | translate }}</th>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: billsTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'contact_name' | gridSort" [nzFilters]="'contact_name' | gridFilterList: billsTable.nzData" [nzFilterFn]="'contact_name' | gridFilterFn">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
+              <th [nzSortFn]="'gross_amount' | gridSort" [nzFilters]="'gross_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'gross_amount' | gridFilterFn">{{ 'CHILDCARE.COL_GROSS_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'subsidy_amount' | gridSort" [nzFilters]="'subsidy_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'subsidy_amount' | gridFilterFn">{{ 'CHILDCARE.COL_SUBSIDY_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'CHILDCARE.COL_NET_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: billsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -340,7 +340,7 @@
         <nz-table #reqTable [nzData]="requirements()" [nzLoading]="requirementsLoading()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th [nzSortFn]="'name' | gridSort">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: reqTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_MANDATORY' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_REQUIRES_SIGNATURE' | translate }}</th>
             </tr>
@@ -368,9 +368,9 @@
         <nz-table #outTable [nzData]="outstandingDocuments()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th [nzSortFn]="'child_name' | gridSort">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'title' | gridSort">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: outTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: outTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: outTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -434,9 +434,9 @@
         <nz-table #refTable [nzData]="refPersons()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'full_name' | gridSort">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
-              <th [nzSortFn]="'relationship' | gridSort">{{ 'CHILDCARE.COL_RELATIONSHIP' | translate }}</th>
-              <th [nzSortFn]="'phone' | gridSort">{{ 'CHILDCARE.COL_PHONE' | translate }}</th>
+              <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: refTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
+              <th [nzSortFn]="'relationship' | gridSort" [nzFilters]="'relationship' | gridFilterList: refTable.nzData" [nzFilterFn]="'relationship' | gridFilterFn">{{ 'CHILDCARE.COL_RELATIONSHIP' | translate }}</th>
+              <th [nzSortFn]="'phone' | gridSort" [nzFilters]="'phone' | gridFilterList: refTable.nzData" [nzFilterFn]="'phone' | gridFilterFn">{{ 'CHILDCARE.COL_PHONE' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_CAN_PICK_UP' | translate }}</th>
               <th>{{ 'CHILDCARE.COL_PORTAL_ACCESS' | translate }}</th>
             </tr>
@@ -475,9 +475,9 @@
         <nz-table #docTable [nzData]="childDocuments()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'title' | gridSort">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'signed_by' | gridSort">{{ 'CHILDCARE.COL_SIGNED_BY' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'signed_by' | gridSort" [nzFilters]="'signed_by' | gridFilterList: docTable.nzData" [nzFilterFn]="'signed_by' | gridFilterFn">{{ 'CHILDCARE.COL_SIGNED_BY' | translate }}</th>
             </tr>
           </thead>
           <tbody>

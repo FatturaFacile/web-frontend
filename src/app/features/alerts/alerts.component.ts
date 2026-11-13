@@ -156,11 +156,7 @@ export class AlertsComponent implements OnInit {
   }
 
   onParamsChange(params: TableQueryParams): void {
-    this.tableState.setPage(params.pageIndex);
-    this.tableState.setPageSize(params.pageSize);
-    if (params.sort) {
-      this.tableState.setSort(params.sort.key, params.sort.order);
-    }
+    this.tableState.applyGridParams(params);
     this.loadData();
   }
 

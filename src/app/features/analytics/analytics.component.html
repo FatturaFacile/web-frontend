@@ -168,11 +168,11 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'date' | gridSort">{{ 'ANALYTICS.DUE_DATE' | translate }}</th>
+                <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: dueTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'ANALYTICS.DUE_DATE' | translate }}</th>
                 <th>{{ 'ANALYTICS.DIRECTION' | translate }}</th>
-                <th [nzSortFn]="'contact_name' | gridSort">{{ 'ANALYTICS.CONTACT' | translate }}</th>
-                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
-                <th class="text-right" [nzSortFn]="'amount' | gridSort">{{ 'COMMON.AMOUNT' | translate }}</th>
+                <th [nzSortFn]="'contact_name' | gridSort" [nzFilters]="'contact_name' | gridFilterList: dueTable.nzData" [nzFilterFn]="'contact_name' | gridFilterFn">{{ 'ANALYTICS.CONTACT' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: dueTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th class="text-right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: dueTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'COMMON.AMOUNT' | translate }}</th>
                 <th>{{ 'COMMON.STATUS' | translate }}</th>
               </tr>
             </thead>
@@ -245,11 +245,11 @@
                 >
                   <thead>
                     <tr>
-                      <th [nzSortFn]="'month_name' | gridSort">{{ 'ANALYTICS.MONTH' | translate }}</th>
-                      <th class="text-right" [nzSortFn]="'revenue' | gridSort">{{ comp.year }}</th>
-                      <th class="text-right" [nzSortFn]="'previous_year_revenue' | gridSort">{{ comp.year - 1 }}</th>
-                      <th class="text-right" [nzSortFn]="'variance' | gridSort">{{ 'ANALYTICS.VARIANCE' | translate }}</th>
-                      <th class="text-right" [nzSortFn]="'variance_percent' | gridSort">%</th>
+                      <th [nzSortFn]="'month_name' | gridSort" [nzFilters]="'month_name' | gridFilterList: compTable.nzData" [nzFilterFn]="'month_name' | gridFilterFn">{{ 'ANALYTICS.MONTH' | translate }}</th>
+                      <th class="text-right" [nzSortFn]="'revenue' | gridSort" [nzFilters]="'revenue' | gridFilterList: compTable.nzData" [nzFilterFn]="'revenue' | gridFilterFn">{{ comp.year }}</th>
+                      <th class="text-right" [nzSortFn]="'previous_year_revenue' | gridSort" [nzFilters]="'previous_year_revenue' | gridFilterList: compTable.nzData" [nzFilterFn]="'previous_year_revenue' | gridFilterFn">{{ comp.year - 1 }}</th>
+                      <th class="text-right" [nzSortFn]="'variance' | gridSort" [nzFilters]="'variance' | gridFilterList: compTable.nzData" [nzFilterFn]="'variance' | gridFilterFn">{{ 'ANALYTICS.VARIANCE' | translate }}</th>
+                      <th class="text-right" [nzSortFn]="'variance_percent' | gridSort" [nzFilters]="'variance_percent' | gridFilterList: compTable.nzData" [nzFilterFn]="'variance_percent' | gridFilterFn">%</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,9 +300,9 @@
               >
                 <thead>
                   <tr>
-                    <th [nzSortFn]="'label' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-                    <th class="text-right" [nzSortFn]="'amount' | gridSort">{{ 'COMMON.AMOUNT' | translate }}</th>
-                    <th class="text-right" [nzSortFn]="'percentage' | gridSort">{{ 'COMMON.SHARE' | translate }}</th>
+                    <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: breakTable.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+                    <th class="text-right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: breakTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'COMMON.AMOUNT' | translate }}</th>
+                    <th class="text-right" [nzSortFn]="'percentage' | gridSort" [nzFilters]="'percentage' | gridFilterList: breakTable.nzData" [nzFilterFn]="'percentage' | gridFilterFn">{{ 'COMMON.SHARE' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -334,10 +334,10 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: reportTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: reportTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
                 <th>{{ 'ANALYTICS.KPIS' | translate }}</th>
-                <th [nzSortFn]="'period_preset' | gridSort">{{ 'ANALYTICS.PERIOD' | translate }}</th>
+                <th [nzSortFn]="'period_preset' | gridSort" [nzFilters]="'period_preset' | gridFilterList: reportTable.nzData" [nzFilterFn]="'period_preset' | gridFilterFn">{{ 'ANALYTICS.PERIOD' | translate }}</th>
                 <th>{{ 'ANALYTICS.SHARED' | translate }}</th>
                 <th class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>

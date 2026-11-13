@@ -7,7 +7,7 @@ import {
   PunchImportResult,
   PunchType,
 } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { defer, Observable, tap, throwError } from 'rxjs';
@@ -22,7 +22,7 @@ const SOURCES = ['badge', 'terminal'];
   styleUrl: './time-punch-import.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ActionFormComponent, NzAlertModule, NzTableModule, TranslatePipe],
   template: `
     <nz-alert
@@ -44,8 +44,8 @@ const SOURCES = ['badge', 'terminal'];
         <nz-table #rejectedTable [nzData]="r.rejected" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'external_id' | gridSort">{{ 'hrmTimeX.externalId' | translate }}</th>
-              <th [nzSortFn]="'reason' | gridSort">{{ 'hrmCommon.reason' | translate }}</th>
+              <th [nzSortFn]="'external_id' | gridSort" [nzFilters]="'external_id' | gridFilterList: rejectedTable.nzData" [nzFilterFn]="'external_id' | gridFilterFn">{{ 'hrmTimeX.externalId' | translate }}</th>
+              <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: rejectedTable.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'hrmCommon.reason' | translate }}</th>
             </tr>
           </thead>
           <tbody>

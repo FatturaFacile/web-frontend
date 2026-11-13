@@ -13,7 +13,6 @@ import {
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
   TranslatePipe,
 } from '@shared';
 import { CycleBackordersFacade } from '../cycle.facades';
@@ -92,14 +91,6 @@ export class SalesOverviewComponent {
         }
       },
     });
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   /** Rates arrive as decimal strings; display them as received with a percent sign. */

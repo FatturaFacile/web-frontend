@@ -8,7 +8,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectRevenueRecognition } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-alert.component';
 
 /** Time and materials billing, billing runs and revenue recognition of a project. */
@@ -17,7 +17,7 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
   styleUrl: './pc-billing.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
   template: `
     <app-gl-error-alert [error]="error()" />
@@ -48,11 +48,11 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
     <nz-table #recognitionTable nzSize="small" [nzData]="recognitions()" [nzPageSize]="10">
       <thead>
         <tr>
-          <th [nzSortFn]="'accounting_period_date' | gridSort">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'completion_percentage' | gridSort">{{ 'PRJ.COMPLETION' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'period_revenue' | gridSort">{{ 'PRJ.PERIOD_REVENUE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'cumulative_recognized_revenue' | gridSort">{{ 'PRJ.CUMULATIVE_REVENUE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'contract_asset_balance' | gridSort">{{ 'PRJ.CONTRACT_ASSET' | translate }}</th>
+          <th [nzSortFn]="'accounting_period_date' | gridSort" [nzFilters]="'accounting_period_date' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'accounting_period_date' | gridFilterFn">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'completion_percentage' | gridSort" [nzFilters]="'completion_percentage' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'completion_percentage' | gridFilterFn">{{ 'PRJ.COMPLETION' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'period_revenue' | gridSort" [nzFilters]="'period_revenue' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'period_revenue' | gridFilterFn">{{ 'PRJ.PERIOD_REVENUE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'cumulative_recognized_revenue' | gridSort" [nzFilters]="'cumulative_recognized_revenue' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'cumulative_recognized_revenue' | gridFilterFn">{{ 'PRJ.CUMULATIVE_REVENUE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'contract_asset_balance' | gridSort" [nzFilters]="'contract_asset_balance' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'contract_asset_balance' | gridFilterFn">{{ 'PRJ.CONTRACT_ASSET' | translate }}</th>
           <th>{{ 'PRJ.POSTED_TO_GL' | translate }}</th>
         </tr>
       </thead>

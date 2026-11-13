@@ -43,7 +43,7 @@ import {
   TableStateService,
   TranslatePipe,
   ModalActionsDirective,
-  IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
+  IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { notInFuture } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
@@ -61,7 +61,7 @@ const INTRASTAT_FIRST_YEAR = 2022;
   styleUrl: './accounting.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -669,11 +669,7 @@ export class AccountingComponent implements OnInit {
   }
 
   onParamsChange(params: TableQueryParams): void {
-    this.tableState.setPage(params.pageIndex);
-    this.tableState.setPageSize(params.pageSize);
-    if (params.sort) {
-      this.tableState.setSort(params.sort.key, params.sort.order);
-    }
+    this.tableState.applyGridParams(params);
     this.loadLedgerEntries();
   }
 

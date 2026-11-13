@@ -18,7 +18,7 @@ import {
   ProjectCostEntry,
   ProjectExpenseCategory,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   'travel_lodging',
@@ -36,7 +36,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   styleUrl: './pc-costs.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
@@ -54,12 +54,12 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzPageSize]="20">
       <thead>
         <tr>
-          <th [nzSortFn]="'incurred_date' | gridSort">{{ 'PRJ.DATE' | translate }}</th>
-          <th [nzSortFn]="'cost_category' | gridSort">{{ 'PRJ.CATEGORY' | translate }}</th>
-          <th [nzSortFn]="'description' | gridSort">{{ 'PRJ.DESCRIPTION' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort">{{ 'PRJ.TOTAL' | translate }}</th>
+          <th [nzSortFn]="'incurred_date' | gridSort" [nzFilters]="'incurred_date' | gridFilterList: table.nzData" [nzFilterFn]="'incurred_date' | gridFilterFn">{{ 'PRJ.DATE' | translate }}</th>
+          <th [nzSortFn]="'cost_category' | gridSort" [nzFilters]="'cost_category' | gridFilterList: table.nzData" [nzFilterFn]="'cost_category' | gridFilterFn">{{ 'PRJ.CATEGORY' | translate }}</th>
+          <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: table.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'PRJ.DESCRIPTION' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort" [nzFilters]="'total_cost' | gridFilterList: table.nzData" [nzFilterFn]="'total_cost' | gridFilterFn">{{ 'PRJ.TOTAL' | translate }}</th>
           <th>{{ 'PRJ.BILLABLE' | translate }}</th>
-          <th [nzSortFn]="'approval_status' | gridSort">{{ 'PRJ.APPROVAL_STATUS' | translate }}</th>
+          <th [nzSortFn]="'approval_status' | gridSort" [nzFilters]="'approval_status' | gridFilterList: table.nzData" [nzFilterFn]="'approval_status' | gridFilterFn">{{ 'PRJ.APPROVAL_STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>
       </thead>

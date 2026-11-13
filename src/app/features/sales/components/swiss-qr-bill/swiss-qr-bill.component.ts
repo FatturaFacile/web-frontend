@@ -14,7 +14,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { QrBill } from '@domain/models/qr-bill.model';
 import { QrBillStore } from '../../state/qr-bill.store';
 
@@ -23,7 +23,7 @@ import { QrBillStore } from '../../state/qr-bill.store';
   styleUrl: './swiss-qr-bill.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ReactiveFormsModule,
     DecimalPipe,
     NzCardModule,

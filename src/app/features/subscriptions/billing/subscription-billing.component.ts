@@ -18,7 +18,7 @@ import {
   SubscriptionRevenueForecast,
   UsageEvent,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { ContractChangesComponent } from './contract-changes.component';
 
 const DECIMAL = /^\d+(\.\d{1,4})?$/;
@@ -29,7 +29,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
   styleUrl: './subscription-billing.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

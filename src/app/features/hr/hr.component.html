@@ -103,13 +103,13 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'employee_number' | gridSort">{{ 'hrmEmp.lblMatricola' | translate }}</th>
-            <th [nzSortFn]="'full_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'work_email' | gridSort">{{ 'hrmEmp.lblEmailAziendale' | translate }}</th>
-            <th [nzSortFn]="'employment_type' | gridSort">{{ 'hrmEmp.lblTipoContratto' | translate }}</th>
-            <th [nzSortFn]="'employment_status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'base_annual_salary' | gridSort">{{ 'hrmEmp.lblRalRetribuzione' | translate }}</th>
-            <th [nzSortFn]="'hire_date' | gridSort">{{ 'hrmEmp.lblDataAssunzione' | translate }}</th>
+            <th [nzSortFn]="'employee_number' | gridSort" [nzFilters]="'employee_number' | gridFilterList: empTable.nzData" [nzFilterFn]="'employee_number' | gridFilterFn">{{ 'hrmEmp.lblMatricola' | translate }}</th>
+            <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: empTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'work_email' | gridSort" [nzFilters]="'work_email' | gridFilterList: empTable.nzData" [nzFilterFn]="'work_email' | gridFilterFn">{{ 'hrmEmp.lblEmailAziendale' | translate }}</th>
+            <th [nzSortFn]="'employment_type' | gridSort" [nzFilters]="'employment_type' | gridFilterList: empTable.nzData" [nzFilterFn]="'employment_type' | gridFilterFn">{{ 'hrmEmp.lblTipoContratto' | translate }}</th>
+            <th [nzSortFn]="'employment_status' | gridSort" [nzFilters]="'employment_status' | gridFilterList: empTable.nzData" [nzFilterFn]="'employment_status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'base_annual_salary' | gridSort" [nzFilters]="'base_annual_salary' | gridFilterList: empTable.nzData" [nzFilterFn]="'base_annual_salary' | gridFilterFn">{{ 'hrmEmp.lblRalRetribuzione' | translate }}</th>
+            <th [nzSortFn]="'hire_date' | gridSort" [nzFilters]="'hire_date' | gridFilterList: empTable.nzData" [nzFilterFn]="'hire_date' | gridFilterFn">{{ 'hrmEmp.lblDataAssunzione' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -179,14 +179,14 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'request_number' | gridSort">{{ 'hrmEmp.lblNRichiesta' | translate }}</th>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblIdDipendente' | translate }}</th>
-            <th [nzSortFn]="'leave_type_name' | gridSort">{{ 'hrmEmp.lblTipologia' | translate }}</th>
-            <th [nzSortFn]="'start_date' | gridSort">{{ 'hrmEmp.lblDataInizio' | translate }}</th>
-            <th [nzSortFn]="'end_date' | gridSort">{{ 'hrmEmp.lblDataFine' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'total_hours' | gridSort">{{ 'hrmEmp.lblOreGiorni' | translate }}</th>
-            <th [nzSortFn]="'reason' | gridSort">{{ 'hrmEmp.lblMotivazione' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'request_number' | gridSort" [nzFilters]="'request_number' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'request_number' | gridFilterFn">{{ 'hrmEmp.lblNRichiesta' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblIdDipendente' | translate }}</th>
+            <th [nzSortFn]="'leave_type_name' | gridSort" [nzFilters]="'leave_type_name' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'leave_type_name' | gridFilterFn">{{ 'hrmEmp.lblTipologia' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'hrmEmp.lblDataInizio' | translate }}</th>
+            <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'hrmEmp.lblDataFine' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmEmp.lblOreGiorni' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'hrmEmp.lblMotivazione' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -251,14 +251,14 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'timesheet_number' | gridSort">{{ 'hrmEmp.lblNRapporto' | translate }}</th>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'work_date' | gridSort">{{ 'hrmEmp.lblDataLavorativa' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'regular_hours' | gridSort">{{ 'hrmEmp.lblOreOrdinarie' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'overtime_hours' | gridSort">{{ 'hrmEmp.lblStraordinari' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'total_hours' | gridSort">{{ 'hrmEmp.lblTotaleOre' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'billable_hours' | gridSort">{{ 'hrmEmp.lblFatturabili' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'timesheet_number' | gridSort" [nzFilters]="'timesheet_number' | gridFilterList: tsTable.nzData" [nzFilterFn]="'timesheet_number' | gridFilterFn">{{ 'hrmEmp.lblNRapporto' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: tsTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'work_date' | gridSort" [nzFilters]="'work_date' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_date' | gridFilterFn">{{ 'hrmEmp.lblDataLavorativa' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'regular_hours' | gridSort" [nzFilters]="'regular_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'regular_hours' | gridFilterFn">{{ 'hrmEmp.lblOreOrdinarie' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'overtime_hours' | gridSort" [nzFilters]="'overtime_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'overtime_hours' | gridFilterFn">{{ 'hrmEmp.lblStraordinari' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmEmp.lblTotaleOre' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'billable_hours' | gridSort" [nzFilters]="'billable_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'billable_hours' | gridFilterFn">{{ 'hrmEmp.lblFatturabili' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -307,12 +307,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'month' | gridSort">{{ 'hrmEmp.lblPeriodoElaborazione' | translate }}</th>
-            <th [nzSortFn]="'country' | gridSort">{{ 'hrmEmp.lblNazione' | translate }}</th>
-            <th [nzSortFn]="'employees_count' | gridSort">{{ 'hrmEmp.lblDipendentiElaborati' | translate }}</th>
+            <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: payTable.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmEmp.lblPeriodoElaborazione' | translate }}</th>
+            <th [nzSortFn]="'country' | gridSort" [nzFilters]="'country' | gridFilterList: payTable.nzData" [nzFilterFn]="'country' | gridFilterFn">{{ 'hrmEmp.lblNazione' | translate }}</th>
+            <th [nzSortFn]="'employees_count' | gridSort" [nzFilters]="'employees_count' | gridFilterList: payTable.nzData" [nzFilterFn]="'employees_count' | gridFilterFn">{{ 'hrmEmp.lblDipendentiElaborati' | translate }}</th>
             <th class="text-right">{{ 'hrmEmp.lblMonteRetributivoLordo' | translate }}</th>
             <th class="text-right">{{ 'hrmEmp.lblTotaleNettoErogato' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: payTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th>{{ 'hrmEmp.lblDataCalcolo' | translate }}</th>
           </tr>
         </thead>
@@ -349,11 +349,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'italian_municipality' | gridSort">{{ 'hrmEmp.lblComuneItalianoDiResidenza' | translate }}</th>
-            <th [nzSortFn]="'canton' | gridSort">{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
-            <th [nzSortFn]="'tax_regime' | gridSort">{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: frTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'italian_municipality' | gridSort" [nzFilters]="'italian_municipality' | gridFilterList: frTable.nzData" [nzFilterFn]="'italian_municipality' | gridFilterFn">{{ 'hrmEmp.lblComuneItalianoDiResidenza' | translate }}</th>
+            <th [nzSortFn]="'canton' | gridSort" [nzFilters]="'canton' | gridFilterList: frTable.nzData" [nzFilterFn]="'canton' | gridFilterFn">{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
+            <th [nzSortFn]="'tax_regime' | gridSort" [nzFilters]="'tax_regime' | gridFilterList: frTable.nzData" [nzFilterFn]="'tax_regime' | gridFilterFn">{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: frTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
           </tr>
         </thead>
         <tbody>

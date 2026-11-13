@@ -56,12 +56,12 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'PRJ.LBL_PROJECT' | translate }}</th>
-        <th [nzSortFn]="'project_type' | gridSort">{{ 'PRJ.LBL_TYPE' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'PRJ.LBL_STATUS' | translate }}</th>
-        <th [nzSortFn]="'health_status' | gridSort">{{ 'PRJ.LBL_HEALTH' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: projTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PRJ.LBL_PROJECT' | translate }}</th>
+        <th [nzSortFn]="'project_type' | gridSort" [nzFilters]="'project_type' | gridFilterList: projTable.nzData" [nzFilterFn]="'project_type' | gridFilterFn">{{ 'PRJ.LBL_TYPE' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: projTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRJ.LBL_STATUS' | translate }}</th>
+        <th [nzSortFn]="'health_status' | gridSort" [nzFilters]="'health_status' | gridFilterList: projTable.nzData" [nzFilterFn]="'health_status' | gridFilterFn">{{ 'PRJ.LBL_HEALTH' | translate }}</th>
         <th>{{ 'PRJ.LBL_PROGRESS' | translate }}</th>
-        <th class="num" [nzSortFn]="'contract_value' | gridSort">{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
+        <th class="num" [nzSortFn]="'contract_value' | gridSort" [nzFilters]="'contract_value' | gridFilterList: projTable.nzData" [nzFilterFn]="'contract_value' | gridFilterFn">{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
         <th nzWidth="220px">{{ 'PRJ.LBL_ACTIONS' | translate }}</th>
       </tr>
     </thead>

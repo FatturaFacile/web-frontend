@@ -22,7 +22,7 @@ import { saveBlob } from './save-blob';
 @Component({
   selector: 'app-area-profile',
   styleUrl: './area-profile.component.scss',
-  imports: [NzButtonModule, NzDescriptionsModule, NzFormModule, NzInputModule, NzTagModule, ReactiveFormsModule, TranslatePipe],
+  imports: [IconActionDirective, NzButtonModule, NzDescriptionsModule, NzFormModule, NzInputModule, NzTagModule, ReactiveFormsModule, TranslatePipe],
   template: `
     @if (person(); as profile) {
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" [nzTitle]="'ASSOC_AREA.PROFILE' | translate">

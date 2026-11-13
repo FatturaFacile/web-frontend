@@ -32,8 +32,7 @@ import {
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
-  TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { CycleOrdersFacade } from '../cycle.facades';
 import { DeliveryNoteFormModalComponent, DeliveryNoteSource } from '../shared/delivery-note-form-modal.component';
 import { DocumentFormModalComponent } from '../shared/document-form-modal.component';
@@ -51,7 +50,7 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
   styleUrl: './orders.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -120,10 +119,10 @@ export class CycleOrdersComponent {
     this.i18n.currentLanguage();
     return [
       { key: 'order_number', header: this.i18n.translate('SC.COMMON.NUMBER'), width: '150px', customCellTemplate: this.numberTpl() },
-      { key: 'contact', header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
+      { key: 'contact', serverKey: 'contact.name', valueGetter: (row) => this.lookups.contactName(row.contact_id, row.contact), header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
       { key: 'date', header: this.i18n.translate('SC.COMMON.DATE'), width: '120px' },
-      { key: 'status', header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
-      { key: 'inventory_status', header: this.i18n.translate('SC.ORDERS.INVENTORY'), width: '160px', customCellTemplate: this.inventoryTpl() },
+      { key: 'status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
+      { key: 'inventory_status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.inventory_status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.ORDERS.INVENTORY'), width: '160px', customCellTemplate: this.inventoryTpl() },
       { key: 'billing_status', header: this.i18n.translate('SC.ORDERS.BILLING'), width: '130px' },
       { key: 'total_gross', header: this.i18n.translate('SC.COMMON.TOTAL'), width: '140px', align: 'right', customCellTemplate: this.totalTpl() },
     ];
@@ -131,14 +130,6 @@ export class CycleOrdersComponent {
 
   constructor() {
     this.lookups.load();
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   /** The credit hold of the order (`credit_hold_id` or the active entry of `holds`), when the API exposes it. */

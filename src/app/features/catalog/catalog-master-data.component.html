@@ -9,11 +9,11 @@
           <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openTerm(null)"></button>
         }
       </div>
-      <nz-table [nzData]="terms()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="terms()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl7>
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'CAT.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: gridTbl7.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'CAT.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl7.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'CAT.DAYS' | translate }}</th>
             <th>{{ 'CAT.END_OF_MONTH' | translate }}</th>
             <th>{{ 'CAT.DISCOUNT' | translate }}</th>
@@ -62,10 +62,10 @@
           <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openSimple('brand')"></button>
         }
       </div>
-      <nz-table [nzData]="brands()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="brands()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl8>
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl8.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -102,10 +102,10 @@
           <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openSimple('category')"></button>
         }
       </div>
-      <nz-table [nzData]="categories()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="categories()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl9>
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl9.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'CAT.PARENT' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -144,11 +144,11 @@
           <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openSimple('unit')"></button>
         }
       </div>
-      <nz-table [nzData]="units()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="units()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl10>
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'CAT.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: gridTbl10.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'CAT.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl10.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>

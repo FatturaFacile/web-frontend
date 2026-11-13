@@ -105,6 +105,9 @@ jobs:
           retention-days: 15
 
   qodana:
+    # Non-blocking: the Qodana Cloud organisation has the Community licence, which does not include the JS linter.
+    # Remove this line once an Ultimate licence is active.
+    continue-on-error: true
     # Fork and Dependabot pull requests get no repository secrets: skip what needs them
     if: >-
       github.actor != 'dependabot[bot]' &&

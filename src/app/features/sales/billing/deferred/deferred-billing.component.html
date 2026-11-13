@@ -4,13 +4,13 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'SC.DEFERRED.SINGLE' | translate">
       <p class="hint">{{ 'SC.DEFERRED.SINGLE_HINT' | translate }}</p>
-      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl38>
         <thead>
           <tr>
             <th scope="col"></th>
-            <th [nzSortFn]="'ddt_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+            <th [nzSortFn]="'ddt_number' | gridSort" [nzFilters]="'ddt_number' | gridFilterList: gridTbl38.nzData" [nzFilterFn]="'ddt_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
             <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl38.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
             <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>

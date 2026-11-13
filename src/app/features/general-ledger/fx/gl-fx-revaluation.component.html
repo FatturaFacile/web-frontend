@@ -17,16 +17,16 @@
   <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
-        <th [nzSortFn]="'revaluation_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
+        <th [nzSortFn]="'revaluation_date' | gridSort" [nzFilters]="'revaluation_date' | gridFilterList: table.nzData" [nzFilterFn]="'revaluation_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
         <th>{{ 'GL.FX_SIDE' | translate }}</th>
         <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-        <th [nzSortFn]="'currency' | gridSort">{{ 'GL.FX_CURRENCY' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'closing_rate' | gridSort">{{ 'GL.FX_CLOSING_RATE' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'open_amount' | gridSort">{{ 'GL.FX_OPEN_AMOUNT' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'book_value' | gridSort">{{ 'GL.FX_BOOK_VALUE' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'revalued_value' | gridSort">{{ 'GL.FX_REVALUED_VALUE' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'difference' | gridSort">{{ 'GL.FX_DIFFERENCE' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'open_items' | gridSort">{{ 'GL.FX_ITEMS' | translate }}</th>
+        <th [nzSortFn]="'currency' | gridSort" [nzFilters]="'currency' | gridFilterList: table.nzData" [nzFilterFn]="'currency' | gridFilterFn">{{ 'GL.FX_CURRENCY' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'closing_rate' | gridSort" [nzFilters]="'closing_rate' | gridFilterList: table.nzData" [nzFilterFn]="'closing_rate' | gridFilterFn">{{ 'GL.FX_CLOSING_RATE' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'open_amount' | gridSort" [nzFilters]="'open_amount' | gridFilterList: table.nzData" [nzFilterFn]="'open_amount' | gridFilterFn">{{ 'GL.FX_OPEN_AMOUNT' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'book_value' | gridSort" [nzFilters]="'book_value' | gridFilterList: table.nzData" [nzFilterFn]="'book_value' | gridFilterFn">{{ 'GL.FX_BOOK_VALUE' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'revalued_value' | gridSort" [nzFilters]="'revalued_value' | gridFilterList: table.nzData" [nzFilterFn]="'revalued_value' | gridFilterFn">{{ 'GL.FX_REVALUED_VALUE' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'difference' | gridSort" [nzFilters]="'difference' | gridFilterList: table.nzData" [nzFilterFn]="'difference' | gridFilterFn">{{ 'GL.FX_DIFFERENCE' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'open_items' | gridSort" [nzFilters]="'open_items' | gridFilterList: table.nzData" [nzFilterFn]="'open_items' | gridFilterFn">{{ 'GL.FX_ITEMS' | translate }}</th>
       </tr>
     </thead>
     <tbody>

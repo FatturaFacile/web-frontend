@@ -67,11 +67,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'title' | gridSort">{{ 'DMS.DOC_TITLE' | translate }}</th>
-            <th [nzSortFn]="'document_type' | gridSort">{{ 'DMS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'DMS.DOC_TITLE' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: docTable.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DMS.DOC_TYPE' | translate }}</th>
             <th>{{ 'DMS.FOLDER' | translate }}</th>
-            <th [nzSortFn]="'latest_version.original_name' | gridSort">{{ 'DMS.LATEST_VERSION' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'latest_version.original_name' | gridSort" [nzFilters]="'latest_version.original_name' | gridFilterList: docTable.nzData" [nzFilterFn]="'latest_version.original_name' | gridFilterFn">{{ 'DMS.LATEST_VERSION' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
             <th>{{ 'DMS.PROTECTION' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -216,11 +216,10 @@
       <nz-table
         [nzData]="folders()"
         [nzFrontPagination]="true"
-        [nzLoading]="foldersLoading()"
-      >
+        [nzLoading]="foldersLoading()" #gridTbl21>
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl21.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
             <th>{{ 'DMS.ACCESS_ROLES' | translate }}</th>
             <th>{{ 'DMS.DOCUMENTS_COUNT' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
@@ -264,14 +263,13 @@
       <nz-table
         [nzData]="retentionPolicies()"
         [nzFrontPagination]="true"
-        [nzLoading]="retentionLoading()"
-      >
+        [nzLoading]="retentionLoading()" #gridTbl22>
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-            <th [nzSortFn]="'document_type' | gridSort">{{ 'DMS.DOC_TYPE' | translate }}</th>
-            <th [nzSortFn]="'retention_months' | gridSort">{{ 'DMS.RETENTION_PERIOD' | translate }}</th>
-            <th [nzSortFn]="'action' | gridSort">{{ 'DMS.RETENTION_ACTION' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DMS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'retention_months' | gridSort" [nzFilters]="'retention_months' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'retention_months' | gridFilterFn">{{ 'DMS.RETENTION_PERIOD' | translate }}</th>
+            <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'DMS.RETENTION_ACTION' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -347,11 +345,11 @@
             <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateTagModal()"></button>
           </div>
 
-          <nz-table [nzData]="tags()" [nzFrontPagination]="true" [nzLoading]="tagsLoading()">
+          <nz-table [nzData]="tags()" [nzFrontPagination]="true" [nzLoading]="tagsLoading()" #gridTbl23>
             <thead>
               <tr>
-                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
-                <th [nzSortFn]="'name' | gridSort">Badge</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl23.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl23.nzData" [nzFilterFn]="'name' | gridFilterFn">Badge</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -632,11 +630,11 @@
 
       <!-- VERSIONI -->
       <h4 class="mt-4">{{ 'DMS.VERSIONS_HISTORY' | translate }}</h4>
-      <nz-table [nzData]="docVersions()" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="docVersions()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl24>
         <thead>
           <tr>
-            <th [nzSortFn]="'version_number' | gridSort">{{ 'DMS.LBL_VER' | translate }}</th>
-            <th [nzSortFn]="'original_name' | gridSort">{{ 'DMS.LBL_FILE' | translate }}</th>
+            <th [nzSortFn]="'version_number' | gridSort" [nzFilters]="'version_number' | gridFilterList: gridTbl24.nzData" [nzFilterFn]="'version_number' | gridFilterFn">{{ 'DMS.LBL_VER' | translate }}</th>
+            <th [nzSortFn]="'original_name' | gridSort" [nzFilters]="'original_name' | gridFilterList: gridTbl24.nzData" [nzFilterFn]="'original_name' | gridFilterFn">{{ 'DMS.LBL_FILE' | translate }}</th>
             <th>SHA-256</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -666,12 +664,12 @@
       <!-- EXTRAZIONI AI / OCR -->
       <h4 class="mt-4">{{ 'DMS.OCR_EXTRACTIONS' | translate }}</h4>
       @if (docExtractions().length > 0) {
-        <nz-table [nzData]="docExtractions()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table [nzData]="docExtractions()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl25>
           <thead>
             <tr>
-              <th [nzSortFn]="'field_name' | gridSort">{{ 'DMS.LBL_CAMPO' | translate }}</th>
-              <th [nzSortFn]="'extracted_value' | gridSort">{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
-              <th [nzSortFn]="'confidence' | gridSort">{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
+              <th [nzSortFn]="'field_name' | gridSort" [nzFilters]="'field_name' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'field_name' | gridFilterFn">{{ 'DMS.LBL_CAMPO' | translate }}</th>
+              <th [nzSortFn]="'extracted_value' | gridSort" [nzFilters]="'extracted_value' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'extracted_value' | gridFilterFn">{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
+              <th [nzSortFn]="'confidence' | gridSort" [nzFilters]="'confidence' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'confidence' | gridFilterFn">{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -721,11 +719,11 @@
         <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openLinkModal()"></button>
       </div>
       @if (docLinks().length > 0) {
-        <nz-table [nzData]="docLinks()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table [nzData]="docLinks()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl26>
           <thead>
             <tr>
               <th>{{ 'DMS.LBL_TIPO' | translate }}</th>
-              <th [nzSortFn]="'label' | gridSort">{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
+              <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: gridTbl26.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -749,12 +747,12 @@
 
       <!-- AUDIT LOG -->
       <h4 class="mt-4">{{ 'DMS.AUDIT_LOG' | translate }}</h4>
-      <nz-table [nzData]="docAuditTrail()" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="docAuditTrail()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl27>
         <thead>
           <tr>
-            <th [nzSortFn]="'event_type' | gridSort">{{ 'DMS.LBL_EVENTO' | translate }}</th>
-            <th [nzSortFn]="'actor_name' | gridSort">{{ 'DMS.LBL_UTENTE' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'DMS.LBL_DATA' | translate }}</th>
+            <th [nzSortFn]="'event_type' | gridSort" [nzFilters]="'event_type' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'event_type' | gridFilterFn">{{ 'DMS.LBL_EVENTO' | translate }}</th>
+            <th [nzSortFn]="'actor_name' | gridSort" [nzFilters]="'actor_name' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'actor_name' | gridFilterFn">{{ 'DMS.LBL_UTENTE' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'DMS.LBL_DATA' | translate }}</th>
           </tr>
         </thead>
         <tbody>

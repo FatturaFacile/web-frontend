@@ -23,7 +23,7 @@
         <th [class.num]="col.type === 'decimal' || col.type === 'integer'">{{ col.labelKey | translate }}</th>
       }
       @if (config().canWrite || config().rowActions) {
-        <th [nzSortFn]="'labelKey' | gridSort">{{ 'hrmCommon.actions' | translate }}</th>
+        <th [nzSortFn]="'labelKey' | gridSort" [nzFilters]="'labelKey' | gridFilterList: table.nzData" [nzFilterFn]="'labelKey' | gridFilterFn">{{ 'hrmCommon.actions' | translate }}</th>
       }
     </tr>
   </thead>
