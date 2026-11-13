@@ -86,10 +86,7 @@ describe('PipelineComponent', () => {
     createQuoteFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'q-1' } })),
     createProjectFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'p-1' } })),
     getDuplicates: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: { entity: 'contacts', mode: 'matches', data: [] },
-      }),
+      of({ entity: 'contacts', mode: 'matches', data: [] }),
     ),
   };
 
@@ -196,5 +193,6 @@ describe('PipelineComponent', () => {
 
     expect(mockCrmApi.getDuplicates).toHaveBeenCalledWith({ entity: 'contacts' });
     expect(component.duplicateModalVisible()).toBe(true);
+    expect(component.duplicateResult()).toEqual({ entity: 'contacts', mode: 'matches', data: [] });
   });
 });

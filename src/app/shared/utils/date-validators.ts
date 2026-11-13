@@ -36,6 +36,11 @@ function startOfToday(): number {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 }
 
+/** A zero-padded time of day such as `09:30` (the value of an `<input type="time">`). */
+function isTimeOfDay(value: DateLike): boolean {
+  return typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
 /**
  * Mirrors `after_or_equal:<start>` (or `after:<start>` with `strict`): the control must not be before the control
  * `startKey` of the same group. Empty values pass. With `dateOnly` the calendar days are compared (use it for date-only
@@ -54,7 +59,15 @@ export function endsNotBefore(startKey: string, options: { strict?: boolean; dat
       const validDay = options.strict ? endDay > startDay : endDay >= startDay;
       return validDay ? null : { endsBeforeStart: true };
     }
-    const start = toTimestamp(control.parent?.get(startKey)?.value as DateLike);
+    const startRaw = control.parent?.get(startKey)?.value as DateLike;
+    if (isTimeOfDay(startRaw) && isTimeOfDay(control.value as DateLike)) {
+      // HH:mm fields (date_format:H:i): zero-padded, so the strings compare like the times
+      const startTime = startRaw as string;
+      const endTime = control.value as string;
+      const validTime = options.strict ? endTime > startTime : endTime >= startTime;
+      return validTime ? null : { endsBeforeStart: true };
+    }
+    const start = toTimestamp(startRaw);
     const end = toTimestamp(control.value as DateLike);
     if (start === null || end === null) {
       return null;

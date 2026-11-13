@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +18,24 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { reportHttpError } from '../shared/hr-http.util';
+
+/** A working time finding that blocks the publication until HR acknowledges it with a reason. */
+interface ShiftViolation {
+  employee_id: string;
+  employee_name: string;
+  date: string;
+  message: string;
+  is_blocking: boolean;
+}
+
+/** The blocking findings of a 422 answer of the publication, empty for any other error. */
+function blockingViolations(err: unknown): ShiftViolation[] {
+  if (!(err instanceof HttpErrorResponse) || err.status !== 422) {
+    return [];
+  }
+  const body = err.error as { errors?: { violations?: ShiftViolation[] } } | null;
+  return body?.errors?.violations ?? [];
+}
 
 /** Planning board of a period, with draft generation, publication, absence plan and the user's own shifts. */
 @Component({
@@ -47,6 +66,22 @@ import { reportHttpError } from '../shared/hr-http.util';
       <button nz-button type="button" [disabled]="!canSearch()" (click)="loadMine()">{{ 'hrmShift.myShifts' | translate }}</button>
       <button nz-button type="button" [disabled]="!canSearch()" (click)="loadAbsences()">{{ 'hrmShift.absencePlan' | translate }}</button>
     </div>
+
+    @if (violations().length) {
+      <section class="mt-3" role="alert">
+        <h3>{{ 'hrmShift.violationsTitle' | translate }}</h3>
+        <ul>
+          @for (violation of violations(); track $index) {
+            <li>{{ violation.employee_name }} - {{ violation.date | date: 'mediumDate' }}: {{ violation.message }}</li>
+          }
+        </ul>
+        <label for="board-ack-reason">{{ 'hrmShift.ackReason' | translate }}</label>
+        <input nz-input id="board-ack-reason" type="text" maxlength="1000" [ngModel]="acknowledgementReason()" (ngModelChange)="acknowledgementReason.set($event)" />
+        <button nz-button nzType="primary" type="button" [disabled]="acknowledgementReason().trim().length < 3" [nzLoading]="busy()" (click)="publishAnyway()">
+          {{ 'hrmShift.publishAnyway' | translate }}
+        </button>
+      </section>
+    }
 
     @if (board(); as b) {
       <nz-table #table [nzData]="b.rows" [nzFrontPagination]="false" nzSize="small">
@@ -131,6 +166,8 @@ export class ShiftBoardComponent {
   protected readonly absences = signal<AbsencePlanEntry[]>([]);
   protected readonly loading = signal(false);
   protected readonly busy = signal(false);
+  protected readonly violations = signal<ShiftViolation[]>([]);
+  protected readonly acknowledgementReason = signal('');
   protected readonly canSearch = computed(() => this.from() !== '' && this.to() !== '' && this.from() <= this.to());
 
   protected load(): void {
@@ -166,7 +203,36 @@ export class ShiftBoardComponent {
   }
 
   protected publish(): void {
-    this.run(this.api.publishShifts(this.period()), 'hrmShift.published');
+    this.violations.set([]);
+    this.acknowledgementReason.set('');
+    this.runPublish(this.period());
+  }
+
+  /** Publishes again with the reason that acknowledges the blocking working time findings. */
+  protected publishAnyway(): void {
+    this.runPublish({ ...this.period(), acknowledgement_reason: this.acknowledgementReason().trim() });
+  }
+
+  private runPublish(payload: ShiftPeriodPayload): void {
+    this.busy.set(true);
+    this.api.publishShifts(payload).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.violations.set([]);
+        this.acknowledgementReason.set('');
+        this.message.success(this.i18n.translate('hrmShift.published'));
+        this.load();
+      },
+      error: (err: unknown) => {
+        this.busy.set(false);
+        const found = blockingViolations(err);
+        if (found.length) {
+          this.violations.set(found);
+        } else {
+          reportHttpError(err, this.message, this.i18n);
+        }
+      },
+    });
   }
 
   protected removeShift(id: string): void {

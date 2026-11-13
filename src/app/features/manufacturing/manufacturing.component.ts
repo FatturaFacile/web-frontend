@@ -50,6 +50,7 @@ import {
   PageHeaderComponent,
   TranslatePipe,
 } from '@shared';
+import { toDayKey, toTimestamp } from '@shared/utils/date-validators';
 import { formErrorTip } from '../inventory/form-error-tip';
 import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
 
@@ -65,6 +66,22 @@ function notBefore(startKey: string): ValidatorFn {
       return null;
     }
     return new Date(control.value).getTime() < new Date(start).getTime() ? { dateOrder: true } : null;
+  };
+}
+
+/** Mirrors `before_or_equal:<start + 2 years>` of RunMrpRequest: the horizon cannot extend past two years from its start. */
+function withinTwoYearsOf(startKey: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const startRaw = control.parent?.get(startKey)?.value;
+    const endDay = toDayKey(control.value);
+    const startTime = toTimestamp(startRaw);
+    if (!endDay || startTime === null) {
+      return null;
+    }
+    const limit = new Date(startTime);
+    limit.setFullYear(limit.getFullYear() + 2);
+    const limitDay = toDayKey(limit);
+    return limitDay !== null && endDay > limitDay ? { exceedsMax: true } : null;
   };
 }
 
@@ -207,7 +224,7 @@ export class ManufacturingComponent implements OnInit {
   readonly isSubmittingMrp = signal(false);
   readonly mrpForm = this.fb.group({
     horizon_start_date: [new Date(), [Validators.required]],
-    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required, notBefore('horizon_start_date')]],
+    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required, notBefore('horizon_start_date'), withinTwoYearsOf('horizon_start_date')]],
     run_type: ['regenerative' as MrpRunType],
   });
 

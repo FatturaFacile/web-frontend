@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -175,6 +175,7 @@ export class DmsComponent implements OnInit {
   // --- TAB 2: FOLDERS ---
   protected readonly folders = signal<DmsFolderResource[]>([]);
   protected readonly foldersLoading = signal<boolean>(false);
+  private readonly folderNames = computed(() => new Map(this.folders().map((f) => [f.id, f.name])));
   protected createFolderModalVisible = signal<boolean>(false);
   protected folderSubmitting = signal<boolean>(false);
   protected readonly folderForm = this.fb.group({
@@ -222,6 +223,11 @@ export class DmsComponent implements OnInit {
       return this.i18n.translate(key);
     }
     return '';
+  }
+
+  /** Folder of a document: the name sent by the API when present, otherwise the one of the loaded folder list. */
+  protected folderNameOf(doc: DmsDocumentResource): string {
+    return doc.folder_name || (doc.folder_id ? this.folderNames().get(doc.folder_id) : undefined) || '-';
   }
 
   ngOnInit(): void {

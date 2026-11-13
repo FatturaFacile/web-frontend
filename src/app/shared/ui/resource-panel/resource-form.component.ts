@@ -25,7 +25,9 @@ import { ResourceLabelsService } from './resource-labels.service';
 import { ResourceLookupService, ResourceOption } from './resource-lookup.service';
 import { ResourceField } from './resource-panel.types';
 import { buildRequestBody, initialFormValue } from './resource-panel.utils';
-import { differentFrom, endsNotBefore, inFuture, notInFuture } from '../../utils/date-validators';
+import { differentFrom, endsNotBefore, inFuture, notInFuture, notInPast } from '../../utils/date-validators';
+import { atLeastField } from '../../utils/decimal-validators';
+import { hasSharedRuleError, validationTipKey } from '../../utils/validation-tip';
 
 function jsonValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -38,6 +40,21 @@ function jsonValidator(control: AbstractControl): ValidationErrors | null {
   } catch {
     return { json: true };
   }
+}
+
+/** Runs a shape check on the parsed JSON of a filled field; invalid JSON is left to `jsonValidator`. */
+function jsonShapeValidator(check: (parsed: unknown) => boolean) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (typeof value !== 'string' || value.trim() === '') {
+      return null;
+    }
+    try {
+      return check(JSON.parse(value) as unknown) ? null : { jsonShape: true };
+    } catch {
+      return null;
+    }
+  };
 }
 
 function positiveValidator(control: AbstractControl): ValidationErrors | null {
@@ -90,11 +107,13 @@ export class ResourceFormComponent implements OnInit {
     const value = initialFormValue(fields, this.initial());
     this.form = new FormGroup(Object.fromEntries(fields.map((f) => [f.key, this.createControl(f, value[f.key])])));
     for (const field of fields) {
-      const startKey = field.notBefore;
-      if (startKey) {
-        this.form.get(startKey)?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-          this.form.get(field.key)?.updateValueAndValidity({ emitEvent: false });
-        });
+      const siblings = [field.notBefore, field.atLeastField, field.differentFrom, field.requiredIf?.field, field.prohibitedIf?.field];
+      for (const siblingKey of siblings) {
+        if (siblingKey) {
+          this.form.get(siblingKey)?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.form.get(field.key)?.updateValueAndValidity({ emitEvent: false });
+          });
+        }
       }
       this.loadLookups(field, true);
       for (const sub of field.fields ?? []) {
@@ -153,17 +172,14 @@ export class ResourceFormComponent implements OnInit {
     if (errors['json']) {
       return this.labels.text('RES.ERR.JSON');
     }
-    if (errors['endsBeforeStart']) {
-      return this.labels.text('COMMON.VALIDATION.END_AFTER_START');
+    if (hasSharedRuleError(control)) {
+      return this.labels.text(validationTipKey(control));
     }
-    if (errors['futureDate']) {
-      return this.labels.text('COMMON.VALIDATION.DATE_NOT_IN_FUTURE');
+    if (errors['prohibited']) {
+      return this.labels.text('COMMON.VALIDATION.NOT_ALLOWED_HERE');
     }
-    if (errors['pastDate']) {
-      return this.labels.text('COMMON.VALIDATION.DATE_NOT_IN_PAST');
-    }
-    if (errors['sameAsOther']) {
-      return this.labels.text('COMMON.VALIDATION.MUST_DIFFER');
+    if (errors['max']) {
+      return this.labels.text('COMMON.VALIDATION.EXCEEDS_LIMIT');
     }
     if (errors['notPositive']) {
       return this.labels.text('COMMON.VALIDATION.GREATER_THAN_ZERO');
@@ -222,11 +238,31 @@ export class ResourceFormComponent implements OnInit {
     if (field.maxLength) {
       validators.push(Validators.maxLength(field.maxLength));
     }
-    if (field.type === 'integer' && field.min !== undefined) {
+    if ((field.type === 'integer' || field.type === 'decimal') && field.min !== undefined) {
       validators.push(Validators.min(field.min));
+    }
+    if ((field.type === 'integer' || field.type === 'decimal') && field.max !== undefined) {
+      validators.push(Validators.max(field.max));
+    }
+    if (field.prohibitedIf) {
+      const { field: otherKey, value } = field.prohibitedIf;
+      validators.push((control: AbstractControl): ValidationErrors | null => {
+        const filled = control.value !== null && control.value !== undefined && control.value !== '';
+        return filled && control.parent?.get(otherKey)?.value === value ? { prohibited: true } : null;
+      });
+    }
+    if (field.requiredIf) {
+      const { field: otherKey, value } = field.requiredIf;
+      validators.push((control: AbstractControl): ValidationErrors | null => {
+        const blank = control.value === null || control.value === undefined || control.value === '';
+        return blank && control.parent?.get(otherKey)?.value === value ? { required: true } : null;
+      });
     }
     if (field.type === 'json') {
       validators.push(jsonValidator);
+      if (field.jsonCheck) {
+        validators.push(jsonShapeValidator(field.jsonCheck));
+      }
     }
     if (field.notBefore) {
       validators.push(endsNotBefore(field.notBefore, { strict: field.strictlyAfter }));
@@ -242,6 +278,12 @@ export class ResourceFormComponent implements OnInit {
     }
     if (field.positive) {
       validators.push(positiveValidator);
+    }
+    if (field.notBeforeToday) {
+      validators.push(notInPast);
+    }
+    if (field.atLeastField) {
+      validators.push(atLeastField(field.atLeastField));
     }
     return validators;
   }

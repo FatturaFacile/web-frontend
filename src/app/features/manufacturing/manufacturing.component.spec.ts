@@ -339,5 +339,19 @@ describe('ManufacturingComponent', () => {
 
       expect(apiService.runMrp).not.toHaveBeenCalled();
     });
+
+    it('does not run MRP when the horizon exceeds two years from its start, and accepts exactly two years', () => {
+      component.openRunMrpModal();
+      component.mrpForm.patchValue({
+        horizon_start_date: new Date(2026, 3, 1),
+        horizon_end_date: new Date(2028, 3, 2),
+      });
+      expect(component.mrpForm.controls.horizon_end_date.hasError('exceedsMax')).toBe(true);
+      component.submitRunMrp();
+      expect(apiService.runMrp).not.toHaveBeenCalled();
+
+      component.mrpForm.patchValue({ horizon_end_date: new Date(2028, 3, 1) });
+      expect(component.mrpForm.controls.horizon_end_date.valid).toBe(true);
+    });
   });
 });

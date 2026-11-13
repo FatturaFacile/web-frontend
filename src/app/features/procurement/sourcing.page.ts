@@ -27,7 +27,7 @@ const CONTRACT_FIELDS = [
 
 const RFQ_FIELDS = [
   req(rf.text('title')),
-  req(rf.date('response_deadline')),
+  req(rf.date('response_deadline', { notBeforeToday: true })),
   rf.text('currency', { maxLength: 3 }),
   rf.uuid('purchase_requisition_id'),
   rf.uuid('cost_center_id'),
@@ -35,9 +35,9 @@ const RFQ_FIELDS = [
   req(rf.tags('supplier_ids')),
   rf.lines('lines', [
     req(rf.text('description')),
-    req(rf.decimal('quantity')),
-    rf.text('uom'),
-    rf.text('internal_sku'),
+    req(rf.decimal('quantity', { positive: true })),
+    rf.text('uom', { maxLength: 20 }),
+    rf.text('internal_sku', { maxLength: 100 }),
     rf.date('required_by_date'),
   ]),
 ];

@@ -183,7 +183,7 @@ export class PayrollDataComponent implements OnInit {
         },
         { key: 'weekly_hours', labelKey: 'hrmEmp.weeklyHours', type: 'decimal', min: 0, max: 80 },
         { key: 'hourly_wage', labelKey: 'hrmPayData.hourlyWage', type: 'decimal', column: false, min: 0 },
-        { key: 'holiday_weeks', labelKey: 'hrmPayData.holidayWeeks', type: 'decimal', column: false, min: 0, max: 12 },
+        { key: 'holiday_weeks', labelKey: 'hrmPayData.holidayWeeks', type: 'integer', column: false, min: 0, max: 12 },
         {
           key: 'work_canton',
           labelKey: 'hrmPayroll.canton',

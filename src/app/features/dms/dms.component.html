@@ -98,7 +98,7 @@
                 <nz-tag>{{ doc.document_type || 'Altro' }}</nz-tag>
               </td>
               <td>
-                <span>{{ doc.folder_name || '-' }}</span>
+                <span>{{ folderNameOf(doc) }}</span>
               </td>
               <td>
                 @if (doc.latest_version) {
@@ -107,6 +107,8 @@
                     v{{ doc.latest_version.version_number }} &bull;
                     {{ (doc.latest_version.size / 1024) | number: '1.0-1' }} KB
                   </div>
+                } @else if (doc.current_version) {
+                  <span class="text-muted">v{{ doc.current_version }}</span>
                 } @else {
                   <span class="text-muted">-</span>
                 }
@@ -246,7 +248,7 @@
                   <nz-tag nzColor="default">{{ 'DMS.LBL_TUTTI_I_RUOLI' | translate }}</nz-tag>
                 }
               </td>
-              <td>{{ folder.documents_count ?? 0 }}</td>
+              <td>{{ folder.documents_count ?? '-' }}</td>
               <td nzAlign="right">
                 <button nz-button nzDanger nzSize="small" (click)="deleteFolder(folder)">
                   <span nz-icon nzType="delete"></span>

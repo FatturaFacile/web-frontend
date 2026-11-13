@@ -304,7 +304,7 @@ export class HrComponent implements OnInit {
       nzOkText: this.translate.instant('hrmEmp.dlgPromuovi'),
       nzOnOk: () => {
         const newSalary = Number(emp.base_annual_salary) * 1.1;
-        this.api.promoteEmployee(emp.id, { base_annual_salary: Math.round(newSalary) }).subscribe({
+        this.api.promoteEmployee(emp.id, { new_base_annual_salary: Math.round(newSalary) }).subscribe({
           next: () => {
             this.message.success(this.translate.instant('hrmEmp.msgDipendentePromossoConSuccesso'));
             this.loadEmployees(this.employeesPage());

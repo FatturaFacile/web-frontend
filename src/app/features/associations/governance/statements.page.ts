@@ -9,7 +9,7 @@ const MAPPING_FIELDS = [
   req(rf.select('scheme', SCHEMES)),
   req(rf.text('line_code', { maxLength: 40 })),
   req(rf.uuid('account_id')),
-  rf.uuid('cost_center_id'),
+  rf.uuid('cost_center_id', { prohibitedIf: { field: 'scheme', value: 'A' } }),
   rf.bool('is_commercial'),
 ];
 

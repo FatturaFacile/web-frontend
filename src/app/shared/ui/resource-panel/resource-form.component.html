@@ -12,7 +12,7 @@
           <textarea nz-input rows="4" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)"></textarea>
         }
         @case ('integer') {
-          <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+          <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzMax]="field.max ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
         @case ('file') {
           <input type="file" [id]="'rf-' + field.key" (change)="onFileChosen(field.key, $event)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
@@ -22,6 +22,9 @@
         }
         @case ('datetime') {
           <input nz-input type="datetime-local" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+        }
+        @case ('time') {
+          <input nz-input type="time" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
         @case ('switch') {
           <nz-switch [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />

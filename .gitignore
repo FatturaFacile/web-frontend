@@ -63,4 +63,26 @@ Thumbs.db
 .env
 
 .claude-build/
-.claude/
+.claude/settings.local.json
+.claude/*.local.md
+
+# Compiled by the IDE SCSS file watcher next to every .scss: never committed
+src/**/*.css
+src/**/*.css.map
+
+# AI tools: local state and scratch files
+.claude/worktrees/
+.sandbox/
+*.tmp
+
+# Agent skills installed by `npx skills` (copies/symlinks per tool): regenerated, never committed
+/skills/
+/skills-lock.json
+/.agents/
+/.continue/skills/
+/.junie/skills/
+/.claude/skills/
+/.antigravity/skills/
+/.cursor/skills/
+/.gemini/skills/
+/.agy/skills/
