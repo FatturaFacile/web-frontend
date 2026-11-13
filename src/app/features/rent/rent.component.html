@@ -44,13 +44,13 @@
         >
           <thead>
             <tr>
-              <th>{{ 'RENT.PLATE' | translate }}</th>
-              <th>{{ 'RENT.MODEL' | translate }}</th>
-              <th>{{ 'RENT.TYPE' | translate }}</th>
-              <th>{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
+              <th [nzSortFn]="'plate' | gridSort">{{ 'RENT.PLATE' | translate }}</th>
+              <th [nzSortFn]="'model' | gridSort">{{ 'RENT.MODEL' | translate }}</th>
+              <th [nzSortFn]="'type' | gridSort">{{ 'RENT.TYPE' | translate }}</th>
+              <th [nzSortFn]="'client' | gridSort">{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
               <th>{{ 'RENT.VIGNETTE' | translate }}</th>
-              <th>{{ 'RENT.RETURN_DATE' | translate }}</th>
-              <th>{{ 'RENT.STATUS' | translate }}</th>
+              <th [nzSortFn]="'returnDate' | gridSort">{{ 'RENT.RETURN_DATE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'RENT.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -92,14 +92,14 @@
         >
           <thead>
             <tr>
-              <th>{{ 'RENT.BOOKING_ID' | translate }}</th>
-              <th>{{ 'RENT.VEHICLE' | translate }}</th>
-              <th>{{ 'RENT.CLIENT' | translate }}</th>
-              <th>{{ 'RENT.START_DATE' | translate }}</th>
-              <th>{{ 'RENT.END_DATE' | translate }}</th>
-              <th>{{ 'RENT.DAILY_RATE' | translate }}</th>
-              <th>{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
-              <th>{{ 'RENT.STATUS' | translate }}</th>
+              <th [nzSortFn]="'id' | gridSort">{{ 'RENT.BOOKING_ID' | translate }}</th>
+              <th [nzSortFn]="'vehicle_plate' | gridSort">{{ 'RENT.VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'client_name' | gridSort">{{ 'RENT.CLIENT' | translate }}</th>
+              <th [nzSortFn]="'start_date' | gridSort">{{ 'RENT.START_DATE' | translate }}</th>
+              <th [nzSortFn]="'end_date' | gridSort">{{ 'RENT.END_DATE' | translate }}</th>
+              <th [nzSortFn]="'daily_rate' | gridSort">{{ 'RENT.DAILY_RATE' | translate }}</th>
+              <th [nzSortFn]="'total_amount' | gridSort">{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'RENT.STATUS' | translate }}</th>
               <th>{{ 'RENT.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -165,11 +165,11 @@
         >
           <thead>
             <tr>
-              <th>{{ 'RENT.PLATE' | translate }}</th>
-              <th>{{ 'RENT.MAKE' | translate }}</th>
-              <th>{{ 'RENT.MODEL' | translate }}</th>
-              <th>{{ 'RENT.YEAR' | translate }}</th>
-              <th>{{ 'RENT.VIN' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort">{{ 'RENT.PLATE' | translate }}</th>
+              <th [nzSortFn]="'make' | gridSort">{{ 'RENT.MAKE' | translate }}</th>
+              <th [nzSortFn]="'model' | gridSort">{{ 'RENT.MODEL' | translate }}</th>
+              <th [nzSortFn]="'year' | gridSort">{{ 'RENT.YEAR' | translate }}</th>
+              <th [nzSortFn]="'vin_chassis' | gridSort">{{ 'RENT.VIN' | translate }}</th>
               <th>{{ 'RENT.CUSTOMER' | translate }}</th>
               <th>{{ 'RENT.ACTIONS' | translate }}</th>
             </tr>

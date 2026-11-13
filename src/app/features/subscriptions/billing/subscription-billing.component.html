@@ -40,9 +40,9 @@
       <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'SUBX.USAGE.METRIC' | translate }}</th>
-            <th>{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
-            <th class="num">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
+            <th [nzSortFn]="'metric_code' | gridSort">{{ 'SUBX.USAGE.METRIC' | translate }}</th>
+            <th [nzSortFn]="'subscription_item_id' | gridSort">{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
+            <th class="num" [nzSortFn]="'quantity' | gridSort">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
             <th>{{ 'SUBX.USAGE.TIMESTAMP' | translate }}</th>
           </tr>
         </thead>
@@ -132,7 +132,7 @@
       <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>ID</th>
+            <th [nzSortFn]="'id' | gridSort">ID</th>
             <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>

@@ -55,10 +55,10 @@
   >
     <thead>
       <tr>
-        <th>{{ 'assets.lblAssetSerial' | translate }}</th>
-        <th>{{ 'assets.lblStatus' | translate }}</th>
-        <th>{{ 'assets.lblCondition' | translate }}</th>
-        <th>{{ 'assets.lblAcquisitionCost' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'assets.lblAssetSerial' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort">{{ 'assets.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'condition' | gridSort">{{ 'assets.lblCondition' | translate }}</th>
+        <th [nzSortFn]="'acquisition_cost' | gridSort">{{ 'assets.lblAcquisitionCost' | translate }}</th>
         <th>{{ 'assets.lblCarryingAmount' | translate }}</th>
         <th>{{ 'assets.lblDeprRate' | translate }}</th>
         <th nzWidth="240px">{{ 'assets.lblActions' | translate }}</th>

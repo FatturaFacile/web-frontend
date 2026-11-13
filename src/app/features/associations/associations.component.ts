@@ -40,7 +40,7 @@ import {
   AuthStore,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 const AMOUNT_PATTERN = /^\d{1,10}(\.\d{1,2})?$/;
@@ -56,6 +56,8 @@ function requiredWhen(siblingKey: string, siblingValue: string) {
   selector: 'app-associations',
   styleUrl: './associations.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

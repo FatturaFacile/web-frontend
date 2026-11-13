@@ -22,9 +22,9 @@
     <thead>
       <tr>
         <th>{{ 'DOCUMENT_TEMPLATES.TYPE' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</th>
+        <th [nzSortFn]="'template.primary_color' | gridSort">{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</th>
+        <th [nzSortFn]="'template.secondary_color' | gridSort">{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</th>
+        <th [nzSortFn]="'template.footer_text' | gridSort">{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</th>
         <th>{{ 'COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>

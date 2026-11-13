@@ -46,13 +46,15 @@ import {
   WorkshopVehicleHistoryEntry,
   WorkshopVehicleStockUnit,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-workshop',
   styleUrl: './workshop.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

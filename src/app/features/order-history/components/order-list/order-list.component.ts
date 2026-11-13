@@ -7,13 +7,15 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { PageHeaderComponent, CurrencyFormatPipe, TranslatePipe } from '@shared';
+import { PageHeaderComponent, CurrencyFormatPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { OrderStore } from '../../state/order.store';
 
 @Component({
   selector: 'app-order-list',
   styleUrl: './order-list.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     DatePipe,
     NzTableModule,
     NzTagModule,

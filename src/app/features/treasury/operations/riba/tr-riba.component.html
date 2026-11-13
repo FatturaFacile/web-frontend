@@ -6,10 +6,10 @@
           <tr>
             <th>{{ 'TR.REFERENCE' | translate }}</th>
             <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th>{{ 'TR.EXECUTION_DATE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.ITEMS' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.TOTAL' | translate }}</th>
-            <th>{{ 'TR.STATUS' | translate }}</th>
+            <th [nzSortFn]="'execution_date' | gridSort">{{ 'TR.EXECUTION_DATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'item_count' | gridSort">{{ 'TR.ITEMS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'TR.TOTAL' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'TR.STATUS' | translate }}</th>
             <th>{{ 'TR.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -46,11 +46,11 @@
         <nz-table #receiptTable nzSize="middle" [nzData]="p.open_receipts" [nzPageSize]="20">
           <thead>
             <tr>
-              <th nzAlign="right">#</th>
-              <th>{{ 'TR.DEBTOR' | translate }}</th>
-              <th>{{ 'TR.DUE_DATE' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
-              <th>{{ 'TR.STATUS' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'receipt_number' | gridSort">#</th>
+              <th [nzSortFn]="'debtor_name' | gridSort">{{ 'TR.DEBTOR' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort">{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'TR.STATUS' | translate }}</th>
               <th>{{ 'TR.ACTIONS' | translate }}</th>
             </tr>
           </thead>

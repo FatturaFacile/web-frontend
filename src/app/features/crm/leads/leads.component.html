@@ -68,11 +68,11 @@
   >
     <thead>
       <tr>
-        <th>{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
-        <th>{{ 'crmLeadScore.lblStatus' | translate }}</th>
-        <th>{{ 'crmLeadScore.lblRating' | translate }}</th>
-        <th>{{ 'crmLeadScore.lblScore' | translate }}</th>
-        <th>{{ 'crmLeadScore.lblCountry' | translate }}</th>
+        <th [nzSortFn]="'full_name' | gridSort">{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort">{{ 'crmLeadScore.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'rating' | gridSort">{{ 'crmLeadScore.lblRating' | translate }}</th>
+        <th [nzSortFn]="'score' | gridSort">{{ 'crmLeadScore.lblScore' | translate }}</th>
+        <th [nzSortFn]="'country' | gridSort">{{ 'crmLeadScore.lblCountry' | translate }}</th>
         <th>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</th>
         <th nzWidth="200px">{{ 'crmLeadScore.lblActions' | translate }}</th>
       </tr>

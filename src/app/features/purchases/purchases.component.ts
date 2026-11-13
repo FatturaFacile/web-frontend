@@ -40,7 +40,7 @@ import {
   ThreeWayMatchLog,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { apiErrorText } from '../sales/cycle/shared/sales-api-helpers';
 import { notInPast } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -89,6 +89,8 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
   selector: 'app-purchases',
   styleUrl: './purchases.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,

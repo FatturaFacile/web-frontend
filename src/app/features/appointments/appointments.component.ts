@@ -42,7 +42,7 @@ import {
   TranslateService,
   UserResource,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 /** Mirrors the API rule `ends_at: after:starts_at`. */
 function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
@@ -58,6 +58,8 @@ function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
   selector: 'app-appointments',
   styleUrl: './appointments.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

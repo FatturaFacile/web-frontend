@@ -8,7 +8,7 @@ import {
   AssociationAttendanceEntry,
   I18nService,
 } from '@core';
-import { TranslatePipe, IconActionDirective } from '@shared';
+import { TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -19,7 +19,10 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 @Component({
   selector: 'app-area-instructor',
   styleUrl: './area-instructor.component.scss',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzEmptyModule, NzRadioModule, NzTableModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    DatePipe, FormsModule, NzButtonModule, NzEmptyModule, NzRadioModule, NzTableModule, TranslatePipe],
   template: `
     @if (courses().length === 0) {
       <nz-empty [nzNotFoundContent]="'ASSOC_AREA.NO_COURSES' | translate" />
@@ -27,8 +30,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
       <nz-table nzSize="small" [nzData]="courses()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.COURSE' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort">{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
             <th>{{ 'ASSOC_AREA.ACTIONS' | translate }}</th>
           </tr>
         </thead>

@@ -46,13 +46,15 @@ import {
   ReplyPortalTicketRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { notInPast } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-portal',
   styleUrl: './portal.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     SlicePipe,

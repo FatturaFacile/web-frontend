@@ -46,7 +46,7 @@ import {
   VisitorsVisitor,
   VisitorsVisitorRequest,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -69,6 +69,8 @@ function dateTimeValidator(control: AbstractControl<string>): ValidationErrors |
   selector: 'app-visitors',
   styleUrl: './visitors.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

@@ -38,7 +38,7 @@ import {
   StoreContractRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { decimalPattern } from '@shared/utils/decimal-validators';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -63,6 +63,8 @@ function requiredWith(otherKey: string): ValidatorFn {
   selector: 'app-contract-register',
   styleUrl: './contract-register.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

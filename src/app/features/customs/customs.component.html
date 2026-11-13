@@ -62,12 +62,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.DOSSIER_NUMBER' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.ROUTE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.WEIGHT_VOL' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'dossier_number' | gridSort">{{ 'CUSTOMS.COLS.DOSSIER_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'direction' | gridSort">{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th [nzSortFn]="'service_type' | gridSort">{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+            <th [nzSortFn]="'origin_country' | gridSort">{{ 'CUSTOMS.COLS.ROUTE' | translate }}</th>
+            <th [nzSortFn]="'gross_weight_kg' | gridSort">{{ 'CUSTOMS.COLS.WEIGHT_VOL' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -173,12 +173,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.DECLARATION_NR' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATISTICAL_VALUE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.TOTAL_MASS' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'trader_declaration_number' | gridSort">{{ 'CUSTOMS.COLS.DECLARATION_NR' | translate }}</th>
+            <th [nzSortFn]="'mrn' | gridSort">{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th [nzSortFn]="'declaration_type' | gridSort">{{ 'CUSTOMS.COLS.TYPE' | translate }}</th>
+            <th [nzSortFn]="'total_statistical_value' | gridSort">{{ 'CUSTOMS.COLS.STATISTICAL_VALUE' | translate }}</th>
+            <th [nzSortFn]="'total_gross_mass' | gridSort">{{ 'CUSTOMS.COLS.TOTAL_MASS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -310,14 +310,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.VERSION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DOC_TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DOC_DATE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DUTY_AMOUNT' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.VAT_AMOUNT' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.SIGNATURE' | translate }}</th>
+            <th [nzSortFn]="'mrn' | gridSort">{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th [nzSortFn]="'version' | gridSort">{{ 'CUSTOMS.COLS.VERSION' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort">{{ 'CUSTOMS.COLS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'direction' | gridSort">{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th [nzSortFn]="'document_date' | gridSort">{{ 'CUSTOMS.COLS.DOC_DATE' | translate }}</th>
+            <th [nzSortFn]="'duty_amount' | gridSort">{{ 'CUSTOMS.COLS.DUTY_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'vat_amount' | gridSort">{{ 'CUSTOMS.COLS.VAT_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'signature_status' | gridSort">{{ 'CUSTOMS.COLS.SIGNATURE' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -381,9 +381,9 @@
             >
               <thead>
                 <tr>
-                  <th>{{ 'CUSTOMS.COLS.NAME' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.CURRENCY' | translate }}</th>
+                  <th [nzSortFn]="'name' | gridSort">{{ 'CUSTOMS.COLS.NAME' | translate }}</th>
+                  <th [nzSortFn]="'service_type' | gridSort">{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+                  <th [nzSortFn]="'currency' | gridSort">{{ 'CUSTOMS.COLS.CURRENCY' | translate }}</th>
                   <th>{{ 'CUSTOMS.COLS.ACTIVE' | translate }}</th>
                   <th>{{ 'COMMON.ACTIONS' | translate }}</th>
                 </tr>
@@ -421,9 +421,9 @@
             >
               <thead>
                 <tr>
-                  <th>{{ 'CUSTOMS.COLS.REQUEST_NR' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.CUSTOMER' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+                  <th [nzSortFn]="'request_number' | gridSort">{{ 'CUSTOMS.COLS.REQUEST_NR' | translate }}</th>
+                  <th [nzSortFn]="'customer_name' | gridSort">{{ 'CUSTOMS.COLS.CUSTOMER' | translate }}</th>
+                  <th [nzSortFn]="'status' | gridSort">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
                   <th>{{ 'COMMON.ACTIONS' | translate }}</th>
                 </tr>
               </thead>

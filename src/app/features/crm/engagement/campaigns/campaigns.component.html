@@ -19,7 +19,7 @@
   >
     <thead>
       <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.COMMON.CODE' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'CRMX.CAMPAIGNS.PERIOD' | translate }}</th>

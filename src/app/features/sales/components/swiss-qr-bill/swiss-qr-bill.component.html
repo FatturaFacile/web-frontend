@@ -166,10 +166,10 @@
         >
           <thead>
             <tr>
-              <th>{{ "SWISS_QR.COL_BILL_NUM" | translate }}</th>
-              <th>{{ "SWISS_QR.COL_DEBTOR" | translate }}</th>
-              <th>{{ "COMMON.AMOUNT" | translate }}</th>
-              <th>{{ "SWISS_QR.COL_DUE_DATE" | translate }}</th>
+              <th [nzSortFn]="'billNumber' | gridSort">{{ "SWISS_QR.COL_BILL_NUM" | translate }}</th>
+              <th [nzSortFn]="'debtor.name' | gridSort">{{ "SWISS_QR.COL_DEBTOR" | translate }}</th>
+              <th [nzSortFn]="'amount' | gridSort">{{ "COMMON.AMOUNT" | translate }}</th>
+              <th [nzSortFn]="'dueDate' | gridSort">{{ "SWISS_QR.COL_DUE_DATE" | translate }}</th>
               <th>{{ "COMMON.STATUS" | translate }}</th>
               <th>{{ "COMMON.ACTION" | translate }}</th>
             </tr>

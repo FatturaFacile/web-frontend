@@ -21,12 +21,14 @@ import {
   EamOpsApiService,
   PermissionsService,
 } from '@core';
-import { TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-ea-locations-classes',
   styleUrl: './ea-locations-classes.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     ReactiveFormsModule,

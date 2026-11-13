@@ -9,12 +9,15 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, PermissionsService, ProjectChangeOrder, ProjectControlApiService } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-pc-change-orders',
   styleUrl: './pc-change-orders.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" class="mb-4" appIconAction="create" (click)="openModal()"></button>
@@ -22,12 +25,12 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } 
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'PRJ.NUMBER' | translate }}</th>
-          <th>{{ 'PRJ.TITLE' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.COST_IMPACT' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.REVENUE_IMPACT' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</th>
-          <th>{{ 'PRJ.STATUS' | translate }}</th>
+          <th [nzSortFn]="'order_number' | gridSort">{{ 'PRJ.NUMBER' | translate }}</th>
+          <th [nzSortFn]="'title' | gridSort">{{ 'PRJ.TITLE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'cost_impact_amount' | gridSort">{{ 'PRJ.COST_IMPACT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'revenue_impact_amount' | gridSort">{{ 'PRJ.REVENUE_IMPACT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'schedule_impact_days' | gridSort">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</th>
+          <th [nzSortFn]="'status' | gridSort">{{ 'PRJ.STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>
       </thead>

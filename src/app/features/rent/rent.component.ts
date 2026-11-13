@@ -33,12 +33,14 @@ import {
   RentApiService,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-rent',
   styleUrl: './rent.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     UpperCasePipe,

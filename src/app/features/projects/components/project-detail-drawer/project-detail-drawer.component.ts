@@ -32,13 +32,15 @@ import {
   StoreProjectTimesheetPayload,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-project-detail-drawer',
   styleUrl: './project-detail-drawer.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,

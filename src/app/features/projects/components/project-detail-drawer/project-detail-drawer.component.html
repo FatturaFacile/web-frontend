@@ -85,12 +85,12 @@
           >
             <thead>
               <tr>
-                <th>{{ 'projectDetailDrawer.lblCode' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
-                <th class="num">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
-                <th class="num">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
+                <th [nzSortFn]="'task_number' | gridSort">{{ 'projectDetailDrawer.lblCode' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort">{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort">{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
+                <th class="num" [nzSortFn]="'estimated_hours' | gridSort">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
+                <th class="num" [nzSortFn]="'actual_hours' | gridSort">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblProgress' | translate }}</th>
               </tr>
             </thead>
@@ -129,12 +129,12 @@
           >
             <thead>
               <tr>
-                <th>{{ 'projectDetailDrawer.lblDate' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblUser' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblHours' | translate }}</th>
+                <th [nzSortFn]="'work_date' | gridSort">{{ 'projectDetailDrawer.lblDate' | translate }}</th>
+                <th [nzSortFn]="'user_id' | gridSort">{{ 'projectDetailDrawer.lblUser' | translate }}</th>
+                <th [nzSortFn]="'hours_worked' | gridSort">{{ 'projectDetailDrawer.lblHours' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblBillable' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'work_summary' | gridSort">{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
                 <th nzWidth="150px">{{ 'projectDetailDrawer.lblActions' | translate }}</th>
               </tr>
             </thead>

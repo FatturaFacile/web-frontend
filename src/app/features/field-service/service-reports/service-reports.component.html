@@ -55,13 +55,13 @@
     <thead>
       <tr>
         <th nzWidth="48px"></th>
-        <th>{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
+        <th [nzSortFn]="'report_number' | gridSort">{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
+        <th [nzSortFn]="'report_date' | gridSort">{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
+        <th [nzSortFn]="'contact.name' | gridSort">{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
+        <th [nzSortFn]="'technician.name' | gridSort">{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
+        <th [nzSortFn]="'total_hours' | gridSort">{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
+        <th [nzSortFn]="'total_gross' | gridSort">{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
+        <th [nzSortFn]="'status.label' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>

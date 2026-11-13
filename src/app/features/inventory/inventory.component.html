@@ -93,12 +93,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_NAME' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_ON_HAND' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_RESERVED' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_AVAILABLE' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_SHORTFALL' | translate }}</th>
+            <th [nzSortFn]="'sku' | gridSort">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'INVENTORY.COL_NAME' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'on_hand' | gridSort">{{ 'INVENTORY.COL_ON_HAND' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'reserved' | gridSort">{{ 'INVENTORY.COL_RESERVED' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'available' | gridSort">{{ 'INVENTORY.COL_AVAILABLE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'shortfall' | gridSort">{{ 'INVENTORY.COL_SHORTFALL' | translate }}</th>
             <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
@@ -184,14 +184,14 @@
         <thead>
           <tr>
             <th>{{ 'INVENTORY.COL_DATE' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_MOVEMENT_NUM' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_TYPE' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_QTY' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_SIGNED_QTY' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
+            <th [nzSortFn]="'movement_number' | gridSort">{{ 'INVENTORY.COL_MOVEMENT_NUM' | translate }}</th>
+            <th [nzSortFn]="'movement_type' | gridSort">{{ 'INVENTORY.COL_TYPE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort">{{ 'INVENTORY.COL_QTY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'source_bin.code' | gridSort">{{ 'INVENTORY.COL_SIGNED_QTY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'unit_cost' | gridSort">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
             <th nzAlign="right">{{ 'INVENTORY.COL_VALUATION' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_REF' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_NOTES' | translate }}</th>
+            <th [nzSortFn]="'reference_type' | gridSort">{{ 'INVENTORY.COL_REF' | translate }}</th>
+            <th [nzSortFn]="'notes' | gridSort">{{ 'INVENTORY.COL_NOTES' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -278,13 +278,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'INVENTORY.COL_ADJ_NUMBER' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_REASON' | translate }}</th>
+            <th [nzSortFn]="'adjustment_number' | gridSort">{{ 'INVENTORY.COL_ADJ_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'warehouse.name' | gridSort">{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort">{{ 'INVENTORY.COL_REASON' | translate }}</th>
             <th nzAlign="right">{{ 'INVENTORY.COL_VAL_CHANGE' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th>{{ 'INVENTORY.COL_DATE' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'rejection_reason' | gridSort">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -363,11 +363,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'INVENTORY.COL_SESSION_NUM' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_SCHEDULED_DATE' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'session_number' | gridSort">{{ 'INVENTORY.COL_SESSION_NUM' | translate }}</th>
+            <th [nzSortFn]="'warehouse.name' | gridSort">{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
+            <th [nzSortFn]="'count_type' | gridSort">{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</th>
+            <th [nzSortFn]="'scheduled_date' | gridSort">{{ 'INVENTORY.COL_SCHEDULED_DATE' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -492,11 +492,11 @@
         <nz-table #valTable [nzScroll]="{ x: '800px' }" [nzData]="v.items" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
           <thead>
             <tr>
-              <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
-              <th>{{ 'INVENTORY.COL_NAME' | translate }}</th>
-              <th nzAlign="right">{{ 'INVENTORY.COL_QTY' | translate }}</th>
-              <th nzAlign="right">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
-              <th nzAlign="right">{{ 'INVENTORY.COL_VALUATION' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort">{{ 'INVENTORY.COL_NAME' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'quantity' | gridSort">{{ 'INVENTORY.COL_QTY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'unit_cost' | gridSort">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'value' | gridSort">{{ 'INVENTORY.COL_VALUATION' | translate }}</th>
               <th>{{ 'INVENTORY.VALUATION.COST_SOURCE' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
@@ -565,10 +565,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'INVENTORY.COL_SKU' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_DESC' | translate }}</th>
-            <th>{{ 'INVENTORY.LBL_UDM' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_HS' | translate }}</th>
+            <th [nzSortFn]="'sku' | gridSort">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'INVENTORY.COL_DESC' | translate }}</th>
+            <th [nzSortFn]="'unit_measure' | gridSort">{{ 'INVENTORY.LBL_UDM' | translate }}</th>
+            <th [nzSortFn]="'hs_code' | gridSort">{{ 'INVENTORY.COL_HS' | translate }}</th>
             <th>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
             <th>{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>

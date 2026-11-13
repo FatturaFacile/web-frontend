@@ -6,14 +6,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DimensionReport, GeneralLedgerApiService, ReportDimension } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Result by cost centre, profit centre or project, in the accounting currency. */
 @Component({
   selector: 'app-gl-dimension-report',
   styleUrl: './gl-dimension-report.component.scss',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
       <nz-select class="select-md" [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
@@ -40,10 +43,10 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
         <nz-table nzSize="small" [nzData]="group.accounts" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'GL.COL_AMOUNT' | translate }}</th>
             </tr>
           </thead>
           <tbody>

@@ -19,7 +19,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { MoneyPipe, TranslatePipe, ModalActionsDirective } from '@shared';
+import { MoneyPipe, TranslatePipe, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { Observable } from 'rxjs';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
@@ -35,6 +35,8 @@ const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
   selector: 'app-gl-journals',
   styleUrl: './gl-journals.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     FormsModule,
     NzButtonModule,

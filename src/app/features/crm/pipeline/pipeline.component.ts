@@ -24,13 +24,15 @@ import {
   StoreOpportunityPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-crm-pipeline',
   styleUrl: './pipeline.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     TranslatePipe,

@@ -10,12 +10,15 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectMilestone } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-pc-milestones',
   styleUrl: './pc-milestones.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" class="mb-4" appIconAction="create" (click)="openModal(null)"></button>
@@ -23,10 +26,10 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } 
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'PRJ.NAME' | translate }}</th>
-          <th>{{ 'PRJ.DATE' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.BILLING_AMOUNT' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort">{{ 'PRJ.NAME' | translate }}</th>
+          <th [nzSortFn]="'milestone_date' | gridSort">{{ 'PRJ.DATE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'billing_amount' | gridSort">{{ 'PRJ.BILLING_AMOUNT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'billing_percentage' | gridSort">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</th>
           <th>{{ 'PRJ.STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>

@@ -11,10 +11,10 @@
 <nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
     <tr>
-      <th>{{ 'hrmCommon.title' | translate }}</th>
+      <th [nzSortFn]="'title' | gridSort">{{ 'hrmCommon.title' | translate }}</th>
       <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th>{{ 'hrmEmp.expiryDate' | translate }}</th>
-      <th>{{ 'hrmEmp.retentionUntil' | translate }}</th>
+      <th [nzSortFn]="'expiry_date' | gridSort">{{ 'hrmEmp.expiryDate' | translate }}</th>
+      <th [nzSortFn]="'retention_until' | gridSort">{{ 'hrmEmp.retentionUntil' | translate }}</th>
       <th>{{ 'hrmEmp.flags' | translate }}</th>
       <th>{{ 'hrmCommon.actions' | translate }}</th>
     </tr>

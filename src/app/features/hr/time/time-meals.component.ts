@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTimeApiService, I18nService, MealBookingPayload } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -20,6 +20,7 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
   selector: 'app-time-meals',
   styleUrl: './time-meals.component.scss',
   imports: [
+    GridExportDirective,
     ActionFormComponent,
     DatePipe,
     FormsModule,

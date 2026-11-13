@@ -30,8 +30,7 @@ import {
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
-  TranslatePipe,
-} from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { CycleReturnsFacade } from '../cycle.facades';
 import { apiErrorText } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
@@ -51,6 +50,8 @@ interface ReceiveDraft {
   selector: 'app-cycle-returns',
   styleUrl: './returns.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

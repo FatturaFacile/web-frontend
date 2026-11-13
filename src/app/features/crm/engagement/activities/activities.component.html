@@ -44,7 +44,7 @@
   >
     <thead>
       <tr>
-        <th>{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</th>
+        <th [nzSortFn]="'subject' | gridSort">{{ 'CRMX.ACTIVITIES.SUBJECT' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.TYPE' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.PRIORITY' | translate }}</th>
         <th>{{ 'CRMX.ACTIVITIES.DUE_DATE' | translate }}</th>

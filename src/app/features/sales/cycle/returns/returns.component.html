@@ -71,9 +71,9 @@
       <nz-table [nzScroll]="{ x: '720px' }" [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-            <th>{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
-            <th>{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'quantity' | gridSort">{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
+            <th [nzSortFn]="'quantity_received' | gridSort">{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
             <th>{{ 'SC.RETURNS.CONDITION' | translate }}</th>
             <th>{{ 'SC.RETURNS.RESTOCK' | translate }}</th>
           </tr>

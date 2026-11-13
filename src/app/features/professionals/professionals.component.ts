@@ -41,12 +41,14 @@ import {
   ProfessionalsApiService,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-professionals',
   styleUrl: './professionals.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

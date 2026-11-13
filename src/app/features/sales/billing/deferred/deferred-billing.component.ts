@@ -16,7 +16,7 @@ import {
   PermissionsService,
   SalesCycleApiService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../../cycle/shared/sales-lookups.service';
 import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-status';
@@ -26,6 +26,8 @@ import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-statu
   selector: 'app-deferred-billing',
   styleUrl: './deferred-billing.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,

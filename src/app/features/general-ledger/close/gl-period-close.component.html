@@ -40,10 +40,10 @@
     <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()">
       <thead>
         <tr>
-          <th>{{ 'GL.CHECK' | translate }}</th>
+          <th [nzSortFn]="'label' | gridSort">{{ 'GL.CHECK' | translate }}</th>
           <th>{{ 'GL.BLOCKING' | translate }}</th>
           <th>{{ 'GL.STATUS' | translate }}</th>
-          <th nzAlign="right">{{ 'GL.COUNT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'count' | gridSort">{{ 'GL.COUNT' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -77,7 +77,7 @@
       <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'GL.TASK_TITLE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'GL.TASK_TITLE' | translate }}</th>
             <th>{{ 'GL.BLOCKING' | translate }}</th>
             <th>{{ 'GL.STATUS' | translate }}</th>
             <th>{{ 'GL.COL_ACTIONS' | translate }}</th>

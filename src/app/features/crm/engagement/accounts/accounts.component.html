@@ -43,7 +43,7 @@
   >
     <thead>
       <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.ACCOUNTS.TIER' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'CRMX.ACCOUNTS.INDUSTRY' | translate }}</th>

@@ -23,7 +23,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 const CONSENT_FIELD = 'consent';
 const NO_VALUE_OPERATORS: readonly string[] = ['is_null', 'not_null'];
@@ -43,6 +43,8 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
   selector: 'app-crm-segments',
   styleUrl: './segments.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

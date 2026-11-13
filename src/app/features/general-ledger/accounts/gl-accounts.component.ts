@@ -18,7 +18,7 @@ import {
   GeneralLedgerApiService,
   PermissionsService,
 } from '@core';
-import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'revenue', 'expense', 'cogs', 'wip', 'memo', 'statistical'];
@@ -36,6 +36,8 @@ const REPORTING_CLASSES = [
   selector: 'app-gl-accounts',
   styleUrl: './gl-accounts.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

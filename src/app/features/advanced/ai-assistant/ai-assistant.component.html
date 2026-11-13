@@ -201,8 +201,8 @@
         >
           <thead>
             <tr>
-              <th nzWidth="30%">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
-              <th nzWidth="50%">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
+              <th nzWidth="30%" [nzSortFn]="'key' | gridSort">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
+              <th nzWidth="50%" [nzSortFn]="'description' | gridSort">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
               <th nzWidth="20%">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -272,11 +272,11 @@
         >
           <thead>
             <tr>
-              <th nzWidth="15%">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
-              <th nzWidth="35%">{{ 'ASSISTANT.QUESTION' | translate }}</th>
-              <th nzWidth="15%">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
-              <th nzWidth="15%">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
-              <th nzWidth="10%">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'created_at' | gridSort">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
+              <th nzWidth="35%" [nzSortFn]="'question' | gridSort">{{ 'ASSISTANT.QUESTION' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'resolver' | gridSort">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
+              <th nzWidth="15%" [nzSortFn]="'outcome' | gridSort">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
+              <th nzWidth="10%" [nzSortFn]="'row_count' | gridSort">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
               <th nzWidth="10%">{{ 'COMMON.DETAILS' | translate }}</th>
             </tr>
           </thead>

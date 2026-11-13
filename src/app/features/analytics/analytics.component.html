@@ -168,11 +168,11 @@
           >
             <thead>
               <tr>
-                <th>{{ 'ANALYTICS.DUE_DATE' | translate }}</th>
+                <th [nzSortFn]="'date' | gridSort">{{ 'ANALYTICS.DUE_DATE' | translate }}</th>
                 <th>{{ 'ANALYTICS.DIRECTION' | translate }}</th>
-                <th>{{ 'ANALYTICS.CONTACT' | translate }}</th>
-                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
-                <th class="text-right">{{ 'COMMON.AMOUNT' | translate }}</th>
+                <th [nzSortFn]="'contact_name' | gridSort">{{ 'ANALYTICS.CONTACT' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th class="text-right" [nzSortFn]="'amount' | gridSort">{{ 'COMMON.AMOUNT' | translate }}</th>
                 <th>{{ 'COMMON.STATUS' | translate }}</th>
               </tr>
             </thead>
@@ -245,11 +245,11 @@
                 >
                   <thead>
                     <tr>
-                      <th>{{ 'ANALYTICS.MONTH' | translate }}</th>
-                      <th class="text-right">{{ comp.year }}</th>
-                      <th class="text-right">{{ comp.year - 1 }}</th>
-                      <th class="text-right">{{ 'ANALYTICS.VARIANCE' | translate }}</th>
-                      <th class="text-right">%</th>
+                      <th [nzSortFn]="'month_name' | gridSort">{{ 'ANALYTICS.MONTH' | translate }}</th>
+                      <th class="text-right" [nzSortFn]="'revenue' | gridSort">{{ comp.year }}</th>
+                      <th class="text-right" [nzSortFn]="'previous_year_revenue' | gridSort">{{ comp.year - 1 }}</th>
+                      <th class="text-right" [nzSortFn]="'variance' | gridSort">{{ 'ANALYTICS.VARIANCE' | translate }}</th>
+                      <th class="text-right" [nzSortFn]="'variance_percent' | gridSort">%</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,9 +300,9 @@
               >
                 <thead>
                   <tr>
-                    <th>{{ 'COMMON.NAME' | translate }}</th>
-                    <th class="text-right">{{ 'COMMON.AMOUNT' | translate }}</th>
-                    <th class="text-right">{{ 'COMMON.SHARE' | translate }}</th>
+                    <th [nzSortFn]="'label' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+                    <th class="text-right" [nzSortFn]="'amount' | gridSort">{{ 'COMMON.AMOUNT' | translate }}</th>
+                    <th class="text-right" [nzSortFn]="'percentage' | gridSort">{{ 'COMMON.SHARE' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -334,10 +334,10 @@
           >
             <thead>
               <tr>
-                <th>{{ 'COMMON.NAME' | translate }}</th>
-                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
                 <th>{{ 'ANALYTICS.KPIS' | translate }}</th>
-                <th>{{ 'ANALYTICS.PERIOD' | translate }}</th>
+                <th [nzSortFn]="'period_preset' | gridSort">{{ 'ANALYTICS.PERIOD' | translate }}</th>
                 <th>{{ 'ANALYTICS.SHARED' | translate }}</th>
                 <th class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>

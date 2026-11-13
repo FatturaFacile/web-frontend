@@ -47,7 +47,7 @@ import {
   TradesSubcontractorStatus,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 const today = (): string => new Date().toISOString().substring(0, 10);
 
@@ -78,6 +78,8 @@ const notZero: ValidatorFn = (control: AbstractControl) => {
   selector: 'app-construction',
   styleUrl: './construction.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     CurrencyPipe,

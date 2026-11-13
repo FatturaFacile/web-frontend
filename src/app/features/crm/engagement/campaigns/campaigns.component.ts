@@ -19,7 +19,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { toTimestamp } from '@shared/utils/date-validators';
 
 const STATUSES: CrmCampaignStatus[] = ['planned', 'active', 'completed', 'cancelled'];
@@ -56,6 +56,8 @@ const emptyDraft = (): CampaignDraft => ({
   selector: 'app-crm-campaigns',
   styleUrl: './campaigns.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

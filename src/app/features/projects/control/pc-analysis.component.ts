@@ -14,13 +14,16 @@ import {
   ProjectGantt,
   ProjectProfitability,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 /** Profitability, forecast, closure checks and schedule (Gantt, critical path, baseline) of a project. */
 @Component({
   selector: 'app-pc-analysis',
   styleUrl: './pc-analysis.component.scss',
-  imports: [NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (closure(); as checks) {
       <nz-alert
@@ -74,8 +77,8 @@ import { MoneyPipe, TranslatePipe } from '@shared';
           <thead>
             <tr>
               <th>WBS</th>
-              <th>{{ 'PRJ.TITLE' | translate }}</th>
-              <th>{{ 'PRJ.PLANNED' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort">{{ 'PRJ.TITLE' | translate }}</th>
+              <th [nzSortFn]="'planned_start_date' | gridSort">{{ 'PRJ.PLANNED' | translate }}</th>
               <th>{{ 'PRJ.BASELINE' | translate }}</th>
               <th nzAlign="right">{{ 'PRJ.FINISH_VARIANCE' | translate }}</th>
               <th>{{ 'PRJ.CRITICAL_PATH' | translate }}</th>

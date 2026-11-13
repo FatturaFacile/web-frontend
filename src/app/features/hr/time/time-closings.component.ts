@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTimeApiService, I18nService, TimeClosingResource, TimeTransferResult } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -17,6 +17,8 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
   selector: 'app-time-closings',
   styleUrl: './time-closings.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     DatePipe,
     FormsModule,
     NzAlertModule,
@@ -62,12 +64,12 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
     <nz-table #table [nzData]="closings()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.year' | translate }}</th>
-          <th>{{ 'hrmLeave.month' | translate }}</th>
+          <th [nzSortFn]="'year' | gridSort">{{ 'hrmCommon.year' | translate }}</th>
+          <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th>{{ 'hrmTime.closedAt' | translate }}</th>
-          <th>{{ 'hrmTime.reopenCount' | translate }}</th>
-          <th>{{ 'hrmTime.lastReopenReason' | translate }}</th>
+          <th [nzSortFn]="'closed_at' | gridSort">{{ 'hrmTime.closedAt' | translate }}</th>
+          <th [nzSortFn]="'reopen_count' | gridSort">{{ 'hrmTime.reopenCount' | translate }}</th>
+          <th [nzSortFn]="'reopen_reason' | gridSort">{{ 'hrmTime.lastReopenReason' | translate }}</th>
           @if (canWrite()) {
             <th>{{ 'hrmCommon.actions' | translate }}</th>
           }

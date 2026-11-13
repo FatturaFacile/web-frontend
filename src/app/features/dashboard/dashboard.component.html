@@ -95,11 +95,11 @@
         >
           <thead>
           <tr>
-            <th>{{ "DASHBOARD.COL_REF" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_TYPE" | translate }}</th>
+            <th [nzSortFn]="'invoice_number' | gridSort">{{ "DASHBOARD.COL_REF" | translate }}</th>
+            <th [nzSortFn]="'invoice_type' | gridSort">{{ "DASHBOARD.COL_TYPE" | translate }}</th>
             <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
-            <th>{{ "DASHBOARD.COL_STATUS" | translate }}</th>
+            <th [nzSortFn]="'total' | gridSort">{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
+            <th [nzSortFn]="'payment_status' | gridSort">{{ "DASHBOARD.COL_STATUS" | translate }}</th>
           </tr>
           </thead>
           <tbody>

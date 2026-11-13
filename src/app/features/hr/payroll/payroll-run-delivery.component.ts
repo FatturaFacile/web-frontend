@@ -11,7 +11,7 @@ import {
   PayslipDeliveryResult,
   TreasuryApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -30,6 +30,8 @@ interface AllocationRow {
   selector: 'app-payroll-run-delivery',
   styleUrl: './payroll-run-delivery.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -64,10 +66,10 @@ interface AllocationRow {
       <nz-table #batchTable class="mt-2" [nzData]="list" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmPayroll.deliver.reference' | translate }}</th>
-            <th>{{ 'hrmPayroll.deliver.items' | translate }}</th>
-            <th>{{ 'hrmPayroll.deliver.total' | translate }}</th>
-            <th>{{ 'hrmCommon.statusCol' | translate }}</th>
+            <th [nzSortFn]="'batch_reference' | gridSort">{{ 'hrmPayroll.deliver.reference' | translate }}</th>
+            <th [nzSortFn]="'item_count' | gridSort">{{ 'hrmPayroll.deliver.items' | translate }}</th>
+            <th [nzSortFn]="'total_amount' | gridSort">{{ 'hrmPayroll.deliver.total' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'hrmCommon.statusCol' | translate }}</th>
           </tr>
         </thead>
         <tbody>

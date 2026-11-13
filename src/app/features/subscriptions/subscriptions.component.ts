@@ -28,13 +28,15 @@ import {
   SubscriptionPlanResource,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, GridExportDirective, GridSortPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-subscriptions',
   styleUrl: './subscriptions.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     TranslatePipe,

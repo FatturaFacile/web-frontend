@@ -7,7 +7,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AccountLedgerReport, GeneralLedgerApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
@@ -16,6 +16,8 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
   selector: 'app-gl-account-ledger',
   styleUrl: './gl-account-ledger.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     NzButtonModule,
     NzDescriptionsModule,
@@ -79,13 +81,13 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
       >
         <thead>
           <tr>
-            <th>{{ 'GL.COL_DATE' | translate }}</th>
-            <th>{{ 'GL.COL_ENTRY' | translate }}</th>
-            <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
-            <th>{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'entry_number' | gridSort">{{ 'GL.COL_ENTRY' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'running_balance' | gridSort">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
+            <th [nzSortFn]="'transaction_debit' | gridSort">{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
           </tr>
         </thead>
         <tbody>

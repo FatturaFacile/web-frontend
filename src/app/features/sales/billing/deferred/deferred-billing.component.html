@@ -8,9 +8,9 @@
         <thead>
           <tr>
             <th scope="col"></th>
-            <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
+            <th [nzSortFn]="'ddt_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
             <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-            <th>{{ 'SC.COMMON.DATE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
             <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>

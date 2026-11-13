@@ -3,7 +3,7 @@ import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { I18nService, PayrollApiService, PayrollRunRecord } from '@core';
-import { ModalActionsDirective, TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -18,6 +18,8 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
   selector: 'app-payroll-runs',
   styleUrl: './payroll-runs.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     DatePipe,
     FormsModule,
@@ -53,12 +55,12 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
     <nz-table #table [nzData]="runs()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.year' | translate }}</th>
-          <th>{{ 'hrmLeave.month' | translate }}</th>
-          <th>{{ 'hrmPayroll.country' | translate }}</th>
+          <th [nzSortFn]="'year' | gridSort">{{ 'hrmCommon.year' | translate }}</th>
+          <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
+          <th [nzSortFn]="'country' | gridSort">{{ 'hrmPayroll.country' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th>{{ 'hrmPayroll.paymentDate' | translate }}</th>
-          <th>{{ 'hrmPayroll.reopenCount' | translate }}</th>
+          <th [nzSortFn]="'payment_date' | gridSort">{{ 'hrmPayroll.paymentDate' | translate }}</th>
+          <th [nzSortFn]="'reopen_count' | gridSort">{{ 'hrmPayroll.reopenCount' | translate }}</th>
           <th>{{ 'hrmCommon.actions' | translate }}</th>
         </tr>
       </thead>

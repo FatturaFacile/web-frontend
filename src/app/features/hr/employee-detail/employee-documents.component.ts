@@ -11,7 +11,7 @@ import {
   isValidationError,
   PermissionsService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -30,6 +30,8 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
   selector: 'app-employee-documents',
   styleUrl: './employee-documents.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

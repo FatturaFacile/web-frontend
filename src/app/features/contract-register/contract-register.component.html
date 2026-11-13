@@ -65,13 +65,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</th>
-            <th>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th [nzSortFn]="'contract_number' | gridSort">{{ 'CONTRACTS.CONTRACT_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
             <th>{{ 'CONTRACTS.KIND' | translate }}</th>
-            <th>{{ 'CONTRACTS.COUNTERPARTY' | translate }}</th>
-            <th>{{ 'CONTRACTS.PERIOD' | translate }}</th>
-            <th>{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'counterparty_name' | gridSort">{{ 'CONTRACTS.COUNTERPARTY' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort">{{ 'CONTRACTS.PERIOD' | translate }}</th>
+            <th [nzSortFn]="'contract_value' | gridSort">{{ 'CONTRACTS.TOTAL_VALUE' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -185,12 +185,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CONTRACTS.TYPE' | translate }}</th>
-            <th>{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
-            <th>{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
-            <th>{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
-            <th>{{ 'CONTRACTS.PENALTY' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort">{{ 'CONTRACTS.TYPE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort">{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
+            <th [nzSortFn]="'responsible_party' | gridSort">{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'CONTRACTS.PENALTY' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -268,9 +268,9 @@
         <thead>
           <tr>
             <th>{{ 'CONTRACTS.ALERT_TYPE' | translate }}</th>
-            <th>{{ 'CONTRACTS.CONTRACT' | translate }}</th>
-            <th>{{ 'CONTRACTS.DUE_ON' | translate }}</th>
-            <th>{{ 'CONTRACTS.MESSAGE' | translate }}</th>
+            <th [nzSortFn]="'contract_number' | gridSort">{{ 'CONTRACTS.CONTRACT' | translate }}</th>
+            <th [nzSortFn]="'due_on' | gridSort">{{ 'CONTRACTS.DUE_ON' | translate }}</th>
+            <th [nzSortFn]="'message' | gridSort">{{ 'CONTRACTS.MESSAGE' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -503,9 +503,9 @@
       <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CONTRACTS.LBL_RUOLO' | translate }}</th>
-            <th>{{ 'CONTRACTS.LBL_NOME' | translate }}</th>
-            <th>Email</th>
+            <th [nzSortFn]="'role' | gridSort">{{ 'CONTRACTS.LBL_RUOLO' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'CONTRACTS.LBL_NOME' | translate }}</th>
+            <th [nzSortFn]="'email' | gridSort">Email</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -534,10 +534,10 @@
       <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CONTRACTS.LBL_TIPO' | translate }}</th>
-            <th>{{ 'CONTRACTS.LBL_TITOLO' | translate }}</th>
-            <th>{{ 'CONTRACTS.LBL_SCADENZA' | translate }}</th>
-            <th>{{ 'CONTRACTS.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort">{{ 'CONTRACTS.LBL_TIPO' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'CONTRACTS.LBL_TITOLO' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort">{{ 'CONTRACTS.LBL_SCADENZA' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'CONTRACTS.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -563,10 +563,10 @@
       <nz-table [nzData]="contractHistory()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>Da</th>
-            <th>A</th>
-            <th>{{ 'CONTRACTS.LBL_DATA' | translate }}</th>
-            <th>{{ 'CONTRACTS.LBL_MOTIVO' | translate }}</th>
+            <th [nzSortFn]="'from_status' | gridSort">Da</th>
+            <th [nzSortFn]="'to_status' | gridSort">A</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'CONTRACTS.LBL_DATA' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort">{{ 'CONTRACTS.LBL_MOTIVO' | translate }}</th>
           </tr>
         </thead>
         <tbody>

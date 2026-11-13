@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { EmployeeDocumentResource, HrSelfServiceApiService, I18nService } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -11,15 +11,18 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 @Component({
   selector: 'app-ss-documents',
   styleUrl: './ss-documents.component.scss',
-  imports: [DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.title' | translate }}</th>
-          <th>{{ 'hrmCommon.type' | translate }}</th>
-          <th>{{ 'hrmSelfService.issueDate' | translate }}</th>
-          <th>{{ 'hrmSelfService.expiryDate' | translate }}</th>
+          <th [nzSortFn]="'title' | gridSort">{{ 'hrmCommon.title' | translate }}</th>
+          <th [nzSortFn]="'document_type' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
+          <th [nzSortFn]="'issue_date' | gridSort">{{ 'hrmSelfService.issueDate' | translate }}</th>
+          <th [nzSortFn]="'expiry_date' | gridSort">{{ 'hrmSelfService.expiryDate' | translate }}</th>
           <th>{{ 'hrmCommon.actions' | translate }}</th>
         </tr>
       </thead>

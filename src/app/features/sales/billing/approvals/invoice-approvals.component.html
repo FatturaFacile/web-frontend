@@ -10,8 +10,8 @@
   <nz-table [nzScroll]="{ x: '760px' }" [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
     <thead>
       <tr>
-        <th>{{ 'SC.PRICING.NAME' | translate }}</th>
-        <th>{{ 'SC.APPROVALS.TIERS' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'SC.PRICING.NAME' | translate }}</th>
+        <th [nzSortFn]="'tier_level' | gridSort">{{ 'SC.APPROVALS.TIERS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>

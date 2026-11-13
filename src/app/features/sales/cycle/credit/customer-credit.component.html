@@ -66,10 +66,10 @@
     <nz-table [nzScroll]="{ x: '720px' }" [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
-          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
-          <th class="num">{{ 'SC.COMMON.TOTAL' | translate }}</th>
-          <th>{{ 'SC.CREDIT.HOLD_REASON' | translate }}</th>
+          <th [nzSortFn]="'order_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+          <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th class="num" [nzSortFn]="'total_gross' | gridSort">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+          <th [nzSortFn]="'credit_hold_reason' | gridSort">{{ 'SC.CREDIT.HOLD_REASON' | translate }}</th>
           <th>{{ 'SC.COMMON.ACTIONS' | translate }}</th>
         </tr>
       </thead>
@@ -123,12 +123,12 @@
     <nz-table [nzScroll]="{ x: '720px' }" [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
-          <th>{{ 'SC.CREDIT.TYPE' | translate }}</th>
-          <th>{{ 'SC.CREDIT.REFERENCE' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.DEBIT' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.CREDIT' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.BALANCE' | translate }}</th>
+          <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th [nzSortFn]="'type' | gridSort">{{ 'SC.CREDIT.TYPE' | translate }}</th>
+          <th [nzSortFn]="'reference' | gridSort">{{ 'SC.CREDIT.REFERENCE' | translate }}</th>
+          <th class="num" [nzSortFn]="'debit' | gridSort">{{ 'SC.CREDIT.DEBIT' | translate }}</th>
+          <th class="num" [nzSortFn]="'credit' | gridSort">{{ 'SC.CREDIT.CREDIT' | translate }}</th>
+          <th class="num" [nzSortFn]="'balance' | gridSort">{{ 'SC.CREDIT.BALANCE' | translate }}</th>
         </tr>
       </thead>
       <tbody>

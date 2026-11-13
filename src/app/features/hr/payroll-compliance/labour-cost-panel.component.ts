@@ -8,7 +8,7 @@ import {
   LabourCostReport,
   PayrollComplianceApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -23,6 +23,8 @@ import { reportHttpError } from '../shared/hr-http.util';
   selector: 'app-labour-cost-panel',
   styleUrl: './labour-cost-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -92,12 +94,12 @@ import { reportHttpError } from '../shared/hr-http.util';
         <thead>
           <tr>
             <th>{{ 'hrmCompliance.labour.group' | translate }}</th>
-            <th>{{ 'hrmCompliance.labour.headcount' | translate }}</th>
-            <th>{{ 'hrmCommon.hours' | translate }}</th>
-            <th>{{ 'hrmPayroll.gross' | translate }}</th>
-            <th>{{ 'hrmPayroll.employerContributions' | translate }}</th>
-            <th>{{ 'hrmCompliance.labour.cost' | translate }}</th>
-            <th>{{ 'hrmCompliance.labour.costPerHour' | translate }}</th>
+            <th [nzSortFn]="'headcount' | gridSort">{{ 'hrmCompliance.labour.headcount' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'employer_contributions' | gridSort">{{ 'hrmPayroll.employerContributions' | translate }}</th>
+            <th [nzSortFn]="'labour_cost' | gridSort">{{ 'hrmCompliance.labour.cost' | translate }}</th>
+            <th [nzSortFn]="'cost_per_hour' | gridSort">{{ 'hrmCompliance.labour.costPerHour' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -141,10 +143,10 @@ import { reportHttpError } from '../shared/hr-http.util';
       <nz-table #childTable [nzData]="rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
             <th>{{ 'hrmCommon.type' | translate }}</th>
-            <th>{{ 'hrmCompliance.children.amount' | translate }}</th>
-            <th>{{ 'hrmPayroll.canton' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'hrmCompliance.children.amount' | translate }}</th>
+            <th [nzSortFn]="'canton' | gridSort">{{ 'hrmPayroll.canton' | translate }}</th>
             <th>{{ 'hrmCompliance.children.rateValidFrom' | translate }}</th>
           </tr>
         </thead>

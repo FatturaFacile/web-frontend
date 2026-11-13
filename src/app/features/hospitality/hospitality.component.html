@@ -147,11 +147,11 @@
         <thead>
           <tr>
             <th>{{ 'HOSPITALITY.ORDER_ID' | translate }}</th>
-            <th>{{ 'HOSPITALITY.TABLE' | translate }}</th>
-            <th>{{ 'HOSPITALITY.COVERS' | translate }}</th>
+            <th [nzSortFn]="'table_id' | gridSort">{{ 'HOSPITALITY.TABLE' | translate }}</th>
+            <th [nzSortFn]="'covers' | gridSort">{{ 'HOSPITALITY.COVERS' | translate }}</th>
             <th>{{ 'HOSPITALITY.STATUS' | translate }}</th>
-            <th>{{ 'HOSPITALITY.TOTAL' | translate }}</th>
-            <th>{{ 'HOSPITALITY.CREATED_AT' | translate }}</th>
+            <th [nzSortFn]="'total_amount' | gridSort">{{ 'HOSPITALITY.TOTAL' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'HOSPITALITY.CREATED_AT' | translate }}</th>
             <th>{{ 'HOSPITALITY.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -285,13 +285,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'HOSPITALITY.GUEST_NAME' | translate }}</th>
-            <th>{{ 'HOSPITALITY.GUEST_PHONE' | translate }}</th>
-            <th>{{ 'HOSPITALITY.PARTY_SIZE' | translate }}</th>
-            <th>{{ 'HOSPITALITY.DATE_TIME' | translate }}</th>
-            <th>{{ 'HOSPITALITY.DURATION' | translate }}</th>
+            <th [nzSortFn]="'guest_name' | gridSort">{{ 'HOSPITALITY.GUEST_NAME' | translate }}</th>
+            <th [nzSortFn]="'guest_phone' | gridSort">{{ 'HOSPITALITY.GUEST_PHONE' | translate }}</th>
+            <th [nzSortFn]="'party_size' | gridSort">{{ 'HOSPITALITY.PARTY_SIZE' | translate }}</th>
+            <th [nzSortFn]="'starts_at' | gridSort">{{ 'HOSPITALITY.DATE_TIME' | translate }}</th>
+            <th [nzSortFn]="'duration_minutes' | gridSort">{{ 'HOSPITALITY.DURATION' | translate }}</th>
             <th>{{ 'HOSPITALITY.STATUS' | translate }}</th>
-            <th>{{ 'HOSPITALITY.NOTES' | translate }}</th>
+            <th [nzSortFn]="'notes' | gridSort">{{ 'HOSPITALITY.NOTES' | translate }}</th>
             <th>{{ 'HOSPITALITY.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -400,10 +400,10 @@
         >
           <thead>
             <tr>
-              <th>{{ 'HOSPITALITY.ITEM_NAME' | translate }}</th>
-              <th>{{ 'HOSPITALITY.COURSE' | translate }}</th>
-              <th>{{ 'HOSPITALITY.QUANTITY' | translate }}</th>
-              <th>{{ 'HOSPITALITY.PRICE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'HOSPITALITY.ITEM_NAME' | translate }}</th>
+              <th [nzSortFn]="'course' | gridSort">{{ 'HOSPITALITY.COURSE' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort">{{ 'HOSPITALITY.QUANTITY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort">{{ 'HOSPITALITY.PRICE' | translate }}</th>
               <th>{{ 'HOSPITALITY.ACTIONS' | translate }}</th>
             </tr>
           </thead>

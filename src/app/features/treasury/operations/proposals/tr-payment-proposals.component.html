@@ -30,13 +30,13 @@
   <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
-        <th>{{ 'TR.PROPOSAL_NUMBER' | translate }}</th>
+        <th [nzSortFn]="'proposal_number' | gridSort">{{ 'TR.PROPOSAL_NUMBER' | translate }}</th>
         <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-        <th>{{ 'TR.EXECUTION_DATE' | translate }}</th>
+        <th [nzSortFn]="'execution_date' | gridSort">{{ 'TR.EXECUTION_DATE' | translate }}</th>
         <th>{{ 'TR.FORMAT' | translate }}</th>
-        <th nzAlign="right">{{ 'TR.ITEMS' | translate }}</th>
-        <th nzAlign="right">{{ 'TR.TOTAL' | translate }}</th>
-        <th>{{ 'TR.STATUS' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'item_count' | gridSort">{{ 'TR.ITEMS' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'TR.TOTAL' | translate }}</th>
+        <th [nzSortFn]="'rejection_reason' | gridSort">{{ 'TR.STATUS' | translate }}</th>
         <th>{{ 'TR.ACTIONS' | translate }}</th>
       </tr>
     </thead>

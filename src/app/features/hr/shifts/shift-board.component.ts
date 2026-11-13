@@ -10,7 +10,7 @@ import {
   ShiftBoard,
   ShiftPeriodPayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -41,7 +41,10 @@ function blockingViolations(err: unknown): ShiftViolation[] {
 @Component({
   selector: 'app-shift-board',
   styleUrl: './shift-board.component.scss',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzPopconfirmModule, NzTableModule, NzTagModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    DatePipe, FormsModule, NzButtonModule, NzInputModule, NzPopconfirmModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <div class="filter-bar">
       <div>
@@ -87,8 +90,8 @@ function blockingViolations(err: unknown): ShiftViolation[] {
       <nz-table #table [nzData]="b.rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th>{{ 'hrmShift.shifts' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'work_date' | gridSort">{{ 'hrmShift.shifts' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -134,9 +137,9 @@ function blockingViolations(err: unknown): ShiftViolation[] {
       <nz-table #abs [nzData]="absences()" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th>{{ 'hrmCommon.date' | translate }}</th>
-            <th>{{ 'hrmCommon.type' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'hrmCommon.date' | translate }}</th>
+            <th [nzSortFn]="'type' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
           </tr>
         </thead>
         <tbody>

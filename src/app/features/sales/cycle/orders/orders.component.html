@@ -169,10 +169,10 @@
         <nz-table [nzScroll]="{ x: '720px' }" [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-              <th>{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
-              <th>{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
-              <th>{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity_open' | gridSort">{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_promisable' | gridSort">{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
+              <th [nzSortFn]="'shortage' | gridSort">{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

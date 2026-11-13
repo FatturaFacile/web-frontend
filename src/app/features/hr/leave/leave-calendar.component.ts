@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrLeaveApiService, I18nService, LeaveCalendarEntry } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -14,7 +14,10 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 @Component({
   selector: 'app-leave-calendar',
   styleUrl: './leave-calendar.component.scss',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe, HrStatusTagComponent],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe, HrStatusTagComponent],
   template: `
     <div class="filter-bar">
       <div>
@@ -32,11 +35,11 @@ import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
     <nz-table #table [nzData]="entries()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th>{{ 'hrmCommon.type' | translate }}</th>
-          <th>{{ 'hrmCommon.from' | translate }}</th>
-          <th>{{ 'hrmCommon.to' | translate }}</th>
-          <th>{{ 'hrmCommon.hours' | translate }}</th>
+          <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+          <th [nzSortFn]="'leave_type_name' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
+          <th [nzSortFn]="'start_date' | gridSort">{{ 'hrmCommon.from' | translate }}</th>
+          <th [nzSortFn]="'end_date' | gridSort">{{ 'hrmCommon.to' | translate }}</th>
+          <th [nzSortFn]="'total_hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
         </tr>
       </thead>

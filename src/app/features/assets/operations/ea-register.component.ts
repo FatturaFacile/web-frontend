@@ -8,14 +8,17 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AssetLedgerType, AssetRegisterRow, AuthStore, EamOpsApiService, ExpiringAsset } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { downloadBlob } from '../../general-ledger/shared/gl-dates';
 
 /** Asset register of a year and ledger (JSON or CSV) and the warranty and insurance expiry alerts. */
 @Component({
   selector: 'app-ea-register',
   styleUrl: './ea-register.component.scss',
-  imports: [FormsModule, NzButtonModule, NzCardModule, NzInputNumberModule, NzSelectModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzCardModule, NzInputNumberModule, NzSelectModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
       <nz-tabs>
@@ -44,15 +47,15 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
           >
             <thead>
               <tr>
-                <th>{{ 'EA.CODE' | translate }}</th>
-                <th>{{ 'EA.NAME' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.COST_START' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.ADDITIONS' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.DISPOSALS' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.COST_END' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.DEPRECIATION_YEAR' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.ACCUMULATED_END' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.NET_BOOK_VALUE' | translate }}</th>
+                <th [nzSortFn]="'asset_number' | gridSort">{{ 'EA.CODE' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'cost_start' | gridSort">{{ 'EA.COST_START' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'additions' | gridSort">{{ 'EA.ADDITIONS' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'disposals_cost' | gridSort">{{ 'EA.DISPOSALS' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'cost_end' | gridSort">{{ 'EA.COST_END' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'depreciation_year' | gridSort">{{ 'EA.DEPRECIATION_YEAR' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'accumulated_end' | gridSort">{{ 'EA.ACCUMULATED_END' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'net_book_value_end' | gridSort">{{ 'EA.NET_BOOK_VALUE' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -77,10 +80,10 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
           <nz-table #expiringTable nzSize="middle" [nzData]="expiring()" [nzShowPagination]="false">
             <thead>
               <tr>
-                <th>{{ 'EA.CODE' | translate }}</th>
-                <th>{{ 'EA.NAME' | translate }}</th>
-                <th>{{ 'EA.WARRANTY_EXPIRY' | translate }}</th>
-                <th>{{ 'EA.INSURANCE_EXPIRY' | translate }}</th>
+                <th [nzSortFn]="'asset_number' | gridSort">{{ 'EA.CODE' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
+                <th [nzSortFn]="'warranty_provider' | gridSort">{{ 'EA.WARRANTY_EXPIRY' | translate }}</th>
+                <th [nzSortFn]="'insurance_provider' | gridSort">{{ 'EA.INSURANCE_EXPIRY' | translate }}</th>
               </tr>
             </thead>
             <tbody>

@@ -37,12 +37,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th>{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th>{{ 'WORKFLOWS.STEP' | translate }}</th>
-            <th>{{ 'WORKFLOWS.INITIATOR' | translate }}</th>
-            <th>{{ 'WORKFLOWS.DUE_AT' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'workflow_name' | gridSort">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
+            <th [nzSortFn]="'approvable_type' | gridSort">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'step_name' | gridSort">{{ 'WORKFLOWS.STEP' | translate }}</th>
+            <th [nzSortFn]="'initiator_name' | gridSort">{{ 'WORKFLOWS.INITIATOR' | translate }}</th>
+            <th [nzSortFn]="'due_at' | gridSort">{{ 'WORKFLOWS.DUE_AT' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -151,11 +151,11 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th>{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
-            <th>{{ 'WORKFLOWS.STARTED_AT' | translate }}</th>
-            <th>{{ 'WORKFLOWS.COMPLETED_AT' | translate }}</th>
+            <th [nzSortFn]="'definition.name' | gridSort">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
+            <th [nzSortFn]="'approvable_type' | gridSort">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'started_at' | gridSort">{{ 'WORKFLOWS.STARTED_AT' | translate }}</th>
+            <th [nzSortFn]="'completed_at' | gridSort">{{ 'WORKFLOWS.COMPLETED_AT' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -247,10 +247,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'WORKFLOWS.CODE' | translate }}</th>
-            <th>{{ 'COMMON.NAME' | translate }}</th>
-            <th>{{ 'WORKFLOWS.TARGET_DOC' | translate }}</th>
-            <th>{{ 'WORKFLOWS.VERSION' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'WORKFLOWS.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'target_entity_type' | gridSort">{{ 'WORKFLOWS.TARGET_DOC' | translate }}</th>
+            <th [nzSortFn]="'version' | gridSort">{{ 'WORKFLOWS.VERSION' | translate }}</th>
             <th>{{ 'WORKFLOWS.PUBLISHED' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
@@ -330,9 +330,9 @@
           >
             <thead>
               <tr>
-                <th>{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</th>
+                <th [nzSortFn]="'delegate_user_name' | gridSort">{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</th>
                 <th>{{ 'WORKFLOWS.SCOPE' | translate }}</th>
-                <th>{{ 'WORKFLOWS.VALID_PERIOD' | translate }}</th>
+                <th [nzSortFn]="'starts_at' | gridSort">{{ 'WORKFLOWS.VALID_PERIOD' | translate }}</th>
                 <th>{{ 'COMMON.STATUS' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
@@ -375,10 +375,10 @@
           >
             <thead>
               <tr>
-                <th>{{ 'COMMON.NAME' | translate }}</th>
-                <th>{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
-                <th>{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
-                <th>{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'reminder_hours' | gridSort">{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
+                <th [nzSortFn]="'escalation_hours' | gridSort">{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
+                <th [nzSortFn]="'escalate_to_type' | gridSort">{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -448,9 +448,9 @@
             <nz-table [nzData]="rep.bottlenecks" [nzFrontPagination]="false" [nzShowPagination]="false">
               <thead>
                 <tr>
-                  <th>{{ 'WORKFLOWS.STEP' | translate }}</th>
-                  <th>{{ 'WORKFLOWS.AVG_HOURS' | translate }}</th>
-                  <th>{{ 'WORKFLOWS.BREACHED_COUNT' | translate }}</th>
+                  <th [nzSortFn]="'step_name' | gridSort">{{ 'WORKFLOWS.STEP' | translate }}</th>
+                  <th [nzSortFn]="'average_hours' | gridSort">{{ 'WORKFLOWS.AVG_HOURS' | translate }}</th>
+                  <th [nzSortFn]="'breached_count' | gridSort">{{ 'WORKFLOWS.BREACHED_COUNT' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -588,10 +588,10 @@
     >
       <thead>
         <tr>
-          <th>#</th>
-          <th>{{ 'WORKFLOWS.EVENT' | translate }}</th>
-          <th>{{ 'WORKFLOWS.ACTOR' | translate }}</th>
-          <th>{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
+          <th [nzSortFn]="'sequence' | gridSort">#</th>
+          <th [nzSortFn]="'event_type' | gridSort">{{ 'WORKFLOWS.EVENT' | translate }}</th>
+          <th [nzSortFn]="'actor_name' | gridSort">{{ 'WORKFLOWS.ACTOR' | translate }}</th>
+          <th [nzSortFn]="'created_at' | gridSort">{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
           <th>{{ 'WORKFLOWS.LBL_CRYPTOGRAPHIC_HASH' | translate }}</th>
         </tr>
       </thead>
@@ -620,7 +620,8 @@
   [nzTitle]="'WORKFLOWS.NEW_DEFINITION' | translate"
   [nzOkLoading]="createDefSubmitting()"
   (nzOnCancel)="createDefModalVisible.set(false)"
-  (nzOnOk)="submitCreateDefinition()"
+  (nzOnOk)="submitCreateDefinition()"
+
   okAction="create"
   [nzOkDisabled]="defForm.invalid"
 >
@@ -667,7 +668,8 @@
   [nzTitle]="'WORKFLOWS.ADD_DELEGATION' | translate"
   [nzOkLoading]="delegationSubmitting()"
   (nzOnCancel)="createDelegationVisible.set(false)"
-  (nzOnOk)="submitCreateDelegation()"
+  (nzOnOk)="submitCreateDelegation()"
+
   okAction="add"
   [nzOkDisabled]="delegationForm.invalid"
 >
@@ -721,7 +723,8 @@
   [nzTitle]="'WORKFLOWS.ADD_RULE' | translate"
   [nzOkLoading]="ruleSubmitting()"
   (nzOnCancel)="createRuleVisible.set(false)"
-  (nzOnOk)="submitCreateRule()"
+  (nzOnOk)="submitCreateRule()"
+
   okAction="add"
   [nzOkDisabled]="ruleForm.invalid"
 >

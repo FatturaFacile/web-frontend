@@ -2,6 +2,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import {
   Component,
   computed,
+  inject,
   input,
   linkedSignal,
   output,
@@ -15,13 +16,14 @@ import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
-import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { exportXlsx } from '../../utils/export-xlsx';
+import { I18nService } from '@core/i18n/i18n.service';
 import {
+  ColumnFilter,
   SortOrder,
   TableColumnDef,
   TableDensity,
@@ -41,12 +43,10 @@ import {
     NzButtonModule,
     NzIconModule,
     NzInputModule,
-    NzSelectModule,
     NzCheckboxModule,
     NzEmptyModule,
     NzSkeletonModule,
     NzTooltipModule,
-    NzDatePickerModule,
     TranslatePipe,
   ],
   templateUrl: './base-table.component.html',
@@ -70,6 +70,8 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly showQuickJumper = input<boolean>(false);
   readonly expandable = input<boolean>(false);
   readonly emptyText = input<string | undefined>(undefined);
+  readonly exportable = input<boolean>(true);
+  readonly exportFileName = input<string>('export');
 
   // Templates
   readonly actionsTemplate = input<TemplateRef<{ $implicit: TItem }>>();
@@ -91,14 +93,90 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly currentSort = signal<TableSortState | null>(null);
   readonly expandedRows = signal<Set<string | number>>(new Set());
 
+  private readonly i18n = inject(I18nService);
+
   readonly filterVisible: Record<string, boolean> = {};
-  readonly filterValues: Record<string, unknown> = {};
+  /** Applied filters. */
+  readonly filterState = signal<Record<string, ColumnFilter>>({});
+  /** Values being edited inside the open filter dropdowns. */
+  readonly draftFilters: Record<string, ColumnFilter> = {};
 
   readonly allColumns = computed(() => this.columns());
 
   readonly visibleColumns = computed(() => {
     const hidden = this.hiddenColumns();
     return this.columns().filter((c) => !hidden.has(c.key) && c.visible !== false);
+  });
+
+  /** Distinct values (max 30) offered by the checkbox list of each column filter. */
+  readonly filterOptions = computed(() => {
+    const result: Record<string, { label: string; value: string }[]> = {};
+    for (const col of this.visibleColumns()) {
+      if (col.filterable === false) {
+        continue;
+      }
+      if (col.filterOptions) {
+        result[String(col.key)] = col.filterOptions.map((o) => ({
+          label: o.label,
+          value: String(o.value),
+        }));
+        continue;
+      }
+      const distinct = new Set<string>();
+      for (const item of this.data()) {
+        const value = this.getColumnValue(item, col);
+        if (value === null || value === undefined || value === '' || typeof value === 'object') {
+          continue;
+        }
+        distinct.add(String(value));
+        if (distinct.size > 30) {
+          break;
+        }
+      }
+      result[String(col.key)] =
+        distinct.size > 30
+          ? []
+          : [...distinct].sort(compareValues).map((v) => ({ label: v, value: v }));
+    }
+    return result;
+  });
+
+  /** Rows of the current page after column filters and sorting. */
+  readonly displayData = computed(() => {
+    const filters = this.filterState();
+    const columns = this.columns();
+    let rows = this.data();
+    const active = Object.entries(filters).filter(
+      ([, f]) => f.text !== '' || f.selected.length > 0,
+    );
+    if (active.length > 0) {
+      rows = rows.filter((item) =>
+        active.every(([key, f]) => {
+          const col = columns.find((c) => String(c.key) === key);
+          if (!col) {
+            return true;
+          }
+          const raw = this.getColumnValue(item, col);
+          const text = raw === null || raw === undefined ? '' : String(raw);
+          if (f.selected.length > 0 && !f.selected.includes(text)) {
+            return false;
+          }
+          return f.text === '' || text.toLowerCase().includes(f.text.toLowerCase());
+        }),
+      );
+    }
+    const sort = this.currentSort();
+    const sortColumn = sort ? columns.find((c) => String(c.key) === sort.key) : undefined;
+    if (sort?.order && sortColumn) {
+      const direction = sort.order === 'ascend' ? 1 : -1;
+      rows = [...rows].sort((a, b) =>
+        sortColumn.sortFn
+          ? direction * sortColumn.sortFn(a, b)
+          : direction *
+            compareValues(this.getColumnValue(a, sortColumn), this.getColumnValue(b, sortColumn)),
+      );
+    }
+    return rows;
   });
 
   readonly isAllSelected = computed(() => {
@@ -126,6 +204,28 @@ export class BaseTableComponent<TItem extends object = object> {
 
   getCellValue(item: TItem, key: keyof TItem | string): unknown {
     return (item as Record<string, unknown>)[key as string];
+  }
+
+  getColumnValue(item: TItem, col: TableColumnDef<TItem>): unknown {
+    return col.valueGetter ? col.valueGetter(item) : this.getCellValue(item, col.key);
+  }
+
+  /** Translated label, falling back to `fallback` when the key is not translated. */
+  label(key: string, fallback: string): string {
+    const translated = this.i18n.translate(key);
+    return !translated || translated === key ? fallback : translated;
+  }
+
+  async exportToXlsx(): Promise<void> {
+    const columns = this.visibleColumns().filter((c) => c.exportable !== false);
+    const rows = this.displayData();
+    await exportXlsx(
+      columns.map((col) => ({
+        header: this.i18n.translate(col.header),
+        values: rows.map((item) => this.getColumnValue(item, col)),
+      })),
+      this.exportFileName(),
+    );
   }
 
   isItemSelected(item: TItem): boolean {
@@ -228,35 +328,56 @@ export class BaseTableComponent<TItem extends object = object> {
   }
 
   setFilterVisible(key: string | keyof TItem, visible: boolean): void {
-    this.filterVisible[String(key)] = visible;
+    const k = String(key);
+    this.filterVisible[k] = visible;
+    if (visible) {
+      const applied = this.filterState()[k];
+      this.draftFilters[k] = {
+        text: applied?.text ?? '',
+        selected: [...(applied?.selected ?? [])],
+      };
+    }
   }
 
-  getFilterValue(key: string | keyof TItem): unknown {
-    return this.filterValues[String(key)];
+  draft(key: string | keyof TItem): ColumnFilter {
+    const k = String(key);
+    return (this.draftFilters[k] ??= { text: '', selected: [] });
+  }
+
+  toggleDraftValue(key: string | keyof TItem, value: string, checked: boolean): void {
+    const d = this.draft(key);
+    d.selected = checked ? [...new Set([...d.selected, value])] : d.selected.filter((v) => v !== value);
   }
 
   hasColumnFilter(key: string | keyof TItem): boolean {
-    const val = this.filterValues[String(key)];
-    return val !== undefined && val !== null && val !== '';
-  }
-
-  onFilterValueChange(key: string | keyof TItem, val: unknown): void {
-    this.filterValues[String(key)] = val;
+    const f = this.filterState()[String(key)];
+    return !!f && (f.text !== '' || f.selected.length > 0);
   }
 
   applyColumnFilter(key: string | keyof TItem): void {
     const k = String(key);
     this.filterVisible[k] = false;
-    this.filterChange.emit(this.filterValues as TableFilterState);
-    this.emitParamsChange({ filters: this.filterValues as TableFilterState, pageIndex: 1 });
+    const d = this.draft(k);
+    this.commitFilters({
+      ...this.filterState(),
+      [k]: { text: d.text.trim(), selected: [...d.selected] },
+    });
   }
 
   resetColumnFilter(key: string | keyof TItem): void {
     const k = String(key);
-    delete this.filterValues[k];
     this.filterVisible[k] = false;
-    this.filterChange.emit(this.filterValues as TableFilterState);
-    this.emitParamsChange({ filters: this.filterValues as TableFilterState, pageIndex: 1 });
+    this.draftFilters[k] = { text: '', selected: [] };
+    const next = { ...this.filterState() };
+    delete next[k];
+    this.commitFilters(next);
+  }
+
+  private commitFilters(next: Record<string, ColumnFilter>): void {
+    this.filterState.set(next);
+    const flat = this.flatFilters();
+    this.filterChange.emit(flat);
+    this.emitParamsChange({ filters: flat });
   }
 
   private emitParamsChange(override: Partial<TableQueryParams>): void {
@@ -264,7 +385,29 @@ export class BaseTableComponent<TItem extends object = object> {
       pageIndex: override.pageIndex ?? this.pageIndex(),
       pageSize: override.pageSize ?? this.pageSize(),
       sort: override.sort !== undefined ? override.sort : this.currentSort(),
-      filters: override.filters ?? (this.filterValues as TableFilterState),
+      filters: override.filters ?? this.flatFilters(),
     });
   }
+
+  private flatFilters(): TableFilterState {
+    const flat: TableFilterState = {};
+    for (const [k, f] of Object.entries(this.filterState())) {
+      if (f.text !== '' || f.selected.length > 0) {
+        flat[k] = f.selected.length > 0 ? f.selected : f.text;
+      }
+    }
+    return flat;
+  }
+}
+
+function compareValues(a: unknown, b: unknown): number {
+  const aEmpty = a === null || a === undefined || a === '';
+  const bEmpty = b === null || b === undefined || b === '';
+  if (aEmpty || bEmpty) {
+    return aEmpty === bEmpty ? 0 : aEmpty ? 1 : -1;
+  }
+  if (typeof a === 'number' && typeof b === 'number') {
+    return a - b;
+  }
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
 }

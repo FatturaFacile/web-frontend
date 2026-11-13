@@ -18,12 +18,14 @@ import {
   TenantMemberTwoFactorStatus,
   TwoFactorPolicyResponse,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 @Component({
   selector: 'app-tenant-security-policy',
   styleUrl: './tenant-security-policy.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     NzCardModule,
     NzTableModule,

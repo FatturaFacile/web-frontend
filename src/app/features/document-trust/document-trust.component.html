@@ -110,12 +110,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.RECIPIENT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.PAYLOAD_SHA256' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
+              <th [nzSortFn]="'network' | gridSort">{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</th>
+              <th [nzSortFn]="'document_reference' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</th>
+              <th [nzSortFn]="'recipient_identifier' | gridSort">{{ 'DOCUMENT_TRUST.RECIPIENT' | translate }}</th>
+              <th [nzSortFn]="'payload_sha256' | gridSort">{{ 'DOCUMENT_TRUST.PAYLOAD_SHA256' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
               <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -185,11 +185,11 @@
         >
           <thead>
             <tr>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNATURE_FORMAT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNATURE_HASH' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNED_AT' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'format' | gridSort">{{ 'DOCUMENT_TRUST.SIGNATURE_FORMAT' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'signature_sha256' | gridSort">{{ 'DOCUMENT_TRUST.SIGNATURE_HASH' | translate }}</th>
+              <th [nzSortFn]="'signed_at' | gridSort">{{ 'DOCUMENT_TRUST.SIGNED_AT' | translate }}</th>
               <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -252,12 +252,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.MODE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.PACKAGE_SHA256' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.TIMESTAMPED_AT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'mode' | gridSort">{{ 'DOCUMENT_TRUST.MODE' | translate }}</th>
+              <th [nzSortFn]="'package_sha256' | gridSort">{{ 'DOCUMENT_TRUST.PACKAGE_SHA256' | translate }}</th>
+              <th [nzSortFn]="'timestamped_at' | gridSort">{{ 'DOCUMENT_TRUST.TIMESTAMPED_AT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>

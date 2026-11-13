@@ -9,7 +9,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { BillingApiService, ReceivablesAgingReport, SalesRegisterReport } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../../cycle/shared/sales-lookups.service';
 import { todayIso } from '../../cycle/shared/sales-status';
@@ -21,6 +21,8 @@ const DOCUMENT_TYPES = ['TD01', 'TD02', 'TD03', 'TD04', 'TD05', 'TD06', 'TD16', 
   selector: 'app-billing-reports',
   styleUrl: './billing-reports.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,

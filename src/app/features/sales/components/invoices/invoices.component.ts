@@ -39,8 +39,7 @@ import {
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
-  TranslatePipe,
-} from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
@@ -70,6 +69,8 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
   selector: 'app-invoices',
   styleUrl: './invoices.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     ReactiveFormsModule,

@@ -23,12 +23,12 @@
     <thead>
       <tr>
         <th>{{ 'GL.ACCRUAL_TYPE' | translate }}</th>
-        <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
-        <th>{{ 'GL.COVERAGE' | translate }}</th>
-        <th>{{ 'GL.CUTOFF_DATE' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.ACCRUAL_TOTAL' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.ACCRUAL_AMOUNT' | translate }}</th>
-        <th>{{ 'GL.ACCRUAL_DAYS' | translate }}</th>
+        <th [nzSortFn]="'description' | gridSort">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th [nzSortFn]="'coverage_start' | gridSort">{{ 'GL.COVERAGE' | translate }}</th>
+        <th [nzSortFn]="'cutoff_date' | gridSort">{{ 'GL.CUTOFF_DATE' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'GL.ACCRUAL_TOTAL' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'GL.ACCRUAL_AMOUNT' | translate }}</th>
+        <th [nzSortFn]="'accrued_days' | gridSort">{{ 'GL.ACCRUAL_DAYS' | translate }}</th>
         <th>{{ 'GL.REVERSAL_DATE' | translate }}</th>
       </tr>
     </thead>
