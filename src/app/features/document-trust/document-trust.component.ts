@@ -1,5 +1,5 @@
 import { DatePipe, SlicePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -15,9 +15,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { Observable, of, tap } from 'rxjs';
 import {
   DocumentSignature,
   DocumentSigningSettings,
@@ -26,25 +26,44 @@ import {
   EDocumentNetworkStatus,
   EDocumentNetworkType,
   EDocumentTransmission,
+  FetchGridModel,
   I18nService,
+  PaginatedResponse,
   PreservationRecord,
   PreserveDocumentRequest,
   SendEDocumentRequest,
   serverErrorMessage,
   SignDocumentRequest,
+  TransmissionListParams,
   TranslateService,
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { uuidFormat } from '@shared/utils/uuid-validator';
+
+/** Query of the lookup grids: the document the user looked up plus the paging and grid parameters. */
+interface DocumentLookupParams {
+  document_id?: string;
+  page?: number;
+  per_page?: number;
+  search?: string;
+}
+
+/** Page the lookup grids show before a document id was typed: nothing is requested. */
+function emptyPage<T>(): Observable<PaginatedResponse<T>> {
+  return of({
+    success: true,
+    message: '',
+    data: [],
+    meta: { current_page: 1, last_page: 1, per_page: 10, total: 0, from: null, to: null },
+  } as unknown as PaginatedResponse<T>);
+}
 
 @Component({
   selector: 'app-document-trust',
   styleUrl: './document-trust.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -54,7 +73,7 @@ import { uuidFormat } from '@shared/utils/uuid-validator';
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzBadgeModule,
     NzButtonModule,
@@ -84,7 +103,12 @@ export class DocumentTrustComponent implements OnInit {
 
   // Networks & Transmissions
   readonly networks = signal<EDocumentNetworkStatus[]>([]);
-  readonly transmissions = signal<EDocumentTransmission[]>([]);
+  /** Server-side grids: paging, sorting, column filters, grouping and export run over the whole list. */
+  readonly transmissionGrid = new FetchGridModel<EDocumentTransmission, TransmissionListParams>((query) =>
+    this.api.getTransmissions(query).pipe(
+      tap({ error: () => this.message.error(this.translate.instant('DOCUMENT_TRUST.TRANSMISSIONS_LOAD_ERROR')) }),
+    ),
+  );
   readonly selectedTransmission = signal<EDocumentTransmission | null>(null);
   readonly isTransmissionDrawerVisible = signal<boolean>(false);
 
@@ -95,13 +119,17 @@ export class DocumentTrustComponent implements OnInit {
 
   // Signatures
   readonly lookupDocumentId = signal<string>('');
-  readonly signatures = signal<DocumentSignature[]>([]);
+  readonly signatureGrid = new FetchGridModel<DocumentSignature, DocumentLookupParams>(({ document_id, ...query }) =>
+    document_id ? this.api.getSignatures(document_id, query) : emptyPage<DocumentSignature>(),
+  );
   readonly verificationResult = signal<VerifySignatureResult | null>(null);
   readonly isVerificationModalVisible = signal<boolean>(false);
 
   // Preservation
   readonly preservationLookupDocumentId = signal<string>('');
-  readonly preservationRecords = signal<PreservationRecord[]>([]);
+  readonly preservationGrid = new FetchGridModel<PreservationRecord, DocumentLookupParams>(({ document_id, ...query }) =>
+    document_id ? this.api.getPreservationRecords(document_id, query) : emptyPage<PreservationRecord>(),
+  );
 
   // Settings
   readonly signingSettings = signal<DocumentSigningSettings | null>(null);
@@ -168,11 +196,45 @@ export class DocumentTrustComponent implements OnInit {
     return '';
   }
 
+  private readonly txNetworkTpl = viewChild<TemplateRef<{ $implicit: EDocumentTransmission; value: unknown }>>('txNetworkTpl');
+  private readonly txReferenceTpl = viewChild<TemplateRef<{ $implicit: EDocumentTransmission; value: unknown }>>('txReferenceTpl');
+  private readonly txRecipientTpl = viewChild<TemplateRef<{ $implicit: EDocumentTransmission; value: unknown }>>('txRecipientTpl');
+  private readonly txHashTpl = viewChild<TemplateRef<{ $implicit: EDocumentTransmission; value: unknown }>>('txHashTpl');
+  private readonly txStatusTpl = viewChild<TemplateRef<{ $implicit: EDocumentTransmission; value: unknown }>>('txStatusTpl');
+  private readonly sigFormatTpl = viewChild<TemplateRef<{ $implicit: DocumentSignature; value: unknown }>>('sigFormatTpl');
+  private readonly sigHashTpl = viewChild<TemplateRef<{ $implicit: DocumentSignature; value: unknown }>>('sigHashTpl');
+  private readonly sigDateTpl = viewChild<TemplateRef<{ $implicit: DocumentSignature; value: unknown }>>('sigDateTpl');
+  private readonly presHashTpl = viewChild<TemplateRef<{ $implicit: PreservationRecord; value: unknown }>>('presHashTpl');
+  private readonly presDateTpl = viewChild<TemplateRef<{ $implicit: PreservationRecord; value: unknown }>>('presDateTpl');
+  private readonly presStatusTpl = viewChild<TemplateRef<{ $implicit: PreservationRecord; value: unknown }>>('presStatusTpl');
+
+  readonly transmissionColumns = computed<TableColumnDef<EDocumentTransmission>[]>(() => [
+    { key: 'network', header: 'DOCUMENT_TRUST.NETWORK', customCellTemplate: this.txNetworkTpl() },
+    { key: 'document_reference', header: 'DOCUMENT_TRUST.DOCUMENT_REF', customCellTemplate: this.txReferenceTpl() },
+    { key: 'recipient_identifier', header: 'DOCUMENT_TRUST.RECIPIENT', customCellTemplate: this.txRecipientTpl() },
+    { key: 'payload_sha256', header: 'DOCUMENT_TRUST.PAYLOAD_SHA256', customCellTemplate: this.txHashTpl() },
+    { key: 'driver', header: 'DOCUMENT_TRUST.DRIVER' },
+    { key: 'status', header: 'DOCUMENT_TRUST.STATUS', customCellTemplate: this.txStatusTpl() },
+  ]);
+
+  readonly signatureColumns = computed<TableColumnDef<DocumentSignature>[]>(() => [
+    { key: 'document_type', header: 'DOCUMENT_TRUST.DOCUMENT_TYPE' },
+    { key: 'format', header: 'DOCUMENT_TRUST.SIGNATURE_FORMAT', customCellTemplate: this.sigFormatTpl() },
+    { key: 'driver', header: 'DOCUMENT_TRUST.DRIVER' },
+    { key: 'content_sha256', header: 'DOCUMENT_TRUST.SIGNATURE_HASH', customCellTemplate: this.sigHashTpl() },
+    { key: 'created_at', header: 'DOCUMENT_TRUST.SIGNED_AT', customCellTemplate: this.sigDateTpl() },
+  ]);
+
+  readonly preservationColumns = computed<TableColumnDef<PreservationRecord>[]>(() => [
+    { key: 'document_type', header: 'DOCUMENT_TRUST.DOCUMENT_TYPE' },
+    { key: 'provider', header: 'DOCUMENT_TRUST.DRIVER' },
+    { key: 'content_sha256', header: 'DOCUMENT_TRUST.PACKAGE_SHA256', customCellTemplate: this.presHashTpl() },
+    { key: 'created_at', header: 'DOCUMENT_TRUST.TIMESTAMPED_AT', customCellTemplate: this.presDateTpl() },
+    { key: 'status', header: 'DOCUMENT_TRUST.STATUS', customCellTemplate: this.presStatusTpl() },
+  ]);
+
   ngOnInit(): void {
     this.loadNetworks();
-    this.loadTransmissions();
-    this.loadSignatures();
-    this.loadPreservationRecords();
     this.loadSigningSettings();
   }
 
@@ -190,28 +252,15 @@ export class DocumentTrustComponent implements OnInit {
   }
 
   loadTransmissions(): void {
-    this.loading.set(true);
-    this.api
-      .getTransmissions({
-        network: this.filterNetwork() || undefined,
-        status: this.filterStatus() || undefined,
-        document_reference: this.filterRef() || undefined,
-        per_page: 50,
-      })
-      .subscribe({
-        next: (res) => {
-          this.transmissions.set(res.data ?? []);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-          this.message.error(this.translate.instant('DOCUMENT_TRUST.TRANSMISSIONS_LOAD_ERROR'));
-        },
-      });
+    this.transmissionGrid.reload();
   }
 
   onFilterChange(): void {
-    this.loadTransmissions();
+    this.transmissionGrid.setFilter({
+      network: this.filterNetwork() || undefined,
+      status: this.filterStatus() || undefined,
+      document_reference: this.filterRef() || undefined,
+    });
   }
 
   openTransmissionDetails(tx: EDocumentTransmission): void {
@@ -286,17 +335,11 @@ export class DocumentTrustComponent implements OnInit {
     if (!docId) {
       return;
     }
-    this.loading.set(true);
-    this.api.getSignatures(docId).subscribe({
-      next: (res) => {
-        this.signatures.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.signatures.set([]);
-      },
-    });
+    if (this.signatureGrid.filterParams().document_id === docId) {
+      this.signatureGrid.reload();
+    } else {
+      this.signatureGrid.setFilter({ document_id: docId });
+    }
   }
 
   openSignModal(): void {
@@ -366,17 +409,11 @@ export class DocumentTrustComponent implements OnInit {
     if (!docId) {
       return;
     }
-    this.loading.set(true);
-    this.api.getPreservationRecords(docId).subscribe({
-      next: (res) => {
-        this.preservationRecords.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.preservationRecords.set([]);
-      },
-    });
+    if (this.preservationGrid.filterParams().document_id === docId) {
+      this.preservationGrid.reload();
+    } else {
+      this.preservationGrid.setFilter({ document_id: docId });
+    }
   }
 
   openPreserveModal(): void {

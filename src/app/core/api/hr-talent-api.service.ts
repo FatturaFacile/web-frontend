@@ -16,6 +16,7 @@ import {
   PaginatedResponse,
   PerformanceReviewResource,
   PipelineStageRecord,
+  QueryFilterParams,
   SubmitPerformanceReviewPayload,
   TrainingCoursePayload,
   TrainingCourseResource,
@@ -31,8 +32,10 @@ export class HrTalentApiService {
 
   // --- Performance reviews ---
 
-  getPerformanceReviews(): Observable<ApiResponse<PerformanceReviewResource[]>> {
-    return this.http.get<ApiResponse<PerformanceReviewResource[]>>(`${this.base}/performance-reviews`);
+  getPerformanceReviews(params?: QueryFilterParams): Observable<PaginatedResponse<PerformanceReviewResource>> {
+    return this.http.get<PaginatedResponse<PerformanceReviewResource>>(`${this.base}/performance-reviews`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   submitPerformanceReview(payload: SubmitPerformanceReviewPayload): Observable<ApiResponse<PerformanceReviewResource>> {
@@ -45,16 +48,20 @@ export class HrTalentApiService {
 
   // --- Training ---
 
-  getTrainingCourses(): Observable<ApiResponse<TrainingCourseResource[]>> {
-    return this.http.get<ApiResponse<TrainingCourseResource[]>>(`${this.base}/training-courses`);
+  getTrainingCourses(params?: QueryFilterParams): Observable<PaginatedResponse<TrainingCourseResource>> {
+    return this.http.get<PaginatedResponse<TrainingCourseResource>>(`${this.base}/training-courses`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createTrainingCourse(payload: TrainingCoursePayload): Observable<ApiResponse<TrainingCourseResource>> {
     return this.http.post<ApiResponse<TrainingCourseResource>>(`${this.base}/training-courses`, payload);
   }
 
-  getTrainingRecords(): Observable<ApiResponse<TrainingRecordResource[]>> {
-    return this.http.get<ApiResponse<TrainingRecordResource[]>>(`${this.base}/training-records`);
+  getTrainingRecords(params?: QueryFilterParams): Observable<PaginatedResponse<TrainingRecordResource>> {
+    return this.http.get<PaginatedResponse<TrainingRecordResource>>(`${this.base}/training-records`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   assignTraining(payload: AssignTrainingPayload): Observable<ApiResponse<TrainingRecordResource>> {
@@ -69,8 +76,10 @@ export class HrTalentApiService {
     );
   }
 
-  getCertifications(): Observable<ApiResponse<CertificationResource[]>> {
-    return this.http.get<ApiResponse<CertificationResource[]>>(`${this.base}/certifications`);
+  getCertifications(params?: QueryFilterParams): Observable<PaginatedResponse<CertificationResource>> {
+    return this.http.get<PaginatedResponse<CertificationResource>>(`${this.base}/certifications`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   scanExpiringCertifications(withinDays?: number): Observable<ApiResponse<{ expiring_certifications_alerted: number }>> {
@@ -82,8 +91,10 @@ export class HrTalentApiService {
 
   // --- Recruiting ---
 
-  getJobPostings(): Observable<ApiResponse<JobPostingRecord[]>> {
-    return this.http.get<ApiResponse<JobPostingRecord[]>>(`${this.base}/job-postings`);
+  getJobPostings(params?: QueryFilterParams): Observable<PaginatedResponse<JobPostingRecord>> {
+    return this.http.get<PaginatedResponse<JobPostingRecord>>(`${this.base}/job-postings`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createJobPosting(payload: JobPostingPayload): Observable<ApiResponse<JobPostingRecord>> {
@@ -156,9 +167,9 @@ export class HrTalentApiService {
     return this.http.post<ApiResponse<Record<string, unknown>>>(`${this.base}/onboarding-templates`, payload);
   }
 
-  getOnboardingChecklists(employeeId?: string): Observable<ApiResponse<OnboardingChecklistRecord[]>> {
-    return this.http.get<ApiResponse<OnboardingChecklistRecord[]>>(`${this.base}/onboarding-checklists`, {
-      params: toHttpParams({ employee_id: employeeId }),
+  getOnboardingChecklists(employeeId?: string, params?: QueryFilterParams): Observable<PaginatedResponse<OnboardingChecklistRecord>> {
+    return this.http.get<PaginatedResponse<OnboardingChecklistRecord>>(`${this.base}/onboarding-checklists`, {
+      params: toHttpParams({ ...params, employee_id: employeeId }),
     });
   }
 

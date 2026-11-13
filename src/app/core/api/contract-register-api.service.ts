@@ -16,6 +16,7 @@ import {
   ContractStatusChangeResource,
   ContractTransitionRequest,
   PaginatedResponse,
+  QueryFilterParams,
   RenewContractRequest,
   StoreContractRequest,
   UpdateContractTermsRequest,
@@ -184,8 +185,10 @@ export class ContractRegisterApiService {
   }
 
   // --- ALERTS ---
-  getAlerts(): Observable<ApiResponse<ContractAlertResource[]>> {
-    return this.http.get<ApiResponse<ContractAlertResource[]>>(`${this.base}/contract-register/alerts`);
+  getAlerts(params?: QueryFilterParams): Observable<PaginatedResponse<ContractAlertResource>> {
+    return this.http.get<PaginatedResponse<ContractAlertResource>>(`${this.base}/contract-register/alerts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   acknowledgeAlert(id: string): Observable<ApiResponse<{ success: boolean }>> {

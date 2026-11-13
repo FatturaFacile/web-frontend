@@ -140,7 +140,7 @@ describe('WorkshopComponent', () => {
     stopTimeEntry: vi.fn().mockReturnValue(of({ data: { ...mockTimeEntry, stopped_at: '2026-03-01T10:00:00Z' } })),
     billTimeEntries: vi.fn().mockReturnValue(of({ data: { line_id: 'line-billed-1' } })),
     getVehicleHistory: vi.fn().mockReturnValue(of({ data: [mockHistoryEntry] })),
-    getRecurringServices: vi.fn().mockReturnValue(of({ data: [mockRecurringService] })),
+    getRecurringServices: vi.fn().mockReturnValue(of({ data: [mockRecurringService], meta: { total: 1, last_page: 1 } })),
     createRecurringService: vi.fn().mockReturnValue(of({ data: mockRecurringService })),
     stopRecurringService: vi.fn().mockReturnValue(of({ data: { success: true } })),
     getVehicleStock: vi.fn().mockReturnValue(of(mockPaginatedStock)),
@@ -183,6 +183,8 @@ describe('WorkshopComponent', () => {
     fixture = TestBed.createComponent(WorkshopComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // The grids load after their debounce (0 ms for the first request).
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load folders, stock, and recurring services', () => {

@@ -131,23 +131,39 @@ describe('AssetsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads categories and assets list on initialization', () => {
+  const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 400));
+
+  it('loads categories and assets list on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockAssetApi.getCategories).toHaveBeenCalled();
     expect(mockAssetApi.getAssets).toHaveBeenCalled();
-    expect(component.assets()).toEqual(mockAssets);
-    expect(component.total()).toBe(1);
+    expect(component.grid.items()).toEqual(mockAssets);
+    expect(component.grid.totalCount()).toBe(1);
   });
 
-  it('filters assets by search query', () => {
+  it('filters assets by search query on the server', async () => {
     fixture.detectChanges();
+    await settle();
     const event = { target: { value: 'Milling' } } as unknown as Event;
     component.onSearch(event);
+    await settle();
 
     expect(component.searchTerm()).toBe('Milling');
-    expect(mockAssetApi.getAssets).toHaveBeenCalledWith(
+    expect(mockAssetApi.getAssets).toHaveBeenLastCalledWith(
       expect.objectContaining({ search: 'Milling', page: 1 }),
+    );
+  });
+
+  it('sends the server key of the calculated carrying value column', async () => {
+    fixture.detectChanges();
+    await settle();
+    component.grid.onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'carrying_value', order: 'descend' }, filters: {} });
+    await settle();
+
+    expect(mockAssetApi.getAssets).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sort_by: 'carrying_value', sort_dir: 'desc' }),
     );
   });
 

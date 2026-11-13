@@ -19,34 +19,13 @@
     }
   </div>
 
-  <nz-table #table [nzScroll]="{ x: '720px' }" nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th>{{ 'GL.ACCRUAL_TYPE' | translate }}</th>
-        <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: table.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
-        <th [nzSortFn]="'coverage_start' | gridSort" [nzFilters]="'coverage_start' | gridFilterList: table.nzData" [nzFilterFn]="'coverage_start' | gridFilterFn">{{ 'GL.COVERAGE' | translate }}</th>
-        <th [nzSortFn]="'cutoff_date' | gridSort" [nzFilters]="'cutoff_date' | gridFilterList: table.nzData" [nzFilterFn]="'cutoff_date' | gridFilterFn">{{ 'GL.CUTOFF_DATE' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: table.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'GL.ACCRUAL_TOTAL' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: table.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'GL.ACCRUAL_AMOUNT' | translate }}</th>
-        <th [nzSortFn]="'accrued_days' | gridSort" [nzFilters]="'accrued_days' | gridFilterList: table.nzData" [nzFilterFn]="'accrued_days' | gridFilterFn">{{ 'GL.ACCRUAL_DAYS' | translate }}</th>
-        <th>{{ 'GL.REVERSAL_DATE' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of table.data; track item.id) {
-        <tr>
-          <td>{{ 'GL.ACCRUAL_' + item.accrual_type.toUpperCase() | translate }}</td>
-          <td>{{ item.description }}</td>
-          <td>{{ item.coverage_start }} / {{ item.coverage_end }}</td>
-          <td>{{ item.cutoff_date }}</td>
-          <td nzAlign="right">{{ item.total_amount | money: currency() }}</td>
-          <td nzAlign="right">{{ item.amount | money: currency() }}</td>
-          <td>{{ item.accrued_days }} / {{ item.coverage_days }}</td>
-          <td>{{ item.reversal_date ?? '' }}</td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="grid" [columns]="columns()" [exportFileName]="'gl-accruals'" />
+
+  <ng-template #typeTpl let-item>{{ 'GL.ACCRUAL_' + item.accrual_type.toUpperCase() | translate }}</ng-template>
+  <ng-template #coverageTpl let-item>{{ item.coverage_start }} / {{ item.coverage_end }}</ng-template>
+  <ng-template #totalTpl let-item>{{ item.total_amount | money: currency() }}</ng-template>
+  <ng-template #amountTpl let-item>{{ item.amount | money: currency() }}</ng-template>
+  <ng-template #daysTpl let-item>{{ item.accrued_days }} / {{ item.coverage_days }}</ng-template>
 </nz-card>
 
 <nz-modal

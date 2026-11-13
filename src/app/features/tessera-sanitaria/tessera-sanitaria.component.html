@@ -69,93 +69,61 @@
         </div>
       </div>
 
-      <nz-table
-        #expensesTable
-        [nzData]="expenses()"
-        [nzLoading]="expensesLoading()"
-        nzSize="small"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'document_number' | gridSort" [nzFilters]="'document_number' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'document_number' | gridFilterFn">{{ 'STS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'payment_date' | gridSort" [nzFilters]="'payment_date' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'payment_date' | gridFilterFn">{{ 'STS.PAYMENT_DATE' | translate }}</th>
-            <th>{{ 'STS.EXPENSE_TYPE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'STS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'patient_fiscal_code' | gridSort" [nzFilters]="'patient_fiscal_code' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'patient_fiscal_code' | gridFilterFn">{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</th>
-            <th nzAlign="center">{{ 'STS.TRACEABLE' | translate }}</th>
-            <th nzAlign="center">{{ 'STS.OPPOSITION' | translate }}</th>
-            <th>{{ 'STS.STATUS' | translate }}</th>
-            <th nzAlign="center">{{ 'STS.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of expensesTable.data; track item.id) {
-            <tr>
-              <td>
-                <strong>{{ item.document_number || item.document_id }}</strong>
-                <div class="doc-sub">{{ item.document_type | uppercase }}</div>
-              </td>
-              <td>{{ item.payment_date | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                <nz-tag [nzColor]="getExpenseTypeColor(item.expense_type)">
-                  {{ getExpenseTypeName(item.expense_type) }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <strong>{{ item.amount | money }}</strong>
-              </td>
-              <td>
-                <code>{{ item.patient_fiscal_code || '-' }}</code>
-              </td>
-              <td nzAlign="center">
-                @if (item.payment_traceable) {
-                  <nz-tag nzColor="success">{{ 'STS.YES' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="default">{{ 'STS.NO' | translate }}</nz-tag>
-                }
-              </td>
-              <td nzAlign="center">
-                @if (item.patient_opposition) {
-                  <nz-tag nzColor="magenta">{{ 'STS.OPPOSED' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="default">{{ 'STS.NONE' | translate }}</nz-tag>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getTransmissionStatusColor(item.transmission_status)">
-                  {{ (item.transmission_status || 'pending') | uppercase }}
-                </nz-tag>
-              </td>
-              <td nzAlign="center">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    (click)="openExpenseDrawer(item)"
-                  >
-                    <span nz-icon nzType="eye"></span>
-                    {{ 'STS.DETAILS' | translate }}
-                  </button>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzDanger
-                    nzSize="small"
-                    nz-popconfirm
-                    [nzPopconfirmTitle]="'STS.CONFIRM_REMOVE_FLAG' | translate"
-                    appIconAction="delete"
-                    (nzOnConfirm)="removeExpenseFlag(item.id)"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="expenses"
+        [columns]="expenseColumns()"
+        [actionsTemplate]="expenseActionsTpl"
+        exportFileName="health-expenses"
+      />
+
+      <ng-template #documentTpl let-item>
+        <strong>{{ item.document_number || item.document_id }}</strong>
+        <div class="doc-sub">{{ item.document_type | uppercase }}</div>
+      </ng-template>
+      <ng-template #paymentDateTpl let-item>{{ item.payment_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #expenseTypeTpl let-item>
+        <nz-tag [nzColor]="getExpenseTypeColor(item.expense_type)">{{ getExpenseTypeName(item.expense_type) }}</nz-tag>
+      </ng-template>
+      <ng-template #amountTpl let-item><strong>{{ item.amount | money }}</strong></ng-template>
+      <ng-template #fiscalCodeTpl let-item><code>{{ item.patient_fiscal_code || '-' }}</code></ng-template>
+      <ng-template #traceableTpl let-item>
+        @if (item.payment_traceable) {
+          <nz-tag nzColor="success">{{ 'STS.YES' | translate }}</nz-tag>
+        } @else {
+          <nz-tag nzColor="default">{{ 'STS.NO' | translate }}</nz-tag>
+        }
+      </ng-template>
+      <ng-template #oppositionTpl let-item>
+        @if (item.patient_opposition) {
+          <nz-tag nzColor="magenta">{{ 'STS.OPPOSED' | translate }}</nz-tag>
+        } @else {
+          <nz-tag nzColor="default">{{ 'STS.NONE' | translate }}</nz-tag>
+        }
+      </ng-template>
+      <ng-template #transmissionTpl let-item>
+        <nz-tag [nzColor]="getTransmissionStatusColor(item.transmission_status)">
+          {{ (item.transmission_status || 'pending') | uppercase }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #expenseActionsTpl let-item>
+        <nz-space>
+          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openExpenseDrawer(item)">
+            <span nz-icon nzType="eye"></span>
+            {{ 'STS.DETAILS' | translate }}
+          </button>
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="link"
+            nzDanger
+            nzSize="small"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'STS.CONFIRM_REMOVE_FLAG' | translate"
+            appIconAction="delete"
+            (nzOnConfirm)="removeExpenseFlag(item.id)"
+          ></button>
+        </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 1: ANNUAL SUMMARY -->

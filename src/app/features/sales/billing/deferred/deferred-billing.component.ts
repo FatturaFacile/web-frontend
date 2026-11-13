@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -6,17 +6,18 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   BillingApiService,
   CoreDeliveryNote,
+  FetchGridModel,
   I18nService,
   PermissionsService,
   SalesCycleApiService,
+  SalesListFilterParams,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../../cycle/shared/sales-lookups.service';
 import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-status';
@@ -26,15 +27,13 @@ import { statusColor, statusKey, todayIso } from '../../cycle/shared/sales-statu
   selector: 'app-deferred-billing',
   styleUrl: './deferred-billing.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzIconModule,
     NzInputModule,
     NzSelectModule,
-    NzTableModule,
     NzTabsModule,
     NzTagModule,
     PageHeaderComponent,
@@ -53,51 +52,43 @@ export class DeferredBillingComponent implements OnInit {
   protected readonly statusColor = statusColor;
   protected readonly statusKey = statusKey;
 
-  protected readonly notes = signal<CoreDeliveryNote[]>([]);
-  protected readonly selectedIds = signal<Set<string>>(new Set());
-  protected readonly loading = signal(false);
+  /** Delivery notes that can still be billed (dispatched, not yet invoiced), paged and filtered by the server. */
+  protected readonly grid = new FetchGridModel<CoreDeliveryNote, SalesListFilterParams>((query) =>
+    this.salesApi.getDeliveryNotes({ ...query, billable: true }),
+  );
+  protected readonly selectedNotes = signal<CoreDeliveryNote[]>([]);
+  protected readonly selectedIds = computed(() => new Set(this.selectedNotes().map((note) => note.id)));
   protected readonly saving = signal(false);
   protected dueDate = '';
   protected runUpTo = todayIso();
   protected runContactId: string | null = null;
   protected runDueDate = '';
 
-  /** Delivery notes that can still be billed (dispatched, not yet invoiced). */
-  protected readonly billable = computed(() =>
-    this.notes().filter((n) => n.status !== 'draft' && n.status !== 'invoiced'),
-  );
+  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: CoreDeliveryNote; value: unknown }>>('numberTpl');
+  private readonly customerTpl = viewChild<TemplateRef<{ $implicit: CoreDeliveryNote; value: unknown }>>('customerTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: CoreDeliveryNote; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<CoreDeliveryNote>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'ddt_number', header: this.i18n.translate('SC.COMMON.NUMBER'), customCellTemplate: this.numberTpl() },
+      { key: 'contact', serverKey: 'contact.name', valueGetter: (row) => this.lookups.contactName(row.contact_id, row.contact), header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
+      { key: 'date', header: this.i18n.translate('SC.COMMON.DATE') },
+      { key: 'status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.COMMON.STATUS'), customCellTemplate: this.statusTpl() },
+    ];
+  });
 
   ngOnInit(): void {
     this.lookups.load();
-    this.load();
   }
 
-  protected load(): void {
-    this.loading.set(true);
-    this.selectedIds.set(new Set());
-    this.salesApi.getDeliveryNotes({ per_page: 100 }).subscribe({
-      next: (res) => {
-        this.notes.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+  protected setSelection(notes: CoreDeliveryNote[]): void {
+    this.selectedNotes.set(notes);
   }
 
-  protected isSelected(id: string): boolean {
-    return this.selectedIds().has(id);
-  }
-
-  protected toggle(id: string, checked: boolean): void {
-    this.selectedIds.update((current) => {
-      const next = new Set(current);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
+  private reloadNotes(): void {
+    this.selectedNotes.set([]);
+    this.grid.reload();
   }
 
   protected createDeferred(): void {
@@ -114,7 +105,7 @@ export class DeferredBillingComponent implements OnInit {
         next: () => {
           this.saving.set(false);
           this.message.success(this.i18n.translate('SC.BILLING.INVOICE_CREATED'));
-          this.load();
+          this.reloadNotes();
         },
         error: (err: unknown) => {
           this.saving.set(false);
@@ -138,7 +129,7 @@ export class DeferredBillingComponent implements OnInit {
         next: () => {
           this.saving.set(false);
           this.message.success(this.i18n.translate('SC.DEFERRED.RUN_DONE'));
-          this.load();
+          this.reloadNotes();
         },
         error: (err: unknown) => {
           this.saving.set(false);

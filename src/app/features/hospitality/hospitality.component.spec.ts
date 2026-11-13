@@ -118,7 +118,7 @@ describe('HospitalityComponent', () => {
     moveOrderTable: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     getKitchenTickets: vi.fn().mockReturnValue(of({ data: mockTickets })),
     updateKitchenTicketStatus: vi.fn().mockReturnValue(of({ data: { ...mockTickets[0], status: 'preparing' } })),
-    getReservations: vi.fn().mockReturnValue(of({ data: mockReservations })),
+    getReservations: vi.fn().mockReturnValue(of({ data: mockReservations, meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
     createReservation: vi.fn().mockReturnValue(of({ data: mockReservations[0] })),
     seatReservation: vi.fn().mockReturnValue(of({ data: { ...mockReservations[0], status: 'seated' } })),
     updateReservationStatus: vi.fn().mockReturnValue(of({ data: { ...mockReservations[0], status: 'cancelled' } })),
@@ -157,6 +157,7 @@ describe('HospitalityComponent', () => {
     fixture = TestBed.createComponent(HospitalityComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should initialize and load rooms, tables, orders, kitchen tickets, and reservations', () => {
@@ -165,7 +166,7 @@ describe('HospitalityComponent', () => {
     expect(apiSpy.getRoomTables).toHaveBeenCalledWith('r-1');
     expect(apiSpy.getOpenOrders).toHaveBeenCalled();
     expect(apiSpy.getKitchenTickets).toHaveBeenCalled();
-    expect(apiSpy.getReservations).toHaveBeenCalledWith({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) });
+    expect(apiSpy.getReservations).toHaveBeenCalledWith(expect.objectContaining({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), page: 1 }));
 
     expect(component.rooms()).toEqual(mockRooms);
     expect(component.tables()).toEqual(mockTables);

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -13,11 +13,11 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   AuthStore,
+  FetchGridModel,
   I18nService,
   isValidationError,
   ProjectApiService,
@@ -27,7 +27,7 @@ import {
   StoreProjectPayload,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { RouterLink } from '@angular/router';
@@ -37,12 +37,10 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
   selector: 'app-projects',
   styleUrl: './projects.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -65,7 +63,7 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
   ],
   templateUrl: './projects.component.html',
 })
-export class ProjectsComponent implements OnInit {
+export class ProjectsComponent {
   private readonly translate = inject(TranslateService);
   private readonly i18n = inject(I18nService);
   private readonly projectApi = inject(ProjectApiService);
@@ -73,12 +71,26 @@ export class ProjectsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly authStore = inject(AuthStore);
 
-  readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly projects = signal<ProjectResource[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
+
+  /** Server-driven grid: paging, sorting, column filters, grouping and export run on the API. */
+  readonly grid = new FetchGridModel<ProjectResource, ProjectFilterParams>((query) => this.projectApi.getProjects(query));
+
+  private readonly nameTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('nameTpl');
+  private readonly typeTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('typeTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('statusTpl');
+  private readonly healthTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('healthTpl');
+  private readonly progressTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('progressTpl');
+  private readonly valueTpl = viewChild<TemplateRef<{ $implicit: ProjectResource; value: unknown }>>('valueTpl');
+
+  protected readonly columns = computed<TableColumnDef<ProjectResource>[]>(() => [
+    { key: 'name', header: 'PRJ.LBL_PROJECT', customCellTemplate: this.nameTpl() },
+    { key: 'project_type', header: 'PRJ.LBL_TYPE', customCellTemplate: this.typeTpl() },
+    { key: 'status', header: 'PRJ.LBL_STATUS', customCellTemplate: this.statusTpl() },
+    { key: 'health_status', header: 'PRJ.LBL_HEALTH', customCellTemplate: this.healthTpl() },
+    { key: 'progress_percentage', header: 'PRJ.LBL_PROGRESS', customCellTemplate: this.progressTpl() },
+    { key: 'contract_value', header: 'PRJ.LBL_CONTRACT_VALUE', align: 'right', customCellTemplate: this.valueTpl() },
+  ]);
 
   // Filters
   readonly searchTerm = signal('');
@@ -124,50 +136,19 @@ export class ProjectsComponent implements OnInit {
     return '';
   }
 
-  ngOnInit(): void {
-    this.loadProjects();
-  }
-
   loadProjects(): void {
-    this.loading.set(true);
-    const params: ProjectFilterParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
-      search: this.searchTerm() || undefined,
-      status: this.statusFilter() || undefined,
-    };
-
-    this.projectApi.getProjects(params).subscribe({
-      next: (res) => {
-        this.projects.set(res.data || []);
-        this.total.set(res.meta?.total || (res.data || []).length);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.projects.set([]);
-        this.total.set(0);
-        this.loading.set(false);
-      },
-    });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadProjects();
+    this.grid.reload();
   }
 
   onSearch(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.searchTerm.set(val);
-    this.pageIndex.set(1);
-    this.loadProjects();
+    this.grid.setFilter({ search: val || undefined });
   }
 
   onStatusChange(status: string | null): void {
     this.statusFilter.set(status);
-    this.pageIndex.set(1);
-    this.loadProjects();
+    this.grid.setFilter({ status: status || undefined });
   }
 
   openCreateModal(): void {

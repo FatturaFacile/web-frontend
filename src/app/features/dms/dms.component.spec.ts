@@ -166,14 +166,17 @@ describe('DmsComponent', () => {
     fixture = TestBed.createComponent(DmsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // the server-driven grid loads its first page after a zero-delay timer
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    fixture.detectChanges();
   });
 
   it('initializes component and loads folders and documents', () => {
     expect(component).toBeTruthy();
     expect(mockDmsApi.getFolders).toHaveBeenCalled();
     expect(mockDmsApi.getDocuments).toHaveBeenCalled();
-    expect(component.documents().length).toBe(1);
-    expect(component.documents()[0].title).toBe('Fattura Attiva 2026-001');
+    expect(component['grid'].items().length).toBe(1);
+    expect(component['grid'].items()[0].title).toBe('Fattura Attiva 2026-001');
   });
 
   it('submits create document modal form', () => {
@@ -200,7 +203,7 @@ describe('DmsComponent', () => {
   });
 
   it('handles check-out and check-in lifecycle', () => {
-    const doc = component.documents()[0];
+    const doc = component['grid'].items()[0];
     component.openCheckOutModal(doc);
     expect(component.checkOutModalVisible()).toBe(true);
 
@@ -219,7 +222,7 @@ describe('DmsComponent', () => {
   });
 
   it('applies and releases legal hold protection', () => {
-    const doc = component.documents()[0];
+    const doc = component['grid'].items()[0];
     component.openLegalHoldModal(doc);
     expect(component.legalHoldModalVisible()).toBe(true);
 
@@ -233,7 +236,7 @@ describe('DmsComponent', () => {
   });
 
   it('opens detail drawer, verifies SHA-256 integrity and confirms OCR extraction', () => {
-    const doc = component.documents()[0];
+    const doc = component['grid'].items()[0];
     component.openDrawer(doc);
     expect(component.drawerVisible()).toBe(true);
     expect(mockDmsApi.getDocumentVersions).toHaveBeenCalledWith(doc.id);

@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -9,14 +9,12 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { AlertsApiService, AlertFilterParams, AlertResource, AlertSeverity, TranslateService } from '@core';
+import { AlertsApiService, AlertFilterParams, AlertResource, AlertSeverity, FetchGridModel, TranslateService } from '@core';
 import {
   BaseTableComponent,
   IconActionDirective,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
-  TableStateService,
   TranslatePipe,
 } from '@shared';
 import { AlertFormDrawerComponent } from './components/alert-form-drawer.component';
@@ -41,19 +39,16 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
     AlertFormDrawerComponent,
     TranslatePipe,
   ],
-  providers: [TableStateService],
   templateUrl: './alerts.component.html',
 })
-export class AlertsComponent implements OnInit {
+export class AlertsComponent {
   protected readonly api = inject(AlertsApiService);
   protected readonly message = inject(NzMessageService);
   protected readonly translate = inject(TranslateService);
-  protected readonly tableState = inject(TableStateService<AlertResource, AlertFilterParams>);
+  protected readonly grid = new FetchGridModel<AlertResource, AlertFilterParams>((query) => this.api.getAlerts(query));
 
-  protected readonly items = signal<AlertResource[]>([]);
   protected readonly drawerOpen = signal(false);
   protected readonly selectedAlert = signal<AlertResource | null>(null);
-  protected selectedSeverity: AlertSeverity | null = null;
 
   private readonly titleTpl =
     viewChild<TemplateRef<{ $implicit: AlertResource; value: unknown }>>('titleTpl');
@@ -74,12 +69,14 @@ export class AlertsComponent implements OnInit {
     },
     {
       key: 'severity',
+      valueLabel: (value) => this.severityLabel(value),
       header: 'COLUMNS.GRAVITA',
       width: '130px',
       customCellTemplate: this.severityTpl(),
     },
     {
       key: 'is_active',
+      valueLabel: (value) => this.translate.instant(value === '1' ? 'common.status.active' : 'common.status.inactive'),
       header: 'COLUMNS.STATO',
       width: '120px',
       customCellTemplate: this.statusTpl(),
@@ -93,71 +90,21 @@ export class AlertsComponent implements OnInit {
     },
   ]);
 
-  ngOnInit(): void {
-    this.loadData();
-  }
-
-  loadData(): void {
-    this.tableState.setLoading(true);
-    this.api.getAlerts(this.tableState.toBackendQueryParams() as AlertFilterParams).subscribe({
-      next: (res) => {
-        let list = res.data || [];
-        if (this.selectedSeverity) {
-          list = list.filter((a) => a.severity === this.selectedSeverity);
-        }
-        this.items.set(list);
-        this.tableState.setTotal(res.meta?.total || list.length);
-        this.tableState.setLoading(false);
-      },
-      error: () => {
-        if (this.items().length === 0) {
-          this.items.set([
-            {
-              id: 'alt-1',
-              title: 'Liquidazione IVA Trimestre Q3 2026',
-              message: 'Termine ultimo per versamento F24 fissato al 16 Novembre',
-              severity: 'warning',
-              is_active: true,
-              created_at: '2026-10-25T08:00:00Z',
-            },
-            {
-              id: 'alt-2',
-              title: 'Certificato SDI in scadenza',
-              message:
-                'Il certificato per la trasmissione fatture elettroniche scade tra 14 giorni',
-              severity: 'critical',
-              is_active: true,
-              created_at: '2026-10-26T10:30:00Z',
-            },
-            {
-              id: 'alt-3',
-              title: 'Sincronizzazione tassi di cambio completata',
-              message: 'Tassi BCE EUR/CHF aggiornati automaticamente',
-              severity: 'info',
-              is_active: false,
-              created_at: '2026-10-28T06:00:00Z',
-            },
-          ]);
-          this.tableState.setTotal(3);
-        }
-        this.tableState.setLoading(false);
-      },
-    });
-  }
-
   onSearchChange(search: string): void {
-    this.tableState.setSearch(search);
-    this.loadData();
+    this.grid.setFilter({ search: search || undefined });
   }
 
-  onSeverityFilterChange(sev: AlertSeverity | null): void {
-    this.selectedSeverity = sev;
-    this.loadData();
+  onSeverityFilterChange(severity: AlertSeverity | null): void {
+    this.grid.setFilter({ severity: severity ?? undefined });
   }
 
-  onParamsChange(params: TableQueryParams): void {
-    this.tableState.applyGridParams(params);
-    this.loadData();
+  private severityLabel(severity: string): string {
+    const keys: Record<string, string> = {
+      info: 'alerts.lblInformativo',
+      warning: 'alerts.lblAttenzione',
+      critical: 'alerts.lblCritico',
+    };
+    return this.translate.instant(keys[severity] ?? severity);
   }
 
   create(): void {
@@ -174,11 +121,7 @@ export class AlertsComponent implements OnInit {
     this.api.deleteAlert(a.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('alerts.messages.deleted'));
-        this.loadData();
-      },
-      error: () => {
-        this.items.update((list) => list.filter((i) => i.id !== a.id));
-        this.message.success(this.translate.instant('alerts.messages.deleted'));
+        this.grid.reload();
       },
     });
   }

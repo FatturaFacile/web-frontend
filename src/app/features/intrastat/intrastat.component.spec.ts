@@ -85,7 +85,13 @@ describe('IntrastatComponent', () => {
   };
 
   const apiSpy = {
-    getDeclarations: vi.fn().mockReturnValue(of({ data: [mockDeclaration, mockPurchasesDeclaration] })),
+    getDeclarations: vi.fn().mockReturnValue(
+      of({
+        data: [mockDeclaration, mockPurchasesDeclaration],
+        meta: { current_page: 1, from: 1, to: 2, last_page: 1, per_page: 10, total: 2 },
+        summary: { sales_total_eur: 15000, purchases_total_eur: 8000, draft_count: 1, submitted_count: 1 },
+      }),
+    ),
     getDeclaration: vi.fn().mockReturnValue(of({ data: mockDeclaration })),
     createDeclaration: vi.fn().mockReturnValue(of({ data: mockDeclaration })),
     generateDeclaration: vi.fn().mockReturnValue(of({ data: mockDeclaration })),
@@ -105,7 +111,7 @@ describe('IntrastatComponent', () => {
       }),
     ),
     getPeriodicity: vi.fn().mockReturnValue(of({ data: mockPeriodicity })),
-    getProductProfiles: vi.fn().mockReturnValue(of({ data: [mockProfile] })),
+    getProductProfiles: vi.fn().mockReturnValue(of({ data: [mockProfile], meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
     setProductProfile: vi.fn().mockReturnValue(of({ data: mockProfile })),
     deleteProductProfile: vi.fn().mockReturnValue(of({ message: 'Deleted' })),
   };
@@ -138,11 +144,12 @@ describe('IntrastatComponent', () => {
     fixture = TestBed.createComponent(IntrastatComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should initialize and load declarations, periodicity, and product profiles', () => {
     expect(component).toBeTruthy();
-    expect(apiSpy.getDeclarations).toHaveBeenCalledWith({ year: 2026 });
+    expect(apiSpy.getDeclarations).toHaveBeenCalledWith(expect.objectContaining({ year: 2026, page: 1 }));
     expect(apiSpy.getPeriodicity).toHaveBeenCalledWith(2026);
     expect(apiSpy.getProductProfiles).toHaveBeenCalled();
 

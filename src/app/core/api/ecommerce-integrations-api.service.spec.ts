@@ -196,7 +196,7 @@ describe('EcommerceIntegrationsApiService', () => {
     expect(putGwReq.request.method).toBe('PUT');
     putGwReq.flush({ success: true, data: mockGateway });
 
-    service.getPaymentLinks('inv-123').subscribe((res) => {
+    service.getPaymentLinks({ invoice_id: 'inv-123' }).subscribe((res) => {
       expect(res.data).toEqual([mockPaymentLink]);
     });
     const linksReq = httpMock.expectOne(

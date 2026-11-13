@@ -1,9 +1,13 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
+  CommunicationDeliveryFilterParams,
+  CommunicationTemplateFilterParams,
+  PaginatedResponse,
   CommunicationChannelResource,
   CommunicationChannelType,
   CommunicationDeliveryLog,
@@ -26,26 +30,9 @@ export class CommunicationApiService {
     return this.http.post<ApiResponse<CommunicationDeliveryLog>>(`${this.base}/documents/send`, payload);
   }
 
-  getDeliveries(params?: {
-    document_id?: string;
-    channel?: string;
-    status?: string;
-    message_type?: string;
-    from?: string;
-    to?: string;
-    per_page?: number;
-  }): Observable<ApiResponse<CommunicationDeliveryLog[]>> {
-    let httpParams = new HttpParams();
-    if (params?.document_id) httpParams = httpParams.set('document_id', params.document_id);
-    if (params?.channel) httpParams = httpParams.set('channel', params.channel);
-    if (params?.status) httpParams = httpParams.set('status', params.status);
-    if (params?.message_type) httpParams = httpParams.set('message_type', params.message_type);
-    if (params?.from) httpParams = httpParams.set('from', params.from);
-    if (params?.to) httpParams = httpParams.set('to', params.to);
-    if (params?.per_page) httpParams = httpParams.set('per_page', params.per_page.toString());
-
-    return this.http.get<ApiResponse<CommunicationDeliveryLog[]>>(`${this.base}/deliveries`, {
-      params: httpParams,
+  getDeliveries(params?: CommunicationDeliveryFilterParams): Observable<PaginatedResponse<CommunicationDeliveryLog>> {
+    return this.http.get<PaginatedResponse<CommunicationDeliveryLog>>(`${this.base}/deliveries`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -81,18 +68,9 @@ export class CommunicationApiService {
     return this.http.post<ApiResponse<CommunicationDeliveryLog>>(`${this.base}/messages/send`, payload);
   }
 
-  getTemplates(params?: {
-    code?: string;
-    channel?: string;
-    locale?: string;
-  }): Observable<ApiResponse<CommunicationTemplateResource[]>> {
-    let httpParams = new HttpParams();
-    if (params?.code) httpParams = httpParams.set('code', params.code);
-    if (params?.channel) httpParams = httpParams.set('channel', params.channel);
-    if (params?.locale) httpParams = httpParams.set('locale', params.locale);
-
-    return this.http.get<ApiResponse<CommunicationTemplateResource[]>>(`${this.base}/templates`, {
-      params: httpParams,
+  getTemplates(params?: CommunicationTemplateFilterParams): Observable<PaginatedResponse<CommunicationTemplateResource>> {
+    return this.http.get<PaginatedResponse<CommunicationTemplateResource>>(`${this.base}/templates`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 

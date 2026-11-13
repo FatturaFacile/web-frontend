@@ -27,7 +27,7 @@ describe('TreasuryApiService', () => {
     service.getBankAccounts().subscribe((res) => {
       expect(res.data).toHaveLength(1);
     });
-    const reqGet = httpTesting.expectOne(`${baseUrl}/bank-accounts`);
+    const reqGet = httpTesting.expectOne((req) => req.url === `${baseUrl}/bank-accounts` && req.method === 'GET');
     expect(reqGet.request.method).toBe('GET');
     reqGet.flush({ success: true, message: 'OK', data: [{ id: 'ba-1', bank_name: 'UBS' }] });
 

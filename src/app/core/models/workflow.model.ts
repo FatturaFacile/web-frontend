@@ -4,22 +4,27 @@ export type WorkflowInstanceStatus = 'pending' | 'approved' | 'rejected' | 'canc
 
 export type WorkflowDecisionType = 'approved' | 'rejected' | 'abstained';
 
+/** A pending approval of the inbox (WorkflowTaskResource of the API). */
 export interface WorkflowTask {
   step_id: string;
   workflow_instance_id: string;
   workflow_code: string;
   workflow_name: string;
+  node_name?: string | null;
   approvable_type: string;
   approvable_id: string;
-  approvable_label?: string;
-  initiator_name?: string;
-  step_name: string;
-  step_index: number;
+  approvable_label?: string | null;
+  initiated_by?: string | null;
+  initiator_name?: string | null;
+  assigned_user_id?: string | null;
+  assigned_role?: string | null;
+  via_delegation_from?: string | null;
+  tier_level?: number | null;
   due_at?: string | null;
-  status: string;
-  is_sla_breached?: boolean;
-  is_escalated?: boolean;
-  context?: Record<string, unknown>;
+  is_overdue?: boolean;
+  hours_remaining?: string | null;
+  escalation_level?: number;
+  escalated_at?: string | null;
   created_at?: string;
 }
 
@@ -174,7 +179,8 @@ export interface WorkflowDelegationModel {
   id: string;
   delegator_user_id: string;
   delegate_user_id: string;
-  delegate_user_name?: string;
+  delegate_user_name?: string | null;
+  delegator_user_name?: string | null;
   scope?: string;
   starts_at?: string | null;
   ends_at?: string | null;
@@ -233,7 +239,12 @@ export interface WorkflowAuditEntryResource {
 }
 
 export interface WorkflowTaskParams {
+  /** Code of the workflow definition (the API filters by `definition_code`). */
+  definition_code?: string;
+  /** @deprecated The API ignores it: use `definition_code`. */
   workflow_code?: string;
+  state?: 'overdue' | 'delegated' | 'escalated';
+  approvable_type?: string;
   status?: string;
   page?: number;
   per_page?: number;

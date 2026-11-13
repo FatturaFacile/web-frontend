@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -6,58 +6,35 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { applyServerErrors, AuthStore, PermissionsService, ProjectChangeOrder, ProjectControlApiService } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { applyServerErrors, AuthStore, FetchGridModel, PermissionsService, ProjectChangeOrder, ProjectControlApiService, QueryFilterParams } from '@core';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-pc-change-orders',
   styleUrl: './pc-change-orders.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
-    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+    BaseTableComponent,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" class="mb-4" appIconAction="create" (click)="openModal()"></button>
     }
-    <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: table.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'PRJ.NUMBER' | translate }}</th>
-          <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'PRJ.TITLE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'cost_impact_amount' | gridSort" [nzFilters]="'cost_impact_amount' | gridFilterList: table.nzData" [nzFilterFn]="'cost_impact_amount' | gridFilterFn">{{ 'PRJ.COST_IMPACT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'revenue_impact_amount' | gridSort" [nzFilters]="'revenue_impact_amount' | gridFilterList: table.nzData" [nzFilterFn]="'revenue_impact_amount' | gridFilterFn">{{ 'PRJ.REVENUE_IMPACT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'schedule_impact_days' | gridSort" [nzFilters]="'schedule_impact_days' | gridFilterList: table.nzData" [nzFilterFn]="'schedule_impact_days' | gridFilterFn">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</th>
-          <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRJ.STATUS' | translate }}</th>
-          <th>{{ 'PRJ.ACTIONS' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (order of table.data; track order.id) {
-          <tr>
-            <td>{{ order.order_number }}</td>
-            <td>{{ order.title }}</td>
-            <td nzAlign="right">{{ order.cost_impact_amount | money: currency() }}</td>
-            <td nzAlign="right">{{ order.revenue_impact_amount | money: currency() }}</td>
-            <td nzAlign="right">{{ order.schedule_impact_days }}</td>
-            <td>
-              <nz-tag>{{ order.status }}</nz-tag>
-              @if (order.rejection_reason) {
-                <div class="text-muted text-xs">{{ order.rejection_reason }}</div>
-              }
-            </td>
-            <td>
-              @if (canWrite && (order.status === 'submitted' || order.status === 'pending_approval')) {
-                <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(order)">{{ 'PRJ.APPROVE' | translate }}</button>
-                <button nz-button nzSize="small" nzDanger type="button" (click)="rejectTarget.set(order)">{{ 'PRJ.REJECT' | translate }}</button>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="change-orders" />
+    <ng-template #costTpl let-order>{{ order.cost_impact_amount | money: currency() }}</ng-template>
+    <ng-template #revenueTpl let-order>{{ order.revenue_impact_amount | money: currency() }}</ng-template>
+    <ng-template #statusTpl let-order>
+      <nz-tag>{{ order.status }}</nz-tag>
+      @if (order.rejection_reason) {
+        <div class="text-muted text-xs">{{ order.rejection_reason }}</div>
+      }
+    </ng-template>
+    <ng-template #actionsTpl let-order>
+      @if (canWrite && (order.status === 'submitted' || order.status === 'pending_approval')) {
+        <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(order)">{{ 'PRJ.APPROVE' | translate }}</button>
+        <button nz-button nzSize="small" nzDanger type="button" (click)="rejectTarget.set(order)">{{ 'PRJ.REJECT' | translate }}</button>
+      }
+    </ng-template>
 
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.CHANGE_ORDER_NEW' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="create" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
@@ -101,7 +78,7 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
     </nz-modal>
   `,
 })
-export class PcChangeOrdersComponent implements OnInit {
+export class PcChangeOrdersComponent {
   readonly projectId = input.required<string>();
 
   private readonly api = inject(ProjectControlApiService);
@@ -109,8 +86,21 @@ export class PcChangeOrdersComponent implements OnInit {
   protected readonly currency = inject(AuthStore).activeCurrency;
   protected readonly canWrite = inject(PermissionsService).canWrite('projects');
 
-  protected readonly items = signal<ProjectChangeOrder[]>([]);
-  protected readonly loading = signal(false);
+  /** Change orders of the project: paging, sorting, filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ProjectChangeOrder, QueryFilterParams>((query) => this.api.getChangeOrders(this.projectId(), query));
+
+  private readonly costTpl = viewChild<TemplateRef<{ $implicit: ProjectChangeOrder; value: unknown }>>('costTpl');
+  private readonly revenueTpl = viewChild<TemplateRef<{ $implicit: ProjectChangeOrder; value: unknown }>>('revenueTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: ProjectChangeOrder; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<ProjectChangeOrder>[]>(() => [
+    { key: 'order_number', header: 'PRJ.NUMBER' },
+    { key: 'title', header: 'PRJ.TITLE' },
+    { key: 'cost_impact_amount', header: 'PRJ.COST_IMPACT', align: 'right', customCellTemplate: this.costTpl() },
+    { key: 'revenue_impact_amount', header: 'PRJ.REVENUE_IMPACT', align: 'right', customCellTemplate: this.revenueTpl() },
+    { key: 'schedule_impact_days', header: 'PRJ.SCHEDULE_IMPACT', align: 'right' },
+    { key: 'status', header: 'PRJ.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -126,19 +116,8 @@ export class PcChangeOrdersComponent implements OnInit {
     schedule_impact_days: this.fb.control<number | null>(null),
   });
 
-  ngOnInit(): void {
-    this.load();
-  }
-
   protected load(): void {
-    this.loading.set(true);
-    this.api.getChangeOrders(this.projectId()).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.reload();
   }
 
   protected openModal(): void {

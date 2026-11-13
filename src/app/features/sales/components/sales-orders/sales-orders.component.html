@@ -10,8 +10,8 @@
       <div class="toolbar">
         <nz-select
           class="status-filter"
-          [ngModel]="quoteStatusFilter()"
-          (ngModelChange)="quoteStatusFilter.set($event); loadQuotes()"
+          [ngModel]="quoteGrid.filterParams().status ?? null"
+          (ngModelChange)="quoteGrid.setFilter({ status: $event ?? undefined })"
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
           nzAllowClear
         >
@@ -23,7 +23,7 @@
           <nz-option nzValue="converted" [nzLabel]="'SALES.LBL_CONVERTITO_IN_ORDINE' | translate"></nz-option>
         </nz-select>
 
-        <button nz-button nzType="default" (click)="loadQuotes()" [nzLoading]="loading()">
+        <button nz-button nzType="default" (click)="loadQuotes()" [nzLoading]="quoteGrid.loading()">
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
@@ -32,97 +32,7 @@
         <button nz-button appIconAction="create" nzType="primary" (click)="openQuoteModal()"></button>
       </div>
 
-      <nz-table
-        #quoteTable
-        [nzData]="quotes()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="quotesTotal()"
-        [nzPageIndex]="quotesPage()"
-        [nzPageSize]="quotesPageSize()"
-        (nzQueryParams)="onQuotesQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'quote_number' | gridSort" [nzFilters]="'quote_number' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'quote_number' | gridFilterFn">{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
-            <th>{{ 'SALES.COL_VALID_UNTIL' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_tax' | gridSort" [nzFilters]="'total_tax' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_tax' | gridFilterFn">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (q of quoteTable.data; track q.id) {
-            <tr>
-              <td><code>{{ q.quote_number }}</code></td>
-              <td><strong>{{ q.contact?.name || q.contact?.display_name || q.contact_id }}</strong></td>
-              <td>{{ q.date | date:'mediumDate' }}</td>
-              <td>{{ q.valid_until ? (q.valid_until | date:'mediumDate') : '-' }}</td>
-              <td nzAlign="right">{{ q.total_net | money: q.currency }}</td>
-              <td nzAlign="right">{{ q.total_tax | money: q.currency }}</td>
-              <td nzAlign="right"><strong>{{ q.total_gross | money: q.currency }}</strong></td>
-              <td nzAlign="center">
-                @switch (q.status) {
-                  @case ('approved') {
-                    <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
-                  }
-                  @case ('pending_approval') {
-                    <nz-tag nzColor="processing">{{ 'SALES.LBL_IN_APPROVAZIONE' | translate }}</nz-tag>
-                  }
-                  @case ('rejected') {
-                    <nz-tag nzColor="error">{{ 'SALES.LBL_RIFIUTATO' | translate }}</nz-tag>
-                  }
-                  @case ('accepted') {
-                    <nz-tag nzColor="cyan">{{ 'SALES.LBL_ACCETTATO' | translate }}</nz-tag>
-                  }
-                  @case ('converted') {
-                    <nz-tag nzColor="purple">{{ 'SALES.LBL_CONVERTITO' | translate }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag nzColor="default">{{ q.status }}</nz-tag>
-                  }
-                }
-              </td>
-              <td nzAlign="right">
-                @if (q.status === 'draft') {
-                  <button nz-button nzType="link" nzSize="small" (click)="submitQuoteForApproval(q.id)">
-                    <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_APPR' | translate }}
-                  </button>
-                }
-                @if (q.status === 'pending_approval') {
-                  <button nz-button nzType="link" nzSize="small" (click)="approveQuote(q.id)">
-                    <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
-                  </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectQuote(q.id)">
-                    <nz-icon nzType="close" /> {{ 'SALES.LBL_RIFIUTA' | translate }}
-                  </button>
-                }
-                @if (q.status === 'approved') {
-                  <button nz-button nzType="link" nzSize="small" (click)="acceptQuote(q.id)">
-                    <nz-icon nzType="check-circle" /> {{ 'SALES.LBL_ACCETTA' | translate }}
-                  </button>
-                }
-                @if (q.status === 'accepted') {
-                  <button nz-button nzType="link" nzSize="small" (click)="convertQuote(q.id)">
-                    <nz-icon nzType="swap" /> {{ 'SALES.LBL_CONVERTI_IN_ORDINE' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="quoteGrid" [columns]="quoteColumns()" [actionsTemplate]="quoteActionsTpl" [exportFileName]="'quotes'" />
     </nz-tab>
 
     <!-- TAB 1: SALES ORDERS -->
@@ -130,8 +40,8 @@
       <div class="toolbar">
         <nz-select
           class="status-filter"
-          [ngModel]="orderStatusFilter()"
-          (ngModelChange)="orderStatusFilter.set($event); loadOrders()"
+          [ngModel]="orderGrid.filterParams().status ?? null"
+          (ngModelChange)="orderGrid.setFilter({ status: $event ?? undefined })"
           [nzPlaceHolder]="'COMMON.ALL_STATUSES' | translate"
           nzAllowClear
         >
@@ -143,7 +53,7 @@
           <nz-option nzValue="cancelled" [nzLabel]="'SALES.LBL_ANNULLATO' | translate"></nz-option>
         </nz-select>
 
-        <button nz-button nzType="default" (click)="loadOrders()" [nzLoading]="loading()">
+        <button nz-button nzType="default" (click)="loadOrders()" [nzLoading]="orderGrid.loading()">
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
@@ -152,105 +62,13 @@
         <button nz-button appIconAction="create" nzType="primary" (click)="openOrderModal()"></button>
       </div>
 
-      <nz-table
-        #orderTable
-        [nzData]="orders()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="ordersTotal()"
-        [nzPageIndex]="ordersPage()"
-        [nzPageSize]="ordersPageSize()"
-        (nzQueryParams)="onOrdersQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: orderTable.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: orderTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: orderTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
-            <th>{{ 'SALES.COL_DUE_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: orderTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: orderTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
-            <th nzAlign="center">{{ 'SALES.LBL_STOCK' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: orderTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (o of orderTable.data; track o.id) {
-            <tr>
-              <td><code>{{ o.order_number }}</code></td>
-              <td><strong>{{ o.contact?.name || o.contact?.display_name || o.contact_id }}</strong></td>
-              <td>{{ o.date | date:'mediumDate' }}</td>
-              <td>{{ o.due_date ? (o.due_date | date:'mediumDate') : '-' }}</td>
-              <td nzAlign="right">{{ o.total_net | money: o.currency }}</td>
-              <td nzAlign="right"><strong>{{ o.total_gross | money: o.currency }}</strong></td>
-              <td nzAlign="center">
-                @if (o.is_stock_reserved) {
-                  <nz-tag nzColor="success"><nz-icon nzType="lock" /> {{ 'SALES.LBL_RISERVATO' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="default">{{ 'SALES.LBL_LIBERO' | translate }}</nz-tag>
-                }
-              </td>
-              <td nzAlign="center">
-                @switch (o.status) {
-                  @case ('confirmed') {
-                    <nz-tag nzColor="blue">{{ 'SALES.LBL_CONFERMATO' | translate }}</nz-tag>
-                  }
-                  @case ('approved') {
-                    <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
-                  }
-                  @case ('shipped') {
-                    <nz-tag nzColor="cyan">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
-                  }
-                  @case ('completed') {
-                    <nz-tag nzColor="purple">{{ 'SALES.LBL_COMPLETATO' | translate }}</nz-tag>
-                  }
-                  @case ('cancelled') {
-                    <nz-tag nzColor="error">{{ 'SALES.LBL_ANNULLATO' | translate }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag nzColor="default">{{ o.status }}</nz-tag>
-                  }
-                }
-              </td>
-              <td nzAlign="right">
-                @if (o.status === 'confirmed') {
-                  <button nz-button nzType="link" nzSize="small" (click)="approveOrder(o.id)">
-                    <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
-                  </button>
-                }
-                @if (!o.is_stock_reserved && o.status !== 'cancelled') {
-                  <button nz-button nzType="link" nzSize="small" (click)="reserveStock(o.id)">
-                    <nz-icon nzType="lock" /> {{ 'SALES.LBL_RISERVA' | translate }}
-                  </button>
-                }
-                @if (o.status !== 'cancelled') {
-                  <button nz-button nzType="link" nzSize="small" (click)="openDdtModal(o.id)">
-                    <nz-icon nzType="swap" /> DDT
-                  </button>
-                  <button nz-button nzType="link" nzSize="small" (click)="invoiceOrder(o.id)">
-                    <nz-icon nzType="file-text" /> Fattura
-                  </button>
-                  <button nz-button appIconAction="cancel" nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o.id)"></button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="orderGrid" [columns]="orderColumns()" [actionsTemplate]="orderActionsTpl" [exportFileName]="'orders'" />
     </nz-tab>
 
     <!-- TAB 2: DELIVERY NOTES (DDT) -->
     <nz-tab [nzTitle]="'SALES.TABS.DDT' | translate">
       <div class="toolbar">
-        <button nz-button nzType="default" (click)="loadDeliveryNotes()" [nzLoading]="loading()">
+        <button nz-button nzType="default" (click)="loadDeliveryNotes()" [nzLoading]="ddtGrid.loading()">
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
 
@@ -259,84 +77,152 @@
         <button nz-button appIconAction="create" nzType="primary" (click)="openDdtModal()"></button>
       </div>
 
-      <nz-table
-        #ddtTable
-        [nzData]="deliveryNotes()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="ddtTotal()"
-        [nzPageIndex]="ddtPage()"
-        [nzPageSize]="ddtPageSize()"
-        (nzQueryParams)="onDdtQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'ddt_number' | gridSort" [nzFilters]="'ddt_number' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'ddt_number' | gridFilterFn">{{ 'SALES.COL_DDT_NUM' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SALES.COL_DATE' | translate }}</th>
-            <th [nzSortFn]="'transport_reason' | gridSort" [nzFilters]="'transport_reason' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'transport_reason' | gridFilterFn">{{ 'SALES.COL_REASON' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'packages_count' | gridSort" [nzFilters]="'packages_count' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'packages_count' | gridFilterFn">{{ 'SALES.COL_PACKAGES' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_WEIGHT' | translate }}</th>
-            <th [nzSortFn]="'carrier_name' | gridSort" [nzFilters]="'carrier_name' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'carrier_name' | gridFilterFn">{{ 'SALES.COL_CARRIER' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ddtTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (d of ddtTable.data; track d.id) {
-            <tr>
-              <td><code>{{ d.ddt_number }}</code></td>
-              <td><strong>{{ d.contact?.name || d.contact_id }}</strong></td>
-              <td>{{ d.date | date:'mediumDate' }}</td>
-              <td><nz-tag>{{ d.transport_reason }}</nz-tag></td>
-              <td nzAlign="right">{{ d.packages_count }}</td>
-              <td nzAlign="right">{{ d.gross_weight_kg ? (d.gross_weight_kg + ' kg') : '-' }}</td>
-              <td>{{ d.carrier_name || '-' }}</td>
-              <td nzAlign="center">
-                @switch (d.status) {
-                  @case ('dispatched') {
-                    <nz-tag nzColor="blue">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
-                  }
-                  @case ('confirmed') {
-                    <nz-tag nzColor="success">{{ 'SALES.LBL_CONSEGNATO' | translate }}</nz-tag>
-                  }
-                  @case ('invoiced') {
-                    <nz-tag nzColor="purple">{{ 'SALES.LBL_FATTURATO' | translate }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag nzColor="default">{{ d.status || 'Bozza' }}</nz-tag>
-                  }
-                }
-              </td>
-              <td nzAlign="right">
-                @if (d.status !== 'dispatched' && d.status !== 'confirmed' && d.status !== 'invoiced') {
-                  <button nz-button nzType="link" nzSize="small" (click)="dispatchDdt(d.id)">
-                    <nz-icon nzType="send" /> {{ 'SALES.LBL_SPEDISCI' | translate }}
-                  </button>
-                }
-                @if (d.status === 'dispatched') {
-                  <button nz-button appIconAction="confirm" nzType="link" nzSize="small" (click)="confirmDdt(d.id)"></button>
-                }
-                @if (d.status === 'confirmed') {
-                  <button nz-button nzType="link" nzSize="small" (click)="invoiceDdt(d.id)">
-                    <nz-icon nzType="file-text" /> Fattura
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="ddtGrid" [columns]="ddtColumns()" [actionsTemplate]="ddtActionsTpl" [exportFileName]="'delivery-notes'" />
     </nz-tab>
   </nz-tabs>
 </nz-card>
+
+<ng-template #quoteNumberTpl let-q><code>{{ q.quote_number }}</code></ng-template>
+<ng-template #orderNumberTpl let-o><code>{{ o.order_number }}</code></ng-template>
+<ng-template #ddtNumberTpl let-d><code>{{ d.ddt_number }}</code></ng-template>
+<ng-template #clientTpl let-r><strong>{{ r.contact?.name || r.contact?.display_name || r.contact_id }}</strong></ng-template>
+<ng-template #dateTpl let-r>{{ r.date | date:'mediumDate' }}</ng-template>
+<ng-template #validUntilTpl let-q>{{ q.valid_until ? (q.valid_until | date:'mediumDate') : '-' }}</ng-template>
+<ng-template #dueDateTpl let-o>{{ o.due_date ? (o.due_date | date:'mediumDate') : '-' }}</ng-template>
+<ng-template #totalNetTpl let-r>{{ r.total_net | money: r.currency }}</ng-template>
+<ng-template #totalTaxTpl let-r>{{ r.total_tax | money: r.currency }}</ng-template>
+<ng-template #totalGrossTpl let-r><strong>{{ r.total_gross | money: r.currency }}</strong></ng-template>
+<ng-template #reasonTpl let-d><nz-tag>{{ d.transport_reason }}</nz-tag></ng-template>
+<ng-template #weightTpl let-d>{{ d.gross_weight_kg ? (d.gross_weight_kg + ' kg') : '-' }}</ng-template>
+<ng-template #inventoryTpl let-o>
+  <nz-tag [nzColor]="o.inventory_status === 'reserved' ? 'success' : 'default'">
+    @if (o.inventory_status === 'reserved') {
+      <nz-icon nzType="lock" />
+    }
+    {{ 'SC.STATUS.' + (o.inventory_status || 'unknown') | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #quoteStatusTpl let-q>
+  @switch (q.status) {
+    @case ('approved') {
+      <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
+    }
+    @case ('pending_approval') {
+      <nz-tag nzColor="processing">{{ 'SALES.LBL_IN_APPROVAZIONE' | translate }}</nz-tag>
+    }
+    @case ('rejected') {
+      <nz-tag nzColor="error">{{ 'SALES.LBL_RIFIUTATO' | translate }}</nz-tag>
+    }
+    @case ('accepted') {
+      <nz-tag nzColor="cyan">{{ 'SALES.LBL_ACCETTATO' | translate }}</nz-tag>
+    }
+    @case ('converted') {
+      <nz-tag nzColor="purple">{{ 'SALES.LBL_CONVERTITO' | translate }}</nz-tag>
+    }
+    @default {
+      <nz-tag nzColor="default">{{ q.status }}</nz-tag>
+    }
+  }
+</ng-template>
+<ng-template #orderStatusTpl let-o>
+  @switch (o.status) {
+    @case ('confirmed') {
+      <nz-tag nzColor="blue">{{ 'SALES.LBL_CONFERMATO' | translate }}</nz-tag>
+    }
+    @case ('approved') {
+      <nz-tag nzColor="success">{{ 'SALES.LBL_APPROVATO' | translate }}</nz-tag>
+    }
+    @case ('shipped') {
+      <nz-tag nzColor="cyan">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
+    }
+    @case ('completed') {
+      <nz-tag nzColor="purple">{{ 'SALES.LBL_COMPLETATO' | translate }}</nz-tag>
+    }
+    @case ('cancelled') {
+      <nz-tag nzColor="error">{{ 'SALES.LBL_ANNULLATO' | translate }}</nz-tag>
+    }
+    @default {
+      <nz-tag nzColor="default">{{ o.status }}</nz-tag>
+    }
+  }
+</ng-template>
+<ng-template #ddtStatusTpl let-d>
+  @switch (d.status) {
+    @case ('dispatched') {
+      <nz-tag nzColor="blue">{{ 'SALES.LBL_SPEDITO' | translate }}</nz-tag>
+    }
+    @case ('confirmed') {
+      <nz-tag nzColor="success">{{ 'SALES.LBL_CONSEGNATO' | translate }}</nz-tag>
+    }
+    @case ('invoiced') {
+      <nz-tag nzColor="purple">{{ 'SALES.LBL_FATTURATO' | translate }}</nz-tag>
+    }
+    @default {
+      <nz-tag nzColor="default">{{ d.status ? d.status : ('SALES.LBL_BOZZA' | translate) }}</nz-tag>
+    }
+  }
+</ng-template>
+<ng-template #quoteActionsTpl let-q>
+  @if (q.status === 'draft') {
+    <button nz-button nzType="link" nzSize="small" (click)="submitQuoteForApproval(q.id)">
+      <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_APPR' | translate }}
+    </button>
+  }
+  @if (q.status === 'pending_approval') {
+    <button nz-button nzType="link" nzSize="small" (click)="approveQuote(q.id)">
+      <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
+    </button>
+    <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectQuote(q.id)">
+      <nz-icon nzType="close" /> {{ 'SALES.LBL_RIFIUTA' | translate }}
+    </button>
+  }
+  @if (q.status === 'approved') {
+    <button nz-button nzType="link" nzSize="small" (click)="acceptQuote(q.id)">
+      <nz-icon nzType="check-circle" /> {{ 'SALES.LBL_ACCETTA' | translate }}
+    </button>
+  }
+  @if (q.status === 'accepted') {
+    <button nz-button nzType="link" nzSize="small" (click)="convertQuote(q.id)">
+      <nz-icon nzType="swap" /> {{ 'SALES.LBL_CONVERTI_IN_ORDINE' | translate }}
+    </button>
+  }
+</ng-template>
+<ng-template #orderActionsTpl let-o>
+  @if (o.status === 'confirmed') {
+    <button nz-button nzType="link" nzSize="small" (click)="approveOrder(o.id)">
+      <nz-icon nzType="check" /> {{ 'SALES.LBL_APPROVA' | translate }}
+    </button>
+  }
+  @if (o.inventory_status !== 'reserved' && o.status !== 'cancelled') {
+    <button nz-button nzType="link" nzSize="small" (click)="reserveStock(o.id)">
+      <nz-icon nzType="lock" /> {{ 'SALES.LBL_RISERVA' | translate }}
+    </button>
+  }
+  @if (o.status !== 'cancelled') {
+    <button nz-button nzType="link" nzSize="small" (click)="openDdtModal(o.id)">
+      <nz-icon nzType="swap" /> DDT
+    </button>
+    <button nz-button nzType="link" nzSize="small" (click)="invoiceOrder(o.id)">
+      <nz-icon nzType="file-text" /> Fattura
+    </button>
+    <button nz-button appIconAction="cancel" nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o.id)"></button>
+  }
+</ng-template>
+<ng-template #ddtActionsTpl let-d>
+  @if (d.status !== 'dispatched' && d.status !== 'confirmed' && d.status !== 'invoiced') {
+    <button nz-button nzType="link" nzSize="small" (click)="dispatchDdt(d.id)">
+      <nz-icon nzType="send" /> {{ 'SALES.LBL_SPEDISCI' | translate }}
+    </button>
+  }
+  @if (d.status === 'dispatched') {
+    <button nz-button appIconAction="confirm" nzType="link" nzSize="small" (click)="confirmDdt(d.id)"></button>
+  }
+  @if (d.status === 'confirmed') {
+    <button nz-button nzType="link" nzSize="small" (click)="invoiceDdt(d.id)">
+      <nz-icon nzType="file-text" /> Fattura
+    </button>
+  }
+</ng-template>
 
 <!-- MODAL: CREATE QUOTE -->
 <nz-modal

@@ -16,137 +16,49 @@
     <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
       <!-- TAB 1: Rental Fleet Vehicles -->
       <nz-tab [nzTitle]="'RENT.TAB_FLEET' | translate">
-        <div class="tab-toolbar">
-          <div class="filter-group">
-            <label for="statusFilter"><strong>{{ 'RENT.FILTER_STATUS' | translate }}:</strong></label>
-            <nz-select
-              id="statusFilter"
-              class="status-select"
-              [(ngModel)]="vehicleFilterStatus"
-              [nzPlaceHolder]="'RENT.ALL_STATUSES' | translate"
-              nzAllowClear
-            >
-              <nz-option nzValue="" [nzLabel]="'RENT.ALL_STATUSES' | translate"></nz-option>
-              <nz-option nzValue="available" [nzLabel]="'RENT.STATUS_AVAILABLE' | translate"></nz-option>
-              <nz-option nzValue="rented" [nzLabel]="'RENT.STATUS_RENTED' | translate"></nz-option>
-              <nz-option nzValue="reserved" [nzLabel]="'RENT.STATUS_RESERVED' | translate"></nz-option>
-              <nz-option nzValue="maintenance" [nzLabel]="'RENT.STATUS_MAINTENANCE' | translate"></nz-option>
-            </nz-select>
-          </div>
-        </div>
-
-        <nz-table
-          #vehiclesTable
-          [nzData]="vehicles()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'plate' | gridSort" [nzFilters]="'plate' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'plate' | gridFilterFn">{{ 'RENT.PLATE' | translate }}</th>
-              <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'RENT.MODEL' | translate }}</th>
-              <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'RENT.TYPE' | translate }}</th>
-              <th [nzSortFn]="'client' | gridSort" [nzFilters]="'client' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'client' | gridFilterFn">{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
-              <th>{{ 'RENT.VIGNETTE' | translate }}</th>
-              <th [nzSortFn]="'returnDate' | gridSort" [nzFilters]="'returnDate' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'returnDate' | gridFilterFn">{{ 'RENT.RETURN_DATE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'RENT.STATUS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (v of vehiclesTable.data; track (v.id || v.plate)) {
-              @if (!vehicleFilterStatus() || v.status === vehicleFilterStatus()) {
-                <tr>
-                  <td>
-                    <strong><code>{{ v.plate }}</code></strong>
-                  </td>
-                  <td>{{ v.make ? v.make + ' ' : '' }}{{ v.model }}</td>
-                  <td>{{ v.type }}</td>
-                  <td>{{ v.client || '-' }}</td>
-                  <td>
-                    <nz-tag [nzColor]="v.vignette ? 'success' : 'default'">
-                      {{ (v.vignette ? 'RENT.YES' : 'RENT.NO') | translate }}
-                    </nz-tag>
-                  </td>
-                  <td>{{ v.returnDate || '-' }}</td>
-                  <td>
-                    <nz-tag [nzColor]="getVehicleStatusBadgeColor(v.status)">
-                      {{ v.status | uppercase }}
-                    </nz-tag>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="vehiclesGrid" [columns]="vehicleColumns()" [bordered]="true" exportFileName="rent-fleet" />
+        <ng-template #vehiclePlateTpl let-v><strong><code>{{ v.plate }}</code></strong></ng-template>
+        <ng-template #vehicleModelTpl let-v>{{ v.make ? v.make + ' ' : '' }}{{ v.model }}</ng-template>
+        <ng-template #vehicleStatusTpl let-v>
+          <nz-tag [nzColor]="getVehicleStatusBadgeColor(v.status)">{{ v.status | uppercase }}</nz-tag>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 2: Rental Bookings & Contracts -->
       <nz-tab [nzTitle]="'RENT.TAB_BOOKINGS' | translate">
-        <nz-table
-          #bookingsTable
-          [nzData]="bookings()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'id' | gridFilterFn">{{ 'RENT.BOOKING_ID' | translate }}</th>
-              <th [nzSortFn]="'vehicle_plate' | gridSort" [nzFilters]="'vehicle_plate' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'vehicle_plate' | gridFilterFn">{{ 'RENT.VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'RENT.CLIENT' | translate }}</th>
-              <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'RENT.START_DATE' | translate }}</th>
-              <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'RENT.END_DATE' | translate }}</th>
-              <th [nzSortFn]="'daily_rate' | gridSort" [nzFilters]="'daily_rate' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'daily_rate' | gridFilterFn">{{ 'RENT.DAILY_RATE' | translate }}</th>
-              <th [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'RENT.STATUS' | translate }}</th>
-              <th>{{ 'RENT.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (b of bookingsTable.data; track b.id) {
-              <tr>
-                <td><code>{{ b.id }}</code></td>
-                <td>
-                  <strong>{{ b.vehicle_plate || b.vehicle_id }}</strong>
-                  @if (b.vehicle_model) {
-                    <div class="sub-text">{{ b.vehicle_model }}</div>
-                  }
-                </td>
-                <td>{{ b.client_name || b.client_id }}</td>
-                <td>{{ b.start_date }}</td>
-                <td>{{ b.end_date }}</td>
-                <td>{{ b.daily_rate | money: 'EUR' }}</td>
-                <td><strong>{{ b.total_amount | money: 'EUR' }}</strong></td>
-                <td>
-                  <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">
-                    {{ b.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button nz-button nzType="link" nzSize="small" (click)="openBookingDetails(b)">
-                      <span nz-icon nzType="eye"></span>
-                      {{ 'RENT.DETAILS' | translate }}
-                    </button>
-                    @if (b.status === 'booked') {
-                      <button nz-button nzType="primary" nzSize="small" (click)="openCheckOutModal(b)">
-                        <span nz-icon nzType="car"></span>
-                        {{ 'RENT.CHECK_OUT' | translate }}
-                      </button>
-                    }
-                    @if (b.status === 'active') {
-                      <button nz-button nzType="primary" nzGhost nzSize="small" (click)="openCheckInModal(b)">
-                        <span nz-icon nzType="check-circle"></span>
-                        {{ 'RENT.CHECK_IN' | translate }}
-                      </button>
-                    }
-                  </div>
-                </td>
-              </tr>
+        <app-base-table [grid]="bookingsGrid" [columns]="bookingColumns()" [actionsTemplate]="bookingActionsTpl" [bordered]="true" exportFileName="rent-bookings" />
+        <ng-template #bookingIdTpl let-b><code>{{ b.id }}</code></ng-template>
+        <ng-template #bookingVehicleTpl let-b>
+          <strong>{{ b.vehicle_plate || b.vehicle_id }}</strong>
+          @if (b.vehicle_model) {
+            <div class="sub-text">{{ b.vehicle_model }}</div>
+          }
+        </ng-template>
+        <ng-template #bookingRateTpl let-b>{{ b.daily_rate | money: 'EUR' }}</ng-template>
+        <ng-template #bookingTotalTpl let-b><strong>{{ b.total_amount | money: 'EUR' }}</strong></ng-template>
+        <ng-template #bookingStatusTpl let-b>
+          <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">{{ b.status | uppercase }}</nz-tag>
+        </ng-template>
+        <ng-template #bookingActionsTpl let-b>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openBookingDetails(b)">
+              <span nz-icon nzType="eye"></span>
+              {{ 'RENT.DETAILS' | translate }}
+            </button>
+            @if (b.status === 'booked' || b.status === 'reserved') {
+              <button nz-button nzType="primary" nzSize="small" (click)="openCheckOutModal(b)">
+                <span nz-icon nzType="car"></span>
+                {{ 'RENT.CHECK_OUT' | translate }}
+              </button>
             }
-          </tbody>
-        </nz-table>
+            @if (b.status === 'active') {
+              <button nz-button nzType="primary" nzGhost nzSize="small" (click)="openCheckInModal(b)">
+                <span nz-icon nzType="check-circle"></span>
+                {{ 'RENT.CHECK_IN' | translate }}
+              </button>
+            }
+          </div>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 3: Automotive Vehicle Registry -->
@@ -156,43 +68,15 @@
           <button nz-button nzType="primary" (click)="openRegisterVehicleModal()" appIconAction="create"></button>
         </div>
 
-        <nz-table
-          #autoTable
-          [nzData]="automotiveVehicles()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: autoTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'RENT.PLATE' | translate }}</th>
-              <th [nzSortFn]="'make' | gridSort" [nzFilters]="'make' | gridFilterList: autoTable.nzData" [nzFilterFn]="'make' | gridFilterFn">{{ 'RENT.MAKE' | translate }}</th>
-              <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: autoTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'RENT.MODEL' | translate }}</th>
-              <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: autoTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'RENT.YEAR' | translate }}</th>
-              <th [nzSortFn]="'vin_chassis' | gridSort" [nzFilters]="'vin_chassis' | gridFilterList: autoTable.nzData" [nzFilterFn]="'vin_chassis' | gridFilterFn">{{ 'RENT.VIN' | translate }}</th>
-              <th>{{ 'RENT.CUSTOMER' | translate }}</th>
-              <th>{{ 'RENT.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (av of autoTable.data; track av.id) {
-              <tr>
-                <td><strong><code>{{ av.license_plate }}</code></strong></td>
-                <td>{{ av.make }}</td>
-                <td>{{ av.model }}</td>
-                <td>{{ av.year || '-' }}</td>
-                <td><code>{{ av.vin_chassis || '-' }}</code></td>
-                <td>{{ ownerName(av) }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <button nz-button nzType="link" nzSize="small" (click)="openEditVehicleModal(av)" appIconAction="edit"></button>
-                    <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteVehicle(av)" appIconAction="delete"></button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="automotiveGrid" [columns]="automotiveColumns()" [actionsTemplate]="autoActionsTpl" [bordered]="true" exportFileName="rent-registry" />
+        <ng-template #autoPlateTpl let-av><strong><code>{{ av.license_plate }}</code></strong></ng-template>
+        <ng-template #autoVinTpl let-av><code>{{ av.vin_chassis || '-' }}</code></ng-template>
+        <ng-template #autoActionsTpl let-av>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openEditVehicleModal(av)" appIconAction="edit"></button>
+            <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteVehicle(av)" appIconAction="delete"></button>
+          </div>
+        </ng-template>
       </nz-tab>
     </nz-tabs>
   </nz-card>

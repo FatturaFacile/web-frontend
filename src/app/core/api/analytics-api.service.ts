@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
   AnalyticsKpiReport,
@@ -11,6 +12,8 @@ import {
   BreakdownEntry,
   DueCalendarEntry,
   DueCalendarQueryParams,
+  PaginatedResponse,
+  QueryFilterParams,
   RevenueComparisonData,
 } from '../models';
 
@@ -150,8 +153,10 @@ export class AnalyticsApiService {
   /**
    * List saved custom report definitions.
    */
-  getReportDefinitions(): Observable<ApiResponse<AnalyticsReportDefinition[]>> {
-    return this.http.get<ApiResponse<AnalyticsReportDefinition[]>>(`${this.baseUrl}/report-definitions`);
+  getReportDefinitions(params?: QueryFilterParams): Observable<PaginatedResponse<AnalyticsReportDefinition>> {
+    return this.http.get<PaginatedResponse<AnalyticsReportDefinition>>(`${this.baseUrl}/report-definitions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   /**

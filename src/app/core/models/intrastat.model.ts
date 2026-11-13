@@ -71,6 +71,14 @@ export interface IntrastatDeclaration {
   updated_at: string;
 }
 
+/** Totals of the whole filtered list of declarations (the KPI cards), sent next to the page by the list endpoint. */
+export interface IntrastatDeclarationSummary {
+  sales_total_eur: number;
+  purchases_total_eur: number;
+  draft_count: number;
+  submitted_count: number;
+}
+
 export interface IntrastatDeclarationRequest {
   flow: IntrastatFlow;
   year: number;

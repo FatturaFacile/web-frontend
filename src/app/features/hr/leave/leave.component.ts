@@ -3,9 +3,8 @@ import { HrLeaveApiService, LeaveTypeResource, PermissionsService } from '@core'
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { LeaveBalancesComponent } from './leave-balances.component';
 import { LeaveCalendarComponent } from './leave-calendar.component';
 
@@ -70,14 +69,20 @@ export class LeaveComponent {
     this.leaveTypes().map((t) => ({ value: t.id, label: `${t.code} - ${t.name}` })),
   );
 
+  /** The select options of the policies need every leave type, not the filtered page of the grid. */
+  private loadLeaveTypes(): void {
+    this.api.getLeaveTypes().subscribe({ next: (res) => this.leaveTypes.set(res.data) });
+  }
+
   protected readonly typesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmLeave.types',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getLeaveTypes().pipe(
-        tap((res) => this.leaveTypes.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.loadLeaveTypes();
+      }
+      return crudPage(this.api.getLeaveTypes(query));
+    },
     create: (payload) => this.api.createLeaveType(payload as never),
     update: (id, payload) => this.api.updateLeaveType(id, payload as never),
     fields: [
@@ -114,9 +119,11 @@ export class LeaveComponent {
   protected readonly policiesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmLeave.policies',
     canWrite: this.canWrite(),
-    list: () => {
-      this.api.getLeaveTypes().subscribe({ next: (res) => this.leaveTypes.set(res.data) });
-      return this.api.getAccrualPolicies().pipe(map((res) => res.data as unknown as Row[]));
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.loadLeaveTypes();
+      }
+      return crudPage(this.api.getAccrualPolicies(query));
     },
     create: (payload) => this.api.createAccrualPolicy(payload as never),
     update: (id, payload) => this.api.updateAccrualPolicy(id, payload as never),

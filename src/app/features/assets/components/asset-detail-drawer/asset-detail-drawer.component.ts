@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, output, signal, TemplateRef, viewChild } from '@angular/core';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -13,20 +13,22 @@ import {
   AssetApiService,
   AssetBookResource,
   DepreciationScheduleResource,
+  FetchGridModel,
   FixedAssetResource,
   MaintenanceWorkOrderResource,
+  QueryFilterParams,
 } from '@core';
-import { MoneyPipe, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, ModalActionsDirective, TableColumnDef, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-asset-detail-drawer',
   styleUrl: './asset-detail-drawer.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     TranslatePipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     NzModalModule,
     NzTabsModule,
     NzDescriptionsModule,
@@ -51,11 +53,48 @@ export class AssetDetailDrawerComponent implements OnInit {
   readonly loadingBooks = signal(false);
   readonly books = signal<AssetBookResource[]>([]);
 
-  readonly loadingSchedules = signal(false);
-  readonly schedules = signal<DepreciationScheduleResource[]>([]);
+  /** Depreciation schedule of the asset, paged, sorted and filtered by the API. */
+  readonly schedulesGrid = new FetchGridModel<DepreciationScheduleResource, QueryFilterParams>((query) =>
+    this.assetApi.getDepreciationSchedules(this.asset().id, query),
+  );
 
-  readonly loadingWorkOrders = signal(false);
-  readonly workOrders = signal<MaintenanceWorkOrderResource[]>([]);
+  /** Maintenance work orders of the asset (the API filters them by asset_id). */
+  readonly workOrdersGrid = new FetchGridModel<MaintenanceWorkOrderResource, QueryFilterParams>((query) =>
+    this.assetApi.getMaintenanceWorkOrders({ ...query, asset_id: this.asset().id } as QueryFilterParams),
+  );
+
+  private readonly periodTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('periodTpl');
+  private readonly scheduleLedgerTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('scheduleLedgerTpl');
+  private readonly openingTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('openingTpl');
+  private readonly depreciationTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('depreciationTpl');
+  private readonly closingTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('closingTpl');
+  private readonly accumulatedTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('accumulatedTpl');
+  private readonly scheduleStatusTpl = viewChild<TemplateRef<{ $implicit: DepreciationScheduleResource; value: unknown }>>('scheduleStatusTpl');
+  private readonly woNumberTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woNumberTpl');
+  private readonly woTypeTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woTypeTpl');
+  private readonly woPriorityTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woPriorityTpl');
+  private readonly woStatusTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woStatusTpl');
+  private readonly woDateTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woDateTpl');
+  private readonly woCostTpl = viewChild<TemplateRef<{ $implicit: MaintenanceWorkOrderResource; value: unknown }>>('woCostTpl');
+
+  protected readonly scheduleColumns = computed<TableColumnDef<DepreciationScheduleResource>[]>(() => [
+    { key: 'period_code', header: 'assetDetailDrawer.lblPeriod', customCellTemplate: this.periodTpl() },
+    { key: 'ledger_type', header: 'assetDetailDrawer.lblLedger', customCellTemplate: this.scheduleLedgerTpl() },
+    { key: 'opening_book_value', header: 'assetDetailDrawer.lblOpeningValue', align: 'right', customCellTemplate: this.openingTpl() },
+    { key: 'depreciation_amount', header: 'assetDetailDrawer.lblDeprAmount', align: 'right', customCellTemplate: this.depreciationTpl() },
+    { key: 'closing_book_value', header: 'assetDetailDrawer.lblClosingValue', align: 'right', customCellTemplate: this.closingTpl() },
+    { key: 'accumulated_depreciation', header: 'assetDetailDrawer.lblAccumulated', align: 'right', customCellTemplate: this.accumulatedTpl() },
+    { key: 'status', header: 'assetDetailDrawer.lblStatus', customCellTemplate: this.scheduleStatusTpl() },
+  ]);
+
+  protected readonly workOrderColumns = computed<TableColumnDef<MaintenanceWorkOrderResource>[]>(() => [
+    { key: 'work_order_number', header: 'assetDetailDrawer.lblWoNumber', customCellTemplate: this.woNumberTpl() },
+    { key: 'maintenance_type', header: 'assetDetailDrawer.lblType', customCellTemplate: this.woTypeTpl() },
+    { key: 'priority', header: 'assetDetailDrawer.lblPriority', customCellTemplate: this.woPriorityTpl() },
+    { key: 'status', header: 'assetDetailDrawer.lblStatus', customCellTemplate: this.woStatusTpl() },
+    { key: 'scheduled_date', header: 'assetDetailDrawer.lblScheduledDate', customCellTemplate: this.woDateTpl() },
+    { key: 'total_cost', header: 'assetDetailDrawer.lblTotalCost', align: 'right', customCellTemplate: this.woCostTpl() },
+  ]);
 
   ngOnInit(): void {
     this.loadData();
@@ -64,8 +103,6 @@ export class AssetDetailDrawerComponent implements OnInit {
   loadData(): void {
     const id = this.asset().id;
     this.loadBooks(id);
-    this.loadSchedules(id);
-    this.loadWorkOrders();
   }
 
   loadBooks(assetId: string): void {
@@ -78,34 +115,6 @@ export class AssetDetailDrawerComponent implements OnInit {
       error: () => {
         this.books.set([]);
         this.loadingBooks.set(false);
-      },
-    });
-  }
-
-  loadSchedules(assetId: string): void {
-    this.loadingSchedules.set(true);
-    this.assetApi.getDepreciationSchedules(assetId).subscribe({
-      next: (res) => {
-        this.schedules.set(res.data || []);
-        this.loadingSchedules.set(false);
-      },
-      error: () => {
-        this.schedules.set([]);
-        this.loadingSchedules.set(false);
-      },
-    });
-  }
-
-  loadWorkOrders(): void {
-    this.loadingWorkOrders.set(true);
-    this.assetApi.getMaintenanceWorkOrders().subscribe({
-      next: (res) => {
-        this.workOrders.set(res.data || []);
-        this.loadingWorkOrders.set(false);
-      },
-      error: () => {
-        this.workOrders.set([]);
-        this.loadingWorkOrders.set(false);
       },
     });
   }

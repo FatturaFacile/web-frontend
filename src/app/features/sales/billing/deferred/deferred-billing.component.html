@@ -4,35 +4,20 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'SC.DEFERRED.SINGLE' | translate">
       <p class="hint">{{ 'SC.DEFERRED.SINGLE_HINT' | translate }}</p>
-      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="billable()" [nzLoading]="loading()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl38>
-        <thead>
-          <tr>
-            <th scope="col"></th>
-            <th [nzSortFn]="'ddt_number' | gridSort" [nzFilters]="'ddt_number' | gridFilterList: gridTbl38.nzData" [nzFilterFn]="'ddt_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
-            <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl38.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
-            <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (n of billable(); track n.id) {
-            <tr>
-              <td>
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(n.id)"
-                  [attr.aria-label]="'SC.DEFERRED.SELECT' | translate: { number: n.ddt_number }"
-                  (change)="toggle(n.id, $any($event.target).checked)"
-                />
-              </td>
-              <td><code>{{ n.ddt_number }}</code></td>
-              <td>{{ lookups.contactName(n.contact_id, n.contact) }}</td>
-              <td>{{ n.date }}</td>
-              <td><nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag></td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="grid"
+        [columns]="columns()"
+        [selectable]="canWrite()"
+        [selectedItems]="selectedNotes()"
+        (selectionChange)="setSelection($event)"
+        size="small"
+        [exportFileName]="'deferred-billing'"
+      />
+      <ng-template #numberTpl let-n><code>{{ n.ddt_number }}</code></ng-template>
+      <ng-template #customerTpl let-n>{{ lookups.contactName(n.contact_id, n.contact) }}</ng-template>
+      <ng-template #statusTpl let-n>
+        <nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag>
+      </ng-template>
       @if (canWrite()) {
         <div class="toolbar">
           <label for="def-due">{{ 'SC.BILLING.DUE_DATE' | translate }}</label>

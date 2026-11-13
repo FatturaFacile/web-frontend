@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, OnInit, output, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -16,11 +16,11 @@ import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  FetchGridModel,
   I18nService,
   ProjectApiService,
   ProjectFinancialSummary,
@@ -29,18 +29,18 @@ import {
   ProjectTimesheetResource,
   StoreProjectTaskPayload,
   serverErrorMessage,
+  QueryFilterParams,
   StoreProjectTimesheetPayload,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-project-detail-drawer',
   styleUrl: './project-detail-drawer.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -49,7 +49,6 @@ import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/uti
     NzBadgeModule,
     NzStatisticModule,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -80,11 +79,53 @@ export class ProjectDetailDrawerComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly authStore = inject(AuthStore);
 
-  readonly loadingTasks = signal(false);
-  readonly tasks = signal<ProjectTaskResource[]>([]);
+  /** Tasks of the project: paging, sorting, filters and grouping run on the API. */
+  readonly tasksGrid = new FetchGridModel<ProjectTaskResource, QueryFilterParams>((query) =>
+    this.projectApi.getTasks(this.project().id, query),
+  );
 
-  readonly loadingTimesheets = signal(false);
-  readonly timesheets = signal<ProjectTimesheetResource[]>([]);
+  /** Timesheets of the project: paging, sorting, filters and grouping run on the API. */
+  readonly timesheetsGrid = new FetchGridModel<ProjectTimesheetResource, QueryFilterParams>((query) =>
+    this.projectApi.getTimesheets(this.project().id, query),
+  );
+
+  private readonly taskCodeTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskCodeTpl');
+  private readonly taskTitleTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskTitleTpl');
+  private readonly taskStatusTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskStatusTpl');
+  private readonly taskPriorityTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskPriorityTpl');
+  private readonly taskEstimatedTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskEstimatedTpl');
+  private readonly taskActualTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskActualTpl');
+  private readonly taskProgressTpl = viewChild<TemplateRef<{ $implicit: ProjectTaskResource; value: unknown }>>('taskProgressTpl');
+  private readonly tsHoursTpl = viewChild<TemplateRef<{ $implicit: ProjectTimesheetResource; value: unknown }>>('tsHoursTpl');
+  private readonly tsBillableTpl = viewChild<TemplateRef<{ $implicit: ProjectTimesheetResource; value: unknown }>>('tsBillableTpl');
+  private readonly tsStatusTpl = viewChild<TemplateRef<{ $implicit: ProjectTimesheetResource; value: unknown }>>('tsStatusTpl');
+  private readonly tsSummaryTpl = viewChild<TemplateRef<{ $implicit: ProjectTimesheetResource; value: unknown }>>('tsSummaryTpl');
+
+  protected readonly taskColumns = computed<TableColumnDef<ProjectTaskResource>[]>(() => [
+    { key: 'code', header: 'projectDetailDrawer.lblCode', customCellTemplate: this.taskCodeTpl() },
+    { key: 'title', header: 'projectDetailDrawer.lblTitle', customCellTemplate: this.taskTitleTpl() },
+    { key: 'status', header: 'projectDetailDrawer.lblStatus', customCellTemplate: this.taskStatusTpl() },
+    { key: 'priority', header: 'projectDetailDrawer.lblPriority', customCellTemplate: this.taskPriorityTpl() },
+    { key: 'estimated_hours', header: 'projectDetailDrawer.lblEstHours', align: 'right', customCellTemplate: this.taskEstimatedTpl() },
+    { key: 'actual_hours', header: 'projectDetailDrawer.lblActHours', align: 'right', customCellTemplate: this.taskActualTpl() },
+    { key: 'progress_percentage', header: 'projectDetailDrawer.lblProgress', customCellTemplate: this.taskProgressTpl() },
+  ]);
+
+  protected readonly timesheetColumns = computed<TableColumnDef<ProjectTimesheetResource>[]>(() => [
+    { key: 'work_date', header: 'projectDetailDrawer.lblDate' },
+    { key: 'user_id', header: 'projectDetailDrawer.lblUser' },
+    { key: 'hours_worked', header: 'projectDetailDrawer.lblHours', align: 'right', customCellTemplate: this.tsHoursTpl() },
+    {
+      key: 'is_billable',
+      serverKey: 'billing',
+      header: 'projectDetailDrawer.lblBillable',
+      valueGetter: (ts) => (ts.is_billable ? 'Billable' : 'Non-Billable'),
+      valueLabel: (value) => (value === 'billable' ? 'Billable' : 'Non-Billable'),
+      customCellTemplate: this.tsBillableTpl(),
+    },
+    { key: 'status', header: 'projectDetailDrawer.lblStatus', customCellTemplate: this.tsStatusTpl() },
+    { key: 'work_summary', header: 'projectDetailDrawer.lblSummary', customCellTemplate: this.tsSummaryTpl() },
+  ]);
 
   readonly loadingFinancials = signal(false);
   readonly financialSummary = signal<ProjectFinancialSummary | null>(null);
@@ -142,8 +183,6 @@ export class ProjectDetailDrawerComponent implements OnInit {
   loadData(): void {
     const id = this.project().id;
     this.loadFinancials(id);
-    this.loadTasks(id);
-    this.loadTimesheets(id);
   }
 
   loadFinancials(projectId: string): void {
@@ -168,32 +207,12 @@ export class ProjectDetailDrawerComponent implements OnInit {
     });
   }
 
-  loadTasks(projectId: string): void {
-    this.loadingTasks.set(true);
-    this.projectApi.getTasks(projectId).subscribe({
-      next: (res) => {
-        this.tasks.set(res.data || []);
-        this.loadingTasks.set(false);
-      },
-      error: () => {
-        this.tasks.set([]);
-        this.loadingTasks.set(false);
-      },
-    });
+  loadTasks(): void {
+    this.tasksGrid.reload();
   }
 
-  loadTimesheets(projectId: string): void {
-    this.loadingTimesheets.set(true);
-    this.projectApi.getTimesheets(projectId).subscribe({
-      next: (res) => {
-        this.timesheets.set(res.data || []);
-        this.loadingTimesheets.set(false);
-      },
-      error: () => {
-        this.timesheets.set([]);
-        this.loadingTimesheets.set(false);
-      },
-    });
+  loadTimesheets(): void {
+    this.timesheetsGrid.reload();
   }
 
   openCreateTaskModal(): void {
@@ -231,7 +250,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
         this.savingTask.set(false);
         this.createTaskModalVisible.set(false);
         this.message.success(this.translate.instant('projectDetailDrawer.msgTaskCreated'));
-        this.loadTasks(this.project().id);
+        this.loadTasks();
       },
       error: () => this.savingTask.set(false),
     });
@@ -270,7 +289,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
         this.savingTimesheet.set(false);
         this.createTimesheetModalVisible.set(false);
         this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetLogged'));
-        this.loadTimesheets(this.project().id);
+        this.loadTimesheets();
       },
       error: () => this.savingTimesheet.set(false),
     });
@@ -280,7 +299,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
     this.projectApi.submitTimesheet(ts.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetSubmittedForApproval'));
-        this.loadTimesheets(this.project().id);
+        this.loadTimesheets();
       },
       error: () => undefined,
     });
@@ -290,7 +309,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
     this.projectApi.approveTimesheet(ts.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('projectDetailDrawer.msgTimesheetApproved'));
-        this.loadTimesheets(this.project().id);
+        this.loadTimesheets();
       },
       error: () => undefined,
     });
@@ -300,7 +319,7 @@ export class ProjectDetailDrawerComponent implements OnInit {
     this.projectApi.rejectTimesheet(ts.id, 'Hours not recognized').subscribe({
       next: () => {
         this.message.info(this.translate.instant('projectDetailDrawer.msgTimesheetRejected'));
-        this.loadTimesheets(this.project().id);
+        this.loadTimesheets();
       },
       error: () => undefined,
     });

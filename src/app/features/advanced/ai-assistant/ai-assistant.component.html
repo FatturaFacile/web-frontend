@@ -263,50 +263,18 @@
           </button>
         </form>
 
-        <nz-table
-          #logsTable
-          [nzData]="logs()"
-          [nzPageSize]="10"
-          nzBordered
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th nzWidth="15%" [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: logsTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
-              <th nzWidth="35%" [nzSortFn]="'question' | gridSort" [nzFilters]="'question' | gridFilterList: logsTable.nzData" [nzFilterFn]="'question' | gridFilterFn">{{ 'ASSISTANT.QUESTION' | translate }}</th>
-              <th nzWidth="15%" [nzSortFn]="'resolver' | gridSort" [nzFilters]="'resolver' | gridFilterList: logsTable.nzData" [nzFilterFn]="'resolver' | gridFilterFn">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
-              <th nzWidth="15%" [nzSortFn]="'outcome' | gridSort" [nzFilters]="'outcome' | gridFilterList: logsTable.nzData" [nzFilterFn]="'outcome' | gridFilterFn">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
-              <th nzWidth="10%" [nzSortFn]="'row_count' | gridSort" [nzFilters]="'row_count' | gridFilterList: logsTable.nzData" [nzFilterFn]="'row_count' | gridFilterFn">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
-              <th nzWidth="10%">{{ 'COMMON.DETAILS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of logsTable.data; track log.id) {
-              <tr>
-                <td>{{ log.created_at }}</td>
-                <td class="font-medium">{{ log.question }}</td>
-                <td><code>{{ log.resolver }}</code></td>
-                <td>
-                  <nz-tag [nzColor]="getOutcomeColor(log.outcome)">
-                    {{ log.outcome }}
-                  </nz-tag>
-                </td>
-                <td>{{ log.row_count }}</td>
-                <td>
-                  <button
-                    nz-button
-                    nzType="link"
-                    type="button"
-                    (click)="openLogDrawer(log)"
-                  >
-                    <i class="fa-solid fa-eye mr-1"></i>
-                    {{ 'COMMON.VIEW' | translate }}
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="logGrid" [columns]="logColumns()" [actionsTemplate]="logActionsTpl" [exportFileName]="'assistant-logs'" />
+
+        <ng-template #logResolverTpl let-log><code>{{ log.resolver }}</code></ng-template>
+        <ng-template #logOutcomeTpl let-log>
+          <nz-tag [nzColor]="getOutcomeColor(log.outcome)">{{ 'ASSISTANT.OUTCOMES.' + log.outcome | translate }}</nz-tag>
+        </ng-template>
+        <ng-template #logActionsTpl let-log>
+          <button nz-button nzType="link" type="button" (click)="openLogDrawer(log)">
+            <i class="fa-solid fa-eye mr-1"></i>
+            {{ 'COMMON.VIEW' | translate }}
+          </button>
+        </ng-template>
       </nz-card>
     </nz-tab>
   </nz-tabs>

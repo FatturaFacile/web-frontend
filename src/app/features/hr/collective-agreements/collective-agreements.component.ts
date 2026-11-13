@@ -5,7 +5,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, crudPage } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -59,7 +59,7 @@ export class CollectiveAgreementsComponent {
   protected readonly agreementsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmCcnl.agreements',
     canWrite: this.canWrite(),
-    list: () => this.api.getAgreements({ per_page: 100 }).pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getAgreements(query)),
     create: (payload) => this.api.createAgreement(payload as never),
     update: (id, payload) => this.api.updateAgreement(id, payload as never),
     remove: (id) => this.api.deleteAgreement(id),

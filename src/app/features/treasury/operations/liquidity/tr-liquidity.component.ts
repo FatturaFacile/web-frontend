@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,7 +14,9 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
+  FetchGridModel,
   ForecastScenario,
+  I18nService,
   LiquidityForecast,
   PermissionsService,
   RecurringCashDirection,
@@ -22,13 +24,14 @@ import {
   RecurringCashItem,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-tr-liquidity',
   styleUrl: './tr-liquidity.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
@@ -54,6 +57,7 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
 })
 export class TrLiquidityComponent implements OnInit {
   private readonly api = inject(TreasuryOpsApiService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly canWrite = inject(PermissionsService).canWrite('treasury');
 
@@ -61,8 +65,48 @@ export class TrLiquidityComponent implements OnInit {
   protected readonly frequencies: RecurringCashFrequency[] = ['weekly', 'monthly', 'quarterly', 'yearly'];
 
   protected readonly forecast = signal<LiquidityForecast | null>(null);
+  /** Every scenario, offered by the forecast scenario selector (the grid below only holds one page). */
   protected readonly scenarios = signal<ForecastScenario[]>([]);
-  protected readonly recurring = signal<RecurringCashItem[]>([]);
+
+  /** Server-driven grids: paging, sorting, column filters and grouping run on the API. */
+  protected readonly scenarioGrid = new FetchGridModel<ForecastScenario>((query) => this.api.getForecastScenarios(query));
+  protected readonly recurringGrid = new FetchGridModel<RecurringCashItem>((query) => this.api.getRecurringItems(query));
+
+  private readonly recurringAmountTpl = viewChild<TemplateRef<{ $implicit: RecurringCashItem; value: unknown }>>('recurringAmountTpl');
+
+  protected readonly scenarioColumns = computed<TableColumnDef<ForecastScenario>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'code', header: this.i18n.translate('TR.CODE'), width: '160px' },
+      { key: 'name', header: this.i18n.translate('TR.NAME') },
+      { key: 'collection_delay_days', align: 'right', header: this.i18n.translate('TR.COLLECTION_DELAY'), width: '170px' },
+      { key: 'disbursement_acceleration_days', align: 'right', header: this.i18n.translate('TR.DISBURSEMENT_ACCELERATION'), width: '190px' },
+      { key: 'sales_growth_factor', align: 'right', header: this.i18n.translate('TR.SALES_GROWTH'), width: '150px' },
+    ];
+  });
+
+  protected readonly recurringColumns = computed<TableColumnDef<RecurringCashItem>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'name', header: this.i18n.translate('TR.NAME') },
+      {
+        key: 'direction',
+        valueLabel: (value) => this.i18n.translate('TR.DIRECTION_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.DIRECTION_' + row.direction.toUpperCase()),
+        header: this.i18n.translate('TR.DIRECTION'),
+        width: '130px',
+      },
+      { key: 'amount', align: 'right', header: this.i18n.translate('TR.AMOUNT'), width: '150px', customCellTemplate: this.recurringAmountTpl() },
+      {
+        key: 'frequency',
+        valueLabel: (value) => this.i18n.translate('TR.FREQUENCY_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.FREQUENCY_' + row.frequency.toUpperCase()),
+        header: this.i18n.translate('TR.FREQUENCY'),
+        width: '140px',
+      },
+      { key: 'next_date', header: this.i18n.translate('TR.NEXT_DATE'), width: '130px' },
+    ];
+  });
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly modal = signal<'scenario' | 'recurring' | null>(null);
@@ -99,8 +143,7 @@ export class TrLiquidityComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadScenarios();
-    this.loadRecurring();
+    this.loadScenarioOptions();
   }
 
   protected loadForecast(): void {
@@ -120,11 +163,12 @@ export class TrLiquidityComponent implements OnInit {
   }
 
   protected loadScenarios(): void {
-    this.api.getForecastScenarios().subscribe({ next: (res) => this.scenarios.set(res.data ?? []) });
+    this.scenarioGrid.reload();
+    this.loadScenarioOptions();
   }
 
-  protected loadRecurring(): void {
-    this.api.getRecurringItems().subscribe({ next: (res) => this.recurring.set(res.data ?? []) });
+  private loadScenarioOptions(): void {
+    this.api.getForecastScenarios({ per_page: 200 }).subscribe({ next: (res) => this.scenarios.set(res.data ?? []) });
   }
 
   protected openModal(kind: 'scenario' | 'recurring'): void {
@@ -166,13 +210,13 @@ export class TrLiquidityComponent implements OnInit {
         end_date: value.end_date || null,
       })
       .subscribe({
-        next: () => this.done(() => this.loadRecurring()),
+        next: () => this.done(() => this.recurringGrid.reload()),
         error: (err: unknown) => this.failed(err, this.recurringForm),
       });
   }
 
   protected removeRecurring(item: RecurringCashItem): void {
-    this.api.deleteRecurringItem(item.id).subscribe({ next: () => this.loadRecurring() });
+    this.api.deleteRecurringItem(item.id).subscribe({ next: () => this.recurringGrid.reload() });
   }
 
   private done(reload: () => void): void {

@@ -44,76 +44,42 @@
     </div>
   </div>
 
-  <nz-table
-    #projTable
-    [nzData]="projects()"
-    [nzLoading]="loading()"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzFrontPagination]="false"
-    (nzQueryParams)="onQueryParamsChange($event)"
-  >
-    <thead>
-      <tr>
-        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: projTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PRJ.LBL_PROJECT' | translate }}</th>
-        <th [nzSortFn]="'project_type' | gridSort" [nzFilters]="'project_type' | gridFilterList: projTable.nzData" [nzFilterFn]="'project_type' | gridFilterFn">{{ 'PRJ.LBL_TYPE' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: projTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRJ.LBL_STATUS' | translate }}</th>
-        <th [nzSortFn]="'health_status' | gridSort" [nzFilters]="'health_status' | gridFilterList: projTable.nzData" [nzFilterFn]="'health_status' | gridFilterFn">{{ 'PRJ.LBL_HEALTH' | translate }}</th>
-        <th>{{ 'PRJ.LBL_PROGRESS' | translate }}</th>
-        <th class="num" [nzSortFn]="'contract_value' | gridSort" [nzFilters]="'contract_value' | gridFilterList: projTable.nzData" [nzFilterFn]="'contract_value' | gridFilterFn">{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
-        <th nzWidth="220px">{{ 'PRJ.LBL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (p of projTable.data; track p.id) {
-        <tr>
-          <td>
-            <div class="proj-info">
-              <button type="button" class="proj-title" (click)="openDetail(p)">{{ p.name }}</button>
-              <span class="proj-num">{{ p.project_number }}</span>
-            </div>
-          </td>
-          <td>
-            <nz-tag>{{ p.project_type }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(p.status)">{{ p.status }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag>
-          </td>
-          <td class="progress-cell">
-            <nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress>
-          </td>
-          <td class="num">{{ p.contract_value | money: p.currency }}</td>
-          <td>
-            <nz-space>
-              <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
-                {{ 'PRJ.LBL_MANAGE' | translate }}
-              </button>
-              <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
-                {{ 'PRJ.CONTROL' | translate }}
-              </a>
-              @if (p.status === 'draft' || p.status === 'paused') {
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
-                  {{ 'PRJ.LBL_START' | translate }}
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="projects" />
+
+  <ng-template #nameTpl let-p>
+    <div class="proj-info">
+      <button type="button" class="proj-title" (click)="openDetail(p)">{{ p.name }}</button>
+      <span class="proj-num">{{ p.project_number }}</span>
+    </div>
+  </ng-template>
+  <ng-template #typeTpl let-p><nz-tag>{{ p.project_type }}</nz-tag></ng-template>
+  <ng-template #statusTpl let-p><nz-tag [nzColor]="getStatusColor(p.status)">{{ p.status }}</nz-tag></ng-template>
+  <ng-template #healthTpl let-p><nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag></ng-template>
+  <ng-template #progressTpl let-p><nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress></ng-template>
+  <ng-template #valueTpl let-p>{{ p.contract_value | money: p.currency }}</ng-template>
+  <ng-template #actionsTpl let-p>
+    <nz-space>
+                <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
+                  {{ 'PRJ.LBL_MANAGE' | translate }}
                 </button>
-              }
-              @if (p.status === 'active') {
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
-                  {{ 'PRJ.LBL_PAUSE' | translate }}
-                </button>
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
-                  {{ 'PRJ.LBL_COMPLETE' | translate }}
-                </button>
-              }
-            </nz-space>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+                <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
+                  {{ 'PRJ.CONTROL' | translate }}
+                </a>
+                @if (p.status === 'draft' || p.status === 'paused') {
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
+                    {{ 'PRJ.LBL_START' | translate }}
+                  </button>
+                }
+                @if (p.status === 'active') {
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
+                    {{ 'PRJ.LBL_PAUSE' | translate }}
+                  </button>
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
+                    {{ 'PRJ.LBL_COMPLETE' | translate }}
+                  </button>
+                }
+              </nz-space>
+  </ng-template>
 </nz-card>
 
 <!-- Create Project Modal -->

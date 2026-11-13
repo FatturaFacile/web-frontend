@@ -1,5 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -20,6 +20,7 @@ import {
   AssetClass,
   AssetCondition,
   EamOpsApiService,
+  FetchGridModel,
   FixedAssetResource,
   I18nService,
   MaintenancePlan,
@@ -30,14 +31,13 @@ import {
   WorkOrder,
   WorkOrderDetail,
 } from '@core';
-import { MoneyPipe, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, TranslatePipe, ModalActionsDirective, IconActionDirective, TableColumnDef, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-ea-maintenance',
   styleUrl: './ea-maintenance.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,
@@ -56,6 +56,7 @@ import { MoneyPipe, TranslatePipe, ModalActionsDirective, IconActionDirective, G
     NzTagModule,
     MoneyPipe,
     TranslatePipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
   ],
   templateUrl: './ea-maintenance.component.html',
 })
@@ -71,11 +72,41 @@ export class EaMaintenanceComponent implements OnInit {
   protected readonly triggers: MaintenanceTrigger[] = ['time', 'meter', 'time_or_meter'];
   protected readonly conditions: AssetCondition[] = ['new', 'excellent', 'good', 'fair', 'poor', 'damaged'];
 
-  protected readonly plans = signal<MaintenancePlan[]>([]);
+  /** Maintenance plans: paging, sorting, filters and grouping run on the API. */
+  protected readonly plansGrid = new FetchGridModel<MaintenancePlan>((query) => this.api.getMaintenancePlans(query));
+
+  private readonly planTriggerTpl = viewChild<TemplateRef<{ $implicit: MaintenancePlan; value: unknown }>>('planTriggerTpl');
+  private readonly planDueTpl = viewChild<TemplateRef<{ $implicit: MaintenancePlan; value: unknown }>>('planDueTpl');
+  private readonly planCostTpl = viewChild<TemplateRef<{ $implicit: MaintenancePlan; value: unknown }>>('planCostTpl');
+  private readonly planActiveTpl = viewChild<TemplateRef<{ $implicit: MaintenancePlan; value: unknown }>>('planActiveTpl');
+
+  protected readonly planColumns = computed<TableColumnDef<MaintenancePlan>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'plan_code', header: 'EA.CODE' },
+      { key: 'name', header: 'EA.NAME' },
+      {
+        key: 'trigger_type',
+        header: 'EA.TRIGGER',
+        valueLabel: (value) => this.i18n.translate('EA.TRIGGER_' + value.toUpperCase()),
+        valueGetter: (plan) => (plan.trigger_type ? this.i18n.translate('EA.TRIGGER_' + plan.trigger_type.toUpperCase()) : ''),
+        customCellTemplate: this.planTriggerTpl(),
+      },
+      { key: 'next_due_date', header: 'EA.NEXT_DUE', customCellTemplate: this.planDueTpl() },
+      { key: 'estimated_cost', header: 'EA.ESTIMATED_COST', align: 'right', customCellTemplate: this.planCostTpl() },
+      {
+        key: 'is_active',
+        serverKey: 'activity',
+        header: 'EA.STATUS',
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'EA.ACTIVE' : 'EA.INACTIVE'),
+        valueGetter: (plan) => this.i18n.translate(plan.is_active ? 'EA.ACTIVE' : 'EA.INACTIVE'),
+        customCellTemplate: this.planActiveTpl(),
+      },
+    ];
+  });
   protected readonly assets = signal<FixedAssetResource[]>([]);
   protected readonly assetClasses = signal<AssetClass[]>([]);
   protected readonly duePlans = signal<MaintenancePlan[]>([]);
-  protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly planModalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -148,14 +179,7 @@ export class EaMaintenanceComponent implements OnInit {
   }
 
   protected load(): void {
-    this.loading.set(true);
-    this.api.getMaintenancePlans({ per_page: 50 }).subscribe({
-      next: (res) => {
-        this.plans.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.plansGrid.reload();
     this.api.getDueMaintenancePlans().subscribe({ next: (res) => this.duePlans.set(res.data ?? []) });
   }
 

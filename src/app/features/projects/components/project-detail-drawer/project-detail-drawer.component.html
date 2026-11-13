@@ -76,40 +76,7 @@
             <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTaskModal()"></button>
           </div>
 
-          <nz-table
-            #tasksTable
-            [nzData]="tasks()"
-            [nzLoading]="loadingTasks()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th [nzSortFn]="'task_number' | gridSort" [nzFilters]="'task_number' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'task_number' | gridFilterFn">{{ 'projectDetailDrawer.lblCode' | translate }}</th>
-                <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
-                <th class="num" [nzSortFn]="'estimated_hours' | gridSort" [nzFilters]="'estimated_hours' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'estimated_hours' | gridFilterFn">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
-                <th class="num" [nzSortFn]="'actual_hours' | gridSort" [nzFilters]="'actual_hours' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'actual_hours' | gridFilterFn">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblProgress' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (t of tasksTable.data; track t.id) {
-                <tr>
-                  <td>{{ t.task_number || t.wbs_code || '—' }}</td>
-                  <td><strong>{{ t.title }}</strong></td>
-                  <td><nz-tag>{{ t.status }}</nz-tag></td>
-                  <td><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></td>
-                  <td class="num">{{ t.estimated_hours }}h</td>
-                  <td class="num">{{ t.actual_hours }}h</td>
-                  <td class="progress-cell">
-                    <nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="tasksGrid" [columns]="taskColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="project-tasks" />
         </div>
       </nz-tab>
 
@@ -120,58 +87,7 @@
             <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTimesheetModal()"></button>
           </div>
 
-          <nz-table
-            #tsTable
-            [nzData]="timesheets()"
-            [nzLoading]="loadingTimesheets()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th [nzSortFn]="'work_date' | gridSort" [nzFilters]="'work_date' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_date' | gridFilterFn">{{ 'projectDetailDrawer.lblDate' | translate }}</th>
-                <th [nzSortFn]="'user_id' | gridSort" [nzFilters]="'user_id' | gridFilterList: tsTable.nzData" [nzFilterFn]="'user_id' | gridFilterFn">{{ 'projectDetailDrawer.lblUser' | translate }}</th>
-                <th [nzSortFn]="'hours_worked' | gridSort" [nzFilters]="'hours_worked' | gridFilterList: tsTable.nzData" [nzFilterFn]="'hours_worked' | gridFilterFn">{{ 'projectDetailDrawer.lblHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblBillable' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'work_summary' | gridSort" [nzFilters]="'work_summary' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_summary' | gridFilterFn">{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
-                <th nzWidth="150px">{{ 'projectDetailDrawer.lblActions' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (ts of tsTable.data; track ts.id) {
-                <tr>
-                  <td>{{ ts.work_date }}</td>
-                  <td>{{ ts.user_id }}</td>
-                  <td class="num"><strong>{{ ts.hours_worked }}h</strong></td>
-                  <td>
-                    <nz-tag [nzColor]="ts.is_billable ? 'green' : 'default'">
-                      {{ ts.is_billable ? 'Billable' : 'Non-Billable' }}
-                    </nz-tag>
-                  </td>
-                  <td><nz-tag>{{ ts.status }}</nz-tag></td>
-                  <td>{{ ts.work_summary || '—' }}</td>
-                  <td>
-                    <nz-space>
-                      @if (ts.status === 'draft') {
-                        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="submitTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblSubmit' | translate }}
-                        </button>
-                      }
-                      @if (ts.status === 'submitted') {
-                        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="approveTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblApprove' | translate }}
-                        </button>
-                        <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="rejectTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblReject' | translate }}
-                        </button>
-                      }
-                    </nz-space>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="timesheetsGrid" [columns]="timesheetColumns()" [actionsTemplate]="timesheetActionsTpl" [scroll]="{ x: '900px' }" size="small" exportFileName="project-timesheets" />
         </div>
       </nz-tab>
     </nz-tabs>
@@ -277,3 +193,36 @@
     </form>
   </ng-container>
 </nz-modal>
+
+<ng-template #taskCodeTpl let-t>{{ t.task_number || t.wbs_code || '—' }}</ng-template>
+<ng-template #taskTitleTpl let-t><strong>{{ t.title }}</strong></ng-template>
+<ng-template #taskStatusTpl let-t><nz-tag>{{ t.status }}</nz-tag></ng-template>
+<ng-template #taskPriorityTpl let-t><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></ng-template>
+<ng-template #taskEstimatedTpl let-t>{{ t.estimated_hours }}h</ng-template>
+<ng-template #taskActualTpl let-t>{{ t.actual_hours }}h</ng-template>
+<ng-template #taskProgressTpl let-t><nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress></ng-template>
+<ng-template #tsHoursTpl let-ts><strong>{{ ts.hours_worked }}h</strong></ng-template>
+<ng-template #tsBillableTpl let-ts>
+  <nz-tag [nzColor]="ts.is_billable ? 'green' : 'default'">
+    {{ ts.is_billable ? 'Billable' : 'Non-Billable' }}
+  </nz-tag>
+</ng-template>
+<ng-template #tsStatusTpl let-ts><nz-tag>{{ ts.status }}</nz-tag></ng-template>
+<ng-template #tsSummaryTpl let-ts>{{ ts.work_summary || '—' }}</ng-template>
+<ng-template #timesheetActionsTpl let-ts>
+  <nz-space>
+                        @if (ts.status === 'draft') {
+                          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="submitTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblSubmit' | translate }}
+                          </button>
+                        }
+                        @if (ts.status === 'submitted') {
+                          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="approveTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblApprove' | translate }}
+                          </button>
+                          <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="rejectTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblReject' | translate }}
+                          </button>
+                        }
+                      </nz-space>
+</ng-template>

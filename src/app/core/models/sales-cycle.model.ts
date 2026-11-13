@@ -407,6 +407,8 @@ export interface CustomerCreditProfile {
 
 export interface SalesListFilterParams {
   status?: string;
+  /** Delivery notes only: the ones that can still be invoiced (neither draft nor invoiced). */
+  billable?: boolean;
   contact_id?: string;
   page?: number;
   per_page?: number;

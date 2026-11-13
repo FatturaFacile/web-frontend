@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -18,12 +18,13 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   TesseraSanitariaApiService,
+  FetchGridModel,
   TesseraSanitariaExpense,
+  TesseraSanitariaExpenseFilterParams,
   TesseraSanitariaExpenseRequest,
   TesseraSanitariaExpenseType,
   TesseraSanitariaSettings,
@@ -32,14 +33,12 @@ import {
   TesseraSanitariaSummary,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tessera-sanitaria',
   styleUrl: './tessera-sanitaria.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,
@@ -48,7 +47,7 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderCompon
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -80,8 +79,38 @@ export class TesseraSanitariaComponent implements OnInit {
   readonly selectedYear = signal<number>(2026);
 
   // --- TAB 0: EXPENSES ---
-  readonly expenses = signal<TesseraSanitariaExpense[]>([]);
-  readonly expensesLoading = signal<boolean>(false);
+  /** Server-driven grid of the flagged expenses: paging, sorting, column filters and grouping run on the API. */
+  readonly expenses = new FetchGridModel<TesseraSanitariaExpense, TesseraSanitariaExpenseFilterParams>((query) =>
+    this.api.getExpenses(query),
+  );
+  /** Every expense of the filtered grid (all pages): the totals above the grid are not limited to the loaded page. */
+  private readonly totalsSource = signal<TesseraSanitariaExpense[]>([]);
+
+  private readonly documentTpl = viewChild<TemplateRef<unknown>>('documentTpl');
+  private readonly paymentDateTpl = viewChild<TemplateRef<unknown>>('paymentDateTpl');
+  private readonly expenseTypeTpl = viewChild<TemplateRef<unknown>>('expenseTypeTpl');
+  private readonly amountTpl = viewChild<TemplateRef<unknown>>('amountTpl');
+  private readonly fiscalCodeTpl = viewChild<TemplateRef<unknown>>('fiscalCodeTpl');
+  private readonly traceableTpl = viewChild<TemplateRef<unknown>>('traceableTpl');
+  private readonly oppositionTpl = viewChild<TemplateRef<unknown>>('oppositionTpl');
+  private readonly transmissionTpl = viewChild<TemplateRef<unknown>>('transmissionTpl');
+  private readonly expenseActionsTpl = viewChild<TemplateRef<unknown>>('expenseActionsTpl');
+
+  protected readonly expenseColumns = computed<TableColumnDef<TesseraSanitariaExpense>[]>(() => {
+    const isTrue = (value: string): boolean => value === '1' || value === 'true';
+    const yesNo = (flag: boolean): string => this.translate.instant(flag ? 'STS.YES' : 'STS.NO');
+    return [
+      { key: 'document_number', header: 'STS.DOCUMENT', customCellTemplate: this.documentTpl() },
+      { key: 'payment_date', header: 'STS.PAYMENT_DATE', customCellTemplate: this.paymentDateTpl() },
+      { key: 'expense_type', header: 'STS.EXPENSE_TYPE', valueGetter: (row) => this.getExpenseTypeName(row.expense_type), valueLabel: (value) => this.getExpenseTypeName(value as TesseraSanitariaExpenseType), customCellTemplate: this.expenseTypeTpl() },
+      { key: 'amount', header: 'STS.AMOUNT', align: 'right', customCellTemplate: this.amountTpl() },
+      // Encrypted and hidden from the API output: the server cannot sort, filter or group by it.
+      { key: 'patient_fiscal_code', header: 'STS.PATIENT_FISCAL_CODE', sortable: false, filterable: false, groupable: false, customCellTemplate: this.fiscalCodeTpl() },
+      { key: 'payment_traceable', header: 'STS.TRACEABLE', align: 'center', valueGetter: (row) => yesNo(row.payment_traceable), valueLabel: (value) => yesNo(isTrue(value)), customCellTemplate: this.traceableTpl() },
+      { key: 'patient_opposition', header: 'STS.OPPOSITION', align: 'center', valueGetter: (row) => yesNo(row.patient_opposition), valueLabel: (value) => yesNo(isTrue(value)), customCellTemplate: this.oppositionTpl() },
+      { key: 'transmission_status', header: 'STS.STATUS', valueGetter: (row) => (row.transmission_status || 'pending').toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.transmissionTpl() },
+    ];
+  });
   readonly selectedExpense = signal<TesseraSanitariaExpense | null>(null);
   readonly drawerVisible = signal<boolean>(false);
   readonly flagModalVisible = signal<boolean>(false);
@@ -100,18 +129,18 @@ export class TesseraSanitariaComponent implements OnInit {
 
   // Derived metrics
   readonly totalExpensesAmount = computed(() =>
-    this.expenses().reduce((sum, e) => sum + (e.amount || 0), 0),
+    this.totalsSource().reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
   );
   readonly totalTraceableAmount = computed(() =>
-    this.expenses()
+    this.totalsSource()
       .filter((e) => e.payment_traceable)
-      .reduce((sum, e) => sum + (e.amount || 0), 0),
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
   );
   readonly totalOpposedCount = computed(
-    () => this.expenses().filter((e) => e.patient_opposition).length,
+    () => this.totalsSource().filter((e) => e.patient_opposition).length,
   );
   readonly totalTransmittedCount = computed(
-    () => this.expenses().filter((e) => e.transmission_status === 'transmitted').length,
+    () => this.totalsSource().filter((e) => e.transmission_status === 'transmitted').length,
   );
 
   // Forms
@@ -176,27 +205,21 @@ export class TesseraSanitariaComponent implements OnInit {
 
   ngOnInit(): void {
     this.syncPatientFiscalCodeValidator();
-    this.loadExpenses();
+    this.expenses.setFilter({ year: this.selectedYear() });
+    this.loadExpenseTotals();
     this.loadSummary();
     this.loadSettings();
   }
 
   // --- TAB 0: EXPENSES ---
   loadExpenses(): void {
-    this.expensesLoading.set(true);
-    this.api
-      .getExpenses({
-        year: this.selectedYear(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.expenses.set(res?.data || []);
-          this.expensesLoading.set(false);
-        },
-        error: () => {
-          this.expensesLoading.set(false);
-        },
-      });
+    this.expenses.setFilter({ year: this.selectedYear() });
+    this.expenses.reload();
+    this.loadExpenseTotals();
+  }
+
+  private loadExpenseTotals(): void {
+    this.expenses.loadAllRows().subscribe({ next: (rows) => this.totalsSource.set(rows), error: () => this.totalsSource.set([]) });
   }
 
   openFlagModal(): void {

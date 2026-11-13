@@ -259,8 +259,12 @@ describe('InventoryComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads products, warehouses, and stock levels on initialization', () => {
+  /** The server-driven grids load after a short debounce: wait for it. */
+  const settle = (ms = 30): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it('loads products, warehouses, and stock levels on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockInventoryApi.getWarehouses).toHaveBeenCalled();
     expect(mockInventoryApi.getProducts).toHaveBeenCalled();
@@ -279,9 +283,10 @@ describe('InventoryComponent', () => {
     expect(mockInventoryApi.getStockLevels).toHaveBeenCalledWith('wh-1');
   });
 
-  it('loads movements and handles transfer submission', () => {
+  it('loads movements and handles transfer submission', async () => {
     fixture.detectChanges();
     component.onTabChange(1);
+    await vi.waitFor(() => expect(component.movements().length).toBe(1));
     expect(component.selectedTabIndex()).toBe(1);
     expect(mockInventoryApi.getMovements).toHaveBeenCalled();
     expect(component.movements().length).toBe(1);
@@ -321,9 +326,10 @@ describe('InventoryComponent', () => {
     expect(component.movementSign({ ...base, source_bin_id: 'a', destination_bin_id: 'b' })).toBe('move');
   });
 
-  it('loads adjustments, approves and creates new adjustment', () => {
+  it('loads adjustments, approves and creates new adjustment', async () => {
     fixture.detectChanges();
     component.onTabChange(2);
+    await vi.waitFor(() => expect(component.adjustments().length).toBe(1));
     expect(mockInventoryApi.getAdjustments).toHaveBeenCalled();
     expect(component.adjustments().length).toBe(1);
 
@@ -373,9 +379,10 @@ describe('InventoryComponent', () => {
     expect(component.rejectingAdjustment()).toBeNull();
   });
 
-  it('loads count sessions, reconciles and schedules new count', () => {
+  it('loads count sessions, reconciles and schedules new count', async () => {
     fixture.detectChanges();
     component.onTabChange(3);
+    await vi.waitFor(() => expect(component.counts().length).toBe(1));
     expect(mockInventoryApi.getCounts).toHaveBeenCalled();
     expect(component.counts().length).toBe(1);
 
@@ -414,14 +421,16 @@ describe('InventoryComponent', () => {
     expect(mockInventoryApi.captureValuationSnapshot).toHaveBeenCalledWith('prod-1', 'wh-1');
   });
 
-  it('filters products on search in catalog tab', () => {
+  it('filters products on search in catalog tab', async () => {
     fixture.detectChanges();
+    await settle();
     component.onTabChange(5);
     const event = { target: { value: 'Widget' } } as unknown as Event;
     component.onSearch(event);
+    await vi.waitFor(() => expect(mockInventoryApi.getProducts).toHaveBeenCalledWith({ page: 1, per_page: 10, search: 'Widget' }), { timeout: 3000 });
 
     expect(component.searchTerm()).toBe('Widget');
-    expect(component.pageIndex()).toBe(1);
+    expect(component.productsGrid.pageIndex()).toBe(1);
     expect(mockInventoryApi.getProducts).toHaveBeenCalledWith({
       page: 1,
       per_page: 10,

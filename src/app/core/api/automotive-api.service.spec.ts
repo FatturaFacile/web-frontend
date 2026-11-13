@@ -45,7 +45,7 @@ describe('AutomotiveApiService', () => {
     expect(vReq.request.method).toBe('GET');
     vReq.flush({ data: { current_page: 1, data: [mockVehicle], last_page: 1, per_page: 15, total: 1 } });
 
-    service.getSeasonalSwitchPlan().subscribe((res) => {
+    service.listSeasonalSwitchPlan().subscribe((res) => {
       expect(res.data.length).toBe(1);
       expect(res.data[0].warehouse_shelf_location).toBe('A-12-3');
     });
@@ -54,7 +54,13 @@ describe('AutomotiveApiService', () => {
     expect(tReq.request.method).toBe('GET');
     tReq.flush({
       success: true,
-      data: [{ id: 'tire-1', vehicle_id: 'v-1', season: 'winter', warehouse_shelf_location: 'A-12-3' }],
+      data: {
+        current_page: 1,
+        data: [{ id: 'tire-1', vehicle_id: 'v-1', season: 'winter', warehouse_shelf_location: 'A-12-3' }],
+        last_page: 1,
+        per_page: 25,
+        total: 1,
+      },
     });
   });
 

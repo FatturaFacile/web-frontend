@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -12,27 +12,30 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
   ApiResponse,
   applyServerErrors,
   CashRegister,
   CashRegisterClosing,
   CashRegisterMovement,
+  FetchGridModel,
   I18nService,
+  PaginatedResponse,
   PermissionsService,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 import { GlLookupStore } from '../../../general-ledger/shared/gl-lookup.store';
 import { notInFuture } from '@shared/utils/date-validators';
+
+const EMPTY_PAGE = { success: true, message: '', data: [], meta: { current_page: 1, from: null, last_page: 1, per_page: 10, to: null, total: 0 } };
 
 @Component({
   selector: 'app-tr-cash-registers',
   styleUrl: './tr-cash-registers.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,
@@ -52,7 +55,7 @@ import { notInFuture } from '@shared/utils/date-validators';
   ],
   templateUrl: './tr-cash-registers.component.html',
 })
-export class TrCashRegistersComponent implements OnInit {
+export class TrCashRegistersComponent {
   private readonly api = inject(TreasuryOpsApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -60,12 +63,8 @@ export class TrCashRegistersComponent implements OnInit {
   protected readonly gl = inject(GlLookupStore);
   protected readonly canWrite = inject(PermissionsService).canWrite('treasury');
 
-  protected readonly registers = signal<CashRegister[]>([]);
   protected readonly selected = signal<CashRegister | null>(null);
-  protected readonly movements = signal<CashRegisterMovement[]>([]);
-  protected readonly closings = signal<CashRegisterClosing[]>([]);
   protected readonly lastClosing = signal<CashRegisterClosing | null>(null);
-  protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly modal = signal<'register' | 'movement' | 'close' | null>(null);
   protected readonly formErrors = signal<string[]>([]);
@@ -94,20 +93,72 @@ export class TrCashRegistersComponent implements OnInit {
     notes: this.fb.control('', Validators.maxLength(1000)),
   });
 
-  ngOnInit(): void {
+  /** Server-driven grids: paging, sorting, column filters and grouping run on the API. */
+  protected readonly registerGrid = new FetchGridModel<CashRegister>((query) => this.api.getCashRegisters(query));
+  protected readonly movementGrid = new FetchGridModel<CashRegisterMovement>((query) => this.forOpenRegister((id) => this.api.getCashRegisterMovements(id, query)));
+  protected readonly closingGrid = new FetchGridModel<CashRegisterClosing>((query) => this.forOpenRegister((id) => this.api.getCashRegisterClosings(id, query)));
+
+  private readonly registerBalanceTpl = viewChild<TemplateRef<{ $implicit: CashRegister; value: unknown }>>('registerBalanceTpl');
+  private readonly movementDirectionTpl = viewChild<TemplateRef<{ $implicit: CashRegisterMovement; value: unknown }>>('movementDirectionTpl');
+  private readonly movementAmountTpl = viewChild<TemplateRef<{ $implicit: CashRegisterMovement; value: unknown }>>('movementAmountTpl');
+  private readonly closingAmountTpl = viewChild<TemplateRef<{ $implicit: CashRegisterClosing; value: unknown }>>('closingAmountTpl');
+
+  protected readonly registerColumns = computed<TableColumnDef<CashRegister>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'code', header: this.i18n.translate('TR.CODE'), width: '140px' },
+      { key: 'name', header: this.i18n.translate('TR.NAME') },
+      { key: 'current_balance', align: 'right', header: this.i18n.translate('TR.CURRENT_BALANCE'), width: '160px', customCellTemplate: this.registerBalanceTpl() },
+      { key: 'last_closed_date', header: this.i18n.translate('TR.LAST_CLOSED'), width: '140px' },
+    ];
+  });
+
+  protected readonly movementColumns = computed<TableColumnDef<CashRegisterMovement>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'movement_date', header: this.i18n.translate('TR.DATE'), width: '120px' },
+      {
+        key: 'direction',
+        valueLabel: (value) => this.i18n.translate('TR.DIRECTION_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.DIRECTION_' + row.direction.toUpperCase()),
+        header: this.i18n.translate('TR.DIRECTION'),
+        width: '130px',
+        customCellTemplate: this.movementDirectionTpl(),
+      },
+      { key: 'payment_method', header: this.i18n.translate('TR.PAYMENT_METHOD'), width: '140px' },
+      { key: 'description', header: this.i18n.translate('TR.DESCRIPTION') },
+      { key: 'amount', align: 'right', header: this.i18n.translate('TR.AMOUNT'), width: '150px', customCellTemplate: this.movementAmountTpl() },
+    ];
+  });
+
+  protected readonly closingColumns = computed<TableColumnDef<CashRegisterClosing>[]>(() => {
+    this.i18n.currentLanguage();
+    const amount = (key: keyof CashRegisterClosing, header: string): TableColumnDef<CashRegisterClosing> => ({
+      key,
+      align: 'right',
+      header: this.i18n.translate(header),
+      width: '140px',
+      customCellTemplate: this.closingAmountTpl(),
+    });
+    return [
+      { key: 'closing_date', header: this.i18n.translate('TR.DATE'), width: '120px' },
+      amount('opening_balance', 'TR.OPENING'),
+      amount('total_in', 'TR.TOTAL_IN'),
+      amount('total_out', 'TR.TOTAL_OUT'),
+      amount('expected_balance', 'TR.EXPECTED'),
+      amount('counted_balance', 'TR.COUNTED'),
+      amount('difference', 'TR.CLOSING_DIFFERENCE'),
+    ];
+  });
+
+  constructor() {
     this.gl.load();
-    this.load();
   }
 
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getCashRegisters().subscribe({
-      next: (res) => {
-        this.registers.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+  /** Loads a page of a sub-list of the open cash register; nothing is requested while no register is open. */
+  private forOpenRegister<T>(load: (registerId: string) => Observable<PaginatedResponse<T>>): Observable<PaginatedResponse<T>> {
+    const id = this.selected()?.id;
+    return id ? load(id) : of(EMPTY_PAGE as PaginatedResponse<T>);
   }
 
   protected open(register: CashRegister): void {
@@ -116,8 +167,8 @@ export class TrCashRegistersComponent implements OnInit {
     }
     this.selected.set(register);
     this.api.getCashRegister(register.id).subscribe({ next: (res) => this.selected.set(res.data) });
-    this.api.getCashRegisterMovements(register.id).subscribe({ next: (res) => this.movements.set(res.data ?? []) });
-    this.api.getCashRegisterClosings(register.id).subscribe({ next: (res) => this.closings.set(res.data ?? []) });
+    this.movementGrid.reload();
+    this.closingGrid.reload();
   }
 
   protected openModal(kind: 'register' | 'movement' | 'close'): void {
@@ -141,7 +192,7 @@ export class TrCashRegistersComponent implements OnInit {
     this.run(
       this.api.createCashRegister({ ...value, currency: value.currency.toUpperCase() }),
       this.registerForm,
-      () => this.load(),
+      () => this.registerGrid.reload(),
     );
   }
 
@@ -180,7 +231,7 @@ export class TrCashRegistersComponent implements OnInit {
       this.closeForm,
       () => {
         this.open(register);
-        this.load();
+        this.registerGrid.reload();
       },
       (res) => this.lastClosing.set(res as CashRegisterClosing),
     );

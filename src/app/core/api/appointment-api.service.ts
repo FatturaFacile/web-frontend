@@ -2,9 +2,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
   Appointment,
+  AppointmentFilterParams,
+  PaginatedResponse,
   AppointmentCalendarItem,
   AppointmentConflictCheckRequest,
   AppointmentConflictCheckResponse,
@@ -18,23 +21,8 @@ export class AppointmentApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/appointments`;
 
-  getAppointments(params?: {
-    technician_id?: string;
-    contact_id?: string;
-    ticket_id?: string;
-    status_id?: string;
-    date?: string;
-    per_page?: number;
-  }): Observable<ApiResponse<Appointment[]>> {
-    let httpParams = new HttpParams();
-    if (params?.technician_id) httpParams = httpParams.set('technician_id', params.technician_id);
-    if (params?.contact_id) httpParams = httpParams.set('contact_id', params.contact_id);
-    if (params?.ticket_id) httpParams = httpParams.set('ticket_id', params.ticket_id);
-    if (params?.status_id) httpParams = httpParams.set('status_id', params.status_id);
-    if (params?.date) httpParams = httpParams.set('date', params.date);
-    if (params?.per_page) httpParams = httpParams.set('per_page', params.per_page.toString());
-
-    return this.http.get<ApiResponse<Appointment[]>>(this.base, { params: httpParams });
+  getAppointments(params?: AppointmentFilterParams): Observable<PaginatedResponse<Appointment>> {
+    return this.http.get<PaginatedResponse<Appointment>>(this.base, { params: params ? toHttpParams(params) : undefined });
   }
 
   getAppointment(id: string): Observable<ApiResponse<Appointment>> {

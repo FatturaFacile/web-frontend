@@ -31,48 +31,30 @@
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'GL.COL_NAME' | translate }}</th>
-        <th>{{ 'GL.COL_FREQUENCY' | translate }}</th>
-        <th>{{ 'GL.COL_NEXT_RUN' | translate }}</th>
-        <th>{{ 'GL.COL_LAST_RUN' | translate }}</th>
-        <th>{{ 'GL.STATUS' | translate }}</th>
-        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of table.data; track item.id) {
-        <tr>
-          <td>
-            {{ item.name }}
-            <div class="muted">{{ item.description }}</div>
-          </td>
-          <td>{{ 'GL.FREQUENCY_' + item.frequency.toUpperCase() | translate }}</td>
-          <td>{{ item.next_run_date ?? '' }}</td>
-          <td>{{ item.last_run_date ?? '' }}</td>
-          <td>
-            <nz-tag [nzColor]="statusColor(item.status)">{{ 'GL.RECURRING_STATUS_' + item.status.toUpperCase() | translate }}</nz-tag>
-          </td>
-          <td>
-            @if (canWrite) {
-              @if (item.status === 'active') {
-                <button nz-button nzSize="small" type="button" (click)="run(item)">{{ 'GL.ACTION_RUN_NOW' | translate }}</button>
-                <button nz-button nzSize="small" type="button" (click)="setStatus(item, 'paused')">{{ 'GL.ACTION_PAUSE' | translate }}</button>
-              }
-              @if (item.status === 'paused') {
-                <button nz-button nzSize="small" type="button" (click)="setStatus(item, 'active')">{{ 'GL.ACTION_RESUME' | translate }}</button>
-              }
-              @if (item.status !== 'ended') {
-                <button nz-button nzSize="small" nzDanger type="button" (click)="setStatus(item, 'ended')">{{ 'GL.ACTION_END' | translate }}</button>
-              }
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-recurring-journals'" />
+
+  <ng-template #nameTpl let-item>
+    {{ item.name }}
+    <div class="muted">{{ item.description }}</div>
+  </ng-template>
+  <ng-template #frequencyTpl let-item>{{ 'GL.FREQUENCY_' + item.frequency.toUpperCase() | translate }}</ng-template>
+  <ng-template #statusTpl let-item>
+    <nz-tag [nzColor]="statusColor(item.status)">{{ 'GL.RECURRING_STATUS_' + item.status.toUpperCase() | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-item>
+      @if (canWrite) {
+        @if (item.status === 'active') {
+          <button nz-button nzSize="small" type="button" (click)="run(item)">{{ 'GL.ACTION_RUN_NOW' | translate }}</button>
+          <button nz-button nzSize="small" type="button" (click)="setStatus(item, 'paused')">{{ 'GL.ACTION_PAUSE' | translate }}</button>
+        }
+        @if (item.status === 'paused') {
+          <button nz-button nzSize="small" type="button" (click)="setStatus(item, 'active')">{{ 'GL.ACTION_RESUME' | translate }}</button>
+        }
+        @if (item.status !== 'ended') {
+          <button nz-button nzSize="small" nzDanger type="button" (click)="setStatus(item, 'ended')">{{ 'GL.ACTION_END' | translate }}</button>
+        }
       }
-    </tbody>
-  </nz-table>
+  </ng-template>
 </nz-card>
 
 <nz-modal

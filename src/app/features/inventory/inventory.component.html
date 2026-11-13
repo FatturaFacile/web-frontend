@@ -148,7 +148,7 @@
         <nz-select
           class="filter-select"
           [ngModel]="movementTypeFilter()"
-          (ngModelChange)="movementTypeFilter.set($event); loadMovements()"
+          (ngModelChange)="setMovementType($event)"
           [nzPlaceHolder]="'INVENTORY.FILTER_MOVEMENT_TYPE' | translate"
           nzAllowClear
         >
@@ -169,75 +169,40 @@
         <button nz-button nzType="primary" (click)="openTransferModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #movementsTable
-        [nzData]="movements()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="movementsTotal()"
-        [nzPageIndex]="movementsPage()"
-        [nzPageSize]="movementsPageSize()"
-        (nzQueryParams)="onMovementsQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th>{{ 'INVENTORY.COL_DATE' | translate }}</th>
-            <th [nzSortFn]="'movement_number' | gridSort" [nzFilters]="'movement_number' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'movement_number' | gridFilterFn">{{ 'INVENTORY.COL_MOVEMENT_NUM' | translate }}</th>
-            <th [nzSortFn]="'movement_type' | gridSort" [nzFilters]="'movement_type' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'movement_type' | gridFilterFn">{{ 'INVENTORY.COL_TYPE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'INVENTORY.COL_QTY' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'source_bin.code' | gridSort" [nzFilters]="'source_bin.code' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'source_bin.code' | gridFilterFn">{{ 'INVENTORY.COL_SIGNED_QTY' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'unit_cost' | gridSort" [nzFilters]="'unit_cost' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'unit_cost' | gridFilterFn">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_VALUATION' | translate }}</th>
-            <th [nzSortFn]="'reference_type' | gridSort" [nzFilters]="'reference_type' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'reference_type' | gridFilterFn">{{ 'INVENTORY.COL_REF' | translate }}</th>
-            <th [nzSortFn]="'notes' | gridSort" [nzFilters]="'notes' | gridFilterList: movementsTable.nzData" [nzFilterFn]="'notes' | gridFilterFn">{{ 'INVENTORY.COL_NOTES' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of movementsTable.data; track m.id) {
-            <tr>
-              <td>{{ m.created_at ? (m.created_at | date:'short') : '-' }}</td>
-              <td><code>{{ m.movement_number || m.id.substring(0, 8) }}</code></td>
-              <td>
-                <nz-tag nzColor="blue">{{ m.movement_type }}</nz-tag>
-              </td>
-              <td nzAlign="right">{{ m.quantity | number:'1.0-4' }}</td>
-              <td nzAlign="right">
-                <!-- The quantity is always positive: the direction comes from signed_quantity or from the bins -->
-                @switch (movementSign(m)) {
-                  @case ('in') {
-                    <nz-tag nzColor="success">+{{ (m.signed_quantity ?? m.quantity) | number:'1.0-4' }}</nz-tag>
-                  }
-                  @case ('out') {
-                    <nz-tag nzColor="error">-{{ (m.signed_quantity !== undefined ? -m.signed_quantity : m.quantity) | number:'1.0-4' }}</nz-tag>
-                  }
-                  @case ('move') {
-                    <nz-tag nzColor="default">{{ m.source_bin?.code || '?' }} &rarr; {{ m.destination_bin?.code || '?' }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag nzColor="default">0</nz-tag>
-                  }
-                }
-              </td>
-              <td nzAlign="right">{{ m.unit_cost | money: authStore.activeCurrency() }}</td>
-              <td nzAlign="right">{{ (m.total_valuation ?? (m.unit_cost * m.quantity)) | money: authStore.activeCurrency() }}</td>
-              <td>
-                <small>{{ m.reference_type || '-' }} {{ m.reference_id ? '#' + m.reference_id : '' }}</small>
-              </td>
-              <td>
-                <small class="desc-text">{{ m.notes || '-' }}</small>
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="9"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
+      <app-base-table
+        [grid]="movementsGrid"
+        [columns]="movementColumns()"
+        [scroll]="{ x: '900px' }"
+        exportFileName="stock-movements"
+      />
+
+      <ng-template #movementDateTpl let-m>{{ m.created_at ? (m.created_at | date:'short') : '-' }}</ng-template>
+      <ng-template #movementNumberTpl let-m><code>{{ m.movement_number || m.id.substring(0, 8) }}</code></ng-template>
+      <ng-template #movementTypeTpl let-m><nz-tag nzColor="blue">{{ m.movement_type }}</nz-tag></ng-template>
+      <ng-template #movementQtyTpl let-m>{{ m.quantity | number:'1.0-4' }}</ng-template>
+      <ng-template #movementSignedTpl let-m>
+        <!-- The quantity is always positive: the direction comes from signed_quantity or from the bins -->
+        @switch (movementSign(m)) {
+          @case ('in') {
+            <nz-tag nzColor="success">+{{ (m.signed_quantity ?? m.quantity) | number:'1.0-4' }}</nz-tag>
           }
-        </tbody>
-      </nz-table>
+          @case ('out') {
+            <nz-tag nzColor="error">-{{ (m.signed_quantity !== undefined ? -m.signed_quantity : m.quantity) | number:'1.0-4' }}</nz-tag>
+          }
+          @case ('move') {
+            <nz-tag nzColor="default">{{ m.source_bin?.code || '?' }} &rarr; {{ m.destination_bin?.code || '?' }}</nz-tag>
+          }
+          @default {
+            <nz-tag nzColor="default">0</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #movementCostTpl let-m>{{ m.unit_cost | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #movementValuationTpl let-m>{{ (m.total_valuation ?? (m.unit_cost * m.quantity)) | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #movementRefTpl let-m>
+        <small>{{ m.reference_type || '-' }} {{ m.reference_id ? '#' + m.reference_id : '' }}</small>
+      </ng-template>
+      <ng-template #movementNotesTpl let-m><small class="desc-text">{{ m.notes || '-' }}</small></ng-template>
     </nz-tab>
 
     <!-- TAB 2: ADJUSTMENTS -->
@@ -247,7 +212,7 @@
         <nz-select
           class="filter-select"
           [ngModel]="adjustmentStatusFilter()"
-          (ngModelChange)="adjustmentStatusFilter.set($event); adjustmentsPage.set(1); loadAdjustments()"
+          (ngModelChange)="setAdjustmentStatus($event)"
           [nzPlaceHolder]="'INVENTORY.FILTER_ADJUSTMENT_STATUS' | translate"
           nzAllowClear
         >
@@ -264,80 +229,49 @@
         }
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #adjTable
-        [nzData]="adjustments()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="adjustmentsTotal()"
-        [nzPageIndex]="adjustmentsPage()"
-        [nzPageSize]="adjustmentsPageSize()"
-        (nzQueryParams)="onAdjustmentsQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'adjustment_number' | gridSort" [nzFilters]="'adjustment_number' | gridFilterList: adjTable.nzData" [nzFilterFn]="'adjustment_number' | gridFilterFn">{{ 'INVENTORY.COL_ADJ_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'warehouse.name' | gridSort" [nzFilters]="'warehouse.name' | gridFilterList: adjTable.nzData" [nzFilterFn]="'warehouse.name' | gridFilterFn">{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
-            <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: adjTable.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'INVENTORY.COL_REASON' | translate }}</th>
-            <th nzAlign="right">{{ 'INVENTORY.COL_VAL_CHANGE' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: adjTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'rejection_reason' | gridSort" [nzFilters]="'rejection_reason' | gridFilterList: adjTable.nzData" [nzFilterFn]="'rejection_reason' | gridFilterFn">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (adj of adjTable.data; track adj.id) {
-            <tr>
-              <td><code>{{ adj.adjustment_number }}</code></td>
-              <td>{{ adj.warehouse?.name || adj.warehouse_id }}</td>
-              <td><nz-tag>{{ adj.reason }}</nz-tag></td>
-              <td nzAlign="right">
-                {{ (adj.net_valuation_change ?? 0) | money: authStore.activeCurrency() }}
-              </td>
-              <td nzAlign="center">
-                @switch (adj.status) {
-                  @case ('approved') {
-                    <nz-tag nzColor="success">{{ 'COMMON.STATUS_APPROVED' | translate }}</nz-tag>
-                  }
-                  @case ('rejected') {
-                    <nz-tag nzColor="error">{{ 'COMMON.STATUS_REJECTED' | translate }}</nz-tag>
-                  }
-                  @case ('pending_approval') {
-                    <nz-tag nzColor="processing">{{ 'COMMON.STATUS_PENDING' | translate }}</nz-tag>
-                  }
-                  @case ('draft') {
-                    <nz-tag>{{ 'INVENTORY.ADJ_STATUS.DRAFT' | translate }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag>{{ adj.status }}</nz-tag>
-                  }
-                }
-              </td>
-              <td>{{ adj.created_at ? (adj.created_at | date:'short') : '-' }}</td>
-              <td nzAlign="right">
-                @if (adj.status === 'pending_approval' && canApproveAdjustments()) {
-                  <button nz-button nzType="link" nzSize="small" (click)="approveAdjustment(adj.id)">
-                    <nz-icon nzType="check" /> {{ 'COMMON.APPROVE' | translate }}
-                  </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="openRejectAdjustment(adj)">
-                    <nz-icon nzType="close" /> {{ 'COMMON.REJECT' | translate }}
-                  </button>
-                } @else if (adj.status === 'rejected' && adj.rejection_reason) {
-                  <small class="desc-text">{{ adj.rejection_reason }}</small>
-                }
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="7"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
+      <app-base-table
+        [grid]="adjustmentsGrid"
+        [columns]="adjustmentColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="adjustmentActionsTpl"
+        exportFileName="inventory-adjustments"
+      />
+
+      <ng-template #adjustmentNumberTpl let-adj><code>{{ adj.adjustment_number }}</code></ng-template>
+      <ng-template #adjustmentReasonTpl let-adj><nz-tag>{{ adj.reason }}</nz-tag></ng-template>
+      <ng-template #adjustmentChangeTpl let-adj>{{ (adj.net_valuation_change ?? 0) | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #adjustmentStatusTpl let-adj>
+        @switch (adj.status) {
+          @case ('approved') {
+            <nz-tag nzColor="success">{{ 'COMMON.STATUS_APPROVED' | translate }}</nz-tag>
           }
-        </tbody>
-      </nz-table>
+          @case ('rejected') {
+            <nz-tag nzColor="error">{{ 'COMMON.STATUS_REJECTED' | translate }}</nz-tag>
+          }
+          @case ('pending_approval') {
+            <nz-tag nzColor="processing">{{ 'COMMON.STATUS_PENDING' | translate }}</nz-tag>
+          }
+          @case ('draft') {
+            <nz-tag>{{ 'INVENTORY.ADJ_STATUS.DRAFT' | translate }}</nz-tag>
+          }
+          @default {
+            <nz-tag>{{ adj.status }}</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #adjustmentDateTpl let-adj>{{ adj.created_at ? (adj.created_at | date:'short') : '-' }}</ng-template>
+      <ng-template #adjustmentActionsTpl let-adj>
+        @if (adj.status === 'pending_approval' && canApproveAdjustments()) {
+          <button nz-button nzType="link" nzSize="small" (click)="approveAdjustment(adj.id)">
+            <nz-icon nzType="check" /> {{ 'COMMON.APPROVE' | translate }}
+          </button>
+          <button nz-button nzType="link" nzDanger nzSize="small" (click)="openRejectAdjustment(adj)">
+            <nz-icon nzType="close" /> {{ 'COMMON.REJECT' | translate }}
+          </button>
+        } @else if (adj.status === 'rejected' && adj.rejection_reason) {
+          <small class="desc-text">{{ adj.rejection_reason }}</small>
+        }
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: PHYSICAL COUNTS -->
@@ -349,72 +283,44 @@
         </button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #cntTable
-        [nzData]="counts()"
-        [nzLoading]="loading()"
-        [nzFrontPagination]="false"
-        [nzTotal]="countsTotal()"
-        [nzPageIndex]="countsPage()"
-        [nzPageSize]="countsPageSize()"
-        (nzQueryParams)="onCountsQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'session_number' | gridSort" [nzFilters]="'session_number' | gridFilterList: cntTable.nzData" [nzFilterFn]="'session_number' | gridFilterFn">{{ 'INVENTORY.COL_SESSION_NUM' | translate }}</th>
-            <th [nzSortFn]="'warehouse.name' | gridSort" [nzFilters]="'warehouse.name' | gridFilterList: cntTable.nzData" [nzFilterFn]="'warehouse.name' | gridFilterFn">{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
-            <th [nzSortFn]="'count_type' | gridSort" [nzFilters]="'count_type' | gridFilterList: cntTable.nzData" [nzFilterFn]="'count_type' | gridFilterFn">{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</th>
-            <th [nzSortFn]="'scheduled_date' | gridSort" [nzFilters]="'scheduled_date' | gridFilterList: cntTable.nzData" [nzFilterFn]="'scheduled_date' | gridFilterFn">{{ 'INVENTORY.COL_SCHEDULED_DATE' | translate }}</th>
-            <th nzAlign="center" [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: cntTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of cntTable.data; track c.id) {
-            <tr>
-              <td><code>{{ c.session_number }}</code></td>
-              <td>{{ c.warehouse?.name || c.warehouse_id }}</td>
-              <td><nz-tag nzColor="purple">{{ c.count_type }}</nz-tag></td>
-              <td>{{ c.scheduled_date | date:'mediumDate' }}</td>
-              <td nzAlign="center">
-                @switch (c.status) {
-                  @case ('reconciled') {
-                    <nz-tag nzColor="success">{{ 'INVENTORY.STATUS.RECONCILED' | translate }}</nz-tag>
-                  }
-                  @case ('in_progress') {
-                    <nz-tag nzColor="processing">{{ 'INVENTORY.STATUS.IN_PROGRESS' | translate }}</nz-tag>
-                  }
-                  @default {
-                    <nz-tag nzColor="default">{{ c.status }}</nz-tag>
-                  }
-                }
-              </td>
-              <td nzAlign="right">
-                @if (c.status !== 'reconciled') {
-                  <button
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    nz-popconfirm
-                    [nzPopconfirmTitle]="'INVENTORY.CONFIRM_RECONCILE' | translate"
-                    (nzOnConfirm)="reconcileCount(c.id)"
-                  >
-                    <nz-icon nzType="sync" /> {{ 'INVENTORY.ACTIONS.RECONCILE' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="6"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
-              </tr>
-            }
+      <app-base-table
+        [grid]="countsGrid"
+        [columns]="countColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="countActionsTpl"
+        exportFileName="inventory-counts"
+      />
+
+      <ng-template #countNumberTpl let-c><code>{{ c.session_number }}</code></ng-template>
+      <ng-template #countTypeTpl let-c><nz-tag nzColor="purple">{{ c.count_type }}</nz-tag></ng-template>
+      <ng-template #countDateTpl let-c>{{ c.scheduled_date | date:'mediumDate' }}</ng-template>
+      <ng-template #countStatusTpl let-c>
+        @switch (c.status) {
+          @case ('reconciled') {
+            <nz-tag nzColor="success">{{ 'INVENTORY.STATUS.RECONCILED' | translate }}</nz-tag>
           }
-        </tbody>
-      </nz-table>
+          @case ('in_progress') {
+            <nz-tag nzColor="processing">{{ 'INVENTORY.STATUS.IN_PROGRESS' | translate }}</nz-tag>
+          }
+          @default {
+            <nz-tag nzColor="default">{{ c.status }}</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #countActionsTpl let-c>
+        @if (c.status !== 'reconciled') {
+          <button
+            nz-button
+            nzType="link"
+            nzSize="small"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'INVENTORY.CONFIRM_RECONCILE' | translate"
+            (nzOnConfirm)="reconcileCount(c.id)"
+          >
+            <nz-icon nzType="sync" /> {{ 'INVENTORY.ACTIONS.RECONCILE' | translate }}
+          </button>
+        }
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 4: VALUATION -->
@@ -551,77 +457,37 @@
         <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="add"></button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #sTable
-        [nzData]="products()"
-        [nzFrontPagination]="false"
-        [nzLoading]="loading()"
-        [nzTotal]="total()"
-        [nzPageIndex]="pageIndex()"
-        [nzPageSize]="pageSize()"
-        (nzQueryParams)="onQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: sTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'INVENTORY.COL_SKU' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: sTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'INVENTORY.COL_DESC' | translate }}</th>
-            <th [nzSortFn]="'unit_measure' | gridSort" [nzFilters]="'unit_measure' | gridFilterList: sTable.nzData" [nzFilterFn]="'unit_measure' | gridFilterFn">{{ 'INVENTORY.LBL_UDM' | translate }}</th>
-            <th [nzSortFn]="'hs_code' | gridSort" [nzFilters]="'hs_code' | gridFilterList: sTable.nzData" [nzFilterFn]="'hs_code' | gridFilterFn">{{ 'INVENTORY.COL_HS' | translate }}</th>
-            <th>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
-            <th>{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (it of sTable.data; track it.id || it.sku) {
-            <tr>
-              <td>
-                <strong>{{ it.sku }}</strong>
-              </td>
-              <td>
-                <div>{{ it.name }}</div>
-                @if (it.description) {
-                  <small class="desc-text">{{ it.description }}</small>
-                }
-              </td>
-              <td>
-                <strong>{{ it.unit_measure }}</strong>
-              </td>
-              <td>
-                <code>{{ it.hs_code || '-' }}</code>
-              </td>
-              <td>
-                {{ +it.cost_price | money: authStore.activeCurrency() }}
-              </td>
-              <td>
-                {{ +it.sale_price | money: authStore.activeCurrency() }}
-              </td>
-              <td nzAlign="right">
-                <button
-                  nz-button
-                  nzType="text"
-                  nzDanger
-                  nzSize="small"
-                  nz-popconfirm
-                  [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
-                  (nzOnConfirm)="deleteProduct(it)"
-                  appIconAction="delete"
-                ></button>
-              </td>
-            </tr>
-          } @empty {
-            @if (!loading()) {
-              <tr>
-                <td colspan="7">
-                  <nz-empty nzNotFoundImage="simple" />
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="productsGrid"
+        [columns]="productColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="productActionsTpl"
+        exportFileName="inventory-products"
+      />
+
+      <ng-template #productSkuTpl let-it><strong>{{ it.sku }}</strong></ng-template>
+      <ng-template #productNameTpl let-it>
+        <div>{{ it.name }}</div>
+        @if (it.description) {
+          <small class="desc-text">{{ it.description }}</small>
+        }
+      </ng-template>
+      <ng-template #productUomTpl let-it><strong>{{ it.unit_measure }}</strong></ng-template>
+      <ng-template #productHsTpl let-it><code>{{ it.hs_code || '-' }}</code></ng-template>
+      <ng-template #productCostTpl let-it>{{ +it.cost_price | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #productPriceTpl let-it>{{ +it.sale_price | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #productActionsTpl let-it>
+        <button
+          nz-button
+          nzType="text"
+          nzDanger
+          nzSize="small"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
+          (nzOnConfirm)="deleteProduct(it)"
+          appIconAction="delete"
+        ></button>
+      </ng-template>
     </nz-tab>
   </nz-tabs>
 </nz-card>

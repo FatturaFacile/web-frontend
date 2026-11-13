@@ -3,72 +3,41 @@
 <div nz-row [nzGutter]="16" class="stats-row">
   <div nz-col [nzSpan]="8">
     <nz-card>
-      <nz-statistic [nzValue]="store.ordersCount()" [nzTitle]="'ORDERS.COUNT' | translate" />
+      <nz-statistic [nzValue]="grid.totalCount()" [nzTitle]="'ORDERS.COUNT' | translate" />
     </nz-card>
   </div>
   <div nz-col [nzSpan]="8">
     <nz-card>
       <nz-statistic
-        [nzValue]="store.totalRevenue() | appCurrency"
+        [nzValue]="totalRevenue() | appCurrency"
         [nzTitle]="'ORDERS.REVENUE' | translate"
       />
     </nz-card>
   </div>
 </div>
 
-@if (store.error(); as error) {
-  <nz-alert nzType="error" [nzMessage]="error" nzShowIcon class="order-alert" />
-}
+<app-base-table
+  [grid]="grid"
+  [columns]="columns()"
+  [actionsTemplate]="actionsTpl"
+  [exportFileName]="'orders'"
+  (rowClick)="select($event)"
+/>
 
-<nz-spin [nzSpinning]="store.isLoading()">
-  <nz-table [nzScroll]="{ x: '760px' }"
-    #orderTable
-    [nzData]="store.orders()"
-    [nzFrontPagination]="true"
-    [nzPageSize]="10"
-    class="orders-table"
-  >
-    <thead>
-      <tr>
-        <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: orderTable.nzData" [nzFilterFn]="'id' | gridFilterFn">{{ "ORDERS.COL_ID" | translate }}</th>
-        <th [nzSortFn]="'referenceNumber' | gridSort" [nzFilters]="'referenceNumber' | gridFilterList: orderTable.nzData" [nzFilterFn]="'referenceNumber' | gridFilterFn">{{ "ORDERS.COL_REF" | translate }}</th>
-        <th [nzSortFn]="'createdAt' | gridSort" [nzFilters]="'createdAt' | gridFilterList: orderTable.nzData" [nzFilterFn]="'createdAt' | gridFilterFn">{{ "ORDERS.COL_DATE" | translate }}</th>
-        <th [nzSortFn]="'items.length' | gridSort" [nzFilters]="'items.length' | gridFilterList: orderTable.nzData" [nzFilterFn]="'items.length' | gridFilterFn">{{ "ORDERS.COL_ITEMS_COUNT" | translate }}</th>
-        <th [nzSortFn]="'totalAmount' | gridSort" [nzFilters]="'totalAmount' | gridFilterList: orderTable.nzData" [nzFilterFn]="'totalAmount' | gridFilterFn">{{ "ORDERS.COL_TOTAL" | translate }}</th>
-        <th>{{ "ORDERS.COL_DETAIL" | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (order of orderTable.data; track order.id) {
-        <tr
-          (click)="store.setSelectedOrderId(order.id)"
-          [class.selected-row]="order.id === store.selectedOrderId()"
-        >
-          <td>{{ order.id }}</td>
-          <td>
-            <nz-tag nzColor="blue">{{ order.referenceNumber }}</nz-tag>
-          </td>
-          <td>{{ order.createdAt | date: "dd/MM/yyyy HH:mm" }}</td>
-          <td>{{ order.items.length }}</td>
-          <td>
-            <strong>{{ order.totalAmount | appCurrency }}</strong>
-          </td>
-          <td>
-            <button
-              type="button"
-              class="select-btn"
-              (click)="store.setSelectedOrderId(order.id); $event.stopPropagation()"
-            >
-              {{ "COMMON.SELECT" | translate }}
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
-</nz-spin>
+<ng-template #referenceTpl let-order>
+  <nz-tag nzColor="blue">{{ order.referenceNumber }}</nz-tag>
+</ng-template>
+<ng-template #createdAtTpl let-order>{{ order.createdAt | date: "dd/MM/yyyy HH:mm" }}</ng-template>
+<ng-template #totalTpl let-order>
+  <strong>{{ order.totalAmount | appCurrency }}</strong>
+</ng-template>
+<ng-template #actionsTpl let-order>
+  <button type="button" class="select-btn" (click)="select(order); $event.stopPropagation()">
+    {{ "COMMON.SELECT" | translate }}
+  </button>
+</ng-template>
 
-@if (store.selectedOrder(); as selected) {
+@if (selectedOrder(); as selected) {
   <nz-card [nzTitle]="'ORDERS.SELECTED_TITLE' | translate" class="detail-card">
     <p><strong>ID:</strong> {{ selected.id }}</p>
     <p>

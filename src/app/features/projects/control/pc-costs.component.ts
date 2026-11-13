@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -8,17 +8,19 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   AuthStore,
+  FetchGridModel,
+  I18nService,
   PermissionsService,
   ProjectControlApiService,
   ProjectCostEntry,
   ProjectExpenseCategory,
+  QueryFilterParams,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 
 const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   'travel_lodging',
@@ -35,12 +37,11 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   selector: 'app-pc-costs',
   styleUrl: './pc-costs.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
-    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+    BaseTableComponent,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
-      <nz-select class="w-field-md" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
+      <nz-select class="w-field-md" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="onApprovalFilterChange($event)">
         <nz-option nzValue="pending" [nzLabel]="'PRJ.APPROVAL_PENDING' | translate" />
         <nz-option nzValue="approved" [nzLabel]="'PRJ.APPROVAL_APPROVED' | translate" />
         <nz-option nzValue="rejected" [nzLabel]="'PRJ.APPROVAL_REJECTED' | translate" />
@@ -51,42 +52,21 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
       }
     </div>
 
-    <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzPageSize]="20">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'incurred_date' | gridSort" [nzFilters]="'incurred_date' | gridFilterList: table.nzData" [nzFilterFn]="'incurred_date' | gridFilterFn">{{ 'PRJ.DATE' | translate }}</th>
-          <th [nzSortFn]="'cost_category' | gridSort" [nzFilters]="'cost_category' | gridFilterList: table.nzData" [nzFilterFn]="'cost_category' | gridFilterFn">{{ 'PRJ.CATEGORY' | translate }}</th>
-          <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: table.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'PRJ.DESCRIPTION' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort" [nzFilters]="'total_cost' | gridFilterList: table.nzData" [nzFilterFn]="'total_cost' | gridFilterFn">{{ 'PRJ.TOTAL' | translate }}</th>
-          <th>{{ 'PRJ.BILLABLE' | translate }}</th>
-          <th [nzSortFn]="'approval_status' | gridSort" [nzFilters]="'approval_status' | gridFilterList: table.nzData" [nzFilterFn]="'approval_status' | gridFilterFn">{{ 'PRJ.APPROVAL_STATUS' | translate }}</th>
-          <th>{{ 'PRJ.ACTIONS' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (cost of table.data; track cost.id) {
-          <tr>
-            <td>{{ cost.incurred_date }}</td>
-            <td>{{ cost.cost_category }}</td>
-            <td>{{ cost.description }}</td>
-            <td nzAlign="right">{{ cost.total_cost | money: currency() }}</td>
-            <td>{{ (cost.is_billable ? 'PRJ.YES' : 'PRJ.NO') | translate }}</td>
-            <td>
-              <nz-tag>{{ cost.approval_status }}</nz-tag>
-              @if (cost.rejection_reason) {
-                <div class="text-muted text-xs">{{ cost.rejection_reason }}</div>
-              }
-            </td>
-            <td>
-              @if (canWrite && cost.approval_status === 'pending') {
-                <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(cost)">{{ 'PRJ.APPROVE' | translate }}</button>
-                <button nz-button nzSize="small" nzDanger type="button" (click)="rejectTarget.set(cost)">{{ 'PRJ.REJECT' | translate }}</button>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="project-costs" />
+    <ng-template #totalTpl let-cost>{{ cost.total_cost | money: currency() }}</ng-template>
+    <ng-template #billableTpl let-cost>{{ (cost.is_billable ? 'PRJ.YES' : 'PRJ.NO') | translate }}</ng-template>
+    <ng-template #approvalTpl let-cost>
+      <nz-tag>{{ cost.approval_status }}</nz-tag>
+      @if (cost.rejection_reason) {
+        <div class="text-muted text-xs">{{ cost.rejection_reason }}</div>
+      }
+    </ng-template>
+    <ng-template #actionsTpl let-cost>
+      @if (canWrite && cost.approval_status === 'pending') {
+        <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(cost)">{{ 'PRJ.APPROVE' | translate }}</button>
+        <button nz-button nzSize="small" nzDanger type="button" (click)="rejectTarget.set(cost)">{{ 'PRJ.REJECT' | translate }}</button>
+      }
+    </ng-template>
 
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.EXPENSE_NEW' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="create" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
@@ -132,7 +112,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
     </nz-modal>
   `,
 })
-export class PcCostsComponent implements OnInit {
+export class PcCostsComponent {
   readonly projectId = input.required<string>();
 
   private readonly api = inject(ProjectControlApiService);
@@ -141,8 +121,35 @@ export class PcCostsComponent implements OnInit {
   protected readonly canWrite = inject(PermissionsService).canWrite('projects');
 
   protected readonly categories = EXPENSE_CATEGORIES;
-  protected readonly items = signal<ProjectCostEntry[]>([]);
-  protected readonly loading = signal(false);
+  private readonly i18n = inject(I18nService);
+
+  /** Cost entries of the project: paging, sorting, filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ProjectCostEntry, QueryFilterParams & { approval_status?: string }>((query) =>
+    this.api.getCosts(this.projectId(), query),
+  );
+
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: ProjectCostEntry; value: unknown }>>('totalTpl');
+  private readonly billableTpl = viewChild<TemplateRef<{ $implicit: ProjectCostEntry; value: unknown }>>('billableTpl');
+  private readonly approvalTpl = viewChild<TemplateRef<{ $implicit: ProjectCostEntry; value: unknown }>>('approvalTpl');
+
+  protected readonly columns = computed<TableColumnDef<ProjectCostEntry>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'incurred_date', header: 'PRJ.DATE' },
+      { key: 'cost_category', header: 'PRJ.CATEGORY' },
+      { key: 'description', header: 'PRJ.DESCRIPTION' },
+      { key: 'total_cost', header: 'PRJ.TOTAL', align: 'right', customCellTemplate: this.totalTpl() },
+      {
+        key: 'is_billable',
+        serverKey: 'billable',
+        header: 'PRJ.BILLABLE',
+        valueGetter: (cost) => this.i18n.translate(cost.is_billable ? 'PRJ.YES' : 'PRJ.NO'),
+        valueLabel: (value) => this.i18n.translate(value === 'yes' ? 'PRJ.YES' : 'PRJ.NO'),
+        customCellTemplate: this.billableTpl(),
+      },
+      { key: 'approval_status', header: 'PRJ.APPROVAL_STATUS', customCellTemplate: this.approvalTpl() },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -158,19 +165,13 @@ export class PcCostsComponent implements OnInit {
     is_billable: this.fb.control(false),
   });
 
-  ngOnInit(): void {
-    this.load();
+  protected load(): void {
+    this.grid.reload();
   }
 
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getCosts(this.projectId(), { approval_status: this.approvalFilter ?? undefined }).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+  protected onApprovalFilterChange(status: string | null): void {
+    this.approvalFilter = status;
+    this.grid.setFilter({ approval_status: status ?? undefined });
   }
 
   protected openModal(): void {

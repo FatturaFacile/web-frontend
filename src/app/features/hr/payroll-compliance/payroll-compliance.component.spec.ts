@@ -131,7 +131,7 @@ describe('Payroll compliance page', () => {
     it('updates the row by its topic and year, not by the row id', async () => {
       api.saveLegalParameters.mockReturnValue(ok({}));
       const legal = config('legalConfig');
-      await new Promise<void>((resolve) => legal.list().subscribe(() => resolve()));
+      await new Promise<void>((resolve) => legal.gridList?.({ page: 1 }).subscribe(() => resolve()));
       legal.update?.('l1', { source: 'New source', parameters: '{"rate":70}' }).subscribe();
       expect(api.saveLegalParameters).toHaveBeenCalledWith('bad_weather', 2026, {
         parameters: { rate: 70 },
@@ -149,10 +149,10 @@ describe('Payroll compliance page', () => {
     });
 
     it('shows the parameters of the listed rows as JSON text for editing', async () => {
-      const rows = await new Promise<Row[]>((resolve) =>
-        config('annualConfig').list().subscribe(resolve),
+      const page = await new Promise<{ data: Row[] }>((resolve) =>
+        config('annualConfig').gridList?.({ page: 1 }).subscribe(resolve),
       );
-      expect(rows[0]['parameters']).toBe('{"ahv":5.3}');
+      expect(page.data[0]['parameters']).toBe('{"ahv":5.3}');
     });
   });
 

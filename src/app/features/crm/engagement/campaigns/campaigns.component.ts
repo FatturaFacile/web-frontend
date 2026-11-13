@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -8,21 +8,31 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CrmApiService,
   CrmCampaign,
   CrmCampaignMember,
+  CrmCampaignMemberFilterParams,
   CrmCampaignStatus,
   CrmSegment,
+  FetchGridModel,
   I18nService,
+  PaginatedResponse,
+  QueryFilterParams,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { toTimestamp } from '@shared/utils/date-validators';
+import { of } from 'rxjs';
 
 const STATUSES: CrmCampaignStatus[] = ['planned', 'active', 'completed', 'cancelled'];
+const EMPTY_PAGE: PaginatedResponse<never> = {
+  success: true,
+  message: '',
+  data: [],
+  meta: { current_page: 1, from: null, last_page: 1, per_page: 15, to: null, total: 0 },
+};
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
 
 interface CampaignDraft {
@@ -56,8 +66,7 @@ const emptyDraft = (): CampaignDraft => ({
   selector: 'app-crm-campaigns',
   styleUrl: './campaigns.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,
@@ -68,7 +77,6 @@ const emptyDraft = (): CampaignDraft => ({
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     PageHeaderComponent,
     TranslatePipe,
@@ -83,14 +91,15 @@ export class CampaignsComponent {
   protected readonly canWrite = computed(() => this.permissions.canWrite('crm'));
 
   protected readonly statuses = STATUSES;
-  protected readonly campaigns = signal<CrmCampaign[]>([]);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<CrmCampaign, QueryFilterParams>((query) => this.api.getCampaigns(query));
   protected readonly createOpen = signal(false);
   protected readonly saving = signal(false);
   protected readonly selected = signal<CrmCampaign | null>(null);
-  protected readonly members = signal<CrmCampaignMember[]>([]);
+  /** Members of the campaign open in the detail dialog (empty page while none is selected). */
+  protected readonly membersGrid = new FetchGridModel<CrmCampaignMember, CrmCampaignMemberFilterParams>((query) => {
+    const campaign = this.selected();
+    return campaign ? this.api.getCampaignMembers(campaign.id, query) : of(EMPTY_PAGE);
+  });
   protected readonly roi = signal<[string, unknown][]>([]);
   protected readonly segments = signal<CrmSegment[]>([]);
   protected readonly sendOpen = signal(false);
@@ -100,22 +109,46 @@ export class CampaignsComponent {
   protected subject = '';
   protected body = '';
 
-  constructor() {
-    this.load(1);
-  }
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly memberNameTpl = viewChild<TemplateRef<unknown>>('memberNameTpl');
 
-  protected load(page = this.pageIndex()): void {
-    this.pageIndex.set(page);
-    this.loading.set(true);
-    this.api.getCampaigns({ page, per_page: 15 }).subscribe({
-      next: (res) => {
-        this.campaigns.set(res.data ?? []);
-        this.total.set(res.meta?.total ?? 0);
-        this.loading.set(false);
+  protected readonly columns = computed<TableColumnDef<CrmCampaign>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'name', header: this.i18n.translate('CRMX.COMMON.NAME') },
+      { key: 'code', header: this.i18n.translate('CRMX.COMMON.CODE') },
+      {
+        key: 'status',
+        header: this.i18n.translate('CRMX.COMMON.STATUS'),
+        valueGetter: (c) => (c.status ? this.i18n.translate('CRMX.CAMPAIGN_STATUS_' + c.status) : ''),
+        valueLabel: (value) => this.i18n.translate('CRMX.CAMPAIGN_STATUS_' + value),
+        customCellTemplate: this.statusTpl(),
       },
-      error: () => this.loading.set(false),
-    });
-  }
+      {
+        key: 'start_date',
+        header: this.i18n.translate('CRMX.CAMPAIGNS.PERIOD'),
+        valueGetter: (c) => `${c.start_date ?? '...'} / ${c.end_date ?? '...'}`,
+        filterable: false,
+        groupable: false,
+      },
+      { key: 'budgeted_cost', header: this.i18n.translate('CRMX.CAMPAIGNS.BUDGET'), align: 'right' },
+      { key: 'expected_revenue', header: this.i18n.translate('CRMX.CAMPAIGNS.EXPECTED_REVENUE'), align: 'right' },
+    ];
+  });
+
+  protected readonly memberColumns = computed<TableColumnDef<CrmCampaignMember>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      {
+        key: 'name',
+        header: this.i18n.translate('CRMX.COMMON.NAME'),
+        valueGetter: (m) => m.name ?? m.contact_id ?? m.lead_id ?? '',
+        customCellTemplate: this.memberNameTpl(),
+      },
+      { key: 'email', header: this.i18n.translate('CRMX.COMMON.EMAIL') },
+      { key: 'status', header: this.i18n.translate('CRMX.COMMON.STATUS') },
+    ];
+  });
 
   /** Mirrors `end_date: after_or_equal:start_date`. */
   protected endsBeforeStart(): boolean {
@@ -155,7 +188,7 @@ export class CampaignsComponent {
           this.saving.set(false);
           this.createOpen.set(false);
           this.message.success(this.i18n.translate('CRMX.COMMON.SAVED'));
-          this.load(1);
+          this.grid.reload();
         },
         error: () => this.saving.set(false),
       });
@@ -168,9 +201,8 @@ export class CampaignsComponent {
 
   protected view(campaign: CrmCampaign): void {
     this.selected.set(campaign);
-    this.members.set([]);
     this.roi.set([]);
-    this.loadMembers(campaign.id);
+    this.membersGrid.reload();
     this.api.getCampaignRoi(campaign.id).subscribe({
       next: (res) => this.roi.set(Object.entries(res.data ?? {})),
     });
@@ -178,10 +210,6 @@ export class CampaignsComponent {
       next: (res) => this.segments.set(res.data ?? []),
       error: () => this.segments.set([]),
     });
-  }
-
-  private loadMembers(id: string): void {
-    this.api.getCampaignMembers(id).subscribe({ next: (res) => this.members.set(res.data ?? []) });
   }
 
   protected addMember(campaign: CrmCampaign): void {
@@ -198,14 +226,14 @@ export class CampaignsComponent {
       next: () => {
         this.memberRef = '';
         this.message.success(this.i18n.translate('CRMX.CAMPAIGNS.MEMBER_ADDED'));
-        this.loadMembers(campaign.id);
+        this.membersGrid.reload();
       },
     });
   }
 
   protected removeMember(campaign: CrmCampaign, member: CrmCampaignMember): void {
     this.api.removeCampaignMember(campaign.id, member.id).subscribe({
-      next: () => this.loadMembers(campaign.id),
+      next: () => this.membersGrid.reload(),
     });
   }
 
@@ -220,7 +248,7 @@ export class CampaignsComponent {
       next: () => {
         this.sendOpen.set(false);
         this.message.success(this.i18n.translate('CRMX.CAMPAIGNS.SENT'));
-        this.loadMembers(campaign.id);
+        this.membersGrid.reload();
       },
     });
   }

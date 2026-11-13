@@ -7,9 +7,8 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, crudPage } from '../shared/crud/crud.types';
 import { PayrollDocumentsComponent } from './payroll-documents.component';
 import { PayrollExportsComponent } from './payroll-exports.component';
 import { PayrollRunsComponent } from './payroll-runs.component';
@@ -138,7 +137,7 @@ export class PayrollComponent implements OnInit {
   protected readonly wageTypesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmPayroll.wageTypes',
     canWrite: this.canWrite(),
-    list: () => this.api.getWageTypes().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getWageTypes(query)),
     create: (payload) => this.api.createWageType(payload as never),
     update: (id, payload) => this.api.updateWageType(id, payload as never),
     remove: (id) => this.api.deleteWageType(id),
@@ -168,7 +167,7 @@ export class PayrollComponent implements OnInit {
   protected readonly familyConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmPayroll.familyAllowances',
     canWrite: this.canWrite(),
-    list: () => this.api.getFamilyAllowanceRates().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getFamilyAllowanceRates(query)),
     create: (payload) => this.api.createFamilyAllowanceRate(payload as never),
     update: (id, payload) => this.api.updateFamilyAllowanceRate(id, payload as never),
     remove: (id) => this.api.deleteFamilyAllowanceRate(id),

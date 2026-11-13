@@ -54,54 +54,13 @@
     <!-- TAB 0: CASES -->
     <nz-tab [nzTitle]="'PRACTICE.TAB_CASES' | translate">
       <div class="tab-toolbar">
-        <button nz-button (click)="loadCases()">
+        <button nz-button (click)="casesGrid.reload()">
           <span nz-icon nzType="reload"></span>
           {{ 'PRACTICE.REFRESH' | translate }}
         </button>
       </div>
 
-      <nz-table
-        #casesTable
-        [nzData]="cases()"
-        [nzLoading]="casesLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'num' | gridSort" [nzFilters]="'num' | gridFilterList: casesTable.nzData" [nzFilterFn]="'num' | gridFilterFn">{{ 'PRACTICE.CASE_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'client' | gridSort" [nzFilters]="'client' | gridFilterList: casesTable.nzData" [nzFilterFn]="'client' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: casesTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'PRACTICE.SUBJECT' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: casesTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th [nzSortFn]="'fee' | gridSort" [nzFilters]="'fee' | gridFilterList: casesTable.nzData" [nzFilterFn]="'fee' | gridFilterFn">{{ 'PRACTICE.FEE' | translate }}</th>
-            <th>{{ 'PRACTICE.AML_COMPLIANT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: casesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRACTICE.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of casesTable.data; track c.id || c.num) {
-            <tr>
-              <td><strong>{{ c.num }}</strong></td>
-              <td>{{ c.client }}</td>
-              <td>{{ c.subject }}</td>
-              <td>{{ c.hours }}</td>
-              <td>{{ c.fee }}</td>
-              <td>
-                @if (c.amlCompliant) {
-                  <nz-tag nzColor="success">{{ 'COMMON.YES' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="warning">{{ 'COMMON.NO' | translate }}</nz-tag>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="c.status === 'active' ? 'processing' : 'default'">
-                  {{ c.status || 'active' }}
-                </nz-tag>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="casesGrid" [columns]="caseColumns()" exportFileName="legal-cases" />
     </nz-tab>
 
     <!-- TAB 1: ACTIVITY CONTROL & BILLABLE ENTRIES -->
@@ -109,17 +68,16 @@
       <div class="tab-toolbar">
         <div class="filter-group">
           <span class="label-inline">{{ 'PRACTICE.PERIOD' | translate }}:</span>
-          <input nz-input class="date-input" type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); loadActivities()" />
+          <input nz-input class="date-input" type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); applyActivityFilters()" />
           <span>-</span>
-          <input nz-input class="date-input" type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); loadActivities()" />
+          <input nz-input class="date-input" type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); applyActivityFilters()" />
           <nz-select
             [ngModel]="filterActivityStatus()"
-            (ngModelChange)="filterActivityStatus.set($event); loadActivities()"
+            (ngModelChange)="filterActivityStatus.set($event); applyActivityFilters()"
           >
             <nz-option nzValue="" [nzLabel]="'PRACTICE.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="unbilled" [nzLabel]="'PRACTICE.STATUS_UNBILLED' | translate"></nz-option>
             <nz-option nzValue="billed" [nzLabel]="'PRACTICE.STATUS_BILLED' | translate"></nz-option>
-            <nz-option nzValue="written_off" [nzLabel]="'PRACTICE.STATUS_WRITTEN_OFF' | translate"></nz-option>
           </nz-select>
         </div>
 
@@ -140,116 +98,26 @@
         </div>
       </div>
 
-      <nz-table
-        #actTable
-        [nzData]="activities()"
-        [nzLoading]="activitiesLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th nzWidth="40px"></th>
-            <th [nzSortFn]="'activity_date' | gridSort" [nzFilters]="'activity_date' | gridFilterList: actTable.nzData" [nzFilterFn]="'activity_date' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: actTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'case_title' | gridSort" [nzFilters]="'case_title' | gridFilterList: actTable.nzData" [nzFilterFn]="'case_title' | gridFilterFn">{{ 'PRACTICE.CASE' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: actTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: actTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th [nzSortFn]="'rate' | gridSort" [nzFilters]="'rate' | gridFilterList: actTable.nzData" [nzFilterFn]="'rate' | gridFilterFn">{{ 'PRACTICE.RATE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: actTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.AMOUNT' | translate }}</th>
-            <th>{{ 'PRACTICE.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (act of actTable.data; track act.id) {
-            <tr>
-              <td>
-                @if (act.status === 'unbilled') {
-                  <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-                  <label
-                    nz-checkbox
-                    [nzChecked]="selectedActivityIds().includes(act.id)"
-                    (nzCheckedChange)="toggleActivitySelection(act.id, $event)"
-                  ></label>
-                }
-              </td>
-              <td>{{ act.activity_date | date: 'dd/MM/yyyy' }}</td>
-              <td><strong>{{ act.client_name || act.client_id }}</strong></td>
-              <td>{{ act.case_title || act.case_id || '-' }}</td>
-              <td>{{ act.description }}</td>
-              <td>{{ act.hours }} h</td>
-              <td>{{ act.rate | money }}</td>
-              <td><strong>{{ act.amount | money }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="getActivityStatusColor(act.status)">
-                  {{ ('PRACTICE.STATUS_' + (act.status | uppercase)) | translate }}
-                </nz-tag>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="activitiesGrid"
+        [columns]="activityColumns()"
+        [selectable]="true"
+        [selectedItems]="selectedActivities()"
+        (selectionChange)="selectedActivities.set($event)"
+        exportFileName="billable-activities"
+      />
     </nz-tab>
 
     <!-- TAB 2: FEE NOTES -->
     <nz-tab [nzTitle]="'PRACTICE.TAB_FEE_NOTES' | translate">
       <div class="tab-toolbar">
-        <button nz-button (click)="loadFeeNotes()">
+        <button nz-button (click)="feeNotesGrid.reload()">
           <span nz-icon nzType="reload"></span>
           {{ 'PRACTICE.REFRESH' | translate }}
         </button>
       </div>
 
-      <nz-table
-        #fnTable
-        [nzData]="feeNotes()"
-        [nzLoading]="feeNotesLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'fee_note_number' | gridSort" [nzFilters]="'fee_note_number' | gridFilterList: fnTable.nzData" [nzFilterFn]="'fee_note_number' | gridFilterFn">{{ 'PRACTICE.FEE_NOTE_NUM' | translate }}</th>
-            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: fnTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_id' | gridSort" [nzFilters]="'client_id' | gridFilterList: fnTable.nzData" [nzFilterFn]="'client_id' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: fnTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'PRACTICE.NET_AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'social_contribution_rate' | gridSort" [nzFilters]="'social_contribution_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'social_contribution_rate' | gridFilterFn">{{ 'PRACTICE.CPA_CONTRIBUTION' | translate }}</th>
-            <th [nzSortFn]="'withholding_tax_rate' | gridSort" [nzFilters]="'withholding_tax_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'withholding_tax_rate' | gridFilterFn">{{ 'PRACTICE.WITHHOLDING' | translate }}</th>
-            <th [nzSortFn]="'vat_rate' | gridSort" [nzFilters]="'vat_rate' | gridFilterList: fnTable.nzData" [nzFilterFn]="'vat_rate' | gridFilterFn">{{ 'PRACTICE.VAT' | translate }}</th>
-            <th>{{ 'PRACTICE.GROSS_AMOUNT' | translate }}</th>
-            <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (fn of fnTable.data; track fn.id) {
-            <tr>
-              <td>
-                <button nz-button nzType="link" (click)="openFeeNoteDrawer(fn)">
-                  {{ fn.fee_note_number }}
-                </button>
-              </td>
-              <td>{{ fn.date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ fn.client_id }}</td>
-              <td>{{ fn.net_amount | money }}</td>
-              <td>{{ fn.social_contribution_rate || 4 }}%</td>
-              <td>{{ fn.withholding_tax_rate || 20 }}%</td>
-              <td>{{ fn.vat_rate || 22 }}%</td>
-              <td><strong>{{ (fn.gross_amount || fn.net_amount) | money }}</strong></td>
-              <td>
-                <nz-space>
-                  <button *nzSpaceItem nz-button nzSize="small" (click)="openFeeNoteDrawer(fn)">
-                    <span nz-icon nzType="eye"></span>
-                  </button>
-                  <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="openApplyRetainerModal(fn)">
-                    <span nz-icon nzType="bank"></span>
-                    {{ 'PRACTICE.APPLY_RETAINER' | translate }}
-                  </button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="feeNotesGrid" [columns]="feeNoteColumns()" [actionsTemplate]="feeNoteActionsTpl" exportFileName="fee-notes" />
     </nz-tab>
 
     <!-- TAB 3: RETAINERS (FONDI SPESE & CONTI TERZI) -->
@@ -257,15 +125,14 @@
       <div class="tab-toolbar">
         <nz-select
           [ngModel]="filterRetainerStatus()"
-          (ngModelChange)="filterRetainerStatus.set($event); loadRetainers()"
+          (ngModelChange)="onRetainerStatusChange($event)"
           [nzPlaceHolder]="'PRACTICE.FILTER_STATUS' | translate"
           nzAllowClear
         >
           <nz-option nzValue="" [nzLabel]="'PRACTICE.ALL_STATUSES' | translate"></nz-option>
-          <nz-option nzValue="available" [nzLabel]="'PRACTICE.RET_AVAILABLE' | translate"></nz-option>
-          <nz-option nzValue="partially_applied" [nzLabel]="'PRACTICE.RET_PARTIAL' | translate"></nz-option>
-          <nz-option nzValue="depleted" [nzLabel]="'PRACTICE.RET_DEPLETED' | translate"></nz-option>
-          <nz-option nzValue="voided" [nzLabel]="'PRACTICE.RET_VOIDED' | translate"></nz-option>
+          <nz-option nzValue="open" [nzLabel]="'PRACTICE.RET_AVAILABLE' | translate"></nz-option>
+          <nz-option nzValue="exhausted" [nzLabel]="'PRACTICE.RET_DEPLETED' | translate"></nz-option>
+          <nz-option nzValue="void" [nzLabel]="'PRACTICE.RET_VOIDED' | translate"></nz-option>
         </nz-select>
 
         <div class="actions">
@@ -296,60 +163,7 @@
         </div>
       }
 
-      <nz-table
-        #retTable
-        [nzData]="retainers()"
-        [nzLoading]="retainersLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'received_on' | gridSort" [nzFilters]="'received_on' | gridFilterList: retTable.nzData" [nzFilterFn]="'received_on' | gridFilterFn">{{ 'PRACTICE.DATE' | translate }}</th>
-            <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: retTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th [nzSortFn]="'case_title' | gridSort" [nzFilters]="'case_title' | gridFilterList: retTable.nzData" [nzFilterFn]="'case_title' | gridFilterFn">{{ 'PRACTICE.CASE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: retTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'PRACTICE.INITIAL_AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'balance' | gridSort" [nzFilters]="'balance' | gridFilterList: retTable.nzData" [nzFilterFn]="'balance' | gridFilterFn">{{ 'PRACTICE.BALANCE_AVAILABLE' | translate }}</th>
-            <th>{{ 'PRACTICE.STATUS' | translate }}</th>
-            <th [nzSortFn]="'reference' | gridSort" [nzFilters]="'reference' | gridFilterList: retTable.nzData" [nzFilterFn]="'reference' | gridFilterFn">{{ 'PRACTICE.REFERENCE' | translate }}</th>
-            <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ret of retTable.data; track ret.id) {
-            <tr>
-              <td>{{ ret.received_on | date: 'dd/MM/yyyy' }}</td>
-              <td><strong>{{ ret.client_name || ret.client_id }}</strong></td>
-              <td>{{ ret.case_title || ret.legal_case_id || '-' }}</td>
-              <td>{{ ret.amount | money }}</td>
-              <td><strong class="text-success">{{ ret.balance | money }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="getRetainerStatusColor(ret.status)">
-                  {{ ('PRACTICE.RET_' + (ret.status | uppercase)) | translate }}
-                </nz-tag>
-              </td>
-              <td>{{ ret.reference || '-' }}</td>
-              <td>
-                <nz-space>
-                  @if (ret.status === 'available' || ret.status === 'partially_applied') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzSize="small"
-                      nzDanger
-                      nz-popconfirm
-                      [nzPopconfirmTitle]="'PRACTICE.CONFIRM_VOID_RETAINER' | translate"
-                      (nzOnConfirm)="voidRetainer(ret.id)"
-                    >
-                      {{ 'PRACTICE.VOID' | translate }}
-                    </button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="retainersGrid" [columns]="retainerColumns()" [actionsTemplate]="retainerActionsTpl" exportFileName="retainers" />
     </nz-tab>
 
     <!-- TAB 4: CLOSINGS & CHECKLISTS -->
@@ -434,19 +248,19 @@
     @if (selectedFeeNote(); as fn) {
       <nz-descriptions class="mb-4" nzBordered [nzColumn]="2" nzSize="small">
         <nz-descriptions-item [nzTitle]="'PRACTICE.FEE_NOTE_NUM' | translate">
-          {{ fn.fee_note_number }}
+          {{ fn.note_number }}
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'PRACTICE.DATE' | translate">
           {{ fn.date | date: 'dd/MM/yyyy' }}
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'PRACTICE.CLIENT' | translate">
-          {{ fn.client_id }}
+          {{ clientName(fn.client) || fn.client_id }}
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'PRACTICE.NET_AMOUNT' | translate">
-          {{ fn.net_amount | money }}
+          {{ fn.taxable_fees | money }}
         </nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'PRACTICE.GROSS_AMOUNT' | translate" [nzSpan]="2">
-          <strong class="total-big">{{ (fn.gross_amount || fn.net_amount) | money }}</strong>
+          <strong class="total-big">{{ grossAmount(fn) | money }}</strong>
         </nz-descriptions-item>
       </nz-descriptions>
 
@@ -534,8 +348,8 @@
         <nz-form-label nzRequired>{{ 'PRACTICE.CASE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="legal_case_id">
-            @for (c of cases(); track c.id || c.num) {
-              <nz-option [nzValue]="c.id || c.num" [nzLabel]="c.num + ' - ' + c.client"></nz-option>
+            @for (c of caseOptions(); track c.id) {
+              <nz-option [nzValue]="c.id" [nzLabel]="c.case_number + ' - ' + c.title"></nz-option>
             }
           </nz-select>
         </nz-form-control>
@@ -666,8 +480,8 @@
         <nz-form-label>{{ 'PRACTICE.CASE' | translate }} (opzionale)</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="legal_case_id" nzAllowClear>
-            @for (c of cases(); track c.id || c.num) {
-              <nz-option [nzValue]="c.id || c.num" [nzLabel]="c.num + ' - ' + c.client"></nz-option>
+            @for (c of caseOptions(); track c.id) {
+              <nz-option [nzValue]="c.id" [nzLabel]="c.case_number + ' - ' + c.title"></nz-option>
             }
           </nz-select>
         </nz-form-control>
@@ -733,13 +547,11 @@
         <nz-form-label nzRequired>{{ 'PRACTICE.SELECT_RETAINER' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="retainer_id">
-            @for (r of retainers(); track r.id) {
-              @if (r.status === 'available' || r.status === 'partially_applied') {
-                <nz-option
-                  [nzValue]="r.id"
-                  [nzLabel]="(r.client_name || r.client_id) + ' - Disp: ' + r.balance + ' € (' + r.received_on + ')'"
-                ></nz-option>
-              }
+            @for (r of openRetainerOptions(); track r.id) {
+              <nz-option
+                [nzValue]="r.id"
+                [nzLabel]="(clientName(r.client) || r.client_id) + ' - Disp: ' + retainerBalance(r) + ' € (' + r.received_on + ')'"
+              ></nz-option>
             }
           </nz-select>
         </nz-form-control>
@@ -843,3 +655,72 @@
     }
   </ng-container>
 </nz-modal>
+
+<!-- GRID CELL TEMPLATES -->
+<ng-template #moneyValueTpl let-value="value">{{ value | money }}</ng-template>
+<ng-template #dateValueTpl let-value="value">{{ value | date: 'dd/MM/yyyy' }}</ng-template>
+
+<ng-template #caseNumberTpl let-c><strong>{{ c.case_number }}</strong></ng-template>
+<ng-template #caseClientTpl let-c>{{ clientName(c.client) }}</ng-template>
+<ng-template #caseHoursTpl let-c>{{ hours(c.logged_minutes) }}</ng-template>
+<ng-template #amlTpl let-c>
+  @if (c.aml_kyc_completed) {
+    <nz-tag nzColor="success">{{ 'COMMON.YES' | translate }}</nz-tag>
+  } @else {
+    <nz-tag nzColor="warning">{{ 'COMMON.NO' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #caseStatusTpl let-c>
+  <nz-tag [nzColor]="c.status === 'active' || c.status === 'open' ? 'processing' : 'default'">{{ c.status }}</nz-tag>
+</ng-template>
+
+<ng-template #actClientTpl let-a><strong>{{ clientName(a.legal_case?.client) || '-' }}</strong></ng-template>
+<ng-template #actCaseTpl let-a>{{ a.legal_case?.title || a.legal_case_id || '-' }}</ng-template>
+<ng-template #actHoursTpl let-a>{{ hours(a.duration_minutes) }} h</ng-template>
+<ng-template #actAmountTpl let-a><strong>{{ a.fee_amount | money }}</strong></ng-template>
+<ng-template #actStatusTpl let-a>
+  <nz-tag [nzColor]="getActivityStatusColor(a.is_billed ? 'billed' : 'unbilled')">
+    {{ activityStatusLabel(a.is_billed ? 'billed' : 'unbilled') }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #feeNumberTpl let-fn>
+  <button nz-button nzType="link" (click)="openFeeNoteDrawer(fn)">{{ fn.note_number }}</button>
+</ng-template>
+<ng-template #feeClientTpl let-fn>{{ clientName(fn.client) || fn.client_id }}</ng-template>
+<ng-template #feeGrossTpl let-fn><strong>{{ grossAmount(fn) | money }}</strong></ng-template>
+<ng-template #feeNoteActionsTpl let-fn>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzSize="small" (click)="openFeeNoteDrawer(fn)">
+      <span nz-icon nzType="eye"></span>
+    </button>
+    <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="openApplyRetainerModal(fn)">
+      <span nz-icon nzType="bank"></span>
+      {{ 'PRACTICE.APPLY_RETAINER' | translate }}
+    </button>
+  </nz-space>
+</ng-template>
+
+<ng-template #retClientTpl let-r><strong>{{ clientName(r.client) || r.client_id }}</strong></ng-template>
+<ng-template #retCaseTpl let-r>{{ r.legal_case?.title || r.legal_case_id || '-' }}</ng-template>
+<ng-template #retBalanceTpl let-r><strong class="text-success">{{ retainerBalance(r) | money }}</strong></ng-template>
+<ng-template #retStatusTpl let-r>
+  <nz-tag [nzColor]="getRetainerStatusColor(r.status)">{{ retainerStatusLabel(r.status) }}</nz-tag>
+</ng-template>
+<ng-template #retainerActionsTpl let-r>
+  <nz-space>
+    @if (r.status === 'open') {
+      <button
+        *nzSpaceItem
+        nz-button
+        nzSize="small"
+        nzDanger
+        nz-popconfirm
+        [nzPopconfirmTitle]="'PRACTICE.CONFIRM_VOID_RETAINER' | translate"
+        (nzOnConfirm)="voidRetainer(r.id)"
+      >
+        {{ 'PRACTICE.VOID' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>

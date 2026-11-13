@@ -1,12 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HrTalentApiService, I18nService, OnboardingChecklistRecord } from '@core';
-import { IconActionDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { FetchGridModel, HrTalentApiService, I18nService, OnboardingChecklistRecord } from '@core';
+import { BaseTableComponent, IconActionDirective, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { reportHttpError } from '../shared/hr-http.util';
 
 /** Candidate data retention, onboarding templates and the onboarding checklists in progress. */
@@ -14,14 +13,12 @@ import { reportHttpError } from '../shared/hr-http.util';
   selector: 'app-recruiting-settings',
   styleUrl: './recruiting-settings.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzInputModule,
-    NzTableModule,
     TranslatePipe,
   ],
   template: `
@@ -46,43 +43,31 @@ import { reportHttpError } from '../shared/hr-http.util';
     }
 
     <h3>{{ 'hrmRecruiting.onboarding' | translate }}</h3>
-    <nz-table #table [nzData]="checklists()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="small">
-      <thead>
-        <tr>
-          <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'hrmRecruiting.tasks' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (list of table.data; track list.id) {
-          <tr>
-            <td>{{ list.employee_id.slice(0, 8) }}</td>
-            <td>
-              <ul class="task-list">
-                @for (task of list.tasks ?? []; track task.id) {
-                  <li>
-                    {{ task.title }}
-                    @if (task.due_on) {
-                      ({{ task.due_on | date: 'mediumDate' }})
-                    }
-                    @if (task.completed_at) {
-                      <span>- {{ 'hrmCommon.status.completed' | translate }}</span>
-                    } @else if (canWrite()) {
-                      <button nz-button nzSize="small" type="button" (click)="completeTask(task.id)">
-                        {{ 'hrmRecruiting.completeTask' | translate }}
-                      </button>
-                    }
-                  </li>
-                }
-              </ul>
-            </td>
-          </tr>
+    <app-base-table [grid]="grid" [columns]="columns()" [size]="'small'" [scroll]="{}" exportFileName="onboarding-checklists" />
+
+    <ng-template #employeeTpl let-list>{{ list.employee_id.slice(0, 8) }}</ng-template>
+    <ng-template #tasksTpl let-list>
+      <ul class="task-list">
+        @for (task of list.tasks ?? []; track task.id) {
+          <li>
+            {{ task.title }}
+            @if (task.due_on) {
+              ({{ task.due_on | date: 'mediumDate' }})
+            }
+            @if (task.completed_at) {
+              <span>- {{ 'hrmCommon.status.completed' | translate }}</span>
+            } @else if (canWrite()) {
+              <button nz-button nzSize="small" type="button" (click)="completeTask(task.id)">
+                {{ 'hrmRecruiting.completeTask' | translate }}
+              </button>
+            }
+          </li>
         }
-      </tbody>
-    </nz-table>
+      </ul>
+    </ng-template>
   `,
 })
-export class RecruitingSettingsComponent implements OnInit {
+export class RecruitingSettingsComponent {
   readonly canWrite = input(false);
 
   private readonly api = inject(HrTalentApiService);
@@ -96,25 +81,29 @@ export class RecruitingSettingsComponent implements OnInit {
   });
   protected readonly templateName = signal('');
   protected readonly templateTasks = signal('');
-  protected readonly checklists = signal<OnboardingChecklistRecord[]>([]);
-  protected readonly loading = signal(true);
-
-  ngOnInit(): void {
-    this.reload();
-  }
+  /** Server-driven grid of the onboarding checklists (their tasks come nested in each row). */
+  protected readonly grid = new FetchGridModel<OnboardingChecklistRecord>((query) =>
+    this.api.getOnboardingChecklists(undefined, query),
+  );
+  private readonly employeeTpl = viewChild<TemplateRef<unknown>>('employeeTpl');
+  private readonly tasksTpl = viewChild<TemplateRef<unknown>>('tasksTpl');
+  protected readonly columns = computed<TableColumnDef<OnboardingChecklistRecord>[]>(() => {
+    return [
+      { key: 'employee_id', header: 'hrmCommon.employee', customCellTemplate: this.employeeTpl() },
+      {
+        key: 'tasks',
+        header: 'hrmRecruiting.tasks',
+        sortable: false,
+        filterable: false,
+        groupable: false,
+        exportable: false,
+        customCellTemplate: this.tasksTpl(),
+      },
+    ];
+  });
 
   protected reload(): void {
-    this.loading.set(true);
-    this.api.getOnboardingChecklists().subscribe({
-      next: (res) => {
-        this.checklists.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        reportHttpError(err, this.message, this.i18n);
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   protected saveRetention(): void {

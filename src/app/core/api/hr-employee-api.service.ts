@@ -10,10 +10,12 @@ import {
   EmployeeLifecycleEventResource,
   EmploymentContractResource,
   NewContractPayload,
+  PaginatedResponse,
   PayrollForecast,
   PositionPayload,
   PositionReadinessLevel,
   PositionResource,
+  QueryFilterParams,
   SalaryComponentPayload,
   SalaryComponentResource,
   TransferEmployeePayload,
@@ -30,8 +32,10 @@ export class HrEmployeeApiService {
 
   // --- Employment contracts ---
 
-  getContracts(employeeId: string): Observable<ApiResponse<EmploymentContractResource[]>> {
-    return this.http.get<ApiResponse<EmploymentContractResource[]>>(`${this.base}/employees/${employeeId}/contracts`);
+  getContracts(employeeId: string, params?: QueryFilterParams): Observable<PaginatedResponse<EmploymentContractResource>> {
+    return this.http.get<PaginatedResponse<EmploymentContractResource>>(`${this.base}/employees/${employeeId}/contracts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   /** The new contract supersedes the active one. */
@@ -63,8 +67,10 @@ export class HrEmployeeApiService {
 
   // --- Employee documents ---
 
-  getEmployeeDocuments(employeeId: string): Observable<ApiResponse<EmployeeDocumentResource[]>> {
-    return this.http.get<ApiResponse<EmployeeDocumentResource[]>>(`${this.base}/employees/${employeeId}/documents`);
+  getEmployeeDocuments(employeeId: string, params?: QueryFilterParams): Observable<PaginatedResponse<EmployeeDocumentResource>> {
+    return this.http.get<PaginatedResponse<EmployeeDocumentResource>>(`${this.base}/employees/${employeeId}/documents`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   uploadEmployeeDocument(
@@ -109,8 +115,10 @@ export class HrEmployeeApiService {
 
   // --- Org chart ---
 
-  getDepartments(): Observable<ApiResponse<DepartmentResource[]>> {
-    return this.http.get<ApiResponse<DepartmentResource[]>>(`${this.base}/departments`);
+  getDepartments(params?: QueryFilterParams): Observable<PaginatedResponse<DepartmentResource>> {
+    return this.http.get<PaginatedResponse<DepartmentResource>>(`${this.base}/departments`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createDepartment(payload: DepartmentPayload): Observable<ApiResponse<DepartmentResource>> {
@@ -122,8 +130,10 @@ export class HrEmployeeApiService {
     return this.http.put<ApiResponse<DepartmentResource>>(`${this.base}/departments/${id}`, payload);
   }
 
-  getPositions(): Observable<ApiResponse<PositionResource[]>> {
-    return this.http.get<ApiResponse<PositionResource[]>>(`${this.base}/positions`);
+  getPositions(params?: QueryFilterParams): Observable<PaginatedResponse<PositionResource>> {
+    return this.http.get<PaginatedResponse<PositionResource>>(`${this.base}/positions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createPosition(payload: PositionPayload): Observable<ApiResponse<PositionResource>> {

@@ -62,13 +62,13 @@
               nz-input
               [placeholder]="'MFG.LBL_CERCA_ORDINE_ARTICOLO' | translate"
               [ngModel]="ordersSearch()"
-              (ngModelChange)="ordersSearch.set($event); loadOrders(1)"
+              (ngModelChange)="searchOrders($event)"
             />
           </nz-input-wrapper>
 
           <nz-select
             [ngModel]="ordersStatusFilter()"
-            (ngModelChange)="ordersStatusFilter.set($event); loadOrders(1)"
+            (ngModelChange)="filterOrdersByStatus($event)"
             nzPlaceHolder="Tutti gli stati"
             nzAllowClear
             class="status-filter"
@@ -81,7 +81,7 @@
             <nz-option nzValue="cancelled" [nzLabel]="'MFG.LBL_ANNULLATO' | translate"></nz-option>
           </nz-select>
 
-          <button nz-button nzType="default" (click)="loadOrders(ordersPage())">
+          <button nz-button nzType="default" (click)="ordersGrid.reload()">
             <span nz-icon nzType="reload"></span>
           </button>
         </div>
@@ -89,53 +89,16 @@
         <button nz-button nzType="primary" (click)="openCreateOrderModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #ordersTable
-        [nzData]="orders()"
-        [nzLoading]="loadingOrders()"
-        [nzFrontPagination]="false"
-        [nzTotal]="ordersTotal()"
-        [nzPageIndex]="ordersPage()"
-        [nzPageSize]="15"
-        (nzPageIndexChange)="loadOrders($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'MFG.LBL_N_ORDINE' | translate }}</th>
-            <th [nzSortFn]="'item_code' | gridSort" [nzFilters]="'item_code' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'item_code' | gridFilterFn">{{ 'MFG.LBL_ARTICOLO_DESCRIZIONE' | translate }}</th>
-            <th class="num" [nzSortFn]="'target_quantity' | gridSort" [nzFilters]="'target_quantity' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'target_quantity' | gridFilterFn">{{ 'MFG.LBL_Q_TA_PREVISTA' | translate }}</th>
-            <th class="num" [nzSortFn]="'completed_quantity' | gridSort" [nzFilters]="'completed_quantity' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'completed_quantity' | gridFilterFn">{{ 'MFG.LBL_Q_TA_PRODOTTA' | translate }}</th>
-            <th [nzSortFn]="'planned_start_date' | gridSort" [nzFilters]="'planned_start_date' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'planned_start_date' | gridFilterFn">{{ 'MFG.LBL_INIZIO_PREVISTO' | translate }}</th>
-            <th [nzSortFn]="'planned_end_date' | gridSort" [nzFilters]="'planned_end_date' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'planned_end_date' | gridFilterFn">{{ 'MFG.LBL_FINE_PREVISTA' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th class="num" [nzSortFn]="'actual_cost_total' | gridSort" [nzFilters]="'actual_cost_total' | gridFilterList: ordersTable.nzData" [nzFilterFn]="'actual_cost_total' | gridFilterFn">{{ 'MFG.LBL_COSTI_TOTALI' | translate }}</th>
-            <th class="cell-actions">{{ 'MFG.LBL_AZIONI' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (o of ordersTable.data; track o.id) {
-            <tr>
-              <td><strong>{{ o.order_number }}</strong></td>
-              <td>{{ o.item_code || o.mfg_item_id }}</td>
-              <td class="num strong">{{ o.target_quantity }} {{ o.uom }}</td>
-              <td class="num strong">{{ o.completed_quantity }} {{ o.uom }}</td>
-              <td>{{ o.planned_start_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ o.planned_end_date | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                <nz-tag [nzColor]="getOrderStatusColor(o.status)">
-                  {{ o.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td class="num">
-                @if (o.actual_cost_total !== null && o.actual_cost_total !== undefined) {
-                  <span>{{ o.actual_cost_total | money: 'EUR' }}</span>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td class="cell-actions">
+      <app-base-table
+        [grid]="ordersGrid"
+        [columns]="orderColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="production-orders"
+        [actionsTemplate]="ordersActions"
+      />
+
+      <ng-template #ordersActions let-o>
                 @if (o.status === 'planned') {
                   <button nz-button nzType="link" nzSize="small" (click)="releaseOrder(o)">
                     {{ 'MFG.LBL_RILASCIA' | translate }}
@@ -160,11 +123,7 @@
                 @if (o.status === 'closed' || o.status === 'cancelled') {
                   <span class="text-muted small">{{ 'MFG.LBL_ARCHIVIATO' | translate }}</span>
                 }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 2: DISTINTE BASE (BOMs) -->
@@ -178,11 +137,11 @@
               nz-input
               [placeholder]="'MFG.LBL_CERCA_DISTINTA' | translate"
               [ngModel]="bomsSearch()"
-              (ngModelChange)="bomsSearch.set($event); loadBoms(1)"
+              (ngModelChange)="searchBoms($event)"
             />
           </nz-input-wrapper>
 
-          <button nz-button nzType="default" (click)="loadBoms(bomsPage())">
+          <button nz-button nzType="default" (click)="bomsGrid.reload()">
             <span nz-icon nzType="reload"></span>
           </button>
         </div>
@@ -191,47 +150,16 @@
       </div>
       <p class="text-muted">{{ 'MFG.BOM_DRAFT_HINT' | translate }}</p>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #bomsTable
-        [nzData]="boms()"
-        [nzLoading]="loadingBoms()"
-        [nzFrontPagination]="false"
-        [nzTotal]="bomsTotal()"
-        [nzPageIndex]="bomsPage()"
-        [nzPageSize]="15"
-        (nzPageIndexChange)="loadBoms($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'bom_number' | gridSort" [nzFilters]="'bom_number' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'bom_number' | gridFilterFn">{{ 'MFG.LBL_N_DISTINTA' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</th>
-            <th [nzSortFn]="'item_code' | gridSort" [nzFilters]="'item_code' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'item_code' | gridFilterFn">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th [nzSortFn]="'revision' | gridSort" [nzFilters]="'revision' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'revision' | gridFilterFn">{{ 'MFG.LBL_REVISIONE' | translate }}</th>
-            <th [nzSortFn]="'bom_type' | gridSort" [nzFilters]="'bom_type' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'bom_type' | gridFilterFn">{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th class="num" [nzSortFn]="'base_quantity' | gridSort" [nzFilters]="'base_quantity' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'base_quantity' | gridFilterFn">{{ 'MFG.LBL_Q_TA_BASE' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th [nzSortFn]="'components.length' | gridSort" [nzFilters]="'components.length' | gridFilterList: bomsTable.nzData" [nzFilterFn]="'components.length' | gridFilterFn">{{ 'MFG.LBL_COMPONENTI' | translate }}</th>
-            <th class="cell-actions">{{ 'MFG.LBL_AZIONI' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (b of bomsTable.data; track b.id) {
-            <tr>
-              <td><strong>{{ b.bom_number }}</strong></td>
-              <td>{{ b.name }}</td>
-              <td>{{ b.item_code || b.mfg_item_id }}</td>
-              <td><nz-tag nzColor="blue">Rev. {{ b.revision }}</nz-tag></td>
-              <td>{{ b.bom_type || 'standard' }}</td>
-              <td class="num">{{ b.base_quantity }} {{ b.uom }}</td>
-              <td>
-                <nz-tag [nzColor]="getBomStatusColor(b.status)">
-                  {{ b.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td>{{ b.components?.length || 0 }} elementi</td>
-              <td class="cell-actions">
+      <app-base-table
+        [grid]="bomsGrid"
+        [columns]="bomColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="boms"
+        [actionsTemplate]="bomsActions"
+      />
+
+      <ng-template #bomsActions let-b>
                 <button nz-button nzType="link" nzSize="small" (click)="explodeBom(b)">
                   {{ 'MFG.LBL_ESPLODI' | translate }}
                 </button>
@@ -252,11 +180,7 @@
                     {{ 'MFG.LBL_NUOVA_REV' | translate }}
                   </button>
                 }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: PIANIFICAZIONE FABBISOGNI (MRP) -->
@@ -268,143 +192,42 @@
         </button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #mrpTable
-        [nzData]="mrpRuns()"
-        [nzLoading]="loadingMrp()"
-        [nzFrontPagination]="false"
-        [nzTotal]="mrpTotal()"
-        [nzPageIndex]="mrpPage()"
-        [nzPageSize]="10"
-        (nzPageIndexChange)="loadMrpRuns($event)"
-        nzSize="middle"
-        class="table-spaced"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'run_number' | gridSort" [nzFilters]="'run_number' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'run_number' | gridFilterFn">{{ 'MFG.LBL_N_CALCOLO_MRP' | translate }}</th>
-            <th [nzSortFn]="'run_type' | gridSort" [nzFilters]="'run_type' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'run_type' | gridFilterFn">{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th [nzSortFn]="'horizon_start_date' | gridSort" [nzFilters]="'horizon_start_date' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'horizon_start_date' | gridFilterFn">{{ 'MFG.LBL_ORIZZONTE_INIZIO' | translate }}</th>
-            <th [nzSortFn]="'horizon_end_date' | gridSort" [nzFilters]="'horizon_end_date' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'horizon_end_date' | gridFilterFn">{{ 'MFG.LBL_ORIZZONTE_FINE' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_items_processed' | gridSort" [nzFilters]="'total_items_processed' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'total_items_processed' | gridFilterFn">{{ 'MFG.LBL_ARTICOLI_ELABORATI' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_planned_orders' | gridSort" [nzFilters]="'total_planned_orders' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'total_planned_orders' | gridFilterFn">{{ 'MFG.LBL_ORDINI_PIANIFICATI' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_shortages' | gridSort" [nzFilters]="'total_shortages' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'total_shortages' | gridFilterFn">{{ 'MFG.LBL_FABBISOGNI_MANCANTI' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: mrpTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'MFG.LBL_DATA_ESECUZIONE' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of mrpTable.data; track r.id) {
-            <tr>
-              <td><strong>{{ r.run_number }}</strong></td>
-              <td><nz-tag>{{ r.run_type }}</nz-tag></td>
-              <td>{{ r.horizon_start_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ r.horizon_end_date | date: 'dd/MM/yyyy' }}</td>
-              <td class="num">{{ r.total_items_processed }}</td>
-              <td class="num strong text-info">{{ r.total_planned_orders }}</td>
-              <td class="num strong text-danger">{{ r.total_shortages }}</td>
-              <td>
-                <nz-tag [nzColor]="r.status === 'completed' ? 'success' : 'processing'">
-                  {{ r.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td>{{ r.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="mrpGrid"
+        [columns]="mrpColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="mrp-runs"
+      />
 
       <nz-divider nzText="Ordini Pianificati Generati da MRP"></nz-divider>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #plannedTable
-        [nzData]="plannedOrders()"
-        [nzLoading]="loadingPlanned()"
-        [nzFrontPagination]="false"
-        [nzTotal]="plannedTotal()"
-        [nzPageIndex]="plannedPage()"
-        [nzPageSize]="10"
-        (nzPageIndexChange)="loadPlannedOrders($event)"
-        nzSize="small"
-        class="table-spaced"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'planned_order_number' | gridSort" [nzFilters]="'planned_order_number' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'planned_order_number' | gridFilterFn">{{ 'MFG.LBL_CODICE_PIANIFICATO' | translate }}</th>
-            <th [nzSortFn]="'item_code' | gridSort" [nzFilters]="'item_code' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'item_code' | gridFilterFn">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th [nzSortFn]="'order_type' | gridSort" [nzFilters]="'order_type' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'order_type' | gridFilterFn">{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th class="num" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'MFG.LBL_QUANTITA_NETTA' | translate }}</th>
-            <th [nzSortFn]="'bom_level' | gridSort" [nzFilters]="'bom_level' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'bom_level' | gridFilterFn">{{ 'MFG.LBL_LIVELLO_DISTINTA' | translate }}</th>
-            <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'MFG.LBL_DATA_INIZIO' | translate }}</th>
-            <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'MFG.LBL_DATA_SCADENZA' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: plannedTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th class="cell-actions">{{ 'MFG.LBL_AZIONE' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of plannedTable.data; track p.id) {
-            <tr>
-              <td><strong>{{ p.planned_order_number }}</strong></td>
-              <td>{{ p.item_code || p.mfg_item_id }}</td>
-              <td><nz-tag [nzColor]="p.order_type === 'make' ? 'blue' : 'green'">{{ p.order_type }}</nz-tag></td>
-              <td class="num strong">{{ p.quantity }} {{ p.uom }}</td>
-              <td>Lvl {{ p.bom_level }}</td>
-              <td>{{ p.start_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ p.due_date | date: 'dd/MM/yyyy' }}</td>
-              <td><nz-tag>{{ p.status }}</nz-tag></td>
-              <td class="cell-actions">
+      <app-base-table
+        [grid]="plannedGrid"
+        [columns]="plannedColumns()"
+        [scroll]="{ x: '900px' }"
+        size="small"
+        exportFileName="planned-orders"
+        [actionsTemplate]="plannedActions"
+      />
+
+      <ng-template #plannedActions let-p>
                 @if (p.status === 'planned' && p.order_type === 'make') {
                   <button nz-button nzType="link" nzSize="small" (click)="convertPlannedOrder(p)">
                     {{ 'MFG.LBL_CONVERTI_IN_ODP' | translate }}
                   </button>
                 }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      </ng-template>
 
       <nz-divider nzText="Mancanze & Fabbisogni Rilevati"></nz-divider>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #shortageTable
-        [nzData]="shortages()"
-        [nzLoading]="loadingShortages()"
-        [nzFrontPagination]="false"
-        [nzTotal]="shortagesTotal()"
-        [nzPageIndex]="shortagesPage()"
-        [nzPageSize]="10"
-        (nzPageIndexChange)="loadShortages($event)"
-        nzSize="small"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'item_code' | gridSort" [nzFilters]="'item_code' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'item_code' | gridFilterFn">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th [nzSortFn]="'required_date' | gridSort" [nzFilters]="'required_date' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'required_date' | gridFilterFn">{{ 'MFG.LBL_DATA_NECESSARIA' | translate }}</th>
-            <th class="num" [nzSortFn]="'gross_requirement' | gridSort" [nzFilters]="'gross_requirement' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'gross_requirement' | gridFilterFn">{{ 'MFG.LBL_FABBISOGNO_LORDO' | translate }}</th>
-            <th class="num" [nzSortFn]="'available_inventory' | gridSort" [nzFilters]="'available_inventory' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'available_inventory' | gridFilterFn">{{ 'MFG.LBL_DISPONIBILITA_ATTUALE' | translate }}</th>
-            <th class="num" [nzSortFn]="'safety_stock' | gridSort" [nzFilters]="'safety_stock' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'safety_stock' | gridFilterFn">{{ 'MFG.LBL_SCORTA_SICUREZZA' | translate }}</th>
-            <th class="num text-danger" [nzSortFn]="'net_shortage' | gridSort" [nzFilters]="'net_shortage' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'net_shortage' | gridFilterFn">{{ 'MFG.LBL_MANCANZA_NETTA' | translate }}</th>
-            <th [nzSortFn]="'recommended_action' | gridSort" [nzFilters]="'recommended_action' | gridFilterList: shortageTable.nzData" [nzFilterFn]="'recommended_action' | gridFilterFn">{{ 'MFG.LBL_AZIONE_CONSIGLIATA' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (s of shortageTable.data; track s.id) {
-            <tr>
-              <td><strong>{{ s.item_code || s.mfg_item_id }}</strong></td>
-              <td>{{ s.required_date | date: 'dd/MM/yyyy' }}</td>
-              <td class="num">{{ s.gross_requirement }}</td>
-              <td class="num">{{ s.available_inventory }}</td>
-              <td class="num">{{ s.safety_stock }}</td>
-              <td class="num strong text-danger">{{ s.net_shortage }}</td>
-              <td><nz-tag nzColor="warning">{{ s.recommended_action }}</nz-tag></td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="shortagesGrid"
+        [columns]="shortageColumns()"
+        [scroll]="{ x: '900px' }"
+        size="small"
+        exportFileName="shortages"
+      />
     </nz-tab>
 
     <!-- TAB 4: CENTRI DI LAVORO & CICLI -->
@@ -414,78 +237,23 @@
         <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #wcTable
-        [nzData]="workCenters()"
-        [nzLoading]="loadingWorkCenters()"
-        nzSize="middle"
-        class="table-spaced"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'work_center_code' | gridSort" [nzFilters]="'work_center_code' | gridFilterList: wcTable.nzData" [nzFilterFn]="'work_center_code' | gridFilterFn">{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: wcTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'MFG.LBL_NOME' | translate }}</th>
-            <th [nzSortFn]="'department_code' | gridSort" [nzFilters]="'department_code' | gridFilterList: wcTable.nzData" [nzFilterFn]="'department_code' | gridFilterFn">{{ 'MFG.LBL_REPARTO' | translate }}</th>
-            <th class="num" [nzSortFn]="'capacity_hours_per_day' | gridSort" [nzFilters]="'capacity_hours_per_day' | gridFilterList: wcTable.nzData" [nzFilterFn]="'capacity_hours_per_day' | gridFilterFn">{{ 'MFG.LBL_CAPACITA_GIORNALIERA_ORE' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: wcTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (w of wcTable.data; track w.id) {
-            <tr>
-              <td><strong>{{ w.work_center_code }}</strong></td>
-              <td>{{ w.name }}</td>
-              <td>{{ w.department_code || '-' }}</td>
-              <td class="num strong">{{ w.capacity_hours_per_day }} h</td>
-              <td class="num">{{ w.hourly_cost_rate !== null && w.hourly_cost_rate !== undefined ? (w.hourly_cost_rate | money: 'EUR') : '-' }}</td>
-              <td><nz-tag [nzColor]="w.status === 'active' ? 'success' : 'default'">{{ w.status | uppercase }}</nz-tag></td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="workCentersGrid"
+        [columns]="workCenterColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="work-centers"
+      />
 
       <nz-divider nzText="Cicli di Lavorazione (Routings)"></nz-divider>
 
-      <nz-table
-        [nzScroll]="{ x: '900px' }"
-        #routingsTable
-        [nzData]="routings()"
-        [nzLoading]="loadingRoutings()"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'routing_number' | gridSort" [nzFilters]="'routing_number' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'routing_number' | gridFilterFn">{{ 'MFG.LBL_N_CICLO' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'MFG.LBL_NOME_CICLO' | translate }}</th>
-            <th [nzSortFn]="'item_code' | gridSort" [nzFilters]="'item_code' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'item_code' | gridFilterFn">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th [nzSortFn]="'revision' | gridSort" [nzFilters]="'revision' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'revision' | gridFilterFn">{{ 'MFG.LBL_REVISIONE' | translate }}</th>
-            <th>{{ 'MFG.LBL_PREDEFINITO' | translate }}</th>
-            <th [nzSortFn]="'operations.length' | gridSort" [nzFilters]="'operations.length' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'operations.length' | gridFilterFn">{{ 'MFG.LBL_OPERAZIONI' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: routingsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'MFG.LBL_STATO' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (rt of routingsTable.data; track rt.id) {
-            <tr>
-              <td><strong>{{ rt.routing_number }}</strong></td>
-              <td>{{ rt.name }}</td>
-              <td>{{ rt.item_code || rt.mfg_item_id }}</td>
-              <td><nz-tag nzColor="blue">Rev. {{ rt.revision }}</nz-tag></td>
-              <td>
-                @if (rt.is_default) {
-                  <nz-tag nzColor="green">Sì</nz-tag>
-                } @else {
-                  <span class="text-muted">No</span>
-                }
-              </td>
-              <td>{{ rt.operations?.length || 0 }} fasi</td>
-              <td><nz-tag nzColor="success">{{ rt.status | uppercase }}</nz-tag></td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="routingsGrid"
+        [columns]="routingColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="routings"
+      />
     </nz-tab>
   </nz-tabs>
 </nz-card>
@@ -776,3 +544,36 @@
     <pre class="bom-json">{{ explodedBomData() | json }}</pre>
   </ng-container>
 </nz-modal>
+
+<!-- Cell templates shared by the grids (value = cell value, $implicit = row) -->
+<ng-template #strongTpl let-v="value"><strong>{{ v }}</strong></ng-template>
+<ng-template #dateTpl let-v="value">{{ v | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #dateTimeTpl let-v="value">{{ v | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #moneyTpl let-v="value">
+  @if (v !== null && v !== undefined) {
+    <span>{{ v | money: 'EUR' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #orderStatusTpl let-v="value"><nz-tag [nzColor]="getOrderStatusColor(v)">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #bomStatusTpl let-v="value"><nz-tag [nzColor]="getBomStatusColor(v)">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #mrpStatusTpl let-v="value"><nz-tag [nzColor]="v === 'completed' ? 'success' : 'processing'">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #revisionTpl let-v="value"><nz-tag nzColor="blue">Rev. {{ v }}</nz-tag></ng-template>
+<ng-template #plainTagTpl let-v="value"><nz-tag>{{ v }}</nz-tag></ng-template>
+<ng-template #planTypeTpl let-v="value"><nz-tag [nzColor]="v === 'make' ? 'blue' : 'green'">{{ v }}</nz-tag></ng-template>
+<ng-template #warningTagTpl let-v="value"><nz-tag nzColor="warning">{{ v }}</nz-tag></ng-template>
+<ng-template #activeTagTpl let-v="value"><nz-tag [nzColor]="v === 'active' ? 'success' : 'default'">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #successTagTpl let-v="value"><nz-tag nzColor="success">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #dashTpl let-v="value">{{ v || '-' }}</ng-template>
+<ng-template #hoursTpl let-v="value">{{ v }} h</ng-template>
+<ng-template #levelTpl let-v="value">Lvl {{ v }}</ng-template>
+<ng-template #componentsTpl let-v="value">{{ v }} elementi</ng-template>
+<ng-template #operationsTpl let-v="value">{{ v }} fasi</ng-template>
+<ng-template #yesNoTpl let-v="value">
+  @if (v) {
+    <nz-tag nzColor="green">Sì</nz-tag>
+  } @else {
+    <span class="text-muted">No</span>
+  }
+</ng-template>

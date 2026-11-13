@@ -2,8 +2,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
+  PaginatedResponse,
+  QueryFilterParams,
   PracticeActivityControlResponse,
   PracticeActivityItem,
   PracticeAppliedRetainer,
@@ -94,15 +97,12 @@ export class PracticeApiService {
     );
   }
 
-  getRetainers(params?: {
-    client_id?: string;
-    status?: string;
-  }): Observable<ApiResponse<PracticeRetainer[]>> {
-    let httpParams = new HttpParams();
-    if (params?.client_id) httpParams = httpParams.set('client_id', params.client_id);
-    if (params?.status) httpParams = httpParams.set('status', params.status);
-    return this.http.get<ApiResponse<PracticeRetainer[]>>(`${this.base}/retainers`, {
-      params: httpParams,
+  /** Retainers, paged on the server; `client_id` and `status` narrow the list, the rest are grid parameters. */
+  getRetainers(
+    params?: QueryFilterParams & { client_id?: string; status?: string },
+  ): Observable<PaginatedResponse<PracticeRetainer>> {
+    return this.http.get<PaginatedResponse<PracticeRetainer>>(`${this.base}/retainers`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 

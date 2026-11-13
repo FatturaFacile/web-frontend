@@ -14,75 +14,54 @@
     <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
       <!-- TAB 1: Channels & Marketplaces -->
       <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_CHANNELS' | translate">
-        <nz-table
-          #channelTable
-          [nzData]="channels()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: channelTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</th>
-              <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: channelTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
-              <th [nzSortFn]="'last_sync_at' | gridSort" [nzFilters]="'last_sync_at' | gridFilterList: channelTable.nzData" [nzFilterFn]="'last_sync_at' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.LAST_SYNC' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (ch of channelTable.data; track ch.id) {
-              <tr>
-                <td>
-                  <strong>{{ ch.name }}</strong>
-                  @if (ch.api_url) {
-                    <div class="store-url">{{ ch.api_url }}</div>
-                  }
-                </td>
-                <td>
-                  <nz-tag [nzColor]="getDriverBadgeColor(ch.driver)">
-                    {{ ch.driver | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="ch.is_active ? 'success' : 'default'">
-                    {{ (ch.is_active ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE') | translate }}
-                  </nz-tag>
-                </td>
-                <td>
-                  @if (ch.last_sync_at) {
-                    <span>{{ ch.last_sync_at | date: 'dd/MM/yyyy HH:mm' }}</span>
-                    @if (ch.last_sync_status) {
-                      <nz-tag [nzColor]="ch.last_sync_status === 'success' ? 'success' : 'error'">
-                        {{ ch.last_sync_status }}
-                      </nz-tag>
-                    }
-                  } @else {
-                    <span class="text-muted">{{ 'ECOMMERCE_INTEGRATIONS.NEVER_SYNCED' | translate }}</span>
-                  }
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button nz-button nzType="link" nzSize="small" (click)="openChannelDetails(ch)">
-                      <span nz-icon nzType="eye"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.DETAILS' | translate }}
-                    </button>
-                    <button nz-button nzType="link" nzSize="small" (click)="testConnection(ch)">
-                      <span nz-icon nzType="sync"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.TEST_CONNECTION' | translate }}
-                    </button>
-                    <button nz-button nzType="link" nzSize="small" (click)="openSyncModal(ch)">
-                      <span nz-icon nzType="cloud-download"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.SYNC_NOW' | translate }}
-                    </button>
-                    <button nz-button nzType="link" nzSize="small" appIconAction="edit" (click)="openEditChannelModal(ch)"></button>
-                    <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteChannel(ch)" appIconAction="delete"></button>
-                  </div>
-                </td>
-              </tr>
+        <app-base-table [grid]="channelGrid" [columns]="channelColumns()" [bordered]="true" [actionsTemplate]="channelActionsTpl" />
+
+        <ng-template #channelNameTpl let-ch>
+          <strong>{{ ch.name }}</strong>
+          @if (ch.api_url) {
+            <div class="store-url">{{ ch.api_url }}</div>
+          }
+        </ng-template>
+        <ng-template #channelDriverTpl let-ch>
+          <nz-tag [nzColor]="getDriverBadgeColor(ch.driver)">
+            {{ ch.driver | uppercase }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #channelStatusTpl let-ch>
+          <nz-tag [nzColor]="ch.is_active ? 'success' : 'default'">
+            {{ (ch.is_active ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE') | translate }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #channelSyncTpl let-ch>
+          @if (ch.last_sync_at) {
+            <span>{{ ch.last_sync_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+            @if (ch.last_sync_status) {
+              <nz-tag [nzColor]="ch.last_sync_status === 'success' ? 'success' : 'error'">
+                {{ ch.last_sync_status }}
+              </nz-tag>
             }
-          </tbody>
-        </nz-table>
+          } @else {
+            <span class="text-muted">{{ 'ECOMMERCE_INTEGRATIONS.NEVER_SYNCED' | translate }}</span>
+          }
+        </ng-template>
+        <ng-template #channelActionsTpl let-ch>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openChannelDetails(ch)">
+              <span nz-icon nzType="eye"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.DETAILS' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" (click)="testConnection(ch)">
+              <span nz-icon nzType="sync"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.TEST_CONNECTION' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" (click)="openSyncModal(ch)">
+              <span nz-icon nzType="cloud-download"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.SYNC_NOW' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" appIconAction="edit" (click)="openEditChannelModal(ch)"></button>
+            <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteChannel(ch)" appIconAction="delete"></button>
+          </div>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 2: Sync Status & Webhooks -->
@@ -130,72 +109,37 @@
           <button nz-button nzType="primary" appIconAction="create" (click)="openCreateApiKeyModal()"></button>
         </div>
 
-        <nz-table
-          #apiKeysTable
-          [nzData]="apiKeys()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: apiKeysTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.SCOPES' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.LAST_USED' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
-              <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (k of apiKeysTable.data; track k.id) {
-              <tr>
-                <td><strong>{{ k.name }}</strong></td>
-                <td>
-                  @for (sc of k.scopes; track sc) {
-                    <nz-tag nzColor="blue">{{ sc }}</nz-tag>
-                  }
-                </td>
-                <td>
-                  {{ k.expires_at ? (k.expires_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
-                </td>
-                <td>
-                  {{ k.last_used_at ? (k.last_used_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
-                </td>
-                <td>
-                  <nz-tag [nzColor]="k.is_revoked ? 'error' : 'success'">
-                    {{ (k.is_revoked ? 'ECOMMERCE_INTEGRATIONS.REVOKED' : 'ECOMMERCE_INTEGRATIONS.ACTIVE') | translate }}
-                  </nz-tag>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      nz-button
-                      nzType="link"
-                      nzSize="small"
-                      [disabled]="k.is_revoked"
-                      (click)="rotateApiKey(k)"
-                    >
-                      <span nz-icon nzType="redo"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.ROTATE' | translate }}
-                    </button>
-                    <button
-                      nz-button
-                      nzType="link"
-                      nzDanger
-                      nzSize="small"
-                      [disabled]="k.is_revoked"
-                      (click)="revokeApiKey(k)"
-                    >
-                      <span nz-icon nzType="stop"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.REVOKE' | translate }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="apiKeyGrid" [columns]="apiKeyColumns()" [bordered]="true" [actionsTemplate]="keyActionsTpl" />
+
+        <ng-template #keyNameTpl let-k><strong>{{ k.name }}</strong></ng-template>
+        <ng-template #keyScopesTpl let-k>
+          @for (sc of k.scopes; track sc) {
+            <nz-tag nzColor="blue">{{ sc }}</nz-tag>
+          }
+        </ng-template>
+        <ng-template #keyExpiresTpl let-k>
+          {{ k.expires_at ? (k.expires_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
+        </ng-template>
+        <ng-template #keyLastUsedTpl let-k>
+          {{ k.last_used_at ? (k.last_used_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
+        </ng-template>
+        <ng-template #keyStatusTpl let-k>
+          <nz-tag [nzColor]="isApiKeyRevoked(k) ? 'error' : 'success'">
+            {{ (isApiKeyRevoked(k) ? 'ECOMMERCE_INTEGRATIONS.REVOKED' : 'ECOMMERCE_INTEGRATIONS.ACTIVE') | translate }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #keyActionsTpl let-k>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" [disabled]="isApiKeyRevoked(k)" (click)="rotateApiKey(k)">
+              <span nz-icon nzType="redo"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.ROTATE' | translate }}
+            </button>
+            <button nz-button nzType="link" nzDanger nzSize="small" [disabled]="isApiKeyRevoked(k)" (click)="revokeApiKey(k)">
+              <span nz-icon nzType="stop"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.REVOKE' | translate }}
+            </button>
+          </div>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 4: Payment Gateway & Hosted Links -->
@@ -270,78 +214,57 @@
               <input
                 nz-input
                 [(ngModel)]="filterInvoiceId"
-                (keyup.enter)="loadPaymentLinks()"
+                (keyup.enter)="searchPaymentLinks()"
                 [placeholder]="'ECOMMERCE_INTEGRATIONS.FILTER_INVOICE_PLACEHOLDER' | translate"
                 class="filter-input"
               />
-              <button nz-button (click)="loadPaymentLinks()">
+              <button nz-button (click)="searchPaymentLinks()">
                 <span nz-icon nzType="search"></span>
               </button>
               <button nz-button nzType="primary" appIconAction="create" (click)="openCreatePaymentLinkModal()"></button>
             </div>
 
-            <nz-table
-              #linksTable
-              [nzData]="paymentLinks()"
-              [nzLoading]="loading()"
-              [nzBordered]="true"
-              nzSize="small"
-            >
-              <thead>
-                <tr>
-                  <th [nzSortFn]="'invoice_id' | gridSort" [nzFilters]="'invoice_id' | gridFilterList: linksTable.nzData" [nzFilterFn]="'invoice_id' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.INVOICE_ID' | translate }}</th>
-                  <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: linksTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.AMOUNT' | translate }}</th>
-                  <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: linksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
-                  <th>{{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_URL' | translate }}</th>
-                  <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (link of linksTable.data; track link.id) {
-                  <tr>
-                    <td><code>{{ link.invoice_id }}</code></td>
-                    <td>
-                      @if (link.amount) {
-                        <span>{{ link.amount | money: (link.currency || 'EUR') }}</span>
-                      } @else {
-                        <span>-</span>
-                      }
-                    </td>
-                    <td>
-                      <nz-tag [nzColor]="getLinkStatusBadgeColor(link.status)">
-                        {{ link.status | uppercase }}
-                      </nz-tag>
-                    </td>
-                    <td>
-                      <div class="link-url-box">
-                        <button nz-button nzSize="small" nzType="link" (click)="copyToClipboard(link.url)">
-                          <span nz-icon nzType="copy"></span>
-                          {{ 'ECOMMERCE_INTEGRATIONS.COPY_LINK' | translate }}
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <button nz-button nzSize="small" nzType="link" (click)="refreshPaymentLink(link)">
-                        <span nz-icon nzType="reload"></span>
-                        {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_REFRESH' | translate }}
-                      </button>
-                      @if (isPaymentLinkCancellable(link)) {
-                        <button
-                          nz-button
-                          nzSize="small"
-                          nzType="link"
-                          nzDanger
-                          nz-popconfirm
-                          [nzPopconfirmTitle]="'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_CONFIRM' | translate"
-                          appIconAction="cancel"
-                          (nzOnConfirm)="cancelPaymentLink(link)"
-                        ></button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </nz-table>
+            <app-base-table [grid]="paymentLinkGrid" [columns]="paymentLinkColumns()" [bordered]="true" size="small" [actionsTemplate]="linkActionsTpl" />
+
+            <ng-template #linkInvoiceTpl let-link><code>{{ link.invoice_id }}</code></ng-template>
+            <ng-template #linkAmountTpl let-link>
+              @if (link.amount) {
+                <span>{{ link.amount | money: (link.currency || 'EUR') }}</span>
+              } @else {
+                <span>-</span>
+              }
+            </ng-template>
+            <ng-template #linkStatusTpl let-link>
+              <nz-tag [nzColor]="getLinkStatusBadgeColor(link.status)">
+                {{ link.status | uppercase }}
+              </nz-tag>
+            </ng-template>
+            <ng-template #linkUrlTpl let-link>
+              <div class="link-url-box">
+                <button nz-button nzSize="small" nzType="link" (click)="copyToClipboard(link.url)">
+                  <span nz-icon nzType="copy"></span>
+                  {{ 'ECOMMERCE_INTEGRATIONS.COPY_LINK' | translate }}
+                </button>
+              </div>
+            </ng-template>
+            <ng-template #linkActionsTpl let-link>
+              <button nz-button nzSize="small" nzType="link" (click)="refreshPaymentLink(link)">
+                <span nz-icon nzType="reload"></span>
+                {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_REFRESH' | translate }}
+              </button>
+              @if (isPaymentLinkCancellable(link)) {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="link"
+                  nzDanger
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_CONFIRM' | translate"
+                  appIconAction="cancel"
+                  (nzOnConfirm)="cancelPaymentLink(link)"
+                ></button>
+              }
+            </ng-template>
           </nz-card>
         </div>
       </nz-tab>

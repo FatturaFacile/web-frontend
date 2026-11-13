@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -8,24 +8,26 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import {
   applyServerErrors,
   ClientApiService,
   contactDisplayName,
+  FetchGridModel,
   FieldServiceApiService,
   FieldWorkOrder,
+  FieldWorkOrderListParams,
   FieldWorkOrderLineType,
   FieldWorkOrderPayload,
   I18nService,
+  PaginatedResponse,
   PermissionsService,
   serverErrorMessage,
   SettingsApiService,
   UserResource,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
@@ -41,8 +43,6 @@ interface ClientOption {
   selector: 'app-field-work-orders',
   styleUrl: './field-work-orders.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,
@@ -54,7 +54,7 @@ interface ClientOption {
     NzInputNumberModule,
     NzModalModule,
     NzSelectModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     MoneyPipe,
     PageHeaderComponent,
@@ -74,12 +74,26 @@ export class FieldWorkOrdersComponent implements OnInit {
   private readonly permissions = inject(PermissionsService);
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('service'));
-  protected readonly orders = signal<FieldWorkOrder[]>([]);
-  protected readonly loading = signal(false);
+  /** Server-side grid. The list answers with the paginator nested in `data`: it is flattened to the standard envelope. */
+  protected readonly grid = new FetchGridModel<FieldWorkOrder, FieldWorkOrderListParams>((query) =>
+    this.api.getWorkOrders(query).pipe(
+      tap({ error: () => this.message.error(this.i18n.translate('FS_WORK_ORDERS.LOAD_FAILED')) }),
+      map(
+        (res) =>
+          ({
+            ...res,
+            data: res.data?.data ?? [],
+            meta: {
+              current_page: res.data?.current_page ?? 1,
+              last_page: res.data?.last_page ?? 1,
+              per_page: res.data?.per_page ?? 20,
+              total: res.data?.total ?? 0,
+            },
+          }) as unknown as PaginatedResponse<FieldWorkOrder>,
+      ),
+    ),
+  );
   protected readonly saving = signal(false);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
   protected readonly clients = signal<ClientOption[]>([]);
   protected readonly technicians = signal<UserResource[]>([]);
   protected readonly lineTypes = LINE_TYPES;
@@ -101,13 +115,27 @@ export class FieldWorkOrdersComponent implements OnInit {
     lines: this.fb.array([this.newLine()]),
   });
 
+  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: FieldWorkOrder; value: unknown }>>('numberTpl');
+  private readonly dateTpl = viewChild<TemplateRef<{ $implicit: FieldWorkOrder; value: unknown }>>('dateTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: FieldWorkOrder; value: unknown }>>('totalTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: FieldWorkOrder; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<FieldWorkOrder>[]>(() => [
+    { key: 'work_order_number', header: 'FS_WORK_ORDERS.NUMBER', customCellTemplate: this.numberTpl() },
+    { key: 'date', header: 'FS_WORK_ORDERS.DATE', customCellTemplate: this.dateTpl() },
+    { key: 'intervention_address', header: 'FS_WORK_ORDERS.ADDRESS' },
+    { key: 'labor_hours', header: 'FS_WORK_ORDERS.HOURS' },
+    { key: 'total_amount', header: 'FS_WORK_ORDERS.TOTAL', customCellTemplate: this.totalTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
   constructor() {
+    this.grid.setPageSize(20);
     // The API requires ended_at on or after started_at.
     revalidateOnStartChange(this.form, 'started_at', 'ended_at', inject(DestroyRef));
   }
 
   ngOnInit(): void {
-    this.load();
     this.clientApi.list({ per_page: 200 }).subscribe({
       next: (res) =>
         this.clients.set(res.data.map((contact) => ({ value: contact.id, label: contactDisplayName(contact) }))),
@@ -141,28 +169,6 @@ export class FieldWorkOrdersComponent implements OnInit {
     if (this.lines.length > 1) {
       this.lines.removeAt(index);
     }
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getWorkOrders({ page: this.pageIndex(), per_page: this.pageSize() }).subscribe({
-      next: (res) => {
-        this.orders.set(res.data?.data ?? []);
-        this.total.set(res.data?.total ?? 0);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.orders.set([]);
-        this.loading.set(false);
-        this.message.error(this.i18n.translate('FS_WORK_ORDERS.LOAD_FAILED'));
-      },
-    });
-  }
-
-  protected onQueryParams(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.load();
   }
 
   protected openCreate(): void {
@@ -230,7 +236,7 @@ export class FieldWorkOrdersComponent implements OnInit {
         this.saving.set(false);
         this.formOpen.set(false);
         this.message.success(this.i18n.translate('FS_WORK_ORDERS.SAVED'));
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -278,7 +284,7 @@ export class FieldWorkOrdersComponent implements OnInit {
         this.saving.set(false);
         this.signOpen.set(false);
         this.message.success(this.i18n.translate('FS_WORK_ORDERS.SIGNED'));
-        this.load();
+        this.grid.reload();
       },
       error: () => {
         this.saving.set(false);
@@ -296,7 +302,7 @@ export class FieldWorkOrdersComponent implements OnInit {
         run().subscribe({
           next: () => {
             this.message.success(this.i18n.translate('FS_WORK_ORDERS.DONE'));
-            this.load();
+            this.grid.reload();
           },
           error: () => this.message.error(this.i18n.translate('FS_WORK_ORDERS.ACTION_FAILED')),
         }),

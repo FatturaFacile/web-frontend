@@ -37,26 +37,7 @@
           ></button>
         </div>
       }
-      <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl48>
-        <thead>
-          <tr>
-            <th [nzSortFn]="'metric_code' | gridSort" [nzFilters]="'metric_code' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'metric_code' | gridFilterFn">{{ 'SUBX.USAGE.METRIC' | translate }}</th>
-            <th [nzSortFn]="'subscription_item_id' | gridSort" [nzFilters]="'subscription_item_id' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'subscription_item_id' | gridFilterFn">{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
-            <th class="num" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: gridTbl48.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
-            <th>{{ 'SUBX.USAGE.TIMESTAMP' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (u of usage(); track u.id) {
-            <tr>
-              <td>{{ u.metric_code }}</td>
-              <td>{{ u.subscription_item_id }}</td>
-              <td class="num">{{ u.quantity }}</td>
-              <td>{{ u.event_timestamp ?? '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="usageGrid" [columns]="usageColumns()" />
     </nz-tab>
 
     <nz-tab [nzTitle]="'SUBX.RUNS.TITLE' | translate">
@@ -82,30 +63,12 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="runs()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'SUBX.RUNS.RUN_DATE' | translate }}</th>
-            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
-            <th class="num">{{ 'SUBX.RUNS.INVOICES' | translate }}</th>
-            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of runs(); track r.id) {
-            <tr>
-              <td>{{ r.run_date ?? '-' }}</td>
-              <td>{{ r.status ?? '-' }}</td>
-              <td class="num">{{ r.invoices_created ?? '-' }}</td>
-              <td>
-                <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="viewRun(r)">
-                  <nz-icon nzType="eye" />
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="runGrid" [columns]="runColumns()" [actionsTemplate]="runActionsTpl" />
+      <ng-template #runActionsTpl let-r>
+        <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="viewRun(r)">
+          <nz-icon nzType="eye" />
+        </button>
+      </ng-template>
     </nz-tab>
 
     <nz-tab [nzTitle]="'SUBX.REVENUE.TITLE' | translate">
@@ -129,22 +92,7 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl49>
-        <thead>
-          <tr>
-            <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: gridTbl49.nzData" [nzFilterFn]="'id' | gridFilterFn">ID</th>
-            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of revenueContracts(); track c.id) {
-            <tr>
-              <td>{{ c.id }}</td>
-              <td>{{ c.status ?? '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="revenueGrid" [columns]="revenueColumns()" />
 
       <h4>{{ 'SUBX.REVENUE.FORECAST' | translate }}</h4>
       <div class="toolbar">

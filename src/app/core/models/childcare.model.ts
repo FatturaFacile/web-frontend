@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export type ChildcareChildStatus = 'waiting' | 'active' | 'left';
 
 export interface ChildcareGroup {
@@ -322,10 +324,19 @@ export interface ChildcareOutstandingDocuments {
   total_missing: number;
 }
 
-export interface ChildcareParams {
+export interface ChildcareParams extends QueryFilterParams {
   status?: string;
   group_id?: string;
   search?: string;
   page?: number;
   per_page?: number;
+}
+
+export interface ChildcareNotesParams extends QueryFilterParams {
+  child_id?: string;
+  date?: string;
+}
+
+export interface ChildcareBillsParams extends QueryFilterParams {
+  period?: string;
 }

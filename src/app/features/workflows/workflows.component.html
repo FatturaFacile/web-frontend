@@ -14,7 +14,7 @@
             nz-input
             [placeholder]="'WORKFLOWS.FILTER_CODE' | translate"
             [ngModel]="taskFilterCode()"
-            (ngModelChange)="taskFilterCode.set($event); loadTasks()"
+            (ngModelChange)="onTaskCodeChange($event)"
             class="filter-input"
           />
           <button nz-button nzType="default" (click)="loadTasks()">
@@ -24,90 +24,7 @@
         </div>
       </div>
 
-      <nz-table
-        #tasksTable
-        nzShowSizeChanger
-        [nzData]="tasks()"
-        [nzFrontPagination]="false"
-        [nzLoading]="tasksLoading()"
-        [nzTotal]="tasksTotal()"
-        [nzPageIndex]="tasksPageIndex()"
-        [nzPageSize]="tasksPageSize()"
-        (nzQueryParams)="onTasksTableQueryChange($event)"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'workflow_name' | gridSort" [nzFilters]="'workflow_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'workflow_name' | gridFilterFn">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th [nzSortFn]="'approvable_type' | gridSort" [nzFilters]="'approvable_type' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'approvable_type' | gridFilterFn">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'step_name' | gridSort" [nzFilters]="'step_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'step_name' | gridFilterFn">{{ 'WORKFLOWS.STEP' | translate }}</th>
-            <th [nzSortFn]="'initiator_name' | gridSort" [nzFilters]="'initiator_name' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'initiator_name' | gridFilterFn">{{ 'WORKFLOWS.INITIATOR' | translate }}</th>
-            <th [nzSortFn]="'due_at' | gridSort" [nzFilters]="'due_at' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'due_at' | gridFilterFn">{{ 'WORKFLOWS.DUE_AT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (task of tasksTable.data; track task.step_id) {
-            <tr>
-              <td>
-                <strong>{{ task.workflow_name || task.workflow_code }}</strong>
-                <div class="text-muted">{{ task.workflow_code }}</div>
-              </td>
-              <td>
-                <nz-tag>{{ task.approvable_type }}</nz-tag>
-                <span>{{ task.approvable_label || task.approvable_id }}</span>
-              </td>
-              <td>
-                <strong>{{ task.step_name }}</strong>
-                <div class="text-muted">Step #{{ task.step_index }}</div>
-              </td>
-              <td>{{ task.initiator_name || ('WORKFLOWS.SYSTEM' | translate) }}</td>
-              <td>
-                @if (task.due_at) {
-                  <span>{{ task.due_at | date: 'dd/MM/yyyy HH:mm' }}</span>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(task.status)">
-                  {{ task.status | uppercase }}
-                </nz-tag>
-                @if (task.is_sla_breached) {
-                  <nz-tag nzColor="error">{{ 'WORKFLOWS.LBL_SLA_BREACH' | translate }}</nz-tag>
-                }
-                @if (task.is_escalated) {
-                  <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_ESCALATED' | translate }}</nz-tag>
-                }
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="primary"
-                    nzSize="small"
-                    (click)="openDecisionModal(task, 'approved')"
-                  >
-                    <span nz-icon nzType="check"></span>
-                    {{ 'WORKFLOWS.APPROVE' | translate }}
-                  </button>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzDanger
-                    nzSize="small"
-                    (click)="openDecisionModal(task, 'rejected')"
-                  >
-                    <span nz-icon nzType="close"></span>
-                    {{ 'WORKFLOWS.REJECT' | translate }}
-                  </button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="tasksGrid" [columns]="taskColumns()" [actionsTemplate]="taskActionsTpl" exportFileName="workflow-tasks" />
     </nz-tab>
 
     <!-- TAB 2: ISTANZE RUNNING & AUDIT HASH VERIFY -->
@@ -116,7 +33,7 @@
         <div class="filter-group">
           <nz-select
             [ngModel]="instanceStatusFilter()"
-            (ngModelChange)="instanceStatusFilter.set($event); loadInstances()"
+            (ngModelChange)="onInstanceStatusChange($event)"
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
@@ -137,82 +54,7 @@
         </button>
       </div>
 
-      <nz-table
-        #instTable
-        nzShowSizeChanger
-        [nzData]="instances()"
-        [nzFrontPagination]="false"
-        [nzLoading]="instancesLoading()"
-        [nzTotal]="instancesTotal()"
-        [nzPageIndex]="instancesPageIndex()"
-        [nzPageSize]="instancesPageSize()"
-        (nzQueryParams)="onInstancesTableQueryChange($event)"
-      >
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th [nzSortFn]="'definition.name' | gridSort" [nzFilters]="'definition.name' | gridFilterList: instTable.nzData" [nzFilterFn]="'definition.name' | gridFilterFn">{{ 'WORKFLOWS.PROCESS' | translate }}</th>
-            <th [nzSortFn]="'approvable_type' | gridSort" [nzFilters]="'approvable_type' | gridFilterList: instTable.nzData" [nzFilterFn]="'approvable_type' | gridFilterFn">{{ 'WORKFLOWS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: instTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th [nzSortFn]="'started_at' | gridSort" [nzFilters]="'started_at' | gridFilterList: instTable.nzData" [nzFilterFn]="'started_at' | gridFilterFn">{{ 'WORKFLOWS.STARTED_AT' | translate }}</th>
-            <th [nzSortFn]="'completed_at' | gridSort" [nzFilters]="'completed_at' | gridFilterList: instTable.nzData" [nzFilterFn]="'completed_at' | gridFilterFn">{{ 'WORKFLOWS.COMPLETED_AT' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (inst of instTable.data; track inst.id) {
-            <tr>
-              <td>
-                <span class="monospace-id">{{ inst.id.slice(0, 8) }}...</span>
-              </td>
-              <td>{{ inst.definition?.name || inst.workflow_definition_id }}</td>
-              <td>
-                <nz-tag>{{ inst.approvable_type }}</nz-tag>
-                <span>#{{ inst.approvable_id }}</span>
-              </td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(inst.status)">
-                  {{ inst.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td>{{ inst.started_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                @if (inst.completed_at) {
-                  <span>{{ inst.completed_at | date: 'dd/MM/yyyy HH:mm' }}</span>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="default"
-                    nzSize="small"
-                    (click)="openAuditTrail(inst)"
-                  >
-                    <span nz-icon nzType="audit"></span>
-                    {{ 'WORKFLOWS.LBL_AUDIT' | translate }}
-                  </button>
-                  @if (inst.status === 'pending') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzDanger
-                      nzSize="small"
-                      (click)="cancelInstance(inst)"
-                    >
-                      <span nz-icon nzType="close"></span>
-                      {{ 'COMMON.CANCEL' | translate }}
-                    </button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="instancesGrid" [columns]="instanceColumns()" [actionsTemplate]="instanceActionsTpl" exportFileName="workflow-instances" />
     </nz-tab>
 
     <!-- TAB 3: DEFINIZIONI & BPMN DESIGNER -->
@@ -223,7 +65,7 @@
             nz-input
             [placeholder]="'WORKFLOWS.SEARCH_DEFINITIONS' | translate"
             [ngModel]="definitionSearch()"
-            (ngModelChange)="definitionSearch.set($event); loadDefinitions()"
+            (ngModelChange)="onDefinitionSearchChange($event)"
             class="filter-input"
           />
           <button nz-button nzType="default" (click)="loadDefinitions()">
@@ -234,84 +76,7 @@
         <button nz-button nzType="primary" (click)="openCreateDefModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        #defsTable
-        nzShowSizeChanger
-        [nzData]="definitions()"
-        [nzFrontPagination]="false"
-        [nzLoading]="definitionsLoading()"
-        [nzTotal]="definitionsTotal()"
-        [nzPageIndex]="definitionsPageIndex()"
-        [nzPageSize]="definitionsPageSize()"
-        (nzQueryParams)="onDefinitionsTableQueryChange($event)"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: defsTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'WORKFLOWS.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: defsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
-            <th [nzSortFn]="'target_entity_type' | gridSort" [nzFilters]="'target_entity_type' | gridFilterList: defsTable.nzData" [nzFilterFn]="'target_entity_type' | gridFilterFn">{{ 'WORKFLOWS.TARGET_DOC' | translate }}</th>
-            <th [nzSortFn]="'version' | gridSort" [nzFilters]="'version' | gridFilterList: defsTable.nzData" [nzFilterFn]="'version' | gridFilterFn">{{ 'WORKFLOWS.VERSION' | translate }}</th>
-            <th>{{ 'WORKFLOWS.PUBLISHED' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (def of defsTable.data; track def.id) {
-            <tr>
-              <td>
-                <code>{{ def.code }}</code>
-              </td>
-              <td>
-                <strong>{{ def.name }}</strong>
-                @if (def.description) {
-                  <div class="text-muted">{{ def.description }}</div>
-                }
-              </td>
-              <td>
-                <nz-tag>{{ def.target_entity_type }}</nz-tag>
-              </td>
-              <td>v{{ def.version }}</td>
-              <td>
-                @if (def.status === 'published') {
-                  <nz-tag nzColor="success">{{ 'WORKFLOWS.LBL_PUBBLICATO' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_BOZZA' | translate }}</nz-tag>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="def.is_active ? 'success' : 'default'">
-                  {{ def.is_active ? 'ATTIVO' : 'INATTIVO' }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  @if (def.status !== 'published') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="primary"
-                      nzSize="small"
-                      (click)="publishDefinition(def)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                      {{ 'WORKFLOWS.LBL_PUBBLICA' | translate }}
-                    </button>
-                  }
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzDanger
-                    nzSize="small"
-                    (click)="deleteDefinition(def)"
-                    appIconAction="delete"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="definitionsGrid" [columns]="definitionColumns()" [actionsTemplate]="definitionActionsTpl" exportFileName="workflow-definitions" />
     </nz-tab>
 
     <!-- TAB 4: DELEGHE ED ESCALATION RULES -->
@@ -323,42 +88,7 @@
             <button nz-button nzType="primary" nzSize="small" (click)="openCreateDelegationModal()" appIconAction="add"></button>
           </div>
 
-          <nz-table
-            [nzData]="delegations()"
-            [nzFrontPagination]="true"
-            [nzLoading]="delegationsLoading()" #gridTbl50>
-            <thead>
-              <tr>
-                <th [nzSortFn]="'delegate_user_name' | gridSort" [nzFilters]="'delegate_user_name' | gridFilterList: gridTbl50.nzData" [nzFilterFn]="'delegate_user_name' | gridFilterFn">{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</th>
-                <th>{{ 'WORKFLOWS.SCOPE' | translate }}</th>
-                <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: gridTbl50.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'WORKFLOWS.VALID_PERIOD' | translate }}</th>
-                <th>{{ 'COMMON.STATUS' | translate }}</th>
-                <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (del of delegations(); track del.id) {
-                <tr>
-                  <td>{{ del.delegate_user_name || del.delegate_user_id }}</td>
-                  <td>{{ 'WORKFLOWS.SCOPE_' + (del.scope || 'all').toUpperCase() | translate }}</td>
-                  <td>
-                    {{ del.starts_at | date: 'dd/MM/yyyy' }} - {{ del.ends_at | date: 'dd/MM/yyyy' }}
-                  </td>
-                  <td>
-                    <nz-tag [nzColor]="del.is_active ? 'success' : 'default'">
-                      {{ del.is_active ? 'ATTIVO' : 'SCADUTO' }}
-                    </nz-tag>
-                  </td>
-                  <td nzAlign="right">
-                    <button nz-button nzDanger nzSize="small" (click)="deleteDelegation(del)">
-                      <span nz-icon nzType="delete"></span>
-                      {{ 'WORKFLOWS.REVOKE' | translate }}
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="delegationsGrid" [columns]="delegationColumns()" [actionsTemplate]="delegationActionsTpl" [scroll]="{ x: '700px' }" exportFileName="workflow-delegations" />
         </div>
 
         <div class="section-box">
@@ -367,37 +97,7 @@
             <button nz-button nzType="primary" nzSize="small" (click)="openCreateRuleModal()" appIconAction="add"></button>
           </div>
 
-          <nz-table
-            [nzData]="escalationRules()"
-            [nzFrontPagination]="true"
-            [nzLoading]="rulesLoading()" #gridTbl51>
-            <thead>
-              <tr>
-                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
-                <th [nzSortFn]="'reminder_hours' | gridSort" [nzFilters]="'reminder_hours' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'reminder_hours' | gridFilterFn">{{ 'WORKFLOWS.REMINDER_H' | translate }}</th>
-                <th [nzSortFn]="'escalation_hours' | gridSort" [nzFilters]="'escalation_hours' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'escalation_hours' | gridFilterFn">{{ 'WORKFLOWS.ESCALATION_H' | translate }}</th>
-                <th [nzSortFn]="'escalate_to_type' | gridSort" [nzFilters]="'escalate_to_type' | gridFilterList: gridTbl51.nzData" [nzFilterFn]="'escalate_to_type' | gridFilterFn">{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</th>
-                <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (rule of escalationRules(); track rule.id) {
-                <tr>
-                  <td>
-                    <strong>{{ rule.name }}</strong>
-                  </td>
-                  <td>{{ rule.reminder_hours }} ore</td>
-                  <td>{{ rule.escalation_hours }} ore</td>
-                  <td>
-                    <nz-tag>{{ rule.escalate_to_type }}</nz-tag>
-                  </td>
-                  <td nzAlign="right">
-                    <button nz-button nzDanger nzSize="small" (click)="deleteEscalationRule(rule)" appIconAction="delete"></button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="rulesGrid" [columns]="ruleColumns()" [actionsTemplate]="ruleActionsTpl" [scroll]="{ x: '700px' }" exportFileName="workflow-escalation-rules" />
         </div>
       </div>
     </nz-tab>
@@ -488,7 +188,7 @@
       <div class="mb-3">
         <p>
           {{ 'WORKFLOWS.CONFIRM_DECISION' | translate }}:
-          <strong>{{ t.workflow_name }}</strong> ({{ t.step_name }})
+          <strong>{{ t.workflow_name }}</strong> ({{ t.node_name }})
         </p>
         <p class="text-muted">
           {{ 'WORKFLOWS.DOCUMENT' | translate }}: {{ t.approvable_type }} #{{ t.approvable_id }}
@@ -770,3 +470,130 @@
     </form>
   </ng-container>
 </nz-modal>
+
+<!-- Cells of the server-driven grids -->
+<ng-template #taskProcessTpl let-task>
+  <strong>{{ task.workflow_name || task.workflow_code }}</strong>
+  <div class="text-muted">{{ task.workflow_code }}</div>
+</ng-template>
+<ng-template #taskDocumentTpl let-task>
+  <nz-tag>{{ task.approvable_type }}</nz-tag>
+  <span>{{ task.approvable_label || task.approvable_id }}</span>
+</ng-template>
+<ng-template #taskStepTpl let-task><strong>{{ task.node_name }}</strong></ng-template>
+<ng-template #taskInitiatorTpl let-task>{{ task.initiator_name || ('WORKFLOWS.SYSTEM' | translate) }}</ng-template>
+<ng-template #taskDueTpl let-task>
+  @if (task.due_at) {
+    <span>{{ task.due_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #taskStateTpl let-task>
+  <nz-tag nzColor="processing">{{ 'WORKFLOWS.STATE_PENDING' | translate }}</nz-tag>
+  @if (task.is_overdue) {
+    <nz-tag nzColor="error">{{ 'WORKFLOWS.LBL_SLA_BREACH' | translate }}</nz-tag>
+  }
+  @if (task.escalated_at) {
+    <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_ESCALATED' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #taskActionsTpl let-task>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="openDecisionModal(task, 'approved')">
+      <span nz-icon nzType="check"></span>
+      {{ 'WORKFLOWS.APPROVE' | translate }}
+    </button>
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="openDecisionModal(task, 'rejected')">
+      <span nz-icon nzType="close"></span>
+      {{ 'WORKFLOWS.REJECT' | translate }}
+    </button>
+  </nz-space>
+</ng-template>
+
+<ng-template #instanceIdTpl let-inst><span class="monospace-id">{{ inst.id.slice(0, 8) }}...</span></ng-template>
+<ng-template #instanceProcessTpl let-inst>{{ inst.definition?.name || inst.workflow_definition_id }}</ng-template>
+<ng-template #instanceDocumentTpl let-inst>
+  <nz-tag>{{ inst.approvable_type }}</nz-tag>
+  <span>#{{ inst.approvable_id }}</span>
+</ng-template>
+<ng-template #instanceStatusTpl let-inst>
+  <nz-tag [nzColor]="getStatusColor(inst.status)">{{ inst.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #instanceStartedTpl let-inst>{{ inst.started_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #instanceCompletedTpl let-inst>
+  @if (inst.completed_at) {
+    <span>{{ inst.completed_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #instanceActionsTpl let-inst>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openAuditTrail(inst)">
+      <span nz-icon nzType="audit"></span>
+      {{ 'WORKFLOWS.LBL_AUDIT' | translate }}
+    </button>
+    @if (inst.status === 'pending') {
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="cancelInstance(inst)">
+        <span nz-icon nzType="close"></span>
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+
+<ng-template #definitionCodeTpl let-def><code>{{ def.code }}</code></ng-template>
+<ng-template #definitionNameTpl let-def>
+  <strong>{{ def.name }}</strong>
+  @if (def.description) {
+    <div class="text-muted">{{ def.description }}</div>
+  }
+</ng-template>
+<ng-template #definitionTargetTpl let-def><nz-tag>{{ def.target_entity_type }}</nz-tag></ng-template>
+<ng-template #definitionVersionTpl let-def>v{{ def.version }}</ng-template>
+<ng-template #definitionPublishedTpl let-def>
+  @if (def.status === 'published') {
+    <nz-tag nzColor="success">{{ 'WORKFLOWS.LBL_PUBBLICATO' | translate }}</nz-tag>
+  } @else {
+    <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_BOZZA' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #definitionActiveTpl let-def>
+  <nz-tag [nzColor]="def.is_active ? 'success' : 'default'">
+    {{ (def.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_INACTIVE') | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #definitionActionsTpl let-def>
+  <nz-space>
+    @if (def.status !== 'published') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="publishDefinition(def)">
+        <span nz-icon nzType="check"></span>
+        {{ 'WORKFLOWS.LBL_PUBBLICA' | translate }}
+      </button>
+    }
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="deleteDefinition(def)" appIconAction="delete"></button>
+  </nz-space>
+</ng-template>
+
+<ng-template #delegationScopeTpl let-del>{{ 'WORKFLOWS.SCOPE_' + (del.scope || 'all').toUpperCase() | translate }}</ng-template>
+<ng-template #delegationPeriodTpl let-del>{{ del.starts_at | date: 'dd/MM/yyyy' }} - {{ del.ends_at | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #delegationStateTpl let-del>
+  <nz-tag [nzColor]="del.is_active ? 'success' : 'default'">
+    {{ (del.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_EXPIRED') | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #delegationActionsTpl let-del>
+  <button nz-button nzDanger nzSize="small" (click)="deleteDelegation(del)">
+    <span nz-icon nzType="delete"></span>
+    {{ 'WORKFLOWS.REVOKE' | translate }}
+  </button>
+</ng-template>
+
+<ng-template #ruleNameTpl let-rule><strong>{{ rule.name }}</strong></ng-template>
+<ng-template #ruleReminderTpl let-rule>{{ rule.reminder_hours }} h</ng-template>
+<ng-template #ruleEscalationTpl let-rule>{{ rule.escalation_hours }} h</ng-template>
+<ng-template #ruleTargetTpl let-rule><nz-tag>{{ rule.escalate_to_type }}</nz-tag></ng-template>
+<ng-template #ruleActionsTpl let-rule>
+  <button nz-button nzDanger nzSize="small" (click)="deleteEscalationRule(rule)" appIconAction="delete"></button>
+</ng-template>

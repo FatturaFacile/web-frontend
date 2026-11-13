@@ -10,7 +10,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -69,7 +69,7 @@ export class TimeScheduleGroupsComponent {
   protected readonly groupsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTimeX.groups',
     canWrite: this.canWrite(),
-    list: () => this.api.getScheduleGroups().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getScheduleGroups(query)),
     create: (payload) => this.api.createScheduleGroup(payload as never),
     rowActions: [
       {

@@ -1,9 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
+  LaravelPaginationMeta,
+  PaginatedResponse,
+  QueryFilterParams,
   ConstructionProgressBilling,
   ConstructionProgressBillingPayload,
   ConstructionSite,
@@ -41,16 +45,16 @@ export class ConstructionApiService {
   private readonly tradesBase = `${environment.apiBaseUrl}/construction-trades`;
 
   // --- SITES & SAL (BASE) ---
-  getSites(): Observable<ApiResponse<ConstructionSite[]>> {
-    return this.http.get<ApiResponse<ConstructionSite[]>>(`${this.base}/sites`);
+  getSites(params: QueryFilterParams = {}): Observable<PaginatedResponse<ConstructionSite>> {
+    return this.listPage<ConstructionSite>(`${this.base}/sites`, params);
   }
 
   createSite(payload: ConstructionSiteRequest): Observable<ApiResponse<ConstructionSite>> {
     return this.http.post<ApiResponse<ConstructionSite>>(`${this.base}/sites`, payload);
   }
 
-  getProgressBillings(): Observable<ApiResponse<ConstructionProgressBilling[]>> {
-    return this.http.get<ApiResponse<ConstructionProgressBilling[]>>(`${this.base}/sal`);
+  getProgressBillings(params: QueryFilterParams = {}): Observable<PaginatedResponse<ConstructionProgressBilling>> {
+    return this.listPage<ConstructionProgressBilling>(`${this.base}/sal`, params);
   }
 
   createProgressBilling(
@@ -60,8 +64,8 @@ export class ConstructionApiService {
   }
 
   // --- BIDS & TENDERS (/construction-trades/bids) ---
-  getBids(): Observable<ApiResponse<TradesBid[]>> {
-    return this.http.get<ApiResponse<TradesBid[]>>(`${this.tradesBase}/bids`);
+  getBids(params: QueryFilterParams & { status?: string } = {}): Observable<PaginatedResponse<TradesBid>> {
+    return this.listPage<TradesBid>(`${this.tradesBase}/bids`, params);
   }
 
   getBid(id: string): Observable<TradesBidResponse> {
@@ -155,10 +159,8 @@ export class ConstructionApiService {
   }
 
   // --- SITE DIARY & DOCUMENTS (/construction-trades/sites/...) ---
-  getSiteDiary(siteId: string): Observable<ApiResponse<TradesSiteDiaryEntry[]>> {
-    return this.http.get<ApiResponse<TradesSiteDiaryEntry[]>>(
-      `${this.tradesBase}/sites/${siteId}/diary`,
-    );
+  getSiteDiary(siteId: string, params: QueryFilterParams = {}): Observable<PaginatedResponse<TradesSiteDiaryEntry>> {
+    return this.listPage<TradesSiteDiaryEntry>(`${this.tradesBase}/sites/${siteId}/diary`, params);
   }
 
   writeSiteDiary(
@@ -171,10 +173,8 @@ export class ConstructionApiService {
     );
   }
 
-  getSiteDocuments(siteId: string): Observable<ApiResponse<TradesSiteDocument[]>> {
-    return this.http.get<ApiResponse<TradesSiteDocument[]>>(
-      `${this.tradesBase}/sites/${siteId}/documents`,
-    );
+  getSiteDocuments(siteId: string, params: QueryFilterParams = {}): Observable<PaginatedResponse<TradesSiteDocument>> {
+    return this.listPage<TradesSiteDocument>(`${this.tradesBase}/sites/${siteId}/documents`, params);
   }
 
   addSiteDocument(
@@ -210,10 +210,8 @@ export class ConstructionApiService {
     );
   }
 
-  getSiteSubcontracts(siteId: string): Observable<ApiResponse<TradesSubcontract[]>> {
-    return this.http.get<ApiResponse<TradesSubcontract[]>>(
-      `${this.tradesBase}/sites/${siteId}/subcontracts`,
-    );
+  getSiteSubcontracts(siteId: string, params: QueryFilterParams = {}): Observable<PaginatedResponse<TradesSubcontract>> {
+    return this.listPage<TradesSubcontract>(`${this.tradesBase}/sites/${siteId}/subcontracts`, params);
   }
 
   createSiteSubcontract(
@@ -234,5 +232,31 @@ export class ConstructionApiService {
       `${this.tradesBase}/subcontracts/${subcontractId}/certifications`,
       payload,
     );
+  }
+
+  /** A list endpoint: the rows may sit in `data` or in a Laravel paginator wrapped in `data`. */
+  private listPage<T>(url: string, params: object): Observable<PaginatedResponse<T>> {
+    type PaginatorBody = LaravelPaginationMeta & { data: T[] };
+    return this.http
+      .get<ApiResponse<T[] | PaginatorBody> & { meta?: LaravelPaginationMeta }>(url, { params: toHttpParams(params) })
+      .pipe(
+        map((res) => {
+          const body = res.data;
+          const items = Array.isArray(body) ? body : (body?.data ?? []);
+          const meta: LaravelPaginationMeta =
+            res.meta ??
+            (Array.isArray(body) || !body
+              ? { current_page: 1, from: null, to: null, last_page: 1, per_page: items.length, total: items.length }
+              : {
+                  current_page: body.current_page,
+                  from: body.from,
+                  to: body.to,
+                  last_page: body.last_page,
+                  per_page: body.per_page,
+                  total: body.total,
+                });
+          return { ...res, data: items, meta };
+        }),
+      );
   }
 }

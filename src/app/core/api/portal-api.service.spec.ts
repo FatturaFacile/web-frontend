@@ -300,7 +300,7 @@ describe('PortalApiService', () => {
   });
 
   it('lists the stock movements of the customer page by page', () => {
-    service.getStockMovements('token-123', 2).subscribe((res) => {
+    service.getStockMovements('token-123', { page: 2 }).subscribe((res) => {
       expect(res.data[0].quantity).toBe('12.500');
       expect(res.meta.total).toBe(31);
     });

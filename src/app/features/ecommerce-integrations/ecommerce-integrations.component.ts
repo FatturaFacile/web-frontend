@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -26,7 +26,6 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
@@ -36,16 +35,18 @@ import {
   CreatePaymentLinkRequest,
   EcommerceChannel,
   EcommerceIntegrationsApiService,
+  FetchGridModel,
   PaymentGatewayProvider,
   PaymentGatewaySettings,
   PaymentLink,
+  PaymentLinkListParams,
   SyncChannelRequest,
   SyncEntityType,
   TranslateService,
   UpdateEcommerceChannelRequest,
   UpdatePaymentGatewayRequest,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { inFuture } from '@shared/utils/date-validators';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -54,8 +55,6 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
   selector: 'app-ecommerce-integrations',
   styleUrl: './ecommerce-integrations.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -64,7 +63,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzBadgeModule,
     NzButtonModule,
@@ -95,7 +94,10 @@ export class EcommerceIntegrationsComponent implements OnInit {
   readonly selectedTabIndex = signal<number>(0);
 
   // Channels
+  /** Every channel (up to the API page limit): the webhook cards of the second tab list all of them. */
   readonly channels = signal<EcommerceChannel[]>([]);
+  /** Server-side grids: paging, sorting, column filters, grouping and export run over the whole list. */
+  readonly channelGrid = new FetchGridModel<EcommerceChannel>((query) => this.api.getChannels(query));
   readonly selectedChannel = signal<EcommerceChannel | null>(null);
   readonly isChannelDrawerVisible = signal<boolean>(false);
   readonly isChannelModalVisible = signal<boolean>(false);
@@ -106,14 +108,14 @@ export class EcommerceIntegrationsComponent implements OnInit {
   readonly syncingChannelId = signal<string | null>(null);
 
   // API Keys
-  readonly apiKeys = signal<ApiKeyItem[]>([]);
+  readonly apiKeyGrid = new FetchGridModel<ApiKeyItem>((query) => this.api.getApiKeys(query));
   readonly isApiKeyModalVisible = signal<boolean>(false);
   readonly newlyGeneratedToken = signal<string | null>(null);
   readonly isTokenRevealModalVisible = signal<boolean>(false);
 
   // Payment Gateway & Links
   readonly paymentGateway = signal<PaymentGatewaySettings | null>(null);
-  readonly paymentLinks = signal<PaymentLink[]>([]);
+  readonly paymentLinkGrid = new FetchGridModel<PaymentLink, PaymentLinkListParams>((query) => this.api.getPaymentLinks(query));
   readonly isPaymentLinkModalVisible = signal<boolean>(false);
   readonly filterInvoiceId = signal<string>('');
 
@@ -159,17 +161,76 @@ export class EcommerceIntegrationsComponent implements OnInit {
       .subscribe(() => this.revalidateChannelCredentials());
   }
 
+  private readonly channelNameTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelNameTpl');
+  private readonly channelDriverTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelDriverTpl');
+  private readonly channelStatusTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelStatusTpl');
+  private readonly channelSyncTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelSyncTpl');
+  private readonly keyNameTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyNameTpl');
+  private readonly keyScopesTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyScopesTpl');
+  private readonly keyExpiresTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyExpiresTpl');
+  private readonly keyLastUsedTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyLastUsedTpl');
+  private readonly keyStatusTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyStatusTpl');
+  private readonly linkInvoiceTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkInvoiceTpl');
+  private readonly linkAmountTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkAmountTpl');
+  private readonly linkStatusTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkStatusTpl');
+  private readonly linkUrlTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkUrlTpl');
+
+  /** `status` is a column the API calculates (gridColumns of the model): active / inactive. */
+  readonly channelColumns = computed<TableColumnDef<EcommerceChannel>[]>(() => [
+    { key: 'name', header: 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME', customCellTemplate: this.channelNameTpl() },
+    { key: 'driver', header: 'ECOMMERCE_INTEGRATIONS.PLATFORM', customCellTemplate: this.channelDriverTpl() },
+    {
+      key: 'status',
+      valueGetter: (channel) => (channel.is_active ? 'active' : 'inactive'),
+      valueLabel: (value) => this.translate.instant(value === 'active' ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE'),
+      header: 'ECOMMERCE_INTEGRATIONS.STATUS',
+      customCellTemplate: this.channelStatusTpl(),
+    },
+    { key: 'last_sync_at', header: 'ECOMMERCE_INTEGRATIONS.LAST_SYNC', customCellTemplate: this.channelSyncTpl() },
+  ]);
+
+  /** `status` is calculated by the API from revoked_at: revoked / active. */
+  readonly apiKeyColumns = computed<TableColumnDef<ApiKeyItem>[]>(() => [
+    { key: 'name', header: 'ECOMMERCE_INTEGRATIONS.KEY_NAME', customCellTemplate: this.keyNameTpl() },
+    { key: 'scopes', header: 'ECOMMERCE_INTEGRATIONS.SCOPES', sortable: false, filterable: false, groupable: false, customCellTemplate: this.keyScopesTpl() },
+    { key: 'expires_at', header: 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT', customCellTemplate: this.keyExpiresTpl() },
+    { key: 'last_used_at', header: 'ECOMMERCE_INTEGRATIONS.LAST_USED', customCellTemplate: this.keyLastUsedTpl() },
+    {
+      key: 'status',
+      valueGetter: (key) => (this.isApiKeyRevoked(key) ? 'revoked' : 'active'),
+      valueLabel: (value) => this.translate.instant(value === 'revoked' ? 'ECOMMERCE_INTEGRATIONS.REVOKED' : 'ECOMMERCE_INTEGRATIONS.ACTIVE'),
+      header: 'ECOMMERCE_INTEGRATIONS.STATUS',
+      customCellTemplate: this.keyStatusTpl(),
+    },
+  ]);
+
+  readonly paymentLinkColumns = computed<TableColumnDef<PaymentLink>[]>(() => [
+    { key: 'invoice_id', header: 'ECOMMERCE_INTEGRATIONS.INVOICE_ID', customCellTemplate: this.linkInvoiceTpl() },
+    { key: 'amount', header: 'ECOMMERCE_INTEGRATIONS.AMOUNT', customCellTemplate: this.linkAmountTpl() },
+    { key: 'status', header: 'ECOMMERCE_INTEGRATIONS.STATUS', customCellTemplate: this.linkStatusTpl() },
+    { key: 'url', header: 'ECOMMERCE_INTEGRATIONS.PAYMENT_URL', sortable: false, filterable: false, groupable: false, exportable: false, customCellTemplate: this.linkUrlTpl() },
+  ]);
+
   ngOnInit(): void {
-    this.loadChannels();
-    this.loadApiKeys();
+    this.loadAllChannels();
     this.loadPaymentGateway();
-    this.loadPaymentLinks();
+  }
+
+  /** A key is revoked when the API says so (`is_revoked`) or when it carries a revocation date. */
+  isApiKeyRevoked(key: ApiKeyItem): boolean {
+    return key.is_revoked ?? !!key.revoked_at;
   }
 
   // --- Channels ---
+  /** Reloads the channel grid and the list the webhook cards show. */
   loadChannels(): void {
+    this.channelGrid.reload();
+    this.loadAllChannels();
+  }
+
+  private loadAllChannels(): void {
     this.loading.set(true);
-    this.api.getChannels().subscribe({
+    this.api.getChannels({ per_page: 200 }).subscribe({
       next: (res) => {
         this.channels.set(res.data ?? []);
         this.loading.set(false);
@@ -444,14 +505,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
 
   // --- API Keys ---
   loadApiKeys(): void {
-    this.api.getApiKeys().subscribe({
-      next: (res) => {
-        this.apiKeys.set(res.data ?? []);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.API_KEYS_LOAD_ERROR'));
-      },
-    });
+    this.apiKeyGrid.reload();
   }
 
   openCreateApiKeyModal(): void {
@@ -602,18 +656,13 @@ export class EcommerceIntegrationsComponent implements OnInit {
   }
 
   // --- Payment Links ---
+  /** Applies the invoice filter of the toolbar. */
+  searchPaymentLinks(): void {
+    this.paymentLinkGrid.setFilter({ invoice_id: this.filterInvoiceId() || undefined });
+  }
+
   loadPaymentLinks(): void {
-    this.loading.set(true);
-    this.api.getPaymentLinks(this.filterInvoiceId() || undefined).subscribe({
-      next: (res) => {
-        this.paymentLinks.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.PAYMENT_LINKS_LOAD_ERROR'));
-      },
-    });
+    this.paymentLinkGrid.reload();
   }
 
   openCreatePaymentLinkModal(): void {
@@ -677,7 +726,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
   }
 
   private replacePaymentLink(updated: PaymentLink): void {
-    this.paymentLinks.update((links) => links.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
+    this.paymentLinkGrid.items.update((links) => links.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
   }
 
   copyToClipboard(text: string): void {

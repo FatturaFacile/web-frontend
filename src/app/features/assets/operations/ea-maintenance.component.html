@@ -4,39 +4,19 @@
       @if (canWrite) {
         <button nz-button nzType="primary" class="mb-4" type="button" appIconAction="add" (click)="openPlanModal(null)"></button>
       }
-      <nz-table #planTable nzSize="middle" [nzData]="plans()" [nzLoading]="loading()" [nzPageSize]="20">
-        <thead>
-          <tr>
-            <th [nzSortFn]="'plan_code' | gridSort" [nzFilters]="'plan_code' | gridFilterList: planTable.nzData" [nzFilterFn]="'plan_code' | gridFilterFn">{{ 'EA.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: planTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
-            <th>{{ 'EA.TRIGGER' | translate }}</th>
-            <th>{{ 'EA.NEXT_DUE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'estimated_cost' | gridSort" [nzFilters]="'estimated_cost' | gridFilterList: planTable.nzData" [nzFilterFn]="'estimated_cost' | gridFilterFn">{{ 'EA.ESTIMATED_COST' | translate }}</th>
-            <th>{{ 'EA.STATUS' | translate }}</th>
-            <th>{{ 'EA.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (plan of planTable.data; track plan.id) {
-            <tr>
-              <td>{{ plan.plan_code }}</td>
-              <td>{{ plan.name }}</td>
-              <td>{{ plan.trigger_type ? ('EA.TRIGGER_' + plan.trigger_type.toUpperCase() | translate) : '' }}</td>
-              <td>{{ plan.next_due_date ?? '' }}</td>
-              <td nzAlign="right">{{ plan.estimated_cost | money: 'EUR' }}</td>
-              <td>
-                <nz-tag [nzColor]="plan.is_active ? 'green' : 'default'">{{ (plan.is_active ? 'EA.ACTIVE' : 'EA.INACTIVE') | translate }}</nz-tag>
-              </td>
-              <td>
-                @if (canWrite) {
-                  <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openPlanModal(plan)"></button>
-                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="openWorkOrderFromPlan(plan)">{{ 'EA.OPEN_WORK_ORDER' | translate }}</button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="plansGrid" [columns]="planColumns()" [actionsTemplate]="planActionsTpl" exportFileName="maintenance-plans" />
+      <ng-template #planTriggerTpl let-plan>{{ plan.trigger_type ? ('EA.TRIGGER_' + plan.trigger_type.toUpperCase() | translate) : '' }}</ng-template>
+      <ng-template #planDueTpl let-plan>{{ plan.next_due_date ?? '' }}</ng-template>
+      <ng-template #planCostTpl let-plan>{{ plan.estimated_cost | money: 'EUR' }}</ng-template>
+      <ng-template #planActiveTpl let-plan>
+        <nz-tag [nzColor]="plan.is_active ? 'green' : 'default'">{{ (plan.is_active ? 'EA.ACTIVE' : 'EA.INACTIVE') | translate }}</nz-tag>
+      </ng-template>
+      <ng-template #planActionsTpl let-plan>
+        @if (canWrite) {
+          <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openPlanModal(plan)"></button>
+          <button nz-button nzSize="small" nzType="primary" type="button" (click)="openWorkOrderFromPlan(plan)">{{ 'EA.OPEN_WORK_ORDER' | translate }}</button>
+        }
+      </ng-template>
     </nz-tab>
 
     <nz-tab [nzTitle]="'EA.DUE_PLANS' | translate">

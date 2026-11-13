@@ -80,114 +80,82 @@
         </div>
       </div>
 
-      <nz-table
-        #declarationsTable
-        [nzData]="declarations()"
-        [nzLoading]="declarationsLoading()"
-        nzSize="small"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'INTRASTAT.MODEL' | translate }}</th>
-            <th>{{ 'INTRASTAT.FLOW' | translate }}</th>
-            <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'INTRASTAT.PERIOD' | translate }}</th>
-            <th [nzSortFn]="'reference_number' | gridSort" [nzFilters]="'reference_number' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'reference_number' | gridFilterFn">{{ 'INTRASTAT.REF_NUMBER' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'INTRASTAT.STATUS' | translate }}</th>
-            <th [nzSortFn]="'protocol_number' | gridSort" [nzFilters]="'protocol_number' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'protocol_number' | gridFilterFn">{{ 'INTRASTAT.PROTOCOL' | translate }}</th>
-            <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of declarationsTable.data; track item.id) {
-            <tr>
-              <td>
-                <nz-tag nzColor="blue"><strong>{{ item.model }}</strong></nz-tag>
-              </td>
-              <td>
-                <nz-tag [nzColor]="getFlowColor(item.flow)">
-                  {{ (item.flow === 'sales' ? 'INTRASTAT.SALES' : 'INTRASTAT.PURCHASES') | translate }}
-                </nz-tag>
-              </td>
-              <td>
-                <strong>{{ item.year }}</strong> / {{ item.periodicity }}{{ item.period }}
-              </td>
-              <td>#{{ item.reference_number }}</td>
-              <td>
-                <nz-tag [nzColor]="getStatusBadgeColor(item.status)">
-                  {{ item.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td><code>{{ item.protocol_number || '-' }}</code></td>
-              <td nzAlign="center">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    (click)="openDeclarationDrawer(item)"
-                  >
-                    <span nz-icon nzType="eye"></span>
-                    {{ 'INTRASTAT.LINES_DETAILS' | translate }}
-                  </button>
+      <app-base-table [grid]="declarationsGrid" [columns]="declarationColumns()" [actionsTemplate]="declarationActionsTpl" [bordered]="true" size="small" exportFileName="intrastat-declarations" />
+      <ng-template #modelTpl let-item><nz-tag nzColor="blue"><strong>{{ item.model }}</strong></nz-tag></ng-template>
+      <ng-template #flowTpl let-item>
+        <nz-tag [nzColor]="getFlowColor(item.flow)">{{ (item.flow === 'sales' ? 'INTRASTAT.SALES' : 'INTRASTAT.PURCHASES') | translate }}</nz-tag>
+      </ng-template>
+      <ng-template #periodTpl let-item><strong>{{ item.year }}</strong> / {{ item.periodicity }}{{ item.period }}</ng-template>
+      <ng-template #referenceTpl let-item>#{{ item.reference_number }}</ng-template>
+      <ng-template #statusTpl let-item>
+        <nz-tag [nzColor]="getStatusBadgeColor(item.status)">{{ item.status | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #protocolTpl let-item><code>{{ item.protocol_number || '-' }}</code></ng-template>
+      <ng-template #declarationActionsTpl let-item>
+        <nz-space>
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="link"
+            nzSize="small"
+            (click)="openDeclarationDrawer(item)"
+          >
+            <span nz-icon nzType="eye"></span>
+            {{ 'INTRASTAT.LINES_DETAILS' | translate }}
+          </button>
 
-                  @if (item.status === 'draft') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="link"
-                      nzSize="small"
-                      (click)="validateDeclaration(item)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                      {{ 'INTRASTAT.VALIDATE' | translate }}
-                    </button>
-                  }
-
-                  @if (item.status === 'validated') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="link"
-                      nzSize="small"
-                      (click)="openSubmitModal(item)"
-                    >
-                      <span nz-icon nzType="send"></span>
-                      {{ 'INTRASTAT.MARK_SUBMITTED' | translate }}
-                    </button>
-                  }
-
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    (click)="exportScdata(item)"
-                  >
-                    <span nz-icon nzType="download"></span>
-                    {{ 'INTRASTAT.EXPORT_SCDATA' | translate }}
-                  </button>
-
-                  @if (item.status === 'draft') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="link"
-                      nzDanger
-                      nzSize="small"
-                      nz-popconfirm
-                      [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE' | translate"
-                      (nzOnConfirm)="deleteDeclaration(item.id)"
-                      appIconAction="delete"
-                    ></button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
+          @if (item.status === 'draft') {
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="link"
+              nzSize="small"
+              (click)="validateDeclaration(item)"
+            >
+              <span nz-icon nzType="check"></span>
+              {{ 'INTRASTAT.VALIDATE' | translate }}
+            </button>
           }
-        </tbody>
-      </nz-table>
+
+          @if (item.status === 'validated') {
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="link"
+              nzSize="small"
+              (click)="openSubmitModal(item)"
+            >
+              <span nz-icon nzType="send"></span>
+              {{ 'INTRASTAT.MARK_SUBMITTED' | translate }}
+            </button>
+          }
+
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="link"
+            nzSize="small"
+            (click)="exportScdata(item)"
+          >
+            <span nz-icon nzType="download"></span>
+            {{ 'INTRASTAT.EXPORT_SCDATA' | translate }}
+          </button>
+
+          @if (item.status === 'draft') {
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="link"
+              nzDanger
+              nzSize="small"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="deleteDeclaration(item.id)"
+              appIconAction="delete"
+            ></button>
+          }
+        </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 1: AUTO GENERATE FROM INVOICES -->
@@ -338,47 +306,22 @@
         </div>
       </div>
 
-      <nz-table
-        #profilesTable
-        [nzData]="productProfiles()"
-        [nzLoading]="productProfilesLoading()"
-        nzSize="small"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'product_id' | gridSort" [nzFilters]="'product_id' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'product_id' | gridFilterFn">{{ 'INTRASTAT.PRODUCT_ID' | translate }}</th>
-            <th [nzSortFn]="'product_name' | gridSort" [nzFilters]="'product_name' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'product_name' | gridFilterFn">{{ 'INTRASTAT.PRODUCT_NAME' | translate }}</th>
-            <th [nzSortFn]="'cn8_code' | gridSort" [nzFilters]="'cn8_code' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'cn8_code' | gridFilterFn">{{ 'INTRASTAT.CN8_CODE' | translate }}</th>
-            <th>{{ 'INTRASTAT.SUPPLY_KIND' | translate }}</th>
-            <th [nzSortFn]="'origin_country_code' | gridSort" [nzFilters]="'origin_country_code' | gridFilterList: profilesTable.nzData" [nzFilterFn]="'origin_country_code' | gridFilterFn">{{ 'INTRASTAT.ORIGIN_COUNTRY' | translate }}</th>
-            <th nzAlign="center">{{ 'INTRASTAT.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of profilesTable.data; track item.product_id) {
-            <tr>
-              <td><code>{{ item.product_id }}</code></td>
-              <td><strong>{{ item.product_name || '-' }}</strong></td>
-              <td><nz-tag nzColor="blue">{{ item.cn8_code }}</nz-tag></td>
-              <td>{{ item.supply_kind ? ('INTRASTAT.SUPPLY_' + item.supply_kind.toUpperCase() | translate) : '-' }}</td>
-              <td>{{ item.origin_country_code || '-' }}</td>
-              <td nzAlign="center">
-                <button
-                  nz-button
-                  nzType="link"
-                  nzDanger
-                  nzSize="small"
-                  nz-popconfirm
-                  [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE_PROFILE' | translate"
-                  (nzOnConfirm)="deleteProductProfile(item.product_id)"
-                  appIconAction="delete"
-                ></button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="productProfilesGrid" [columns]="profileColumns()" [actionsTemplate]="profileActionsTpl" itemKey="product_id" [bordered]="true" size="small" exportFileName="intrastat-product-profiles" />
+      <ng-template #profileIdTpl let-item><code>{{ item.product_id }}</code></ng-template>
+      <ng-template #profileNameTpl let-item><strong>{{ item.product_name || '-' }}</strong></ng-template>
+      <ng-template #profileCnTpl let-item><nz-tag nzColor="blue">{{ item.cn8_code }}</nz-tag></ng-template>
+      <ng-template #profileActionsTpl let-item>
+        <button
+          nz-button
+          nzType="link"
+          nzDanger
+          nzSize="small"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE_PROFILE' | translate"
+          (nzOnConfirm)="deleteProductProfile(item.product_id)"
+          appIconAction="delete"
+        ></button>
+      </ng-template>
     </nz-tab>
   </nz-tabs>
 </nz-card>

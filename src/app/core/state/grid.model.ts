@@ -108,7 +108,7 @@ export abstract class GridModel<T, F extends QueryFilterParams = QueryFilterPara
       .subscribe((res) => {
         if (res) {
           this.items.set(res.data);
-          this.totalCount.set(res.meta.total);
+          this.totalCount.set(res.meta?.total ?? res.data.length);
         }
         this.loading.set(false);
         this.loaded.set(true);

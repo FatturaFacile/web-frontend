@@ -1,13 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HrTimeApiService, I18nService, TimeClosingResource, TimeTransferResult } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { FetchGridModel, HrTimeApiService, I18nService, QueryFilterParams, TimeClosingResource, TimeTransferResult } from '@core';
+import { BaseTableComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { reportHttpError } from '../shared/hr-http.util';
 import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 import { ReasonButtonComponent } from '../shared/reason-button.component';
@@ -17,14 +16,12 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
   selector: 'app-time-closings',
   styleUrl: './time-closings.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     DatePipe,
     FormsModule,
     NzAlertModule,
     NzButtonModule,
     NzInputModule,
-    NzTableModule,
     TranslatePipe,
     HrStatusTagComponent,
     ReasonButtonComponent,
@@ -61,68 +58,57 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
         [nzMessage]="'hrmTime.transferDone' | translate: { month: t.month + '/' + t.year, employees: t.employees_processed, inputs: t.inputs_upserted, credits: t.night_time_bank_credits }"
       />
     }
-    <nz-table #table [nzData]="closings()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: table.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'hrmCommon.year' | translate }}</th>
-          <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: table.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
-          <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th [nzSortFn]="'closed_at' | gridSort" [nzFilters]="'closed_at' | gridFilterList: table.nzData" [nzFilterFn]="'closed_at' | gridFilterFn">{{ 'hrmTime.closedAt' | translate }}</th>
-          <th [nzSortFn]="'reopen_count' | gridSort" [nzFilters]="'reopen_count' | gridFilterList: table.nzData" [nzFilterFn]="'reopen_count' | gridFilterFn">{{ 'hrmTime.reopenCount' | translate }}</th>
-          <th [nzSortFn]="'reopen_reason' | gridSort" [nzFilters]="'reopen_reason' | gridFilterList: table.nzData" [nzFilterFn]="'reopen_reason' | gridFilterFn">{{ 'hrmTime.lastReopenReason' | translate }}</th>
-          @if (canWrite()) {
-            <th>{{ 'hrmCommon.actions' | translate }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of table.data; track row.id) {
-          <tr>
-            <td>{{ row.year }}</td>
-            <td>{{ row.month }}</td>
-            <td><app-hr-status-tag [value]="row.status" /></td>
-            <td>{{ row.closed_at | date: 'medium' }}</td>
-            <td>{{ row.reopen_count }}</td>
-            <td>{{ row.reopen_reason }}</td>
-            @if (canWrite()) {
-              <td>
-                @if (row.status.toLowerCase() === 'closed') {
-                  <app-reason-button labelKey="hrmTime.reopen" [danger]="true" (confirmed)="reopen(row, $event)" />
-                }
-                @if (canTransfer(row)) {
-                  <button nz-button nzSize="small" type="button" (click)="transferToPayroll(row)">
-                    {{ 'hrmTime.transferToPayroll' | translate }}
-                  </button>
-                }
-              </td>
-            }
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="canWrite() ? actionsTpl : undefined" [scroll]="{}" exportFileName="time-closings" />
+
+    <ng-template #statusTpl let-row><app-hr-status-tag [value]="row.status" /></ng-template>
+    <ng-template #closedAtTpl let-row>{{ row.closed_at | date: 'medium' }}</ng-template>
+    <ng-template #actionsTpl let-row>
+      @if (row.status.toLowerCase() === 'closed') {
+        <app-reason-button labelKey="hrmTime.reopen" [danger]="true" (confirmed)="reopen(row, $event)" />
+      }
+      @if (canTransfer(row)) {
+        <button nz-button nzSize="small" type="button" (click)="transferToPayroll(row)">
+          {{ 'hrmTime.transferToPayroll' | translate }}
+        </button>
+      }
+    </ng-template>
   `,
 })
-export class TimeClosingsComponent implements OnInit {
+export class TimeClosingsComponent {
   readonly canWrite = input(false);
 
   private readonly api = inject(HrTimeApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
-  protected readonly closings = signal<TimeClosingResource[]>([]);
-  protected readonly loading = signal(true);
+  /** Server-driven grid of the closings of the selected year. */
+  protected readonly grid = new FetchGridModel<TimeClosingResource, QueryFilterParams & { year?: number }>((query) =>
+    this.api.getTimeClosings(query.year, query),
+  );
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly closedAtTpl = viewChild<TemplateRef<unknown>>('closedAtTpl');
+  protected readonly columns = computed<TableColumnDef<TimeClosingResource>[]>(() => {
+    return [
+      { key: 'year', header: 'hrmCommon.year' },
+      { key: 'month', header: 'hrmLeave.month' },
+      { key: 'status', header: 'hrmCommon.statusCol', customCellTemplate: this.statusTpl() },
+      { key: 'closed_at', header: 'hrmTime.closedAt', customCellTemplate: this.closedAtTpl() },
+      { key: 'reopen_count', header: 'hrmTime.reopenCount', align: 'right' },
+      { key: 'reopen_reason', header: 'hrmTime.lastReopenReason' },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly year = signal<number>(new Date().getFullYear());
   protected readonly month = signal<number | null>(null);
   protected readonly transfer = signal<TimeTransferResult | null>(null);
 
-  ngOnInit(): void {
-    this.reload();
+  constructor() {
+    this.grid.setFilter({ year: this.year() });
   }
 
   protected setYear(value: number): void {
     this.year.set(value);
-    this.reload();
+    this.grid.setFilter({ year: value || undefined });
   }
 
   protected canClose(): boolean {
@@ -131,17 +117,7 @@ export class TimeClosingsComponent implements OnInit {
   }
 
   protected reload(): void {
-    this.loading.set(true);
-    this.api.getTimeClosings(this.year() || undefined).subscribe({
-      next: (res) => {
-        this.closings.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        reportHttpError(err, this.message, this.i18n);
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   protected close(): void {

@@ -2,10 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   AnswerPortalCsatRequest,
   ApiResponse,
   ApprovePortalQuoteRequest,
+  PaginatedResponse,
+  QueryFilterParams,
   CreatePortalMovementRequest,
   CreatePortalTicketRequest,
   CustomsPortalDossier,
@@ -22,7 +25,7 @@ import {
   PortalQuote,
   PortalServiceReport,
   PortalStockLine,
-  PortalStockMovementPage,
+  PortalStockMovement,
   PortalSubscription,
   PortalTicketListItem,
   PortalTicketReplyRequest,
@@ -56,24 +59,30 @@ export class PortalApiService {
     return this.http.get(`${this.base}/quotes/${token}/pdf`, { responseType: 'blob' });
   }
 
-  getInvoices(token: string): Observable<ApiResponse<PortalInvoice[]>> {
-    return this.http.get<ApiResponse<PortalInvoice[]>>(`${this.base}/invoices/${token}`);
+  getInvoices(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<PortalInvoice>> {
+    return this.http.get<PaginatedResponse<PortalInvoice>>(`${this.base}/invoices/${token}`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   downloadInvoicePdf(token: string, invoiceId: string): Observable<Blob> {
     return this.http.get(`${this.base}/invoices/${token}/${invoiceId}/pdf`, { responseType: 'blob' });
   }
 
-  getServiceReports(token: string): Observable<ApiResponse<PortalServiceReport[]>> {
-    return this.http.get<ApiResponse<PortalServiceReport[]>>(`${this.base}/service-reports/${token}`);
+  getServiceReports(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<PortalServiceReport>> {
+    return this.http.get<PaginatedResponse<PortalServiceReport>>(`${this.base}/service-reports/${token}`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   downloadServiceReportPdf(token: string, reportId: string): Observable<Blob> {
     return this.http.get(`${this.base}/service-reports/${token}/${reportId}/pdf`, { responseType: 'blob' });
   }
 
-  getTickets(token: string): Observable<ApiResponse<PortalHelpdeskTicket[]>> {
-    return this.http.get<ApiResponse<PortalHelpdeskTicket[]>>(`${this.base}/helpdesk/${token}/tickets`);
+  getTickets(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<PortalHelpdeskTicket>> {
+    return this.http.get<PaginatedResponse<PortalHelpdeskTicket>>(`${this.base}/helpdesk/${token}/tickets`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getTicket(token: string, ticketId: string): Observable<ApiResponse<PortalHelpdeskTicket & { messages: PortalHelpdeskMessage[] }>> {
@@ -121,9 +130,9 @@ export class PortalApiService {
     });
   }
 
-  getStockMovements(token: string, page = 1): Observable<PortalStockMovementPage> {
-    return this.http.get<PortalStockMovementPage>(`${this.base}/stock-movements/${token}`, {
-      params: new HttpParams().set('page', String(page)),
+  getStockMovements(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<PortalStockMovement>> {
+    return this.http.get<PaginatedResponse<PortalStockMovement>>(`${this.base}/stock-movements/${token}`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -181,8 +190,10 @@ export class PortalApiService {
     return this.http.post<ApiResponse<PortalMovementRequest>>(`${this.base}/movement-requests/${token}`, payload);
   }
 
-  getCustomsDossiers(token: string): Observable<ApiResponse<CustomsPortalDossier[]>> {
-    return this.http.get<ApiResponse<CustomsPortalDossier[]>>(`${this.base}/customs/${token}/dossiers`);
+  getCustomsDossiers(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<CustomsPortalDossier>> {
+    return this.http.get<PaginatedResponse<CustomsPortalDossier>>(`${this.base}/customs/${token}/dossiers`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createCustomsShipmentRequest(token: string, payload: CustomsPortalShipmentRequest): Observable<ApiResponse<CustomsPortalDossier>> {

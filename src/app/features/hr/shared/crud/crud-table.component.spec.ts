@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../../icons-provider';
+import { TableColumnDef } from '@shared';
 import { CrudTableComponent } from './crud-table.component';
 import { CrudConfig } from './crud.types';
 
@@ -178,5 +179,44 @@ describe('CrudTableComponent', () => {
     expect(c.form.get('qty')?.errors?.['outOfRange']).toBeTruthy();
     c.save();
     expect(create).not.toHaveBeenCalled();
+  });
+
+  describe('server-driven grid (gridList)', () => {
+    const page = (data: Row[]) => of({ success: true, message: '', data, meta: { total: data.length } });
+    const fields: CrudConfig<Row>['fields'] = [
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text' },
+      { key: 'employee_id', serverKey: 'user_id', labelKey: 'hrmCommon.employee', type: 'select', options: () => [{ value: 'e1', label: 'Mario Rossi' }] },
+      { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean' },
+      { key: 'secret', labelKey: 'hrmCommon.notes', type: 'text', noGrid: true },
+    ];
+
+    it('loads the page from gridList, shows translated cells and maps the columns to the server', async () => {
+      const gridList = vi.fn().mockReturnValue(page([{ id: '1', code: 'IT', employee_id: 'e1', is_active: true, secret: 'x' }]));
+      configure({ list: undefined, gridList, fields });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      fixture.detectChanges();
+
+      expect(gridList).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
+      expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
+
+      const columns = (component as unknown as { tableColumns(): TableColumnDef<Row>[] }).tableColumns();
+      expect(columns.map((c) => c.serverKey)).toEqual([undefined, 'user_id', undefined, undefined]);
+      // raw server values of the filter lists and group headers are translated like the cells
+      expect(columns[1].valueLabel?.('e1')).toBe('Mario Rossi');
+      expect(columns[2].valueLabel?.('1')).toBe(columns[2].valueLabel?.('true'));
+      expect(columns[2].valueLabel?.('1')).not.toBe(columns[2].valueLabel?.('0'));
+      // an encrypted column cannot be sorted, filtered or grouped by the server
+      expect(columns[3]).toEqual(expect.objectContaining({ sortable: false, filterable: false, groupable: false }));
+    });
+
+    it('reloads the grid after a row action instead of calling a client-side list', async () => {
+      const gridList = vi.fn().mockReturnValue(page([{ id: '1', code: 'IT' }]));
+      configure({ list: undefined, gridList, fields: fields.slice(0, 1) });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      const calls = gridList.mock.calls.length;
+      (component as unknown as { runAction(a: unknown, r: Row): void }).runAction({ labelKey: 'x', run: () => of({}) }, { id: '1' });
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      expect(gridList.mock.calls.length).toBeGreaterThan(calls);
+    });
   });
 });

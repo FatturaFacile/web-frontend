@@ -38,7 +38,7 @@
   </nz-card>
   <nz-card class="stat-card">
     <nz-statistic
-      [nzValue]="deliveries().length"
+      [nzValue]="deliveries.totalCount()"
       [nzTitle]="'COMMUNICATION.TOTAL_DELIVERIES' | translate"
       [nzPrefix]="totalIcon"
     ></nz-statistic>
@@ -86,63 +86,36 @@
         </div>
       </div>
 
-      <nz-table
-        #deliveriesTable
-        [nzData]="deliveries()"
-        [nzLoading]="deliveriesLoading()"
-        nzSize="small"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'recipient' | gridSort" [nzFilters]="'recipient' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'recipient' | gridFilterFn">{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
-            <th [nzSortFn]="'channel' | gridSort" [nzFilters]="'channel' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'channel' | gridFilterFn">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'COMMUNICATION.DRIVER' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMUNICATION.STATUS' | translate }}</th>
-            <th [nzSortFn]="'provider_reference' | gridSort" [nzFilters]="'provider_reference' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'provider_reference' | gridFilterFn">{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'COMMUNICATION.DATE' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of deliveriesTable.data; track item.id) {
-            <tr>
-              <td>
-                <strong>{{ item.recipient }}</strong>
-                @if (item.error) {
-                  <div class="error-snippet text-danger">{{ item.error }}</div>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">
-                  {{ item.channel | uppercase }}
-                </nz-tag>
-              </td>
-              <td><code>{{ item.driver }}</code></td>
-              <td>
-                <nz-tag [nzColor]="getDeliveryStatusColor(item.status)">
-                  {{ item.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td>
-                <span class="provider-ref">{{ item.provider_reference || '-' }}</span>
-              </td>
-              <td>{{ item.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td nzAlign="center">
-                <button
-                  nz-button
-                  nzType="link"
-                  nzSize="small"
-                  (click)="openDeliveryDrawer(item)"
-                >
-                  <span nz-icon nzType="eye"></span>
-                  {{ 'COMMUNICATION.DETAILS' | translate }}
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="deliveries"
+        [columns]="deliveryColumns()"
+        [actionsTemplate]="deliveryActionsTpl"
+        exportFileName="deliveries"
+      />
+
+      <ng-template #recipientTpl let-item>
+        <strong>{{ item.recipient }}</strong>
+        @if (item.error) {
+          <div class="error-snippet text-danger">{{ item.error }}</div>
+        }
+      </ng-template>
+      <ng-template #deliveryChannelTpl let-item>
+        <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">{{ item.channel | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #driverTpl let-item><code>{{ item.driver }}</code></ng-template>
+      <ng-template #deliveryStatusTpl let-item>
+        <nz-tag [nzColor]="getDeliveryStatusColor(item.status)">{{ item.status | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #providerRefTpl let-item>
+        <span class="provider-ref">{{ item.provider_reference || '-' }}</span>
+      </ng-template>
+      <ng-template #createdAtTpl let-item>{{ item.created_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+      <ng-template #deliveryActionsTpl let-item>
+        <button nz-button nzType="link" nzSize="small" (click)="openDeliveryDrawer(item)">
+          <span nz-icon nzType="eye"></span>
+          {{ 'COMMUNICATION.DETAILS' | translate }}
+        </button>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 1: CHANNELS & GATEWAYS -->
@@ -229,78 +202,46 @@
         </div>
       </div>
 
-      <nz-table
-        #templatesTable
-        [nzData]="templates()"
-        [nzLoading]="templatesLoading()"
-        nzSize="small"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
-            <th [nzSortFn]="'channel' | gridSort" [nzFilters]="'channel' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'channel' | gridFilterFn">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th [nzSortFn]="'locale' | gridSort" [nzFilters]="'locale' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'locale' | gridFilterFn">{{ 'COMMUNICATION.LOCALE' | translate }}</th>
-            <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
-            <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of templatesTable.data; track item.id) {
-            <tr>
-              <td><code>{{ item.code }}</code></td>
-              <td>
-                <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">
-                  {{ item.channel | uppercase }}
-                </nz-tag>
-              </td>
-              <td><nz-tag>{{ item.locale }}</nz-tag></td>
-              <td>{{ item.subject || '-' }}</td>
-              <td>
-                @if (item.is_active) {
-                  <nz-tag nzColor="success">{{ 'COMMUNICATION.ACTIVE' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="default">{{ 'COMMUNICATION.INACTIVE' | translate }}</nz-tag>
-                }
-              </td>
-              <td nzAlign="center">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    (click)="openPreviewModal(item)"
-                  >
-                    <span nz-icon nzType="eye"></span>
-                    {{ 'COMMUNICATION.PREVIEW' | translate }}
-                  </button>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzSize="small"
-                    appIconAction="edit"
-                    (click)="openEditTemplateModal(item)"
-                  ></button>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="link"
-                    nzDanger
-                    nzSize="small"
-                    nz-popconfirm
-                    appIconAction="delete"
-                    [nzPopconfirmTitle]="'COMMUNICATION.CONFIRM_DELETE_TEMPLATE' | translate"
-                    (nzOnConfirm)="deleteTemplate(item.id)"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="templates"
+        [columns]="templateColumns()"
+        [actionsTemplate]="templateActionsTpl"
+        exportFileName="templates"
+      />
+
+      <ng-template #codeTpl let-item><code>{{ item.code }}</code></ng-template>
+      <ng-template #templateChannelTpl let-item>
+        <nz-tag [nzColor]="getChannelBadgeColor(item.channel)">{{ item.channel | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #localeTpl let-item><nz-tag>{{ item.locale }}</nz-tag></ng-template>
+      <ng-template #subjectTpl let-item>{{ item.subject || '-' }}</ng-template>
+      <ng-template #activeTpl let-item>
+        @if (item.is_active) {
+          <nz-tag nzColor="success">{{ 'COMMUNICATION.ACTIVE' | translate }}</nz-tag>
+        } @else {
+          <nz-tag nzColor="default">{{ 'COMMUNICATION.INACTIVE' | translate }}</nz-tag>
+        }
+      </ng-template>
+      <ng-template #templateActionsTpl let-item>
+        <nz-space>
+          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openPreviewModal(item)">
+            <span nz-icon nzType="eye"></span>
+            {{ 'COMMUNICATION.PREVIEW' | translate }}
+          </button>
+          <button *nzSpaceItem nz-button nzType="link" nzSize="small" appIconAction="edit" (click)="openEditTemplateModal(item)"></button>
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="link"
+            nzDanger
+            nzSize="small"
+            nz-popconfirm
+            appIconAction="delete"
+            [nzPopconfirmTitle]="'COMMUNICATION.CONFIRM_DELETE_TEMPLATE' | translate"
+            (nzOnConfirm)="deleteTemplate(item.id)"
+          ></button>
+        </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: QUICK SEND -->

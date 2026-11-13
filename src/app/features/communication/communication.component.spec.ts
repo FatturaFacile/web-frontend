@@ -80,13 +80,22 @@ describe('CommunicationComponent', () => {
     variables: { name: 'Mario Rossi', number: 'INV-2026-0042' },
   };
 
+  const page = <T>(data: T[]) => ({
+    success: true,
+    message: 'ok',
+    data,
+    meta: { current_page: 1, last_page: 1, per_page: 10, total: data.length, from: 1, to: data.length },
+  });
+
   const apiSpy = {
-    getDeliveries: vi.fn().mockReturnValue(of({ data: mockDeliveries })),
+    getDeliveries: vi.fn().mockImplementation((query: Record<string, unknown>) =>
+      of(query['grid_values'] ? { data: [{ value: 'sent', count: 1 }, { value: 'failed', count: 1 }] } : page(mockDeliveries)),
+    ),
     getDelivery: vi.fn().mockReturnValue(of({ data: mockDeliveries[0] })),
     getChannels: vi.fn().mockReturnValue(of({ data: mockChannels })),
     updateChannel: vi.fn().mockReturnValue(of({ data: mockChannels[0] })),
     testChannel: vi.fn().mockReturnValue(of({ success: true, message: 'Delivered' })),
-    getTemplates: vi.fn().mockReturnValue(of({ data: mockTemplates })),
+    getTemplates: vi.fn().mockImplementation(() => of(page(mockTemplates))),
     getTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
     createTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
     updateTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
@@ -124,6 +133,7 @@ describe('CommunicationComponent', () => {
     fixture = TestBed.createComponent(CommunicationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load deliveries, channels, and templates', () => {
@@ -131,22 +141,22 @@ describe('CommunicationComponent', () => {
     expect(apiSpy.getDeliveries).toHaveBeenCalled();
     expect(apiSpy.getChannels).toHaveBeenCalled();
     expect(apiSpy.getTemplates).toHaveBeenCalled();
-    expect(component.deliveries().length).toBe(2);
+    expect(component.deliveries.items().length).toBe(2);
     expect(component.channels().length).toBe(2);
-    expect(component.templates().length).toBe(1);
+    expect(component.templates.items().length).toBe(1);
     expect(component.totalSent()).toBe(1);
     expect(component.totalFailed()).toBe(1);
     expect(component.activeChannelsCount()).toBe(1);
   });
 
-  it('should filter deliveries by channel and status', () => {
+  it('should filter deliveries by channel and status on the server', async () => {
     component.filterChannel.set('email');
     component.filterStatus.set('sent');
     component.loadDeliveries();
-    expect(apiSpy.getDeliveries).toHaveBeenCalledWith({
-      channel: 'email',
-      status: 'sent',
-    });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiSpy.getDeliveries).toHaveBeenCalledWith(
+      expect.objectContaining({ channel: 'email', status: 'sent', page: 1 }),
+    );
   });
 
   it('should open and close delivery drawer', () => {

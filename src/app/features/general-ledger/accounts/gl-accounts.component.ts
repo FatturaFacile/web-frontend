@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -9,17 +9,23 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   ChartAccountDetail,
   ChartAccountPayload,
+  FetchGridModel,
+  QueryFilterParams,
   GeneralLedgerApiService,
+  I18nService,
   PermissionsService,
 } from '@core';
-import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+
+interface AccountGridFilter extends QueryFilterParams {
+  type?: string;
+}
 
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'revenue', 'expense', 'cogs', 'wip', 'memo', 'statistical'];
 const REPORTING_CLASSES = [
@@ -36,8 +42,7 @@ const REPORTING_CLASSES = [
   selector: 'app-gl-accounts',
   styleUrl: './gl-accounts.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -51,27 +56,27 @@ const REPORTING_CLASSES = [
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     TranslatePipe,
   ],
   templateUrl: './gl-accounts.component.html',
 })
-export class GlAccountsComponent implements OnInit {
+export class GlAccountsComponent {
   private readonly api = inject(GeneralLedgerApiService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly lookups = inject(GlLookupStore);
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
   protected readonly accountTypes = ACCOUNT_TYPES;
   protected readonly reportingClasses = REPORTING_CLASSES;
-  protected readonly items = signal<ChartAccountDetail[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<ChartAccountDetail, AccountGridFilter>((query) => this.api.getAccountList(query));
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
   protected typeFilter: string | null = null;
   protected search = '';
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
   private editingId: string | null = null;
 
   protected readonly form = this.fb.group({
@@ -86,27 +91,56 @@ export class GlAccountsComponent implements OnInit {
     is_active: this.fb.control(true),
   });
 
-  ngOnInit(): void {
-    this.load();
-  }
+  private readonly codeTpl = viewChild<TemplateRef<{ $implicit: ChartAccountDetail; value: unknown }>>('codeTpl');
+  private readonly typeTpl = viewChild<TemplateRef<{ $implicit: ChartAccountDetail; value: unknown }>>('typeTpl');
+  private readonly balanceTpl = viewChild<TemplateRef<{ $implicit: ChartAccountDetail; value: unknown }>>('balanceTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: ChartAccountDetail; value: unknown }>>('statusTpl');
 
-  protected filtered(): ChartAccountDetail[] {
-    const term = this.search.trim().toLowerCase();
-    return this.items().filter(
-      (a) =>
-        !term || `${a.account_code ?? ''} ${a.name}`.toLowerCase().includes(term),
-    );
+  protected readonly columns = computed<TableColumnDef<ChartAccountDetail>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'account_code', header: 'GL.COL_CODE', customCellTemplate: this.codeTpl() },
+      { key: 'name', header: 'GL.COL_NAME' },
+      {
+        key: 'account_type',
+        header: 'GL.ACCOUNT_TYPE',
+        valueLabel: (value) => this.i18n.translate('GL.ACCOUNT_TYPE_' + value.toUpperCase()),
+        customCellTemplate: this.typeTpl(),
+      },
+      {
+        key: 'normal_balance',
+        header: 'GL.NORMAL_BALANCE',
+        valueLabel: (value) => this.i18n.translate('GL.NORMAL_' + value.toUpperCase()),
+        customCellTemplate: this.balanceTpl(),
+      },
+      {
+        key: 'is_active',
+        serverKey: 'activity_state',
+        header: 'GL.STATUS',
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'GL.ACTIVE' : 'GL.INACTIVE'),
+        customCellTemplate: this.statusTpl(),
+      },
+    ];
+  });
+
+  constructor() {
+    this.grid.setPageSize(25);
   }
 
   protected load(): void {
-    this.loading.set(true);
-    this.api.getAccountList({ type: this.typeFilter ?? undefined, per_page: 500 }).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.setFilter({ type: this.typeFilter ?? undefined });
+  }
+
+  /** The search text is matched by the server on code and name; typing is debounced. */
+  protected onSearch(): void {
+    if (this.searchTimer !== null) {
+      clearTimeout(this.searchTimer);
+    }
+    this.searchTimer = setTimeout(() => this.grid.setFilter({ search: this.search.trim() || undefined }), 300);
+  }
+
+  private reload(): void {
+    this.grid.reload();
   }
 
   protected openModal(account: ChartAccountDetail | null): void {
@@ -144,7 +178,7 @@ export class GlAccountsComponent implements OnInit {
         this.saving.set(false);
         this.modalOpen.set(false);
         this.lookups.load(true);
-        this.load();
+        this.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -157,7 +191,7 @@ export class GlAccountsComponent implements OnInit {
     this.api.deleteAccount(account.id).subscribe({
       next: () => {
         this.lookups.load(true);
-        this.load();
+        this.reload();
       },
     });
   }

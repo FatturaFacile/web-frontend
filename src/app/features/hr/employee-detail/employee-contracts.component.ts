@@ -5,7 +5,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, crudPage } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -49,7 +49,7 @@ export class EmployeeContractsComponent {
     return {
       titleKey: 'hrmEmp.contracts',
       canWrite: this.canWrite(),
-      list: () => this.api.getContracts(employeeId).pipe(map((res) => res.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getContracts(employeeId, query)),
       create: (payload) => this.api.createContract(employeeId, payload as never),
       update: (id, payload) => this.api.updateContract(id, payload as never),
       isReadonly: (row) => row['is_active'] !== true,

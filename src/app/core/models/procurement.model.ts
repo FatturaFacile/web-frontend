@@ -257,6 +257,8 @@ export interface InspectGoodsReceiptPayload {
 export interface ThreeWayMatchLog {
   id: string;
   purchase_order_id: string;
+  /** Number of the purchase order, when the API loaded it. */
+  po_number?: string | null;
   purchase_receipt_id: string;
   passive_invoice_id: string;
   match_status: ThreeWayMatchStatus;
@@ -289,6 +291,8 @@ export interface ApproveThreeWayVariancePayload {
 export interface SupplierInvoice {
   id: string;
   supplier_id: string | null;
+  /** Name of the supplier contact, resolved by the API. */
+  supplier_name?: string | null;
   invoice_number: string;
   document_type?: string | null;
   date: string;

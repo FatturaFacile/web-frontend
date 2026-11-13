@@ -63,7 +63,14 @@ describe('TesseraSanitariaComponent', () => {
   };
 
   const apiSpy = {
-    getExpenses: vi.fn().mockReturnValue(of({ data: [mockExpense, mockOpposedExpense] })),
+    getExpenses: vi.fn().mockImplementation(() =>
+      of({
+        success: true,
+        message: 'ok',
+        data: [mockExpense, mockOpposedExpense],
+        meta: { current_page: 1, last_page: 1, per_page: 10, total: 2, from: 1, to: 2 },
+      }),
+    ),
     getExpense: vi.fn().mockReturnValue(of({ data: mockExpense })),
     flagExpense: vi.fn().mockReturnValue(of({ data: mockExpense })),
     removeExpenseFlag: vi.fn().mockReturnValue(of({ message: 'Removed' })),
@@ -101,25 +108,27 @@ describe('TesseraSanitariaComponent', () => {
     fixture = TestBed.createComponent(TesseraSanitariaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load expenses, summary, and settings', () => {
     expect(component).toBeTruthy();
-    expect(apiSpy.getExpenses).toHaveBeenCalledWith({ year: 2026 });
+    expect(apiSpy.getExpenses).toHaveBeenCalledWith(expect.objectContaining({ year: 2026, page: 1 }));
     expect(apiSpy.getSummary).toHaveBeenCalledWith(2026);
     expect(apiSpy.getSettings).toHaveBeenCalled();
 
-    expect(component.expenses().length).toBe(2);
+    expect(component.expenses.items().length).toBe(2);
     expect(component.totalExpensesAmount()).toBe(170.0);
     expect(component.totalTraceableAmount()).toBe(120.0);
     expect(component.totalOpposedCount()).toBe(1);
     expect(component.totalTransmittedCount()).toBe(1);
   });
 
-  it('should change year and reload expenses and summary', () => {
+  it('should change year and reload expenses and summary', async () => {
     component.changeYear(2025);
+    await new Promise((resolve) => setTimeout(resolve, 400));
     expect(component.selectedYear()).toBe(2025);
-    expect(apiSpy.getExpenses).toHaveBeenCalledWith({ year: 2025 });
+    expect(apiSpy.getExpenses).toHaveBeenCalledWith(expect.objectContaining({ year: 2025 }));
     expect(apiSpy.getSummary).toHaveBeenCalledWith(2025);
   });
 

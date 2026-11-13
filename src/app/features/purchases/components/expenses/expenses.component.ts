@@ -11,16 +11,15 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { ExpensesApiService, ExpenseFilterParams, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
 import {
-  BaseTableComponent,
-  IconActionDirective,
-  PageHeaderComponent,
-  TableColumnDef,
-  TableQueryParams,
-  TableStateService,
-  TranslatePipe,
-} from '@shared';
+  ExpensesApiService,
+  ExpenseFilterParams,
+  ExpenseResource,
+  ExpenseStatus,
+  FetchGridModel,
+  TranslateService,
+} from '@core';
+import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 
 // Labels come from the expenses.statuses.* translations
@@ -53,16 +52,16 @@ const STATUS_COLOR: Record<ExpenseStatus, string> = {
     IconActionDirective,
     TranslatePipe,
   ],
-  providers: [TableStateService],
   templateUrl: './expenses.component.html',
 })
 export class ExpensesComponent implements OnInit {
   protected readonly api = inject(ExpensesApiService);
   protected readonly message = inject(NzMessageService);
   protected readonly translate = inject(TranslateService);
-  protected readonly tableState = inject(TableStateService<ExpenseResource, ExpenseFilterParams>);
-
-  protected readonly items = signal<ExpenseResource[]>([]);
+  protected readonly grid = new FetchGridModel<ExpenseResource, ExpenseFilterParams>((query) =>
+    this.api.listExpenses(query),
+  );
+  protected readonly items = this.grid.items;
   protected readonly drawerOpen = signal(false);
   protected readonly selectedExpense = signal<ExpenseResource | null>(null);
   protected readonly isExporting = signal(false);
@@ -78,10 +77,8 @@ export class ExpensesComponent implements OnInit {
     return this.items().reduce((acc, curr) => acc + (Number(curr.amount_gross) || 0), 0);
   });
 
-  protected readonly pendingCount = computed(() => {
-    return this.items().filter((i) => i.status === 'submitted' || i.status === 'draft')
-      .length;
-  });
+  /** Expenses still waiting for a decision, over the whole dataset (the status value list of the grid). */
+  protected readonly pendingCount = signal(0);
 
   private readonly dateTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('dateTpl');
@@ -116,6 +113,8 @@ export class ExpensesComponent implements OnInit {
     },
     {
       key: 'category',
+      serverKey: 'category_label',
+      valueGetter: (row) => row.category?.name ?? '-',
       customCellTemplate: this.categoryTpl(),
       header: 'expenses.columns.category',
       width: '150px',
@@ -130,6 +129,8 @@ export class ExpensesComponent implements OnInit {
     },
     {
       key: 'status',
+      valueGetter: (row) => this.translate.instant('expenses.statuses.' + row.status),
+      valueLabel: (value) => this.translate.instant('expenses.statuses.' + value),
       header: 'expenses.columns.status',
       width: '140px',
       customCellTemplate: this.statusTpl(),
@@ -137,42 +138,33 @@ export class ExpensesComponent implements OnInit {
   ]);
 
   ngOnInit(): void {
-    this.loadData();
+    this.refreshPendingCount();
   }
 
+  /** Reloads the list after a change made by the drawer or a deletion. */
   loadData(): void {
-    this.tableState.setLoading(true);
-    const params = this.tableState.toBackendQueryParams() as ExpenseFilterParams;
+    this.grid.reload();
+    this.refreshPendingCount();
+  }
 
-    this.api.listExpenses(params).subscribe({
-      next: (res) => {
-        this.items.set(res.data || []);
-        if (res.meta) {
-          this.tableState.setTotal(res.meta.total);
-        } else {
-          this.tableState.setTotal(res.data?.length || 0);
-        }
-        this.tableState.setLoading(false);
-      },
-      error: () => {
-        this.tableState.setLoading(false);
-      },
+  private refreshPendingCount(): void {
+    this.grid.loadValues('status').subscribe((values) => {
+      this.pendingCount.set(
+        values
+          .filter((entry) => entry.value === 'submitted' || entry.value === 'draft')
+          .reduce((sum, entry) => sum + entry.count, 0),
+      );
     });
   }
 
   onSearchChange(search: string): void {
-    this.tableState.setSearch(search);
-    this.loadData();
+    this.grid.setFilter({ search: search || undefined });
+    this.refreshPendingCount();
   }
 
   onStatusFilterChange(status: string | null): void {
-    this.tableState.setFilter('status', status || undefined);
-    this.loadData();
-  }
-
-  onParamsChange(params: TableQueryParams): void {
-    this.tableState.applyGridParams(params);
-    this.loadData();
+    this.grid.setFilter({ status: status || undefined });
+    this.refreshPendingCount();
   }
 
   create(): void {

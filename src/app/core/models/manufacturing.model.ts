@@ -40,6 +40,7 @@ export interface MfgBomResource {
   engineering_change_order_id?: string | null;
   notes?: string | null;
   components?: MfgBomComponent[];
+  components_count?: number;
   created_at?: string;
 }
 
@@ -249,6 +250,7 @@ export interface MfgRoutingResource {
   effective_from?: string | null;
   effective_to?: string | null;
   notes?: string | null;
+  operations_count?: number;
   operations?: {
     id: string;
     sequence: number;

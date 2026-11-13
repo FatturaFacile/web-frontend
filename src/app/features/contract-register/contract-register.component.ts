@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -24,6 +24,7 @@ import {
   serverErrorMessage,
   ContractAlertResource,
   ContractKind,
+  ContractObligationParams,
   ContractObligationResource,
   ContractObligationStatus,
   ContractPartyResource,
@@ -34,11 +35,13 @@ import {
   ContractSavePartyRequest,
   ContractStatus,
   ContractStatusChangeResource,
+  FetchGridModel,
+  QueryFilterParams,
   RenewContractRequest,
   StoreContractRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { decimalPattern } from '@shared/utils/decimal-validators';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -87,6 +90,7 @@ function requiredWith(otherKey: string): ValidatorFn {
     NzIconModule,
     NzEmptyModule,
     PageHeaderComponent,
+    BaseTableComponent,
     MoneyPipe,
     TranslatePipe,
   ],
@@ -181,12 +185,28 @@ export class ContractRegisterComponent implements OnInit {
   });
 
   // --- TAB 2: GLOBAL OBLIGATIONS ---
-  protected readonly globalObligations = signal<ContractObligationResource[]>([]);
-  protected readonly obligationsLoading = signal<boolean>(false);
-  protected readonly obligationsTotal = signal<number>(0);
-  protected readonly obligationsPageIndex = signal<number>(1);
-  protected readonly obligationsPageSize = signal<number>(10);
-  protected readonly obligationStatusFilter = signal<ContractObligationStatus | ''>('');
+  protected readonly obligationsGrid = new FetchGridModel<ContractObligationResource, ContractObligationParams & QueryFilterParams>(
+    (query) => this.contractApi.getAllObligations(query),
+  );
+  protected readonly obligationStatusFilter = signal<ContractObligationStatus | 'overdue' | ''>('');
+
+  private readonly obligationTypeTpl = viewChild<TemplateRef<{ $implicit: ContractObligationResource; value: unknown }>>('obligationTypeTpl');
+  private readonly obligationTitleTpl = viewChild<TemplateRef<{ $implicit: ContractObligationResource; value: unknown }>>('obligationTitleTpl');
+  private readonly obligationDueTpl = viewChild<TemplateRef<{ $implicit: ContractObligationResource; value: unknown }>>('obligationDueTpl');
+  private readonly obligationAmountTpl = viewChild<TemplateRef<{ $implicit: ContractObligationResource; value: unknown }>>('obligationAmountTpl');
+  private readonly obligationStatusTpl = viewChild<TemplateRef<{ $implicit: ContractObligationResource; value: unknown }>>('obligationStatusTpl');
+
+  protected readonly obligationColumns = computed<TableColumnDef<ContractObligationResource>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'type', header: this.i18n.translate('CONTRACTS.TYPE'), valueGetter: (row) => row.type.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.obligationTypeTpl() },
+      { key: 'title', header: this.i18n.translate('CONTRACTS.TITLE_FIELD'), customCellTemplate: this.obligationTitleTpl() },
+      { key: 'due_date', header: this.i18n.translate('CONTRACTS.DUE_DATE'), customCellTemplate: this.obligationDueTpl() },
+      { key: 'responsible_party', header: this.i18n.translate('CONTRACTS.RESPONSIBLE'), valueGetter: (row) => row.responsible_party ?? '-' },
+      { key: 'amount', header: this.i18n.translate('CONTRACTS.PENALTY'), align: 'right', customCellTemplate: this.obligationAmountTpl() },
+      { key: 'status', header: this.i18n.translate('COMMON.STATUS'), valueGetter: (row) => row.status.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.obligationStatusTpl() },
+    ];
+  });
 
   // Complete / Waive Obligation Modal
   protected actionObligationTarget = signal<ContractObligationResource | null>(null);
@@ -196,8 +216,22 @@ export class ContractRegisterComponent implements OnInit {
   protected waiveReason = signal<string>('');
 
   // --- TAB 3: CONTRACT ALERTS ---
-  protected readonly alerts = signal<ContractAlertResource[]>([]);
-  protected readonly alertsLoading = signal<boolean>(false);
+  protected readonly alertsGrid = new FetchGridModel<ContractAlertResource>((query) => this.contractApi.getAlerts(query));
+
+  private readonly alertTypeTpl = viewChild<TemplateRef<{ $implicit: ContractAlertResource; value: unknown }>>('alertTypeTpl');
+  private readonly alertContractTpl = viewChild<TemplateRef<{ $implicit: ContractAlertResource; value: unknown }>>('alertContractTpl');
+  private readonly alertDueTpl = viewChild<TemplateRef<{ $implicit: ContractAlertResource; value: unknown }>>('alertDueTpl');
+  private readonly alertStatusTpl = viewChild<TemplateRef<{ $implicit: ContractAlertResource; value: unknown }>>('alertStatusTpl');
+
+  protected readonly alertColumns = computed<TableColumnDef<ContractAlertResource>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'alert_type', header: this.i18n.translate('CONTRACTS.ALERT_TYPE'), valueGetter: (row) => this.alertTypeLabel(row.alert_type), valueLabel: (value) => this.alertTypeLabel(value), customCellTemplate: this.alertTypeTpl() },
+      { key: 'contract_number', header: this.i18n.translate('CONTRACTS.CONTRACT'), customCellTemplate: this.alertContractTpl() },
+      { key: 'due_on', header: this.i18n.translate('CONTRACTS.DUE_ON'), customCellTemplate: this.alertDueTpl() },
+      { key: 'status', header: this.i18n.translate('COMMON.STATUS'), valueGetter: (row) => this.alertStatusLabel(row.is_acknowledged ? 'acknowledged' : 'open'), valueLabel: (value) => this.alertStatusLabel(value), customCellTemplate: this.alertStatusTpl() },
+    ];
+  });
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -270,9 +304,9 @@ export class ContractRegisterComponent implements OnInit {
     if (index === 0) {
       this.loadContracts();
     } else if (index === 1) {
-      this.loadGlobalObligations();
+      this.obligationsGrid.reload();
     } else if (index === 2) {
-      this.loadAlerts();
+      this.alertsGrid.reload();
     }
   }
 
@@ -538,31 +572,13 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   // --- TAB 2: GLOBAL OBLIGATIONS LOGIC ---
-  protected loadGlobalObligations(): void {
-    this.obligationsLoading.set(true);
-    this.contractApi
-      .getAllObligations({
-        status: (this.obligationStatusFilter() || undefined) as ContractObligationStatus | undefined,
-        page: this.obligationsPageIndex(),
-        per_page: this.obligationsPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.globalObligations.set(res.data);
-          this.obligationsTotal.set(res.meta?.total ?? res.data.length);
-          this.obligationsLoading.set(false);
-        },
-        error: () => {
-          this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_OBBLIGAZIONI_CONTRATTUALI'));
-          this.obligationsLoading.set(false);
-        },
-      });
-  }
-
-  protected onObligationsTableQueryChange(params: NzTableQueryParams): void {
-    this.obligationsPageIndex.set(params.pageIndex);
-    this.obligationsPageSize.set(params.pageSize);
-    this.loadGlobalObligations();
+  /** Applies the status selector: "overdue" is not a stored status, it maps to the overdue filter of the API. */
+  protected setObligationStatus(value: ContractObligationStatus | 'overdue' | ''): void {
+    this.obligationStatusFilter.set(value);
+    this.obligationsGrid.setFilter({
+      status: value === '' || value === 'overdue' ? undefined : value,
+      overdue: value === 'overdue' ? true : undefined,
+    });
   }
 
   protected openCompleteObligationModal(ob: ContractObligationResource): void {
@@ -583,7 +599,7 @@ export class ContractRegisterComponent implements OnInit {
         next: () => {
           this.message.success(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_COMPLETATA'));
           this.completeModalVisible.set(false);
-          this.loadGlobalObligations();
+          this.obligationsGrid.reload();
         },
         error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_IL_COMPLETAMENTO_DELL_OBBLIGAZIONE')),
       });
@@ -603,32 +619,26 @@ export class ContractRegisterComponent implements OnInit {
       next: () => {
         this.message.info(this.translate.instant('CONTRACTS.MSG_OBBLIGAZIONE_CONTRATTUALE_CONDONATA_WAIVED'));
         this.waiveModalVisible.set(false);
-        this.loadGlobalObligations();
+        this.obligationsGrid.reload();
       },
       error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_RINUNCIA_ALL_OBBLIGAZIONE')),
     });
   }
 
   // --- TAB 3: CONTRACT ALERTS LOGIC ---
-  protected loadAlerts(): void {
-    this.alertsLoading.set(true);
-    this.contractApi.getAlerts().subscribe({
-      next: (res) => {
-        this.alerts.set(res.data);
-        this.alertsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_NEL_CARICAMENTO_DEGLI_AVVISI_CONTRATTUALI'));
-        this.alertsLoading.set(false);
-      },
-    });
+  protected alertTypeLabel(type: string): string {
+    return this.i18n.translate(type === 'notice_deadline' ? 'CONTRACTS.LBL_ALERT_NOTICE_DEADLINE' : 'CONTRACTS.LBL_ALERT_EXPIRY');
+  }
+
+  protected alertStatusLabel(status: string): string {
+    return this.i18n.translate(status === 'acknowledged' ? 'CONTRACTS.LBL_CONFERMATO' : 'CONTRACTS.LBL_DA_VERIFICARE');
   }
 
   protected acknowledgeAlert(alert: ContractAlertResource): void {
     this.contractApi.acknowledgeAlert(alert.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('CONTRACTS.MSG_PRESA_VISIONE_CONFERMATA'));
-        alert.is_acknowledged = true;
+        this.alertsGrid.reload();
       },
       error: () => this.message.error(this.translate.instant('CONTRACTS.MSG_ERRORE_DURANTE_LA_CONFERMA')),
     });
@@ -641,7 +651,7 @@ export class ContractRegisterComponent implements OnInit {
       case 'completed':
         return 'success';
       case 'draft':
-      case 'pending':
+      case 'open':
         return 'warning';
       case 'renewed':
         return 'processing';

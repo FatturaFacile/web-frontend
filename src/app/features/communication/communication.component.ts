@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -25,26 +25,29 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CommunicationApiService,
   CommunicationChannelResource,
   CommunicationChannelType,
+  CommunicationDeliveryFilterParams,
   CommunicationDeliveryLog,
   CommunicationDriverType,
   CommunicationPreviewResponse,
   CommunicationSaveTemplateRequest,
   CommunicationSendDocumentRequest,
   CommunicationSendMessageRequest,
+  CommunicationTemplateFilterParams,
   CommunicationTemplateResource,
   CommunicationUpdateChannelRequest,
+  FetchGridModel,
+  GridValue,
   I18nService,
   serverErrorMessage,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 
 const TEMPLATE_CODE_PATTERN = /^[a-z][a-z0-9_.]{1,99}$/;
 
@@ -111,8 +114,6 @@ const SMTP_PORT_PATTERN = /^\d{1,5}$/;
   selector: 'app-communication',
   styleUrl: './communication.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -121,7 +122,7 @@ const SMTP_PORT_PATTERN = /^\d{1,5}$/;
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -150,9 +151,48 @@ export class CommunicationComponent implements OnInit {
 
   readonly selectedTabIndex = signal<number>(0);
 
+  private readonly recipientTpl = viewChild<TemplateRef<unknown>>('recipientTpl');
+  private readonly deliveryChannelTpl = viewChild<TemplateRef<unknown>>('deliveryChannelTpl');
+  private readonly driverTpl = viewChild<TemplateRef<unknown>>('driverTpl');
+  private readonly deliveryStatusTpl = viewChild<TemplateRef<unknown>>('deliveryStatusTpl');
+  private readonly providerRefTpl = viewChild<TemplateRef<unknown>>('providerRefTpl');
+  private readonly createdAtTpl = viewChild<TemplateRef<unknown>>('createdAtTpl');
+  private readonly codeTpl = viewChild<TemplateRef<unknown>>('codeTpl');
+  private readonly templateChannelTpl = viewChild<TemplateRef<unknown>>('templateChannelTpl');
+  private readonly localeTpl = viewChild<TemplateRef<unknown>>('localeTpl');
+  private readonly subjectTpl = viewChild<TemplateRef<unknown>>('subjectTpl');
+  private readonly activeTpl = viewChild<TemplateRef<unknown>>('activeTpl');
+
+  protected readonly deliveryColumns = computed<TableColumnDef<CommunicationDeliveryLog>[]>(() => {
+    return [
+      { key: 'recipient', header: 'COMMUNICATION.RECIPIENT', customCellTemplate: this.recipientTpl() },
+      { key: 'channel', header: 'COMMUNICATION.CHANNEL', valueGetter: (row) => row.channel.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.deliveryChannelTpl() },
+      { key: 'driver', header: 'COMMUNICATION.DRIVER', customCellTemplate: this.driverTpl() },
+      { key: 'status', header: 'COMMUNICATION.STATUS', valueGetter: (row) => row.status.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.deliveryStatusTpl() },
+      { key: 'provider_reference', header: 'COMMUNICATION.PROVIDER_REF', customCellTemplate: this.providerRefTpl() },
+      { key: 'created_at', header: 'COMMUNICATION.DATE', customCellTemplate: this.createdAtTpl() },
+    ];
+  });
+
+  protected readonly templateColumns = computed<TableColumnDef<CommunicationTemplateResource>[]>(() => {
+    const activeLabel = (active: boolean): string =>
+      this.translate.instant(active ? 'COMMUNICATION.ACTIVE' : 'COMMUNICATION.INACTIVE');
+    return [
+      { key: 'code', header: 'COMMUNICATION.TEMPLATE_CODE', customCellTemplate: this.codeTpl() },
+      { key: 'channel', header: 'COMMUNICATION.CHANNEL', valueGetter: (row) => row.channel.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.templateChannelTpl() },
+      { key: 'locale', header: 'COMMUNICATION.LOCALE', customCellTemplate: this.localeTpl() },
+      { key: 'subject', header: 'COMMUNICATION.SUBJECT', customCellTemplate: this.subjectTpl() },
+      { key: 'is_active', header: 'COMMUNICATION.STATUS', valueGetter: (row) => activeLabel(row.is_active), valueLabel: (value) => activeLabel(value === '1' || value === 'true'), customCellTemplate: this.activeTpl() },
+    ];
+  });
+
   // --- TAB 0: DELIVERIES LOG ---
-  readonly deliveries = signal<CommunicationDeliveryLog[]>([]);
-  readonly deliveriesLoading = signal<boolean>(false);
+  /** Server-driven grid of the deliveries log: paging, sorting, column filters and grouping run on the API. */
+  readonly deliveries = new FetchGridModel<CommunicationDeliveryLog, CommunicationDeliveryFilterParams>((query) =>
+    this.api.getDeliveries(query),
+  );
+  /** Deliveries per status over the whole filtered log (not only the loaded page). */
+  private readonly deliveryStatusCounts = signal<GridValue[]>([]);
   readonly filterChannel = signal<string>('');
   readonly filterStatus = signal<string>('');
 
@@ -169,8 +209,9 @@ export class CommunicationComponent implements OnInit {
   readonly testLoading = signal<boolean>(false);
 
   // --- TAB 2: TEMPLATES ---
-  readonly templates = signal<CommunicationTemplateResource[]>([]);
-  readonly templatesLoading = signal<boolean>(false);
+  readonly templates = new FetchGridModel<CommunicationTemplateResource, CommunicationTemplateFilterParams>((query) =>
+    this.api.getTemplates(query),
+  );
   readonly filterTemplateChannel = signal<string>('');
   readonly selectedTemplate = signal<CommunicationTemplateResource | null>(null);
   readonly templateModalVisible = signal<boolean>(false);
@@ -178,12 +219,8 @@ export class CommunicationComponent implements OnInit {
   readonly previewContent = signal<CommunicationPreviewResponse | null>(null);
 
   // Derived metrics
-  readonly totalSent = computed(
-    () => this.deliveries().filter((d) => d.status === 'sent').length,
-  );
-  readonly totalFailed = computed(
-    () => this.deliveries().filter((d) => d.status === 'failed').length,
-  );
+  readonly totalSent = computed(() => this.statusCount('sent'));
+  readonly totalFailed = computed(() => this.statusCount('failed'));
   readonly activeChannelsCount = computed(
     () => this.channels().filter((c) => c.is_enabled).length,
   );
@@ -318,28 +355,26 @@ export class CommunicationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadDeliveries();
+    this.loadDeliveryStatusCounts();
     this.loadChannels();
-    this.loadTemplates();
   }
 
   // --- TAB 0: DELIVERIES LOG ---
   loadDeliveries(): void {
-    this.deliveriesLoading.set(true);
-    this.api
-      .getDeliveries({
-        channel: this.filterChannel() || undefined,
-        status: this.filterStatus() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.deliveries.set(res?.data || []);
-          this.deliveriesLoading.set(false);
-        },
-        error: () => {
-          this.deliveriesLoading.set(false);
-        },
-      });
+    this.deliveries.setFilter({
+      channel: this.filterChannel() || undefined,
+      status: this.filterStatus() || undefined,
+    });
+    this.deliveries.reload();
+    this.loadDeliveryStatusCounts();
+  }
+
+  private loadDeliveryStatusCounts(): void {
+    this.deliveries.loadValues('status').subscribe((values) => this.deliveryStatusCounts.set(values));
+  }
+
+  private statusCount(status: string): number {
+    return this.deliveryStatusCounts().find((entry) => entry.value === status)?.count ?? 0;
   }
 
   openDeliveryDrawer(d: CommunicationDeliveryLog): void {
@@ -467,20 +502,8 @@ export class CommunicationComponent implements OnInit {
 
   // --- TAB 2: TEMPLATES ---
   loadTemplates(): void {
-    this.templatesLoading.set(true);
-    this.api
-      .getTemplates({
-        channel: this.filterTemplateChannel() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.templates.set(res?.data || []);
-          this.templatesLoading.set(false);
-        },
-        error: () => {
-          this.templatesLoading.set(false);
-        },
-      });
+    this.templates.setFilter({ channel: this.filterTemplateChannel() || undefined });
+    this.templates.reload();
   }
 
   openCreateTemplateModal(): void {

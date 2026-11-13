@@ -59,7 +59,7 @@ describe('EcommerceIntegrationsComponent', () => {
 
   beforeEach(async () => {
     apiMock = {
-      getChannels: vi.fn().mockReturnValue(of({ success: true, data: [mockChannel] })),
+      getChannels: vi.fn().mockReturnValue(of({ success: true, data: [mockChannel], meta: { total: 1, last_page: 1 } })),
       getChannel: vi.fn().mockReturnValue(of({ success: true, data: mockChannel })),
       createChannel: vi.fn().mockReturnValue(of({ success: true, data: mockChannel })),
       updateChannel: vi.fn().mockReturnValue(of({ success: true, data: mockChannel })),
@@ -68,7 +68,7 @@ describe('EcommerceIntegrationsComponent', () => {
       syncChannel: vi.fn().mockReturnValue(
         of({ success: true, data: { status: 'completed', synced_items: 12 } as SyncChannelResult }),
       ),
-      getApiKeys: vi.fn().mockReturnValue(of({ success: true, data: [mockApiKey] })),
+      getApiKeys: vi.fn().mockReturnValue(of({ success: true, data: [mockApiKey], meta: { total: 1, last_page: 1 } })),
       createApiKey: vi.fn().mockReturnValue(of({ success: true, data: { ...mockApiKey, token: 'sk_live_token_123' } })),
       revokeApiKey: vi.fn().mockReturnValue(of({ success: true })),
       rotateApiKey: vi.fn().mockReturnValue(
@@ -85,7 +85,7 @@ describe('EcommerceIntegrationsComponent', () => {
       ),
       getPaymentGateway: vi.fn().mockReturnValue(of({ success: true, data: mockGateway })),
       updatePaymentGateway: vi.fn().mockReturnValue(of({ success: true, data: mockGateway })),
-      getPaymentLinks: vi.fn().mockReturnValue(of({ success: true, data: [mockPaymentLink] })),
+      getPaymentLinks: vi.fn().mockReturnValue(of({ success: true, data: [mockPaymentLink], meta: { total: 1, last_page: 1 } })),
       createPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: mockPaymentLink })),
       getPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: { ...mockPaymentLink, status: 'paid' } })),
       cancelPaymentLink: vi.fn().mockReturnValue(of({ success: true, data: { ...mockPaymentLink, status: 'cancelled' } })),
@@ -121,6 +121,7 @@ describe('EcommerceIntegrationsComponent', () => {
     fixture = TestBed.createComponent(EcommerceIntegrationsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 30));
   });
 
   it('should initialize and load channels, api keys, gateway settings, and payment links', () => {
@@ -128,11 +129,13 @@ describe('EcommerceIntegrationsComponent', () => {
     expect(apiMock['getChannels']).toHaveBeenCalled();
     expect(component.channels().length).toBe(1);
     expect(apiMock['getApiKeys']).toHaveBeenCalled();
-    expect(component.apiKeys().length).toBe(1);
+    expect(component.apiKeyGrid.items().length).toBe(1);
+    expect(component.apiKeyGrid.totalCount()).toBe(1);
+    expect(component.channelGrid.items().length).toBe(1);
     expect(apiMock['getPaymentGateway']).toHaveBeenCalled();
     expect(component.paymentGateway()?.provider).toBe('stripe');
     expect(apiMock['getPaymentLinks']).toHaveBeenCalled();
-    expect(component.paymentLinks().length).toBe(1);
+    expect(component.paymentLinkGrid.items().length).toBe(1);
   });
 
   it('should open create channel modal and submit new channel', () => {
@@ -381,18 +384,25 @@ describe('EcommerceIntegrationsComponent', () => {
   });
 
   it('should refresh and cancel a payment link in place', () => {
-    const link = component.paymentLinks()[0];
+    const link = component.paymentLinkGrid.items()[0];
     expect(component.isPaymentLinkCancellable(link)).toBe(true);
 
     component.refreshPaymentLink(link);
     expect(apiMock['getPaymentLink']).toHaveBeenCalledWith('link-1');
-    expect(component.paymentLinks()[0].status).toBe('paid');
+    expect(component.paymentLinkGrid.items()[0].status).toBe('paid');
 
     component.cancelPaymentLink(link);
     expect(apiMock['cancelPaymentLink']).toHaveBeenCalledWith('link-1');
-    expect(component.paymentLinks()[0].status).toBe('cancelled');
+    expect(component.paymentLinkGrid.items()[0].status).toBe('cancelled');
     expect(messageMock['success']).toHaveBeenCalled();
-    expect(component.isPaymentLinkCancellable(component.paymentLinks()[0])).toBe(false);
+    expect(component.isPaymentLinkCancellable(component.paymentLinkGrid.items()[0])).toBe(false);
+  });
+
+  it('treats a key with a revocation date as revoked and maps the calculated server columns', () => {
+    expect(component.isApiKeyRevoked({ ...mockApiKey, is_revoked: undefined, revoked_at: '2026-11-01T00:00:00Z' })).toBe(true);
+    expect(component.isApiKeyRevoked({ ...mockApiKey, is_revoked: undefined, revoked_at: null })).toBe(false);
+    expect(component.apiKeyColumns().find((column) => column.key === 'status')?.valueLabel?.('revoked')).toBe('ECOMMERCE_INTEGRATIONS.REVOKED');
+    expect(component.channelColumns().find((column) => column.key === 'status')?.valueLabel?.('inactive')).toBe('ECOMMERCE_INTEGRATIONS.INACTIVE');
   });
 
   it('should return correct badge colors', () => {

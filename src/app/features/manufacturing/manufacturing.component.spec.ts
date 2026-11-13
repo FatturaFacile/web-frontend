@@ -155,6 +155,8 @@ describe('ManufacturingComponent', () => {
       return {} as NzModalRef;
     });
     fixture.detectChanges();
+    // The grids load after their debounce (0 ms for the first request).
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('initializes and loads production orders, BOMs, MRP runs, and work centers', () => {
@@ -353,5 +355,27 @@ describe('ManufacturingComponent', () => {
       component.mrpForm.patchValue({ horizon_end_date: new Date(2028, 3, 1) });
       expect(component.mrpForm.controls.horizon_end_date.valid).toBe(true);
     });
+  });
+
+  it('maps the calculated columns of the grids to the server columns', () => {
+    const columns = component as unknown as {
+      orderColumns: () => { key: string; serverKey?: string }[];
+      bomColumns: () => { key: string; serverKey?: string }[];
+      routingColumns: () => { key: string; serverKey?: string }[];
+    };
+    const serverKeyOf = (list: { key: string; serverKey?: string }[], key: string) => list.find((c) => c.key === key)?.serverKey ?? key;
+
+    expect(serverKeyOf(columns.orderColumns(), 'item_code')).toBe('mfgItem.item_code');
+    expect(serverKeyOf(columns.bomColumns(), 'item_code')).toBe('mfgItem.item_code');
+    expect(serverKeyOf(columns.bomColumns(), 'components_count')).toBe('components_count');
+    expect(serverKeyOf(columns.routingColumns(), 'operations_count')).toBe('operations_count');
+  });
+
+  it('sends the search text and the status to the orders grid', () => {
+    component.searchOrders('  PO-1 ');
+    component.filterOrdersByStatus('released');
+
+    expect(component.ordersGrid.filterParams()).toEqual({ search: 'PO-1', status: 'released' });
+    expect(component.ordersGrid.pageIndex()).toBe(1);
   });
 });

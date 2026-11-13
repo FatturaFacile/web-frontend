@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators';
@@ -25,6 +25,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CreateTimeLogPayload,
   FeeNote,
+  FetchGridModel,
   LegalCase,
   PracticeActivityItem,
   PracticeApiService,
@@ -39,9 +40,26 @@ import {
   PracticeRetainerBalance,
   PracticeRetainerRequest,
   ProfessionalsApiService,
+  ProfessionalsClientName,
+  QueryFilterParams,
+  TimeLog,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+
+/** Page-level filters of the activities grid (period and billing status). */
+interface ActivityFilter extends QueryFilterParams {
+  from?: string;
+  to?: string;
+  is_billed?: string;
+}
+
+/** Page-level filter of the retainers grid. */
+interface RetainerFilter extends QueryFilterParams {
+  status?: string;
+}
+
+type CellTemplate<T> = TemplateRef<{ $implicit: T; value: unknown }>;
 
 @Component({
   selector: 'app-professionals',
@@ -76,6 +94,7 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, Mod
     PageHeaderComponent,
     TranslatePipe,
     MoneyPipe,
+    BaseTableComponent,
   ],
   templateUrl: './professionals.component.html',
 })
@@ -89,20 +108,27 @@ export class ProfessionalsComponent implements OnInit {
   readonly selectedTabIndex = signal<number>(0);
 
   // --- TAB 0: CASES ---
-  readonly cases = signal<LegalCase[]>([]);
-  readonly casesLoading = signal<boolean>(false);
+  readonly casesGrid = new FetchGridModel<LegalCase>((query) => this.profApi.getCases(query));
+  /** Cases offered by the select of the modals (the grid only holds its current page). */
+  readonly caseOptions = signal<LegalCase[]>([]);
 
   // --- TAB 1: ACTIVITY CONTROL ---
-  readonly activities = signal<PracticeActivityItem[]>([]);
-  readonly activitiesLoading = signal<boolean>(false);
-  readonly selectedActivityIds = signal<string[]>([]);
+  readonly activitiesGrid = new FetchGridModel<TimeLog, ActivityFilter>((query) => this.profApi.getTimeLogs(query));
+  readonly selectedActivities = signal<TimeLog[]>([]);
+  /** Ids of the selected activities that can still be billed. */
+  readonly selectedActivityIds = computed(() =>
+    this.selectedActivities()
+      .filter((a) => !a.is_billed)
+      .map((a) => a.id),
+  );
   readonly filterActivityStatus = signal<string>('unbilled');
   readonly fromDate = signal<string>(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().substring(0, 10));
   readonly toDate = signal<string>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().substring(0, 10));
+  /** Unbilled minutes and amount of the period, from the activity control (over all the activities, not one page). */
+  readonly unbilledTotals = signal<{ minutes: number; amount: number }>({ minutes: 0, amount: 0 });
 
   // --- TAB 2: FEE NOTES ---
-  readonly feeNotes = signal<FeeNote[]>([]);
-  readonly feeNotesLoading = signal<boolean>(false);
+  readonly feeNotesGrid = new FetchGridModel<FeeNote>((query) => this.profApi.getFeeNotes(query));
   readonly selectedFeeNote = signal<FeeNote | null>(null);
   readonly feeNoteDrawerVisible = signal<boolean>(false);
   readonly feeNoteActivities = signal<PracticeActivityItem[]>([]);
@@ -110,9 +136,10 @@ export class ProfessionalsComponent implements OnInit {
   readonly feeNoteDrawerLoading = signal<boolean>(false);
 
   // --- TAB 3: RETAINERS (FONDI SPESE) ---
-  readonly retainers = signal<PracticeRetainer[]>([]);
+  readonly retainersGrid = new FetchGridModel<PracticeRetainer, RetainerFilter>((query) => this.practiceApi.getRetainers(query));
+  /** Open retainers offered by the select of the apply modal (the grid only holds its current page). */
+  readonly openRetainerOptions = signal<PracticeRetainer[]>([]);
   readonly retainerBalances = signal<PracticeRetainerBalance[]>([]);
-  readonly retainersLoading = signal<boolean>(false);
   readonly filterRetainerStatus = signal<string>('');
 
   // --- TAB 4: CLOSINGS & CHECKLISTS ---
@@ -123,17 +150,9 @@ export class ProfessionalsComponent implements OnInit {
   readonly checklistModalVisible = signal<boolean>(false);
 
   // Derived metrics for summary cards
-  readonly totalUnbilledHours = computed(() =>
-    this.activities()
-      .filter((a) => a.status === 'unbilled')
-      .reduce((acc, a) => acc + (a.hours || 0), 0),
-  );
+  readonly totalUnbilledHours = computed(() => this.unbilledTotals().minutes / 60);
 
-  readonly totalUnbilledAmount = computed(() =>
-    this.activities()
-      .filter((a) => a.status === 'unbilled')
-      .reduce((acc, a) => acc + (parseFloat(a.amount) || 0), 0),
-  );
+  readonly totalUnbilledAmount = computed(() => this.unbilledTotals().amount);
 
   readonly totalRetainerAvailable = computed(() =>
     this.retainerBalances().reduce((acc, b) => acc + (parseFloat(b.current_balance) || 0), 0),
@@ -189,61 +208,227 @@ export class ProfessionalsComponent implements OnInit {
   private readonly closingPeriodSync = revalidateOnStartChange(this.closingForm, 'period_start', 'period_end', inject(DestroyRef));
 
   ngOnInit(): void {
-    this.loadCases();
-    this.loadActivities();
-    this.loadFeeNotes();
-    this.loadRetainers();
+    this.applyActivityFilters();
+    this.loadCaseOptions();
+    this.loadRetainerSupport();
     this.loadClosings();
   }
 
+  // --- Grid columns (the keys the API knows are in serverKey; the cell templates are in the HTML) ---
+  private readonly caseNumberTpl = viewChild<CellTemplate<LegalCase>>('caseNumberTpl');
+  private readonly caseClientTpl = viewChild<CellTemplate<LegalCase>>('caseClientTpl');
+  private readonly caseHoursTpl = viewChild<CellTemplate<LegalCase>>('caseHoursTpl');
+  private readonly moneyValueTpl = viewChild<CellTemplate<never>>('moneyValueTpl');
+  private readonly dateValueTpl = viewChild<CellTemplate<never>>('dateValueTpl');
+  private readonly amlTpl = viewChild<CellTemplate<LegalCase>>('amlTpl');
+  private readonly caseStatusTpl = viewChild<CellTemplate<LegalCase>>('caseStatusTpl');
+  private readonly actClientTpl = viewChild<CellTemplate<TimeLog>>('actClientTpl');
+  private readonly actCaseTpl = viewChild<CellTemplate<TimeLog>>('actCaseTpl');
+  private readonly actHoursTpl = viewChild<CellTemplate<TimeLog>>('actHoursTpl');
+  private readonly actAmountTpl = viewChild<CellTemplate<TimeLog>>('actAmountTpl');
+  private readonly actStatusTpl = viewChild<CellTemplate<TimeLog>>('actStatusTpl');
+  private readonly feeNumberTpl = viewChild<CellTemplate<FeeNote>>('feeNumberTpl');
+  private readonly feeClientTpl = viewChild<CellTemplate<FeeNote>>('feeClientTpl');
+  private readonly feeGrossTpl = viewChild<CellTemplate<FeeNote>>('feeGrossTpl');
+  private readonly retClientTpl = viewChild<CellTemplate<PracticeRetainer>>('retClientTpl');
+  private readonly retCaseTpl = viewChild<CellTemplate<PracticeRetainer>>('retCaseTpl');
+  private readonly retBalanceTpl = viewChild<CellTemplate<PracticeRetainer>>('retBalanceTpl');
+  private readonly retStatusTpl = viewChild<CellTemplate<PracticeRetainer>>('retStatusTpl');
+
+  protected readonly caseColumns = computed<TableColumnDef<LegalCase>[]>(() => [
+    { key: 'case_number', header: 'PRACTICE.CASE_NUMBER', customCellTemplate: this.caseNumberTpl() },
+    {
+      key: 'client',
+      serverKey: 'client.name',
+      header: 'PRACTICE.CLIENT',
+      valueGetter: (c) => this.clientName(c.client),
+      customCellTemplate: this.caseClientTpl(),
+    },
+    { key: 'title', header: 'PRACTICE.SUBJECT' },
+    {
+      key: 'logged_minutes',
+      header: 'PRACTICE.HOURS',
+      valueGetter: (c) => this.hours(c.logged_minutes),
+      valueLabel: (value) => String(this.hours(value)),
+      customCellTemplate: this.caseHoursTpl(),
+    },
+    { key: 'fee_total', header: 'PRACTICE.FEE', customCellTemplate: this.moneyValueTpl() },
+    {
+      key: 'aml_kyc_completed',
+      header: 'PRACTICE.AML_COMPLIANT',
+      valueGetter: (c) => this.yesNo(c.aml_kyc_completed),
+      valueLabel: (value) => this.yesNo(['1', 'true', 't'].includes(value)),
+      customCellTemplate: this.amlTpl(),
+    },
+    { key: 'status', header: 'PRACTICE.STATUS', customCellTemplate: this.caseStatusTpl() },
+  ]);
+
+  protected readonly activityColumns = computed<TableColumnDef<TimeLog>[]>(() => [
+    { key: 'date', header: 'PRACTICE.DATE', customCellTemplate: this.dateValueTpl() },
+    {
+      key: 'client',
+      serverKey: 'legalCase.client.name',
+      header: 'PRACTICE.CLIENT',
+      valueGetter: (a) => this.clientName(a.legal_case?.client),
+      customCellTemplate: this.actClientTpl(),
+    },
+    {
+      key: 'case',
+      serverKey: 'legalCase.title',
+      header: 'PRACTICE.CASE',
+      valueGetter: (a) => a.legal_case?.title ?? a.legal_case_id,
+      customCellTemplate: this.actCaseTpl(),
+    },
+    { key: 'description', header: 'PRACTICE.DESCRIPTION' },
+    {
+      key: 'duration_minutes',
+      header: 'PRACTICE.HOURS',
+      valueGetter: (a) => this.hours(a.duration_minutes),
+      valueLabel: (value) => String(this.hours(value)),
+      customCellTemplate: this.actHoursTpl(),
+    },
+    { key: 'hourly_rate', header: 'PRACTICE.RATE', customCellTemplate: this.moneyValueTpl() },
+    { key: 'fee_amount', header: 'PRACTICE.AMOUNT', customCellTemplate: this.actAmountTpl() },
+    {
+      key: 'status',
+      serverKey: 'billing_status',
+      header: 'PRACTICE.STATUS',
+      valueGetter: (a) => this.activityStatusLabel(a.is_billed ? 'billed' : 'unbilled'),
+      valueLabel: (value) => this.activityStatusLabel(value),
+      customCellTemplate: this.actStatusTpl(),
+    },
+  ]);
+
+  protected readonly feeNoteColumns = computed<TableColumnDef<FeeNote>[]>(() => [
+    { key: 'note_number', header: 'PRACTICE.FEE_NOTE_NUM', customCellTemplate: this.feeNumberTpl() },
+    { key: 'date', header: 'PRACTICE.DATE', customCellTemplate: this.dateValueTpl() },
+    {
+      key: 'client',
+      serverKey: 'client.name',
+      header: 'PRACTICE.CLIENT',
+      valueGetter: (n) => this.clientName(n.client),
+      customCellTemplate: this.feeClientTpl(),
+    },
+    { key: 'taxable_fees', header: 'PRACTICE.NET_AMOUNT', customCellTemplate: this.moneyValueTpl() },
+    { key: 'cassa_previdenza_amount', header: 'PRACTICE.CPA_CONTRIBUTION', customCellTemplate: this.moneyValueTpl() },
+    { key: 'ritenuta_acconto_amount', header: 'PRACTICE.WITHHOLDING', customCellTemplate: this.moneyValueTpl() },
+    { key: 'vat_amount', header: 'PRACTICE.VAT', customCellTemplate: this.moneyValueTpl() },
+    {
+      key: 'gross_amount',
+      header: 'PRACTICE.GROSS_AMOUNT',
+      valueGetter: (n) => this.grossAmount(n),
+      customCellTemplate: this.feeGrossTpl(),
+    },
+  ]);
+
+  protected readonly retainerColumns = computed<TableColumnDef<PracticeRetainer>[]>(() => [
+    { key: 'received_on', header: 'PRACTICE.DATE', customCellTemplate: this.dateValueTpl() },
+    {
+      key: 'client',
+      serverKey: 'client.name',
+      header: 'PRACTICE.CLIENT',
+      valueGetter: (r) => this.clientName(r.client),
+      customCellTemplate: this.retClientTpl(),
+    },
+    {
+      key: 'legal_case',
+      serverKey: 'legalCase.title',
+      header: 'PRACTICE.CASE',
+      valueGetter: (r) => r.legal_case?.title ?? '',
+      customCellTemplate: this.retCaseTpl(),
+    },
+    { key: 'amount', header: 'PRACTICE.INITIAL_AMOUNT', customCellTemplate: this.moneyValueTpl() },
+    {
+      key: 'balance',
+      header: 'PRACTICE.BALANCE_AVAILABLE',
+      valueGetter: (r) => this.retainerBalance(r),
+      customCellTemplate: this.retBalanceTpl(),
+    },
+    {
+      key: 'status',
+      header: 'PRACTICE.STATUS',
+      valueGetter: (r) => this.retainerStatusLabel(r.status),
+      valueLabel: (value) => this.retainerStatusLabel(value),
+      customCellTemplate: this.retStatusTpl(),
+    },
+    { key: 'reference', header: 'PRACTICE.REFERENCE' },
+  ]);
+
+  /** Display name of a client embedded by the API. */
+  clientName(client: ProfessionalsClientName | null | undefined): string {
+    if (!client) {
+      return '';
+    }
+    return client.company_name || [client.first_name, client.last_name].filter(Boolean).join(' ');
+  }
+
+  hours(minutes: number | string | null | undefined): number {
+    return Math.round((Number(minutes ?? 0) / 60) * 100) / 100;
+  }
+
+  grossAmount(note: FeeNote): number {
+    return Number(note.taxable_fees) + Number(note.cassa_previdenza_amount) + Number(note.vat_amount);
+  }
+
+  retainerBalance(retainer: PracticeRetainer): number {
+    return Number(retainer.amount) - Number(retainer.applied_amount);
+  }
+
+  private yesNo(value: boolean | undefined): string {
+    return this.translate.instant(value ? 'COMMON.YES' : 'COMMON.NO');
+  }
+
+  activityStatusLabel(status: string): string {
+    return this.translate.instant('PRACTICE.STATUS_' + status.toUpperCase());
+  }
+
+  retainerStatusLabel(status: string): string {
+    const key = { open: 'PRACTICE.RET_AVAILABLE', exhausted: 'PRACTICE.RET_DEPLETED', void: 'PRACTICE.RET_VOIDED' }[status];
+    return key ? this.translate.instant(key) : status;
+  }
+
   // --- TAB 0: CASES ---
-  loadCases(): void {
-    this.casesLoading.set(true);
-    this.profApi.getCases().subscribe({
-      next: (res) => {
-        this.cases.set(res?.data || []);
-        this.casesLoading.set(false);
-      },
-      error: () => {
-        this.casesLoading.set(false);
-      },
+  loadCaseOptions(): void {
+    this.profApi.getCases({ per_page: 100 }).subscribe({
+      next: (res) => this.caseOptions.set(res?.data ?? []),
     });
   }
 
   // --- TAB 1: ACTIVITY CONTROL ---
-  loadActivities(): void {
-    this.activitiesLoading.set(true);
-    this.practiceApi
-      .getActivityControl({
-        from: this.fromDate(),
-        to: this.toDate(),
-      })
-      .subscribe({
-        next: (res) => {
-          let list = res?.data?.activities || [];
-          const status = this.filterActivityStatus();
-          if (status) {
-            list = list.filter((a) => a.status === status);
-          }
-          this.activities.set(list);
-          this.selectedActivityIds.set([]);
-          this.activitiesLoading.set(false);
-        },
-        error: () => {
-          this.activitiesLoading.set(false);
-        },
-      });
+  /** Applies the period and billing status of the toolbar to the grid and refreshes the unbilled totals. */
+  applyActivityFilters(): void {
+    const status = this.filterActivityStatus();
+    this.activitiesGrid.setFilter({
+      from: this.fromDate(),
+      to: this.toDate(),
+      is_billed: status === 'billed' ? 'true' : status === 'unbilled' ? 'false' : undefined,
+    });
+    this.selectedActivities.set([]);
+    this.loadUnbilledTotals();
   }
 
-  toggleActivitySelection(activityId: string, checked: boolean): void {
-    this.selectedActivityIds.update((current) =>
-      checked ? [...current, activityId] : current.filter((id) => id !== activityId),
-    );
+  /** Reloads the activities after a change (new time log, new fee note). */
+  reloadActivities(): void {
+    this.activitiesGrid.reload();
+    this.selectedActivities.set([]);
+    this.loadUnbilledTotals();
+  }
+
+  private loadUnbilledTotals(): void {
+    this.practiceApi.getActivityControl({ from: this.fromDate(), to: this.toDate() }).subscribe({
+      next: (res) => {
+        const rows = res?.data?.rows ?? [];
+        this.unbilledTotals.set({
+          minutes: rows.reduce((total, row) => total + Number(row.unbilled_minutes), 0),
+          amount: rows.reduce((total, row) => total + Number(row.unbilled_amount), 0),
+        });
+      },
+    });
   }
 
   openLogTimeModal(): void {
     this.timeLogForm.reset({
-      legal_case_id: this.cases()[0]?.id || '',
+      legal_case_id: this.caseOptions()[0]?.id || '',
       date: new Date().toISOString().substring(0, 10),
       duration_minutes: 60,
       hourly_rate: 120,
@@ -270,7 +455,9 @@ export class ProfessionalsComponent implements OnInit {
       next: () => {
         this.message.success(this.translate.instant('PRACTICE.TIME_LOG_SAVED'));
         this.timeLogModalVisible.set(false);
-        this.loadActivities();
+        this.reloadActivities();
+        this.casesGrid.reload();
+        this.loadCaseOptions();
       },
       error: () => {
         this.message.error(this.translate.instant('PRACTICE.ACTION_ERROR'));
@@ -280,8 +467,8 @@ export class ProfessionalsComponent implements OnInit {
 
   openCreateFeeNoteModal(): void {
     const selectedIds = this.selectedActivityIds();
-    const selectedActs = this.activities().filter((a) => selectedIds.includes(a.id));
-    const firstClientId = selectedActs[0]?.client_id || '';
+    const selectedActs = this.selectedActivities().filter((a) => selectedIds.includes(a.id));
+    const firstClientId = selectedActs[0]?.legal_case?.client?.id || '';
 
     this.feeNoteForm.reset({
       client_id: firstClientId,
@@ -314,8 +501,9 @@ export class ProfessionalsComponent implements OnInit {
       next: () => {
         this.message.success(this.translate.instant('PRACTICE.FEE_NOTE_CREATED'));
         this.feeNoteModalVisible.set(false);
-        this.loadActivities();
-        this.loadFeeNotes();
+        this.reloadActivities();
+        this.feeNotesGrid.reload();
+        this.casesGrid.reload();
         this.selectedTabIndex.set(2);
       },
       error: () => {
@@ -325,19 +513,6 @@ export class ProfessionalsComponent implements OnInit {
   }
 
   // --- TAB 2: FEE NOTES ---
-  loadFeeNotes(): void {
-    this.feeNotesLoading.set(true);
-    this.profApi.getFeeNotes().subscribe({
-      next: (res) => {
-        this.feeNotes.set(res?.data || []);
-        this.feeNotesLoading.set(false);
-      },
-      error: () => {
-        this.feeNotesLoading.set(false);
-      },
-    });
-  }
-
   openFeeNoteDrawer(fn: FeeNote): void {
     this.selectedFeeNote.set(fn);
     this.feeNoteDrawerVisible.set(true);
@@ -371,12 +546,10 @@ export class ProfessionalsComponent implements OnInit {
 
   openApplyRetainerModal(fn?: FeeNote): void {
     const feeNote = fn || this.selectedFeeNote();
-    const availableRetainers = this.retainers().filter(
-      (r) => r.status === 'available' || r.status === 'partially_applied',
-    );
+    const availableRetainers = this.openRetainerOptions();
 
     this.applyRetainerForm.reset({
-      fee_note_id: feeNote?.id || this.feeNotes()[0]?.id || '',
+      fee_note_id: feeNote?.id || this.feeNotesGrid.items()[0]?.id || '',
       retainer_id: availableRetainers[0]?.id || '',
       amount: '500.00',
     });
@@ -410,27 +583,26 @@ export class ProfessionalsComponent implements OnInit {
   }
 
   // --- TAB 3: RETAINERS (FONDI SPESE) ---
+  /** Refreshes the retainers grid, the balance cards and the open retainers of the apply modal. */
   loadRetainers(): void {
-    this.retainersLoading.set(true);
-    this.practiceApi
-      .getRetainers({
-        status: this.filterRetainerStatus() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.retainers.set(res?.data || []);
-          this.retainersLoading.set(false);
-        },
-        error: () => {
-          this.retainersLoading.set(false);
-        },
-      });
+    this.retainersGrid.reload();
+    this.loadRetainerSupport();
+  }
 
+  private loadRetainerSupport(): void {
+    this.practiceApi.getRetainers({ status: 'open', per_page: 100 }).subscribe({
+      next: (res) => this.openRetainerOptions.set(res?.data ?? []),
+    });
     this.practiceApi.getRetainerBalances().subscribe({
       next: (res) => {
         this.retainerBalances.set(res?.data || []);
       },
     });
+  }
+
+  onRetainerStatusChange(status: string | null): void {
+    this.filterRetainerStatus.set(status ?? '');
+    this.retainersGrid.setFilter({ status: status || undefined });
   }
 
   openCreateRetainerModal(): void {
@@ -610,27 +782,14 @@ export class ProfessionalsComponent implements OnInit {
   }
 
   getActivityStatusColor(status: string): string {
-    switch (status) {
-      case 'unbilled':
-        return 'warning';
-      case 'billed':
-        return 'success';
-      case 'written_off':
-        return 'default';
-      default:
-        return 'default';
-    }
+    return status === 'billed' ? 'success' : status === 'unbilled' ? 'warning' : 'default';
   }
 
   getRetainerStatusColor(status: string): string {
     switch (status) {
-      case 'available':
+      case 'open':
         return 'success';
-      case 'partially_applied':
-        return 'processing';
-      case 'depleted':
-        return 'default';
-      case 'voided':
+      case 'void':
         return 'error';
       default:
         return 'default';

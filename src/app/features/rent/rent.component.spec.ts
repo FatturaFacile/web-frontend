@@ -64,14 +64,14 @@ describe('RentComponent', () => {
 
   beforeEach(async () => {
     rentApiMock = {
-      getVehicles: vi.fn().mockReturnValue(of({ success: true, data: [mockVehicle] })),
-      getBookings: vi.fn().mockReturnValue(of({ success: true, data: [mockBooking] })),
+      getVehicles: vi.fn().mockReturnValue(of({ success: true, message: '', data: [mockVehicle], meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
+      getBookings: vi.fn().mockReturnValue(of({ success: true, message: '', data: [mockBooking], meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
       recordCheckInInspection: vi.fn().mockReturnValue(of({ success: true })),
       recordCheckOutInspection: vi.fn().mockReturnValue(of({ success: true })),
     };
 
     autoApiMock = {
-      getVehicles: vi.fn().mockReturnValue(of({ success: true, data: { current_page: 1, data: [mockAutoVehicle], last_page: 1, per_page: 15, total: 1 } })),
+      listVehicles: vi.fn().mockReturnValue(of({ success: true, message: '', data: [mockAutoVehicle], meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
       registerVehicle: vi.fn().mockReturnValue(of({ success: true, data: mockAutoVehicle })),
       updateVehicle: vi.fn().mockReturnValue(of({ success: true, data: mockAutoVehicle })),
       deleteVehicle: vi.fn().mockReturnValue(of({ success: true })),
@@ -108,6 +108,7 @@ describe('RentComponent', () => {
     fixture = TestBed.createComponent(RentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should initialize and load rental vehicles, bookings, and automotive registry', () => {
@@ -116,15 +117,16 @@ describe('RentComponent', () => {
     expect(component.vehicles().length).toBe(1);
     expect(rentApiMock['getBookings']).toHaveBeenCalled();
     expect(component.bookings().length).toBe(1);
-    expect(autoApiMock['getVehicles']).toHaveBeenCalled();
+    expect(autoApiMock['listVehicles']).toHaveBeenCalled();
     expect(component.automotiveVehicles().length).toBe(1);
   });
 
-  it('should filter vehicles by status', () => {
-    component.vehicleFilterStatus.set('available');
-    expect(component.vehicleFilterStatus()).toBe('available');
-    component.vehicleFilterStatus.set('');
-    expect(component.vehicleFilterStatus()).toBe('');
+  it('should send the vehicle status filter to the server instead of filtering the page', async () => {
+    component.vehiclesGrid.gridFilter.set({ rental_status: ['available'] });
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const lastQuery = rentApiMock['getVehicles']!.mock.calls.at(-1)![0] as Record<string, unknown>;
+    expect(lastQuery['filter']).toEqual({ rental_status: ['available'] });
   });
 
   it('should open and close booking drawer', () => {
@@ -278,6 +280,7 @@ describe('RentComponent', () => {
     expect(component.getBookingStatusBadgeColor('active')).toBe('processing');
     expect(component.getBookingStatusBadgeColor('completed')).toBe('success');
     expect(component.getBookingStatusBadgeColor('booked')).toBe('warning');
+    expect(component.getBookingStatusBadgeColor('reserved')).toBe('warning');
     expect(component.getBookingStatusBadgeColor('cancelled')).toBe('default');
   });
 

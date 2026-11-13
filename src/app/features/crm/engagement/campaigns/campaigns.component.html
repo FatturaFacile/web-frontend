@@ -7,44 +7,21 @@
       <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
     }
   </div>
-  <nz-table
-    [nzData]="campaigns()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="15"
-    (nzPageIndexChange)="load($event)"
-    nzSize="middle" #gridTbl17>
-    <thead>
-      <tr>
-        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl17.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
-        <th>{{ 'CRMX.COMMON.CODE' | translate }}</th>
-        <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
-        <th>{{ 'CRMX.CAMPAIGNS.PERIOD' | translate }}</th>
-        <th class="num">{{ 'CRMX.CAMPAIGNS.BUDGET' | translate }}</th>
-        <th class="num">{{ 'CRMX.CAMPAIGNS.EXPECTED_REVENUE' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (c of campaigns(); track c.id) {
-        <tr>
-          <td>{{ c.name }}</td>
-          <td>{{ c.code ?? '-' }}</td>
-          <td><nz-tag>{{ c.status ? ('CRMX.CAMPAIGN_STATUS_' + c.status | translate) : '-' }}</nz-tag></td>
-          <td>{{ c.start_date ?? '...' }} / {{ c.end_date ?? '...' }}</td>
-          <td class="num">{{ c.budgeted_cost ?? '-' }}</td>
-          <td class="num">{{ c.expected_revenue ?? '-' }}</td>
-          <td>
-            <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(c)">
-              <nz-icon nzType="eye" />
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [actionsTemplate]="actionsTpl"
+    exportFileName="campaigns"
+  />
+
+  <ng-template #statusTpl let-c>
+    <nz-tag>{{ c.status ? ('CRMX.CAMPAIGN_STATUS_' + c.status | translate) : '-' }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-c>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(c)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
 </nz-card>
 
 <nz-modal
@@ -87,40 +64,30 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="members()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
-            <th>{{ 'CRMX.COMMON.EMAIL' | translate }}</th>
-            <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
-            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of members(); track m.id) {
-            <tr>
-              <td>{{ m.name ?? m.contact_id ?? m.lead_id }}</td>
-              <td>{{ m.email ?? '-' }}</td>
-              <td>{{ m.status ?? '-' }}</td>
-              <td>
-                @if (canWrite()) {
-                  <button
-                    nz-button
-                    nzType="text"
-                    nzDanger
-                    nzSize="small"
-                    type="button"
-                    nz-popconfirm
-                    [nzPopconfirmTitle]="'CRMX.CAMPAIGNS.REMOVE_CONFIRM' | translate"
-                    (nzOnConfirm)="removeMember(c, m)"
-                    appIconAction="delete"
-                  ></button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="membersGrid"
+        [columns]="memberColumns()"
+        [actionsTemplate]="memberActionsTpl"
+        [scroll]="{ x: '600px' }"
+        [exportable]="false"
+        size="small"
+      />
+      <ng-template #memberNameTpl let-m>{{ m.name ?? m.contact_id ?? m.lead_id }}</ng-template>
+      <ng-template #memberActionsTpl let-m>
+        @if (canWrite()) {
+          <button
+            nz-button
+            nzType="text"
+            nzDanger
+            nzSize="small"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'CRMX.CAMPAIGNS.REMOVE_CONFIRM' | translate"
+            (nzOnConfirm)="removeMember(c, m)"
+            appIconAction="delete"
+          ></button>
+        }
+      </ng-template>
 
       <nz-modal
         [nzVisible]="sendOpen()"

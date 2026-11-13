@@ -13,9 +13,9 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map } from 'rxjs';
+import { tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { ConstructionPanelComponent } from './construction-panel.component';
 import { ShortTimeClaimModalComponent } from './short-time-claim-modal.component';
 import { ShortTimeClaimsDrawerComponent } from './short-time-claims-drawer.component';
@@ -96,13 +96,12 @@ export class ShortTimeComponent implements OnInit {
   protected readonly casesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmShortTime.cases',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getCases().pipe(
-        map((res) => {
-          this.cases.set(res.data);
-          return res.data.map(
-            (c) => ({ ...c, claims_count: c.claims?.length ?? 0 }) as unknown as Row,
-          );
+    gridList: (query) =>
+      crudPage(this.api.getCases(query)).pipe(
+        tap((page) => {
+          if (isRowsQuery(query)) {
+            this.cases.set(page.data as unknown as ShortTimeCaseRecord[]);
+          }
         }),
       ),
     create: (payload) => this.api.createCase(payload as never),

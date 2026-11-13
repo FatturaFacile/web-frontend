@@ -37,7 +37,7 @@ const CASES: Case[] = [
   },
   { name: 'updateMilestone', call: (s) => s.updateMilestone('m1', { name: 'Go live 2' }), method: 'PUT', path: '/milestones/m1', body: { name: 'Go live 2' } },
   { name: 'completeMilestone', call: (s) => s.completeMilestone('m1'), method: 'POST', path: '/milestones/m1/complete', body: {} },
-  { name: 'getChangeOrders', call: (s) => s.getChangeOrders('p1', 'submitted'), method: 'GET', path: '/p1/change-orders', params: { status: 'submitted' } },
+  { name: 'getChangeOrders', call: (s) => s.getChangeOrders('p1', { status: 'submitted' }), method: 'GET', path: '/p1/change-orders', params: { status: 'submitted' } },
   {
     name: 'createChangeOrder',
     call: (s) => s.createChangeOrder('p1', { order_number: 'CO-1', title: 'Extra', scope_description: 'More', cost_impact_amount: 100 }),

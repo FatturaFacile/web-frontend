@@ -42,62 +42,10 @@
     <!-- TAB 1: CANTIERI & SAL -->
     <nz-tab [nzTitle]="'CONSTRUCTION.TAB_SITES' | translate">
       <nz-card>
-        <nz-table #sitesTable [nzData]="sites()" [nzLoading]="sitesLoading()" [nzFrontPagination]="true">
-          <thead>
-            <tr>
-              <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: sitesTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'CONSTRUCTION.COL_CODE' | translate }}</th>
-              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: sitesTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CONSTRUCTION.FIELD_NAME' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
-              <th [nzSortFn]="'address' | gridSort" [nzFilters]="'address' | gridFilterList: sitesTable.nzData" [nzFilterFn]="'address' | gridFilterFn">{{ 'CONSTRUCTION.COL_LOCATION' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'sia_norm_reference' | gridSort" [nzFilters]="'sia_norm_reference' | gridFilterList: sitesTable.nzData" [nzFilterFn]="'sia_norm_reference' | gridFilterFn">{{ 'CONSTRUCTION.COL_NORM' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (site of sitesTable.data; track site.id) {
-              <tr>
-                <td><strong>{{ site.code }}</strong></td>
-                <td>{{ site.name }}</td>
-                <td>{{ contactNameOf(site.client_id) }}</td>
-                <td>{{ site.address }}</td>
-                <td>
-                  @if (site.status) {
-                    <nz-tag>{{ 'CONSTRUCTION.SITE_STATUS_' + site.status.toUpperCase() | translate }}</nz-tag>
-                  }
-                </td>
-                <td><small class="text-muted">{{ site.sia_norm_reference || '-' }}</small></td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="sitesGrid" [columns]="siteColumns()" exportFileName="cantieri" />
 
         <h4 class="section-title">{{ 'CONSTRUCTION.SAL_TITLE' | translate }}</h4>
-        <nz-table #salTable [nzData]="progressBillings()" [nzFrontPagination]="true" nzSize="small">
-          <thead>
-            <tr>
-              <th [nzSortFn]="'sal_number' | gridSort" [nzFilters]="'sal_number' | gridFilterList: salTable.nzData" [nzFilterFn]="'sal_number' | gridFilterFn">{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'period_start' | gridSort" [nzFilters]="'period_start' | gridFilterList: salTable.nzData" [nzFilterFn]="'period_start' | gridFilterFn">{{ 'CONSTRUCTION.COL_PERIOD_START' | translate }}</th>
-              <th [nzSortFn]="'period_end' | gridSort" [nzFilters]="'period_end' | gridFilterList: salTable.nzData" [nzFilterFn]="'period_end' | gridFilterFn">{{ 'CONSTRUCTION.COL_PERIOD_END' | translate }}</th>
-              <th [nzSortFn]="'gross_certified_amount' | gridSort" [nzFilters]="'gross_certified_amount' | gridFilterList: salTable.nzData" [nzFilterFn]="'gross_certified_amount' | gridFilterFn">{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
-              <th [nzSortFn]="'retention_percentage' | gridSort" [nzFilters]="'retention_percentage' | gridFilterList: salTable.nzData" [nzFilterFn]="'retention_percentage' | gridFilterFn">{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
-              <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: salTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: salTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (sal of salTable.data; track sal.id) {
-              <tr>
-                <td><strong>{{ sal.sal_number }}</strong></td>
-                <td>{{ sal.period_start | date: 'mediumDate' }}</td>
-                <td>{{ sal.period_end | date: 'mediumDate' }}</td>
-                <td>{{ sal.gross_certified_amount | currency: 'EUR' }}</td>
-                <td>{{ sal.retention_percentage }}%</td>
-                <td><strong>{{ sal.net_amount | currency: 'EUR' }}</strong></td>
-                <td><nz-tag nzColor="success">{{ sal.status | uppercase }}</nz-tag></td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="salGrid" [columns]="salColumns()" size="small" exportFileName="sal" />
       </nz-card>
     </nz-tab>
 
@@ -113,14 +61,14 @@
                 nz-input
                 [placeholder]="'CONSTRUCTION.SEARCH_BIDS' | translate"
                 [ngModel]="filterBidSearch()"
-                (ngModelChange)="filterBidSearch.set($event); loadBids()"
+                (ngModelChange)="filterBidSearch.set($event); applyBidFilters()"
               />
             </nz-input-wrapper>
 
             <nz-select
               class="status-select"
               [ngModel]="filterBidStatus()"
-              (ngModelChange)="filterBidStatus.set($event); loadBids()"
+              (ngModelChange)="filterBidStatus.set($event ?? ''); applyBidFilters()"
               [nzPlaceHolder]="'CONSTRUCTION.FILTER_STATUS' | translate"
               nzAllowClear
             >
@@ -138,27 +86,91 @@
           </div>
         </div>
 
-        <nz-table #bidsTable [nzData]="bids()" [nzLoading]="bidsLoading()" [nzFrontPagination]="true">
+        <app-base-table [grid]="bidsGrid" [columns]="bidColumns()" [actionsTemplate]="bidActionsTemplate()" exportFileName="offerte" />
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: GIORNALE DEI LAVORI -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DIARY' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-select
+              class="site-select"
+              [ngModel]="selectedDiarySiteId()"
+              (ngModelChange)="onSiteChange($event)"
+              [nzPlaceHolder]="'CONSTRUCTION.SELECT_SITE' | translate"
+            >
+              @for (site of sites(); track site.id) {
+                <nz-option [nzValue]="site.id" [nzLabel]="siteLabel(site)"></nz-option>
+              }
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadDiary()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CONSTRUCTION.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <app-base-table [grid]="diaryGrid" [columns]="diaryColumns()" exportFileName="giornale-lavori" />
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 4: SICUREZZA & DOCUMENTI (POS / DURC) -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DOCUMENTS' | translate">
+      <nz-card>
+        <h4>{{ 'CONSTRUCTION.DOCUMENTS_TITLE' | translate }}</h4>
+        <app-base-table [grid]="documentsGrid" [columns]="documentColumns()" exportFileName="documenti-cantiere" />
+
+        <h4 class="section-title">{{ 'CONSTRUCTION.EXPIRING_TITLE' | translate }}</h4>
+        <nz-table #expTable [nzData]="expiringDocuments()" [nzFrontPagination]="true" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'bid_number' | gridSort" [nzFilters]="'bid_number' | gridFilterList: bidsTable.nzData" [nzFilterFn]="'bid_number' | gridFilterFn">{{ 'CONSTRUCTION.COL_BID_CODE' | translate }}</th>
-              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: bidsTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONSTRUCTION.COL_BID_TITLE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
-              <th [nzSortFn]="'currency' | gridSort" [nzFilters]="'currency' | gridFilterList: bidsTable.nzData" [nzFilterFn]="'currency' | gridFilterFn">{{ 'CONSTRUCTION.FIELD_CURRENCY' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: bidsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
-              <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: expTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
+              <th [nzSortFn]="'expires_on' | gridSort" [nzFilters]="'expires_on' | gridFilterList: expTable.nzData" [nzFilterFn]="'expires_on' | gridFilterFn">{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (bid of bidsTable.data; track bid.id) {
+            @for (exp of expTable.data; track exp.id) {
               <tr>
-                <td><strong>{{ bid.bid_number }}</strong></td>
-                <td>{{ bid.title }}</td>
-                <td>{{ contactNameOf(bid.contact_id) }}</td>
-                <td>{{ bid.currency }}</td>
-                <td><nz-tag [nzColor]="getBidStatusColor(bid.status)">{{ bid.status | uppercase }}</nz-tag></td>
-                <td nzRight>
-                  <nz-space>
+                <td><strong>{{ exp.title }}</strong></td>
+                <td><nz-tag nzColor="error">{{ 'CONSTRUCTION.DOC_KIND_' + exp.kind.toUpperCase() | translate }}</nz-tag></td>
+                <td><span class="text-danger">{{ exp.expires_on | date: 'mediumDate' }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 5: SUBAPPALTI -->
+    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_SUBCONTRACTS' | translate">
+      <nz-card>
+        <app-base-table [grid]="subcontractsGrid" [columns]="subcontractColumns()" [actionsTemplate]="subcontractActionsTemplate()" exportFileName="subappalti" />
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+
+  <!-- Cell templates of the server-driven tables -->
+  <ng-template #codeTpl let-row let-value="value"><strong>{{ value }}</strong></ng-template>
+  <ng-template #siteClientTpl let-site>{{ contactNameOf(site.client_id) }}</ng-template>
+  <ng-template #bidClientTpl let-bid>{{ contactNameOf(bid.contact_id) }}</ng-template>
+  <ng-template #subNameTpl let-sub><strong>{{ subcontractorNameOf(sub.subcontractor_id) }}</strong></ng-template>
+  <ng-template #siteStatusTpl let-site>
+    @if (site.status) {
+      <nz-tag>{{ siteStatusLabel(site.status) }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #normTpl let-row let-value="value"><small class="text-muted">{{ value || '-' }}</small></ng-template>
+  <ng-template #dateTpl let-row let-value="value">{{ value | date: 'mediumDate' }}</ng-template>
+  <ng-template #eurTpl let-row let-value="value">{{ value | currency: 'EUR' }}</ng-template>
+  <ng-template #percentTpl let-row let-value="value">{{ value }}%</ng-template>
+  <ng-template #salStatusTpl let-sal><nz-tag nzColor="success">{{ sal.status | uppercase }}</nz-tag></ng-template>
+  <ng-template #bidStatusTpl let-bid><nz-tag [nzColor]="getBidStatusColor(bid.status)">{{ bid.status | uppercase }}</nz-tag></ng-template>
+  <ng-template #bidActionsTpl let-bid>
+    <nz-space>
                     <button
                       *nzSpaceItem
                       nz-button
@@ -194,135 +206,20 @@
                       </button>
                     }
                   </nz-space>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-      </nz-card>
-    </nz-tab>
-
-    <!-- TAB 3: GIORNALE DEI LAVORI -->
-    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DIARY' | translate">
-      <nz-card>
-        <div class="filter-toolbar">
-          <div class="filter-inputs">
-            <nz-select
-              class="site-select"
-              [ngModel]="selectedDiarySiteId()"
-              (ngModelChange)="selectedDiarySiteId.set($event); loadDiary($event)"
-              [nzPlaceHolder]="'CONSTRUCTION.SELECT_SITE' | translate"
-            >
-              @for (site of sites(); track site.id) {
-                <nz-option [nzValue]="site.id" [nzLabel]="siteLabel(site)"></nz-option>
-              }
-            </nz-select>
-
-            <button nz-button nzType="default" (click)="loadDiary(selectedDiarySiteId())">
-              <span nz-icon nzType="reload"></span>
-              {{ 'CONSTRUCTION.REFRESH' | translate }}
-            </button>
-          </div>
-        </div>
-
-        <nz-table #diaryTable [nzData]="diaryEntries()" [nzLoading]="diaryLoading()" [nzFrontPagination]="true">
-          <thead>
-            <tr>
-              <th [nzSortFn]="'entry_date' | gridSort" [nzFilters]="'entry_date' | gridFilterList: diaryTable.nzData" [nzFilterFn]="'entry_date' | gridFilterFn">{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
-              <th [nzSortFn]="'weather' | gridSort" [nzFilters]="'weather' | gridFilterList: diaryTable.nzData" [nzFilterFn]="'weather' | gridFilterFn">{{ 'CONSTRUCTION.COL_WEATHER' | translate }}</th>
-              <th [nzSortFn]="'workers_present' | gridSort" [nzFilters]="'workers_present' | gridFilterList: diaryTable.nzData" [nzFilterFn]="'workers_present' | gridFilterFn">{{ 'CONSTRUCTION.COL_WORKERS' | translate }}</th>
-              <th [nzSortFn]="'incidents' | gridSort" [nzFilters]="'incidents' | gridFilterList: diaryTable.nzData" [nzFilterFn]="'incidents' | gridFilterFn">{{ 'CONSTRUCTION.FIELD_INCIDENTS' | translate }}</th>
-              <th [nzSortFn]="'work_performed' | gridSort" [nzFilters]="'work_performed' | gridFilterList: diaryTable.nzData" [nzFilterFn]="'work_performed' | gridFilterFn">{{ 'CONSTRUCTION.COL_WORK_PERFORMED' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (entry of diaryTable.data; track entry.id) {
-              <tr>
-                <td>{{ entry.entry_date | date: 'mediumDate' }}</td>
-                <td>
-                  @if (entry.weather) {
-                    <nz-tag>{{ entry.weather }}</nz-tag>
-                  }
-                </td>
-                <td><strong>{{ entry.workers_present }}</strong></td>
-                <td><small class="text-muted">{{ entry.incidents || '-' }}</small></td>
-                <td>{{ entry.work_performed }}</td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-      </nz-card>
-    </nz-tab>
-
-    <!-- TAB 4: SICUREZZA & DOCUMENTI (POS / DURC) -->
-    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_DOCUMENTS' | translate">
-      <nz-card>
-        <h4>{{ 'CONSTRUCTION.DOCUMENTS_TITLE' | translate }}</h4>
-        <nz-table #docTable [nzData]="siteDocuments()" [nzLoading]="documentsLoading()" [nzFrontPagination]="true">
-          <thead>
-            <tr>
-              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (doc of docTable.data; track doc.id) {
-              <tr>
-                <td><strong>{{ doc.title }}</strong></td>
-                <td><nz-tag [nzColor]="getCategoryColor(doc.kind)">{{ 'CONSTRUCTION.DOC_KIND_' + doc.kind.toUpperCase() | translate }}</nz-tag></td>
-                <td>{{ doc.expires_on ? (doc.expires_on | date: 'mediumDate') : '-' }}</td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-
-        <h4 class="section-title">{{ 'CONSTRUCTION.EXPIRING_TITLE' | translate }}</h4>
-        <nz-table #expTable [nzData]="expiringDocuments()" [nzFrontPagination]="true" nzSize="small">
-          <thead>
-            <tr>
-              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: expTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
-              <th [nzSortFn]="'expires_on' | gridSort" [nzFilters]="'expires_on' | gridFilterList: expTable.nzData" [nzFilterFn]="'expires_on' | gridFilterFn">{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (exp of expTable.data; track exp.id) {
-              <tr>
-                <td><strong>{{ exp.title }}</strong></td>
-                <td><nz-tag nzColor="error">{{ 'CONSTRUCTION.DOC_KIND_' + exp.kind.toUpperCase() | translate }}</nz-tag></td>
-                <td><span class="text-danger">{{ exp.expires_on | date: 'mediumDate' }}</span></td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-      </nz-card>
-    </nz-tab>
-
-    <!-- TAB 5: SUBAPPALTI -->
-    <nz-tab [nzTitle]="'CONSTRUCTION.TAB_SUBCONTRACTS' | translate">
-      <nz-card>
-        <nz-table #subTable [nzData]="subcontracts()" [nzLoading]="subcontractsLoading()" [nzFrontPagination]="true">
-          <thead>
-            <tr>
-              <th>{{ 'CONSTRUCTION.COL_SUBCONTRACTOR' | translate }}</th>
-              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: subTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'CONSTRUCTION.COL_SCOPE' | translate }}</th>
-              <th [nzSortFn]="'contract_amount' | gridSort" [nzFilters]="'contract_amount' | gridFilterList: subTable.nzData" [nzFilterFn]="'contract_amount' | gridFilterFn">{{ 'CONSTRUCTION.COL_CONTRACT_AMOUNT' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_PERIOD' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: subTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
-              <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (sub of subTable.data; track sub.id) {
-              <tr>
-                <td><strong>{{ subcontractorNameOf(sub.subcontractor_id) }}</strong></td>
-                <td>{{ sub.description }}</td>
-                <td>{{ sub.contract_amount | currency: 'EUR' }}</td>
-                <td>{{ sub.starts_on ? (sub.starts_on | date: 'mediumDate') : '-' }} / {{ sub.ends_on ? (sub.ends_on | date: 'mediumDate') : '-' }}</td>
-                <td><nz-tag [nzColor]="sub.status === 'completed' ? 'success' : 'blue'">{{ sub.status | uppercase }}</nz-tag></td>
-                <td nzRight>
-                  @if (sub.status === 'active') {
+  </ng-template>
+  <ng-template #weatherTpl let-row let-value="value">
+    @if (value) {
+      <nz-tag>{{ value }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #workersTpl let-row let-value="value"><strong>{{ value }}</strong></ng-template>
+  <ng-template #incidentsTpl let-row let-value="value"><small class="text-muted">{{ value || '-' }}</small></ng-template>
+  <ng-template #docKindTpl let-doc><nz-tag [nzColor]="getCategoryColor(doc.kind)">{{ documentKindLabel(doc.kind) }}</nz-tag></ng-template>
+  <ng-template #docExpiryTpl let-row let-value="value">{{ value ? (value | date: 'mediumDate') : '-' }}</ng-template>
+  <ng-template #subPeriodTpl let-sub>{{ sub.starts_on ? (sub.starts_on | date: 'mediumDate') : '-' }} / {{ sub.ends_on ? (sub.ends_on | date: 'mediumDate') : '-' }}</ng-template>
+  <ng-template #subStatusTpl let-sub><nz-tag [nzColor]="sub.status === 'completed' ? 'success' : 'blue'">{{ sub.status | uppercase }}</nz-tag></ng-template>
+  <ng-template #subActionsTpl let-sub>
+    @if (sub.status === 'active') {
                     <button
                       nz-button
                       nzType="default"
@@ -333,14 +230,7 @@
                       {{ 'CONSTRUCTION.ACTION_CERTIFY_SUB' | translate }}
                     </button>
                   }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-      </nz-card>
-    </nz-tab>
-  </nz-tabs>
+  </ng-template>
 </div>
 
 <!-- DRAWER: COMPUTO & DETTAGLI APPALTO -->

@@ -2,12 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { map, Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
   IntrastatCodeList,
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
+  IntrastatDeclarationSummary,
   IntrastatExportRequest,
   IntrastatGenerateRequest,
   IntrastatLineRequest,
@@ -16,6 +18,9 @@ import {
   IntrastatProductProfileRequest,
   IntrastatSubmitRequest,
   IntrastatValidationResponse,
+  LaravelPaginationMeta,
+  PaginatedResponse,
+  QueryFilterParams,
 } from '../models';
 
 @Service()
@@ -23,23 +28,16 @@ export class IntrastatApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/intrastat`;
 
-  getDeclarations(params?: {
-    flow?: string;
-    year?: number;
-    status?: string;
-    page?: number;
-    per_page?: number;
-  }): Observable<ApiResponse<IntrastatDeclaration[]>> {
-    let httpParams = new HttpParams();
-    if (params?.flow) httpParams = httpParams.set('flow', params.flow);
-    if (params?.year) httpParams = httpParams.set('year', params.year.toString());
-    if (params?.status) httpParams = httpParams.set('status', params.status);
-    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
-    if (params?.per_page) httpParams = httpParams.set('per_page', params.per_page.toString());
-
-    return this.http.get<ApiResponse<IntrastatDeclaration[]>>(`${this.base}/declarations`, {
-      params: httpParams,
-    });
+  /** Grid list: page-level filters (flow, year, status) plus the grid query (paging, sort, column filters, grid_values). */
+  getDeclarations(
+    params: QueryFilterParams & { flow?: string; year?: number; status?: string } = {},
+  ): Observable<PaginatedResponse<IntrastatDeclaration> & { summary?: IntrastatDeclarationSummary }> {
+    return this.http
+      .get<ApiResponse<IntrastatDeclaration[]> & { meta?: LaravelPaginationMeta; summary?: IntrastatDeclarationSummary }>(
+        `${this.base}/declarations`,
+        { params: toHttpParams(params) },
+      )
+      .pipe(map((res) => ({ ...res, meta: res.meta ?? plainListMeta(res.data, params) })));
   }
 
   getDeclaration(id: string): Observable<ApiResponse<IntrastatDeclaration>> {
@@ -133,8 +131,12 @@ export class IntrastatApiService {
     return this.http.get<ApiResponse<IntrastatCodeList>>(`${this.base}/codes`);
   }
 
-  getProductProfiles(): Observable<ApiResponse<IntrastatProductProfile[]>> {
-    return this.http.get<ApiResponse<IntrastatProductProfile[]>>(`${this.base}/product-profiles`);
+  getProductProfiles(params: QueryFilterParams = {}): Observable<PaginatedResponse<IntrastatProductProfile>> {
+    return this.http
+      .get<ApiResponse<IntrastatProductProfile[]> & { meta?: LaravelPaginationMeta }>(`${this.base}/product-profiles`, {
+        params: toHttpParams(params),
+      })
+      .pipe(map((res) => ({ ...res, meta: res.meta ?? plainListMeta(res.data, params) })));
   }
 
   setProductProfile(
@@ -150,4 +152,10 @@ export class IntrastatApiService {
   deleteProductProfile(productId: string): Observable<{ message?: string }> {
     return this.http.delete<{ message?: string }>(`${this.base}/product-profiles/${productId}`);
   }
+}
+
+/** The `grid_values` answer is a plain list without meta: give it one so every response is a PaginatedResponse. */
+function plainListMeta(items: unknown[] | undefined, params: QueryFilterParams): LaravelPaginationMeta {
+  const count = items?.length ?? 0;
+  return { current_page: params.page ?? 1, from: null, to: null, last_page: 1, per_page: count, total: count };
 }

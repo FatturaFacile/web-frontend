@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -14,7 +14,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
@@ -38,11 +38,12 @@ import {
   DmsStoreTagRequest,
   DmsTagResource,
   DmsUpdateAiSettingRequest,
+  FetchGridModel,
   I18nService,
   serverErrorMessage,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -72,6 +73,7 @@ const DMS_LINK_TARGET_TYPES = [
   selector: 'app-dms',
   styleUrl: './dms.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
@@ -113,11 +115,53 @@ export class DmsComponent implements OnInit {
   protected selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: DOCUMENTS ---
-  protected readonly documents = signal<DmsDocumentResource[]>([]);
-  protected readonly documentsLoading = signal<boolean>(false);
-  protected readonly documentsTotal = signal<number>(0);
-  protected readonly documentsPageIndex = signal<number>(1);
-  protected readonly documentsPageSize = signal<number>(10);
+  /** Server-driven documents grid: paging, sorting, column filters, grouping and export run on the API. */
+  protected readonly grid = new FetchGridModel<DmsDocumentResource, DmsDocumentParams>((q) => this.dmsApi.getDocuments(q));
+
+  private readonly titleTpl = viewChild<TemplateRef<unknown>>('titleTpl');
+  private readonly typeTpl = viewChild<TemplateRef<unknown>>('typeTpl');
+  private readonly versionTpl = viewChild<TemplateRef<unknown>>('versionTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly protectionTpl = viewChild<TemplateRef<unknown>>('protectionTpl');
+
+  protected readonly documentColumns = computed<TableColumnDef<DmsDocumentResource>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'title', header: this.i18n.translate('DMS.DOC_TITLE'), customCellTemplate: this.titleTpl() },
+      {
+        key: 'document_type',
+        header: this.i18n.translate('DMS.DOC_TYPE'),
+        valueGetter: (d) => d.document_type || '',
+        customCellTemplate: this.typeTpl(),
+      },
+      {
+        key: 'folder_name',
+        serverKey: 'folder.name',
+        header: this.i18n.translate('DMS.FOLDER'),
+        valueGetter: (d) => this.folderNameOf(d),
+      },
+      {
+        key: 'latest_version',
+        serverKey: 'latest_file_name',
+        header: this.i18n.translate('DMS.LATEST_VERSION'),
+        valueGetter: (d) => d.latest_version?.original_name ?? '',
+        customCellTemplate: this.versionTpl(),
+      },
+      {
+        key: 'status',
+        header: this.i18n.translate('COMMON.STATUS'),
+        valueGetter: (d) => d.status,
+        customCellTemplate: this.statusTpl(),
+      },
+      {
+        key: 'legal_hold',
+        header: this.i18n.translate('DMS.PROTECTION'),
+        valueGetter: (d) => (d.legal_hold ? this.i18n.translate('DMS.LBL_LEGAL_HOLD') : '-'),
+        valueLabel: (value) => (value === '1' || value === 'true' ? this.i18n.translate('DMS.LBL_LEGAL_HOLD') : '-'),
+        customCellTemplate: this.protectionTpl(),
+      },
+    ];
+  });
   protected readonly searchTitle = signal<string>('');
   protected readonly selectedFolderId = signal<string>('');
   protected readonly selectedDocType = signal<string>('');
@@ -234,13 +278,12 @@ export class DmsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFolders();
-    this.loadDocuments();
   }
 
   protected onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
     if (index === 0) {
-      this.loadDocuments();
+      this.refreshDocuments();
     } else if (index === 1) {
       this.loadFolders();
     } else if (index === 2) {
@@ -252,34 +295,19 @@ export class DmsComponent implements OnInit {
   }
 
   // --- DOCUMENTS LOGIC ---
+  /** Pushes the toolbar filters to the grid (page 1) and reloads. */
   protected loadDocuments(): void {
-    this.documentsLoading.set(true);
-    const params: DmsDocumentParams = {
+    this.grid.setFilter({
       folder_id: this.selectedFolderId() || undefined,
       document_type: this.selectedDocType() || undefined,
       status: (this.selectedStatus() || undefined) as DmsDocumentStatus | undefined,
-      search: this.searchTitle() || undefined,
-      page: this.documentsPageIndex(),
-      per_page: this.documentsPageSize(),
-    };
-
-    this.dmsApi.getDocuments(params).subscribe({
-      next: (res) => {
-        this.documents.set(res.data);
-        this.documentsTotal.set(res.meta?.total ?? res.data.length);
-        this.documentsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('DMS.MSG_ERRORE_NEL_CARICAMENTO_DEI_DOCUMENTI_DMS'));
-        this.documentsLoading.set(false);
-      },
+      q: this.searchTitle() || undefined,
     });
   }
 
-  protected onDocumentsTableQueryChange(params: NzTableQueryParams): void {
-    this.documentsPageIndex.set(params.pageIndex);
-    this.documentsPageSize.set(params.pageSize);
-    this.loadDocuments();
+  /** Reloads the current page after a mutation. */
+  protected refreshDocuments(): void {
+    this.grid.reload();
   }
 
   protected openCreateDocModal(): void {
@@ -344,7 +372,7 @@ export class DmsComponent implements OnInit {
         this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_ARCHIVIATO_CON_SUCCESSO'));
         this.createDocModalVisible.set(false);
         this.createDocSubmitting.set(false);
-        this.loadDocuments();
+        this.refreshDocuments();
       },
       error: () => {
         this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_ARCHIVIAZIONE_DEL_DOCUMENTO'));
@@ -362,7 +390,7 @@ export class DmsComponent implements OnInit {
     this.dmsApi.deleteDocument(doc.id).subscribe({
       next: () => {
         this.message.info(this.translate.instant('DMS.MSG_DOCUMENTO_ELIMINATO'));
-        this.loadDocuments();
+        this.refreshDocuments();
       },
       error: () => {
         this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_ELIMINAZIONE'));
@@ -387,7 +415,7 @@ export class DmsComponent implements OnInit {
         this.message.success(this.translate.instant('DMS.MSG_DOCUMENTO_ESTRATTO_IN_MODIFICA_CHECK_OUT'));
         this.checkOutModalVisible.set(false);
         this.checkOutSubmitting.set(false);
-        this.loadDocuments();
+        this.refreshDocuments();
       },
       error: () => {
         this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_CHECK_OUT'));
@@ -419,7 +447,7 @@ export class DmsComponent implements OnInit {
           this.message.success(this.translate.instant('DMS.MSG_NUOVA_VERSIONE_CARICATA_CHECK_IN_COMPLETATO'));
           this.checkInModalVisible.set(false);
           this.checkInSubmitting.set(false);
-          this.loadDocuments();
+          this.refreshDocuments();
         },
         error: () => {
           this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_IL_CHECK_IN'));
@@ -451,7 +479,7 @@ export class DmsComponent implements OnInit {
         this.message.success(this.translate.instant('DMS.MSG_BLOCCO_PROBATORIO_LEGAL_HOLD_APPLICATO_CON'));
         this.legalHoldModalVisible.set(false);
         this.legalHoldSubmitting.set(false);
-        this.loadDocuments();
+        this.refreshDocuments();
       },
       error: () => {
         this.message.error(this.translate.instant('DMS.MSG_ERRORE_DURANTE_L_APPLICAZIONE_DEL_BLOCCO'));
@@ -464,7 +492,7 @@ export class DmsComponent implements OnInit {
     this.dmsApi.releaseLegalHold(doc.id).subscribe({
       next: () => {
         this.message.info(this.translate.instant('DMS.MSG_BLOCCO_PROBATORIO_RIMOSSO'));
-        this.loadDocuments();
+        this.refreshDocuments();
       },
       error: () => {
         this.message.error(this.translate.instant('DMS.MSG_ERRORE_NELLA_RIMOZIONE_DEL_LEGAL_HOLD'));

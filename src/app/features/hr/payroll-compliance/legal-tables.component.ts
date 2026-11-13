@@ -3,9 +3,9 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { I18nService, PayrollComplianceApiService } from '@core';
 import { TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { defer, map, Observable, tap, throwError } from 'rxjs';
+import { defer, map, Observable, throwError } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, CrudRow, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -58,12 +58,9 @@ export class LegalTablesComponent {
   protected readonly legalConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmCompliance.legal.legalTitle',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getLegalParameters().pipe(
-        map((res) =>
-          res.data.map((r) => ({ ...r, parameters: JSON.stringify(r.parameters ?? {}) }) as Row),
-        ),
-        tap((rows) => this.legalRows.set(rows)),
+    gridList: (query) =>
+      crudPage(this.api.getLegalParameters(query)).pipe(
+        map((page) => this.withJsonParameters(page, isRowsQuery(query), this.legalRows)),
       ),
     create: (payload) => this.saveLegal(String(payload['topic']), Number(payload['year']), payload),
     update: (id, payload) => {
@@ -108,12 +105,9 @@ export class LegalTablesComponent {
   protected readonly annualConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmCompliance.legal.annualTitle',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getAnnualParameters().pipe(
-        map((res) =>
-          res.data.map((r) => ({ ...r, parameters: JSON.stringify(r.parameters ?? {}) }) as Row),
-        ),
-        tap((rows) => this.annualRows.set(rows)),
+    gridList: (query) =>
+      crudPage(this.api.getAnnualParameters(query)).pipe(
+        map((page) => this.withJsonParameters(page, isRowsQuery(query), this.annualRows)),
       ),
     create: (payload) =>
       this.saveAnnual(String(payload['country']), Number(payload['year']), payload),
@@ -153,6 +147,16 @@ export class LegalTablesComponent {
       },
     ],
   }));
+
+  /** The parameters object is edited as a JSON text: the rows of a page are remembered to resolve the key of an update. */
+  private withJsonParameters<P extends { data: CrudRow[] }>(page: P, isRows: boolean, remember: { set(rows: Row[]): void }): P {
+    if (!isRows) {
+      return page;
+    }
+    const rows = page.data.map((r) => ({ ...r, parameters: JSON.stringify(r['parameters'] ?? {}) }) as Row);
+    remember.set(rows);
+    return { ...page, data: rows };
+  }
 
   private invalidJson(): Observable<never> {
     return throwError(

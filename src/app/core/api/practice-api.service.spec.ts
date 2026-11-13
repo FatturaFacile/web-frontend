@@ -155,19 +155,19 @@ describe('PracticeApiService', () => {
         client_id: 'cli-1',
         received_on: '2026-11-01',
         amount: '1500.00',
-        balance: '1500.00',
-        status: 'available',
+        applied_amount: '0.00',
+        status: 'open',
       },
     ];
 
-    service.getRetainers({ client_id: 'cli-1', status: 'available' }).subscribe((res) => {
+    service.getRetainers({ client_id: 'cli-1', status: 'open' }).subscribe((res) => {
       expect(res.data).toEqual(mockRetainers);
     });
     const retReq = httpMock.expectOne(
       (r) =>
         r.url.endsWith('/practice/retainers') &&
         r.params.get('client_id') === 'cli-1' &&
-        r.params.get('status') === 'available',
+        r.params.get('status') === 'open',
     );
     expect(retReq.request.method).toBe('GET');
     retReq.flush({ data: mockRetainers });

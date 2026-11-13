@@ -5,7 +5,7 @@ export interface RentalVehicle {
   make?: string;
   type: string;
   client?: string;
-  vignette: boolean;
+  vignette?: boolean;
   returnDate?: string;
   status: 'available' | 'rented' | 'maintenance' | 'reserved' | string;
   daily_rate?: number;

@@ -113,21 +113,26 @@ describe('ProjectsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads projects list on initialization', () => {
+  const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 400));
+
+  it('loads projects list on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockProjectApi.getProjects).toHaveBeenCalled();
-    expect(component.projects()).toEqual(mockProjects);
-    expect(component.total()).toBe(1);
+    expect(component.grid.items()).toEqual(mockProjects);
+    expect(component.grid.totalCount()).toBe(1);
   });
 
-  it('filters projects by search term', () => {
+  it('filters projects by search term on the server', async () => {
     fixture.detectChanges();
+    await settle();
     const event = { target: { value: 'Deployment' } } as unknown as Event;
     component.onSearch(event);
+    await settle();
 
     expect(component.searchTerm()).toBe('Deployment');
-    expect(mockProjectApi.getProjects).toHaveBeenCalledWith(
+    expect(mockProjectApi.getProjects).toHaveBeenLastCalledWith(
       expect.objectContaining({ search: 'Deployment', page: 1 }),
     );
   });

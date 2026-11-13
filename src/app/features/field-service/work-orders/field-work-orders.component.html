@@ -10,70 +10,37 @@
     </div>
   }
 
-  <nz-table
-    #table
-    nzSize="middle"
-    nzShowSizeChanger
-    [nzData]="orders()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzScroll]="{ x: 'max-content' }"
-    (nzQueryParams)="onQueryParams($event)"
-  >
-    <thead>
-      <tr>
-        <th [nzSortFn]="'work_order_number' | gridSort" [nzFilters]="'work_order_number' | gridFilterList: table.nzData" [nzFilterFn]="'work_order_number' | gridFilterFn">{{ 'FS_WORK_ORDERS.NUMBER' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.DATE' | translate }}</th>
-        <th [nzSortFn]="'intervention_address' | gridSort" [nzFilters]="'intervention_address' | gridFilterList: table.nzData" [nzFilterFn]="'intervention_address' | gridFilterFn">{{ 'FS_WORK_ORDERS.ADDRESS' | translate }}</th>
-        <th [nzSortFn]="'labor_hours' | gridSort" [nzFilters]="'labor_hours' | gridFilterList: table.nzData" [nzFilterFn]="'labor_hours' | gridFilterFn">{{ 'FS_WORK_ORDERS.HOURS' | translate }}</th>
-        <th [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: table.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'FS_WORK_ORDERS.TOTAL' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (order of table.data; track order.id) {
-        <tr>
-          <td>
-            <strong>{{ order.work_order_number }}</strong>
-          </td>
-          <td>{{ order.date.slice(0, 16).replace('T', ' ') }}</td>
-          <td>{{ order.intervention_address }}</td>
-          <td>{{ order.labor_hours }}</td>
-          <td>{{ order.total_amount | money }}</td>
-          <td>
-            <nz-tag>{{ order.status }}</nz-tag>
-            @if (order.client_signed_by) {
-              <nz-tag nzColor="success">{{ order.client_signed_by }}</nz-tag>
-            }
-          </td>
-          <td>
-            @if (canWrite()) {
-              @if (order.status === 'draft') {
-                <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="openEdit(order)"></button>
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
-                  {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
-                </button>
-              }
-              @if (order.status === 'draft' || order.status === 'completed') {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(order)">
-                  {{ 'FS_WORK_ORDERS.SIGN' | translate }}
-                </button>
-              }
-              @if ((order.status === 'completed' || order.status === 'signed') && !order.invoice_id) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(order)">
-                  {{ 'FS_WORK_ORDERS.INVOICE' | translate }}
-                </button>
-              }
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
+
+  <ng-template #numberTpl let-order><strong>{{ order.work_order_number }}</strong></ng-template>
+  <ng-template #dateTpl let-order>{{ order.date.slice(0, 16).replace('T', ' ') }}</ng-template>
+  <ng-template #totalTpl let-order>{{ order.total_amount | money }}</ng-template>
+  <ng-template #statusTpl let-order>
+    <nz-tag>{{ order.status }}</nz-tag>
+    @if (order.client_signed_by) {
+      <nz-tag nzColor="success">{{ order.client_signed_by }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-order>
+    @if (canWrite()) {
+      @if (order.status === 'draft') {
+        <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="openEdit(order)"></button>
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
+          {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (order.status === 'draft' || order.status === 'completed') {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(order)">
+          {{ 'FS_WORK_ORDERS.SIGN' | translate }}
+        </button>
+      }
+      @if ((order.status === 'completed' || order.status === 'signed') && !order.invoice_id) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(order)">
+          {{ 'FS_WORK_ORDERS.INVOICE' | translate }}
+        </button>
+      }
+    }
+  </ng-template>
 </nz-card>
 
 <app-signature-dialog

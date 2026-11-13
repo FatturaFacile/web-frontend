@@ -35,7 +35,7 @@
   </nz-card>
   <nz-card class="stat-card">
     <nz-statistic
-      [nzValue]="appointments().length"
+      [nzValue]="appointments.totalCount()"
       [nzTitle]="'APPOINTMENTS.TOTAL' | translate"
       [nzPrefix]="totalIcon"
     ></nz-statistic>
@@ -93,75 +93,53 @@
         </div>
       </div>
 
-      <nz-table
-        #appTable
-        [nzData]="appointments()"
-        [nzLoading]="appointmentsLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: appTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'APPOINTMENTS.TITLE_COL' | translate }}</th>
-            <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: appTable.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'APPOINTMENTS.CONTACT' | translate }}</th>
-            <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: appTable.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'APPOINTMENTS.STARTS_AT' | translate }}</th>
-            <th [nzSortFn]="'ends_at' | gridSort" [nzFilters]="'ends_at' | gridFilterList: appTable.nzData" [nzFilterFn]="'ends_at' | gridFilterFn">{{ 'APPOINTMENTS.ENDS_AT' | translate }}</th>
-            <th>{{ 'APPOINTMENTS.STATUS' | translate }}</th>
-            <th [nzSortFn]="'address' | gridSort" [nzFilters]="'address' | gridFilterList: appTable.nzData" [nzFilterFn]="'address' | gridFilterFn">{{ 'APPOINTMENTS.ADDRESS' | translate }}</th>
-            <th>{{ 'APPOINTMENTS.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (app of appTable.data; track app.id) {
-            <tr>
-              <td>
-                <button nz-button nzType="link" (click)="openAppointmentDrawer(app)">
-                  {{ app.title }}
-                </button>
-                @if (app.appointment_number) {
-                  <span class="app-num">#{{ app.appointment_number }}</span>
-                }
-              </td>
-              <td>{{ app.contact?.name || app.contact_id || '-' }}</td>
-              <td>{{ app.starts_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ app.ends_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <nz-tag [nzColor]="getStatusBadgeColor(app)">
-                  {{ getStatusLabel(app) }}
-                </nz-tag>
-              </td>
-              <td>{{ app.address || '-' }}</td>
-              <td>
-                <nz-space>
-                  <button *nzSpaceItem nz-button nzSize="small" (click)="openAppointmentDrawer(app)">
-                    <span nz-icon nzType="eye"></span>
-                  </button>
-                  @if (!app.cancelled_at && !app.service_report_id) {
-                    <button *nzSpaceItem nz-button nzSize="small" (click)="convertToServiceReport(app)">
-                      <span nz-icon nzType="form"></span>
-                      {{ 'APPOINTMENTS.REPORT' | translate }}
-                    </button>
-                    <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="openCancelModal(app)">
-                      {{ 'APPOINTMENTS.CANCEL' | translate }}
-                    </button>
-                  }
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzSize="small"
-                    nzType="text"
-                    nzDanger
-                    nz-popconfirm
-                    appIconAction="delete"
-                    [nzPopconfirmTitle]="'APPOINTMENTS.CONFIRM_DELETE' | translate"
-                    (nzOnConfirm)="deleteAppointment(app)"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
+      <app-base-table
+        [grid]="appointments"
+        [columns]="appointmentColumns()"
+        [actionsTemplate]="appointmentActionsTpl"
+        exportFileName="appointments"
+      />
+
+      <ng-template #titleTpl let-app>
+        <button nz-button nzType="link" (click)="openAppointmentDrawer(app)">{{ app.title }}</button>
+        @if (app.appointment_number) {
+          <span class="app-num">#{{ app.appointment_number }}</span>
+        }
+      </ng-template>
+      <ng-template #contactTpl let-app>{{ app.contact?.name || app.contact_id || '-' }}</ng-template>
+      <ng-template #startsAtTpl let-app>{{ app.starts_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+      <ng-template #endsAtTpl let-app>{{ app.ends_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+      <ng-template #lifecycleTpl let-app>
+        <nz-tag [nzColor]="getStatusBadgeColor(app)">{{ getStatusLabel(app) }}</nz-tag>
+      </ng-template>
+      <ng-template #addressTpl let-app>{{ app.address || '-' }}</ng-template>
+      <ng-template #appointmentActionsTpl let-app>
+        <nz-space>
+          <button *nzSpaceItem nz-button nzSize="small" (click)="openAppointmentDrawer(app)">
+            <span nz-icon nzType="eye"></span>
+          </button>
+          @if (!app.cancelled_at && !app.service_report_id) {
+            <button *nzSpaceItem nz-button nzSize="small" (click)="convertToServiceReport(app)">
+              <span nz-icon nzType="form"></span>
+              {{ 'APPOINTMENTS.REPORT' | translate }}
+            </button>
+            <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="openCancelModal(app)">
+              {{ 'APPOINTMENTS.CANCEL' | translate }}
+            </button>
           }
-        </tbody>
-      </nz-table>
+          <button
+            *nzSpaceItem
+            nz-button
+            nzSize="small"
+            nzType="text"
+            nzDanger
+            nz-popconfirm
+            appIconAction="delete"
+            [nzPopconfirmTitle]="'APPOINTMENTS.CONFIRM_DELETE' | translate"
+            (nzOnConfirm)="deleteAppointment(app)"
+          ></button>
+        </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 2: CONFLICT CHECKER -->

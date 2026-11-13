@@ -31,12 +31,10 @@ describe('WorkflowsComponent', () => {
       approvable_id: 'PO-2026-001',
       approvable_label: 'Fornitore Bosch CH (CHF 12,000)',
       initiator_name: 'Mario Rossi',
-      step_name: 'Approvazione Direzione Tecnica',
-      step_index: 1,
+      node_name: 'Approvazione Direzione Tecnica',
       due_at: '2026-11-15T18:00:00Z',
-      status: 'pending',
-      is_sla_breached: false,
-      is_escalated: false,
+      is_overdue: false,
+      escalated_at: null,
     },
   ];
 
@@ -148,10 +146,10 @@ describe('WorkflowsComponent', () => {
     createDefinition: vi.fn().mockReturnValue(of({ success: true, data: mockDefinitions[0] })),
     publishDefinition: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDefinitions[0], status: 'published' } })),
     deleteDefinition: vi.fn().mockReturnValue(of(null)),
-    getDelegations: vi.fn().mockReturnValue(of({ success: true, data: mockDelegations })),
+    getDelegations: vi.fn().mockReturnValue(of({ success: true, data: mockDelegations, meta: { total: 1 } })),
     createDelegation: vi.fn().mockReturnValue(of({ success: true, data: mockDelegations[0] })),
     deleteDelegation: vi.fn().mockReturnValue(of(null)),
-    getEscalationRules: vi.fn().mockReturnValue(of({ success: true, data: mockRules })),
+    getEscalationRules: vi.fn().mockReturnValue(of({ success: true, data: mockRules, meta: { total: 1 } })),
     createEscalationRule: vi.fn().mockReturnValue(of({ success: true, data: mockRules[0] })),
     deleteEscalationRule: vi.fn().mockReturnValue(of(null)),
     getSlaReport: vi.fn().mockReturnValue(of({ success: true, data: mockSlaReport })),
@@ -177,6 +175,7 @@ describe('WorkflowsComponent', () => {
     fixture = TestBed.createComponent(WorkflowsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 50));
   });
 
   it('initializes component and loads pending inbox tasks', () => {
@@ -201,6 +200,22 @@ describe('WorkflowsComponent', () => {
     });
     expect(component.decisionModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
+  });
+
+  it('sends the process filter of the inbox as definition_code and the server keys of the calculated columns', async () => {
+    component.onTaskCodeChange('purchase_approval');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockWorkflowApi.getMyTasks).toHaveBeenLastCalledWith(
+      expect.objectContaining({ definition_code: 'purchase_approval', page: 1 }),
+    );
+
+    const keys = Object.fromEntries(
+      (component as unknown as { taskColumns(): { key: string; serverKey?: string }[] }).taskColumns().map((c) => [c.key, c.serverKey ?? c.key]),
+    );
+    expect(keys['workflow_name']).toBe('instance.definition.name');
+    expect(keys['node_name']).toBe('node.name');
+    expect(keys['initiator_name']).toBe('instance.creator.name');
+    expect(keys['state']).toBe('state');
   });
 
   it('navigates to instances tab, starts a workflow, and inspects audit hash verification', () => {
@@ -262,8 +277,8 @@ describe('WorkflowsComponent', () => {
 
   it('navigates to delegations tab, manages delegations, and views SLA report', () => {
     component.onTabChange(3);
-    expect(mockWorkflowApi.getDelegations).toHaveBeenCalled();
-    expect(mockWorkflowApi.getEscalationRules).toHaveBeenCalled();
+    expect(mockWorkflowApi.getDelegations).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
+    expect(mockWorkflowApi.getEscalationRules).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
 
     component.openCreateDelegationModal();
     const year = new Date().getFullYear() + 1;

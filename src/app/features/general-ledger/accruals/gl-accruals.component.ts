@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -9,28 +9,32 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   Accrual,
   AccrualType,
   applyServerErrors,
   AuthStore,
   CreateAccrualPayload,
+  FetchGridModel,
   GeneralLedgerApiService,
   I18nService,
   PermissionsService,
+  QueryFilterParams,
 } from '@core';
-import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+
+interface AccrualGridFilter extends QueryFilterParams {
+  accrual_type?: string;
+}
 
 @Component({
   selector: 'app-gl-accruals',
   styleUrl: './gl-accruals.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -43,14 +47,13 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
     NzInputNumberModule,
     NzModalModule,
     NzSelectModule,
-    NzTableModule,
     GlErrorAlertComponent,
     MoneyPipe,
     TranslatePipe,
   ],
   templateUrl: './gl-accruals.component.html',
 })
-export class GlAccrualsComponent implements OnInit {
+export class GlAccrualsComponent {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly destroyRef = inject(DestroyRef);
@@ -61,8 +64,7 @@ export class GlAccrualsComponent implements OnInit {
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
   protected readonly types: AccrualType[] = ['accrued_revenue', 'accrued_expense', 'prepaid_expense', 'deferred_revenue'];
-  protected readonly items = signal<Accrual[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<Accrual, AccrualGridFilter>((query) => this.api.getAccruals(query));
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly error = signal<unknown>(null);
@@ -81,30 +83,40 @@ export class GlAccrualsComponent implements OnInit {
     cost_center_id: this.fb.control(''),
   });
 
+  private readonly typeTpl = viewChild<TemplateRef<{ $implicit: Accrual; value: unknown }>>('typeTpl');
+  private readonly coverageTpl = viewChild<TemplateRef<{ $implicit: Accrual; value: unknown }>>('coverageTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: Accrual; value: unknown }>>('totalTpl');
+  private readonly amountTpl = viewChild<TemplateRef<{ $implicit: Accrual; value: unknown }>>('amountTpl');
+  private readonly daysTpl = viewChild<TemplateRef<{ $implicit: Accrual; value: unknown }>>('daysTpl');
+
+  protected readonly columns = computed<TableColumnDef<Accrual>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      {
+        key: 'accrual_type',
+        header: 'GL.ACCRUAL_TYPE',
+        valueLabel: (value) => this.i18n.translate('GL.ACCRUAL_' + value.toUpperCase()),
+        customCellTemplate: this.typeTpl(),
+      },
+      { key: 'description', header: 'GL.COL_DESCRIPTION' },
+      { key: 'coverage_start', header: 'GL.COVERAGE', customCellTemplate: this.coverageTpl() },
+      { key: 'cutoff_date', header: 'GL.CUTOFF_DATE' },
+      { key: 'total_amount', header: 'GL.ACCRUAL_TOTAL', align: 'right', customCellTemplate: this.totalTpl() },
+      { key: 'amount', header: 'GL.ACCRUAL_AMOUNT', align: 'right', customCellTemplate: this.amountTpl() },
+      { key: 'accrued_days', header: 'GL.ACCRUAL_DAYS', customCellTemplate: this.daysTpl() },
+      { key: 'reversal_date', header: 'GL.REVERSAL_DATE' },
+    ];
+  });
+
   constructor() {
     // The API requires coverage_end after coverage_start.
     revalidateOnStartChange(this.form, 'coverage_start', 'coverage_end', this.destroyRef);
-  }
-
-  ngOnInit(): void {
     this.lookups.load();
-    this.load();
   }
 
   protected setType(type: AccrualType | null): void {
     this.typeFilter.set(type);
-    this.load();
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getAccruals({ accrual_type: this.typeFilter() ?? undefined }).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.setFilter({ accrual_type: type ?? undefined });
   }
 
   protected openCreate(): void {
@@ -137,7 +149,7 @@ export class GlAccrualsComponent implements OnInit {
         this.saving.set(false);
         this.modalOpen.set(false);
         this.message.success(this.i18n.translate('GL.ACCRUAL_CREATED'));
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);

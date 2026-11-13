@@ -63,13 +63,13 @@
               nz-input
               [placeholder]="'hrmEmp.lblCercaNomeEmailOMatricola' | translate"
               [ngModel]="employeesSearch()"
-              (ngModelChange)="employeesSearch.set($event); loadEmployees(1)"
+              (ngModelChange)="setEmployeesSearch($event)"
             />
           </nz-input-wrapper>
 
           <nz-select
             [ngModel]="employeesStatusFilter()"
-            (ngModelChange)="employeesStatusFilter.set($event); loadEmployees(1)"
+            (ngModelChange)="setEmployeesStatus($event)"
             nzPlaceHolder="Tutti gli stati"
             nzAllowClear
             class="w-field-sm"
@@ -80,7 +80,7 @@
             <nz-option nzValue="terminated" [nzLabel]="'hrmEmp.lblCessato' | translate"></nz-option>
           </nz-select>
 
-          <button nz-button nzType="default" (click)="loadEmployees(employeesPage())">
+          <button nz-button nzType="default" (click)="employeesGrid.reload()">
             <span nz-icon nzType="reload"></span>
           </button>
         </div>
@@ -90,73 +90,50 @@
         </button>
       </div>
 
-      <nz-table
-        #empTable
-        [nzData]="employees()"
-        [nzLoading]="loadingEmployees()"
-        [nzFrontPagination]="false"
-        [nzTotal]="employeesTotal()"
-        [nzPageIndex]="employeesPage()"
-        [nzPageSize]="15"
-        (nzPageIndexChange)="loadEmployees($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'employee_number' | gridSort" [nzFilters]="'employee_number' | gridFilterList: empTable.nzData" [nzFilterFn]="'employee_number' | gridFilterFn">{{ 'hrmEmp.lblMatricola' | translate }}</th>
-            <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: empTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'work_email' | gridSort" [nzFilters]="'work_email' | gridFilterList: empTable.nzData" [nzFilterFn]="'work_email' | gridFilterFn">{{ 'hrmEmp.lblEmailAziendale' | translate }}</th>
-            <th [nzSortFn]="'employment_type' | gridSort" [nzFilters]="'employment_type' | gridFilterList: empTable.nzData" [nzFilterFn]="'employment_type' | gridFilterFn">{{ 'hrmEmp.lblTipoContratto' | translate }}</th>
-            <th [nzSortFn]="'employment_status' | gridSort" [nzFilters]="'employment_status' | gridFilterList: empTable.nzData" [nzFilterFn]="'employment_status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'base_annual_salary' | gridSort" [nzFilters]="'base_annual_salary' | gridFilterList: empTable.nzData" [nzFilterFn]="'base_annual_salary' | gridFilterFn">{{ 'hrmEmp.lblRalRetribuzione' | translate }}</th>
-            <th [nzSortFn]="'hire_date' | gridSort" [nzFilters]="'hire_date' | gridFilterList: empTable.nzData" [nzFilterFn]="'hire_date' | gridFilterFn">{{ 'hrmEmp.lblDataAssunzione' | translate }}</th>
-            <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (e of empTable.data; track e.id) {
-            <tr>
-              <td><strong>{{ e.employee_number }}</strong></td>
-              <td>
-                <div class="font-semibold">{{ e.full_name }}</div>
-                <div class="text-xs text-muted">{{ e.position_name || e.department_name || 'Generale' }}</div>
-              </td>
-              <td>{{ e.work_email }}</td>
-              <td><nz-tag>{{ e.employment_type }}</nz-tag></td>
-              <td>
-                <nz-tag [nzColor]="getEmploymentStatusColor(e.employment_status)">
-                  {{ e.employment_status | uppercase }}
-                </nz-tag>
-              </td>
-              <td class="text-right font-medium">
-                {{ e.base_annual_salary | money: (e.currency || 'EUR') }}
-              </td>
-              <td>{{ e.hire_date | date: 'dd/MM/yyyy' }}</td>
-              <td class="text-center">
-                <button nz-button nzType="link" nzSize="small" (click)="openEmployeeFile(e)">
-                  {{ 'hrmEmp.openFile' | translate }}
-                </button>
-                @if (e.employment_status === 'probation') {
-                  <button nz-button nzType="link" nzSize="small" (click)="completeProbation(e)">
-                    {{ 'hrmEmp.lblConfermaProva' | translate }}
-                  </button>
-                }
-                @if (e.employment_status === 'active') {
-                  <button nz-button nzType="link" nzSize="small" (click)="promoteEmployee(e)">
-                    {{ 'hrmEmp.lblPromuovi' | translate }}
-                  </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="terminateEmployee(e)">
-                    {{ 'hrmEmp.lblTermina' | translate }}
-                  </button>
-                }
-                @if (e.employment_status === 'terminated') {
-                  <span class="text-muted text-xs">{{ 'hrmEmp.lblCessato' | translate }}</span>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="employeesGrid"
+        [columns]="employeeColumns()"
+        [actionsTemplate]="employeeActionsTpl"
+        [scroll]="{}"
+        exportFileName="employees"
+      />
+
+      <ng-template #employeeNumberTpl let-e><strong>{{ e.employee_number }}</strong></ng-template>
+      <ng-template #employeeNameTpl let-e>
+        <div class="font-semibold">{{ e.full_name }}</div>
+        <div class="text-xs text-muted">{{ e.position_name || e.department_name || 'Generale' }}</div>
+      </ng-template>
+      <ng-template #employmentTypeTpl let-e><nz-tag>{{ e.employment_type }}</nz-tag></ng-template>
+      <ng-template #employmentStatusTpl let-e>
+        <nz-tag [nzColor]="getEmploymentStatusColor(e.employment_status)">
+          {{ e.employment_status | uppercase }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #salaryTpl let-e>
+        <span class="font-medium">{{ e.base_annual_salary | money: (e.currency || 'EUR') }}</span>
+      </ng-template>
+      <ng-template #hireDateTpl let-e>{{ e.hire_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #employeeActionsTpl let-e>
+        <button nz-button nzType="link" nzSize="small" (click)="openEmployeeFile(e)">
+          {{ 'hrmEmp.openFile' | translate }}
+        </button>
+        @if (e.employment_status === 'probation') {
+          <button nz-button nzType="link" nzSize="small" (click)="completeProbation(e)">
+            {{ 'hrmEmp.lblConfermaProva' | translate }}
+          </button>
+        }
+        @if (e.employment_status === 'active') {
+          <button nz-button nzType="link" nzSize="small" (click)="promoteEmployee(e)">
+            {{ 'hrmEmp.lblPromuovi' | translate }}
+          </button>
+          <button nz-button nzType="link" nzDanger nzSize="small" (click)="terminateEmployee(e)">
+            {{ 'hrmEmp.lblTermina' | translate }}
+          </button>
+        }
+        @if (e.employment_status === 'terminated') {
+          <span class="text-muted text-xs">{{ 'hrmEmp.lblCessato' | translate }}</span>
+        }
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 2: FERIE E PERMESSI -->
@@ -166,67 +143,46 @@
         <button nz-button nzType="primary" (click)="openLeaveModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        #leavesTable
-        [nzData]="leaveRequests()"
-        [nzLoading]="loadingLeaves()"
-        [nzFrontPagination]="false"
-        [nzTotal]="leavesTotal()"
-        [nzPageIndex]="leavesPage()"
-        [nzPageSize]="15"
-        (nzPageIndexChange)="loadLeaveRequests($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'request_number' | gridSort" [nzFilters]="'request_number' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'request_number' | gridFilterFn">{{ 'hrmEmp.lblNRichiesta' | translate }}</th>
-            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblIdDipendente' | translate }}</th>
-            <th [nzSortFn]="'leave_type_name' | gridSort" [nzFilters]="'leave_type_name' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'leave_type_name' | gridFilterFn">{{ 'hrmEmp.lblTipologia' | translate }}</th>
-            <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'hrmEmp.lblDataInizio' | translate }}</th>
-            <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'hrmEmp.lblDataFine' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmEmp.lblOreGiorni' | translate }}</th>
-            <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'hrmEmp.lblMotivazione' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: leavesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (l of leavesTable.data; track l.id) {
-            <tr>
-              <td><strong>{{ l.request_number }}</strong></td>
-              <td>{{ l.employee_name || l.employee_id }}</td>
-              <td><nz-tag nzColor="blue">{{ l.leave_type_name || l.leave_type_id }}</nz-tag></td>
-              <td>{{ l.start_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ l.end_date | date: 'dd/MM/yyyy' }}</td>
-              <td class="text-right font-medium">{{ l.total_hours }}h ({{ l.total_days }} gg)</td>
-              <td>{{ l.reason || '-' }}</td>
-              <td>
-                <nz-tag [nzColor]="getLeaveStatusColor(l.status)">
-                  {{ l.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td class="text-center">
-                @if (l.status === 'pending') {
-                  <button nz-button nzType="link" nzSize="small" (click)="approveLeave(l)">
-                    {{ 'hrmEmp.lblApprova' | translate }}
-                  </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectLeave(l)">
-                    {{ 'hrmEmp.lblRifiuta' | translate }}
-                  </button>
-                } @else if (l.status === 'approved') {
-                  <app-reason-button
-                    labelKey="hrmLeave.cancelRequest"
-                    [danger]="true"
-                    (confirmed)="cancelLeave(l, $event)"
-                  />
-                } @else {
-                  <span class="text-muted text-xs">{{ 'hrmEmp.lblDefinito' | translate }}</span>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="leavesGrid"
+        [columns]="leaveColumns()"
+        [actionsTemplate]="leaveActionsTpl"
+        [scroll]="{}"
+        exportFileName="leave-requests"
+      />
+
+      <ng-template #leaveNumberTpl let-l><strong>{{ l.request_number }}</strong></ng-template>
+      <ng-template #leaveEmployeeTpl let-l>{{ l.employee_name || l.employee_id }}</ng-template>
+      <ng-template #leaveTypeTpl let-l><nz-tag nzColor="blue">{{ l.leave_type_name || l.leave_type_id }}</nz-tag></ng-template>
+      <ng-template #leaveStartTpl let-l>{{ l.start_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #leaveEndTpl let-l>{{ l.end_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #leaveHoursTpl let-l>
+        <span class="font-medium">{{ l.total_hours }}h ({{ l.total_days }} gg)</span>
+      </ng-template>
+      <ng-template #leaveReasonTpl let-l>{{ l.reason || '-' }}</ng-template>
+      <ng-template #leaveStatusTpl let-l>
+        <nz-tag [nzColor]="getLeaveStatusColor(l.status)">
+          {{ l.status | uppercase }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #leaveActionsTpl let-l>
+        @if (l.status === 'pending') {
+          <button nz-button nzType="link" nzSize="small" (click)="approveLeave(l)">
+            {{ 'hrmEmp.lblApprova' | translate }}
+          </button>
+          <button nz-button nzType="link" nzDanger nzSize="small" (click)="rejectLeave(l)">
+            {{ 'hrmEmp.lblRifiuta' | translate }}
+          </button>
+        } @else if (l.status === 'approved') {
+          <app-reason-button
+            labelKey="hrmLeave.cancelRequest"
+            [danger]="true"
+            (confirmed)="cancelLeave(l, $event)"
+          />
+        } @else {
+          <span class="text-muted text-xs">{{ 'hrmEmp.lblDefinito' | translate }}</span>
+        }
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: PRESENZE & TIMESHEET -->
@@ -238,58 +194,35 @@
         </button>
       </div>
 
-      <nz-table
-        #tsTable
-        [nzData]="timesheets()"
-        [nzLoading]="loadingTimesheets()"
-        [nzFrontPagination]="false"
-        [nzTotal]="timesheetsTotal()"
-        [nzPageIndex]="timesheetsPage()"
-        [nzPageSize]="15"
-        (nzPageIndexChange)="loadTimesheets($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'timesheet_number' | gridSort" [nzFilters]="'timesheet_number' | gridFilterList: tsTable.nzData" [nzFilterFn]="'timesheet_number' | gridFilterFn">{{ 'hrmEmp.lblNRapporto' | translate }}</th>
-            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: tsTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'work_date' | gridSort" [nzFilters]="'work_date' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_date' | gridFilterFn">{{ 'hrmEmp.lblDataLavorativa' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'regular_hours' | gridSort" [nzFilters]="'regular_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'regular_hours' | gridFilterFn">{{ 'hrmEmp.lblOreOrdinarie' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'overtime_hours' | gridSort" [nzFilters]="'overtime_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'overtime_hours' | gridFilterFn">{{ 'hrmEmp.lblStraordinari' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmEmp.lblTotaleOre' | translate }}</th>
-            <th class="text-right" [nzSortFn]="'billable_hours' | gridSort" [nzFilters]="'billable_hours' | gridFilterList: tsTable.nzData" [nzFilterFn]="'billable_hours' | gridFilterFn">{{ 'hrmEmp.lblFatturabili' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (t of tsTable.data; track t.id) {
-            <tr>
-              <td><strong>{{ t.timesheet_number }}</strong></td>
-              <td>{{ t.employee_name || t.employee_id }}</td>
-              <td>{{ t.work_date | date: 'dd/MM/yyyy' }}</td>
-              <td class="text-right font-medium">{{ t.regular_hours }} h</td>
-              <td class="text-right text-orange-600">{{ t.overtime_hours }} h</td>
-              <td class="text-right font-bold">{{ t.total_hours }} h</td>
-              <td class="text-right text-green-600">{{ t.billable_hours }} h</td>
-              <td>
-                <nz-tag [nzColor]="t.status === 'approved' ? 'success' : 'processing'">
-                  {{ t.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td class="text-center">
-                @if (t.status === 'submitted' || t.status === 'draft') {
-                  <button nz-button nzType="link" nzSize="small" (click)="approveTimesheet(t)">
-                    {{ 'hrmEmp.lblApprova' | translate }}
-                  </button>
-                } @else {
-                  <span class="text-muted text-xs">{{ 'hrmEmp.lblConvalidato' | translate }}</span>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="timesheetsGrid"
+        [columns]="timesheetColumns()"
+        [actionsTemplate]="timesheetActionsTpl"
+        [scroll]="{}"
+        exportFileName="timesheets"
+      />
+
+      <ng-template #timesheetNumberTpl let-t><strong>{{ t.timesheet_number }}</strong></ng-template>
+      <ng-template #timesheetEmployeeTpl let-t>{{ t.employee_name || t.employee_id }}</ng-template>
+      <ng-template #timesheetDateTpl let-t>{{ t.work_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #timesheetRegularTpl let-t><span class="font-medium">{{ t.regular_hours }} h</span></ng-template>
+      <ng-template #timesheetOvertimeTpl let-t><span class="text-orange-600">{{ t.overtime_hours }} h</span></ng-template>
+      <ng-template #timesheetTotalTpl let-t><span class="font-bold">{{ t.total_hours }} h</span></ng-template>
+      <ng-template #timesheetBillableTpl let-t><span class="text-green-600">{{ t.billable_hours }} h</span></ng-template>
+      <ng-template #timesheetStatusTpl let-t>
+        <nz-tag [nzColor]="t.status === 'approved' ? 'success' : 'processing'">
+          {{ t.status | uppercase }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #timesheetActionsTpl let-t>
+        @if (t.status === 'submitted' || t.status === 'draft') {
+          <button nz-button nzType="link" nzSize="small" (click)="approveTimesheet(t)">
+            {{ 'hrmEmp.lblApprova' | translate }}
+          </button>
+        } @else {
+          <span class="text-muted text-xs">{{ 'hrmEmp.lblConvalidato' | translate }}</span>
+        }
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 4: PAYROLL & FRONTALIERI IT/CH -->
@@ -298,72 +231,47 @@
         <h4 class="text-base font-semibold">{{ 'hrmEmp.lblElaborazioniCedoliniAndRegimiCrossBorder' | translate }}</h4>
       </div>
 
-      <nz-table
-        #payTable
-        [nzData]="payrollRuns()"
-        [nzLoading]="loadingPayroll()"
-        nzSize="middle"
+      <app-base-table
         class="mb-6"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: payTable.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmEmp.lblPeriodoElaborazione' | translate }}</th>
-            <th [nzSortFn]="'country' | gridSort" [nzFilters]="'country' | gridFilterList: payTable.nzData" [nzFilterFn]="'country' | gridFilterFn">{{ 'hrmEmp.lblNazione' | translate }}</th>
-            <th [nzSortFn]="'employees_count' | gridSort" [nzFilters]="'employees_count' | gridFilterList: payTable.nzData" [nzFilterFn]="'employees_count' | gridFilterFn">{{ 'hrmEmp.lblDipendentiElaborati' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblMonteRetributivoLordo' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblTotaleNettoErogato' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: payTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDataCalcolo' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (pr of payTable.data; track pr.id) {
-            <tr>
-              <td><strong>Mese {{ pr.month }}/{{ pr.year }}</strong></td>
-              <td><nz-tag nzColor="blue">{{ pr.country || 'IT/CH' }}</nz-tag></td>
-              <td>{{ pr.employees_count || '-' }}</td>
-              <td class="text-right font-semibold">
-                {{ pr.total_gross !== null && pr.total_gross !== undefined ? (pr.total_gross | money: 'EUR') : '-' }}
-              </td>
-              <td class="text-right font-bold text-green-600">
-                {{ pr.total_net !== null && pr.total_net !== undefined ? (pr.total_net | money: 'EUR') : '-' }}
-              </td>
-              <td>
-                <nz-tag [nzColor]="pr.status === 'paid' ? 'success' : 'processing'">
-                  {{ pr.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td>{{ pr.created_at ? (pr.created_at | date: 'dd/MM/yyyy') : '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+        [grid]="payrollGrid"
+        [columns]="payrollColumns()"
+        [scroll]="{}"
+        exportFileName="payroll-runs"
+      />
+
+      <ng-template #payrollPeriodTpl let-pr><strong>Mese {{ pr.month }}/{{ pr.year }}</strong></ng-template>
+      <ng-template #payrollCountryTpl let-pr><nz-tag nzColor="blue">{{ pr.country || 'IT/CH' }}</nz-tag></ng-template>
+      <ng-template #payrollGrossTpl let-pr>
+        <span class="font-semibold">{{ pr.total_gross !== null && pr.total_gross !== undefined ? (pr.total_gross | money: 'EUR') : '-' }}</span>
+      </ng-template>
+      <ng-template #payrollNetTpl let-pr>
+        <span class="font-bold text-green-600">{{ pr.total_net !== null && pr.total_net !== undefined ? (pr.total_net | money: 'EUR') : '-' }}</span>
+      </ng-template>
+      <ng-template #payrollStatusTpl let-pr>
+        <nz-tag [nzColor]="pr.status === 'Final' || pr.status === 'Approved' ? 'success' : 'processing'">
+          {{ pr.status | uppercase }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #payrollDateTpl let-pr>{{ pr.created_at ? (pr.created_at | date: 'dd/MM/yyyy') : '-' }}</ng-template>
 
       <nz-divider nzText="Lavoratori Frontalieri (Accordo Fiscale IT/CH)"></nz-divider>
 
-      <nz-table
-        #frTable
-        [nzData]="frontierWorkers()"
-        [nzLoading]="loadingFrontier()"
-        nzSize="middle"
-      >
+      <nz-table #frTable [nzData]="frontierWorkers()" [nzLoading]="loadingFrontier()" nzSize="middle">
         <thead>
           <tr>
             <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: frTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th [nzSortFn]="'italian_municipality' | gridSort" [nzFilters]="'italian_municipality' | gridFilterList: frTable.nzData" [nzFilterFn]="'italian_municipality' | gridFilterFn">{{ 'hrmEmp.lblComuneItalianoDiResidenza' | translate }}</th>
-            <th [nzSortFn]="'canton' | gridSort" [nzFilters]="'canton' | gridFilterList: frTable.nzData" [nzFilterFn]="'canton' | gridFilterFn">{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
-            <th [nzSortFn]="'tax_regime' | gridSort" [nzFilters]="'tax_regime' | gridFilterList: frTable.nzData" [nzFilterFn]="'tax_regime' | gridFilterFn">{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: frTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'work_canton' | gridSort" [nzFilters]="'work_canton' | gridFilterList: frTable.nzData" [nzFilterFn]="'work_canton' | gridFilterFn">{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
+            <th [nzSortFn]="'regime' | gridSort" [nzFilters]="'regime' | gridFilterList: frTable.nzData" [nzFilterFn]="'regime' | gridFilterFn">{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'nights_away' | gridSort" [nzFilters]="'nights_away' | gridFilterList: frTable.nzData" [nzFilterFn]="'nights_away' | gridFilterFn">{{ 'hrmCompliance.frontier.nightsAway' | translate }}</th>
           </tr>
         </thead>
         <tbody>
-          @for (fw of frTable.data; track fw.id) {
+          @for (fw of frTable.data; track fw.employee_id) {
             <tr>
               <td><strong>{{ fw.employee_name || fw.employee_id }}</strong></td>
-              <td>{{ fw.italian_municipality || 'Fascia di frontiera' }}</td>
-              <td><nz-tag nzColor="red">{{ fw.canton || 'TI' }}</nz-tag></td>
-              <td><nz-tag nzColor="purple">{{ fw.tax_regime || 'Nuovo Accordo 2024' }}</nz-tag></td>
-              <td><nz-tag nzColor="success">{{ fw.status | uppercase }}</nz-tag></td>
+              <td><nz-tag nzColor="red">{{ fw.work_canton || '-' }}</nz-tag></td>
+              <td><nz-tag nzColor="purple">{{ fw.regime }}</nz-tag></td>
+              <td class="text-right">{{ fw.nights_away }}</td>
             </tr>
           }
         </tbody>

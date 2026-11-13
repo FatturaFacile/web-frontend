@@ -46,7 +46,7 @@ describeApiCases('CrmApiService (accounts, activities, segments, campaigns, repo
   { name: 'getCampaignById', call: (s) => s.getCampaignById('cp1'), method: 'GET', path: '/crm/campaigns/cp1' },
   { name: 'createCampaign', call: (s) => s.createCampaign({ name: 'Spring', status: 'planned' }), method: 'POST', path: '/crm/campaigns', body: { name: 'Spring', status: 'planned' } },
   { name: 'getCampaignRoi', call: (s) => s.getCampaignRoi('cp1'), method: 'GET', path: '/crm/campaigns/cp1/roi' },
-  { name: 'getCampaignMembers', call: (s) => s.getCampaignMembers('cp1', 'sent'), method: 'GET', path: '/crm/campaigns/cp1/members', params: { status: 'sent' } },
+  { name: 'getCampaignMembers', call: (s) => s.getCampaignMembers('cp1', { status: 'sent' }), method: 'GET', path: '/crm/campaigns/cp1/members', params: { status: 'sent' } },
   { name: 'addCampaignMembers', call: (s) => s.addCampaignMembers('cp1', { segment_id: 's1' }), method: 'POST', path: '/crm/campaigns/cp1/members', body: { segment_id: 's1' } },
   { name: 'removeCampaignMember', call: (s) => s.removeCampaignMember('cp1', 'm1'), method: 'DELETE', path: '/crm/campaigns/cp1/members/m1' },
   { name: 'sendCampaign', call: (s) => s.sendCampaign('cp1', { subject: 'Hi', body: 'Hello' }), method: 'POST', path: '/crm/campaigns/cp1/send', body: { subject: 'Hi', body: 'Hello' } },

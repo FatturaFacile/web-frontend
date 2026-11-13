@@ -59,7 +59,7 @@ describe('SubscriptionsComponent', () => {
   const mockContracts: SubscriptionContractResource[] = [
     {
       id: 'contract-1',
-      contract_number: 'SUB-2026-001',
+      subscription_number: 'SUB-2026-001',
       name: 'Alpha Plan',
       customer_id: 'cust-1',
       customer_name: 'Alpha SA',
@@ -138,24 +138,29 @@ describe('SubscriptionsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads metrics, plans, and contracts on initialization', () => {
+  const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
+
+  it('loads metrics, plans, and contracts on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockSubApi.getMetrics).toHaveBeenCalled();
     expect(mockSubApi.getPlans).toHaveBeenCalled();
     expect(mockSubApi.getContracts).toHaveBeenCalled();
     expect(component.metrics()).toEqual(mockMetrics);
     expect(component.plans()).toEqual(mockPlans);
-    expect(component.contracts()).toEqual(mockContracts);
-    expect(component.total()).toBe(1);
+    expect(component['grid'].items()).toEqual(mockContracts);
+    expect(component['grid'].totalCount()).toBe(1);
   });
 
-  it('filters contracts on search query change', () => {
+  it('filters contracts on search query change', async () => {
     fixture.detectChanges();
+    await settle();
     const event = { target: { value: 'Alpha' } } as unknown as Event;
     component.onSearch(event);
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(component.searchTerm()).toBe('Alpha');
+    expect(component['grid'].filterParams().search).toBe('Alpha');
     expect(mockSubApi.getContracts).toHaveBeenCalledWith(
       expect.objectContaining({ search: 'Alpha', page: 1 }),
     );

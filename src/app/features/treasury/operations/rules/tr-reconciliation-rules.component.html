@@ -3,46 +3,25 @@
   @if (canWrite) {
     <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
   }
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th nzAlign="right" [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: table.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'TR.PRIORITY' | translate }}</th>
-        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'TR.NAME' | translate }}</th>
-        <th>{{ 'TR.CATEGORY' | translate }}</th>
-        <th>{{ 'TR.LEDGER_ACCOUNT_CODE' | translate }}</th>
-        <th>{{ 'TR.STATUS' | translate }}</th>
-        <th>{{ 'TR.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (rule of table.data; track rule.id) {
-        <tr>
-          <td nzAlign="right">{{ rule.priority }}</td>
-          <td>{{ rule.name }}</td>
-          <td>{{ 'TR.CATEGORY_' + rule.category.toUpperCase() | translate }}</td>
-          <td>{{ rule.ledger_account_code ?? '' }}</td>
-          <td>
-            <nz-tag [nzColor]="rule.is_active ? 'green' : 'default'">{{ (rule.is_active ? 'TR.ACTIVE' : 'TR.INACTIVE') | translate }}</nz-tag>
-          </td>
-          <td>
-            @if (canWrite) {
-              <button nz-button nzSize="small" type="button" (click)="openModal(rule)" appIconAction="edit"></button>
-              <button
-                nz-button
-                nzSize="small"
-                nzDanger
-                type="button"
-                nz-popconfirm
-                [nzPopconfirmTitle]="'TR.CONFIRM_DELETE' | translate"
-                (nzOnConfirm)="remove(rule)"
-                appIconAction="delete"
-              ></button>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{ x: '800px' }" [exportFileName]="'reconciliation-rules'" />
+  <ng-template #stateTpl let-rule>
+    <nz-tag [nzColor]="rule.is_active ? 'green' : 'default'">{{ (rule.is_active ? 'TR.ACTIVE' : 'TR.INACTIVE') | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-rule>
+    @if (canWrite) {
+      <button nz-button nzSize="small" type="button" (click)="openModal(rule)" appIconAction="edit"></button>
+      <button
+        nz-button
+        nzSize="small"
+        nzDanger
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'TR.CONFIRM_DELETE' | translate"
+        (nzOnConfirm)="remove(rule)"
+        appIconAction="delete"
+      ></button>
+    }
+  </ng-template>
 </nz-card>
 
 <nz-modal

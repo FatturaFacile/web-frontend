@@ -5,8 +5,10 @@ import { Observable } from 'rxjs';
 import {
   AbsencePlanEntry,
   ApiResponse,
+  PaginatedResponse,
   PlaceShiftPayload,
   PlannedShift,
+  QueryFilterParams,
   ShiftBoard,
   ShiftExceptionPayload,
   ShiftPeriodParams,
@@ -26,8 +28,10 @@ export class HrShiftApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/hr`;
 
-  getShiftTypes(): Observable<ApiResponse<ShiftTypeRecord[]>> {
-    return this.http.get<ApiResponse<ShiftTypeRecord[]>>(`${this.base}/shift-types`);
+  getShiftTypes(params?: QueryFilterParams): Observable<PaginatedResponse<ShiftTypeRecord>> {
+    return this.http.get<PaginatedResponse<ShiftTypeRecord>>(`${this.base}/shift-types`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createShiftType(payload: ShiftTypePayload): Observable<ApiResponse<ShiftTypeRecord>> {
@@ -38,8 +42,10 @@ export class HrShiftApiService {
     return this.http.put<ApiResponse<ShiftTypeRecord>>(`${this.base}/shift-types/${id}`, payload);
   }
 
-  getShiftSequences(): Observable<ApiResponse<ShiftSequenceRecord[]>> {
-    return this.http.get<ApiResponse<ShiftSequenceRecord[]>>(`${this.base}/shift-sequences`);
+  getShiftSequences(params?: QueryFilterParams): Observable<PaginatedResponse<ShiftSequenceRecord>> {
+    return this.http.get<PaginatedResponse<ShiftSequenceRecord>>(`${this.base}/shift-sequences`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createShiftSequence(payload: ShiftSequencePayload): Observable<ApiResponse<ShiftSequenceRecord>> {

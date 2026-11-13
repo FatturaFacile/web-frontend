@@ -33,6 +33,13 @@ const closing: CashRegisterClosing = {
   notes: null,
 };
 
+const page = (data: unknown[]) => ({
+  success: true,
+  message: '',
+  data,
+  meta: { current_page: 1, from: 1, last_page: 1, per_page: 10, to: data.length, total: data.length },
+});
+
 describe('TrCashRegistersComponent', () => {
   const api = {
     getCashRegisters: vi.fn(),
@@ -46,10 +53,10 @@ describe('TrCashRegistersComponent', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     TestBed.resetTestingModule();
-    api.getCashRegisters.mockReturnValue(of({ success: true, message: '', data: [register] }));
+    api.getCashRegisters.mockReturnValue(of(page([register])));
     api.getCashRegister.mockReturnValue(of({ success: true, message: '', data: register }));
-    api.getCashRegisterMovements.mockReturnValue(of({ success: true, message: '', data: [] }));
-    api.getCashRegisterClosings.mockReturnValue(of({ success: true, message: '', data: [closing] }));
+    api.getCashRegisterMovements.mockReturnValue(of(page([])));
+    api.getCashRegisterClosings.mockReturnValue(of(page([closing])));
     api.closeCashRegisterDay.mockReturnValue(of({ success: true, message: '', data: closing }));
     api.addCashRegisterMovement.mockReturnValue(of({ success: true, message: '', data: {} }));
     await TestBed.configureTestingModule({

@@ -7,7 +7,7 @@
     <label for="chg-contract">{{ 'SUBX.CHANGES.CONTRACT' | translate }}</label>
     <nz-select nzId="chg-contract" class="field" nzShowSearch nzAllowClear [ngModel]="contractId" (ngModelChange)="selectContract($event)">
       @for (c of contracts(); track c.id) {
-        <nz-option [nzValue]="c.id" [nzLabel]="c.contract_number + ' - ' + (c.customer_name ?? '') + ' (' + c.status + ')'"></nz-option>
+        <nz-option [nzValue]="c.id" [nzLabel]="c.subscription_number + ' - ' + (c.customer_name ?? '') + ' (' + c.status + ')'"></nz-option>
       }
     </nz-select>
   </div>

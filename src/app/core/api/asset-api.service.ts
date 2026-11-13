@@ -79,8 +79,10 @@ export class AssetApiService {
     return this.http.get<ApiResponse<AssetTagData>>(`${this.base}/assets/${id}/tag`);
   }
 
-  getDepreciationSchedules(id: string): Observable<ApiResponse<DepreciationScheduleResource[]>> {
-    return this.http.get<ApiResponse<DepreciationScheduleResource[]>>(`${this.base}/assets/${id}/depreciation-schedules`);
+  getDepreciationSchedules(id: string, params?: QueryFilterParams): Observable<PaginatedResponse<DepreciationScheduleResource>> {
+    return this.http.get<PaginatedResponse<DepreciationScheduleResource>>(`${this.base}/assets/${id}/depreciation-schedules`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   simulateDepreciation(payload: RunDepreciationPayload): Observable<ApiResponse<unknown>> {

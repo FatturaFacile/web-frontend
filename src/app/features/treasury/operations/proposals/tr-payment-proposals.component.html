@@ -6,7 +6,7 @@
       [attr.aria-label]="'TR.STATUS' | translate"
       [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
       [(ngModel)]="statusFilter"
-      (ngModelChange)="load()"
+      (ngModelChange)="onStatusChange($event)"
     >
       @for (status of statuses; track status) {
         <nz-option [nzValue]="status" [nzLabel]="'TR.PROPOSAL_STATUS_' + status.toUpperCase() | translate" />
@@ -27,49 +27,25 @@
     </ng-template>
   }
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th [nzSortFn]="'proposal_number' | gridSort" [nzFilters]="'proposal_number' | gridFilterList: table.nzData" [nzFilterFn]="'proposal_number' | gridFilterFn">{{ 'TR.PROPOSAL_NUMBER' | translate }}</th>
-        <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-        <th [nzSortFn]="'execution_date' | gridSort" [nzFilters]="'execution_date' | gridFilterList: table.nzData" [nzFilterFn]="'execution_date' | gridFilterFn">{{ 'TR.EXECUTION_DATE' | translate }}</th>
-        <th>{{ 'TR.FORMAT' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'item_count' | gridSort" [nzFilters]="'item_count' | gridFilterList: table.nzData" [nzFilterFn]="'item_count' | gridFilterFn">{{ 'TR.ITEMS' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: table.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'TR.TOTAL' | translate }}</th>
-        <th [nzSortFn]="'rejection_reason' | gridSort" [nzFilters]="'rejection_reason' | gridFilterList: table.nzData" [nzFilterFn]="'rejection_reason' | gridFilterFn">{{ 'TR.STATUS' | translate }}</th>
-        <th>{{ 'TR.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (proposal of table.data; track proposal.id) {
-        <tr>
-          <td>{{ proposal.proposal_number }}</td>
-          <td>{{ banks.label(proposal.bank_account_id) }}</td>
-          <td>{{ proposal.execution_date }}</td>
-          <td>{{ 'TR.FORMAT_' + proposal.format.toUpperCase() | translate }}</td>
-          <td nzAlign="right">{{ proposal.item_count }}</td>
-          <td nzAlign="right">{{ proposal.total_amount | money: proposal.currency }}</td>
-          <td>
-            <nz-tag [nzColor]="statusColor(proposal.status)">{{ 'TR.PROPOSAL_STATUS_' + proposal.status.toUpperCase() | translate }}</nz-tag>
-            @if (proposal.rejection_reason) {
-              <div class="muted">{{ proposal.rejection_reason }}</div>
-            }
-          </td>
-          <td>
-            @if (canWrite && proposal.status === 'draft') {
-              @if (proposal.created_by !== userId) {
-                <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(proposal)">{{ 'TR.APPROVE' | translate }}</button>
-              }
-              <button nz-button nzSize="small" nzDanger type="button" (click)="openReject(proposal)">{{ 'TR.REJECT' | translate }}</button>
-            }
-            @if (proposal.status === 'converted' && proposal.payment_batch_id) {
-              <button nz-button nzSize="small" type="button" (click)="downloadPain001(proposal)">{{ 'TR.DOWNLOAD_PAIN001' | translate }}</button>
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{ x: '1100px' }" [exportFileName]="'payment-proposals'" />
+  <ng-template #amountTpl let-proposal>{{ proposal.total_amount | money: proposal.currency }}</ng-template>
+  <ng-template #statusTpl let-proposal>
+    <nz-tag [nzColor]="statusColor(proposal.status)">{{ 'TR.PROPOSAL_STATUS_' + proposal.status.toUpperCase() | translate }}</nz-tag>
+    @if (proposal.rejection_reason) {
+      <div class="muted">{{ proposal.rejection_reason }}</div>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-proposal>
+    @if (canWrite && proposal.status === 'draft') {
+      @if (proposal.created_by !== userId) {
+        <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(proposal)">{{ 'TR.APPROVE' | translate }}</button>
       }
-    </tbody>
-  </nz-table>
+      <button nz-button nzSize="small" nzDanger type="button" (click)="openReject(proposal)">{{ 'TR.REJECT' | translate }}</button>
+    }
+    @if (proposal.status === 'converted' && proposal.payment_batch_id) {
+      <button nz-button nzSize="small" type="button" (click)="downloadPain001(proposal)">{{ 'TR.DOWNLOAD_PAIN001' | translate }}</button>
+    }
+  </ng-template>
 </nz-card>
 
 <nz-modal

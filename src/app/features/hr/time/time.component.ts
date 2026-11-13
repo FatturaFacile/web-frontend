@@ -4,9 +4,8 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage } from '../shared/crud/crud.types';
 import { TimeClosingsComponent } from './time-closings.component';
 import { TimeMealsComponent } from './time-meals.component';
 import { TimePayrollViewComponent } from './time-payroll-view.component';
@@ -93,7 +92,7 @@ export class TimeComponent implements OnInit {
   protected readonly eventsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTime.events',
     canWrite: this.canWrite(),
-    list: () => this.api.getEvents({ per_page: 50 }).pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getEvents(query)),
     create: (payload) => this.api.createEvent(payload as never),
     update: (id, payload) => this.api.updateEvent(id, payload as never),
     remove: (id, reason) => this.api.deleteEvent(id, reason ?? ''),
@@ -102,6 +101,7 @@ export class TimeComponent implements OnInit {
     fields: [
       {
         key: 'employee_id',
+        serverKey: 'user_id',
         labelKey: 'hrmCommon.employee',
         type: 'select',
         createOnly: true,
@@ -143,7 +143,7 @@ export class TimeComponent implements OnInit {
   protected readonly overtimeConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTime.overtimeRules',
     canWrite: this.canWrite(),
-    list: () => this.api.getOvertimeRules().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getOvertimeRules(query)),
     create: (payload) => this.api.createOvertimeRule(payload as never),
     update: (id, payload) => this.api.updateOvertimeRule(id, payload as never),
     remove: (id) => this.api.deleteOvertimeRule(id),
@@ -170,7 +170,7 @@ export class TimeComponent implements OnInit {
   protected readonly auditConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTime.audit',
     canWrite: false,
-    list: () => this.api.getAudit({ per_page: 50 }).pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getAudit(query)),
     fields: [
       { key: 'occurred_at', labelKey: 'hrmCommon.date', type: 'text' },
       { key: 'actor_name', labelKey: 'hrmTime.actor', type: 'text' },
