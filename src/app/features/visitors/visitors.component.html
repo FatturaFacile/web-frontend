@@ -73,12 +73,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'badge_number' | gridSort">{{ 'VISITORS.BADGE' | translate }}</th>
-            <th [nzSortFn]="'visitor.full_name' | gridSort">{{ 'VISITORS.VISITOR' | translate }}</th>
-            <th [nzSortFn]="'visitor.company_name' | gridSort">{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th [nzSortFn]="'host.name' | gridSort">{{ 'VISITORS.HOST' | translate }}</th>
+            <th [nzSortFn]="'badge_number' | gridSort" [nzFilters]="'badge_number' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'badge_number' | gridFilterFn">{{ 'VISITORS.BADGE' | translate }}</th>
+            <th [nzSortFn]="'visitor.full_name' | gridSort" [nzFilters]="'visitor.full_name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'visitor.full_name' | gridFilterFn">{{ 'VISITORS.VISITOR' | translate }}</th>
+            <th [nzSortFn]="'visitor.company_name' | gridSort" [nzFilters]="'visitor.company_name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'visitor.company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'host.name' | gridSort" [nzFilters]="'host.name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'host.name' | gridFilterFn">{{ 'VISITORS.HOST' | translate }}</th>
             <th>{{ 'VISITORS.CHECKED_IN_AT' | translate }}</th>
-            <th [nzSortFn]="'purpose' | gridSort">{{ 'VISITORS.PURPOSE' | translate }}</th>
+            <th [nzSortFn]="'purpose' | gridSort" [nzFilters]="'purpose' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'purpose' | gridFilterFn">{{ 'VISITORS.PURPOSE' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -145,12 +145,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'expected_at' | gridSort">{{ 'VISITORS.EXPECTED_AT' | translate }}</th>
-            <th [nzSortFn]="'visitor.full_name' | gridSort">{{ 'VISITORS.VISITOR' | translate }}</th>
-            <th [nzSortFn]="'visitor.company_name' | gridSort">{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th [nzSortFn]="'host.name' | gridSort">{{ 'VISITORS.HOST' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'VISITORS.STATUS' | translate }}</th>
-            <th [nzSortFn]="'badge_number' | gridSort">{{ 'VISITORS.BADGE' | translate }}</th>
+            <th [nzSortFn]="'expected_at' | gridSort" [nzFilters]="'expected_at' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'expected_at' | gridFilterFn">{{ 'VISITORS.EXPECTED_AT' | translate }}</th>
+            <th [nzSortFn]="'visitor.full_name' | gridSort" [nzFilters]="'visitor.full_name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'visitor.full_name' | gridFilterFn">{{ 'VISITORS.VISITOR' | translate }}</th>
+            <th [nzSortFn]="'visitor.company_name' | gridSort" [nzFilters]="'visitor.company_name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'visitor.company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'host.name' | gridSort" [nzFilters]="'host.name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'host.name' | gridFilterFn">{{ 'VISITORS.HOST' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'VISITORS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'badge_number' | gridSort" [nzFilters]="'badge_number' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'badge_number' | gridFilterFn">{{ 'VISITORS.BADGE' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -255,10 +255,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'full_name' | gridSort">{{ 'VISITORS.NAME' | translate }}</th>
-            <th [nzSortFn]="'company_name' | gridSort">{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th [nzSortFn]="'email' | gridSort">{{ 'VISITORS.EMAIL' | translate }}</th>
-            <th [nzSortFn]="'phone' | gridSort">{{ 'VISITORS.PHONE' | translate }}</th>
+            <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: registryTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'VISITORS.NAME' | translate }}</th>
+            <th [nzSortFn]="'company_name' | gridSort" [nzFilters]="'company_name' | gridFilterList: registryTable.nzData" [nzFilterFn]="'company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'email' | gridSort" [nzFilters]="'email' | gridFilterList: registryTable.nzData" [nzFilterFn]="'email' | gridFilterFn">{{ 'VISITORS.EMAIL' | translate }}</th>
+            <th [nzSortFn]="'phone' | gridSort" [nzFilters]="'phone' | gridFilterList: registryTable.nzData" [nzFilterFn]="'phone' | gridFilterFn">{{ 'VISITORS.PHONE' | translate }}</th>
             <th>{{ 'VISITORS.DOCUMENT' | translate }}</th>
             <th>{{ 'VISITORS.LAST_VISIT' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
@@ -334,11 +334,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'VISITORS.KIOSK_NAME' | translate }}</th>
-            <th [nzSortFn]="'device_key' | gridSort">{{ 'VISITORS.DEVICE_KEY' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'VISITORS.KIOSK_NAME' | translate }}</th>
+            <th [nzSortFn]="'device_key' | gridSort" [nzFilters]="'device_key' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'device_key' | gridFilterFn">{{ 'VISITORS.DEVICE_KEY' | translate }}</th>
             <th>{{ 'VISITORS.STATUS' | translate }}</th>
             <th>{{ 'VISITORS.LAST_SEEN' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'VISITORS.CREATED_AT' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'VISITORS.CREATED_AT' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>

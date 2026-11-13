@@ -24,14 +24,14 @@ import {
   WorkspaceScope,
   TranslateService,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-workspace',
   styleUrl: './workspace.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,

@@ -11,7 +11,7 @@ import {
   PayslipDeliveryResult,
   TreasuryApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -31,7 +31,7 @@ interface AllocationRow {
   styleUrl: './payroll-run-delivery.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -66,10 +66,10 @@ interface AllocationRow {
       <nz-table #batchTable class="mt-2" [nzData]="list" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'batch_reference' | gridSort">{{ 'hrmPayroll.deliver.reference' | translate }}</th>
-            <th [nzSortFn]="'item_count' | gridSort">{{ 'hrmPayroll.deliver.items' | translate }}</th>
-            <th [nzSortFn]="'total_amount' | gridSort">{{ 'hrmPayroll.deliver.total' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'hrmCommon.statusCol' | translate }}</th>
+            <th [nzSortFn]="'batch_reference' | gridSort" [nzFilters]="'batch_reference' | gridFilterList: batchTable.nzData" [nzFilterFn]="'batch_reference' | gridFilterFn">{{ 'hrmPayroll.deliver.reference' | translate }}</th>
+            <th [nzSortFn]="'item_count' | gridSort" [nzFilters]="'item_count' | gridFilterList: batchTable.nzData" [nzFilterFn]="'item_count' | gridFilterFn">{{ 'hrmPayroll.deliver.items' | translate }}</th>
+            <th [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: batchTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'hrmPayroll.deliver.total' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: batchTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmCommon.statusCol' | translate }}</th>
           </tr>
         </thead>
         <tbody>

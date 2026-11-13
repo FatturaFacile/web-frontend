@@ -21,7 +21,7 @@ import {
   LeadScoringRuleType,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const FIELDS = ['title', 'email', 'phone', 'company_name', 'website', 'country', 'estimated_budget', 'status', 'lead_source_code', 'campaign_id'];
 const OPERATORS = ['filled', 'empty', 'equals', 'not_equals', 'contains', 'in', 'gte', 'lte', 'business_email'];
@@ -62,7 +62,7 @@ const emptyDraft = (): RuleDraft => ({
   styleUrl: './scoring-rules.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

@@ -19,6 +19,19 @@
     </div>
 
     <div class="toolbar-right">
+      <nz-select
+        class="group-select"
+        nzAllowClear
+        nzSize="small"
+        data-testid="grid-group-by"
+        [nzPlaceHolder]="label('common.table.groupBy', 'Raggruppa per')"
+        [ngModel]="groupBy()"
+        (ngModelChange)="setGroupBy($event)"
+      >
+        @for (col of groupColumns(); track col.key) {
+          <nz-option [nzLabel]="col.header | translate" [nzValue]="col.key" />
+        }
+      </nz-select>
       @if (exportable()) {
         <button
           nz-button
@@ -107,17 +120,17 @@
   </div>
 
   <!-- Table Skeleton on initial load -->
-  @if (loading() && (!data() || data().length === 0)) {
+  @if (isLoading() && rows().length === 0) {
     <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
   } @else {
     <nz-table
       #nzTable
       [nzData]="displayData()"
       [nzFrontPagination]="false"
-      [nzLoading]="loading()"
-      [nzTotal]="total()"
-      [nzPageIndex]="pageIndex()"
-      [nzPageSize]="pageSize()"
+      [nzLoading]="isLoading()"
+      [nzTotal]="rowTotal()"
+      [nzPageIndex]="currentPage()"
+      [nzPageSize]="currentPageSize()"
       [nzPageSizeOptions]="pageSizeOptions()"
       [nzShowSizeChanger]="showSizeChanger()"
       [nzShowQuickJumper]="showQuickJumper()"
@@ -232,10 +245,23 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of nzTable.data; track getItemKey(item)) {
+        @for (row of viewRows(); track row.kind === 'group' ? 'group:' + row.key + ':' + $index : getItemKey(row.item)) {
+          @if (row.kind === 'group') {
+            <tr class="group-row" data-testid="grid-group-row">
+              <td [attr.colspan]="totalColumnCount()" (click)="toggleGroup(row.key)">
+                <nz-icon [nzType]="row.collapsed ? 'right' : 'down'" />
+                <strong>{{ row.label }}</strong>
+                @if (row.count !== null) {
+                  <span class="group-count">({{ row.count }})</span>
+                }
+              </td>
+            </tr>
+          } @else {
+          @let item = row.item;
           <tr
             class="table-row"
             [class.row-selected]="isItemSelected(item)"
+            [hidden]="row.hidden"
             (click)="onRowClick(item)"
           >
             @if (expandable()) {
@@ -291,6 +317,7 @@
                 [ngTemplateOutletContext]="{ $implicit: item }"
               />
             </tr>
+          }
           }
         }
       </tbody>

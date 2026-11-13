@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { AuthStore, PayrollApiService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -36,7 +36,7 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
   styleUrl: './payroll.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
@@ -80,12 +80,12 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'employee_name' | gridSort">Dipendente</th>
-                <th [nzSortFn]="'permit_type' | gridSort">Permesso</th>
-                <th [nzSortFn]="'valid_until' | gridSort">Scadenza</th>
+                <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: permTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">Dipendente</th>
+                <th [nzSortFn]="'permit_type' | gridSort" [nzFilters]="'permit_type' | gridFilterList: permTable.nzData" [nzFilterFn]="'permit_type' | gridFilterFn">Permesso</th>
+                <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: permTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">Scadenza</th>
                 <th>Giorni Residui</th>
-                <th [nzSortFn]="'severity' | gridSort">Stato</th>
-                <th [nzSortFn]="'message' | gridSort">Messaggio</th>
+                <th [nzSortFn]="'severity' | gridSort" [nzFilters]="'severity' | gridFilterList: permTable.nzData" [nzFilterFn]="'severity' | gridFilterFn">Stato</th>
+                <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: permTable.nzData" [nzFilterFn]="'message' | gridFilterFn">Messaggio</th>
               </tr>
             </thead>
             <tbody>

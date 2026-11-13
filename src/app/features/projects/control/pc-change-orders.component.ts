@@ -9,14 +9,14 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, PermissionsService, ProjectChangeOrder, ProjectControlApiService } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-pc-change-orders',
   styleUrl: './pc-change-orders.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
@@ -25,12 +25,12 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th [nzSortFn]="'order_number' | gridSort">{{ 'PRJ.NUMBER' | translate }}</th>
-          <th [nzSortFn]="'title' | gridSort">{{ 'PRJ.TITLE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'cost_impact_amount' | gridSort">{{ 'PRJ.COST_IMPACT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'revenue_impact_amount' | gridSort">{{ 'PRJ.REVENUE_IMPACT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'schedule_impact_days' | gridSort">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</th>
-          <th [nzSortFn]="'status' | gridSort">{{ 'PRJ.STATUS' | translate }}</th>
+          <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: table.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'PRJ.NUMBER' | translate }}</th>
+          <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'PRJ.TITLE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'cost_impact_amount' | gridSort" [nzFilters]="'cost_impact_amount' | gridFilterList: table.nzData" [nzFilterFn]="'cost_impact_amount' | gridFilterFn">{{ 'PRJ.COST_IMPACT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'revenue_impact_amount' | gridSort" [nzFilters]="'revenue_impact_amount' | gridFilterList: table.nzData" [nzFilterFn]="'revenue_impact_amount' | gridFilterFn">{{ 'PRJ.REVENUE_IMPACT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'schedule_impact_days' | gridSort" [nzFilters]="'schedule_impact_days' | gridFilterList: table.nzData" [nzFilterFn]="'schedule_impact_days' | gridFilterFn">{{ 'PRJ.SCHEDULE_IMPACT' | translate }}</th>
+          <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PRJ.STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>
       </thead>

@@ -22,9 +22,9 @@
   <nz-table [nzScroll]="{ x: '720px' }" #table nzSize="middle" [nzData]="budgets()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'GL.COL_NAME' | translate }}</th>
-        <th [nzSortFn]="'version' | gridSort">{{ 'GL.BUDGET_VERSION' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'GL.STATUS' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'GL.COL_NAME' | translate }}</th>
+        <th [nzSortFn]="'version' | gridSort" [nzFilters]="'version' | gridFilterList: table.nzData" [nzFilterFn]="'version' | gridFilterFn">{{ 'GL.BUDGET_VERSION' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'GL.STATUS' | translate }}</th>
         <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
       </tr>
     </thead>

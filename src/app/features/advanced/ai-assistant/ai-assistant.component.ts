@@ -21,14 +21,14 @@ import {
   AssistantOutcome,
 } from '../../../core/models';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-import { ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-ai-assistant',
   styleUrl: './ai-assistant.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ReactiveFormsModule,
     NzTabsModule,
     NzCardModule,

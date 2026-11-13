@@ -6,7 +6,7 @@ import {
   PayrollComplianceApiService,
   WithholdingTaxParameters,
 } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -21,7 +21,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './frontier-panel.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ActionFormComponent, NzDescriptionsModule, NzTableModule, TranslatePipe],
   template: `
     <h4>{{ 'hrmCompliance.frontier.nightsTitle' | translate }}</h4>
@@ -32,10 +32,10 @@ import { reportHttpError } from '../shared/hr-http.util';
     <nz-table #table [nzData]="commuters()" [nzFrontPagination]="false" nzSize="small">
       <thead>
         <tr>
-          <th [nzSortFn]="'name' | gridSort">{{ 'hrmCommon.name' | translate }}</th>
-          <th [nzSortFn]="'email' | gridSort">Email</th>
-          <th [nzSortFn]="'job_title' | gridSort">{{ 'hrmCompliance.frontier.jobTitle' | translate }}</th>
-          <th [nzSortFn]="'hire_date' | gridSort">{{ 'hrmCompliance.frontier.hireDate' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'hrmCommon.name' | translate }}</th>
+          <th [nzSortFn]="'email' | gridSort" [nzFilters]="'email' | gridFilterList: table.nzData" [nzFilterFn]="'email' | gridFilterFn">Email</th>
+          <th [nzSortFn]="'job_title' | gridSort" [nzFilters]="'job_title' | gridFilterList: table.nzData" [nzFilterFn]="'job_title' | gridFilterFn">{{ 'hrmCompliance.frontier.jobTitle' | translate }}</th>
+          <th [nzSortFn]="'hire_date' | gridSort" [nzFilters]="'hire_date' | gridFilterList: table.nzData" [nzFilterFn]="'hire_date' | gridFilterFn">{{ 'hrmCompliance.frontier.hireDate' | translate }}</th>
         </tr>
       </thead>
       <tbody>

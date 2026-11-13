@@ -17,7 +17,6 @@ import {
   ModalActionsDirective,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
   TranslatePipe,
 } from '@shared';
 import { CycleDeliveryNotesFacade } from '../cycle.facades';
@@ -77,23 +76,15 @@ export class CycleDeliveryNotesComponent {
     this.i18n.currentLanguage();
     return [
       { key: 'ddt_number', header: this.i18n.translate('SC.COMMON.NUMBER'), width: '150px', customCellTemplate: this.numberTpl() },
-      { key: 'contact', header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
+      { key: 'contact', serverKey: 'contact.name', valueGetter: (row) => this.lookups.contactName(row.contact_id, row.contact), header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
       { key: 'date', header: this.i18n.translate('SC.COMMON.DATE'), width: '120px' },
-      { key: 'status', header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
+      { key: 'status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
       { key: 'tracking_number', header: this.i18n.translate('SC.DDT.TRACKING'), width: '180px' },
     ];
   });
 
   constructor() {
     this.lookups.load();
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   protected view(note: CoreDeliveryNote): void {

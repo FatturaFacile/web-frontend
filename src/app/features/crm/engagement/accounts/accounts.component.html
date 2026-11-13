@@ -39,11 +39,10 @@
     [nzPageIndex]="pageIndex()"
     [nzPageSize]="15"
     (nzPageIndexChange)="load($event)"
-    nzSize="middle"
-  >
+    nzSize="middle" #gridTbl15>
     <thead>
       <tr>
-        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl15.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.ACCOUNTS.TIER' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'CRMX.ACCOUNTS.INDUSTRY' | translate }}</th>

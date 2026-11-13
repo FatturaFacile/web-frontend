@@ -7,7 +7,7 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { TreasuryCashPosition, TreasuryKpis, TreasuryOpsApiService } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 interface KpiTile {
   labelKey: string;
@@ -21,7 +21,7 @@ interface KpiTile {
   styleUrl: './tr-kpis.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzStatisticModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
@@ -54,10 +54,10 @@ interface KpiTile {
         <nz-table #bankTable nzSize="small" [nzData]="p.bank_accounts" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th [nzSortFn]="'bank_name' | gridSort">{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'current_balance' | gridSort">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'available_balance' | gridSort">{{ 'TR.AVAILABLE_BALANCE' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'overdraft_limit' | gridSort">{{ 'TR.OVERDRAFT_LIMIT' | translate }}</th>
+              <th [nzSortFn]="'bank_name' | gridSort" [nzFilters]="'bank_name' | gridFilterList: bankTable.nzData" [nzFilterFn]="'bank_name' | gridFilterFn">{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'current_balance' | gridSort" [nzFilters]="'current_balance' | gridFilterList: bankTable.nzData" [nzFilterFn]="'current_balance' | gridFilterFn">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'available_balance' | gridSort" [nzFilters]="'available_balance' | gridFilterList: bankTable.nzData" [nzFilterFn]="'available_balance' | gridFilterFn">{{ 'TR.AVAILABLE_BALANCE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'overdraft_limit' | gridSort" [nzFilters]="'overdraft_limit' | gridFilterList: bankTable.nzData" [nzFilterFn]="'overdraft_limit' | gridFilterFn">{{ 'TR.OVERDRAFT_LIMIT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -74,10 +74,10 @@ interface KpiTile {
         <nz-table #totalTable class="totals-table" nzSize="small" [nzData]="p.totals" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th [nzSortFn]="'currency' | gridSort">{{ 'TR.CURRENCY' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'bank' | gridSort">{{ 'TR.BANK' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'cash' | gridSort">{{ 'TR.CASH' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'total' | gridSort">{{ 'TR.TOTAL' | translate }}</th>
+              <th [nzSortFn]="'currency' | gridSort" [nzFilters]="'currency' | gridFilterList: totalTable.nzData" [nzFilterFn]="'currency' | gridFilterFn">{{ 'TR.CURRENCY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'bank' | gridSort" [nzFilters]="'bank' | gridFilterList: totalTable.nzData" [nzFilterFn]="'bank' | gridFilterFn">{{ 'TR.BANK' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'cash' | gridSort" [nzFilters]="'cash' | gridFilterList: totalTable.nzData" [nzFilterFn]="'cash' | gridFilterFn">{{ 'TR.CASH' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total' | gridSort" [nzFilters]="'total' | gridFilterList: totalTable.nzData" [nzFilterFn]="'total' | gridFilterFn">{{ 'TR.TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

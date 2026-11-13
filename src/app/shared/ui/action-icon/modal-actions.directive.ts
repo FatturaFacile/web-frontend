@@ -17,7 +17,7 @@ import { IconActionDirective } from './icon-action.directive';
 /** Footer of a modal whose buttons are icons: the translated label is the tooltip of the button. */
 @Component({
   selector: 'app-modal-actions-footer',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NzButtonModule, IconActionDirective],
   template: `
     <ng-template #footer>
@@ -45,7 +45,7 @@ export class ModalActionsFooterComponent {
   readonly modal = input.required<NzModalComponent>();
   readonly okAction = input.required<ActionIconName>();
   readonly cancelAction = input.required<ActionIconName>();
-  readonly footer = viewChild.required<TemplateRef<{}>>('footer');
+  readonly footer = viewChild.required<TemplateRef<object>>('footer');
 }
 
 /**
@@ -55,6 +55,7 @@ export class ModalActionsFooterComponent {
  * A modal that sets its own `nzFooter` (also `null`) keeps it.
  */
 @Directive({
+  // eslint-disable-next-line @angular-eslint/directive-selector -- intentionally targets every <nz-modal>
   selector: 'nz-modal',
 })
 export class ModalActionsDirective implements OnInit {

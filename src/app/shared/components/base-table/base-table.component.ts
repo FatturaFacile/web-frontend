@@ -2,7 +2,9 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import {
   Component,
   computed,
+  effect,
   inject,
+  untracked,
   input,
   linkedSignal,
   output,
@@ -10,8 +12,10 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -22,6 +26,7 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { exportXlsx } from '../../utils/export-xlsx';
 import { I18nService } from '@core/i18n/i18n.service';
+import { buildGridRows, GRID_EMPTY, GridModel, GridRow, GridValue } from '@core/state/grid.model';
 import {
   ColumnFilter,
   SortOrder,
@@ -39,6 +44,7 @@ import {
     NgTemplateOutlet,
     FormsModule,
     NzTableModule,
+    NzSelectModule,
     NzDropdownModule,
     NzButtonModule,
     NzIconModule,
@@ -53,7 +59,14 @@ import {
 })
 export class BaseTableComponent<TItem extends object = object> {
   // Inputs
-  readonly data = input.required<TItem[]>();
+  /**
+   * Server-side grid model. When set, the table is fully driven by the server: rows, paging, sorting, column
+   * filters, grouping, the values of the filter lists and the xlsx export all come from the API over the whole
+   * dataset (`data`, `total`, `pageIndex`, `pageSize` and `loading` are then ignored).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the model is generic over the filter params
+  readonly grid = input<GridModel<TItem, any> | undefined>(undefined);
+  readonly data = input<TItem[]>([]);
   readonly columns = input.required<TableColumnDef<TItem>[]>();
   readonly loading = input<boolean>(false);
   readonly total = input<number>(0);
@@ -87,6 +100,13 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly filterChange = output<TableFilterState>();
   readonly rowClick = output<TItem>();
 
+  /** Rows of the current page: from the server model when there is one. */
+  readonly rows = computed<TItem[]>(() => this.grid()?.items() ?? this.data());
+  readonly isLoading = computed(() => this.grid()?.loading() ?? this.loading());
+  readonly rowTotal = computed(() => this.grid()?.totalCount() ?? this.total());
+  readonly currentPage = computed(() => this.grid()?.pageIndex() ?? this.pageIndex());
+  readonly currentPageSize = computed(() => this.grid()?.pageSize() ?? this.pageSize());
+
   // Internal states
   readonly currentDensity = linkedSignal<TableDensity>(() => this.size());
   readonly hiddenColumns = signal<Set<string | keyof TItem>>(new Set());
@@ -108,6 +128,42 @@ export class BaseTableComponent<TItem extends object = object> {
     return this.columns().filter((c) => !hidden.has(c.key) && c.visible !== false);
   });
 
+  /** Values of the filter lists loaded from the server (whole dataset), per column. */
+  private readonly serverValues = signal<Record<string, GridValue[]>>({});
+
+  /** Every value seen so far per column, so the list stays complete after a server-side filter. */
+  private readonly seenValues = signal<Record<string, Set<string>>>({});
+
+  constructor() {
+    effect(() => {
+      const rows = this.rows();
+      const columns = this.visibleColumns();
+      if (this.grid()) {
+        return;
+      }
+      untracked(() =>
+        this.seenValues.update((current) => {
+          const next = { ...current };
+          for (const col of columns) {
+            const known = new Set(next[String(col.key)] ?? []);
+            for (const item of rows) {
+              const value = this.getColumnValue(item, col);
+              if (value === null || value === undefined || value === '' || typeof value === 'object') {
+                continue;
+              }
+              known.add(String(value));
+              if (known.size > 30) {
+                break;
+              }
+            }
+            next[String(col.key)] = known;
+          }
+          return next;
+        }),
+      );
+    });
+  }
+
   /** Distinct values (max 30) offered by the checkbox list of each column filter. */
   readonly filterOptions = computed(() => {
     const result: Record<string, { label: string; value: string }[]> = {};
@@ -122,30 +178,30 @@ export class BaseTableComponent<TItem extends object = object> {
         }));
         continue;
       }
-      const distinct = new Set<string>();
-      for (const item of this.data()) {
-        const value = this.getColumnValue(item, col);
-        if (value === null || value === undefined || value === '' || typeof value === 'object') {
-          continue;
-        }
-        distinct.add(String(value));
-        if (distinct.size > 30) {
-          break;
-        }
+      if (this.grid()) {
+        result[String(col.key)] = (this.serverValues()[String(col.key)] ?? []).map((v) => ({
+          label: v.value === null || v.value === '' ? '—' : `${col.valueLabel ? col.valueLabel(v.value) : v.value} (${v.count})`,
+          value: v.value === null || v.value === '' ? GRID_EMPTY : v.value,
+        }));
+        continue;
       }
+      const seen = this.seenValues()[String(col.key)] ?? new Set<string>();
       result[String(col.key)] =
-        distinct.size > 30
+        seen.size > 30
           ? []
-          : [...distinct].sort(compareValues).map((v) => ({ label: v, value: v }));
+          : [...seen].sort(compareValues).map((v) => ({ label: v, value: v }));
     }
     return result;
   });
 
   /** Rows of the current page after column filters and sorting. */
   readonly displayData = computed(() => {
+    if (this.grid()) {
+      return this.rows();
+    }
     const filters = this.filterState();
     const columns = this.columns();
-    let rows = this.data();
+    let rows = this.rows();
     const active = Object.entries(filters).filter(
       ([, f]) => f.text !== '' || f.selected.length > 0,
     );
@@ -176,18 +232,72 @@ export class BaseTableComponent<TItem extends object = object> {
             compareValues(this.getColumnValue(a, sortColumn), this.getColumnValue(b, sortColumn)),
       );
     }
+    const groupKey = this.groupBy();
+    const groupColumn = groupKey ? columns.find((c) => String(c.key) === groupKey) : undefined;
+    if (groupColumn) {
+      rows = [...rows].sort((a, b) =>
+        compareValues(this.groupLabelOf(a, groupColumn), this.groupLabelOf(b, groupColumn)),
+      );
+    }
     return rows;
   });
 
+  private readonly localCollapsed = signal<ReadonlySet<string>>(new Set());
+
+  /** Column (by its declared key) the rows are grouped by (null = no grouping). */
+  readonly groupBy = signal<string | null>(null);
+  readonly collapsedGroups = computed(() => this.grid()?.collapsedGroups() ?? this.localCollapsed());
+
+  private readonly groupColumn = computed(() => {
+    const key = this.groupBy();
+    return key ? this.columns().find((c) => String(c.key) === key) : undefined;
+  });
+
+  /**
+   * The rendered rows: group header rows interleaved with the data rows. With a server grid the group sizes come
+   * from the whole dataset; without one they are counted on the rows at hand.
+   */
+  readonly viewRows = computed<GridRow<TItem>[]>(() => {
+    const column = this.groupColumn();
+    const items = this.displayData();
+    if (!column) {
+      return buildGridRows(items, null, [], new Set());
+    }
+    const valueOf = (item: TItem): unknown => this.groupLabelOf(item, column);
+    const grid = this.grid();
+    let summary: GridValue[];
+    if (grid) {
+      summary = grid.groupSummary();
+    } else {
+      const counts = new Map<string, number>();
+      for (const item of items) {
+        const label = this.groupLabelOf(item, column);
+        counts.set(label, (counts.get(label) ?? 0) + 1);
+      }
+      summary = [...counts].map(([value, count]) => ({ value, count }));
+    }
+    return buildGridRows(items, valueOf, summary, this.collapsedGroups(), column.valueLabel);
+  });
+
+  readonly groupColumns = computed(() => this.visibleColumns().filter((c) => c.groupable !== false));
+
+  readonly totalColumnCount = computed(
+    () =>
+      this.visibleColumns().length +
+      (this.selectable() ? 1 : 0) +
+      (this.expandable() ? 1 : 0) +
+      (this.actionsTemplate() ? 1 : 0),
+  );
+
   readonly isAllSelected = computed(() => {
-    const d = this.data();
+    const d = this.rows();
     const sel = this.selectedItems();
     if (!d || d.length === 0 || sel.length === 0) return false;
     return d.every((item) => this.isItemSelected(item));
   });
 
   readonly isIndeterminate = computed(() => {
-    const d = this.data();
+    const d = this.rows();
     if (!d || d.length === 0) return false;
     const hasSome = d.some((item) => this.isItemSelected(item));
     return hasSome && !this.isAllSelected();
@@ -206,6 +316,38 @@ export class BaseTableComponent<TItem extends object = object> {
     return (item as Record<string, unknown>)[key as string];
   }
 
+  groupLabelOf(item: TItem, col: TableColumnDef<TItem>): string {
+    const value = this.getColumnValue(item, col);
+    return value === null || value === undefined || value === '' || typeof value === 'object'
+      ? GRID_EMPTY
+      : String(value);
+  }
+
+  setGroupBy(key: string | null): void {
+    this.groupBy.set(key);
+    const grid = this.grid();
+    if (grid) {
+      grid.setGroupBy(key ? this.serverKey(key) : null);
+      return;
+    }
+    this.localCollapsed.set(new Set());
+  }
+
+  toggleGroup(key: string): void {
+    const grid = this.grid();
+    if (grid) {
+      grid.toggleGroup(key);
+      return;
+    }
+    this.localCollapsed.update((set) => {
+      const next = new Set(set);
+      if (!next.delete(key)) {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
   getColumnValue(item: TItem, col: TableColumnDef<TItem>): unknown {
     return col.valueGetter ? col.valueGetter(item) : this.getCellValue(item, col.key);
   }
@@ -218,7 +360,8 @@ export class BaseTableComponent<TItem extends object = object> {
 
   async exportToXlsx(): Promise<void> {
     const columns = this.visibleColumns().filter((c) => c.exportable !== false);
-    const rows = this.displayData();
+    const grid = this.grid();
+    const rows = grid ? await firstValueFrom(grid.loadAllRows()) : this.displayData();
     await exportXlsx(
       columns.map((col) => ({
         header: this.i18n.translate(col.header),
@@ -254,7 +397,7 @@ export class BaseTableComponent<TItem extends object = object> {
   }
 
   onSelectAll(checked: boolean): void {
-    const d = this.data();
+    const d = this.rows();
     if (!checked) {
       // Remove all visible rows from selected items
       const currentKeys = new Set(d.map((it) => this.getItemKey(it)));
@@ -306,7 +449,7 @@ export class BaseTableComponent<TItem extends object = object> {
   }
 
   onPageIndexChange(pageIndex: number): void {
-    this.pageChange.emit({ pageIndex, pageSize: this.pageSize() });
+    this.pageChange.emit({ pageIndex, pageSize: this.currentPageSize() });
     this.emitParamsChange({ pageIndex });
   }
 
@@ -330,6 +473,11 @@ export class BaseTableComponent<TItem extends object = object> {
   setFilterVisible(key: string | keyof TItem, visible: boolean): void {
     const k = String(key);
     this.filterVisible[k] = visible;
+    if (visible && this.grid()) {
+      this.grid()!
+        .loadValues(this.serverKey(k))
+        .subscribe((values) => this.serverValues.update((current) => ({ ...current, [k]: values })));
+    }
     if (visible) {
       const applied = this.filterState()[k];
       this.draftFilters[k] = {
@@ -381,12 +529,24 @@ export class BaseTableComponent<TItem extends object = object> {
   }
 
   private emitParamsChange(override: Partial<TableQueryParams>): void {
-    this.paramsChange.emit({
-      pageIndex: override.pageIndex ?? this.pageIndex(),
-      pageSize: override.pageSize ?? this.pageSize(),
+    const params: TableQueryParams = {
+      pageIndex: override.pageIndex ?? this.currentPage(),
+      pageSize: override.pageSize ?? this.currentPageSize(),
       sort: override.sort !== undefined ? override.sort : this.currentSort(),
       filters: override.filters ?? this.flatFilters(),
+    };
+    this.grid()?.onGridParams({
+      ...params,
+      sort: params.sort ? { key: this.serverKey(params.sort.key), order: params.sort.order } : null,
+      filters: Object.fromEntries(Object.entries(params.filters).map(([key, value]) => [this.serverKey(key), value])),
     });
+    this.paramsChange.emit(params);
+  }
+
+  /** Name the API knows the column by (sorting, filtering, grouping): `serverKey`, else the column key. */
+  serverKey(key: string | keyof TItem): string {
+    const column = this.columns().find((c) => String(c.key) === String(key));
+    return column?.serverKey ?? String(key);
   }
 
   private flatFilters(): TableFilterState {

@@ -38,8 +38,7 @@ import {
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
-  TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
@@ -70,7 +69,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
   styleUrl: './invoices.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     ReactiveFormsModule,
@@ -209,6 +208,9 @@ export class InvoicesComponent {
     },
     {
       key: 'status',
+      serverKey: 'display_status',
+      valueGetter: (inv) => this.i18n.translate(this.statusOf(inv).key),
+      valueLabel: (value) => this.i18n.translate(this.statusKeyOf(value)),
       header: this.i18n.translate('SALES.INVOICES.COLUMNS.PAYMENT_STATUS'),
       width: '140px',
       customCellTemplate: this.statusTpl(),
@@ -244,13 +246,15 @@ export class InvoicesComponent {
     return STATUS[inv.status] ?? { key: 'SALES.INVOICES.STATUS.DRAFT', color: 'default' };
   }
 
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
+  /** Translation key of a `display_status` value of the server (see Invoice::gridColumns). */
+  private statusKeyOf(value: string): string {
+    if (value === 'proforma') {
+      return 'SALES.INVOICES.STATUS.PROFORMA';
     }
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
+    if (value === 'overdue') {
+      return 'SALES.INVOICES.STATUS.OVERDUE';
     }
+    return STATUS[value as InvoiceStatus]?.key ?? value;
   }
 
   protected create(): void {

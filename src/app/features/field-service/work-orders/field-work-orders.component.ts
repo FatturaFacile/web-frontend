@@ -25,7 +25,7 @@ import {
   SettingsApiService,
   UserResource,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
@@ -42,7 +42,7 @@ interface ClientOption {
   styleUrl: './field-work-orders.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

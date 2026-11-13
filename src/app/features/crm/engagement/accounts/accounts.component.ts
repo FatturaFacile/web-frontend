@@ -19,7 +19,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const TIERS: CrmAccountTier[] = ['strategic', 'enterprise', 'mid_market', 'smb', 'standard'];
 const STATUSES: CrmAccountStatus[] = ['prospect', 'active', 'inactive', 'churned'];
@@ -52,7 +52,7 @@ const emptyDraft = (): AccountDraft => ({
   styleUrl: './accounts.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

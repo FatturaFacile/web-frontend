@@ -40,7 +40,7 @@ import {
   IntrastatSupplyKind,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Mirrors `required_if:channel,customs`. */
 function requiredForCustoms(control: AbstractControl) {
@@ -66,7 +66,7 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
   styleUrl: './intrastat.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     UpperCasePipe,

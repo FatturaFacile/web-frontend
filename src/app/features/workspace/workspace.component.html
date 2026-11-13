@@ -255,9 +255,9 @@
           <thead>
             <tr>
               <th nzWidth="15%">{{ 'WORKSPACE.ITEM_TYPE' | translate }}</th>
-              <th nzWidth="40%" [nzSortFn]="'subject' | gridSort">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
-              <th nzWidth="25%" [nzSortFn]="'counterpart' | gridSort">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
-              <th nzWidth="20%" [nzSortFn]="'starts_at' | gridSort">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
+              <th nzWidth="40%" [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
+              <th nzWidth="25%" [nzSortFn]="'counterpart' | gridSort" [nzFilters]="'counterpart' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'counterpart' | gridFilterFn">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
+              <th nzWidth="20%" [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
             </tr>
           </thead>
           <tbody>

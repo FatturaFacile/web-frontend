@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTimeApiService, I18nService, TimeClosingResource, TimeTransferResult } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -18,7 +18,7 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
   styleUrl: './time-closings.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     DatePipe,
     FormsModule,
     NzAlertModule,
@@ -64,12 +64,12 @@ import { ReasonButtonComponent } from '../shared/reason-button.component';
     <nz-table #table [nzData]="closings()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th [nzSortFn]="'year' | gridSort">{{ 'hrmCommon.year' | translate }}</th>
-          <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
+          <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: table.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'hrmCommon.year' | translate }}</th>
+          <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: table.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th [nzSortFn]="'closed_at' | gridSort">{{ 'hrmTime.closedAt' | translate }}</th>
-          <th [nzSortFn]="'reopen_count' | gridSort">{{ 'hrmTime.reopenCount' | translate }}</th>
-          <th [nzSortFn]="'reopen_reason' | gridSort">{{ 'hrmTime.lastReopenReason' | translate }}</th>
+          <th [nzSortFn]="'closed_at' | gridSort" [nzFilters]="'closed_at' | gridFilterList: table.nzData" [nzFilterFn]="'closed_at' | gridFilterFn">{{ 'hrmTime.closedAt' | translate }}</th>
+          <th [nzSortFn]="'reopen_count' | gridSort" [nzFilters]="'reopen_count' | gridFilterList: table.nzData" [nzFilterFn]="'reopen_count' | gridFilterFn">{{ 'hrmTime.reopenCount' | translate }}</th>
+          <th [nzSortFn]="'reopen_reason' | gridSort" [nzFilters]="'reopen_reason' | gridFilterList: table.nzData" [nzFilterFn]="'reopen_reason' | gridFilterFn">{{ 'hrmTime.lastReopenReason' | translate }}</th>
           @if (canWrite()) {
             <th>{{ 'hrmCommon.actions' | translate }}</th>
           }

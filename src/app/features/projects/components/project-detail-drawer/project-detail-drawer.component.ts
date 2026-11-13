@@ -32,7 +32,7 @@ import {
   StoreProjectTimesheetPayload,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
@@ -40,7 +40,7 @@ import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/uti
   styleUrl: './project-detail-drawer.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,

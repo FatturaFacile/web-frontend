@@ -85,12 +85,12 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'task_number' | gridSort">{{ 'projectDetailDrawer.lblCode' | translate }}</th>
-                <th [nzSortFn]="'title' | gridSort">{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'priority' | gridSort">{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
-                <th class="num" [nzSortFn]="'estimated_hours' | gridSort">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
-                <th class="num" [nzSortFn]="'actual_hours' | gridSort">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
+                <th [nzSortFn]="'task_number' | gridSort" [nzFilters]="'task_number' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'task_number' | gridFilterFn">{{ 'projectDetailDrawer.lblCode' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
+                <th class="num" [nzSortFn]="'estimated_hours' | gridSort" [nzFilters]="'estimated_hours' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'estimated_hours' | gridFilterFn">{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
+                <th class="num" [nzSortFn]="'actual_hours' | gridSort" [nzFilters]="'actual_hours' | gridFilterList: tasksTable.nzData" [nzFilterFn]="'actual_hours' | gridFilterFn">{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblProgress' | translate }}</th>
               </tr>
             </thead>
@@ -129,12 +129,12 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'work_date' | gridSort">{{ 'projectDetailDrawer.lblDate' | translate }}</th>
-                <th [nzSortFn]="'user_id' | gridSort">{{ 'projectDetailDrawer.lblUser' | translate }}</th>
-                <th [nzSortFn]="'hours_worked' | gridSort">{{ 'projectDetailDrawer.lblHours' | translate }}</th>
+                <th [nzSortFn]="'work_date' | gridSort" [nzFilters]="'work_date' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_date' | gridFilterFn">{{ 'projectDetailDrawer.lblDate' | translate }}</th>
+                <th [nzSortFn]="'user_id' | gridSort" [nzFilters]="'user_id' | gridFilterList: tsTable.nzData" [nzFilterFn]="'user_id' | gridFilterFn">{{ 'projectDetailDrawer.lblUser' | translate }}</th>
+                <th [nzSortFn]="'hours_worked' | gridSort" [nzFilters]="'hours_worked' | gridFilterList: tsTable.nzData" [nzFilterFn]="'hours_worked' | gridFilterFn">{{ 'projectDetailDrawer.lblHours' | translate }}</th>
                 <th>{{ 'projectDetailDrawer.lblBillable' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'work_summary' | gridSort">{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: tsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'work_summary' | gridSort" [nzFilters]="'work_summary' | gridFilterList: tsTable.nzData" [nzFilterFn]="'work_summary' | gridFilterFn">{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
                 <th nzWidth="150px">{{ 'projectDetailDrawer.lblActions' | translate }}</th>
               </tr>
             </thead>

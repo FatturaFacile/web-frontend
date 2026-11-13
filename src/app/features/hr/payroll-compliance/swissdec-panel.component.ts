@@ -8,7 +8,7 @@ import {
   SwissdecStatus,
   SwissdecVersion,
 } from '@core';
-import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -26,7 +26,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './swissdec-panel.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     FormsModule,
     NzAlertModule,
@@ -125,8 +125,8 @@ import { reportHttpError } from '../shared/hr-http.util';
         <nz-table #issues [nzData]="r.persons" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
-              <th [nzSortFn]="'issues.length' | gridSort">{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
+              <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: issues.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'issues.length' | gridSort" [nzFilters]="'issues.length' | gridFilterList: issues.nzData" [nzFilterFn]="'issues.length' | gridFilterFn">{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
             </tr>
           </thead>
           <tbody>

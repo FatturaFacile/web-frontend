@@ -122,11 +122,11 @@
       <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
-            <th [nzSortFn]="'batch_reference' | gridSort">{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
-            <th [nzSortFn]="'payment_method' | gridSort">{{ 'treasury.lblMetodoPagamento' | translate }}</th>
-            <th [nzSortFn]="'execution_date' | gridSort">{{ 'treasury.lblDataEsecuzione' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_amount' | gridSort">{{ 'treasury.lblImportoTotale' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'treasury.lblStato' | translate }}</th>
+            <th [nzSortFn]="'batch_reference' | gridSort" [nzFilters]="'batch_reference' | gridFilterList: pbTable.nzData" [nzFilterFn]="'batch_reference' | gridFilterFn">{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
+            <th [nzSortFn]="'payment_method' | gridSort" [nzFilters]="'payment_method' | gridFilterList: pbTable.nzData" [nzFilterFn]="'payment_method' | gridFilterFn">{{ 'treasury.lblMetodoPagamento' | translate }}</th>
+            <th [nzSortFn]="'execution_date' | gridSort" [nzFilters]="'execution_date' | gridFilterList: pbTable.nzData" [nzFilterFn]="'execution_date' | gridFilterFn">{{ 'treasury.lblDataEsecuzione' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: pbTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'treasury.lblImportoTotale' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: pbTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'treasury.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'treasury.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -192,12 +192,12 @@
       <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
-            <th [nzSortFn]="'forecast_date' | gridSort">{{ 'treasury.lblDataAnalisi' | translate }}</th>
-            <th [nzSortFn]="'horizon_days' | gridSort">{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
-            <th class="num" [nzSortFn]="'opening_cash' | gridSort">{{ 'treasury.lblCassaIniziale' | translate }}</th>
-            <th class="num" [nzSortFn]="'expected_inflows' | gridSort">{{ 'treasury.lblEntratePreviste' | translate }}</th>
-            <th class="num" [nzSortFn]="'expected_outflows' | gridSort">{{ 'treasury.lblUscitePreviste' | translate }}</th>
-            <th class="num" [nzSortFn]="'projected_cash' | gridSort">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
+            <th [nzSortFn]="'forecast_date' | gridSort" [nzFilters]="'forecast_date' | gridFilterList: cfTable.nzData" [nzFilterFn]="'forecast_date' | gridFilterFn">{{ 'treasury.lblDataAnalisi' | translate }}</th>
+            <th [nzSortFn]="'horizon_days' | gridSort" [nzFilters]="'horizon_days' | gridFilterList: cfTable.nzData" [nzFilterFn]="'horizon_days' | gridFilterFn">{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
+            <th class="num" [nzSortFn]="'opening_cash' | gridSort" [nzFilters]="'opening_cash' | gridFilterList: cfTable.nzData" [nzFilterFn]="'opening_cash' | gridFilterFn">{{ 'treasury.lblCassaIniziale' | translate }}</th>
+            <th class="num" [nzSortFn]="'expected_inflows' | gridSort" [nzFilters]="'expected_inflows' | gridFilterList: cfTable.nzData" [nzFilterFn]="'expected_inflows' | gridFilterFn">{{ 'treasury.lblEntratePreviste' | translate }}</th>
+            <th class="num" [nzSortFn]="'expected_outflows' | gridSort" [nzFilters]="'expected_outflows' | gridFilterList: cfTable.nzData" [nzFilterFn]="'expected_outflows' | gridFilterFn">{{ 'treasury.lblUscitePreviste' | translate }}</th>
+            <th class="num" [nzSortFn]="'projected_cash' | gridSort" [nzFilters]="'projected_cash' | gridFilterList: cfTable.nzData" [nzFilterFn]="'projected_cash' | gridFilterFn">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
             <th>{{ 'treasury.lblRischioDeficit' | translate }}</th>
           </tr>
         </thead>

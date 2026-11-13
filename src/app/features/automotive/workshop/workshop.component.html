@@ -70,14 +70,14 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'folder_number' | gridSort">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'license_plate' | gridSort">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'customer_name' | gridSort">{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
-              <th [nzSortFn]="'kind' | gridSort">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'folder_number' | gridSort" [nzFilters]="'folder_number' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'folder_number' | gridFilterFn">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort" [nzFilters]="'kind' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'kind' | gridFilterFn">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_MILEAGE_IN' | translate }}</th>
-              <th [nzSortFn]="'total_net' | gridSort">{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
-              <th [nzSortFn]="'total_gross' | gridSort">{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -227,14 +227,14 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'stock_number' | gridSort">{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
-              <th [nzSortFn]="'make' | gridSort">{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
-              <th [nzSortFn]="'condition' | gridSort">{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
-              <th [nzSortFn]="'year' | gridSort">{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
+              <th [nzSortFn]="'stock_number' | gridSort" [nzFilters]="'stock_number' | gridFilterList: stockTable.nzData" [nzFilterFn]="'stock_number' | gridFilterFn">{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
+              <th [nzSortFn]="'make' | gridSort" [nzFilters]="'make' | gridFilterList: stockTable.nzData" [nzFilterFn]="'make' | gridFilterFn">{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
+              <th [nzSortFn]="'condition' | gridSort" [nzFilters]="'condition' | gridFilterList: stockTable.nzData" [nzFilterFn]="'condition' | gridFilterFn">{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
+              <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: stockTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_PURCHASE_COST' | translate }}</th>
-              <th [nzSortFn]="'list_price' | gridSort">{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'buyer_name' | gridSort">{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
+              <th [nzSortFn]="'list_price' | gridSort" [nzFilters]="'list_price' | gridFilterList: stockTable.nzData" [nzFilterFn]="'list_price' | gridFilterFn">{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: stockTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'buyer_name' | gridSort" [nzFilters]="'buyer_name' | gridFilterList: stockTable.nzData" [nzFilterFn]="'buyer_name' | gridFilterFn">{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -308,12 +308,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'name' | gridSort">{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
-              <th [nzSortFn]="'license_plate' | gridSort">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'service_type' | gridSort">{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
-              <th [nzSortFn]="'interval' | gridSort">{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
-              <th [nzSortFn]="'start_date' | gridSort">{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
-              <th [nzSortFn]="'unit_price' | gridSort">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'service_type' | gridSort" [nzFilters]="'service_type' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'service_type' | gridFilterFn">{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
+              <th [nzSortFn]="'interval' | gridSort" [nzFilters]="'interval' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'interval' | gridFilterFn">{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
+              <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
@@ -402,12 +402,12 @@
         <nz-table #linesTable [nzData]="folderLines()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'line_type' | gridSort">{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
-              <th [nzSortFn]="'description' | gridSort">{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
-              <th [nzSortFn]="'quantity' | gridSort">{{ 'WORKSHOP.COL_QTY' | translate }}</th>
-              <th [nzSortFn]="'unit_price' | gridSort">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
-              <th [nzSortFn]="'tax_rate' | gridSort">{{ 'WORKSHOP.COL_VAT' | translate }}</th>
-              <th [nzSortFn]="'subtotal' | gridSort">{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
+              <th [nzSortFn]="'line_type' | gridSort" [nzFilters]="'line_type' | gridFilterList: linesTable.nzData" [nzFilterFn]="'line_type' | gridFilterFn">{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: linesTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: linesTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'WORKSHOP.COL_QTY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: linesTable.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'tax_rate' | gridSort" [nzFilters]="'tax_rate' | gridFilterList: linesTable.nzData" [nzFilterFn]="'tax_rate' | gridFilterFn">{{ 'WORKSHOP.COL_VAT' | translate }}</th>
+              <th [nzSortFn]="'subtotal' | gridSort" [nzFilters]="'subtotal' | gridFilterList: linesTable.nzData" [nzFilterFn]="'subtotal' | gridFilterFn">{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -474,10 +474,10 @@
         <nz-table #timeTable [nzData]="folderTimeEntries()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'technician_name' | gridSort">{{ 'WORKSHOP.COL_TECH' | translate }}</th>
-              <th [nzSortFn]="'started_at' | gridSort">{{ 'WORKSHOP.COL_START' | translate }}</th>
+              <th [nzSortFn]="'technician_name' | gridSort" [nzFilters]="'technician_name' | gridFilterList: timeTable.nzData" [nzFilterFn]="'technician_name' | gridFilterFn">{{ 'WORKSHOP.COL_TECH' | translate }}</th>
+              <th [nzSortFn]="'started_at' | gridSort" [nzFilters]="'started_at' | gridFilterList: timeTable.nzData" [nzFilterFn]="'started_at' | gridFilterFn">{{ 'WORKSHOP.COL_START' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_STOP' | translate }}</th>
-              <th [nzSortFn]="'minutes' | gridSort">{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
+              <th [nzSortFn]="'minutes' | gridSort" [nzFilters]="'minutes' | gridFilterList: timeTable.nzData" [nzFilterFn]="'minutes' | gridFilterFn">{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_BILLED' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
@@ -523,12 +523,12 @@
         <nz-table #historyTable [nzData]="vehicleHistory()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'folder_number' | gridSort">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'kind' | gridSort">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'folder_number' | gridSort" [nzFilters]="'folder_number' | gridFilterList: historyTable.nzData" [nzFilterFn]="'folder_number' | gridFilterFn">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort" [nzFilters]="'kind' | gridFilterList: historyTable.nzData" [nzFilterFn]="'kind' | gridFilterFn">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: historyTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_MILEAGE' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_DATE' | translate }}</th>
-              <th [nzSortFn]="'total_gross' | gridSort">{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: historyTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

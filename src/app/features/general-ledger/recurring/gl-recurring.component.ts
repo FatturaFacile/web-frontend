@@ -23,7 +23,7 @@ import {
   RecurringStatus,
   ScheduledRunResult,
 } from '@core';
-import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
@@ -35,7 +35,7 @@ const STATUS_COLORS: Record<RecurringStatus, string> = { active: 'green', paused
   styleUrl: './gl-recurring.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

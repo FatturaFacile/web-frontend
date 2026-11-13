@@ -42,14 +42,9 @@
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <!-- Cell Templates -->
@@ -230,10 +225,10 @@
         <nz-table #outTable [nzData]="sdi.outbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th [nzSortFn]="'action' | gridSort">{{ 'SALES.LBL_AZIONE' | translate }}</th>
-              <th [nzSortFn]="'transmitted_at' | gridSort">{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th [nzSortFn]="'details' | gridSort">{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: outTable.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'SALES.LBL_AZIONE' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort" [nzFilters]="'transmitted_at' | gridFilterList: outTable.nzData" [nzFilterFn]="'transmitted_at' | gridFilterFn">{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: outTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort" [nzFilters]="'details' | gridFilterList: outTable.nzData" [nzFilterFn]="'details' | gridFilterFn">{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -254,10 +249,10 @@
         <nz-table #inTable [nzData]="sdi.inbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th [nzSortFn]="'action' | gridSort">{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
-              <th [nzSortFn]="'transmitted_at' | gridSort">{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th [nzSortFn]="'details' | gridSort">{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: inTable.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort" [nzFilters]="'transmitted_at' | gridFilterList: inTable.nzData" [nzFilterFn]="'transmitted_at' | gridFilterFn">{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: inTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort" [nzFilters]="'details' | gridFilterList: inTable.nzData" [nzFilterFn]="'details' | gridFilterFn">{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -345,10 +340,10 @@
     <nz-table #instTable [nzData]="currentInstallments()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th [nzSortFn]="'installment_number' | gridSort">{{ 'SALES.LBL_RATA' | translate }}</th>
-          <th [nzSortFn]="'due_date' | gridSort">{{ 'SALES.LBL_SCADENZA' | translate }}</th>
-          <th [nzSortFn]="'amount' | gridSort">{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
-          <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
+          <th [nzSortFn]="'installment_number' | gridSort" [nzFilters]="'installment_number' | gridFilterList: instTable.nzData" [nzFilterFn]="'installment_number' | gridFilterFn">{{ 'SALES.LBL_RATA' | translate }}</th>
+          <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: instTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'SALES.LBL_SCADENZA' | translate }}</th>
+          <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: instTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
+          <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: instTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
         </tr>
       </thead>
       <tbody>

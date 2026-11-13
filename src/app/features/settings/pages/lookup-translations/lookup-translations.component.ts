@@ -6,7 +6,7 @@ import {
   PermissionsService,
   SaveLookupTranslationPayload,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -28,7 +28,7 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
   styleUrl: './lookup-translations.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     ActionFormComponent,
     FormsModule,
@@ -82,9 +82,9 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'hrmCommon.code' | translate }}</th>
-            <th [nzSortFn]="'label' | gridSort">{{ 'lookupTranslations.label' | translate }}</th>
-            <th [nzSortFn]="'short_label' | gridSort">{{ 'lookupTranslations.shortLabel' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: table.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'hrmCommon.code' | translate }}</th>
+            <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: table.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'lookupTranslations.label' | translate }}</th>
+            <th [nzSortFn]="'short_label' | gridSort" [nzFilters]="'short_label' | gridFilterList: table.nzData" [nzFilterFn]="'short_label' | gridFilterFn">{{ 'lookupTranslations.shortLabel' | translate }}</th>
             @if (canWrite()) {
               <th>{{ 'hrmCommon.actions' | translate }}</th>
             }

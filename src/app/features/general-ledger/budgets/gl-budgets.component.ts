@@ -23,7 +23,7 @@ import {
   PermissionsService,
   RollingForecastReport,
 } from '@core';
-import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
@@ -31,7 +31,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   styleUrl: './gl-budgets.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

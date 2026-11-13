@@ -24,16 +24,16 @@
         </button>
       </div>
       @if (register(); as r) {
-        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()">
+        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()" #gridTbl41>
           <thead>
             <tr>
-              <th [nzSortFn]="'invoice_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
-              <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
-              <th [nzSortFn]="'document_type' | gridSort">{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
-              <th [nzSortFn]="'customer_name' | gridSort">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-              <th class="num" [nzSortFn]="'total_net' | gridSort">{{ 'SC.COMMON.NET' | translate }}</th>
-              <th class="num" [nzSortFn]="'total_tax' | gridSort">{{ 'SC.COMMON.TAX' | translate }}</th>
-              <th class="num" [nzSortFn]="'total_gross' | gridSort">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+              <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SC.COMMON.NET' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_tax' | gridSort" [nzFilters]="'total_tax' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_tax' | gridFilterFn">{{ 'SC.COMMON.TAX' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SC.COMMON.TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -84,16 +84,16 @@
         </button>
       </div>
       @if (aging(); as a) {
-        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()">
+        <nz-table [nzScroll]="{ x: '760px' }" [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()" #gridTbl42>
           <thead>
             <tr>
-              <th [nzSortFn]="'customer_name' | gridSort">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-              <th class="num" [nzSortFn]="'current' | gridSort">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
-              <th class="num" [nzSortFn]="'days_1_30' | gridSort">1-30</th>
-              <th class="num" [nzSortFn]="'days_31_60' | gridSort">31-60</th>
-              <th class="num" [nzSortFn]="'days_61_90' | gridSort">61-90</th>
-              <th class="num" [nzSortFn]="'over_90' | gridSort">&gt;90</th>
-              <th class="num" [nzSortFn]="'total_open' | gridSort">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'current' | gridSort" [nzFilters]="'current' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'current' | gridFilterFn">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
+              <th class="num" [nzSortFn]="'days_1_30' | gridSort" [nzFilters]="'days_1_30' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_1_30' | gridFilterFn">1-30</th>
+              <th class="num" [nzSortFn]="'days_31_60' | gridSort" [nzFilters]="'days_31_60' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_31_60' | gridFilterFn">31-60</th>
+              <th class="num" [nzSortFn]="'days_61_90' | gridSort" [nzFilters]="'days_61_90' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_61_90' | gridFilterFn">61-90</th>
+              <th class="num" [nzSortFn]="'over_90' | gridSort" [nzFilters]="'over_90' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'over_90' | gridFilterFn">&gt;90</th>
+              <th class="num" [nzSortFn]="'total_open' | gridSort" [nzFilters]="'total_open' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'total_open' | gridFilterFn">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
             </tr>
           </thead>
           <tbody>

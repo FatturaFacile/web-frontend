@@ -28,7 +28,7 @@ import {
   SubscriptionPlanResource,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
@@ -36,7 +36,7 @@ import { TranslatePipe } from '@shared';
   styleUrl: './subscriptions.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     TranslatePipe,

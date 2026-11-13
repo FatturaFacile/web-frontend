@@ -32,7 +32,7 @@ import {
   TreasuryApiService,
   TranslateService,
 } from '@core';
-import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TableQueryParams, TableStateService, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TableQueryParams, TableStateService, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { ibanValidator } from '@shared/utils/iban-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -41,7 +41,7 @@ import { validationTipKey } from '@shared/utils/validation-tip';
   styleUrl: './treasury.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -365,11 +365,7 @@ export class TreasuryComponent implements OnInit {
   }
 
   onParamsChange(params: TableQueryParams): void {
-    this.tableState.setPage(params.pageIndex);
-    this.tableState.setPageSize(params.pageSize);
-    if (params.sort) {
-      this.tableState.setSort(params.sort.key, params.sort.order);
-    }
+    this.tableState.applyGridParams(params);
     this.loadTransactions();
   }
 

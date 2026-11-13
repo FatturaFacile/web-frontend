@@ -10,7 +10,7 @@ import {
   SelfServiceLeaveRequest,
   SelfServiceLeaveType,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -44,7 +44,7 @@ function endNotBeforeStartValidator(control: AbstractControl): ValidationErrors 
   styleUrl: './ss-leave.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

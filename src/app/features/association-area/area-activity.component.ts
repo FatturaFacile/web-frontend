@@ -6,7 +6,7 @@ import {
   AssociationAreaRecord,
   I18nService,
 } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -21,19 +21,19 @@ import { recordText, saveBlob } from './save-blob';
   styleUrl: './area-activity.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <h3>{{ 'ASSOC_AREA.CALENDAR' | translate }}</h3>
     @if (calendar().length === 0) {
       <nz-empty />
     } @else {
-      <nz-table nzSize="small" [nzData]="calendar()" [nzShowPagination]="false">
+      <nz-table nzSize="small" [nzData]="calendar()" [nzShowPagination]="false" #gridTbl1>
         <thead>
           <tr>
-            <th [nzSortFn]="'date' | gridSort">{{ 'ASSOC_AREA.DATE' | translate }}</th>
-            <th [nzSortFn]="'starts_at' | gridSort">{{ 'ASSOC_AREA.TIME' | translate }}</th>
-            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'ASSOC_AREA.DATE' | translate }}</th>
+            <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'ASSOC_AREA.TIME' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
             <th>{{ 'ASSOC_AREA.STATUS' | translate }}</th>
           </tr>
         </thead>

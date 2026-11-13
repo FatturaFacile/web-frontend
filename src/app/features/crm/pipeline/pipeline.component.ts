@@ -24,7 +24,7 @@ import {
   StoreOpportunityPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
@@ -32,7 +32,7 @@ import { TranslatePipe } from '@shared';
   styleUrl: './pipeline.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     TranslatePipe,

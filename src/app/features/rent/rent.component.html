@@ -44,13 +44,13 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'plate' | gridSort">{{ 'RENT.PLATE' | translate }}</th>
-              <th [nzSortFn]="'model' | gridSort">{{ 'RENT.MODEL' | translate }}</th>
-              <th [nzSortFn]="'type' | gridSort">{{ 'RENT.TYPE' | translate }}</th>
-              <th [nzSortFn]="'client' | gridSort">{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
+              <th [nzSortFn]="'plate' | gridSort" [nzFilters]="'plate' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'plate' | gridFilterFn">{{ 'RENT.PLATE' | translate }}</th>
+              <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'RENT.MODEL' | translate }}</th>
+              <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'RENT.TYPE' | translate }}</th>
+              <th [nzSortFn]="'client' | gridSort" [nzFilters]="'client' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'client' | gridFilterFn">{{ 'RENT.CURRENT_CLIENT' | translate }}</th>
               <th>{{ 'RENT.VIGNETTE' | translate }}</th>
-              <th [nzSortFn]="'returnDate' | gridSort">{{ 'RENT.RETURN_DATE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'RENT.STATUS' | translate }}</th>
+              <th [nzSortFn]="'returnDate' | gridSort" [nzFilters]="'returnDate' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'returnDate' | gridFilterFn">{{ 'RENT.RETURN_DATE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: vehiclesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'RENT.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -92,14 +92,14 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'id' | gridSort">{{ 'RENT.BOOKING_ID' | translate }}</th>
-              <th [nzSortFn]="'vehicle_plate' | gridSort">{{ 'RENT.VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'client_name' | gridSort">{{ 'RENT.CLIENT' | translate }}</th>
-              <th [nzSortFn]="'start_date' | gridSort">{{ 'RENT.START_DATE' | translate }}</th>
-              <th [nzSortFn]="'end_date' | gridSort">{{ 'RENT.END_DATE' | translate }}</th>
-              <th [nzSortFn]="'daily_rate' | gridSort">{{ 'RENT.DAILY_RATE' | translate }}</th>
-              <th [nzSortFn]="'total_amount' | gridSort">{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'RENT.STATUS' | translate }}</th>
+              <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'id' | gridFilterFn">{{ 'RENT.BOOKING_ID' | translate }}</th>
+              <th [nzSortFn]="'vehicle_plate' | gridSort" [nzFilters]="'vehicle_plate' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'vehicle_plate' | gridFilterFn">{{ 'RENT.VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'client_name' | gridSort" [nzFilters]="'client_name' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'client_name' | gridFilterFn">{{ 'RENT.CLIENT' | translate }}</th>
+              <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'RENT.START_DATE' | translate }}</th>
+              <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'RENT.END_DATE' | translate }}</th>
+              <th [nzSortFn]="'daily_rate' | gridSort" [nzFilters]="'daily_rate' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'daily_rate' | gridFilterFn">{{ 'RENT.DAILY_RATE' | translate }}</th>
+              <th [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'RENT.TOTAL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: bookingsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'RENT.STATUS' | translate }}</th>
               <th>{{ 'RENT.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -165,11 +165,11 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'license_plate' | gridSort">{{ 'RENT.PLATE' | translate }}</th>
-              <th [nzSortFn]="'make' | gridSort">{{ 'RENT.MAKE' | translate }}</th>
-              <th [nzSortFn]="'model' | gridSort">{{ 'RENT.MODEL' | translate }}</th>
-              <th [nzSortFn]="'year' | gridSort">{{ 'RENT.YEAR' | translate }}</th>
-              <th [nzSortFn]="'vin_chassis' | gridSort">{{ 'RENT.VIN' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: autoTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'RENT.PLATE' | translate }}</th>
+              <th [nzSortFn]="'make' | gridSort" [nzFilters]="'make' | gridFilterList: autoTable.nzData" [nzFilterFn]="'make' | gridFilterFn">{{ 'RENT.MAKE' | translate }}</th>
+              <th [nzSortFn]="'model' | gridSort" [nzFilters]="'model' | gridFilterList: autoTable.nzData" [nzFilterFn]="'model' | gridFilterFn">{{ 'RENT.MODEL' | translate }}</th>
+              <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: autoTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'RENT.YEAR' | translate }}</th>
+              <th [nzSortFn]="'vin_chassis' | gridSort" [nzFilters]="'vin_chassis' | gridFilterList: autoTable.nzData" [nzFilterFn]="'vin_chassis' | gridFilterFn">{{ 'RENT.VIN' | translate }}</th>
               <th>{{ 'RENT.CUSTOMER' | translate }}</th>
               <th>{{ 'RENT.ACTIONS' | translate }}</th>
             </tr>

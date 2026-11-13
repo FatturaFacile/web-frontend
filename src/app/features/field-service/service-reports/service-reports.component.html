@@ -55,13 +55,13 @@
     <thead>
       <tr>
         <th nzWidth="48px"></th>
-        <th [nzSortFn]="'report_number' | gridSort">{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
-        <th [nzSortFn]="'report_date' | gridSort">{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
-        <th [nzSortFn]="'contact.name' | gridSort">{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
-        <th [nzSortFn]="'technician.name' | gridSort">{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
-        <th [nzSortFn]="'total_hours' | gridSort">{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
-        <th [nzSortFn]="'total_gross' | gridSort">{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
-        <th [nzSortFn]="'status.label' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
+        <th [nzSortFn]="'report_number' | gridSort" [nzFilters]="'report_number' | gridFilterList: table.nzData" [nzFilterFn]="'report_number' | gridFilterFn">{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
+        <th [nzSortFn]="'report_date' | gridSort" [nzFilters]="'report_date' | gridFilterList: table.nzData" [nzFilterFn]="'report_date' | gridFilterFn">{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
+        <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: table.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
+        <th [nzSortFn]="'technician.name' | gridSort" [nzFilters]="'technician.name' | gridFilterList: table.nzData" [nzFilterFn]="'technician.name' | gridFilterFn">{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
+        <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: table.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
+        <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: table.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
+        <th [nzSortFn]="'status.label' | gridSort" [nzFilters]="'status.label' | gridFilterList: table.nzData" [nzFilterFn]="'status.label' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>

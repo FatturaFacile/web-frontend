@@ -21,7 +21,7 @@ import {
   TwoFactorStatus,
   UserSession,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 /** Mirrors `required_without:<other>`: the control is required while the sibling is blank. */
@@ -37,7 +37,7 @@ function requiredWithout(other: string): ValidatorFn {
   styleUrl: './security-settings.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     ReactiveFormsModule,
     DatePipe,

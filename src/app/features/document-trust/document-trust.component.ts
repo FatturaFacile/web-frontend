@@ -36,7 +36,7 @@ import {
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 
 @Component({
@@ -44,7 +44,7 @@ import { uuidFormat } from '@shared/utils/uuid-validator';
   styleUrl: './document-trust.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

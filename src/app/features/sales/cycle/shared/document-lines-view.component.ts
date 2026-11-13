@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { CoreDocumentLine } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Read-only lines table of a sales document with delivered / invoiced quantities when present. */
 @Component({
@@ -9,21 +9,21 @@ import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@sh
   styleUrl: './document-lines-view.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-table #table [nzData]="lines()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th [nzSortFn]="'description' | gridSort">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-          <th class="num" [nzSortFn]="'quantity' | gridSort">{{ 'SC.LINES.QUANTITY' | translate }}</th>
+          <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: table.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+          <th class="num" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: table.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'SC.LINES.QUANTITY' | translate }}</th>
           @if (showProgress()) {
             <th class="num">{{ 'SC.LINES.DELIVERED' | translate }}</th>
             <th class="num">{{ 'SC.LINES.INVOICED' | translate }}</th>
           }
-          <th class="num" [nzSortFn]="'unit_price' | gridSort">{{ 'SC.LINES.UNIT_PRICE' | translate }}</th>
-          <th class="num" [nzSortFn]="'tax_rate' | gridSort">{{ 'SC.LINES.TAX_RATE' | translate }}</th>
-          <th class="num" [nzSortFn]="'line_total' | gridSort">{{ 'SC.LINES.TOTAL' | translate }}</th>
+          <th class="num" [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: table.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'SC.LINES.UNIT_PRICE' | translate }}</th>
+          <th class="num" [nzSortFn]="'tax_rate' | gridSort" [nzFilters]="'tax_rate' | gridFilterList: table.nzData" [nzFilterFn]="'tax_rate' | gridFilterFn">{{ 'SC.LINES.TAX_RATE' | translate }}</th>
+          <th class="num" [nzSortFn]="'line_total' | gridSort" [nzFilters]="'line_total' | gridFilterList: table.nzData" [nzFilterFn]="'line_total' | gridFilterFn">{{ 'SC.LINES.TOTAL' | translate }}</th>
         </tr>
       </thead>
       <tbody>

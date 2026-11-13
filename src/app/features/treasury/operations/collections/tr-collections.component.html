@@ -28,12 +28,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'due_date' | gridSort">{{ 'TR.DUE_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'expected_amount' | gridSort">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'collected_amount' | gridSort">{{ 'TR.COLLECTED_AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'aging_bucket' | gridSort">{{ 'TR.AGING_BUCKET' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'dunning_level' | gridSort">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'TR.STATUS' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: table.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'TR.DUE_DATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'expected_amount' | gridSort" [nzFilters]="'expected_amount' | gridFilterList: table.nzData" [nzFilterFn]="'expected_amount' | gridFilterFn">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'collected_amount' | gridSort" [nzFilters]="'collected_amount' | gridFilterList: table.nzData" [nzFilterFn]="'collected_amount' | gridFilterFn">{{ 'TR.COLLECTED_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'aging_bucket' | gridSort" [nzFilters]="'aging_bucket' | gridFilterList: table.nzData" [nzFilterFn]="'aging_bucket' | gridFilterFn">{{ 'TR.AGING_BUCKET' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'dunning_level' | gridSort" [nzFilters]="'dunning_level' | gridFilterList: table.nzData" [nzFilterFn]="'dunning_level' | gridFilterFn">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'TR.STATUS' | translate }}</th>
             <th>{{ 'TR.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -78,10 +78,10 @@
         <nz-table #dunningTable nzSize="middle" [nzData]="readiness.overdue_items" [nzPageSize]="20">
           <thead>
             <tr>
-              <th [nzSortFn]="'due_date' | gridSort">{{ 'TR.DUE_DATE' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'expected_amount' | gridSort">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'aging_bucket' | gridSort">{{ 'TR.AGING_BUCKET' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'dunning_level' | gridSort">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'expected_amount' | gridSort" [nzFilters]="'expected_amount' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'expected_amount' | gridFilterFn">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'aging_bucket' | gridSort" [nzFilters]="'aging_bucket' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'aging_bucket' | gridFilterFn">{{ 'TR.AGING_BUCKET' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'dunning_level' | gridSort" [nzFilters]="'dunning_level' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'dunning_level' | gridFilterFn">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

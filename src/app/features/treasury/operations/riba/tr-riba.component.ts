@@ -17,7 +17,7 @@ import {
   RibaPortfolio,
   TreasuryOpsApiService,
 } from '@core';
-import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { downloadBlob } from '../../../general-ledger/shared/gl-dates';
 import { TrLookupStore } from '../tr-lookup.store';
 
@@ -26,7 +26,7 @@ import { TrLookupStore } from '../tr-lookup.store';
   styleUrl: './tr-riba.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     FormsModule,
     NzButtonModule,

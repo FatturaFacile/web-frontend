@@ -29,11 +29,11 @@
     <thead>
       <tr>
         <th nzWidth="40px"></th>
-        <th [nzSortFn]="'entry_number' | gridSort">{{ 'GL.COL_ENTRY' | translate }}</th>
-        <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
-        <th [nzSortFn]="'description' | gridSort">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th [nzSortFn]="'entry_number' | gridSort" [nzFilters]="'entry_number' | gridFilterList: table.nzData" [nzFilterFn]="'entry_number' | gridFilterFn">{{ 'GL.COL_ENTRY' | translate }}</th>
+        <th [nzSortFn]="'posting_date' | gridSort" [nzFilters]="'posting_date' | gridFilterList: table.nzData" [nzFilterFn]="'posting_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
+        <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: table.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
         <th>{{ 'GL.STATUS' | translate }}</th>
-        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'GL.COL_TOTAL' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: table.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'GL.COL_TOTAL' | translate }}</th>
         <th>{{ 'GL.COL_AUTO_REVERSE' | translate }}</th>
         <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
       </tr>

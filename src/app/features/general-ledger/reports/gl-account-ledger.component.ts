@@ -7,7 +7,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AccountLedgerReport, GeneralLedgerApiService } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
@@ -17,7 +17,7 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
   styleUrl: './gl-account-ledger.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     NzButtonModule,
     NzDescriptionsModule,
@@ -77,17 +77,16 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
         [nzPageIndex]="r.meta.current_page"
         [nzPageSize]="r.meta.per_page"
         [nzLoading]="loading()"
-        (nzPageIndexChange)="load($event)"
-      >
+        (nzPageIndexChange)="load($event)" #gridTbl30>
         <thead>
           <tr>
-            <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
-            <th [nzSortFn]="'entry_number' | gridSort">{{ 'GL.COL_ENTRY' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right" [nzSortFn]="'running_balance' | gridSort">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
-            <th [nzSortFn]="'transaction_debit' | gridSort">{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort" [nzFilters]="'posting_date' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'posting_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'entry_number' | gridSort" [nzFilters]="'entry_number' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'entry_number' | gridFilterFn">{{ 'GL.COL_ENTRY' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'running_balance' | gridSort" [nzFilters]="'running_balance' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'running_balance' | gridFilterFn">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
+            <th [nzSortFn]="'transaction_debit' | gridSort" [nzFilters]="'transaction_debit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'transaction_debit' | gridFilterFn">{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
           </tr>
         </thead>
         <tbody>

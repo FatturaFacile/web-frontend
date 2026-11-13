@@ -23,10 +23,10 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'name' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</th>
-              <th [nzSortFn]="'driver' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: channelTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: channelTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}</th>
               <th>{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
-              <th [nzSortFn]="'last_sync_at' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.LAST_SYNC' | translate }}</th>
+              <th [nzSortFn]="'last_sync_at' | gridSort" [nzFilters]="'last_sync_at' | gridFilterList: channelTable.nzData" [nzFilterFn]="'last_sync_at' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.LAST_SYNC' | translate }}</th>
               <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -139,7 +139,7 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'name' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: apiKeysTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</th>
               <th>{{ 'ECOMMERCE_INTEGRATIONS.SCOPES' | translate }}</th>
               <th>{{ 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT' | translate }}</th>
               <th>{{ 'ECOMMERCE_INTEGRATIONS.LAST_USED' | translate }}</th>
@@ -289,9 +289,9 @@
             >
               <thead>
                 <tr>
-                  <th [nzSortFn]="'invoice_id' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.INVOICE_ID' | translate }}</th>
-                  <th [nzSortFn]="'amount' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.AMOUNT' | translate }}</th>
-                  <th [nzSortFn]="'status' | gridSort">{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
+                  <th [nzSortFn]="'invoice_id' | gridSort" [nzFilters]="'invoice_id' | gridFilterList: linksTable.nzData" [nzFilterFn]="'invoice_id' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.INVOICE_ID' | translate }}</th>
+                  <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: linksTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.AMOUNT' | translate }}</th>
+                  <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: linksTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'ECOMMERCE_INTEGRATIONS.STATUS' | translate }}</th>
                   <th>{{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_URL' | translate }}</th>
                   <th>{{ 'ECOMMERCE_INTEGRATIONS.ACTIONS' | translate }}</th>
                 </tr>

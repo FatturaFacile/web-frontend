@@ -30,11 +30,11 @@
   >
     <thead>
       <tr>
-        <th [nzSortFn]="'id' | gridSort">{{ "ORDERS.COL_ID" | translate }}</th>
-        <th [nzSortFn]="'referenceNumber' | gridSort">{{ "ORDERS.COL_REF" | translate }}</th>
-        <th [nzSortFn]="'createdAt' | gridSort">{{ "ORDERS.COL_DATE" | translate }}</th>
-        <th [nzSortFn]="'items.length' | gridSort">{{ "ORDERS.COL_ITEMS_COUNT" | translate }}</th>
-        <th [nzSortFn]="'totalAmount' | gridSort">{{ "ORDERS.COL_TOTAL" | translate }}</th>
+        <th [nzSortFn]="'id' | gridSort" [nzFilters]="'id' | gridFilterList: orderTable.nzData" [nzFilterFn]="'id' | gridFilterFn">{{ "ORDERS.COL_ID" | translate }}</th>
+        <th [nzSortFn]="'referenceNumber' | gridSort" [nzFilters]="'referenceNumber' | gridFilterList: orderTable.nzData" [nzFilterFn]="'referenceNumber' | gridFilterFn">{{ "ORDERS.COL_REF" | translate }}</th>
+        <th [nzSortFn]="'createdAt' | gridSort" [nzFilters]="'createdAt' | gridFilterList: orderTable.nzData" [nzFilterFn]="'createdAt' | gridFilterFn">{{ "ORDERS.COL_DATE" | translate }}</th>
+        <th [nzSortFn]="'items.length' | gridSort" [nzFilters]="'items.length' | gridFilterList: orderTable.nzData" [nzFilterFn]="'items.length' | gridFilterFn">{{ "ORDERS.COL_ITEMS_COUNT" | translate }}</th>
+        <th [nzSortFn]="'totalAmount' | gridSort" [nzFilters]="'totalAmount' | gridFilterList: orderTable.nzData" [nzFilterFn]="'totalAmount' | gridFilterFn">{{ "ORDERS.COL_TOTAL" | translate }}</th>
         <th>{{ "ORDERS.COL_DETAIL" | translate }}</th>
       </tr>
     </thead>

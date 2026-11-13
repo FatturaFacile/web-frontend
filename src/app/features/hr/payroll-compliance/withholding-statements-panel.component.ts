@@ -8,7 +8,7 @@ import {
   WithholdingStatementQuery,
   WithholdingStatementReport,
 } from '@core';
-import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -54,7 +54,7 @@ const CANTONS = [
   styleUrl: './withholding-statements-panel.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     FormsModule,
     MoneyPipe,
@@ -159,14 +159,14 @@ const CANTONS = [
         <nz-table #lines [nzData]="statement.lines" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'last_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
-              <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
-              <th [nzSortFn]="'tariff_code' | gridSort">{{ 'hrmCompliance.statements.tariff' | translate }}</th>
-              <th [nzSortFn]="'gross' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
-              <th [nzSortFn]="'basis' | gridSort">{{ 'hrmCompliance.statements.basis' | translate }}</th>
-              <th [nzSortFn]="'rate_percent' | gridSort">%</th>
-              <th [nzSortFn]="'tax' | gridSort">{{ 'hrmPayroll.withholdingTax' | translate }}</th>
-              <th [nzSortFn]="'missing.length' | gridSort">{{ 'hrmCompliance.statements.missing' | translate }}</th>
+              <th [nzSortFn]="'last_name' | gridSort" [nzFilters]="'last_name' | gridFilterList: lines.nzData" [nzFilterFn]="'last_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: lines.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
+              <th [nzSortFn]="'tariff_code' | gridSort" [nzFilters]="'tariff_code' | gridFilterList: lines.nzData" [nzFilterFn]="'tariff_code' | gridFilterFn">{{ 'hrmCompliance.statements.tariff' | translate }}</th>
+              <th [nzSortFn]="'gross' | gridSort" [nzFilters]="'gross' | gridFilterList: lines.nzData" [nzFilterFn]="'gross' | gridFilterFn">{{ 'hrmPayroll.gross' | translate }}</th>
+              <th [nzSortFn]="'basis' | gridSort" [nzFilters]="'basis' | gridFilterList: lines.nzData" [nzFilterFn]="'basis' | gridFilterFn">{{ 'hrmCompliance.statements.basis' | translate }}</th>
+              <th [nzSortFn]="'rate_percent' | gridSort" [nzFilters]="'rate_percent' | gridFilterList: lines.nzData" [nzFilterFn]="'rate_percent' | gridFilterFn">%</th>
+              <th [nzSortFn]="'tax' | gridSort" [nzFilters]="'tax' | gridFilterList: lines.nzData" [nzFilterFn]="'tax' | gridFilterFn">{{ 'hrmPayroll.withholdingTax' | translate }}</th>
+              <th [nzSortFn]="'missing.length' | gridSort" [nzFilters]="'missing.length' | gridFilterList: lines.nzData" [nzFilterFn]="'missing.length' | gridFilterFn">{{ 'hrmCompliance.statements.missing' | translate }}</th>
             </tr>
           </thead>
           <tbody>

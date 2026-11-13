@@ -21,14 +21,14 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-gl-period-close',
   styleUrl: './gl-period-close.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     FormsModule,
     NzAlertModule,

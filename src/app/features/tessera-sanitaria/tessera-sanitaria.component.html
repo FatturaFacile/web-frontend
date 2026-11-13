@@ -78,11 +78,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'document_number' | gridSort">{{ 'STS.DOCUMENT' | translate }}</th>
-            <th [nzSortFn]="'payment_date' | gridSort">{{ 'STS.PAYMENT_DATE' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort" [nzFilters]="'document_number' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'document_number' | gridFilterFn">{{ 'STS.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'payment_date' | gridSort" [nzFilters]="'payment_date' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'payment_date' | gridFilterFn">{{ 'STS.PAYMENT_DATE' | translate }}</th>
             <th>{{ 'STS.EXPENSE_TYPE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'STS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'patient_fiscal_code' | gridSort">{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'STS.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'patient_fiscal_code' | gridSort" [nzFilters]="'patient_fiscal_code' | gridFilterList: expensesTable.nzData" [nzFilterFn]="'patient_fiscal_code' | gridFilterFn">{{ 'STS.PATIENT_FISCAL_CODE' | translate }}</th>
             <th nzAlign="center">{{ 'STS.TRACEABLE' | translate }}</th>
             <th nzAlign="center">{{ 'STS.OPPOSITION' | translate }}</th>
             <th>{{ 'STS.STATUS' | translate }}</th>

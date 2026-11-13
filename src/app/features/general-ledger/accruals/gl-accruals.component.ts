@@ -20,7 +20,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
@@ -30,7 +30,7 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
   styleUrl: './gl-accruals.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

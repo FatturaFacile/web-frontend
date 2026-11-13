@@ -18,7 +18,7 @@ import {
   contactDisplayName,
   I18nService,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams, TranslatePipe, IconActionDirective } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective } from '@shared';
 import { ClientFacade } from '../services/client.facade';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
@@ -77,10 +77,12 @@ export class ClientsComponent {
       header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TYPE'),
       width: '130px',
       valueGetter: (c) => this.typeLabel(c.type),
+      valueLabel: (value) => this.typeLabel(value as ContactType),
       customCellTemplate: this.typeTpl(),
     },
     {
       key: 'vat_number',
+      serverKey: 'tax_id',
       header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TAX_ID'),
       width: '160px',
       valueGetter: (c) => c.vat_number || c.fiscal_code || c.uid_number || '',
@@ -129,15 +131,6 @@ export class ClientsComponent {
         return 'purple';
       default:
         return 'cyan';
-    }
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
     }
   }
 

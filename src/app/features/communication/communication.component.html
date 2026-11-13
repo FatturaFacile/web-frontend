@@ -95,12 +95,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'recipient' | gridSort">{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
-            <th [nzSortFn]="'channel' | gridSort">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th [nzSortFn]="'driver' | gridSort">{{ 'COMMUNICATION.DRIVER' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'COMMUNICATION.STATUS' | translate }}</th>
-            <th [nzSortFn]="'provider_reference' | gridSort">{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'COMMUNICATION.DATE' | translate }}</th>
+            <th [nzSortFn]="'recipient' | gridSort" [nzFilters]="'recipient' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'recipient' | gridFilterFn">{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
+            <th [nzSortFn]="'channel' | gridSort" [nzFilters]="'channel' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'channel' | gridFilterFn">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'COMMUNICATION.DRIVER' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMUNICATION.STATUS' | translate }}</th>
+            <th [nzSortFn]="'provider_reference' | gridSort" [nzFilters]="'provider_reference' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'provider_reference' | gridFilterFn">{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: deliveriesTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'COMMUNICATION.DATE' | translate }}</th>
             <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -238,10 +238,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
-            <th [nzSortFn]="'channel' | gridSort">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th [nzSortFn]="'locale' | gridSort">{{ 'COMMUNICATION.LOCALE' | translate }}</th>
-            <th [nzSortFn]="'subject' | gridSort">{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
+            <th [nzSortFn]="'channel' | gridSort" [nzFilters]="'channel' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'channel' | gridFilterFn">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th [nzSortFn]="'locale' | gridSort" [nzFilters]="'locale' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'locale' | gridFilterFn">{{ 'COMMUNICATION.LOCALE' | translate }}</th>
+            <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: templatesTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
             <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
             <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
           </tr>

@@ -45,13 +45,8 @@
     </nz-select>
   </div>
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
-    (paramsChange)="onParamsChange($event)"
   />
   <ng-template #orderTpl let-b><code>{{ b.order_number }}</code></ng-template>
   <ng-template #customerTpl let-b>{{ lookups.contactName(b.contact_id) }}</ng-template>

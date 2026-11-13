@@ -24,7 +24,7 @@ import {
   TreasuryApiService,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { downloadBlob } from '../../../general-ledger/shared/gl-dates';
 import { TrLookupStore } from '../tr-lookup.store';
 import { notInPast } from '@shared/utils/date-validators';
@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<PaymentProposalStatus, string> = { draft: 'gold', co
   styleUrl: './tr-payment-proposals.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

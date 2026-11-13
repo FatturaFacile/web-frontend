@@ -22,7 +22,7 @@ import {
   RecurringCashItem,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
@@ -30,7 +30,7 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
   styleUrl: './tr-liquidity.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

@@ -95,11 +95,11 @@
         >
           <thead>
           <tr>
-            <th [nzSortFn]="'invoice_number' | gridSort">{{ "DASHBOARD.COL_REF" | translate }}</th>
-            <th [nzSortFn]="'invoice_type' | gridSort">{{ "DASHBOARD.COL_TYPE" | translate }}</th>
+            <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: recentTable.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ "DASHBOARD.COL_REF" | translate }}</th>
+            <th [nzSortFn]="'invoice_type' | gridSort" [nzFilters]="'invoice_type' | gridFilterList: recentTable.nzData" [nzFilterFn]="'invoice_type' | gridFilterFn">{{ "DASHBOARD.COL_TYPE" | translate }}</th>
             <th>{{ "DASHBOARD.COL_PARTY" | translate }}</th>
-            <th [nzSortFn]="'total' | gridSort">{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
-            <th [nzSortFn]="'payment_status' | gridSort">{{ "DASHBOARD.COL_STATUS" | translate }}</th>
+            <th [nzSortFn]="'total' | gridSort" [nzFilters]="'total' | gridFilterList: recentTable.nzData" [nzFilterFn]="'total' | gridFilterFn">{{ "DASHBOARD.COL_AMOUNT" | translate }}</th>
+            <th [nzSortFn]="'payment_status' | gridSort" [nzFilters]="'payment_status' | gridFilterList: recentTable.nzData" [nzFilterFn]="'payment_status' | gridFilterFn">{{ "DASHBOARD.COL_STATUS" | translate }}</th>
           </tr>
           </thead>
           <tbody>

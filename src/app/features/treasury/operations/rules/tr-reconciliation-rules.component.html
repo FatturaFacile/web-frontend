@@ -6,8 +6,8 @@
   <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
-        <th nzAlign="right" [nzSortFn]="'priority' | gridSort">{{ 'TR.PRIORITY' | translate }}</th>
-        <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: table.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'TR.PRIORITY' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'TR.NAME' | translate }}</th>
         <th>{{ 'TR.CATEGORY' | translate }}</th>
         <th>{{ 'TR.LEDGER_ACCOUNT_CODE' | translate }}</th>
         <th>{{ 'TR.STATUS' | translate }}</th>

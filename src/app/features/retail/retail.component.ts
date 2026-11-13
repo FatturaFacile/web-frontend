@@ -31,7 +31,7 @@ import {
   UpdateLoyaltyCardPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { formErrorTip } from '../inventory/form-error-tip';
 import { positiveNumber } from '@shared/utils/decimal-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -42,7 +42,7 @@ import { TranslatePipe } from '@shared';
   styleUrl: './retail.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     ModalActionsDirective,
     TranslatePipe,

@@ -21,7 +21,7 @@ import {
   I18nService,
   SalesCycleApiService,
 } from '@core';
-import { IconActionDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import {
   apiErrorText,
   CREDIT_MANAGER_ROLES,
@@ -39,7 +39,7 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
   styleUrl: './customer-credit.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     FormsModule,
     NzAlertModule,

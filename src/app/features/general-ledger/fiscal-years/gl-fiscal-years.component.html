@@ -11,10 +11,10 @@
     <thead>
       <tr>
         <th nzWidth="40px"></th>
-        <th [nzSortFn]="'year_code' | gridSort">{{ 'GL.YEAR_CODE' | translate }}</th>
-        <th [nzSortFn]="'start_date' | gridSort">{{ 'GL.START_DATE' | translate }}</th>
-        <th [nzSortFn]="'end_date' | gridSort">{{ 'GL.END_DATE' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort">{{ 'GL.STATUS' | translate }}</th>
+        <th [nzSortFn]="'year_code' | gridSort" [nzFilters]="'year_code' | gridFilterList: table.nzData" [nzFilterFn]="'year_code' | gridFilterFn">{{ 'GL.YEAR_CODE' | translate }}</th>
+        <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: table.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'GL.START_DATE' | translate }}</th>
+        <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: table.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'GL.END_DATE' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'GL.STATUS' | translate }}</th>
         <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
       </tr>
     </thead>

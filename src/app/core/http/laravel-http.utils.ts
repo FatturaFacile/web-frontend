@@ -7,9 +7,23 @@ import { ApiValidationErrorResponse } from '@core/models/api.models';
 export function toHttpParams(source: object): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(source)) {
-    if (value !== undefined && value !== null && value !== '') {
-      params = params.set(key, String(value));
+    if (value === undefined || value === null || value === '') {
+      continue;
     }
+    if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+      // Grid filters: { filter: { status: ['a', 'b'] }, filter_like: { name: 'x' } }
+      for (const [inner, innerValue] of Object.entries(value)) {
+        if (Array.isArray(innerValue)) {
+          for (const item of innerValue) {
+            params = params.append(`${key}[${inner}][]`, String(item));
+          }
+        } else if (innerValue !== undefined && innerValue !== null && innerValue !== '') {
+          params = params.set(`${key}[${inner}]`, String(innerValue));
+        }
+      }
+      continue;
+    }
+    params = params.set(key, String(value));
   }
   return params;
 }

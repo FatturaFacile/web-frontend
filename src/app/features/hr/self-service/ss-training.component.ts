@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { HrSelfServiceApiService, I18nService, SelfServiceTraining } from '@core';
-import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
@@ -12,18 +12,18 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './ss-training.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     DatePipe, NzTableModule, TranslatePipe, HrStatusTagComponent],
   template: `
     <h3>{{ 'hrmSelfService.trainingRecords' | translate }}</h3>
     <nz-table #records [nzData]="data().training_records" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th [nzSortFn]="'course_code' | gridSort">{{ 'hrmCommon.code' | translate }}</th>
-          <th [nzSortFn]="'course_title' | gridSort">{{ 'hrmSelfService.course' | translate }}</th>
-          <th [nzSortFn]="'category' | gridSort">{{ 'hrmSelfService.category' | translate }}</th>
-          <th [nzSortFn]="'scheduled_date' | gridSort">{{ 'hrmSelfService.scheduledDate' | translate }}</th>
-          <th [nzSortFn]="'completed_date' | gridSort">{{ 'hrmSelfService.completedDate' | translate }}</th>
+          <th [nzSortFn]="'course_code' | gridSort" [nzFilters]="'course_code' | gridFilterList: records.nzData" [nzFilterFn]="'course_code' | gridFilterFn">{{ 'hrmCommon.code' | translate }}</th>
+          <th [nzSortFn]="'course_title' | gridSort" [nzFilters]="'course_title' | gridFilterList: records.nzData" [nzFilterFn]="'course_title' | gridFilterFn">{{ 'hrmSelfService.course' | translate }}</th>
+          <th [nzSortFn]="'category' | gridSort" [nzFilters]="'category' | gridFilterList: records.nzData" [nzFilterFn]="'category' | gridFilterFn">{{ 'hrmSelfService.category' | translate }}</th>
+          <th [nzSortFn]="'scheduled_date' | gridSort" [nzFilters]="'scheduled_date' | gridFilterList: records.nzData" [nzFilterFn]="'scheduled_date' | gridFilterFn">{{ 'hrmSelfService.scheduledDate' | translate }}</th>
+          <th [nzSortFn]="'completed_date' | gridSort" [nzFilters]="'completed_date' | gridFilterList: records.nzData" [nzFilterFn]="'completed_date' | gridFilterFn">{{ 'hrmSelfService.completedDate' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
         </tr>
       </thead>
@@ -45,10 +45,10 @@ import { reportHttpError } from '../shared/hr-http.util';
     <nz-table #certs [nzData]="data().certifications" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th [nzSortFn]="'code' | gridSort">{{ 'hrmCommon.code' | translate }}</th>
-          <th [nzSortFn]="'name' | gridSort">{{ 'hrmCommon.name' | translate }}</th>
-          <th [nzSortFn]="'issue_date' | gridSort">{{ 'hrmSelfService.issueDate' | translate }}</th>
-          <th [nzSortFn]="'expiry_date' | gridSort">{{ 'hrmSelfService.expiryDate' | translate }}</th>
+          <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: certs.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'hrmCommon.code' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: certs.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'hrmCommon.name' | translate }}</th>
+          <th [nzSortFn]="'issue_date' | gridSort" [nzFilters]="'issue_date' | gridFilterList: certs.nzData" [nzFilterFn]="'issue_date' | gridFilterFn">{{ 'hrmSelfService.issueDate' | translate }}</th>
+          <th [nzSortFn]="'expiry_date' | gridSort" [nzFilters]="'expiry_date' | gridFilterList: certs.nzData" [nzFilterFn]="'expiry_date' | gridFilterFn">{{ 'hrmSelfService.expiryDate' | translate }}</th>
           <th>{{ 'hrmCommon.statusCol' | translate }}</th>
         </tr>
       </thead>

@@ -110,12 +110,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'network' | gridSort">{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</th>
-              <th [nzSortFn]="'document_reference' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</th>
-              <th [nzSortFn]="'recipient_identifier' | gridSort">{{ 'DOCUMENT_TRUST.RECIPIENT' | translate }}</th>
-              <th [nzSortFn]="'payload_sha256' | gridSort">{{ 'DOCUMENT_TRUST.PAYLOAD_SHA256' | translate }}</th>
-              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
+              <th [nzSortFn]="'network' | gridSort" [nzFilters]="'network' | gridFilterList: txTable.nzData" [nzFilterFn]="'network' | gridFilterFn">{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</th>
+              <th [nzSortFn]="'document_reference' | gridSort" [nzFilters]="'document_reference' | gridFilterList: txTable.nzData" [nzFilterFn]="'document_reference' | gridFilterFn">{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</th>
+              <th [nzSortFn]="'recipient_identifier' | gridSort" [nzFilters]="'recipient_identifier' | gridFilterList: txTable.nzData" [nzFilterFn]="'recipient_identifier' | gridFilterFn">{{ 'DOCUMENT_TRUST.RECIPIENT' | translate }}</th>
+              <th [nzSortFn]="'payload_sha256' | gridSort" [nzFilters]="'payload_sha256' | gridFilterList: txTable.nzData" [nzFilterFn]="'payload_sha256' | gridFilterFn">{{ 'DOCUMENT_TRUST.PAYLOAD_SHA256' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: txTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: txTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
               <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -185,11 +185,11 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'document_type' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th [nzSortFn]="'format' | gridSort">{{ 'DOCUMENT_TRUST.SIGNATURE_FORMAT' | translate }}</th>
-              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th [nzSortFn]="'signature_sha256' | gridSort">{{ 'DOCUMENT_TRUST.SIGNATURE_HASH' | translate }}</th>
-              <th [nzSortFn]="'signed_at' | gridSort">{{ 'DOCUMENT_TRUST.SIGNED_AT' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: sigTable.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'format' | gridSort" [nzFilters]="'format' | gridFilterList: sigTable.nzData" [nzFilterFn]="'format' | gridFilterFn">{{ 'DOCUMENT_TRUST.SIGNATURE_FORMAT' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: sigTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'signature_sha256' | gridSort" [nzFilters]="'signature_sha256' | gridFilterList: sigTable.nzData" [nzFilterFn]="'signature_sha256' | gridFilterFn">{{ 'DOCUMENT_TRUST.SIGNATURE_HASH' | translate }}</th>
+              <th [nzSortFn]="'signed_at' | gridSort" [nzFilters]="'signed_at' | gridFilterList: sigTable.nzData" [nzFilterFn]="'signed_at' | gridFilterFn">{{ 'DOCUMENT_TRUST.SIGNED_AT' | translate }}</th>
               <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -252,12 +252,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'document_type' | gridSort">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th [nzSortFn]="'driver' | gridSort">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th [nzSortFn]="'mode' | gridSort">{{ 'DOCUMENT_TRUST.MODE' | translate }}</th>
-              <th [nzSortFn]="'package_sha256' | gridSort">{{ 'DOCUMENT_TRUST.PACKAGE_SHA256' | translate }}</th>
-              <th [nzSortFn]="'timestamped_at' | gridSort">{{ 'DOCUMENT_TRUST.TIMESTAMPED_AT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: presTable.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'driver' | gridSort" [nzFilters]="'driver' | gridFilterList: presTable.nzData" [nzFilterFn]="'driver' | gridFilterFn">{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
+              <th [nzSortFn]="'mode' | gridSort" [nzFilters]="'mode' | gridFilterList: presTable.nzData" [nzFilterFn]="'mode' | gridFilterFn">{{ 'DOCUMENT_TRUST.MODE' | translate }}</th>
+              <th [nzSortFn]="'package_sha256' | gridSort" [nzFilters]="'package_sha256' | gridFilterList: presTable.nzData" [nzFilterFn]="'package_sha256' | gridFilterFn">{{ 'DOCUMENT_TRUST.PACKAGE_SHA256' | translate }}</th>
+              <th [nzSortFn]="'timestamped_at' | gridSort" [nzFilters]="'timestamped_at' | gridFilterList: presTable.nzData" [nzFilterFn]="'timestamped_at' | gridFilterFn">{{ 'DOCUMENT_TRUST.TIMESTAMPED_AT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: presTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>

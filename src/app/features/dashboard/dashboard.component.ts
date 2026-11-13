@@ -19,14 +19,14 @@ import {
   InvoiceResource,
   KpiSummary,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-dashboard',
   styleUrl: './dashboard.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     RouterLink,
     CurrencyPipe,
     NzCardModule,

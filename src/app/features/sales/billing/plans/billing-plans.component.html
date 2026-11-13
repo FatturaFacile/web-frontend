@@ -39,15 +39,14 @@
     [nzPageIndex]="pageIndex()"
     [nzPageSize]="15"
     (nzPageIndexChange)="load($event)"
-    nzSize="middle"
-  >
+    nzSize="middle" #gridTbl39>
     <thead>
       <tr>
-        <th [nzSortFn]="'schedule_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+        <th [nzSortFn]="'schedule_number' | gridSort" [nzFilters]="'schedule_number' | gridFilterList: gridTbl39.nzData" [nzFilterFn]="'schedule_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
         <th>{{ 'SC.COMMON.STATUS' | translate }}</th>
-        <th class="num" [nzSortFn]="'total_amount' | gridSort">{{ 'SC.PLANS.TOTAL' | translate }}</th>
-        <th class="num" [nzSortFn]="'billed_amount' | gridSort">{{ 'SC.PLANS.BILLED' | translate }}</th>
-        <th class="num" [nzSortFn]="'remaining_amount' | gridSort">{{ 'SC.PLANS.REMAINING' | translate }}</th>
+        <th class="num" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: gridTbl39.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'SC.PLANS.TOTAL' | translate }}</th>
+        <th class="num" [nzSortFn]="'billed_amount' | gridSort" [nzFilters]="'billed_amount' | gridFilterList: gridTbl39.nzData" [nzFilterFn]="'billed_amount' | gridFilterFn">{{ 'SC.PLANS.BILLED' | translate }}</th>
+        <th class="num" [nzSortFn]="'remaining_amount' | gridSort" [nzFilters]="'remaining_amount' | gridFilterList: gridTbl39.nzData" [nzFilterFn]="'remaining_amount' | gridFilterFn">{{ 'SC.PLANS.REMAINING' | translate }}</th>
         <th>{{ 'SC.PLANS.NEXT_BILLING' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
@@ -87,11 +86,11 @@
         <nz-descriptions-item [nzTitle]="'SC.PLANS.BILLED' | translate">{{ p.billed_amount | money: p.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'SC.PLANS.REMAINING' | translate">{{ p.remaining_amount | money: p.currency }}</nz-descriptions-item>
       </nz-descriptions>
-      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="p.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '760px' }" [nzData]="p.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl40>
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'SC.PRICING.NAME' | translate }}</th>
-            <th [nzSortFn]="'target_date' | gridSort">{{ 'SC.PLANS.TARGET_DATE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl40.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'SC.PRICING.NAME' | translate }}</th>
+            <th [nzSortFn]="'target_date' | gridSort" [nzFilters]="'target_date' | gridFilterList: gridTbl40.nzData" [nzFilterFn]="'target_date' | gridFilterFn">{{ 'SC.PLANS.TARGET_DATE' | translate }}</th>
             <th class="num">%</th>
             <th class="num">{{ 'SC.BILLING.AMOUNT' | translate }}</th>
             <th>{{ 'SC.COMMON.STATUS' | translate }}</th>

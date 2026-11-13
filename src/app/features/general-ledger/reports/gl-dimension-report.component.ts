@@ -6,7 +6,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DimensionReport, GeneralLedgerApiService, ReportDimension } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Result by cost centre, profit centre or project, in the accounting currency. */
@@ -15,7 +15,7 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
   styleUrl: './gl-dimension-report.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
@@ -40,13 +40,13 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
       </p>
       @for (group of r.groups; track group.dimension_id ?? group.dimension_code) {
         <h4>{{ group.dimension_code }} {{ group.dimension_name }} - {{ group.result | money: r.currency }}</h4>
-        <nz-table nzSize="small" [nzData]="group.accounts" [nzShowPagination]="false">
+        <nz-table nzSize="small" [nzData]="group.accounts" [nzShowPagination]="false" #gridTbl31>
           <thead>
             <tr>
-              <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }}</th>
-              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'GL.COL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'GL.COL_AMOUNT' | translate }}</th>
             </tr>
           </thead>
           <tbody>

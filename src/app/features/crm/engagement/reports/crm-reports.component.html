@@ -42,10 +42,10 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="forecasts()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzData]="forecasts()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl18>
         <thead>
           <tr>
-            <th [nzSortFn]="'period' | gridSort">{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
+            <th [nzSortFn]="'period' | gridSort" [nzFilters]="'period' | gridFilterList: gridTbl18.nzData" [nzFilterFn]="'period' | gridFilterFn">{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.QUOTA' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.COMMIT' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.BEST_CASE' | translate }}</th>

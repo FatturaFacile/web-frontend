@@ -46,10 +46,10 @@
             <nz-table #dayTable nzSize="small" [nzData]="scenario.days" [nzPageSize]="15">
               <thead>
                 <tr>
-                  <th [nzSortFn]="'date' | gridSort">{{ 'TR.DATE' | translate }}</th>
-                  <th nzAlign="right" [nzSortFn]="'inflows' | gridSort">{{ 'TR.TOTAL_INFLOWS' | translate }}</th>
-                  <th nzAlign="right" [nzSortFn]="'outflows' | gridSort">{{ 'TR.TOTAL_OUTFLOWS' | translate }}</th>
-                  <th nzAlign="right" [nzSortFn]="'balance' | gridSort">{{ 'TR.BALANCE' | translate }}</th>
+                  <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: dayTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'TR.DATE' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'inflows' | gridSort" [nzFilters]="'inflows' | gridFilterList: dayTable.nzData" [nzFilterFn]="'inflows' | gridFilterFn">{{ 'TR.TOTAL_INFLOWS' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'outflows' | gridSort" [nzFilters]="'outflows' | gridFilterList: dayTable.nzData" [nzFilterFn]="'outflows' | gridFilterFn">{{ 'TR.TOTAL_OUTFLOWS' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'balance' | gridSort" [nzFilters]="'balance' | gridFilterList: dayTable.nzData" [nzFilterFn]="'balance' | gridFilterFn">{{ 'TR.BALANCE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,11 +75,11 @@
       <nz-table #scenarioTable nzSize="middle" [nzData]="scenarios()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th [nzSortFn]="'code' | gridSort">{{ 'TR.CODE' | translate }}</th>
-            <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'collection_delay_days' | gridSort">{{ 'TR.COLLECTION_DELAY' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'disbursement_acceleration_days' | gridSort">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'sales_growth_factor' | gridSort">{{ 'TR.SALES_GROWTH' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: scenarioTable.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'TR.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: scenarioTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'TR.NAME' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'collection_delay_days' | gridSort" [nzFilters]="'collection_delay_days' | gridFilterList: scenarioTable.nzData" [nzFilterFn]="'collection_delay_days' | gridFilterFn">{{ 'TR.COLLECTION_DELAY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'disbursement_acceleration_days' | gridSort" [nzFilters]="'disbursement_acceleration_days' | gridFilterList: scenarioTable.nzData" [nzFilterFn]="'disbursement_acceleration_days' | gridFilterFn">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'sales_growth_factor' | gridSort" [nzFilters]="'sales_growth_factor' | gridFilterList: scenarioTable.nzData" [nzFilterFn]="'sales_growth_factor' | gridFilterFn">{{ 'TR.SALES_GROWTH' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -103,11 +103,11 @@
       <nz-table #recurringTable nzSize="middle" [nzData]="recurring()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'TR.NAME' | translate }}</th>
             <th>{{ 'TR.DIRECTION' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'TR.AMOUNT' | translate }}</th>
             <th>{{ 'TR.FREQUENCY' | translate }}</th>
-            <th [nzSortFn]="'next_date' | gridSort">{{ 'TR.NEXT_DATE' | translate }}</th>
+            <th [nzSortFn]="'next_date' | gridSort" [nzFilters]="'next_date' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'next_date' | gridFilterFn">{{ 'TR.NEXT_DATE' | translate }}</th>
             <th>{{ 'TR.ACTIONS' | translate }}</th>
           </tr>
         </thead>

@@ -20,7 +20,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const TYPES: CrmActivityType[] = ['task', 'call', 'meeting', 'note', 'email', 'follow_up'];
 const PRIORITIES: CrmActivityPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -55,7 +55,7 @@ const emptyDraft = (): ActivityDraft => ({
   styleUrl: './activities.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

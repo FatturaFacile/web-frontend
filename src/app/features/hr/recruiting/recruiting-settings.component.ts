@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTalentApiService, I18nService, OnboardingChecklistRecord } from '@core';
-import { IconActionDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { IconActionDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -15,7 +15,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './recruiting-settings.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
     DatePipe,
     FormsModule,
@@ -50,7 +50,7 @@ import { reportHttpError } from '../shared/hr-http.util';
       <thead>
         <tr>
           <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th [nzSortFn]="'title' | gridSort">{{ 'hrmRecruiting.tasks' | translate }}</th>
+          <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'hrmRecruiting.tasks' | translate }}</th>
         </tr>
       </thead>
       <tbody>

@@ -7,7 +7,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AuthStore, FxRevaluation, GeneralLedgerApiService, I18nService, PermissionsService } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
@@ -16,7 +16,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   styleUrl: './gl-fx-revaluation.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,

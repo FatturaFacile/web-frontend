@@ -8,7 +8,7 @@ import {
   LabourCostReport,
   PayrollComplianceApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -24,7 +24,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   styleUrl: './labour-cost-panel.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -94,12 +94,12 @@ import { reportHttpError } from '../shared/hr-http.util';
         <thead>
           <tr>
             <th>{{ 'hrmCompliance.labour.group' | translate }}</th>
-            <th [nzSortFn]="'headcount' | gridSort">{{ 'hrmCompliance.labour.headcount' | translate }}</th>
-            <th [nzSortFn]="'hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
-            <th [nzSortFn]="'gross_salary' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
-            <th [nzSortFn]="'employer_contributions' | gridSort">{{ 'hrmPayroll.employerContributions' | translate }}</th>
-            <th [nzSortFn]="'labour_cost' | gridSort">{{ 'hrmCompliance.labour.cost' | translate }}</th>
-            <th [nzSortFn]="'cost_per_hour' | gridSort">{{ 'hrmCompliance.labour.costPerHour' | translate }}</th>
+            <th [nzSortFn]="'headcount' | gridSort" [nzFilters]="'headcount' | gridFilterList: costTable.nzData" [nzFilterFn]="'headcount' | gridFilterFn">{{ 'hrmCompliance.labour.headcount' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort" [nzFilters]="'hours' | gridFilterList: costTable.nzData" [nzFilterFn]="'hours' | gridFilterFn">{{ 'hrmCommon.hours' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort" [nzFilters]="'gross_salary' | gridFilterList: costTable.nzData" [nzFilterFn]="'gross_salary' | gridFilterFn">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'employer_contributions' | gridSort" [nzFilters]="'employer_contributions' | gridFilterList: costTable.nzData" [nzFilterFn]="'employer_contributions' | gridFilterFn">{{ 'hrmPayroll.employerContributions' | translate }}</th>
+            <th [nzSortFn]="'labour_cost' | gridSort" [nzFilters]="'labour_cost' | gridFilterList: costTable.nzData" [nzFilterFn]="'labour_cost' | gridFilterFn">{{ 'hrmCompliance.labour.cost' | translate }}</th>
+            <th [nzSortFn]="'cost_per_hour' | gridSort" [nzFilters]="'cost_per_hour' | gridFilterList: costTable.nzData" [nzFilterFn]="'cost_per_hour' | gridFilterFn">{{ 'hrmCompliance.labour.costPerHour' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -143,10 +143,10 @@ import { reportHttpError } from '../shared/hr-http.util';
       <nz-table #childTable [nzData]="rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: childTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
             <th>{{ 'hrmCommon.type' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort">{{ 'hrmCompliance.children.amount' | translate }}</th>
-            <th [nzSortFn]="'canton' | gridSort">{{ 'hrmPayroll.canton' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: childTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'hrmCompliance.children.amount' | translate }}</th>
+            <th [nzSortFn]="'canton' | gridSort" [nzFilters]="'canton' | gridFilterList: childTable.nzData" [nzFilterFn]="'canton' | gridFilterFn">{{ 'hrmPayroll.canton' | translate }}</th>
             <th>{{ 'hrmCompliance.children.rateValidFrom' | translate }}</th>
           </tr>
         </thead>

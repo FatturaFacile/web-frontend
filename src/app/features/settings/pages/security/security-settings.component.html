@@ -83,8 +83,8 @@
       <thead>
         <tr>
           <th>{{ 'SECURITY.COL_TYPE' | translate }}</th>
-          <th [nzSortFn]="'user_agent' | gridSort">{{ 'SECURITY.COL_DEVICE' | translate }}</th>
-          <th [nzSortFn]="'ip_address' | gridSort">{{ 'SECURITY.COL_IP' | translate }}</th>
+          <th [nzSortFn]="'user_agent' | gridSort" [nzFilters]="'user_agent' | gridFilterList: sessionsTable.nzData" [nzFilterFn]="'user_agent' | gridFilterFn">{{ 'SECURITY.COL_DEVICE' | translate }}</th>
+          <th [nzSortFn]="'ip_address' | gridSort" [nzFilters]="'ip_address' | gridFilterList: sessionsTable.nzData" [nzFilterFn]="'ip_address' | gridFilterFn">{{ 'SECURITY.COL_IP' | translate }}</th>
           <th>{{ 'SECURITY.COL_LAST_ACTIVITY' | translate }}</th>
           <th>{{ 'COMMON.STATUS' | translate }}</th>
           <th nzAlign="right">{{ 'COMMON.ACTION' | translate }}</th>

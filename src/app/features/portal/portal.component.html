@@ -109,11 +109,11 @@
               >
                 <thead>
                   <tr>
-                    <th [nzSortFn]="'title' | gridSort">{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
-                    <th [nzSortFn]="'start_at' | gridSort">{{ 'PORTAL.DATE_START' | translate }}</th>
-                    <th [nzSortFn]="'end_at' | gridSort">{{ 'PORTAL.DATE_END' | translate }}</th>
-                    <th [nzSortFn]="'technician_name' | gridSort">{{ 'PORTAL.TECHNICIAN' | translate }}</th>
-                    <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
+                    <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: aptTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
+                    <th [nzSortFn]="'start_at' | gridSort" [nzFilters]="'start_at' | gridFilterList: aptTable.nzData" [nzFilterFn]="'start_at' | gridFilterFn">{{ 'PORTAL.DATE_START' | translate }}</th>
+                    <th [nzSortFn]="'end_at' | gridSort" [nzFilters]="'end_at' | gridFilterList: aptTable.nzData" [nzFilterFn]="'end_at' | gridFilterFn">{{ 'PORTAL.DATE_END' | translate }}</th>
+                    <th [nzSortFn]="'technician_name' | gridSort" [nzFilters]="'technician_name' | gridFilterList: aptTable.nzData" [nzFilterFn]="'technician_name' | gridFilterFn">{{ 'PORTAL.TECHNICIAN' | translate }}</th>
+                    <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: aptTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,11 +150,11 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'quote_number' | gridSort">{{ 'PORTAL.NUMBER' | translate }}</th>
-              <th [nzSortFn]="'date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
-              <th [nzSortFn]="'valid_until' | gridSort">{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
-              <th [nzSortFn]="'total_gross' | gridSort">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th [nzSortFn]="'signed_by' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'quote_number' | gridSort" [nzFilters]="'quote_number' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'quote_number' | gridFilterFn">{{ 'PORTAL.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'signed_by' | gridSort" [nzFilters]="'signed_by' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'signed_by' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -211,12 +211,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'invoice_number' | gridSort">{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
-              <th [nzSortFn]="'due_date' | gridSort">{{ 'PORTAL.DUE_DATE' | translate }}</th>
-              <th [nzSortFn]="'total_gross' | gridSort">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th [nzSortFn]="'total_paid' | gridSort">{{ 'PORTAL.PAID' | translate }}</th>
-              <th [nzSortFn]="'payment_status' | gridSort">{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
+              <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: invTable.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: invTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: invTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'PORTAL.DUE_DATE' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: invTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'total_paid' | gridSort" [nzFilters]="'total_paid' | gridFilterList: invTable.nzData" [nzFilterFn]="'total_paid' | gridFilterFn">{{ 'PORTAL.PAID' | translate }}</th>
+              <th [nzSortFn]="'payment_status' | gridSort" [nzFilters]="'payment_status' | gridFilterList: invTable.nzData" [nzFilterFn]="'payment_status' | gridFilterFn">{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -256,10 +256,10 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'subscription_number' | gridSort">{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
-                <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PLAN' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
-                <th [nzSortFn]="'next_billing_date' | gridSort">{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
+                <th [nzSortFn]="'subscription_number' | gridSort" [nzFilters]="'subscription_number' | gridFilterList: subTable.nzData" [nzFilterFn]="'subscription_number' | gridFilterFn">{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: subTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PLAN' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: subTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'next_billing_date' | gridSort" [nzFilters]="'next_billing_date' | gridFilterList: subTable.nzData" [nzFilterFn]="'next_billing_date' | gridFilterFn">{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
                 <th>{{ 'PORTAL.AUTO_RENEW' | translate }}</th>
               </tr>
             </thead>
@@ -320,11 +320,11 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'ticket_number' | gridSort">{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
-                <th [nzSortFn]="'subject' | gridSort">{{ 'PORTAL.SUBJECT' | translate }}</th>
-                <th [nzSortFn]="'priority' | gridSort">{{ 'PORTAL.PRIORITY' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
-                <th [nzSortFn]="'created_at' | gridSort">{{ 'PORTAL.CREATED_AT' | translate }}</th>
+                <th [nzSortFn]="'ticket_number' | gridSort" [nzFilters]="'ticket_number' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'ticket_number' | gridFilterFn">{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'PORTAL.SUBJECT' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'PORTAL.PRIORITY' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'PORTAL.CREATED_AT' | translate }}</th>
                 <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -399,12 +399,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'report_number' | gridSort">{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'report_date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
-              <th [nzSortFn]="'site_address' | gridSort">{{ 'PORTAL.SITE' | translate }}</th>
-              <th [nzSortFn]="'total_hours' | gridSort">{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
+              <th [nzSortFn]="'report_number' | gridSort" [nzFilters]="'report_number' | gridFilterList: repTable.nzData" [nzFilterFn]="'report_number' | gridFilterFn">{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'report_date' | gridSort" [nzFilters]="'report_date' | gridFilterList: repTable.nzData" [nzFilterFn]="'report_date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'site_address' | gridSort" [nzFilters]="'site_address' | gridFilterList: repTable.nzData" [nzFilterFn]="'site_address' | gridFilterFn">{{ 'PORTAL.SITE' | translate }}</th>
+              <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: repTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
               <th>{{ 'PORTAL.SIGNED' | translate }}</th>
-              <th [nzSortFn]="'original_name' | gridSort">{{ 'PORTAL.ACTIONS' | translate }}</th>
+              <th [nzSortFn]="'original_name' | gridSort" [nzFilters]="'original_name' | gridFilterList: repTable.nzData" [nzFilterFn]="'original_name' | gridFilterFn">{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -455,11 +455,11 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'sku' | gridSort">{{ 'PORTAL.SKU' | translate }}</th>
-              <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th [nzSortFn]="'lot_number' | gridSort">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'quantity_available' | gridSort">{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
-              <th [nzSortFn]="'quantity_reserved' | gridSort">{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: stkTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: stkTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort" [nzFilters]="'lot_number' | gridFilterList: stkTable.nzData" [nzFilterFn]="'lot_number' | gridFilterFn">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity_available' | gridSort" [nzFilters]="'quantity_available' | gridFilterList: stkTable.nzData" [nzFilterFn]="'quantity_available' | gridFilterFn">{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_reserved' | gridSort" [nzFilters]="'quantity_reserved' | gridFilterList: stkTable.nzData" [nzFilterFn]="'quantity_reserved' | gridFilterFn">{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -486,12 +486,12 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'executed_at' | gridSort">{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
+              <th [nzSortFn]="'executed_at' | gridSort" [nzFilters]="'executed_at' | gridFilterList: movTable.nzData" [nzFilterFn]="'executed_at' | gridFilterFn">{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
               <th>{{ 'PORTAL.MOVEMENT_DIRECTION' | translate }}</th>
-              <th [nzSortFn]="'sku' | gridSort">{{ 'PORTAL.SKU' | translate }}</th>
-              <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th [nzSortFn]="'lot_number' | gridSort">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'quantity' | gridSort">{{ 'PORTAL.QUANTITY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: movTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: movTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort" [nzFilters]="'lot_number' | gridFilterList: movTable.nzData" [nzFilterFn]="'lot_number' | gridFilterFn">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: movTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'PORTAL.QUANTITY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -534,13 +534,13 @@
         >
           <thead>
             <tr>
-              <th [nzSortFn]="'dossier_number' | gridSort">{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'direction' | gridSort">{{ 'PORTAL.DIRECTION' | translate }}</th>
-              <th [nzSortFn]="'origin_country' | gridSort">{{ 'PORTAL.ORIGIN' | translate }}</th>
-              <th [nzSortFn]="'destination_country' | gridSort">{{ 'PORTAL.DESTINATION' | translate }}</th>
-              <th [nzSortFn]="'packages' | gridSort">{{ 'PORTAL.PACKAGES' | translate }}</th>
-              <th [nzSortFn]="'gross_weight_kg' | gridSort">{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'dossier_number' | gridSort" [nzFilters]="'dossier_number' | gridFilterList: customsTable.nzData" [nzFilterFn]="'dossier_number' | gridFilterFn">{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'direction' | gridSort" [nzFilters]="'direction' | gridFilterList: customsTable.nzData" [nzFilterFn]="'direction' | gridFilterFn">{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th [nzSortFn]="'origin_country' | gridSort" [nzFilters]="'origin_country' | gridFilterList: customsTable.nzData" [nzFilterFn]="'origin_country' | gridFilterFn">{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th [nzSortFn]="'destination_country' | gridSort" [nzFilters]="'destination_country' | gridFilterList: customsTable.nzData" [nzFilterFn]="'destination_country' | gridFilterFn">{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th [nzSortFn]="'packages' | gridSort" [nzFilters]="'packages' | gridFilterList: customsTable.nzData" [nzFilterFn]="'packages' | gridFilterFn">{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th [nzSortFn]="'gross_weight_kg' | gridSort" [nzFilters]="'gross_weight_kg' | gridFilterList: customsTable.nzData" [nzFilterFn]="'gross_weight_kg' | gridFilterFn">{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: customsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>

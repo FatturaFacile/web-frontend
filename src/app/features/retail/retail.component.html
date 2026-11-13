@@ -75,12 +75,12 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'document_number' | gridSort">{{ 'retail.lblNScontrino' | translate }}</th>
-            <th [nzSortFn]="'issued_at' | gridSort">{{ 'retail.lblDataEOra' | translate }}</th>
-            <th [nzSortFn]="'cashier_name' | gridSort">{{ 'retail.lblCassiere' | translate }}</th>
-            <th [nzSortFn]="'payment_method' | gridSort">{{ 'retail.lblMetodoPagamento' | translate }}</th>
-            <th class="num" [nzSortFn]="'total_amount' | gridSort">{{ 'retail.lblTotaleEuro' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'retail.lblStato' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort" [nzFilters]="'document_number' | gridFilterList: docTable.nzData" [nzFilterFn]="'document_number' | gridFilterFn">{{ 'retail.lblNScontrino' | translate }}</th>
+            <th [nzSortFn]="'issued_at' | gridSort" [nzFilters]="'issued_at' | gridFilterList: docTable.nzData" [nzFilterFn]="'issued_at' | gridFilterFn">{{ 'retail.lblDataEOra' | translate }}</th>
+            <th [nzSortFn]="'cashier_name' | gridSort" [nzFilters]="'cashier_name' | gridFilterList: docTable.nzData" [nzFilterFn]="'cashier_name' | gridFilterFn">{{ 'retail.lblCassiere' | translate }}</th>
+            <th [nzSortFn]="'payment_method' | gridSort" [nzFilters]="'payment_method' | gridFilterList: docTable.nzData" [nzFilterFn]="'payment_method' | gridFilterFn">{{ 'retail.lblMetodoPagamento' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: docTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'retail.lblTotaleEuro' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'retail.lblStato' | translate }}</th>
             <th class="cell-actions">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -171,11 +171,11 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'card_number' | gridSort">{{ 'retail.lblCodiceCarta' | translate }}</th>
-            <th [nzSortFn]="'contact_id' | gridSort">{{ 'retail.lblClienteIdNome' | translate }}</th>
-            <th class="num" [nzSortFn]="'balance' | gridSort">{{ 'retail.lblSaldoPuntiCredito' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort">{{ 'retail.lblStato' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'retail.lblDataEmissione' | translate }}</th>
+            <th [nzSortFn]="'card_number' | gridSort" [nzFilters]="'card_number' | gridFilterList: loyaltyTable.nzData" [nzFilterFn]="'card_number' | gridFilterFn">{{ 'retail.lblCodiceCarta' | translate }}</th>
+            <th [nzSortFn]="'contact_id' | gridSort" [nzFilters]="'contact_id' | gridFilterList: loyaltyTable.nzData" [nzFilterFn]="'contact_id' | gridFilterFn">{{ 'retail.lblClienteIdNome' | translate }}</th>
+            <th class="num" [nzSortFn]="'balance' | gridSort" [nzFilters]="'balance' | gridFilterList: loyaltyTable.nzData" [nzFilterFn]="'balance' | gridFilterFn">{{ 'retail.lblSaldoPuntiCredito' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: loyaltyTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'retail.lblStato' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: loyaltyTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'retail.lblDataEmissione' | translate }}</th>
             <th class="cell-actions">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -450,10 +450,10 @@
       >
         <thead>
           <tr>
-            <th [nzSortFn]="'created_at' | gridSort">{{ 'retail.lblData' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: txTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'retail.lblData' | translate }}</th>
             <th>{{ 'retail.lblTipo' | translate }}</th>
-            <th class="num" [nzSortFn]="'amount' | gridSort">{{ 'retail.lblPunti' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort">{{ 'retail.lblCausale' | translate }}</th>
+            <th class="num" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: txTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'retail.lblPunti' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: txTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'retail.lblCausale' | translate }}</th>
           </tr>
         </thead>
         <tbody>

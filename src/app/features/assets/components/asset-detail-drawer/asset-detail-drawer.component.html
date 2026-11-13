@@ -58,13 +58,13 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'ledger_type' | gridSort">{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
-                <th [nzSortFn]="'depreciation_method' | gridSort">{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
+                <th [nzSortFn]="'ledger_type' | gridSort" [nzFilters]="'ledger_type' | gridFilterList: booksTable.nzData" [nzFilterFn]="'ledger_type' | gridFilterFn">{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
+                <th [nzSortFn]="'depreciation_method' | gridSort" [nzFilters]="'depreciation_method' | gridFilterList: booksTable.nzData" [nzFilterFn]="'depreciation_method' | gridFilterFn">{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblUsefulLife' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblRate' | translate }}</th>
-                <th [nzSortFn]="'cost' | gridSort">{{ 'assetDetailDrawer.lblCost' | translate }}</th>
-                <th [nzSortFn]="'accumulated_depreciation' | gridSort">{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
-                <th [nzSortFn]="'net_book_value' | gridSort">{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
+                <th [nzSortFn]="'cost' | gridSort" [nzFilters]="'cost' | gridFilterList: booksTable.nzData" [nzFilterFn]="'cost' | gridFilterFn">{{ 'assetDetailDrawer.lblCost' | translate }}</th>
+                <th [nzSortFn]="'accumulated_depreciation' | gridSort" [nzFilters]="'accumulated_depreciation' | gridFilterList: booksTable.nzData" [nzFilterFn]="'accumulated_depreciation' | gridFilterFn">{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
+                <th [nzSortFn]="'net_book_value' | gridSort" [nzFilters]="'net_book_value' | gridFilterList: booksTable.nzData" [nzFilterFn]="'net_book_value' | gridFilterFn">{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblPostsToGl' | translate }}</th>
               </tr>
             </thead>
@@ -104,13 +104,13 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'period_code' | gridSort">{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
-                <th [nzSortFn]="'ledger_type' | gridSort">{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
-                <th [nzSortFn]="'opening_book_value' | gridSort">{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
-                <th [nzSortFn]="'depreciation_amount' | gridSort">{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
-                <th [nzSortFn]="'closing_book_value' | gridSort">{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
-                <th [nzSortFn]="'accumulated_depreciation' | gridSort">{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'period_code' | gridSort" [nzFilters]="'period_code' | gridFilterList: schTable.nzData" [nzFilterFn]="'period_code' | gridFilterFn">{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
+                <th [nzSortFn]="'ledger_type' | gridSort" [nzFilters]="'ledger_type' | gridFilterList: schTable.nzData" [nzFilterFn]="'ledger_type' | gridFilterFn">{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
+                <th [nzSortFn]="'opening_book_value' | gridSort" [nzFilters]="'opening_book_value' | gridFilterList: schTable.nzData" [nzFilterFn]="'opening_book_value' | gridFilterFn">{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
+                <th [nzSortFn]="'depreciation_amount' | gridSort" [nzFilters]="'depreciation_amount' | gridFilterList: schTable.nzData" [nzFilterFn]="'depreciation_amount' | gridFilterFn">{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
+                <th [nzSortFn]="'closing_book_value' | gridSort" [nzFilters]="'closing_book_value' | gridFilterList: schTable.nzData" [nzFilterFn]="'closing_book_value' | gridFilterFn">{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
+                <th [nzSortFn]="'accumulated_depreciation' | gridSort" [nzFilters]="'accumulated_depreciation' | gridFilterList: schTable.nzData" [nzFilterFn]="'accumulated_depreciation' | gridFilterFn">{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: schTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -144,11 +144,11 @@
           >
             <thead>
               <tr>
-                <th [nzSortFn]="'work_order_number' | gridSort">{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
-                <th [nzSortFn]="'maintenance_type' | gridSort">{{ 'assetDetailDrawer.lblType' | translate }}</th>
-                <th [nzSortFn]="'priority' | gridSort">{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'scheduled_date' | gridSort">{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
+                <th [nzSortFn]="'work_order_number' | gridSort" [nzFilters]="'work_order_number' | gridFilterList: woTable.nzData" [nzFilterFn]="'work_order_number' | gridFilterFn">{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
+                <th [nzSortFn]="'maintenance_type' | gridSort" [nzFilters]="'maintenance_type' | gridFilterList: woTable.nzData" [nzFilterFn]="'maintenance_type' | gridFilterFn">{{ 'assetDetailDrawer.lblType' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: woTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: woTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'scheduled_date' | gridSort" [nzFilters]="'scheduled_date' | gridFilterList: woTable.nzData" [nzFilterFn]="'scheduled_date' | gridFilterFn">{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblTotalCost' | translate }}</th>
               </tr>
             </thead>

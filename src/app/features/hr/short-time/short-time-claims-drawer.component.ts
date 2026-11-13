@@ -16,7 +16,7 @@ import {
   ShortTimeClaim,
   ShortTimeClaimSummary,
 } from '@core';
-import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -34,7 +34,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
   styleUrl: './short-time-claims-drawer.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     ActionFormComponent,
     MoneyPipe,
@@ -58,9 +58,9 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
         <nz-table #table [nzData]="claims()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th [nzSortFn]="'month' | gridSort">{{ 'hrmShortTime.claims.period' | translate }}</th>
+              <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: table.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmShortTime.claims.period' | translate }}</th>
               <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-              <th [nzSortFn]="'total_compensation' | gridSort">{{ 'hrmShortTime.claims.total' | translate }}</th>
+              <th [nzSortFn]="'total_compensation' | gridSort" [nzFilters]="'total_compensation' | gridFilterList: table.nzData" [nzFilterFn]="'total_compensation' | gridFilterFn">{{ 'hrmShortTime.claims.total' | translate }}</th>
               <th>{{ 'hrmCommon.actions' | translate }}</th>
             </tr>
           </thead>
