@@ -4,7 +4,6 @@ import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } 
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -35,17 +34,18 @@ import {
   UpdateHelpdeskTicketRequest,
   TranslateService,
 } from '@core';
-import { downloadBlob, TranslatePipe } from '@shared';
+import { downloadBlob, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-tools.component';
 
 @Component({
   selector: 'app-ticket-detail-drawer',
   styleUrl: './ticket-detail-drawer.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     ReactiveFormsModule,
-    NzDrawerModule,
     NzTabsModule,
     NzFormModule,
     NzInputModule,

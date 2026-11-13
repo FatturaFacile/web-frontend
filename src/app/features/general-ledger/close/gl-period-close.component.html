@@ -68,7 +68,7 @@
         <input class="task-input" nz-input maxlength="255" [attr.aria-label]="'GL.TASK_TITLE' | translate" [placeholder]="'GL.TASK_TITLE' | translate" [(ngModel)]="newTitle" />
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [(ngModel)]="newBlocking">{{ 'GL.BLOCKING' | translate }}</label>
-        <button nz-button type="button" [disabled]="!newTitle.trim()" (click)="addTask()">{{ 'GL.ADD_TASK' | translate }}</button>
+        <button nz-button type="button" [disabled]="!newTitle.trim()" (click)="addTask()" appIconAction="add"></button>
       </div>
     }
     @if (list.tasks.length === 0) {

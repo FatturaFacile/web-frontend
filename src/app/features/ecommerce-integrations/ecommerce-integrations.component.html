@@ -4,18 +4,9 @@
     [subtitle]="'ECOMMERCE_INTEGRATIONS.PAGE_SUBTITLE' | translate"
   >
     <div class="header-actions">
-      <button nz-button nzType="primary" (click)="openCreateChannelModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'ECOMMERCE_INTEGRATIONS.NEW_CHANNEL' | translate }}
-      </button>
-      <button nz-button (click)="openCreateApiKeyModal()">
-        <span nz-icon nzType="lock"></span>
-        {{ 'ECOMMERCE_INTEGRATIONS.NEW_API_KEY' | translate }}
-      </button>
-      <button nz-button (click)="openCreatePaymentLinkModal()">
-        <span nz-icon nzType="dollar"></span>
-        {{ 'ECOMMERCE_INTEGRATIONS.NEW_PAYMENT_LINK' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateChannelModal()"></button>
+      <button nz-button appIconAction="create" (click)="openCreateApiKeyModal()"></button>
+      <button nz-button appIconAction="create" (click)="openCreatePaymentLinkModal()"></button>
     </div>
   </app-page-header>
 
@@ -84,13 +75,8 @@
                       <span nz-icon nzType="cloud-download"></span>
                       {{ 'ECOMMERCE_INTEGRATIONS.SYNC_NOW' | translate }}
                     </button>
-                    <button nz-button nzType="link" nzSize="small" (click)="openEditChannelModal(ch)">
-                      <span nz-icon nzType="edit"></span>
-                      {{ 'ECOMMERCE_INTEGRATIONS.EDIT' | translate }}
-                    </button>
-                    <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteChannel(ch)">
-                      <span nz-icon nzType="delete"></span>
-                    </button>
+                    <button nz-button nzType="link" nzSize="small" appIconAction="edit" (click)="openEditChannelModal(ch)"></button>
+                    <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteChannel(ch)" appIconAction="delete"></button>
                   </div>
                 </td>
               </tr>
@@ -141,10 +127,7 @@
       <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_API_KEYS' | translate">
         <div class="tab-toolbar">
           <p class="description">{{ 'ECOMMERCE_INTEGRATIONS.API_KEYS_DESCRIPTION' | translate }}</p>
-          <button nz-button nzType="primary" (click)="openCreateApiKeyModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'ECOMMERCE_INTEGRATIONS.CREATE_API_KEY' | translate }}
-          </button>
+          <button nz-button nzType="primary" appIconAction="create" (click)="openCreateApiKeyModal()"></button>
         </div>
 
         <nz-table
@@ -277,10 +260,7 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <button nz-button nzType="primary" [nzLoading]="loading()">
-                <span nz-icon nzType="check"></span>
-                {{ 'ECOMMERCE_INTEGRATIONS.SAVE_GATEWAY' | translate }}
-              </button>
+              <button nz-button nzType="primary" appIconAction="save" [nzLoading]="loading()" [disabled]="gatewayForm.invalid"></button>
             </form>
           </nz-card>
 
@@ -297,10 +277,7 @@
               <button nz-button (click)="loadPaymentLinks()">
                 <span nz-icon nzType="search"></span>
               </button>
-              <button nz-button nzType="primary" (click)="openCreatePaymentLinkModal()">
-                <span nz-icon nzType="plus"></span>
-                {{ 'ECOMMERCE_INTEGRATIONS.CREATE_LINK' | translate }}
-              </button>
+              <button nz-button nzType="primary" appIconAction="create" (click)="openCreatePaymentLinkModal()"></button>
             </div>
 
             <nz-table
@@ -356,11 +333,9 @@
                           nzDanger
                           nz-popconfirm
                           [nzPopconfirmTitle]="'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_CONFIRM' | translate"
+                          appIconAction="cancel"
                           (nzOnConfirm)="cancelPaymentLink(link)"
-                        >
-                          <span nz-icon nzType="close-circle"></span>
-                          {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL' | translate }}
-                        </button>
+                        ></button>
                       }
                     </td>
                   </tr>
@@ -375,9 +350,11 @@
 
   <!-- MODAL: Channel (Create / Edit) -->
   <nz-modal
+  okAction="save"
     [nzVisible]="isChannelModalVisible()"
     [nzTitle]="(isEditingChannel() ? 'ECOMMERCE_INTEGRATIONS.EDIT_CHANNEL_MODAL' : 'ECOMMERCE_INTEGRATIONS.CREATE_CHANNEL_MODAL') | translate"
     (nzOnCancel)="closeChannelModal()"
+    [nzOkDisabled]="channelForm.invalid"
     (nzOnOk)="submitChannel()"
     [nzOkLoading]="loading()"
   >
@@ -494,9 +471,11 @@
 
   <!-- MODAL: Create API Key -->
   <nz-modal
+  okAction="create"
     [nzVisible]="isApiKeyModalVisible()"
     [nzTitle]="'ECOMMERCE_INTEGRATIONS.CREATE_API_KEY' | translate"
     (nzOnCancel)="closeApiKeyModal()"
+    [nzOkDisabled]="apiKeyForm.invalid"
     (nzOnOk)="submitApiKey()"
     [nzOkLoading]="loading()"
   >
@@ -569,9 +548,11 @@
 
   <!-- MODAL: Create Payment Link -->
   <nz-modal
+  okAction="create"
     [nzVisible]="isPaymentLinkModalVisible()"
     [nzTitle]="'ECOMMERCE_INTEGRATIONS.CREATE_PAYMENT_LINK_MODAL' | translate"
     (nzOnCancel)="closePaymentLinkModal()"
+    [nzOkDisabled]="paymentLinkForm.invalid"
     (nzOnOk)="submitCreatePaymentLink()"
     [nzOkLoading]="loading()"
   >
@@ -603,13 +584,14 @@
   </nz-modal>
 
   <!-- DRAWER: Channel Details -->
-  <nz-drawer
-    [nzVisible]="isChannelDrawerVisible()"
+  <nz-modal
+  [nzVisible]="isChannelDrawerVisible()"
+  [nzWidth]="800"
+  [nzFooter]="null"
     [nzTitle]="'ECOMMERCE_INTEGRATIONS.CHANNEL_DETAILS' | translate"
-    (nzOnClose)="closeChannelDrawer()"
-    [nzWidth]="500"
+    (nzOnCancel)="closeChannelDrawer()"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedChannel(); as ch) {
         <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
           <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate">
@@ -635,5 +617,5 @@
         </nz-descriptions>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 </div>

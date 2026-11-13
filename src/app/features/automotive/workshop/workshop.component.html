@@ -4,20 +4,11 @@
 >
   <div class="header-actions">
     @if (selectedTabIndex() === 0) {
-      <button nz-button nzType="primary" (click)="openCreateFolderModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_FOLDER' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFolderModal()"></button>
     } @else if (selectedTabIndex() === 1) {
-      <button nz-button nzType="primary" (click)="openCreateStockModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_STOCK_UNIT' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateStockModal()"></button>
     } @else if (selectedTabIndex() === 2) {
-      <button nz-button nzType="primary" (click)="openCreateRecurringModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_RECURRING' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateRecurringModal()"></button>
     }
   </div>
 </app-page-header>
@@ -371,13 +362,14 @@
 </div>
 
 <!-- DRAWER: GESTIONE COMMESSA & RIGHE & TEMPI & STORICO -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="850"
+  [nzWidth]="960"
+  [nzFooter]="null"
   [nzTitle]="('WORKSHOP.DRAWER_TITLE' | translate) + ': ' + (selectedFolder()?.folder_number || '')"
-  (nzOnClose)="closeFolderDrawer()"
+  (nzOnCancel)="closeFolderDrawer()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedFolder(); as folder) {
       <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
         <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_VEHICLE' | translate">
@@ -404,10 +396,7 @@
       <div class="drawer-section">
         <div class="drawer-section-header">
           <h4>{{ 'WORKSHOP.LINES_TITLE' | translate }}</h4>
-          <button nz-button nzType="primary" nzSize="small" (click)="openAddLineModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'WORKSHOP.ADD_LINE' | translate }}
-          </button>
+          <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openAddLineModal()"></button>
         </div>
 
         <nz-table #linesTable [nzData]="folderLines()" [nzFrontPagination]="false" nzSize="small">
@@ -442,11 +431,10 @@
                     nzDanger
                     nzSize="small"
                     nz-popconfirm
+                    appIconAction="delete"
                     [nzPopconfirmTitle]="'WORKSHOP.CONFIRM_DELETE_LINE' | translate"
                     (nzOnConfirm)="deleteLine(line.id)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                  ></button>
                 </td>
               </tr>
             }
@@ -559,13 +547,15 @@
       </div>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: CREA COMMESSA -->
 <nz-modal
   [nzVisible]="folderModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_FOLDER' | translate"
+  okAction="create"
   (nzOnCancel)="folderModalVisible.set(false)"
+  [nzOkDisabled]="folderForm.invalid"
   (nzOnOk)="saveFolder()"
 >
   <ng-container *nzModalContent>
@@ -656,7 +646,9 @@
 <nz-modal
   [nzVisible]="lineModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_ADD_LINE' | translate"
+  okAction="add"
   (nzOnCancel)="lineModalVisible.set(false)"
+  [nzOkDisabled]="lineForm.invalid"
   (nzOnOk)="saveLine()"
 >
   <ng-container *nzModalContent>
@@ -722,7 +714,9 @@
 <nz-modal
   [nzVisible]="timeBillModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_BILL_TIME' | translate"
+  okAction="confirm"
   (nzOnCancel)="timeBillModalVisible.set(false)"
+  [nzOkDisabled]="timeBillForm.invalid"
   (nzOnOk)="billTimeEntries()"
 >
   <ng-container *nzModalContent>
@@ -766,7 +760,9 @@
 <nz-modal
   [nzVisible]="stockModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_STOCK' | translate"
+  okAction="create"
   (nzOnCancel)="stockModalVisible.set(false)"
+  [nzOkDisabled]="stockForm.invalid"
   (nzOnOk)="saveStock()"
 >
   <ng-container *nzModalContent>
@@ -856,7 +852,9 @@
 <nz-modal
   [nzVisible]="sellStockModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_SELL_STOCK' | translate"
+  okAction="confirm"
   (nzOnCancel)="sellStockModalVisible.set(false)"
+  [nzOkDisabled]="sellStockForm.invalid"
   (nzOnOk)="saveSellStock()"
 >
   <ng-container *nzModalContent>
@@ -916,7 +914,9 @@
 <nz-modal
   [nzVisible]="recurringModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_RECURRING' | translate"
+  okAction="create"
   (nzOnCancel)="recurringModalVisible.set(false)"
+  [nzOkDisabled]="recurringForm.invalid"
   (nzOnOk)="saveRecurringService()"
 >
   <ng-container *nzModalContent>

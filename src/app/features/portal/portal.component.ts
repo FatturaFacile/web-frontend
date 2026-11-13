@@ -7,7 +7,6 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -47,13 +46,15 @@ import {
   ReplyPortalTicketRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { notInPast } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-portal',
   styleUrl: './portal.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     SlicePipe,
     UpperCasePipe,
     DatePipe,
@@ -69,7 +70,6 @@ import { notInPast } from '@shared/utils/date-validators';
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzAlertModule,
     NzStatisticModule,

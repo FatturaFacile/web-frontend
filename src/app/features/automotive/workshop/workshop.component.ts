@@ -8,7 +8,6 @@ import { catchError, debounceTime, distinctUntilChanged, map, of, startWith, swi
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -47,13 +46,15 @@ import {
   WorkshopVehicleHistoryEntry,
   WorkshopVehicleStockUnit,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-workshop',
   styleUrl: './workshop.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     DecimalPipe,
     UpperCasePipe,
@@ -69,7 +70,6 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

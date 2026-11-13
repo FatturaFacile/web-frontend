@@ -8,7 +8,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -37,13 +36,15 @@ import {
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 
 @Component({
   selector: 'app-document-trust',
   styleUrl: './document-trust.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     SlicePipe,
     UpperCasePipe,
@@ -60,7 +61,6 @@ import { uuidFormat } from '@shared/utils/uuid-validator';
     NzFormModule,
     NzInputModule,
     NzSelectModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzAlertModule,
     NzSpinModule,

@@ -2,7 +2,6 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -20,7 +19,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const TIERS: CrmAccountTier[] = ['strategic', 'enterprise', 'mid_market', 'smb', 'standard'];
 const STATUSES: CrmAccountStatus[] = ['prospect', 'active', 'inactive', 'churned'];
@@ -52,10 +51,11 @@ const emptyDraft = (): AccountDraft => ({
   selector: 'app-crm-accounts',
   styleUrl: './accounts.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,

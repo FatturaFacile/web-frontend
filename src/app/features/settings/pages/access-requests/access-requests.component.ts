@@ -7,7 +7,7 @@ import {
   TenantAccessRequestRecord,
   TenantAccessRequestStatus,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -49,6 +49,7 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
     ActionFormComponent,
     DatePipe,
     FormsModule,
+    ModalActionsDirective,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,

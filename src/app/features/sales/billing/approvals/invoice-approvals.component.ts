@@ -19,7 +19,7 @@ import {
   InvoiceApprovalMatrixPayload,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { DECIMAL_PATTERN } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 
@@ -30,6 +30,8 @@ const APPROVER_ROLES = ['owner', 'admin', 'accountant', 'sales_manager', 'sales'
   selector: 'app-invoice-approvals',
   styleUrl: './invoice-approvals.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,

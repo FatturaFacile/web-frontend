@@ -9,7 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { AssistantApiService } from '../../../core/api/assistant-api.service';
 import {
@@ -21,6 +21,7 @@ import {
   AssistantOutcome,
 } from '../../../core/models';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { ModalActionsDirective } from '@shared';
 
 @Component({
   selector: 'app-ai-assistant',
@@ -36,7 +37,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
     NzSpinModule,
     NzAlertModule,
     NzSelectModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
     NzFormModule,
     TranslatePipe,
   ],

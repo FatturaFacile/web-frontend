@@ -27,7 +27,7 @@ import {
   StoreProjectPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { RouterLink } from '@angular/router';
@@ -48,6 +48,8 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
     NzSelectModule,
     NzFormModule,
     NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzPopconfirmModule,
     NzProgressModule,
     NzIconModule,

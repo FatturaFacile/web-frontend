@@ -17,7 +17,7 @@ import {
   CoreQuotePayload,
   SalesCycleApiService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { createLineGroup, DocumentLinesEditorComponent, LineGroup, linesToPayload } from './document-lines-editor.component';
 import { SalesLookupsService } from './sales-lookups.service';
@@ -30,6 +30,7 @@ export type SalesDocumentKind = 'quote' | 'order';
   selector: 'app-document-form-modal',
   styleUrl: './document-form-modal.component.scss',
   imports: [
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzModalModule,
     NzFormModule,
@@ -47,6 +48,7 @@ export type SalesDocumentKind = 'quote' | 'order';
       [nzOkDisabled]="form.invalid"
       nzWidth="960px"
       (nzOnCancel)="visible.set(false)"
+      okAction="save"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>

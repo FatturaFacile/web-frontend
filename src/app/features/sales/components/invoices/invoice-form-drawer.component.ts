@@ -11,8 +11,8 @@ import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
@@ -27,7 +27,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
 import {
@@ -70,9 +70,11 @@ function toIsoDate(d: Date): string {
   selector: 'app-invoice-form-drawer',
   styleUrl: './invoice-form-drawer.component.scss',
   imports: [
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     CurrencyPipe,
-    NzDrawerModule,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,

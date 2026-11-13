@@ -51,9 +51,8 @@
               nz-popconfirm
               [nzPopconfirmTitle]="'hrmShared.confirmDelete' | translate"
               (nzOnConfirm)="remove(doc)"
-            >
-              {{ 'hrmCommon.delete' | translate }}
-            </button>
+              appIconAction="delete"
+            ></button>
           }
         </td>
       </tr>
@@ -62,11 +61,11 @@
 </nz-table>
 
 <nz-modal
+  okAction="save"
   [nzVisible]="formOpen()"
   [nzTitle]="'hrmEmp.uploadDocument' | translate"
-  [nzOkText]="'hrmCommon.save' | translate"
-  [nzCancelText]="'hrmCommon.cancel' | translate"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid || !file()"
   (nzOnOk)="upload()"
   (nzOnCancel)="formOpen.set(false)"
 >

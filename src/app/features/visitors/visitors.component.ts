@@ -14,7 +14,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -47,7 +46,7 @@ import {
   VisitorsVisitor,
   VisitorsVisitorRequest,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -70,6 +69,8 @@ function dateTimeValidator(control: AbstractControl<string>): ValidationErrors |
   selector: 'app-visitors',
   styleUrl: './visitors.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
@@ -83,7 +84,6 @@ function dateTimeValidator(control: AbstractControl<string>): ValidationErrors |
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

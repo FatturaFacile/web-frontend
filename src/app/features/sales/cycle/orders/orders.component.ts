@@ -5,7 +5,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -28,6 +27,8 @@ import {
 } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
@@ -50,13 +51,14 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
   selector: 'app-cycle-orders',
   styleUrl: './orders.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,

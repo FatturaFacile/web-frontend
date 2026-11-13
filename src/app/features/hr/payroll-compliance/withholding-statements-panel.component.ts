@@ -8,7 +8,7 @@ import {
   WithholdingStatementQuery,
   WithholdingStatementReport,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -53,6 +53,7 @@ const CANTONS = [
   selector: 'app-withholding-statements-panel',
   styleUrl: './withholding-statements-panel.component.scss',
   imports: [
+    ModalActionsDirective,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -193,8 +194,6 @@ const CANTONS = [
     <nz-modal
       [nzVisible]="confirmOpen()"
       [nzTitle]="'hrmCompliance.statements.close' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="closing()"
       (nzOnOk)="closeStatement()"
       (nzOnCancel)="confirmOpen.set(false)"

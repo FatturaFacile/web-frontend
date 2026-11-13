@@ -23,7 +23,7 @@ import {
   TicketWatcher,
   UserResource,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective } from '@shared';
 
 interface Option {
   value: string;
@@ -35,6 +35,7 @@ interface Option {
   selector: 'app-ticket-agent-tools',
   styleUrl: './ticket-agent-tools.component.scss',
   imports: [
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCheckboxModule,

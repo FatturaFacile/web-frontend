@@ -4,9 +4,7 @@
   <div class="toolbar">
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="open(null)">
-        <nz-icon nzType="plus" /> {{ 'CRMX.SEGMENTS.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="open(null)"></button>
     }
   </div>
   <nz-table [nzData]="segments()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
@@ -34,9 +32,7 @@
               <nz-icon nzType="team" />
             </button>
             @if (canWrite()) {
-              <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CRMX.COMMON.EDIT' | translate" (click)="open(s)">
-                <nz-icon nzType="edit" />
-              </button>
+              <button nz-button nzType="text" nzSize="small" type="button" (click)="open(s)" appIconAction="edit"></button>
               <button
                 nz-button
                 nzType="text"
@@ -44,12 +40,10 @@
                 nzSize="small"
                 type="button"
                 nz-popconfirm
-                [attr.aria-label]="'COMMON.DELETE' | translate"
                 [nzPopconfirmTitle]="'CRMX.COMMON.CONFIRM_DELETE' | translate"
                 (nzOnConfirm)="remove(s)"
-              >
-                <nz-icon nzType="delete" />
-              </button>
+                appIconAction="delete"
+              ></button>
             }
           </td>
         </tr>
@@ -58,13 +52,14 @@
   </nz-table>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="!!previewFor()"
-  [nzWidth]="480"
+  [nzWidth]="640"
+  [nzFooter]="null"
   [nzTitle]="previewFor()?.name ?? ''"
-  (nzOnClose)="previewFor.set(null)"
+  (nzOnCancel)="previewFor.set(null)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <p class="hint">{{ 'CRMX.SEGMENTS.MEMBERS_HINT' | translate }}</p>
     <ul>
       @for (m of preview(); track $index) {
@@ -72,9 +67,10 @@
       }
     </ul>
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <nz-modal
+  okAction="save"
   [nzVisible]="modalOpen()"
   [nzTitle]="(editing() ? 'CRMX.SEGMENTS.EDIT' : 'CRMX.SEGMENTS.NEW') | translate"
   nzWidth="720px"
@@ -128,13 +124,9 @@
           </nz-select>
           <input nz-input [disabled]="!needsValue(f)" [attr.aria-label]="'CRMX.SEGMENTS.VALUE' | translate" [placeholder]="'CRMX.SEGMENTS.VALUE' | translate" [(ngModel)]="f.value" />
         }
-        <button nz-button nzType="text" nzDanger type="button" [disabled]="filters.length <= 1" [attr.aria-label]="'COMMON.DELETE' | translate" (click)="removeFilter(i)">
-          <nz-icon nzType="delete" />
-        </button>
+        <button nz-button nzType="text" nzDanger type="button" [disabled]="filters.length <= 1" (click)="removeFilter(i)" appIconAction="delete"></button>
       </div>
     }
-    <button nz-button nzType="dashed" type="button" (click)="addFilter()">
-      <nz-icon nzType="plus" /> {{ 'CRMX.SEGMENTS.ADD_FILTER' | translate }}
-    </button>
+    <button nz-button nzType="dashed" type="button" appIconAction="add" (click)="addFilter()"></button>
   </ng-container>
 </nz-modal>

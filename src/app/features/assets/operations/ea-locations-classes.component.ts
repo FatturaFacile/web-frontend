@@ -21,12 +21,14 @@ import {
   EamOpsApiService,
   PermissionsService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 @Component({
   selector: 'app-ea-locations-classes',
   styleUrl: './ea-locations-classes.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     NzAlertModule,
     NzButtonModule,

@@ -55,9 +55,7 @@
       </button>
     }
     @if (config().create && canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="run(config().create!)">
-        <span nz-icon nzType="plus"></span>{{ config().create!.labelKey | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="run(config().create!)"></button>
     }
   </div>
 
@@ -157,13 +155,14 @@
   </ng-container>
 </nz-modal>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="resultOpen()"
-  [nzWidth]="640"
+  [nzWidth]="720"
   [nzTitle]="'RES.RESULT' | translate"
-  (nzOnClose)="resultOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="resultOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <app-resource-detail [value]="result()" />
   </ng-container>
-</nz-drawer>
+</nz-modal>

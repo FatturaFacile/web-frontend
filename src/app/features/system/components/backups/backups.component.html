@@ -81,11 +81,9 @@
         [nzPopconfirmTitle]="'system.backups.confirmDelete' | translate"
         [nzOkText]="'common.actions.delete' | translate"
         [nzCancelText]="'common.actions.cancel' | translate"
+        appIconAction="delete"
         (nzOnConfirm)="delete(b)"
-        [title]="'system.backups.actions.delete' | translate"
-      >
-        <nz-icon nzType="delete" />
-      </button>
+      ></button>
     </div>
   </ng-template>
 </nz-card>
@@ -95,6 +93,8 @@
   [nzTitle]="'system.backups.modal.title' | translate"
   (nzOnCancel)="isUploadModalVisible.set(false)"
   (nzOnOk)="submitUploadRestore()"
+  okAction="confirm"
+  [nzOkDisabled]="!uploadFile()"
   [nzOkLoading]="isUploading()"
 >
   <ng-container *nzModalContent>

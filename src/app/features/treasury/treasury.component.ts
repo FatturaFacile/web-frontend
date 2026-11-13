@@ -32,15 +32,7 @@ import {
   TreasuryApiService,
   TranslateService,
 } from '@core';
-import {
-  BaseTableComponent,
-  MoneyPipe,
-  PageHeaderComponent,
-  TableColumnDef,
-  TableQueryParams,
-  TableStateService,
-  TranslatePipe,
-} from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TableQueryParams, TableStateService, TranslatePipe } from '@shared';
 import { ibanValidator } from '@shared/utils/iban-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -48,6 +40,8 @@ import { validationTipKey } from '@shared/utils/validation-tip';
   selector: 'app-treasury',
   styleUrl: './treasury.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     CurrencyPipe,
@@ -91,7 +85,7 @@ export class TreasuryComponent implements OnInit {
   protected isUploading = signal(false);
   protected isReconciling = signal(false);
   protected importFormat: 'camt' | 'cbi' = 'camt';
-  protected selectedFile: File | null = null;
+  protected readonly selectedFile = signal<File | null>(null);
 
   // Bank Accounts
   protected readonly bankAccounts = signal<BankAccountResource[]>([]);
@@ -408,12 +402,13 @@ export class TreasuryComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
+      this.selectedFile.set(input.files[0]);
     }
   }
 
   submitImport(): void {
-    if (!this.selectedFile) {
+    const file = this.selectedFile();
+    if (!file) {
       this.message.warning(this.translate.instant('treasury.msgSelezionaUnFileDaImportare'));
       return;
     }
@@ -422,7 +417,7 @@ export class TreasuryComponent implements OnInit {
     const fd = new FormData();
     if (this.importFormat === 'camt') {
       // CAMT goes through the payment import (`/sales/payment-imports`); it auto-matches credits to open invoices.
-      this.billingApi.uploadPaymentImport(this.selectedFile).subscribe({
+      this.billingApi.uploadPaymentImport(file).subscribe({
         next: (res) => {
           this.isUploading.set(false);
           this.isImportModalVisible.set(false);
@@ -436,7 +431,7 @@ export class TreasuryComponent implements OnInit {
         },
       });
     } else {
-      fd.append('file', this.selectedFile);
+      fd.append('file', file);
       this.treasuryApi.importCbiFile(fd).subscribe({
         next: (res) => {
           this.isUploading.set(false);

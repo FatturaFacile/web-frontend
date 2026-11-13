@@ -65,14 +65,10 @@
                 <ng-container *ngTemplateOutlet="control; context: { $implicit: sub, group: line, compact: true }" />
               </div>
             }
-            <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(field, i)" [attr.aria-label]="'RES.ACTION.REMOVE_LINE' | translate">
-              <span nz-icon nzType="delete"></span>
-            </button>
+            <button nz-button nzType="text" nzDanger type="button" appIconAction="delete" (click)="removeLine(field, i)"></button>
           </div>
         }
-        <button nz-button type="button" (click)="addLine(field)">
-          <span nz-icon nzType="plus"></span>{{ 'RES.ACTION.ADD_LINE' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="add" (click)="addLine(field)"></button>
       </fieldset>
     } @else {
       <ng-container *ngTemplateOutlet="control; context: { $implicit: field, group: form, compact: false }" />
@@ -82,7 +78,11 @@
     <p class="rf-error" role="alert">{{ error }}</p>
   }
   <div class="rf-actions">
-    <button nz-button type="button" (click)="cancelled.emit()">{{ 'RES.ACTION.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ submitLabelKey() | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="cancelled.emit()"></button>
+    @if (submitLabelKey() === 'RES.ACTION.SAVE') {
+      <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid"></button>
+    } @else {
+      <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="form.invalid">{{ submitLabelKey() | translate }}</button>
+    }
   </div>
 </form>

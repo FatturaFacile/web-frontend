@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="open()"
+  [nzWidth]="720"
+  [nzFooter]="null"
   [nzTitle]="'ticketCreateDrawer.lblNuovoTicketDiAssistenza' | translate"
-  [nzWidth]="520"
-  (nzOnClose)="close()"
+  (nzOnCancel)="close()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="title">{{ 'ticketCreateDrawer.lblTitoloOggetto' | translate }}</nz-form-label>
@@ -142,16 +143,16 @@
       </nz-form-item>
 
       <div class="form-actions">
-        <button nz-button type="button" (click)="close()">{{ 'ticketCreateDrawer.lblAnnulla' | translate }}</button>
+        <button nz-button type="button" appIconAction="cancel" (click)="close()"></button>
         <button
           nz-button
           nzType="primary"
           type="submit"
+          appIconAction="create"
           [nzLoading]="isSaving()"
-        >
-          {{ 'ticketCreateDrawer.lblCreaTicket' | translate }}
-        </button>
+          [disabled]="form.invalid"
+        ></button>
       </div>
     </form>
   </ng-container>
-</nz-drawer>
+</nz-modal>

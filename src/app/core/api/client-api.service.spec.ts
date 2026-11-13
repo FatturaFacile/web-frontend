@@ -36,6 +36,27 @@ describe('ClientApiService', () => {
     req.flush({ success: true, message: 'OK', data: [{ id: 'c-1', display_name: 'Mario Rossi' }] });
   });
 
+  it('unwraps the Laravel paginator that the API returns inside data', () => {
+    service.list({ page: 2 }).subscribe((res) => {
+      expect(res.data).toEqual([{ id: 'c-1', display_name: 'Mario Rossi' }]);
+      expect(res.meta).toEqual({ current_page: 2, from: 26, to: 26, last_page: 2, per_page: 25, total: 26 });
+    });
+
+    httpTesting.expectOne((r) => r.url === baseUrl).flush({
+      success: true,
+      message: 'OK',
+      data: {
+        current_page: 2,
+        data: [{ id: 'c-1', display_name: 'Mario Rossi' }],
+        from: 26,
+        to: 26,
+        last_page: 2,
+        per_page: 25,
+        total: 26,
+      },
+    });
+  });
+
   it('gets a single contact by id', () => {
     service.get('c-1').subscribe((res) => {
       expect(res.data.id).toBe('c-1');

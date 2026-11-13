@@ -37,10 +37,7 @@
           </button>
         </div>
 
-        <button nz-button nzType="primary" (click)="openCreateMemberModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'ASSOCIATIONS.NEW_MEMBER' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateMemberModal()"></button>
       </div>
 
       <nz-table
@@ -116,10 +113,9 @@
                     nz-button
                     nzDanger
                     nzSize="small"
+                    appIconAction="delete"
                     (click)="deleteMember(m)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                  ></button>
                 </nz-space>
               </td>
             </tr>
@@ -131,10 +127,7 @@
     <!-- TAB 2: QUOTE ASSOCIATIVE & INCASSI -->
     <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_FEES' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreateFeeModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'ASSOCIATIONS.ASSIGN_FEE' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFeeModal()"></button>
         <button nz-button nzType="default" (click)="loadFees()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -197,10 +190,9 @@
                       nz-button
                       nzDanger
                       nzSize="small"
+                      appIconAction="cancel"
                       (click)="cancelFee(fee)"
-                    >
-                      <span nz-icon nzType="close"></span>
-                    </button>
+                    ></button>
                   }
                 </nz-space>
               </td>
@@ -213,10 +205,7 @@
     <!-- TAB 3: CORSI & ATTIVITÀ SPORTIVE -->
     <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_COURSES' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreateCourseModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'ASSOCIATIONS.NEW_COURSE' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateCourseModal()"></button>
         <button nz-button nzType="default" (click)="loadCourses()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -276,10 +265,7 @@
       }
 
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreateDonationModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'ASSOCIATIONS.NEW_DONATION' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDonationModal()"></button>
         <button nz-button nzType="default" (click)="loadDonations()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -377,10 +363,7 @@
         <div class="section-box">
           <div class="tab-toolbar">
             <h4>{{ 'ASSOCIATIONS.EXPENSE_REIMBURSEMENTS' | translate }}</h4>
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateReimbModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'ASSOCIATIONS.NEW_REIMBURSEMENT' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateReimbModal()"></button>
           </div>
 
           <nz-table [nzData]="reimbursements()" [nzFrontPagination]="true" [nzLoading]="reimbursementsLoading()">
@@ -409,12 +392,8 @@
                   <td nzAlign="right">
                     <nz-space>
                       @if (r.status === 'submitted') {
-                        <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="decideReimb(r, true)">
-                          <span nz-icon nzType="check"></span>
-                        </button>
-                        <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="decideReimb(r, false)">
-                          <span nz-icon nzType="close"></span>
-                        </button>
+                        <button *nzSpaceItem nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="decideReimb(r, true)"></button>
+                        <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="decideReimb(r, false)"></button>
                       }
                       @if (r.status === 'approved') {
                         <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="payReimb(r)">
@@ -434,10 +413,7 @@
     <!-- TAB 6: ASSEMBLEE & VERBALI -->
     <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_MEETINGS' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreateMeetingModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'ASSOCIATIONS.NEW_MEETING' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateMeetingModal()"></button>
         <button nz-button nzType="default" (click)="loadMeetings()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -481,7 +457,9 @@
   [nzVisible]="createMemberModalVisible()"
   [nzTitle]="'ASSOCIATIONS.NEW_MEMBER' | translate"
   [nzOkLoading]="createMemberSubmitting()"
+  okAction="create"
   (nzOnCancel)="createMemberModalVisible.set(false)"
+  [nzOkDisabled]="memberForm.invalid"
   (nzOnOk)="submitCreateMember()"
 >
   <ng-container *nzModalContent>
@@ -542,7 +520,9 @@
   [nzVisible]="createFeeModalVisible()"
   [nzTitle]="'ASSOCIATIONS.ASSIGN_FEE' | translate"
   [nzOkLoading]="createFeeSubmitting()"
+  okAction="create"
   (nzOnCancel)="createFeeModalVisible.set(false)"
+  [nzOkDisabled]="feeForm.invalid"
   (nzOnOk)="submitCreateFee()"
 >
   <ng-container *nzModalContent>
@@ -604,7 +584,9 @@
   [nzVisible]="paymentModalVisible()"
   [nzTitle]="'ASSOCIATIONS.COLLECT' | translate"
   [nzOkLoading]="paymentSubmitting()"
+  okAction="confirm"
   (nzOnCancel)="paymentModalVisible.set(false)"
+  [nzOkDisabled]="!isPaymentAmountValid() || !isPaymentDateValid()"
   (nzOnOk)="submitPayment()"
 >
   <ng-container *nzModalContent>
@@ -639,7 +621,9 @@
   [nzVisible]="createCourseModalVisible()"
   [nzTitle]="'ASSOCIATIONS.NEW_COURSE' | translate"
   [nzOkLoading]="createCourseSubmitting()"
+  okAction="create"
   (nzOnCancel)="createCourseModalVisible.set(false)"
+  [nzOkDisabled]="courseForm.invalid"
   (nzOnOk)="submitCreateCourse()"
 >
   <ng-container *nzModalContent>
@@ -693,7 +677,9 @@
   [nzVisible]="enrolModalVisible()"
   [nzTitle]="'ASSOCIATIONS.ENROL_MEMBER' | translate"
   [nzOkLoading]="enrolSubmitting()"
+  okAction="create"
   (nzOnCancel)="enrolModalVisible.set(false)"
+  [nzOkDisabled]="!enrolMemberId()"
   (nzOnOk)="submitEnrol()"
 >
   <ng-container *nzModalContent>
@@ -716,7 +702,9 @@
   [nzVisible]="createDonationModalVisible()"
   [nzTitle]="'ASSOCIATIONS.NEW_DONATION' | translate"
   [nzOkLoading]="createDonationSubmitting()"
+  okAction="create"
   (nzOnCancel)="createDonationModalVisible.set(false)"
+  [nzOkDisabled]="donationForm.invalid"
   (nzOnOk)="submitCreateDonation()"
 >
   <ng-container *nzModalContent>
@@ -792,7 +780,9 @@
   [nzVisible]="createReimbModalVisible()"
   [nzTitle]="'ASSOCIATIONS.NEW_REIMBURSEMENT' | translate"
   [nzOkLoading]="reimbSubmitting()"
+  okAction="create"
   (nzOnCancel)="createReimbModalVisible.set(false)"
+  [nzOkDisabled]="reimbForm.invalid"
   (nzOnOk)="submitCreateReimb()"
 >
   <ng-container *nzModalContent>
@@ -884,7 +874,9 @@
   [nzVisible]="createMeetingModalVisible()"
   [nzTitle]="'ASSOCIATIONS.NEW_MEETING' | translate"
   [nzOkLoading]="meetingSubmitting()"
+  okAction="create"
   (nzOnCancel)="createMeetingModalVisible.set(false)"
+  [nzOkDisabled]="meetingForm.invalid"
   (nzOnOk)="submitCreateMeeting()"
 >
   <ng-container *nzModalContent>
@@ -950,13 +942,14 @@
 </nz-modal>
 
 <!-- DRAWER: DETTAGLIO SOCIO -->
-<nz-drawer
+<nz-modal
   [nzVisible]="memberDrawerVisible()"
-  [nzWidth]="520"
+  [nzWidth]="720"
+  [nzFooter]="null"
   [nzTitle]="selectedMember()?.first_name + ' ' + selectedMember()?.last_name"
-  (nzOnClose)="memberDrawerVisible.set(false)"
+  (nzOnCancel)="memberDrawerVisible.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedMember(); as m) {
       <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
         <nz-descriptions-item [nzTitle]="'ASSOCIATIONS.MEMBER_NO' | translate">
@@ -987,4 +980,4 @@
       }
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>

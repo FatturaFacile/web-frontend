@@ -16,9 +16,7 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="createOpen.set(true)">
-        <nz-icon nzType="plus" /> {{ 'SC.RETURNS.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="createOpen.set(true)"></button>
     }
   </div>
 
@@ -45,13 +43,14 @@
   </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="820"
   [nzTitle]="selected()?.return_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as r) {
       <nz-tag [nzColor]="statusColor(r.status)">{{ statusKey(r.status) | translate }}</nz-tag>
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
@@ -178,6 +177,6 @@
       </nz-modal>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <app-return-form-modal [(visible)]="createOpen" (saved)="onCreated($event)" />

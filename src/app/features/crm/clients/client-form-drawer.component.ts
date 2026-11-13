@@ -10,13 +10,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 import {
   applyServerErrors,
   ClientApiService,
@@ -61,7 +61,9 @@ function exactLengthWhenFilled(length: number): ValidatorFn {
   styleUrl: './client-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,

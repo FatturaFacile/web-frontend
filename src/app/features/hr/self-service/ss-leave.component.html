@@ -28,9 +28,13 @@
 
 <div class="flex justify-between items-center mt-4 mb-2">
   <h3>{{ 'hrmSelfService.myRequests' | translate }}</h3>
-  <button nz-button nzType="primary" type="button" (click)="openForm()">
-    {{ 'hrmSelfService.newRequest' | translate }}
-  </button>
+  <button
+    nz-button
+    nzType="primary"
+    type="button"
+    (click)="openForm()"
+    appIconAction="create"
+  ></button>
 </div>
 <nz-table #requestTable [nzData]="requests()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
@@ -66,11 +70,11 @@
 </nz-table>
 
 <nz-modal
+  okAction="save"
   [nzVisible]="formOpen()"
   [nzTitle]="'hrmSelfService.newRequest' | translate"
-  [nzOkText]="'hrmCommon.save' | translate"
-  [nzCancelText]="'hrmCommon.cancel' | translate"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid"
   (nzOnOk)="submit()"
   (nzOnCancel)="formOpen.set(false)"
 >
@@ -117,10 +121,9 @@
 <nz-modal
   [nzVisible]="cancelTarget() !== null"
   [nzTitle]="'hrmSelfService.withdraw' | translate"
-  [nzOkText]="'hrmCommon.confirm' | translate"
-  [nzCancelText]="'hrmCommon.cancel' | translate"
   [nzOkLoading]="saving()"
   [nzOkDanger]="true"
+  [nzOkDisabled]="cancelReason.invalid"
   (nzOnOk)="confirmCancel()"
   (nzOnCancel)="cancelTarget.set(null)"
 >

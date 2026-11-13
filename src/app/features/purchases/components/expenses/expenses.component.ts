@@ -14,6 +14,7 @@ import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { ExpensesApiService, ExpenseFilterParams, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
@@ -49,6 +50,7 @@ const STATUS_COLOR: Record<ExpenseStatus, string> = {
     BaseTableComponent,
     PageHeaderComponent,
     ExpenseFormDrawerComponent,
+    IconActionDirective,
     TranslatePipe,
   ],
   providers: [TableStateService],

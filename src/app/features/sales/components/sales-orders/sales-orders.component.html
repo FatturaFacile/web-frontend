@@ -29,9 +29,7 @@
 
         <div class="spacer"></div>
 
-        <button nz-button nzType="primary" (click)="openQuoteModal()">
-          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_QUOTE' | translate }}
-        </button>
+        <button nz-button appIconAction="create" nzType="primary" (click)="openQuoteModal()"></button>
       </div>
 
       <nz-table
@@ -151,9 +149,7 @@
 
         <div class="spacer"></div>
 
-        <button nz-button nzType="primary" (click)="openOrderModal()">
-          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_ORDER' | translate }}
-        </button>
+        <button nz-button appIconAction="create" nzType="primary" (click)="openOrderModal()"></button>
       </div>
 
       <nz-table
@@ -236,9 +232,7 @@
                   <button nz-button nzType="link" nzSize="small" (click)="invoiceOrder(o.id)">
                     <nz-icon nzType="file-text" /> Fattura
                   </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o.id)">
-                    <nz-icon nzType="close-circle" /> {{ 'COMMON.CANCEL' | translate }}
-                  </button>
+                  <button nz-button appIconAction="cancel" nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o.id)"></button>
                 }
               </td>
             </tr>
@@ -262,9 +256,7 @@
 
         <div class="spacer"></div>
 
-        <button nz-button nzType="primary" (click)="openDdtModal()">
-          <nz-icon nzType="plus" /> {{ 'SALES.ACTIONS.NEW_DDT' | translate }}
-        </button>
+        <button nz-button appIconAction="create" nzType="primary" (click)="openDdtModal()"></button>
       </div>
 
       <nz-table
@@ -324,9 +316,7 @@
                   </button>
                 }
                 @if (d.status === 'dispatched') {
-                  <button nz-button nzType="link" nzSize="small" (click)="confirmDdt(d.id)">
-                    <nz-icon nzType="check-circle" /> {{ 'SALES.LBL_CONFERMA' | translate }}
-                  </button>
+                  <button nz-button appIconAction="confirm" nzType="link" nzSize="small" (click)="confirmDdt(d.id)"></button>
                 }
                 @if (d.status === 'confirmed') {
                   <button nz-button nzType="link" nzSize="small" (click)="invoiceDdt(d.id)">
@@ -354,6 +344,8 @@
   [nzTitle]="'SALES.MODALS.CREATE_QUOTE_TITLE' | translate"
   [nzOkLoading]="saving()"
   (nzOnCancel)="quoteModalVisible.set(false)"
+  [nzOkDisabled]="quoteForm.invalid"
+  okAction="create"
   (nzOnOk)="submitQuote()"
   nzWidth="780px"
 >
@@ -412,18 +404,14 @@
                 <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
               </nz-col>
               <nz-col class="item-remove" [nzSpan]="2">
-                <button nz-button nzType="text" nzDanger (click)="removeQuoteItem($index)">
-                  <nz-icon nzType="delete" />
-                </button>
+                <button nz-button appIconAction="delete" nzType="text" nzDanger (click)="removeQuoteItem($index)"></button>
               </nz-col>
             </nz-row>
           </div>
         }
       </div>
 
-      <button class="add-item" nz-button nzType="dashed" (click)="addQuoteItem()">
-        <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
-      </button>
+      <button class="add-item" nz-button appIconAction="add" nzType="dashed" (click)="addQuoteItem()"></button>
 
       <nz-form-item class="notes-item">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
@@ -441,6 +429,8 @@
   [nzTitle]="'SALES.MODALS.CREATE_ORDER_TITLE' | translate"
   [nzOkLoading]="saving()"
   (nzOnCancel)="orderModalVisible.set(false)"
+  [nzOkDisabled]="orderForm.invalid"
+  okAction="create"
   (nzOnOk)="submitOrder()"
   nzWidth="780px"
 >
@@ -499,18 +489,14 @@
                 <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
               </nz-col>
               <nz-col class="item-remove" [nzSpan]="2">
-                <button nz-button nzType="text" nzDanger (click)="removeOrderItem($index)">
-                  <nz-icon nzType="delete" />
-                </button>
+                <button nz-button appIconAction="delete" nzType="text" nzDanger (click)="removeOrderItem($index)"></button>
               </nz-col>
             </nz-row>
           </div>
         }
       </div>
 
-      <button class="add-item" nz-button nzType="dashed" (click)="addOrderItem()">
-        <nz-icon nzType="plus" /> {{ 'SALES.LBL_AGGIUNGI_RIGA' | translate }}
-      </button>
+      <button class="add-item" nz-button appIconAction="add" nzType="dashed" (click)="addOrderItem()"></button>
 
       <nz-form-item class="notes-item">
         <nz-form-label>{{ 'SALES.COL_NOTES' | translate }}</nz-form-label>
@@ -528,6 +514,8 @@
   [nzTitle]="'SALES.MODALS.CREATE_DDT_TITLE' | translate"
   [nzOkLoading]="saving()"
   (nzOnCancel)="ddtModalVisible.set(false)"
+  [nzOkDisabled]="ddtForm.invalid"
+  okAction="create"
   (nzOnOk)="submitDdt()"
   nzWidth="680px"
 >

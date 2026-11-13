@@ -167,9 +167,7 @@
     <button *nzSpaceItem nz-button (click)="loadTickets()" [nzLoading]="loading()">
       <i nz-icon nzType="reload"></i> {{ 'FIELD_SERVICE.LBL_AGGIORNA' | translate }}
     </button>
-    <button *nzSpaceItem nz-button nzType="primary" (click)="openCreate()">
-      <i nz-icon nzType="plus"></i> {{ 'FIELD_SERVICE.LBL_NUOVO_TICKET' | translate }}
-    </button>
+    <button *nzSpaceItem nz-button nzType="primary" appIconAction="create" (click)="openCreate()"></button>
   </nz-space>
 </ng-template>
 

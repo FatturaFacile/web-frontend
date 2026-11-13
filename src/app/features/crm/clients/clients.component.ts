@@ -18,13 +18,7 @@ import {
   contactDisplayName,
   I18nService,
 } from '@core';
-import {
-  BaseTableComponent,
-  PageHeaderComponent,
-  TableColumnDef,
-  TableQueryParams,
-  TranslatePipe,
-} from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams, TranslatePipe, IconActionDirective } from '@shared';
 import { ClientFacade } from '../services/client.facade';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
@@ -32,6 +26,7 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
   selector: 'app-crm-clients',
   styleUrl: './clients.component.scss',
   imports: [
+    IconActionDirective,
     FormsModule,
     NzTagModule,
     NzCardModule,

@@ -11,7 +11,7 @@ import {
   PrivacySubprocessor,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
   selector: 'app-privacy-center',
   styleUrl: './privacy-center.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     JsonPipe,
     FormsModule,
@@ -56,9 +58,13 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
         <!-- TAB 1: GDPR / nLPD Data Subject Requests & Portability -->
         <nz-tab [nzTitle]="'privacyCenter.tabRights' | translate">
           <div class="row mb-4">
-            <button nz-button nzType="primary" type="button" (click)="dsrModalOpen.set(true)">
-              {{ 'privacyCenter.newRequest' | translate }}
-            </button>
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              appIconAction="add"
+              (click)="dsrModalOpen.set(true)"
+            ></button>
             <select class="ant-input w-field-sm" [(ngModel)]="portabilitySubjectType">
               <option value="contact">{{ 'privacyCenter.subjectContact' | translate }}</option>
               <option value="employee">{{ 'privacyCenter.subjectEmployee' | translate }}</option>
@@ -125,9 +131,13 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
         <!-- TAB 2: RoPA (Processing Activities) -->
         <nz-tab [nzTitle]="'privacyCenter.tabRopa' | translate">
           <div class="mb-4">
-            <button nz-button nzType="primary" type="button" (click)="ropaModalOpen.set(true)">
-              {{ 'privacyCenter.newActivity' | translate }}
-            </button>
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              appIconAction="add"
+              (click)="ropaModalOpen.set(true)"
+            ></button>
           </div>
           <nz-table #ropaTable [nzData]="activities()" [nzLoading]="loading()" nzSize="small">
             <thead>
@@ -156,9 +166,13 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
         <!-- TAB 3: Subprocessors (Swiss nLPD Art. 16) -->
         <nz-tab [nzTitle]="'privacyCenter.tabSubprocessors' | translate">
           <div class="mb-4">
-            <button nz-button nzType="primary" type="button" (click)="subModalOpen.set(true)">
-              {{ 'privacyCenter.addSubprocessor' | translate }}
-            </button>
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              appIconAction="add"
+              (click)="subModalOpen.set(true)"
+            ></button>
           </div>
           <nz-table #subTable [nzData]="subprocessors()" [nzLoading]="loading()" nzSize="small">
             <thead>
@@ -264,6 +278,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
       [nzTitle]="'privacyCenter.modalDsr' | translate"
       (nzOnCancel)="dsrModalOpen.set(false)"
       (nzOnOk)="submitDsr()"
+      okAction="add"
+      [nzOkDisabled]="dsrForm.invalid"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="dsrForm">
@@ -313,6 +329,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
       [nzTitle]="'privacyCenter.modalRopa' | translate"
       (nzOnCancel)="ropaModalOpen.set(false)"
       (nzOnOk)="submitRopa()"
+      okAction="add"
+      [nzOkDisabled]="ropaForm.invalid"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="ropaForm">
@@ -338,6 +356,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
       [nzTitle]="'privacyCenter.modalSubprocessor' | translate"
       (nzOnCancel)="subModalOpen.set(false)"
       (nzOnOk)="submitSubprocessor()"
+      okAction="add"
+      [nzOkDisabled]="subForm.invalid"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="subForm">
@@ -363,6 +383,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
       [nzTitle]="'privacyCenter.modalBreach' | translate"
       (nzOnCancel)="breachModalOpen.set(false)"
       (nzOnOk)="submitBreach()"
+      okAction="create"
+      [nzOkDisabled]="breachForm.invalid"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="breachForm">

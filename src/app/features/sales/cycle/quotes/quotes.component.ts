@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -23,6 +22,8 @@ import {
 } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
@@ -45,12 +46,13 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
   selector: 'app-cycle-quotes',
   styleUrl: './quotes.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,
@@ -180,6 +182,10 @@ export class CycleQuotesComponent {
     this.signedBy = '';
     this.signature = null;
     this.signOpen.set(true);
+  }
+
+  protected get canSign(): boolean {
+    return !!this.signedBy.trim() && !!this.signature;
   }
 
   protected submitSignature(quote: CoreQuote): void {

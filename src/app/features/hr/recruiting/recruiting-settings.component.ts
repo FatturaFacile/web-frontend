@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HrTalentApiService, I18nService, OnboardingChecklistRecord } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -13,7 +13,15 @@ import { reportHttpError } from '../shared/hr-http.util';
 @Component({
   selector: 'app-recruiting-settings',
   styleUrl: './recruiting-settings.component.scss',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
+  imports: [
+    IconActionDirective,
+    DatePipe,
+    FormsModule,
+    NzButtonModule,
+    NzInputModule,
+    NzTableModule,
+    TranslatePipe,
+  ],
   template: `
     @if (canWrite()) {
       <h3>{{ 'hrmRecruiting.retention' | translate }}</h3>
@@ -22,9 +30,7 @@ import { reportHttpError } from '../shared/hr-http.util';
           <label for="retention-days">{{ 'hrmRecruiting.retentionDays' | translate }}</label>
           <input nz-input id="retention-days" type="number" min="1" max="3650" [ngModel]="retentionDays()" (ngModelChange)="retentionDays.set($event)" />
         </div>
-        <button nz-button nzType="primary" type="button" [disabled]="!retentionValid()" (click)="saveRetention()">
-          {{ 'hrmCommon.save' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" [disabled]="!retentionValid()" (click)="saveRetention()" appIconAction="save"></button>
       </div>
 
       <h3>{{ 'hrmRecruiting.newTemplate' | translate }}</h3>
@@ -33,9 +39,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <input nz-input id="tpl-name" maxlength="120" [ngModel]="templateName()" (ngModelChange)="templateName.set($event)" />
         <label for="tpl-tasks">{{ 'hrmRecruiting.templateTasks' | translate }}</label>
         <textarea nz-input id="tpl-tasks" rows="4" [ngModel]="templateTasks()" (ngModelChange)="templateTasks.set($event)"></textarea>
-        <button nz-button type="button" class="mt-2" [disabled]="!templateName().trim() || !templateTasks().trim()" (click)="saveTemplate()">
-          {{ 'hrmCommon.create' | translate }}
-        </button>
+        <button nz-button type="button" class="mt-2" [disabled]="!templateName().trim() || !templateTasks().trim()" (click)="saveTemplate()" appIconAction="create"></button>
       </div>
     }
 

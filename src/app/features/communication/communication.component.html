@@ -225,10 +225,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'COMMUNICATION.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateTemplateModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'COMMUNICATION.NEW_TEMPLATE' | translate }}
-          </button>
+          <button nz-button nzType="primary" appIconAction="create" (click)="openCreateTemplateModal()"></button>
         </div>
       </div>
 
@@ -284,11 +281,9 @@
                     nz-button
                     nzType="link"
                     nzSize="small"
+                    appIconAction="edit"
                     (click)="openEditTemplateModal(item)"
-                  >
-                    <span nz-icon nzType="edit"></span>
-                    {{ 'COMMUNICATION.EDIT' | translate }}
-                  </button>
+                  ></button>
                   <button
                     *nzSpaceItem
                     nz-button
@@ -296,12 +291,10 @@
                     nzDanger
                     nzSize="small"
                     nz-popconfirm
+                    appIconAction="delete"
                     [nzPopconfirmTitle]="'COMMUNICATION.CONFIRM_DELETE_TEMPLATE' | translate"
                     (nzOnConfirm)="deleteTemplate(item.id)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                    {{ 'COMMUNICATION.DELETE' | translate }}
-                  </button>
+                  ></button>
                 </nz-space>
               </td>
             </tr>
@@ -395,7 +388,7 @@
 
           <nz-form-item>
             <nz-form-control [nzOffset]="5" [nzSpan]="12">
-              <button nz-button nzType="primary">
+              <button nz-button nzType="primary" [disabled]="quickSendForm.invalid">
                 <span nz-icon nzType="send"></span>
                 {{ 'COMMUNICATION.SUBMIT_SEND' | translate }}
               </button>
@@ -408,13 +401,14 @@
 </nz-card>
 
 <!-- DELIVERY DETAILS DRAWER -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="600"
+  [nzWidth]="720"
+  [nzFooter]="null"
   [nzTitle]="'COMMUNICATION.DELIVERY_DETAILS' | translate"
-  (nzOnClose)="closeDeliveryDrawer()"
+  (nzOnCancel)="closeDeliveryDrawer()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedDelivery(); as d) {
       <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
         <nz-descriptions-item [nzTitle]="'COMMUNICATION.DELIVERY_ID' | translate">
@@ -456,13 +450,15 @@
       </nz-descriptions>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- CHANNEL CONFIG MODAL -->
 <nz-modal
   [(nzVisible)]="configModalVisible"
   [nzTitle]="'COMMUNICATION.CONFIG_CHANNEL_TITLE' | translate"
+  okAction="save"
   (nzOnCancel)="configModalVisible.set(false)"
+  [nzOkDisabled]="channelConfigForm.invalid"
   (nzOnOk)="saveChannelConfig()"
   nzWidth="600px"
 >
@@ -584,7 +580,9 @@
 <nz-modal
   [(nzVisible)]="testModalVisible"
   [nzTitle]="'COMMUNICATION.TEST_CHANNEL_TITLE' | translate"
+  okAction="confirm"
   (nzOnCancel)="testModalVisible.set(false)"
+  [nzOkDisabled]="testForm.invalid"
   (nzOnOk)="runChannelTest()"
   [nzOkLoading]="testLoading()"
 >
@@ -608,7 +606,9 @@
 <nz-modal
   [(nzVisible)]="templateModalVisible"
   [nzTitle]="(selectedTemplate() ? 'COMMUNICATION.EDIT_TEMPLATE' : 'COMMUNICATION.NEW_TEMPLATE') | translate"
+  okAction="save"
   (nzOnCancel)="templateModalVisible.set(false)"
+  [nzOkDisabled]="templateForm.invalid"
   (nzOnOk)="saveTemplate()"
   nzWidth="700px"
 >
@@ -726,8 +726,6 @@
     }
   </ng-container>
   <ng-template #previewFooter>
-    <button nz-button nzType="primary" (click)="previewModalVisible.set(false)">
-      {{ 'COMMUNICATION.CLOSE' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="close" (click)="previewModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>

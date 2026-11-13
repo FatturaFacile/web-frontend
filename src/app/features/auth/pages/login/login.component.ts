@@ -167,6 +167,12 @@ export class LoginComponent {
       });
   }
 
+  protected canSubmitChallenge(): boolean {
+    const { code, recoveryCode } = this.challengeForm.getRawValue();
+
+    return this.useRecoveryCode() ? !!recoveryCode.trim() : !!code.trim();
+  }
+
   protected onChallengeSubmit(): void {
     const isRecovery = this.useRecoveryCode();
     const { code, recoveryCode } = this.challengeForm.getRawValue();

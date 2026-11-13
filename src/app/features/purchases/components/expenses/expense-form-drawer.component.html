@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="open()"
   [nzTitle]="(expense() ? 'expenses.form.editTitle' : 'expenses.form.createTitle') | translate"
-  [nzWidth]="500"
-  (nzOnClose)="open.set(false)"
+  [nzWidth]="720"
+  [nzFooter]="null"
+  (nzOnCancel)="open.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="category_id">{{ 'expenses.columns.category' | translate }}</nz-form-label>
@@ -85,11 +86,9 @@
       </nz-form-item>
 
       <div class="footer-actions">
-        <button nz-button type="button" (click)="open.set(false)">{{ 'common.actions.cancel' | translate }}</button>
-        <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
-          {{ 'expenses.form.submit' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
+        <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="isSaving()" [disabled]="form.invalid"></button>
       </div>
     </form>
   </ng-container>
-</nz-drawer>
+</nz-modal>

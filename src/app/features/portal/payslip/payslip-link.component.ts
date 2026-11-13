@@ -14,24 +14,57 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 @Component({
   selector: 'app-payslip-link',
   styleUrl: './payslip-link.component.scss',
-  imports: [ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzIconModule, NzInputModule, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    NzAlertModule,
+    NzButtonModule,
+    NzCardModule,
+    NzFormModule,
+    NzIconModule,
+    NzInputModule,
+    TranslatePipe,
+  ],
   template: `
     <nz-card class="payslip-card" [nzTitle]="'PAYSLIP_LINK.TITLE' | translate">
       <p>{{ 'PAYSLIP_LINK.INTRO' | translate }}</p>
       <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="open()">
         <nz-form-item>
-          <nz-form-label nzRequired nzFor="payslip-birth-date">{{ 'PAYSLIP_LINK.BIRTH_DATE' | translate }}</nz-form-label>
+          <nz-form-label nzRequired nzFor="payslip-birth-date">{{
+            'PAYSLIP_LINK.BIRTH_DATE' | translate
+          }}</nz-form-label>
           <nz-form-control [nzErrorTip]="'PAYSLIP_LINK.BIRTH_DATE_REQUIRED' | translate">
-            <input nz-input id="payslip-birth-date" type="date" autocomplete="bday" formControlName="birth_date" />
+            <input
+              nz-input
+              id="payslip-birth-date"
+              type="date"
+              autocomplete="bday"
+              formControlName="birth_date"
+            />
           </nz-form-control>
         </nz-form-item>
         @if (failed()) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="'PAYSLIP_LINK.FAILED' | translate" class="payslip-alert" />
+          <nz-alert
+            nzType="error"
+            nzShowIcon
+            [nzMessage]="'PAYSLIP_LINK.FAILED' | translate"
+            class="payslip-alert"
+          />
         }
         @if (opened()) {
-          <nz-alert nzType="success" nzShowIcon [nzMessage]="'PAYSLIP_LINK.OPENED' | translate" class="payslip-alert" />
+          <nz-alert
+            nzType="success"
+            nzShowIcon
+            [nzMessage]="'PAYSLIP_LINK.OPENED' | translate"
+            class="payslip-alert"
+          />
         }
-        <button nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+        <button
+          nz-button
+          nzType="primary"
+          type="submit"
+          [nzLoading]="loading()"
+          [disabled]="form.invalid"
+        >
           <span nz-icon nzType="download"></span>{{ 'PAYSLIP_LINK.OPEN' | translate }}
         </button>
       </form>

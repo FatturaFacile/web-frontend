@@ -7,7 +7,6 @@ import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -48,7 +47,7 @@ import {
   TradesSubcontractorStatus,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 const today = (): string => new Date().toISOString().substring(0, 10);
 
@@ -79,6 +78,8 @@ const notZero: ValidatorFn = (control: AbstractControl) => {
   selector: 'app-construction',
   styleUrl: './construction.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     CurrencyPipe,
     DatePipe,
     UpperCasePipe,
@@ -94,7 +95,6 @@ const notZero: ValidatorFn = (control: AbstractControl) => {
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

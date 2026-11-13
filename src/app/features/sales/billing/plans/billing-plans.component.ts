@@ -9,7 +9,6 @@ import {
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -30,7 +29,7 @@ import {
   PermissionsService,
   SalesCycleApiService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { DECIMAL_PATTERN, maxNumber } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { statusColor, todayIso } from '../../cycle/shared/sales-status';
@@ -40,12 +39,13 @@ import { statusColor, todayIso } from '../../cycle/shared/sales-status';
   selector: 'app-billing-plans',
   styleUrl: './billing-plans.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzFormModule,
     NzIconModule,
     NzInputModule,

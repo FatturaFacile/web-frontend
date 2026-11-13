@@ -21,7 +21,7 @@ import {
   LeadScoringRuleType,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const FIELDS = ['title', 'email', 'phone', 'company_name', 'website', 'country', 'estimated_budget', 'status', 'lead_source_code', 'campaign_id'];
 const OPERATORS = ['filled', 'empty', 'equals', 'not_equals', 'contains', 'in', 'gte', 'lte', 'business_email'];
@@ -61,6 +61,8 @@ const emptyDraft = (): RuleDraft => ({
   selector: 'app-lead-scoring-rules',
   styleUrl: './scoring-rules.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,

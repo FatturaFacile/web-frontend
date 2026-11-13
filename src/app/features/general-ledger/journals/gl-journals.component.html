@@ -134,11 +134,11 @@
 <nz-modal
   [nzVisible]="rejectTarget() !== null"
   [nzTitle]="'GL.REJECT_TITLE' | translate"
-  [nzOkText]="'GL.ACTION_REJECT' | translate"
   [nzOkDanger]="true"
   [nzOkDisabled]="!rejectReason.trim()"
   (nzOnOk)="confirmReject()"
   (nzOnCancel)="rejectTarget.set(null)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <label for="gl-reject-reason">{{ 'GL.REJECTION_REASON' | translate }}</label>

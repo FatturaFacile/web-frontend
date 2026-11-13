@@ -5,7 +5,6 @@ import { AbstractControl, FormControl, FormsModule, NonNullableFormBuilder, Reac
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -41,7 +40,7 @@ import {
   AuthStore,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 const AMOUNT_PATTERN = /^\d{1,10}(\.\d{1,2})?$/;
@@ -57,6 +56,8 @@ function requiredWhen(siblingKey: string, siblingValue: string) {
   selector: 'app-associations',
   styleUrl: './associations.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
@@ -72,7 +73,6 @@ function requiredWhen(siblingKey: string, siblingValue: string) {
     NzSwitchModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzStatisticModule,
     NzSpaceModule,

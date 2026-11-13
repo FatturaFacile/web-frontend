@@ -6,7 +6,7 @@ import {
   PermissionsService,
   SaveLookupTranslationPayload,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -27,6 +27,7 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
   selector: 'app-lookup-translations',
   styleUrl: './lookup-translations.component.scss',
   imports: [
+    ModalActionsDirective,
     ActionFormComponent,
     FormsModule,
     NzButtonModule,

@@ -16,13 +16,14 @@ import {
   SettingsApiService,
   UserResource,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-settings',
   styleUrl: './settings.component.scss',
   imports: [
+    IconActionDirective,
     ReactiveFormsModule,
     DatePipe,
     NzTagModule,

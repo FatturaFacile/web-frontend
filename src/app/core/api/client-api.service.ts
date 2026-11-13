@@ -7,34 +7,50 @@ import {
   ContactFilterParams,
   ContactPayload,
   ContactResource,
+  LaravelPaginationMeta,
   PaginatedResponse,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
+
+type PaginatorBody = LaravelPaginationMeta & { data: ContactResource[] };
 
 @Service()
 export class ClientApiService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiBaseUrl}/crm/contacts`;
 
+  /** The API wraps the Laravel paginator in `data`; a plain array with optional `meta` is accepted too. */
   list(filters: ContactFilterParams): Observable<PaginatedResponse<ContactResource>> {
     return this.http
-      .get<ApiResponse<ContactResource[]> & Partial<Pick<PaginatedResponse<ContactResource>, 'meta'>>>(
+      .get<ApiResponse<ContactResource[] | PaginatorBody> & Partial<Pick<PaginatedResponse<ContactResource>, 'meta'>>>(
         this.url,
         { params: toHttpParams(filters) },
       )
       .pipe(
-        map((res) => ({
-          ...res,
-          // Defensive: the spec only documents `data`; fall back if `meta` is absent.
-          meta: res.meta ?? {
-            current_page: filters.page ?? 1,
-            from: null,
-            to: null,
-            last_page: 1,
-            per_page: res.data.length,
-            total: res.data.length,
-          },
-        })),
+        map((res) => {
+          const body = res.data;
+          const items = Array.isArray(body) ? body : body.data;
+          const meta: LaravelPaginationMeta =
+            res.meta ??
+            (Array.isArray(body)
+              ? {
+                  current_page: filters.page ?? 1,
+                  from: null,
+                  to: null,
+                  last_page: 1,
+                  per_page: items.length,
+                  total: items.length,
+                }
+              : {
+                  current_page: body.current_page,
+                  from: body.from,
+                  to: body.to,
+                  last_page: body.last_page,
+                  per_page: body.per_page,
+                  total: body.total,
+                });
+          return { ...res, data: items, meta };
+        }),
       );
   }
 

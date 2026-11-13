@@ -10,13 +10,13 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, PermissionsService, ProjectBudget, ProjectControlApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 
 /** Budget of a project: category report, versions, revision, approval and baseline. */
 @Component({
   selector: 'app-pc-budget',
   styleUrl: './pc-budget.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
       @if (canWrite) {
@@ -103,7 +103,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       <nz-alert nzType="info" nzShowIcon [nzMessage]="'PRJ.NO_BUDGET' | translate" />
     }
 
-    <nz-modal [nzVisible]="revisionOpen()" [nzTitle]="'PRJ.BUDGET_REVISE' | translate" [nzOkLoading]="saving()" (nzOnOk)="saveRevision()" (nzOnCancel)="revisionOpen.set(false)">
+    <nz-modal [nzVisible]="revisionOpen()" [nzTitle]="'PRJ.BUDGET_REVISE' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="save" (nzOnOk)="saveRevision()" (nzOnCancel)="revisionOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
           <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />

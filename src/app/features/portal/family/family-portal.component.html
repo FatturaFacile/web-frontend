@@ -195,10 +195,9 @@
 <nz-modal
   [nzVisible]="signingDocument() !== null"
   [nzTitle]="'FAMILY_PORTAL.SIGN_TITLE' | translate"
-  [nzOkText]="'FAMILY_PORTAL.SIGN' | translate"
-  [nzCancelText]="'FAMILY_PORTAL.CANCEL' | translate"
   (nzOnOk)="submitSign()"
   (nzOnCancel)="signingDocument.set(null)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     @if (signingDocument(); as document) {

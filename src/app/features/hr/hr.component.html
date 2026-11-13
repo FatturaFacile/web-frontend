@@ -163,9 +163,7 @@
     <nz-tab [nzTitle]="'hrmEmp.lblFerieAndPermessi' | translate">
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-base font-semibold">{{ 'hrmEmp.lblRichiesteDiAssenzaFerieEPermessi' | translate }}</h4>
-        <button nz-button nzType="primary" (click)="openLeaveModal()">
-          <span nz-icon nzType="plus"></span> {{ 'hrmEmp.lblNuovaRichiesta' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openLeaveModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -376,10 +374,12 @@
 
 <!-- MODAL: ASSUMI DIPENDENTE -->
 <nz-modal
+  okAction="create"
   [nzVisible]="isHireModalVisible()"
   [nzTitle]="'hrmEmp.lblAssunzioneNuovoDipendente' | translate"
   [nzOkLoading]="isSubmittingHire()"
   (nzOnCancel)="isHireModalVisible.set(false)"
+  [nzOkDisabled]="hireForm.invalid"
   (nzOnOk)="submitHire()"
   nzWidth="650px"
 >
@@ -485,10 +485,12 @@
 
 <!-- MODAL: RICHIESTA FERIE / PERMESSO -->
 <nz-modal
+  okAction="create"
   [nzVisible]="isLeaveModalVisible()"
   [nzTitle]="'hrmEmp.lblRichiestaFerieEPermessi' | translate"
   [nzOkLoading]="isSubmittingLeave()"
   (nzOnCancel)="isLeaveModalVisible.set(false)"
+  [nzOkDisabled]="leaveForm.invalid"
   (nzOnOk)="submitLeaveRequest()"
   nzWidth="500px"
 >
@@ -550,10 +552,12 @@
 
 <!-- MODAL: REGISTRA PRESENZE / ORE -->
 <nz-modal
+  okAction="save"
   [nzVisible]="isTimesheetModalVisible()"
   [nzTitle]="'hrmEmp.lblRegistraPresenzeTimesheet' | translate"
   [nzOkLoading]="isSubmittingTimesheet()"
   (nzOnCancel)="isTimesheetModalVisible.set(false)"
+  [nzOkDisabled]="timesheetForm.invalid"
   (nzOnOk)="submitTimesheet()"
   nzWidth="500px"
 >

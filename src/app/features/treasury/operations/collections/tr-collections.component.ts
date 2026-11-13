@@ -11,12 +11,13 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AuthStore, DunningReadiness, I18nService, PermissionsService, ReceivableCollection, TreasuryOpsApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-tr-collections',
   styleUrl: './tr-collections.component.scss',
   imports: [
+    ModalActionsDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,

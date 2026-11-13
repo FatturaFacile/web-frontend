@@ -41,7 +41,13 @@ import {
   TimesheetResource,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import {
+  IconActionDirective,
+  ModalActionsDirective,
+  MoneyPipe,
+  PageHeaderComponent,
+  TranslatePipe,
+} from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { toIsoDate } from '@shared/utils/iso-date';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -59,6 +65,8 @@ const CONTRACT_TYPES = ['permanent', 'fixed_term', 'apprenticeship', 'contractor
   selector: 'app-hr',
   styleUrl: './hr.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,

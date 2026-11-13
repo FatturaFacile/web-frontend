@@ -3,10 +3,7 @@
   subtitle="Fixed assets registers, parallel accounting books (IT/CH), depreciations, and QR identification"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateModal()">
-      <nz-icon nzType="plus" />
-      {{ 'assets.lblNewAsset' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
   </div>
 </app-page-header>
 
@@ -124,7 +121,9 @@
 <nz-modal
   [nzVisible]="createModalVisible()"
   [nzTitle]="'assets.lblRecordNewFixedAsset' | translate"
+  okAction="create"
   (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="assetForm.invalid"
   (nzOnOk)="submitCreateAsset()"
   [nzOkLoading]="saving()"
   [nzWidth]="600"

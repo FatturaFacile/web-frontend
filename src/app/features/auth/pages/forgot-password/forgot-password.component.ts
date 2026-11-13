@@ -70,7 +70,7 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
               </ng-template>
             </nz-form-item>
 
-            <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+            <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()" [disabled]="form.invalid">
               {{ (requested() ? 'AUTH.RESEND_BTN' : 'AUTH.FORGOT_SUBMIT') | translate }}
             </button>
           </form>

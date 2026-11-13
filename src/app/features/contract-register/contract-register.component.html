@@ -49,10 +49,7 @@
           </button>
         </div>
 
-        <button nz-button nzType="primary" (click)="openCreateModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'CONTRACTS.NEW_CONTRACT' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
       </div>
 
       <nz-table
@@ -233,11 +230,9 @@
                       nz-button
                       nzType="primary"
                       nzSize="small"
+                      appIconAction="confirm"
                       (click)="openCompleteObligationModal(ob)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                      {{ 'CONTRACTS.COMPLETE' | translate }}
-                    </button>
+                    ></button>
                     <button
                       *nzSpaceItem
                       nz-button
@@ -305,10 +300,7 @@
               </td>
               <td nzAlign="right">
                 @if (!a.is_acknowledged) {
-                  <button nz-button nzType="primary" nzSize="small" (click)="acknowledgeAlert(a)">
-                    <span nz-icon nzType="check"></span>
-                    {{ 'CONTRACTS.ACKNOWLEDGE' | translate }}
-                  </button>
+                  <button nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="acknowledgeAlert(a)"></button>
                 }
               </td>
             </tr>
@@ -321,10 +313,12 @@
 
 <!-- MODAL: REGISTRA NUOVO CONTRATTO -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createModalVisible()"
   [nzTitle]="'CONTRACTS.NEW_CONTRACT' | translate"
   [nzOkLoading]="createSubmitting()"
   (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="contractForm.invalid"
   (nzOnOk)="submitCreateContract()"
 >
   <ng-container *nzModalContent>
@@ -393,10 +387,12 @@
 
 <!-- MODAL: RINNOVO CONTRATTO -->
 <nz-modal
+  okAction="confirm"
   [nzVisible]="renewModalVisible()"
   [nzTitle]="'CONTRACTS.RENEW_TITLE' | translate"
   [nzOkLoading]="renewSubmitting()"
   (nzOnCancel)="renewModalVisible.set(false)"
+  [nzOkDisabled]="renewForm.invalid"
   (nzOnOk)="submitRenewContract()"
 >
   <ng-container *nzModalContent>
@@ -414,6 +410,7 @@
 
 <!-- MODAL: PREAVVISO DISDETTA -->
 <nz-modal
+  okAction="confirm"
   [nzVisible]="noticeModalVisible()"
   [nzTitle]="'CONTRACTS.NOTICE_TITLE' | translate"
   [nzOkLoading]="noticeSubmitting()"
@@ -434,6 +431,7 @@
 
 <!-- MODAL: COMPLETA OBBLIGAZIONE -->
 <nz-modal
+  okAction="confirm"
   [nzVisible]="completeModalVisible()"
   [nzTitle]="'CONTRACTS.COMPLETE_OBLIGATION' | translate"
   (nzOnCancel)="completeModalVisible.set(false)"
@@ -452,6 +450,7 @@
 
 <!-- MODAL: WAIVE OBBLIGAZIONE -->
 <nz-modal
+  okAction="confirm"
   [nzVisible]="waiveModalVisible()"
   [nzTitle]="'CONTRACTS.WAIVE_OBLIGATION' | translate"
   (nzOnCancel)="waiveModalVisible.set(false)"
@@ -469,13 +468,14 @@
 </nz-modal>
 
 <!-- DRAWER: DETTAGLIO CONTRATTO -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="640"
+  [nzWidth]="900"
   [nzTitle]="selectedContract()?.title || ('CONTRACTS.CONTRACT_DETAILS' | translate)"
-  (nzOnClose)="drawerVisible.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerVisible.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedContract(); as c) {
       <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
         <nz-descriptions-item [nzTitle]="'CONTRACTS.CONTRACT_NUMBER' | translate">
@@ -497,10 +497,7 @@
       <!-- PARTI -->
       <div class="tab-toolbar mt-4">
         <h4>{{ 'CONTRACTS.PARTIES' | translate }}</h4>
-        <button nz-button nzType="default" nzSize="small" (click)="openPartyModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'CONTRACTS.ADD_PARTY' | translate }}
-        </button>
+        <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openPartyModal()"></button>
       </div>
 
       <nz-table [nzData]="contractParties()" [nzFrontPagination]="false" [nzShowPagination]="false">
@@ -521,9 +518,7 @@
               <td>{{ p.name }}</td>
               <td>{{ p.email || '-' }}</td>
               <td nzAlign="right">
-                <button nz-button nzDanger nzSize="small" (click)="deleteParty(p)">
-                  <span nz-icon nzType="delete"></span>
-                </button>
+                <button nz-button nzDanger nzSize="small" appIconAction="delete" (click)="deleteParty(p)"></button>
               </td>
             </tr>
           }
@@ -533,10 +528,7 @@
       <!-- OBBLIGAZIONI DEL CONTRATTO -->
       <div class="tab-toolbar mt-4">
         <h4>{{ 'CONTRACTS.OBLIGATIONS' | translate }}</h4>
-        <button nz-button nzType="default" nzSize="small" (click)="openObligationModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'CONTRACTS.ADD_OBLIGATION' | translate }}
-        </button>
+        <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openObligationModal()"></button>
       </div>
 
       <nz-table [nzData]="contractObligations()" [nzFrontPagination]="false" [nzShowPagination]="false">
@@ -594,13 +586,15 @@
       </nz-table>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: AGGIUNGI PARTE -->
 <nz-modal
+  okAction="add"
   [nzVisible]="partyModalVisible()"
   [nzTitle]="'CONTRACTS.ADD_PARTY' | translate"
   (nzOnCancel)="partyModalVisible.set(false)"
+  [nzOkDisabled]="partyForm.invalid"
   (nzOnOk)="submitParty()"
 >
   <ng-container *nzModalContent>
@@ -662,9 +656,11 @@
 
 <!-- MODAL: AGGIUNGI OBBLIGAZIONE -->
 <nz-modal
+  okAction="add"
   [nzVisible]="obligationModalVisible()"
   [nzTitle]="'CONTRACTS.ADD_OBLIGATION' | translate"
   (nzOnCancel)="obligationModalVisible.set(false)"
+  [nzOkDisabled]="obligationForm.invalid"
   (nzOnOk)="submitObligation()"
 >
   <ng-container *nzModalContent>

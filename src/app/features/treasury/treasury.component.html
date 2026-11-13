@@ -71,9 +71,7 @@
     <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
       <div class="tab-intro">
         <span class="text-muted">{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
-        <button nz-button nzType="primary" (click)="openAccountModal()">
-          <nz-icon nzType="plus" /> {{ 'treasury.lblNuovoContoBancario' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openAccountModal()"></button>
       </div>
 
       <app-base-table
@@ -86,9 +84,7 @@
       />
 
       <ng-template #accountActionsTpl let-acc>
-        <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteAccount(acc)">
-          {{ 'treasury.lblElimina' | translate }}
-        </button>
+        <button nz-button nzType="link" nzDanger nzSize="small" appIconAction="delete" (click)="deleteAccount(acc)"></button>
       </ng-template>
     </nz-tab>
 
@@ -120,9 +116,7 @@
     <nz-tab [nzTitle]="'treasury.lblDistinteDiPagamentoBonificiAndRiba' | translate">
       <div class="tab-intro">
         <span class="text-muted">{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
-        <button nz-button nzType="primary" (click)="openBatchModal()">
-          <nz-icon nzType="plus" /> {{ 'treasury.lblNuovaDistintaPagamento' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openBatchModal()"></button>
       </div>
 
       <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
@@ -233,10 +227,10 @@
 <nz-modal
   [nzVisible]="accountModalVisible()"
   [nzTitle]="'treasury.lblRegistraNuovoContoBancario' | translate"
-  [nzOkText]="'treasury.lblSalvaConto' | translate"
-  [nzCancelText]="'treasury.lblAnnulla' | translate"
   (nzOnCancel)="accountModalVisible.set(false)"
-  (nzOnOk)="submitAccount()"
+  (nzOnOk)="submitAccount()"
+  okAction="save"
+  [nzOkDisabled]="accountForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="accountForm" nzLayout="vertical">
@@ -296,10 +290,10 @@
 <nz-modal
   [nzVisible]="batchModalVisible()"
   [nzTitle]="'treasury.lblCreaDistintaDiPagamentoDispositiva' | translate"
-  [nzOkText]="'treasury.lblCreaDistinta' | translate"
-  [nzCancelText]="'treasury.lblAnnulla' | translate"
   (nzOnCancel)="batchModalVisible.set(false)"
-  (nzOnOk)="submitBatch()"
+  (nzOnOk)="submitBatch()"
+  okAction="create"
+  [nzOkDisabled]="batchForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="batchForm" nzLayout="vertical">
@@ -376,6 +370,7 @@
   [nzTitle]="'treasury.modal.title' | translate"
   (nzOnCancel)="isImportModalVisible.set(false)"
   (nzOnOk)="submitImport()"
+  [nzOkDisabled]="!selectedFile()"
   [nzOkLoading]="isUploading()"
 >
   <ng-container *nzModalContent>

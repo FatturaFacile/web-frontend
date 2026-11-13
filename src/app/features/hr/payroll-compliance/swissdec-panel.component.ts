@@ -8,7 +8,7 @@ import {
   SwissdecStatus,
   SwissdecVersion,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -25,6 +25,7 @@ import { reportHttpError } from '../shared/hr-http.util';
   selector: 'app-swissdec-panel',
   styleUrl: './swissdec-panel.component.scss',
   imports: [
+    ModalActionsDirective,
     FormsModule,
     NzAlertModule,
     NzButtonModule,
@@ -153,8 +154,6 @@ import { reportHttpError } from '../shared/hr-http.util';
     <nz-modal
       [nzVisible]="confirmOpen()"
       [nzTitle]="'hrmCompliance.swissdec.transmit' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="loading()"
       (nzOnOk)="transmit()"
       (nzOnCancel)="confirmOpen.set(false)"

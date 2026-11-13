@@ -27,9 +27,7 @@
     </nz-select>
 
     <span class="spacer"></span>
-    <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> {{ "alerts.actions.create" | translate }}
-    </button>
+    <button nz-button nzType="primary" type="button" appIconAction="add" (click)="create()"></button>
   </div>
 
   <app-base-table
@@ -75,11 +73,9 @@
         nzType="text"
         nzSize="small"
         type="button"
+        appIconAction="edit"
         (click)="edit(alert)"
-        [title]="'alerts.actions.edit' | translate"
-      >
-        <nz-icon nzType="edit" />
-      </button>
+      ></button>
       <button
         nz-button
         nzType="text"
@@ -88,13 +84,9 @@
         type="button"
         nz-popconfirm
         [nzPopconfirmTitle]="'alerts.confirmDelete' | translate"
-        [nzOkText]="'common.actions.delete' | translate"
-        [nzCancelText]="'common.actions.cancel' | translate"
+        appIconAction="delete"
         (nzOnConfirm)="delete(alert)"
-        [title]="'alerts.actions.delete' | translate"
-      >
-        <nz-icon nzType="delete" />
-      </button>
+      ></button>
     </div>
   </ng-template>
 </nz-card>

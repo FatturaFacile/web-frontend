@@ -23,7 +23,7 @@
 <nz-card>
   <div class="toolbar">
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.RECURRING_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()" appIconAction="create"></button>
       <span class="spacer"></span>
       <label for="gl-scheduled-as-of">{{ 'GL.AS_OF' | translate }}</label>
       <input class="date-input" id="gl-scheduled-as-of" nz-input type="date" [(ngModel)]="scheduledAsOf" />
@@ -82,6 +82,7 @@
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
@@ -155,11 +156,11 @@
                 <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
               }
             </nz-select>
-            <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)">&times;</button>
+            <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)" appIconAction="delete"></button>
           </div>
         }
       </div>
-      <button nz-button type="button" (click)="addLine()">{{ 'GL.ADD_LINE' | translate }}</button>
+      <button nz-button type="button" (click)="addLine()" appIconAction="add"></button>
     </form>
   </ng-container>
 </nz-modal>

@@ -168,7 +168,7 @@
             @for (error of errors(); track error) {
               <p class="enrol-error" role="alert">{{ error.startsWith('ASSOC_ENROL.') ? (error | translate) : error }}</p>
             }
-            <button nz-button nzType="primary" type="submit" [nzLoading]="submitting()">{{ 'ASSOC_ENROL.SUBMIT' | translate }}</button>
+            <button nz-button nzType="primary" type="submit" [nzLoading]="submitting()" [disabled]="person.invalid || extra.invalid">{{ 'ASSOC_ENROL.SUBMIT' | translate }}</button>
           </form>
         }
 

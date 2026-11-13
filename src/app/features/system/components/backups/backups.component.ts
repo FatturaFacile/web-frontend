@@ -8,13 +8,15 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { SystemApiService, SystemBackup } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-backups',
   styleUrl: './backups.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     NzTagModule,
     NzCardModule,
@@ -38,7 +40,7 @@ export class BackupsComponent implements OnInit {
   protected readonly isCreating = signal(false);
   protected readonly isUploadModalVisible = signal(false);
   protected readonly isUploading = signal(false);
-  private uploadFile: File | null = null;
+  protected readonly uploadFile = signal<File | null>(null);
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly sizeTpl = viewChild<TemplateRef<unknown>>('sizeTpl');
@@ -157,18 +159,19 @@ export class BackupsComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.uploadFile = input.files[0];
+      this.uploadFile.set(input.files[0]);
     }
   }
 
   submitUploadRestore(): void {
-    if (!this.uploadFile) {
+    const file = this.uploadFile();
+    if (!file) {
       this.message.warning(this.translate.instant('system.backups.messages.selectZip'));
       return;
     }
     this.isUploading.set(true);
     const fd = new FormData();
-    fd.append('file', this.uploadFile);
+    fd.append('file', file);
     this.api.restoreTenantBackupUpload(fd).subscribe({
       next: () => {
         this.isUploading.set(false);

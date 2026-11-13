@@ -7,7 +7,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -34,12 +33,14 @@ import {
   RentApiService,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 @Component({
   selector: 'app-rent',
   styleUrl: './rent.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     UpperCasePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -55,7 +56,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzInputModule,
     NzInputNumberModule,
     NzSelectModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzAlertModule,
     NzSpinModule,

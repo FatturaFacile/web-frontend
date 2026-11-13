@@ -26,9 +26,7 @@
     />
 
     <span class="spacer"></span>
-    <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> {{ "CRM.CLIENTS.NEW" | translate }}
-    </button>
+    <button nz-button nzType="primary" type="button" appIconAction="create" (click)="create()"></button>
   </div>
 
   <app-base-table
@@ -80,11 +78,9 @@
         nzType="text"
         nzSize="small"
         type="button"
+        appIconAction="edit"
         (click)="edit(c)"
-        [title]="'CRM.CLIENTS.ACTIONS.EDIT' | translate"
-      >
-        <nz-icon nzType="edit" />
-      </button>
+      ></button>
       <button
         nz-button
         nzType="text"
@@ -95,11 +91,9 @@
         [nzPopconfirmTitle]="'CRM.CLIENTS.ACTIONS.CONFIRM_DELETE' | translate: { name: name(c) }"
         [nzOkText]="'COMMON.DELETE' | translate"
         [nzCancelText]="'COMMON.CANCEL' | translate"
+        appIconAction="delete"
         (nzOnConfirm)="delete(c)"
-        [title]="'CRM.CLIENTS.ACTIONS.DELETE' | translate"
-      >
-        <nz-icon nzType="delete" />
-      </button>
+      ></button>
     </div>
   </ng-template>
 </nz-card>

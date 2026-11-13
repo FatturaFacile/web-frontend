@@ -1,6 +1,6 @@
 <nz-card>
   @if (canWrite) {
-    <button class="mb-3" nz-button nzType="primary" type="button" (click)="openModal('register')">{{ 'TR.REGISTER_NEW' | translate }}</button>
+    <button class="mb-3" nz-button nzType="primary" type="button" (click)="openModal('register')" appIconAction="create"></button>
   }
   <nz-table #table nzSize="middle" [nzScroll]="{ x: '640px' }" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
@@ -43,7 +43,7 @@
     <nz-tabs>
       <nz-tab [nzTitle]="'TR.CASH_BOOK' | translate">
         @if (canWrite) {
-          <button class="mb-3" nz-button type="button" (click)="openModal('movement')">{{ 'TR.MOVEMENT_NEW' | translate }}</button>
+          <button class="mb-3" nz-button type="button" (click)="openModal('movement')" appIconAction="create"></button>
         }
         <nz-table #movementTable nzSize="small" [nzData]="movements()" [nzPageSize]="20">
           <thead>
@@ -110,6 +110,8 @@
   [nzTitle]="'TR.REGISTER_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveRegister()"
+  okAction="create"
+  [nzOkDisabled]="registerForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
@@ -160,6 +162,8 @@
   [nzTitle]="'TR.MOVEMENT_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveMovement()"
+  okAction="create"
+  [nzOkDisabled]="movementForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
@@ -228,6 +232,7 @@
   [nzTitle]="'TR.DAILY_CLOSE' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveClose()"
+  [nzOkDisabled]="closeForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>

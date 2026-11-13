@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="visible()"
-  [nzWidth]="850"
+  [nzWidth]="960"
+  [nzFooter]="null"
   [nzTitle]="(asset().name || 'Asset') + ' (' + (asset().asset_number || 'N/A') + ')'"
-  (nzOnClose)="onClose()"
+  (nzOnCancel)="onClose()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <nz-tabs>
       <!-- TAB 1: OVERVIEW -->
       <nz-tab [nzTitle]="'assetDetailDrawer.lblOverviewAndMetrics' | translate">
@@ -168,4 +169,4 @@
       </nz-tab>
     </nz-tabs>
   </ng-container>
-</nz-drawer>
+</nz-modal>

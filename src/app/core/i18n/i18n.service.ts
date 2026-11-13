@@ -93,6 +93,28 @@ export class I18nService {
     });
   }
 
+  /**
+   * Usato dall'initializer dell'app: non risolve finché le traduzioni (lingua attiva ed eventuale
+   * fallback inglese) non sono caricate, riprovando con backoff. Finché è pendente l'app resta sullo
+   * splash con lo spinner, senza mostrare il sito con testi mancanti.
+   */
+  async waitForInitialTranslations(): Promise<void> {
+    const required: SupportedLanguage[] = [this.currentLanguage()];
+    if (required[0] !== 'en') {
+      required.push('en');
+    }
+
+    let delayMs = 1000;
+    for (;;) {
+      await this.loadInitialTranslations();
+      if (required.every((lang) => !!this.dictionaries()[lang])) {
+        return;
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+      delayMs = Math.min(delayMs * 2, 10000);
+    }
+  }
+
   setTenantId(tenantId: string): void {
     this.currentTenantId.set(tenantId);
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -146,7 +168,10 @@ export class I18nService {
         );
 
         // Le traduzioni arrivano solo dall'API (seeders + eventuali override del tenant): il frontend non ne ha una copia
-        const dict = (res as ApiResponseTranslations).translations ?? {};
+        const dict = (res as ApiResponseTranslations)?.translations;
+        if (!dict || typeof dict !== 'object' || Object.keys(dict).length === 0) {
+          throw new Error('Risposta traduzioni vuota o non valida');
+        }
         this.dictionaries.update((curr) => ({ ...curr, [lang]: dict }));
         return dict;
       } catch (error) {

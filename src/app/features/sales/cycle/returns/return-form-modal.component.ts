@@ -14,7 +14,7 @@ import {
   SalesReturn,
   SalesReturnPayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { apiErrorText } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { todayIso } from '../shared/sales-status';
@@ -32,7 +32,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 @Component({
   selector: 'app-return-form-modal',
   styleUrl: './return-form-modal.component.scss',
-  imports: [FormsModule, NzAlertModule, NzCheckboxModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  imports: [ModalActionsDirective, FormsModule, NzAlertModule, NzCheckboxModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <nz-modal
       [nzVisible]="visible()"
@@ -41,6 +41,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
       [nzOkDisabled]="!valid()"
       nzWidth="820px"
       (nzOnCancel)="visible.set(false)"
+      okAction="create"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>

@@ -43,7 +43,8 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(ThemeService);
       const i18n = inject(I18nService);
-      return i18n.loadInitialTranslations();
+      // Bootstrap bloccato (splash + spinner) finché le traduzioni non sono caricate
+      return i18n.waitForInitialTranslations();
     }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

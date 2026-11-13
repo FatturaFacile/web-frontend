@@ -16,11 +16,11 @@ import {
   ShortTimeClaim,
   ShortTimeClaimSummary,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -33,24 +33,26 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
   selector: 'app-short-time-claims-drawer',
   styleUrl: './short-time-claims-drawer.component.scss',
   imports: [
+    ModalActionsDirective,
     ActionFormComponent,
     MoneyPipe,
     NzAlertModule,
     NzButtonModule,
     NzDescriptionsModule,
-    NzDrawerModule,
+    NzModalModule,
     NzTableModule,
     NzTagModule,
     TranslatePipe,
   ],
   template: `
-    <nz-drawer
+    <nz-modal
       [nzVisible]="open()"
-      nzWidth="720"
+      [nzWidth]="720"
+      [nzFooter]="null"
       [nzTitle]="'hrmShortTime.claims.title' | translate"
-      (nzOnClose)="open.set(false)"
+      (nzOnCancel)="open.set(false)"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         <nz-table #table [nzData]="claims()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
@@ -130,7 +132,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
           }
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class ShortTimeClaimsDrawerComponent {

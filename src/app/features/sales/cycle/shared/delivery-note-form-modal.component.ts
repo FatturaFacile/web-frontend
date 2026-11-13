@@ -15,7 +15,7 @@ import {
   SalesCycleApiService,
   TransportBy,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { DECIMAL_PATTERN } from './document-lines-editor.component';
 import { SalesLookupsService } from './sales-lookups.service';
 
@@ -32,6 +32,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
   selector: 'app-delivery-note-form-modal',
   styleUrl: './delivery-note-form-modal.component.scss',
   imports: [
+    ModalActionsDirective,
     ReactiveFormsModule,
     FormsModule,
     NzModalModule,
@@ -50,6 +51,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
       [nzOkDisabled]="form.invalid"
       nzWidth="860px"
       (nzOnCancel)="visible.set(false)"
+      okAction="create"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>

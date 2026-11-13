@@ -33,6 +33,8 @@ import {
 } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
@@ -68,6 +70,8 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
   selector: 'app-invoices',
   styleUrl: './invoices.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     FormsModule,
     CurrencyPipe,

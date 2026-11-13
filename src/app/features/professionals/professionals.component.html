@@ -7,14 +7,8 @@
       <span nz-icon nzType="clock-circle"></span>
       {{ 'PRACTICE.LOG_TIME' | translate }}
     </button>
-    <button nz-button (click)="openCreateRetainerModal()">
-      <span nz-icon nzType="wallet"></span>
-      {{ 'PRACTICE.NEW_RETAINER' | translate }}
-    </button>
-    <button nz-button nzType="primary" (click)="openCreateClosingModal()">
-      <span nz-icon nzType="plus"></span>
-      {{ 'PRACTICE.NEW_CLOSING' | translate }}
-    </button>
+    <button nz-button (click)="openCreateRetainerModal()" appIconAction="create"></button>
+    <button nz-button nzType="primary" (click)="openCreateClosingModal()" appIconAction="create"></button>
   </div>
 </app-page-header>
 
@@ -279,10 +273,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'PRACTICE.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateRetainerModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'PRACTICE.NEW_RETAINER' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openCreateRetainerModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -368,10 +359,7 @@
           <span nz-icon nzType="reload"></span>
           {{ 'PRACTICE.REFRESH' | translate }}
         </button>
-        <button nz-button nzType="primary" (click)="openCreateClosingModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'PRACTICE.NEW_CLOSING' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateClosingModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -435,13 +423,14 @@
 </nz-card>
 
 <!-- DRAWER: FEE NOTE DETAILS -->
-<nz-drawer
+<nz-modal
   [nzVisible]="feeNoteDrawerVisible()"
-  [nzWidth]="640"
+  [nzWidth]="800"
   [nzTitle]="'PRACTICE.FEE_NOTE_DETAILS' | translate"
-  (nzOnClose)="closeFeeNoteDrawer()"
+  (nzOnCancel)="closeFeeNoteDrawer()"
+  [nzFooter]="null"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedFeeNote(); as fn) {
       <nz-descriptions class="mb-4" nzBordered [nzColumn]="2" nzSize="small">
         <nz-descriptions-item [nzTitle]="'PRACTICE.FEE_NOTE_NUM' | translate">
@@ -518,7 +507,7 @@
       </nz-table>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: TIME LOG -->
 <nz-modal
@@ -526,6 +515,7 @@
   [nzTitle]="'PRACTICE.LOG_TIME' | translate"
   (nzOnCancel)="timeLogModalVisible.set(false)"
   (nzOnOk)="saveTimeLog()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="timeLogForm" nzLayout="vertical">
@@ -586,6 +576,7 @@
   [nzTitle]="'PRACTICE.GENERATE_FEE_NOTE' | translate"
   (nzOnCancel)="feeNoteModalVisible.set(false)"
   (nzOnOk)="saveFeeNote()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="feeNoteForm" nzLayout="vertical">
@@ -650,6 +641,7 @@
   [nzTitle]="'PRACTICE.NEW_RETAINER' | translate"
   (nzOnCancel)="retainerModalVisible.set(false)"
   (nzOnOk)="saveRetainer()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="retainerForm" nzLayout="vertical">
@@ -716,6 +708,7 @@
   [nzTitle]="'PRACTICE.APPLY_RETAINER' | translate"
   (nzOnCancel)="applyRetainerModalVisible.set(false)"
   (nzOnOk)="saveApplyRetainer()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="applyRetainerForm" nzLayout="vertical">
@@ -767,6 +760,7 @@
   [nzTitle]="'PRACTICE.NEW_CLOSING' | translate"
   (nzOnCancel)="closingModalVisible.set(false)"
   (nzOnOk)="saveClosing()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="closingForm" nzLayout="vertical">

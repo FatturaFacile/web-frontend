@@ -167,7 +167,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
                 </ng-template>
               </nz-form-item>
 
-              <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+              <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()" [disabled]="form.invalid">
                 {{ 'AUTH.RESET_SUBMIT' | translate }}
               </button>
             </form>

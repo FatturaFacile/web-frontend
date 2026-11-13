@@ -1,8 +1,8 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { EmploymentContractResource, HrEmployeeApiService, PermissionsService } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig } from '../shared/crud/crud.types';
@@ -16,22 +16,23 @@ type Row = { id: string } & Record<string, unknown>;
 @Component({
   selector: 'app-employee-contracts',
   styleUrl: './employee-contracts.component.scss',
-  imports: [NzAlertModule, NzDrawerModule, TranslatePipe, CrudTableComponent],
+  imports: [ModalActionsDirective, NzAlertModule, NzModalModule, TranslatePipe, CrudTableComponent],
   template: `
     <nz-alert nzType="info" nzShowIcon class="mb-3" [nzMessage]="'hrmEmp.supersedeHint' | translate" />
     <app-crud-table [config]="contractsConfig()" />
-    <nz-drawer
+    <nz-modal
       [nzVisible]="componentsOf() !== null"
       [nzTitle]="'hrmEmp.salaryComponents' | translate"
-      nzWidth="720"
-      (nzOnClose)="componentsOf.set(null)"
+      [nzWidth]="720"
+      [nzFooter]="null"
+      (nzOnCancel)="componentsOf.set(null)"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         @if (componentsConfig(); as config) {
           <app-crud-table [config]="config" />
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class EmployeeContractsComponent {
