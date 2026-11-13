@@ -479,7 +479,20 @@ export class ChildcareComponent implements OnInit {
     this.attendancesLoading.set(true);
     this.api.getMonthlyRegister({ month: this.attendanceMonth() }).subscribe({
       next: (res) => {
-        this.attendances.set(res.data || []);
+        this.attendances.set(
+          (res.data?.children ?? []).flatMap((row) =>
+            Object.entries(row.days).map(([date, day]) => ({
+              id: `${row.child_id}-${date}`,
+              child_id: row.child_id,
+              child_name: row.name,
+              date,
+              status: day.status,
+              check_in_at: day.check_in_at,
+              check_out_at: day.check_out_at,
+              absence_reason: day.absence_reason,
+            })),
+          ),
+        );
         this.attendancesLoading.set(false);
       },
       error: () => {
@@ -767,7 +780,18 @@ export class ChildcareComponent implements OnInit {
 
     this.api.getOutstandingDocuments().subscribe({
       next: (res) => {
-        this.outstandingDocuments.set(res.data || []);
+        this.outstandingDocuments.set(
+          (res.data?.children ?? []).flatMap((row) =>
+            row.missing.map((requirement) => ({
+              id: `${row.child_id}-${requirement.requirement_id}`,
+              child_id: row.child_id,
+              child_name: row.name,
+              title: requirement.name,
+              requirement_id: requirement.requirement_id,
+              status: 'missing' as const,
+            })),
+          ),
+        );
       },
     });
   }

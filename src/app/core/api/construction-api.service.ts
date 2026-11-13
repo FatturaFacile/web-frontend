@@ -187,9 +187,10 @@ export class ConstructionApiService {
     );
   }
 
-  getExpiringDocuments(): Observable<ApiResponse<TradesSiteDocument[]>> {
+  getExpiringDocuments(withinDays = 30): Observable<ApiResponse<TradesSiteDocument[]>> {
     return this.http.get<ApiResponse<TradesSiteDocument[]>>(
       `${this.tradesBase}/site-documents/expiring`,
+      { params: { within_days: withinDays } },
     );
   }
 

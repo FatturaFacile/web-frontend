@@ -104,7 +104,7 @@ export class PayrollSettingsComponent implements OnInit {
       next: (res) => {
         const values: Record<string, string> = {};
         for (const field of this.fields()) {
-          values[field.key] = String(res.data[field.key] ?? '');
+          values[field.key] = String(res.data?.[field.key] ?? '');
         }
         this.form.patchValue(values);
         this.loading.set(false);

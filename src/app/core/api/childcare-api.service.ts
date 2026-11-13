@@ -8,6 +8,8 @@ import {
   ChildcareActivityRequest,
   ChildcareAdmitRequest,
   ChildcareAttendance,
+  ChildcareOutstandingDocuments,
+  ChildcareRegister,
   ChildcareAttendanceCorrection,
   ChildcareBill,
   ChildcareBillingRunRequest,
@@ -133,8 +135,8 @@ export class ChildcareApiService {
     );
   }
 
-  getMonthlyRegister(params: { month: string; group_id?: string }): Observable<ApiResponse<ChildcareAttendance[]>> {
-    return this.http.get<ApiResponse<ChildcareAttendance[]>>(`${this.base}/attendances/register`, {
+  getMonthlyRegister(params: { month: string; group_id?: string }): Observable<ApiResponse<ChildcareRegister>> {
+    return this.http.get<ApiResponse<ChildcareRegister>>(`${this.base}/attendances/register`, {
       params: toHttpParams(params),
     });
   }
@@ -217,7 +219,7 @@ export class ChildcareApiService {
     return this.http.get<ApiResponse<ChildcareDocument[]>>(`${this.base}/children/${childId}/documents`);
   }
 
-  getOutstandingDocuments(): Observable<ApiResponse<ChildcareDocument[]>> {
-    return this.http.get<ApiResponse<ChildcareDocument[]>>(`${this.base}/documents/outstanding`);
+  getOutstandingDocuments(): Observable<ApiResponse<ChildcareOutstandingDocuments>> {
+    return this.http.get<ApiResponse<ChildcareOutstandingDocuments>>(`${this.base}/documents/outstanding`);
   }
 }

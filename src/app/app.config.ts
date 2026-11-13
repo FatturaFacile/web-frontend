@@ -12,6 +12,7 @@ import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { credentialsInterceptor } from '@core/interceptors/credentials.interceptor';
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
+import { paginatedResponseInterceptor } from '@core/interceptors/paginated-response.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { I18nService, PageTitleStrategy } from '@core/i18n';
 import { ThemeService } from '@core/theme';
@@ -35,7 +36,13 @@ export const appConfig: ApplicationConfig = {
         cookieName: 'XSRF-TOKEN',
         headerName: 'X-XSRF-TOKEN',
       }),
-      withInterceptors([credentialsInterceptor, csrfRefreshInterceptor, tenantAuthInterceptor, errorInterceptor]),
+      withInterceptors([
+        credentialsInterceptor,
+        csrfRefreshInterceptor,
+        tenantAuthInterceptor,
+        paginatedResponseInterceptor,
+        errorInterceptor,
+      ]),
     ),
     provideNzIcons(icons),
     provideNzI18n(en_US),

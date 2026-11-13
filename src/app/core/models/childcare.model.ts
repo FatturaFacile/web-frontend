@@ -106,6 +106,29 @@ export interface ChildcareAttendance {
   correction_reason?: string | null;
 }
 
+/** One child's row of the monthly attendance register: `days` is keyed by `Y-m-d`. */
+export interface ChildcareRegisterRow {
+  child_id: string;
+  reference_code: string;
+  name: string;
+  present_days: number;
+  days: Record<
+    string,
+    {
+      status: ChildcareAttendance['status'];
+      absence_reason: string | null;
+      check_in_at: string | null;
+      check_out_at: string | null;
+    }
+  >;
+}
+
+/** Payload of `GET /childcare/attendances/register`. */
+export interface ChildcareRegister {
+  month: string;
+  children: ChildcareRegisterRow[];
+}
+
 export interface ChildcareCheckInRequest {
   child_id: string;
   at?: string;
@@ -284,8 +307,19 @@ export interface ChildcareDocument {
   requirement_name?: string | null;
   signed_at?: string | null;
   signed_by?: string | null;
-  status: 'pending' | 'signed' | 'expired';
+  status: 'pending' | 'signed' | 'expired' | 'missing';
   created_at?: string;
+}
+
+/** Payload of `GET /childcare/documents/outstanding`: the mandatory documents still missing, per child. */
+export interface ChildcareOutstandingDocuments {
+  children: {
+    child_id: string;
+    reference_code: string;
+    name: string;
+    missing: { requirement_id: string; name: string }[];
+  }[];
+  total_missing: number;
 }
 
 export interface ChildcareParams {

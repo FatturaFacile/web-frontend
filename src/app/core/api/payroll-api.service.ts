@@ -212,8 +212,8 @@ export class PayrollApiService {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/setup`, {});
   }
 
-  getSettings(country: 'swiss' | 'italian'): Observable<ApiResponse<PayrollSettingsRecord>> {
-    return this.http.get<ApiResponse<PayrollSettingsRecord>>(this.settingsUrls[country]);
+  getSettings(country: 'swiss' | 'italian'): Observable<ApiResponse<PayrollSettingsRecord | null>> {
+    return this.http.get<ApiResponse<PayrollSettingsRecord | null>>(this.settingsUrls[country]);
   }
 
   saveSettings(country: 'swiss' | 'italian', payload: PayrollSettingsPayload): Observable<ApiResponse<PayrollSettingsRecord>> {
