@@ -43,18 +43,17 @@ describe('DocumentTrustApiService', () => {
     document_id: 'inv-123',
     format: 'cades-bes-p7m',
     driver: 'cades',
-    signature_sha256: 'a1b2c3d4e5f6',
-    signed_at: '2026-11-09T10:00:00Z',
+    content_sha256: 'a1b2c3d4e5f6',
+    created_at: '2026-11-09T10:00:00Z',
   };
 
   const mockPreservation: PreservationRecord = {
     id: 'pres-1',
     document_type: 'invoice',
     document_id: 'inv-123',
-    driver: 'local',
-    mode: 'fingerprint_only',
-    package_sha256: 'fedcba987654321',
-    timestamped_at: '2026-11-09T10:00:00Z',
+    provider: 'local',
+    content_sha256: 'fedcba987654321',
+    created_at: '2026-11-09T10:00:00Z',
     status: 'archived',
   };
 

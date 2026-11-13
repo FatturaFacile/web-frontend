@@ -1,14 +1,13 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectRevenueRecognition } from '@core';
-import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { AuthStore, FetchGridModel, I18nService, PermissionsService, ProjectControlApiService, ProjectRevenueRecognition, QueryFilterParams } from '@core';
+import { BaseTableComponent, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-alert.component';
 
 /** Time and materials billing, billing runs and revenue recognition of a project. */
@@ -16,9 +15,8 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
   selector: 'app-pc-billing',
   styleUrl: './pc-billing.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
-    FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
+    BaseTableComponent,
+    FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
   template: `
     <app-gl-error-alert [error]="error()" />
 
@@ -45,33 +43,15 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
       </nz-card>
     }
 
-    <nz-table #recognitionTable nzSize="small" [nzData]="recognitions()" [nzPageSize]="10">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'accounting_period_date' | gridSort" [nzFilters]="'accounting_period_date' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'accounting_period_date' | gridFilterFn">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'completion_percentage' | gridSort" [nzFilters]="'completion_percentage' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'completion_percentage' | gridFilterFn">{{ 'PRJ.COMPLETION' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'period_revenue' | gridSort" [nzFilters]="'period_revenue' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'period_revenue' | gridFilterFn">{{ 'PRJ.PERIOD_REVENUE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'cumulative_recognized_revenue' | gridSort" [nzFilters]="'cumulative_recognized_revenue' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'cumulative_recognized_revenue' | gridFilterFn">{{ 'PRJ.CUMULATIVE_REVENUE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'contract_asset_balance' | gridSort" [nzFilters]="'contract_asset_balance' | gridFilterList: recognitionTable.nzData" [nzFilterFn]="'contract_asset_balance' | gridFilterFn">{{ 'PRJ.CONTRACT_ASSET' | translate }}</th>
-          <th>{{ 'PRJ.POSTED_TO_GL' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (run of recognitionTable.data; track run.id) {
-          <tr>
-            <td>{{ run.accounting_period_date }}</td>
-            <td nzAlign="right">{{ run.completion_percentage }}%</td>
-            <td nzAlign="right">{{ run.period_revenue | money: currency() }}</td>
-            <td nzAlign="right">{{ run.cumulative_recognized_revenue | money: currency() }}</td>
-            <td nzAlign="right">{{ run.contract_asset_balance | money: currency() }}</td>
-            <td>{{ (run.is_posted_to_gl ? 'PRJ.YES' : 'PRJ.NO') | translate }}</td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" exportFileName="revenue-recognition" />
+    <ng-template #completionTpl let-run>{{ run.completion_percentage }}%</ng-template>
+    <ng-template #periodRevenueTpl let-run>{{ run.period_revenue | money: currency() }}</ng-template>
+    <ng-template #cumulativeTpl let-run>{{ run.cumulative_recognized_revenue | money: currency() }}</ng-template>
+    <ng-template #assetTpl let-run>{{ run.contract_asset_balance | money: currency() }}</ng-template>
+    <ng-template #postedTpl let-run>{{ (run.is_posted_to_gl ? 'PRJ.YES' : 'PRJ.NO') | translate }}</ng-template>
   `,
 })
-export class PcBillingComponent implements OnInit {
+export class PcBillingComponent {
   readonly projectId = input.required<string>();
 
   private readonly api = inject(ProjectControlApiService);
@@ -80,16 +60,40 @@ export class PcBillingComponent implements OnInit {
   protected readonly currency = inject(AuthStore).activeCurrency;
   protected readonly canWrite = inject(PermissionsService).canWrite('projects');
 
-  protected readonly recognitions = signal<ProjectRevenueRecognition[]>([]);
+  /** Revenue recognition runs of the project: paging, sorting, filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ProjectRevenueRecognition, QueryFilterParams>((query) =>
+    this.api.getRevenueRecognitions(this.projectId(), query),
+  );
+
+  private readonly completionTpl = viewChild<TemplateRef<{ $implicit: ProjectRevenueRecognition; value: unknown }>>('completionTpl');
+  private readonly periodRevenueTpl = viewChild<TemplateRef<{ $implicit: ProjectRevenueRecognition; value: unknown }>>('periodRevenueTpl');
+  private readonly cumulativeTpl = viewChild<TemplateRef<{ $implicit: ProjectRevenueRecognition; value: unknown }>>('cumulativeTpl');
+  private readonly assetTpl = viewChild<TemplateRef<{ $implicit: ProjectRevenueRecognition; value: unknown }>>('assetTpl');
+  private readonly postedTpl = viewChild<TemplateRef<{ $implicit: ProjectRevenueRecognition; value: unknown }>>('postedTpl');
+
+  protected readonly columns = computed<TableColumnDef<ProjectRevenueRecognition>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'accounting_period_date', header: 'PRJ.ACCOUNTING_DATE' },
+      { key: 'completion_percentage', header: 'PRJ.COMPLETION', align: 'right', customCellTemplate: this.completionTpl() },
+      { key: 'period_revenue', header: 'PRJ.PERIOD_REVENUE', align: 'right', customCellTemplate: this.periodRevenueTpl() },
+      { key: 'cumulative_recognized_revenue', header: 'PRJ.CUMULATIVE_REVENUE', align: 'right', customCellTemplate: this.cumulativeTpl() },
+      { key: 'contract_asset_balance', header: 'PRJ.CONTRACT_ASSET', align: 'right', customCellTemplate: this.assetTpl() },
+      {
+        key: 'is_posted_to_gl',
+        serverKey: 'posting',
+        header: 'PRJ.POSTED_TO_GL',
+        valueGetter: (run) => this.i18n.translate(run.is_posted_to_gl ? 'PRJ.YES' : 'PRJ.NO'),
+        valueLabel: (value) => this.i18n.translate(value === 'yes' ? 'PRJ.YES' : 'PRJ.NO'),
+        customCellTemplate: this.postedTpl(),
+      },
+    ];
+  });
   protected readonly error = signal<unknown>(null);
   protected taxRate: number | null = 22;
   protected upToDate = '';
   protected accountingDate = '';
   protected overrideCompletion: number | null = null;
-
-  ngOnInit(): void {
-    this.load();
-  }
 
   protected billTimeAndMaterials(): void {
     if (this.taxRate === null) {
@@ -119,6 +123,6 @@ export class PcBillingComponent implements OnInit {
   }
 
   private load(): void {
-    this.api.getRevenueRecognitions(this.projectId()).subscribe({ next: (res) => this.recognitions.set(res.data ?? []) });
+    this.grid.reload();
   }
 }

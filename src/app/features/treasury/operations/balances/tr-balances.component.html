@@ -39,7 +39,7 @@
           [attr.aria-label]="'TR.MOVEMENT_TYPE' | translate"
           [nzPlaceHolder]="'TR.MOVEMENT_TYPE' | translate"
           [(ngModel)]="movementTypeFilter"
-          (ngModelChange)="loadMovements()"
+          (ngModelChange)="onMovementTypeChange($event)"
         >
           @for (type of movementTypes; track type) {
             <nz-option [nzValue]="type" [nzLabel]="'TR.MOVEMENT_' + type.toUpperCase() | translate" />
@@ -51,30 +51,8 @@
           <button nz-button type="button" (click)="openModal('charge')" appIconAction="create"></button>
         }
       </div>
-      <nz-table #movementTable nzSize="middle" [nzData]="movements()" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th [nzSortFn]="'movement_date' | gridSort" [nzFilters]="'movement_date' | gridFilterList: movementTable.nzData" [nzFilterFn]="'movement_date' | gridFilterFn">{{ 'TR.DATE' | translate }}</th>
-            <th>{{ 'TR.MOVEMENT_TYPE' | translate }}</th>
-            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th>{{ 'TR.COUNTER_ACCOUNT' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: movementTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'TR.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: movementTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'TR.DESCRIPTION' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (movement of movementTable.data; track movement.id) {
-            <tr>
-              <td>{{ movement.movement_date }}</td>
-              <td>{{ 'TR.MOVEMENT_' + movement.movement_type.toUpperCase() | translate }}</td>
-              <td>{{ banks.label(movement.bank_account_id) }}</td>
-              <td>{{ movement.counter_bank_account_id ? banks.label(movement.counter_bank_account_id) : '' }}</td>
-              <td nzAlign="right">{{ movement.amount | money: movement.currency }}</td>
-              <td>{{ movement.description }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="movementGrid" [columns]="movementColumns()" [scroll]="{ x: '720px' }" [exportFileName]="'treasury-movements'" />
+      <ng-template #movementAmountTpl let-movement>{{ movement.amount | money: movement.currency }}</ng-template>
     </nz-tab>
 
     <nz-tab [nzTitle]="'TR.FX_REVALUATION' | translate">

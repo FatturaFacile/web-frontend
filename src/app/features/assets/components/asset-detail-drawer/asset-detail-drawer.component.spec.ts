@@ -131,8 +131,8 @@ describe('AssetDetailDrawerComponent', () => {
 
   const mockAssetApi = {
     getAssetBooks: vi.fn().mockReturnValue(of({ success: true, data: mockBooks })),
-    getDepreciationSchedules: vi.fn().mockReturnValue(of({ success: true, data: mockSchedules })),
-    getMaintenanceWorkOrders: vi.fn().mockReturnValue(of({ success: true, data: mockWorkOrders })),
+    getDepreciationSchedules: vi.fn().mockReturnValue(of({ success: true, data: mockSchedules, meta: { total: mockSchedules.length } })),
+    getMaintenanceWorkOrders: vi.fn().mockReturnValue(of({ success: true, data: mockWorkOrders, meta: { total: mockWorkOrders.length } })),
   };
 
   const mockMessage = {
@@ -158,15 +158,16 @@ describe('AssetDetailDrawerComponent', () => {
     fixture.componentRef.setInput('visible', true);
   });
 
-  it('loads parallel books, depreciation schedules, and maintenance orders', () => {
+  it('loads parallel books, depreciation schedules, and maintenance orders of the asset', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(component).toBeTruthy();
     expect(mockAssetApi.getAssetBooks).toHaveBeenCalledWith('asset-1');
-    expect(mockAssetApi.getDepreciationSchedules).toHaveBeenCalledWith('asset-1');
-    expect(mockAssetApi.getMaintenanceWorkOrders).toHaveBeenCalled();
+    expect(mockAssetApi.getDepreciationSchedules).toHaveBeenCalledWith('asset-1', expect.objectContaining({ page: 1 }));
+    expect(mockAssetApi.getMaintenanceWorkOrders).toHaveBeenCalledWith(expect.objectContaining({ asset_id: 'asset-1' }));
     expect(component.books()).toEqual(mockBooks);
-    expect(component.schedules()).toEqual(mockSchedules);
-    expect(component.workOrders()).toEqual(mockWorkOrders);
+    expect(component.schedulesGrid.items()).toEqual(mockSchedules);
+    expect(component.workOrdersGrid.items()).toEqual(mockWorkOrders);
   });
 
   it('returns appropriate color for parallel book ledger types', () => {

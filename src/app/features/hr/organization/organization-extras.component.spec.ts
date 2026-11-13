@@ -68,7 +68,7 @@ describe('Organization: successor and payroll forecast', () => {
       positionsVersion: { update(fn: (v: number) => number): void };
     };
     const first = page.positionsConfig();
-    await new Promise<void>((resolve) => first.list().subscribe(() => resolve()));
+    await new Promise<void>((resolve) => first.gridList?.({ page: 1 }).subscribe(() => resolve()));
     first.rowActions?.[0].run({ id: 'p1' });
     expect(page.successorOpen()).toBe(true);
     expect(page.successorPosition()?.id).toBe('p1');

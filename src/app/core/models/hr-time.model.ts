@@ -36,6 +36,7 @@ export interface LeaveAccrualPolicyPayload {
 export interface LeaveBalanceResource {
   id: string;
   employee_id: string;
+  employee_name?: string;
   leave_type_id: string;
   fiscal_year: number;
   entitlement_hours: string;

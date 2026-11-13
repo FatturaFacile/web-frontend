@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { decimalPattern } from '@shared/utils/decimal-validators';
@@ -19,13 +19,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   ChildcareAdmitRequest,
   ChildcareApiService,
+  ChildcareBillsParams,
+  ChildcareNotesParams,
+  ChildcareParams,
+  FetchGridModel,
   ChildcareAttendance,
   ChildcareBill,
   ChildcareBillingRunRequest,
@@ -52,12 +56,13 @@ import {
   ChildcareNoteCategory,
   ChildcareRelationship,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-childcare',
   styleUrl: './childcare.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
@@ -99,13 +104,57 @@ export class ChildcareComponent implements OnInit {
   readonly selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: CHILDREN ---
+  /** Active children for the check-in, check-out and note selects (the grid below only holds one page). */
   readonly children = signal<ChildcareChild[]>([]);
-  readonly childrenTotal = signal<number>(0);
-  readonly childrenLoading = signal<boolean>(false);
-  readonly childrenPageIndex = signal<number>(1);
-  readonly childrenPageSize = signal<number>(10);
+  readonly childGrid = new FetchGridModel<ChildcareChild, ChildcareParams>((q) => this.api.getChildren(q));
   readonly filterStatus = signal<string>('');
   readonly filterSearch = signal<string>('');
+
+  private readonly childNameTpl = viewChild<TemplateRef<unknown>>('childNameTpl');
+  private readonly childGroupTpl = viewChild<TemplateRef<unknown>>('childGroupTpl');
+  private readonly childBirthTpl = viewChild<TemplateRef<unknown>>('childBirthTpl');
+  private readonly childEnrolledTpl = viewChild<TemplateRef<unknown>>('childEnrolledTpl');
+  private readonly childStatusTpl = viewChild<TemplateRef<unknown>>('childStatusTpl');
+  private readonly childBillingTpl = viewChild<TemplateRef<unknown>>('childBillingTpl');
+
+  readonly childColumns = computed<TableColumnDef<ChildcareChild>[]>(() => [
+    {
+      key: 'first_name',
+      serverKey: 'display_name',
+      header: 'CHILDCARE.COL_NAME',
+      valueGetter: (c) => `${c.first_name} ${c.last_name}`.trim(),
+      customCellTemplate: this.childNameTpl(),
+    },
+    {
+      key: 'group_name',
+      serverKey: 'group.name',
+      header: 'CHILDCARE.COL_GROUP',
+      valueGetter: (c) => c.group_name || c.group_id || '',
+      customCellTemplate: this.childGroupTpl(),
+    },
+    {
+      key: 'birth_date',
+      header: 'CHILDCARE.COL_BIRTH_DATE',
+      sortable: false,
+      filterable: false,
+      groupable: false,
+      customCellTemplate: this.childBirthTpl(),
+    },
+    { key: 'enrolled_on', header: 'CHILDCARE.COL_ENROLLED_ON', customCellTemplate: this.childEnrolledTpl() },
+    {
+      key: 'status',
+      header: 'CHILDCARE.COL_STATUS',
+      valueGetter: (c) => this.childStatusLabel(c.status),
+      valueLabel: (value) => this.childStatusLabel(value),
+      customCellTemplate: this.childStatusTpl(),
+    },
+    {
+      key: 'billing_contact_name',
+      header: 'CHILDCARE.COL_BILLING_CONTACT',
+      valueGetter: (c) => c.billing_contact_name || c.billing_contact_id,
+      customCellTemplate: this.childBillingTpl(),
+    },
+  ]);
 
   // Groups cache
   readonly groups = signal<ChildcareGroup[]>([]);
@@ -127,14 +176,66 @@ export class ChildcareComponent implements OnInit {
   readonly attendanceMonth = signal<string>(new Date().toISOString().substring(0, 7));
 
   // --- TAB 3: DAILY LOG NOTES ---
-  readonly dailyNotes = signal<ChildcareDailyNote[]>([]);
-  readonly dailyNotesLoading = signal<boolean>(false);
+  readonly noteGrid = new FetchGridModel<ChildcareDailyNote, ChildcareNotesParams>((q) => this.api.getNotes(q));
+
+  private readonly noteDateTpl = viewChild<TemplateRef<unknown>>('noteDateTpl');
+  private readonly noteChildTpl = viewChild<TemplateRef<unknown>>('noteChildTpl');
+  private readonly noteCategoryTpl = viewChild<TemplateRef<unknown>>('noteCategoryTpl');
+  private readonly noteFamilyTpl = viewChild<TemplateRef<unknown>>('noteFamilyTpl');
+
+  readonly noteColumns = computed<TableColumnDef<ChildcareDailyNote>[]>(() => [
+    { key: 'date', header: 'CHILDCARE.COL_DATE', customCellTemplate: this.noteDateTpl() },
+    {
+      key: 'child_name',
+      header: 'CHILDCARE.COL_CHILD',
+      valueGetter: (n) => n.child_name || n.child_id,
+      customCellTemplate: this.noteChildTpl(),
+    },
+    { key: 'category', header: 'CHILDCARE.COL_CATEGORY', customCellTemplate: this.noteCategoryTpl() },
+    { key: 'body', serverKey: 'body_text', header: 'CHILDCARE.COL_BODY' },
+    {
+      key: 'visible_to_family',
+      header: 'CHILDCARE.COL_FAMILY_VISIBLE',
+      sortable: false,
+      filterable: false,
+      groupable: false,
+      customCellTemplate: this.noteFamilyTpl(),
+    },
+  ]);
 
   // --- TAB 4: BILLING & FEE PLANS ---
   readonly bills = signal<ChildcareBill[]>([]);
   readonly feePlans = signal<ChildcareFeePlan[]>([]);
-  readonly billingLoading = signal<boolean>(false);
   readonly billingPeriod = signal<string>(new Date().toISOString().substring(0, 7));
+  readonly billGrid = new FetchGridModel<ChildcareBill, ChildcareBillsParams>((q) => this.api.getBills(q), 300);
+
+  private readonly billPeriodTpl = viewChild<TemplateRef<unknown>>('billPeriodTpl');
+  private readonly billChildTpl = viewChild<TemplateRef<unknown>>('billChildTpl');
+  private readonly billContactTpl = viewChild<TemplateRef<unknown>>('billContactTpl');
+  private readonly billGrossTpl = viewChild<TemplateRef<unknown>>('billGrossTpl');
+  private readonly billSubsidyTpl = viewChild<TemplateRef<unknown>>('billSubsidyTpl');
+  private readonly billNetTpl = viewChild<TemplateRef<unknown>>('billNetTpl');
+  private readonly billStatusTpl = viewChild<TemplateRef<unknown>>('billStatusTpl');
+
+  readonly billColumns = computed<TableColumnDef<ChildcareBill>[]>(() => [
+    { key: 'period', header: 'CHILDCARE.COL_PERIOD', customCellTemplate: this.billPeriodTpl() },
+    {
+      key: 'child_name',
+      header: 'CHILDCARE.COL_CHILD',
+      valueGetter: (b) => b.child_name || b.child_id,
+      customCellTemplate: this.billChildTpl(),
+    },
+    {
+      key: 'contact_name',
+      header: 'CHILDCARE.COL_BILLING_CONTACT',
+      valueGetter: (b) => b.contact_name || b.contact_id,
+      customCellTemplate: this.billContactTpl(),
+    },
+    { key: 'gross_amount', header: 'CHILDCARE.COL_GROSS_AMOUNT', align: 'right', customCellTemplate: this.billGrossTpl() },
+    { key: 'subsidy_amount', header: 'CHILDCARE.COL_SUBSIDY_AMOUNT', align: 'right', customCellTemplate: this.billSubsidyTpl() },
+    { key: 'net_amount', header: 'CHILDCARE.COL_NET_AMOUNT', align: 'right', customCellTemplate: this.billNetTpl() },
+    { key: 'status', header: 'CHILDCARE.COL_STATUS', customCellTemplate: this.billStatusTpl() },
+  ]);
 
   // Billing statistics
   readonly totalBilledAmount = computed(() =>
@@ -238,50 +339,57 @@ export class ChildcareComponent implements OnInit {
     can_pick_up: [true],
   });
 
+  constructor() {
+    // The period is required by the API: set it before the grid sends its first request.
+    this.billGrid.setFilter({ period: this.billingPeriod() });
+  }
+
   ngOnInit(): void {
     this.checkOutForm.controls.child_id.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((childId) => this.loadPickUpPersons(childId));
     this.loadGroups();
-    this.loadChildren();
+    this.loadChildOptions();
     this.loadAttendances();
-    this.loadDailyNotes();
     this.loadFeePlans();
-    this.loadBills();
+    this.loadBillTotals();
     this.loadRequirements();
   }
 
   // --- CHILDREN METHODS ---
   loadChildren(): void {
-    this.childrenLoading.set(true);
-    const status = this.filterStatus();
-    const search = this.filterSearch().trim();
-
-    this.api
-      .getChildren({
-        page: this.childrenPageIndex(),
-        per_page: this.childrenPageSize(),
-        status: status ? status : undefined,
-        search: search ? search : undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.children.set(res.data);
-          this.childrenTotal.set(res.meta?.total ?? res.data.length);
-          this.childrenLoading.set(false);
-        },
-        error: () => {
-          this.childrenLoading.set(false);
-          this.message.error(this.translate.instant('CHILDCARE.LOAD_ERROR'));
-        },
-      });
+    this.childGrid.reload();
+    this.loadChildOptions();
   }
 
-  onChildrenTableQueryChange(params: NzTableQueryParams): void {
-    const { pageIndex, pageSize } = params;
-    this.childrenPageIndex.set(pageIndex);
-    this.childrenPageSize.set(pageSize);
-    this.loadChildren();
+  private loadChildOptions(): void {
+    this.api.getChildren({ status: 'active', per_page: 200 }).subscribe({
+      next: (res) => this.children.set(res.data ?? []),
+      error: () => this.message.error(this.translate.instant('CHILDCARE.LOAD_ERROR')),
+    });
+  }
+
+  onStatusFilterChange(status: string | null): void {
+    this.filterStatus.set(status ?? '');
+    this.childGrid.setFilter({ status: status ? status : undefined });
+  }
+
+  onSearchChange(search: string): void {
+    this.filterSearch.set(search);
+  }
+
+  applySearch(): void {
+    const search = this.filterSearch().trim();
+    this.childGrid.setFilter({ search: search ? search : undefined });
+  }
+
+  childStatusLabel(status: ChildcareChildStatus | string): string {
+    const keys: Record<string, string> = {
+      active: 'CHILDCARE.STATUS.ENROLLED',
+      waiting: 'CHILDCARE.STATUS.WAITLIST',
+      left: 'CHILDCARE.STATUS.WITHDRAWN',
+    };
+    return keys[status] ? this.translate.instant(keys[status]) : status;
   }
 
   loadGroups(): void {
@@ -404,7 +512,7 @@ export class ChildcareComponent implements OnInit {
       },
     });
 
-    this.api.getNotes({ child_id: child.id }).subscribe({
+    this.api.getNotes({ child_id: child.id, per_page: 200 }).subscribe({
       next: (res) => {
         this.childDailyNotes.set(res.data || []);
         this.drawerLoading.set(false);
@@ -624,16 +732,7 @@ export class ChildcareComponent implements OnInit {
 
   // --- DAILY LOG METHODS ---
   loadDailyNotes(): void {
-    this.dailyNotesLoading.set(true);
-    this.api.getNotes().subscribe({
-      next: (res) => {
-        this.dailyNotes.set(res.data || []);
-        this.dailyNotesLoading.set(false);
-      },
-      error: () => {
-        this.dailyNotesLoading.set(false);
-      },
-    });
+    this.noteGrid.reload();
   }
 
   openCreateNoteModal(): void {
@@ -683,15 +782,15 @@ export class ChildcareComponent implements OnInit {
   }
 
   loadBills(): void {
-    this.billingLoading.set(true);
-    this.api.getBills({ period: this.billingPeriod() }).subscribe({
-      next: (res) => {
-        this.bills.set(res.data || []);
-        this.billingLoading.set(false);
-      },
-      error: () => {
-        this.billingLoading.set(false);
-      },
+    this.billGrid.setFilter({ period: this.billingPeriod() });
+    this.billGrid.reload();
+    this.loadBillTotals();
+  }
+
+  /** Totals of the whole period (the grid only holds one page of bills). */
+  private loadBillTotals(): void {
+    this.api.getBills({ period: this.billingPeriod(), per_page: 200 }).subscribe({
+      next: (res) => this.bills.set(res.data || []),
     });
   }
 

@@ -5,32 +5,33 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   CreateTimeEventPayload,
+  DailyTimeRecordPayload,
   MealBookingPayload,
   MealBookingQuery,
   NightWorkBalance,
-  PunchImportPayload,
-  PunchImportResult,
-  ScheduleGroupMemberPayload,
-  ScheduleGroupPayload,
-  ScheduleGroupRecord,
-  ScheduleGroupRulesPayload,
-  TimeBadgePayload,
-  TimePayrollView,
-  TimePresenceRow,
-  TimeTransferResult,
-  DailyTimeRecordPayload,
   OvertimeRulePayload,
   OvertimeRuleResource,
   OvertimeSummary,
   PaginatedResponse,
+  PunchImportPayload,
+  PunchImportResult,
+  QueryFilterParams,
+  ScheduleGroupMemberPayload,
+  ScheduleGroupPayload,
+  ScheduleGroupRecord,
+  ScheduleGroupRulesPayload,
   TimeAuditEntry,
+  TimeBadgePayload,
   TimeClosingResource,
   TimeEventFilterParams,
   TimeEventResource,
+  TimePayrollView,
+  TimePresenceRow,
   TimeProfilePayload,
   TimeProfileResource,
   TimeReport,
   TimeReportParams,
+  TimeTransferResult,
   UpdateTimeEventPayload,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -100,8 +101,10 @@ export class HrTimeApiService {
 
   // --- Overtime rules ---
 
-  getOvertimeRules(): Observable<ApiResponse<OvertimeRuleResource[]>> {
-    return this.http.get<ApiResponse<OvertimeRuleResource[]>>(`${this.base}/overtime-rules`);
+  getOvertimeRules(params?: QueryFilterParams): Observable<PaginatedResponse<OvertimeRuleResource>> {
+    return this.http.get<PaginatedResponse<OvertimeRuleResource>>(`${this.base}/overtime-rules`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createOvertimeRule(payload: OvertimeRulePayload): Observable<ApiResponse<OvertimeRuleResource>> {
@@ -118,9 +121,9 @@ export class HrTimeApiService {
 
   // --- Monthly closings ---
 
-  getTimeClosings(year?: number): Observable<ApiResponse<TimeClosingResource[]>> {
-    return this.http.get<ApiResponse<TimeClosingResource[]>>(`${this.base}/time-closings`, {
-      params: toHttpParams({ year }),
+  getTimeClosings(year?: number, params?: QueryFilterParams): Observable<PaginatedResponse<TimeClosingResource>> {
+    return this.http.get<PaginatedResponse<TimeClosingResource>>(`${this.base}/time-closings`, {
+      params: toHttpParams({ ...params, year }),
     });
   }
 
@@ -139,8 +142,10 @@ export class HrTimeApiService {
 
   // --- Schedule groups and badges ---
 
-  getScheduleGroups(): Observable<ApiResponse<ScheduleGroupRecord[]>> {
-    return this.http.get<ApiResponse<ScheduleGroupRecord[]>>(`${this.base}/schedule-groups`);
+  getScheduleGroups(params?: QueryFilterParams): Observable<PaginatedResponse<ScheduleGroupRecord>> {
+    return this.http.get<PaginatedResponse<ScheduleGroupRecord>>(`${this.base}/schedule-groups`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createScheduleGroup(payload: ScheduleGroupPayload): Observable<ApiResponse<ScheduleGroupRecord>> {
@@ -174,8 +179,8 @@ export class HrTimeApiService {
     return this.http.post<ApiResponse<PunchImportResult>>(`${this.base}/time/punches/import`, payload);
   }
 
-  getMealBookings(params: MealBookingQuery): Observable<ApiResponse<Record<string, unknown>[]>> {
-    return this.http.get<ApiResponse<Record<string, unknown>[]>>(`${this.base}/time/meal-bookings`, { params: toHttpParams(params) });
+  getMealBookings(params: MealBookingQuery & QueryFilterParams): Observable<PaginatedResponse<Record<string, unknown>>> {
+    return this.http.get<PaginatedResponse<Record<string, unknown>>>(`${this.base}/time/meal-bookings`, { params: toHttpParams(params) });
   }
 
   bookMeal(payload: MealBookingPayload): Observable<ApiResponse<Record<string, unknown>>> {

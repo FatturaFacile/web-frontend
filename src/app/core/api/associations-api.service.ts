@@ -15,12 +15,14 @@ import {
   AssociationFeeParams,
   AssociationFeePlan,
   AssociationMeeting,
+  AssociationMeetingParams,
   AssociationMeetingRequest,
   AssociationMember,
   AssociationMemberParams,
   AssociationMemberRequest,
   AssociationPaymentRequest,
   AssociationReimbursement,
+  AssociationReimbursementParams,
   AssociationReimbursementRequest,
   AssociationVolunteer,
   PaginatedResponse,
@@ -170,8 +172,10 @@ export class AssociationsApiService {
   }
 
   // --- MEETINGS & MINUTES ---
-  getMeetings(): Observable<ApiResponse<AssociationMeeting[]>> {
-    return this.http.get<ApiResponse<AssociationMeeting[]>>(`${this.base}/associations/meetings`);
+  getMeetings(params?: AssociationMeetingParams): Observable<PaginatedResponse<AssociationMeeting>> {
+    return this.http.get<PaginatedResponse<AssociationMeeting>>(`${this.base}/associations/meetings`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createMeeting(payload: AssociationMeetingRequest): Observable<ApiResponse<AssociationMeeting>> {
@@ -192,8 +196,10 @@ export class AssociationsApiService {
     );
   }
 
-  getReimbursements(): Observable<ApiResponse<AssociationReimbursement[]>> {
-    return this.http.get<ApiResponse<AssociationReimbursement[]>>(`${this.base}/associations/reimbursements`);
+  getReimbursements(params?: AssociationReimbursementParams): Observable<PaginatedResponse<AssociationReimbursement>> {
+    return this.http.get<PaginatedResponse<AssociationReimbursement>>(`${this.base}/associations/reimbursements`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createReimbursement(payload: AssociationReimbursementRequest): Observable<ApiResponse<AssociationReimbursement>> {

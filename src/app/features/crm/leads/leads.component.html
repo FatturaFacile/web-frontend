@@ -49,137 +49,97 @@
         <nz-option nzValue="cold" [nzLabel]="'crmLeadScore.lblCold' | translate"></nz-option>
       </nz-select>
 
-      <button nz-button nzType="default" (click)="loadLeads()">
+      <button nz-button nzType="default" (click)="grid.reload()">
         <nz-icon nzType="reload" />
         {{ 'crmLeadScore.lblRefresh' | translate }}
       </button>
     </div>
   </div>
 
-  <nz-table
-    #leadsTable
-    [nzData]="leads()"
-    [nzLoading]="loading()"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzFrontPagination]="false"
-    (nzQueryParams)="onQueryParamsChange($event)"
-  >
-    <thead>
-      <tr>
-        <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'crmLeadScore.lblLeadCompany' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'crmLeadScore.lblStatus' | translate }}</th>
-        <th [nzSortFn]="'rating' | gridSort" [nzFilters]="'rating' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'rating' | gridFilterFn">{{ 'crmLeadScore.lblRating' | translate }}</th>
-        <th [nzSortFn]="'score' | gridSort" [nzFilters]="'score' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'score' | gridFilterFn">{{ 'crmLeadScore.lblScore' | translate }}</th>
-        <th [nzSortFn]="'country' | gridSort" [nzFilters]="'country' | gridFilterList: leadsTable.nzData" [nzFilterFn]="'country' | gridFilterFn">{{ 'crmLeadScore.lblCountry' | translate }}</th>
-        <th>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</th>
-        <th nzWidth="200px">{{ 'crmLeadScore.lblActions' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (lead of leadsTable.data; track lead.id) {
-        <tr>
-          <td>
-            <div class="lead-info">
-              <span class="lead-name">{{ lead.full_name || lead.company_name }}</span>
-              @if (lead.title && lead.company_name) {
-                <span class="lead-sub">{{ lead.title }} &#64; {{ lead.company_name }}</span>
-              }
-              @if (lead.email) {
-                <span class="lead-sub">{{ lead.email }}</span>
-              }
-            </div>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(lead.status)">{{ lead.status }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getRatingColor(lead.rating)">{{ lead.rating || 'N/A' }}</nz-tag>
-          </td>
-          <td>
-            <nz-space>
-              <button
-                *nzSpaceItem
-                nz-button
-                nzType="link"
-                nzSize="small"
-                (click)="openScoreModal(lead)"
-              >
-                {{ lead.score }} pts
-              </button>
-              <button
-                *nzSpaceItem
-                nz-button
-                nzType="text"
-                nzSize="small"
-                nz-tooltip
-                nzTooltipTitle="Recalculate Score"
-                (click)="recalculateScore(lead)"
-              >
-                <nz-icon nzType="sync" />
-              </button>
-            </nz-space>
-          </td>
-          <td>
-            <nz-tag>{{ lead.country }}</nz-tag>
-          </td>
-          <td>
-            {{ lead.estimated_budget ? (lead.estimated_budget | money: authStore.activeCurrency()) : '—' }}
-          </td>
-          <td>
-            <nz-space>
-              @if (lead.status === 'new' || lead.status === 'contacted') {
-                <button
-                  *nzSpaceItem
-                  nz-button
-                  nzType="link"
-                  nzSize="small"
-                  (click)="qualify(lead)"
-                >
-                  {{ 'crmLeadScore.lblQualify' | translate }}
-                </button>
-              }
-              @if (lead.status === 'qualified') {
-                <button
-                  *nzSpaceItem
-                  nz-button
-                  nzType="link"
-                  nzSize="small"
-                  (click)="convert(lead)"
-                >
-                  {{ 'crmLeadScore.lblConvert' | translate }}
-                </button>
-              }
-              @if (lead.status !== 'disqualified' && lead.status !== 'converted') {
-                <button
-                  *nzSpaceItem
-                  nz-button
-                  nzType="text"
-                  nzDanger
-                  nzSize="small"
-                  (click)="disqualify(lead)"
-                >
-                  {{ 'crmLeadScore.lblDisqualify' | translate }}
-                </button>
-              }
-              <button
-                *nzSpaceItem
-                nz-button
-                nzType="text"
-                nzDanger
-                nzSize="small"
-                nz-popconfirm
-                nzPopconfirmTitle="Are you sure you want to delete this lead?"
-                (nzOnConfirm)="deleteLead(lead)"
-                appIconAction="delete"
-              ></button>
-            </nz-space>
-          </td>
-        </tr>
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [actionsTemplate]="actionsTpl"
+    exportFileName="leads"
+  />
+
+  <ng-template #nameTpl let-lead>
+    <div class="lead-info">
+      <span class="lead-name">{{ lead.full_name || lead.company_name }}</span>
+      @if (lead.title && lead.company_name) {
+        <span class="lead-sub">{{ lead.title }} &#64; {{ lead.company_name }}</span>
       }
-    </tbody>
-  </nz-table>
+      @if (lead.email) {
+        <span class="lead-sub">{{ lead.email }}</span>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #statusTpl let-lead>
+    <nz-tag [nzColor]="getStatusColor(lead.status)">{{ lead.status }}</nz-tag>
+  </ng-template>
+
+  <ng-template #ratingTpl let-lead>
+    <nz-tag [nzColor]="getRatingColor(lead.rating)">{{ lead.rating || 'N/A' }}</nz-tag>
+  </ng-template>
+
+  <ng-template #scoreTpl let-lead>
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openScoreModal(lead)">
+        {{ lead.score }} pts
+      </button>
+      <button
+        *nzSpaceItem
+        nz-button
+        nzType="text"
+        nzSize="small"
+        nz-tooltip
+        nzTooltipTitle="Recalculate Score"
+        (click)="recalculateScore(lead)"
+      >
+        <nz-icon nzType="sync" />
+      </button>
+    </nz-space>
+  </ng-template>
+
+  <ng-template #countryTpl let-lead>
+    <nz-tag>{{ lead.country }}</nz-tag>
+  </ng-template>
+
+  <ng-template #budgetTpl let-lead>
+    {{ lead.estimated_budget ? (lead.estimated_budget | money: authStore.activeCurrency()) : '—' }}
+  </ng-template>
+
+  <ng-template #actionsTpl let-lead>
+    <nz-space>
+      @if (lead.status === 'new' || lead.status === 'contacted') {
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="qualify(lead)">
+          {{ 'crmLeadScore.lblQualify' | translate }}
+        </button>
+      }
+      @if (lead.status === 'qualified') {
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="convert(lead)">
+          {{ 'crmLeadScore.lblConvert' | translate }}
+        </button>
+      }
+      @if (lead.status !== 'disqualified' && lead.status !== 'converted') {
+        <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="disqualify(lead)">
+          {{ 'crmLeadScore.lblDisqualify' | translate }}
+        </button>
+      }
+      <button
+        *nzSpaceItem
+        nz-button
+        nzType="text"
+        nzDanger
+        nzSize="small"
+        nz-popconfirm
+        nzPopconfirmTitle="Are you sure you want to delete this lead?"
+        (nzOnConfirm)="deleteLead(lead)"
+        appIconAction="delete"
+      ></button>
+    </nz-space>
+  </ng-template>
 </nz-card>
 
 <!-- Create Lead Drawer -->

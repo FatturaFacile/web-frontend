@@ -344,7 +344,7 @@ export class PortalComponent implements OnInit {
   }
 
   private loadStockMovements(page: number): void {
-    this.portalApi.getStockMovements(this.token(), page).subscribe({
+    this.portalApi.getStockMovements(this.token(), { page }).subscribe({
       next: (res) => {
         this.stockMovementsPage = res.meta.current_page;
         this.stockMovements.update((rows) => (page === 1 ? res.data : [...rows, ...res.data]));

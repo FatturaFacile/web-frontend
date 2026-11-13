@@ -53,15 +53,15 @@
                 nz-input
                 [placeholder]="'CHILDCARE.SEARCH_PLACEHOLDER' | translate"
                 [ngModel]="filterSearch()"
-                (ngModelChange)="filterSearch.set($event)"
-                (keyup.enter)="loadChildren()"
+                (ngModelChange)="onSearchChange($event)"
+                (keyup.enter)="applySearch()"
               />
             </nz-input-wrapper>
 
             <nz-select
               class="status-select"
               [ngModel]="filterStatus()"
-              (ngModelChange)="filterStatus.set($event); loadChildren()"
+              (ngModelChange)="onStatusFilterChange($event)"
               [nzPlaceHolder]="'CHILDCARE.FILTER_STATUS' | translate"
               nzAllowClear
             >
@@ -78,78 +78,7 @@
           </div>
         </div>
 
-        <nz-table
-          #childrenTable
-          nzShowSizeChanger
-          [nzData]="children()"
-          [nzTotal]="childrenTotal()"
-          [nzLoading]="childrenLoading()"
-          [nzPageIndex]="childrenPageIndex()"
-          [nzPageSize]="childrenPageSize()"
-          [nzFrontPagination]="false"
-          (nzQueryParams)="onChildrenTableQueryChange($event)"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'first_name' | gridSort" [nzFilters]="'first_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'first_name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
-              <th [nzSortFn]="'group_name' | gridSort" [nzFilters]="'group_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'group_name' | gridFilterFn">{{ 'CHILDCARE.COL_GROUP' | translate }}</th>
-              <th>{{ 'CHILDCARE.COL_BIRTH_DATE' | translate }}</th>
-              <th [nzSortFn]="'enrolled_on' | gridSort" [nzFilters]="'enrolled_on' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'enrolled_on' | gridFilterFn">{{ 'CHILDCARE.COL_ENROLLED_ON' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'billing_contact_name' | gridSort" [nzFilters]="'billing_contact_name' | gridFilterList: childrenTable.nzData" [nzFilterFn]="'billing_contact_name' | gridFilterFn">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
-              <th nzRight>{{ 'CHILDCARE.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (child of childrenTable.data; track child.id) {
-              <tr>
-                <td>
-                  <strong>{{ child.first_name }} {{ child.last_name }}</strong>
-                  @if (child.allergies) {
-                    <br /><small class="text-danger">{{ 'CHILDCARE.ALLERGIES' | translate }}: {{ child.allergies }}</small>
-                  }
-                </td>
-                <td>
-                  <nz-tag>{{ child.group_name || child.group_id || '-' }}</nz-tag>
-                </td>
-                <td>{{ child.birth_date ? (child.birth_date | date: 'mediumDate') : '-' }}</td>
-                <td>{{ child.enrolled_on | date: 'mediumDate' }}</td>
-                <td>
-                  <nz-tag [nzColor]="getChildStatusColor(child.status)">
-                    {{ child.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>{{ child.billing_contact_name || child.billing_contact_id }}</td>
-                <td nzRight>
-                  <nz-space>
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="default"
-                      nzSize="small"
-                      (click)="openChildDrawer(child)"
-                    >
-                      <span nz-icon nzType="folder-open"></span>
-                      {{ 'CHILDCARE.ACTION_MANAGE' | translate }}
-                    </button>
-                    @if (child.status === 'waiting') {
-                      <button
-                        *nzSpaceItem
-                        nz-button
-                        nzType="primary"
-                        nzSize="small"
-                        (click)="admitChild(child)"
-                      >
-                        <span nz-icon nzType="check"></span>
-                        {{ 'CHILDCARE.ACTION_ADMIT' | translate }}
-                      </button>
-                    }
-                  </nz-space>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="childGrid" [columns]="childColumns()" [actionsTemplate]="childActionsTpl" exportFileName="childcare-children" />
       </nz-card>
     </nz-tab>
 
@@ -215,39 +144,7 @@
     <!-- TAB 3: DIARIO DI BORDO -->
     <nz-tab [nzTitle]="'CHILDCARE.TAB_DAILY_LOG' | translate">
       <nz-card>
-        <nz-table
-          #notesTable
-          [nzData]="dailyNotes()"
-          [nzLoading]="dailyNotesLoading()"
-          [nzFrontPagination]="true"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: notesTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
-              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: notesTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'category' | gridSort" [nzFilters]="'category' | gridFilterList: notesTable.nzData" [nzFilterFn]="'category' | gridFilterFn">{{ 'CHILDCARE.COL_CATEGORY' | translate }}</th>
-              <th [nzSortFn]="'body' | gridSort" [nzFilters]="'body' | gridFilterList: notesTable.nzData" [nzFilterFn]="'body' | gridFilterFn">{{ 'CHILDCARE.COL_BODY' | translate }}</th>
-              <th>{{ 'CHILDCARE.COL_FAMILY_VISIBLE' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (n of notesTable.data; track n.id) {
-              <tr>
-                <td>{{ n.date | date: 'mediumDate' }}</td>
-                <td><strong>{{ n.child_name || n.child_id }}</strong></td>
-                <td>
-                  <nz-tag [nzColor]="getCategoryColor(n.category)">{{ n.category | uppercase }}</nz-tag>
-                </td>
-                <td>{{ n.body }}</td>
-                <td>
-                  <nz-tag [nzColor]="n.visible_to_family ? 'success' : 'default'">
-                    {{ (n.visible_to_family ? 'CHILDCARE.YES' : 'CHILDCARE.NO') | translate }}
-                  </nz-tag>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="noteGrid" [columns]="noteColumns()" exportFileName="childcare-notes" />
       </nz-card>
     </nz-tab>
 
@@ -293,43 +190,7 @@
           </div>
         </div>
 
-        <nz-table
-          #billsTable
-          [nzData]="bills()"
-          [nzLoading]="billingLoading()"
-          [nzFrontPagination]="true"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'period' | gridSort" [nzFilters]="'period' | gridFilterList: billsTable.nzData" [nzFilterFn]="'period' | gridFilterFn">{{ 'CHILDCARE.COL_PERIOD' | translate }}</th>
-              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: billsTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
-              <th [nzSortFn]="'contact_name' | gridSort" [nzFilters]="'contact_name' | gridFilterList: billsTable.nzData" [nzFilterFn]="'contact_name' | gridFilterFn">{{ 'CHILDCARE.COL_BILLING_CONTACT' | translate }}</th>
-              <th [nzSortFn]="'gross_amount' | gridSort" [nzFilters]="'gross_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'gross_amount' | gridFilterFn">{{ 'CHILDCARE.COL_GROSS_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'subsidy_amount' | gridSort" [nzFilters]="'subsidy_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'subsidy_amount' | gridFilterFn">{{ 'CHILDCARE.COL_SUBSIDY_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: billsTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'CHILDCARE.COL_NET_AMOUNT' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: billsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (bill of billsTable.data; track bill.id) {
-              <tr>
-                <td><strong>{{ bill.period }}</strong></td>
-                <td>{{ bill.child_name || bill.child_id }}</td>
-                <td>{{ bill.contact_name || bill.contact_id }}</td>
-                <td>{{ bill.gross_amount | money: bill.currency }}</td>
-                <td>{{ bill.subsidy_amount | money: bill.currency }}</td>
-                <td>
-                  <strong>{{ bill.net_amount | money: bill.currency }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="bill.status === 'paid' ? 'success' : 'blue'">
-                    {{ bill.status | uppercase }}
-                  </nz-tag>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="billGrid" [columns]="billColumns()" exportFileName="childcare-bills" />
       </nz-card>
     </nz-tab>
 
@@ -1056,3 +917,78 @@
     </form>
   </ng-container>
 </nz-modal>
+
+<!-- Cell templates of the server-driven grids -->
+<ng-template #childNameTpl let-child>
+  <strong>{{ child.first_name }} {{ child.last_name }}</strong>
+  @if (child.allergies) {
+    <br /><small class="text-danger">{{ 'CHILDCARE.ALLERGIES' | translate }}: {{ child.allergies }}</small>
+  }
+</ng-template>
+
+<ng-template #childGroupTpl let-child>
+  <nz-tag>{{ child.group_name || child.group_id || '-' }}</nz-tag>
+</ng-template>
+
+<ng-template #childBirthTpl let-child>
+  {{ child.birth_date ? (child.birth_date | date: 'mediumDate') : '-' }}
+</ng-template>
+
+<ng-template #childEnrolledTpl let-child>
+  {{ child.enrolled_on | date: 'mediumDate' }}
+</ng-template>
+
+<ng-template #childStatusTpl let-child>
+  <nz-tag [nzColor]="getChildStatusColor(child.status)">
+    {{ childStatusLabel(child.status) | uppercase }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #childBillingTpl let-child>
+  {{ child.billing_contact_name || child.billing_contact_id }}
+</ng-template>
+
+<ng-template #childActionsTpl let-child>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openChildDrawer(child)">
+      <span nz-icon nzType="folder-open"></span>
+      {{ 'CHILDCARE.ACTION_MANAGE' | translate }}
+    </button>
+    @if (child.status === 'waiting') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="admitChild(child)">
+        <span nz-icon nzType="check"></span>
+        {{ 'CHILDCARE.ACTION_ADMIT' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+
+<ng-template #noteDateTpl let-n>{{ n.date | date: 'mediumDate' }}</ng-template>
+
+<ng-template #noteChildTpl let-n><strong>{{ n.child_name || n.child_id }}</strong></ng-template>
+
+<ng-template #noteCategoryTpl let-n>
+  <nz-tag [nzColor]="getCategoryColor(n.category)">{{ n.category | uppercase }}</nz-tag>
+</ng-template>
+
+<ng-template #noteFamilyTpl let-n>
+  <nz-tag [nzColor]="n.visible_to_family ? 'success' : 'default'">
+    {{ (n.visible_to_family ? 'CHILDCARE.YES' : 'CHILDCARE.NO') | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #billPeriodTpl let-bill><strong>{{ bill.period }}</strong></ng-template>
+
+<ng-template #billChildTpl let-bill>{{ bill.child_name || bill.child_id }}</ng-template>
+
+<ng-template #billContactTpl let-bill>{{ bill.contact_name || bill.contact_id }}</ng-template>
+
+<ng-template #billGrossTpl let-bill>{{ bill.gross_amount | money: bill.currency }}</ng-template>
+
+<ng-template #billSubsidyTpl let-bill>{{ bill.subsidy_amount | money: bill.currency }}</ng-template>
+
+<ng-template #billNetTpl let-bill><strong>{{ bill.net_amount | money: bill.currency }}</strong></ng-template>
+
+<ng-template #billStatusTpl let-bill>
+  <nz-tag [nzColor]="bill.status === 'paid' ? 'success' : 'blue'">{{ bill.status | uppercase }}</nz-tag>
+</ng-template>

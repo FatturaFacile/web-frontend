@@ -7,6 +7,7 @@ import {
   ApiResponse,
   DocumentQuotaState,
   PaginatedResponse,
+  QueryFilterParams,
   TenantAccessDecisionPayload,
   TenantAccessRequestRecord,
   TenantAccessRequestStatus,
@@ -18,11 +19,7 @@ export class AdminApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/admin`;
 
-  getTenantAccessRequests(params?: {
-    status?: TenantAccessRequestStatus | null;
-    per_page?: number;
-    page?: number;
-  }): Observable<PaginatedResponse<TenantAccessRequestRecord>> {
+  getTenantAccessRequests(params?: QueryFilterParams & { status?: TenantAccessRequestStatus | null }): Observable<PaginatedResponse<TenantAccessRequestRecord>> {
     return this.http.get<PaginatedResponse<TenantAccessRequestRecord>>(`${this.base}/tenant-access-requests`, {
       params: params ? toHttpParams(params) : undefined,
     });

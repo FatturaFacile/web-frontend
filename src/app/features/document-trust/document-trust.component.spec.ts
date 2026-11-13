@@ -47,18 +47,17 @@ describe('DocumentTrustComponent', () => {
     document_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
     format: 'cades-bes-p7m',
     driver: 'cades',
-    signature_sha256: 'a1b2c3d4e5f6a1b2c3d4e5f6',
-    signed_at: '2026-11-09T10:00:00Z',
+    content_sha256: 'a1b2c3d4e5f6a1b2c3d4e5f6',
+    created_at: '2026-11-09T10:00:00Z',
   };
 
   const mockPreservation: PreservationRecord = {
     id: 'pres-1',
     document_type: 'invoice',
     document_id: '5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b',
-    driver: 'local',
-    mode: 'fingerprint_only',
-    package_sha256: 'fedcba9876543210fedcba9876543210',
-    timestamped_at: '2026-11-09T10:00:00Z',
+    provider: 'local',
+    content_sha256: 'fedcba9876543210fedcba9876543210',
+    created_at: '2026-11-09T10:00:00Z',
     status: 'archived',
   };
 
@@ -72,10 +71,10 @@ describe('DocumentTrustComponent', () => {
   beforeEach(async () => {
     apiMock = {
       getNetworks: vi.fn().mockReturnValue(of({ success: true, data: mockNetworks })),
-      getTransmissions: vi.fn().mockReturnValue(of({ success: true, data: [mockTransmission] })),
+      getTransmissions: vi.fn().mockReturnValue(of({ success: true, data: [mockTransmission], meta: { total: 1, last_page: 1 } })),
       getTransmission: vi.fn().mockReturnValue(of({ success: true, data: mockTransmission })),
       sendDocument: vi.fn().mockReturnValue(of({ success: true, data: mockTransmission })),
-      getSignatures: vi.fn().mockReturnValue(of({ success: true, data: [mockSignature] })),
+      getSignatures: vi.fn().mockReturnValue(of({ success: true, data: [mockSignature], meta: { total: 1, last_page: 1 } })),
       signDocument: vi.fn().mockReturnValue(of({ success: true, data: mockSignature })),
       verifySignature: vi.fn().mockReturnValue(
         of({
@@ -92,7 +91,7 @@ describe('DocumentTrustComponent', () => {
           } as VerifySignatureResult,
         }),
       ),
-      getPreservationRecords: vi.fn().mockReturnValue(of({ success: true, data: [mockPreservation] })),
+      getPreservationRecords: vi.fn().mockReturnValue(of({ success: true, data: [mockPreservation], meta: { total: 1, last_page: 1 } })),
       preserveDocument: vi.fn().mockReturnValue(of({ success: true, data: mockPreservation })),
       getSigningSettings: vi.fn().mockReturnValue(of({ success: true, data: mockSettings })),
       updateSigningSettings: vi.fn().mockReturnValue(of({ success: true, data: mockSettings })),
@@ -128,40 +127,47 @@ describe('DocumentTrustComponent', () => {
     fixture = TestBed.createComponent(DocumentTrustComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 30));
   });
 
-  it('should initialize and load networks, transmissions, signatures, preservation records, and settings', () => {
+  it('should initialize and load networks, transmissions, signatures, preservation records, and settings', async () => {
     expect(component).toBeTruthy();
     expect(apiMock['getNetworks']).toHaveBeenCalled();
     expect(component.networks().length).toBe(3);
     expect(apiMock['getTransmissions']).toHaveBeenCalled();
-    expect(component.transmissions().length).toBe(1);
+    expect(component.transmissionGrid.items().length).toBe(1);
+    expect(component.transmissionGrid.totalCount()).toBe(1);
     // the lookups need a document UUID: nothing is requested until one is typed
     expect(apiMock['getSignatures']).not.toHaveBeenCalled();
     component.lookupDocumentId.set('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
     component.loadSignatures();
-    expect(apiMock['getSignatures']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
-    expect(component.signatures().length).toBe(1);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiMock['getSignatures']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b', expect.anything());
+    expect(component.signatureGrid.items().length).toBe(1);
     component.preservationLookupDocumentId.set('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
     component.loadPreservationRecords();
-    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b');
-    expect(component.preservationRecords().length).toBe(1);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('5b2c7e90-1d34-4f68-8a0b-9c1d2e3f4a5b', expect.anything());
+    expect(component.preservationGrid.items().length).toBe(1);
     expect(apiMock['getSigningSettings']).toHaveBeenCalled();
     expect(component.signingSettings()?.driver).toBe('cades');
   });
 
-  it('should filter transmissions and open details drawer', () => {
+  it('should filter transmissions and open details drawer', async () => {
     component.filterNetwork.set('peppol');
     component.filterStatus.set('delivered');
     component.filterRef.set('INV-2026');
     component.onFilterChange();
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(apiMock['getTransmissions']).toHaveBeenCalledWith({
-      network: 'peppol',
-      status: 'delivered',
-      document_reference: 'INV-2026',
-      per_page: 50,
-    });
+    expect(apiMock['getTransmissions']).toHaveBeenCalledWith(
+      expect.objectContaining({
+        network: 'peppol',
+        status: 'delivered',
+        document_reference: 'INV-2026',
+        page: 1,
+      }),
+    );
 
     component.openTransmissionDetails(mockTransmission);
     expect(apiMock['getTransmission']).toHaveBeenCalledWith('tx-1');
@@ -208,7 +214,7 @@ describe('DocumentTrustComponent', () => {
     expect(apiMock['sendDocument']).not.toHaveBeenCalled();
   });
 
-  it('should sign document and refresh signatures list', () => {
+  it('should sign document and refresh signatures list', async () => {
     component.openSignModal();
     expect(component.isSignModalVisible()).toBe(true);
 
@@ -225,7 +231,8 @@ describe('DocumentTrustComponent', () => {
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isSignModalVisible()).toBe(false);
-    expect(apiMock['getSignatures']).toHaveBeenCalledWith('8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiMock['getSignatures']).toHaveBeenCalledWith('8d1f0a52-3b6e-4c11-9a7e-1f2d3c4b5a69', expect.anything());
   });
 
   it('should verify signature and open verification modal', () => {
@@ -240,7 +247,7 @@ describe('DocumentTrustComponent', () => {
     expect(component.verificationResult()).toBeNull();
   });
 
-  it('should preserve document and refresh preservation list', () => {
+  it('should preserve document and refresh preservation list', async () => {
     component.openPreserveModal();
     expect(component.isPreserveModalVisible()).toBe(true);
 
@@ -257,7 +264,8 @@ describe('DocumentTrustComponent', () => {
     });
     expect(messageMock['success']).toHaveBeenCalled();
     expect(component.isPreserveModalVisible()).toBe(false);
-    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiMock['getPreservationRecords']).toHaveBeenCalledWith('0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d', expect.anything());
   });
 
   it('should update signing settings', () => {

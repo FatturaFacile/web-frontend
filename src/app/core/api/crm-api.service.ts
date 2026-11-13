@@ -23,11 +23,13 @@ import {
   CrmActivityUpdatePayload,
   CrmCampaign,
   CrmCampaignMember,
+  CrmCampaignMemberFilterParams,
   CrmCampaignMemberPayload,
   CrmCampaignPayload,
   CrmCampaignRoi,
   CrmDuplicateMatch,
   CrmForecast,
+  CrmForecastFilterParams,
   CrmForecastGeneratePayload,
   CrmPartyLink,
   CrmReport,
@@ -354,7 +356,7 @@ export class CrmApiService {
   }
 
   // --- Campaigns ---
-  getCampaigns(params?: { page?: number; per_page?: number; search?: string }): Observable<PaginatedResponse<CrmCampaign>> {
+  getCampaigns(params?: QueryFilterParams): Observable<PaginatedResponse<CrmCampaign>> {
     return this.http.get<PaginatedResponse<CrmCampaign>>(`${this.base}/campaigns`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -372,9 +374,9 @@ export class CrmApiService {
     return this.http.get<ApiResponse<CrmCampaignRoi>>(`${this.base}/campaigns/${id}/roi`);
   }
 
-  getCampaignMembers(id: string, status?: string): Observable<ApiResponse<CrmCampaignMember[]>> {
-    return this.http.get<ApiResponse<CrmCampaignMember[]>>(`${this.base}/campaigns/${id}/members`, {
-      params: status ? toHttpParams({ status }) : undefined,
+  getCampaignMembers(id: string, params?: CrmCampaignMemberFilterParams): Observable<PaginatedResponse<CrmCampaignMember>> {
+    return this.http.get<PaginatedResponse<CrmCampaignMember>>(`${this.base}/campaigns/${id}/members`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -409,7 +411,7 @@ export class CrmApiService {
     });
   }
 
-  getForecasts(params?: { period?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<CrmForecast>> {
+  getForecasts(params?: CrmForecastFilterParams): Observable<PaginatedResponse<CrmForecast>> {
     return this.http.get<PaginatedResponse<CrmForecast>>(`${this.base}/forecasts`, {
       params: params ? toHttpParams(params) : undefined,
     });

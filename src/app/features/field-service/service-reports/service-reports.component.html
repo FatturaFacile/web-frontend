@@ -39,90 +39,53 @@
     }
   </div>
 
-  <nz-table
-    #table
-    nzSize="middle"
-    nzShowSizeChanger
-    [nzData]="reports()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzScroll]="{ x: 'max-content' }"
-    (nzQueryParams)="onQueryParams($event)"
-  >
-    <thead>
-      <tr>
-        <th nzWidth="48px"></th>
-        <th [nzSortFn]="'report_number' | gridSort" [nzFilters]="'report_number' | gridFilterList: table.nzData" [nzFilterFn]="'report_number' | gridFilterFn">{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
-        <th [nzSortFn]="'report_date' | gridSort" [nzFilters]="'report_date' | gridFilterList: table.nzData" [nzFilterFn]="'report_date' | gridFilterFn">{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
-        <th [nzSortFn]="'contact.name' | gridSort" [nzFilters]="'contact.name' | gridFilterList: table.nzData" [nzFilterFn]="'contact.name' | gridFilterFn">{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
-        <th [nzSortFn]="'technician.name' | gridSort" [nzFilters]="'technician.name' | gridFilterList: table.nzData" [nzFilterFn]="'technician.name' | gridFilterFn">{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
-        <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: table.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
-        <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: table.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
-        <th [nzSortFn]="'status.label' | gridSort" [nzFilters]="'status.label' | gridFilterList: table.nzData" [nzFilterFn]="'status.label' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (report of table.data; track report.id) {
-        <tr>
-          <td>
-            @if (canWrite() && report.is_signed && !report.is_invoiced) {
-              <input
-                type="checkbox"
-                [checked]="selectedIds().has(report.id)"
-                (change)="toggle(report.id, $any($event.target).checked)"
-                [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
-              />
-            }
-          </td>
-          <td>
-            <strong>{{ report.report_number }}</strong>
-          </td>
-          <td>{{ report.report_date }}</td>
-          <td>{{ report.contact?.name }}</td>
-          <td>{{ report.technician?.name }}</td>
-          <td>{{ report.total_hours }}</td>
-          <td>{{ report.total_gross | money }}</td>
-          <td>
-            @if (report.status?.label) {
-              <nz-tag>{{ report.status?.label }}</nz-tag>
-            }
-            @if (report.is_signed) {
-              <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
-            }
-            @if (report.is_invoiced) {
-              <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
-            }
-          </td>
-          <td>
-            <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
-              {{ 'SERVICE_REPORTS.PDF' | translate }}
-            </button>
-            @if (canWrite()) {
-              @if (!report.is_signed) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
-                  {{ 'SERVICE_REPORTS.SIGN' | translate }}
-                </button>
-              }
-              @if (!report.is_invoiced) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
-                  {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
-                </button>
-              }
-              @if (report.is_signed && !report.is_invoiced) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
-                  {{ 'SERVICE_REPORTS.INVOICE' | translate }}
-                </button>
-              }
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
+
+  <ng-template #selectTpl let-report>
+    @if (canWrite() && report.is_signed && !report.is_invoiced) {
+      <input
+        type="checkbox"
+        [checked]="selectedIds().has(report.id)"
+        (change)="toggle(report.id, $any($event.target).checked)"
+        [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
+      />
+    }
+  </ng-template>
+  <ng-template #numberTpl let-report><strong>{{ report.report_number }}</strong></ng-template>
+  <ng-template #totalTpl let-report>{{ report.total_gross | money }}</ng-template>
+  <ng-template #statusTpl let-report>
+    @if (report.status?.label) {
+      <nz-tag>{{ report.status?.label }}</nz-tag>
+    }
+    @if (report.is_signed) {
+      <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
+    }
+    @if (report.is_invoiced) {
+      <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-report>
+    <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
+      {{ 'SERVICE_REPORTS.PDF' | translate }}
+    </button>
+    @if (canWrite()) {
+      @if (!report.is_signed) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
+          {{ 'SERVICE_REPORTS.SIGN' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (!report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
+          {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
+        </button>
+      }
+      @if (report.is_signed && !report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
+          {{ 'SERVICE_REPORTS.INVOICE' | translate }}
+        </button>
+      }
+    }
+  </ng-template>
 </nz-card>
 
 <app-signature-dialog

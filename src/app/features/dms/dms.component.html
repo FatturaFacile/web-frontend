@@ -45,7 +45,7 @@
             <nz-option nzValue="Other" [nzLabel]="'DMS.LBL_ALTRO' | translate"></nz-option>
           </nz-select>
 
-          <button nz-button nzType="default" (click)="loadDocuments()">
+          <button nz-button nzType="default" (click)="refreshDocuments()">
             <span nz-icon nzType="reload"></span>
             {{ 'COMMON.RELOAD' | translate }}
           </button>
@@ -54,153 +54,128 @@
         <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDocModal()"></button>
       </div>
 
-      <nz-table
-        #docTable
-        nzShowSizeChanger
-        [nzData]="documents()"
-        [nzFrontPagination]="false"
-        [nzLoading]="documentsLoading()"
-        [nzTotal]="documentsTotal()"
-        [nzPageIndex]="documentsPageIndex()"
-        [nzPageSize]="documentsPageSize()"
-        (nzQueryParams)="onDocumentsTableQueryChange($event)"
+      <app-base-table
+        [grid]="grid"
+        [columns]="documentColumns()"
+        [actionsTemplate]="docActionsTpl"
+        exportFileName="documents"
+      />
+
+      <ng-template #titleTpl let-doc>
+      <button
+        type="button"
+        class="link-button"
+        (click)="openDrawer(doc)"
       >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'DMS.DOC_TITLE' | translate }}</th>
-            <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: docTable.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DMS.DOC_TYPE' | translate }}</th>
-            <th>{{ 'DMS.FOLDER' | translate }}</th>
-            <th [nzSortFn]="'latest_version.original_name' | gridSort" [nzFilters]="'latest_version.original_name' | gridFilterList: docTable.nzData" [nzFilterFn]="'latest_version.original_name' | gridFilterFn">{{ 'DMS.LATEST_VERSION' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th>{{ 'DMS.PROTECTION' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (doc of docTable.data; track doc.id) {
-            <tr>
-              <td>
-                <button
-                  type="button"
-                  class="link-button"
-                  (click)="openDrawer(doc)"
-                >
-                  <strong>{{ doc.title }}</strong>
-                </button>
-                @if (doc.description) {
-                  <div class="text-muted">{{ doc.description }}</div>
-                }
-              </td>
-              <td>
-                <nz-tag>{{ doc.document_type || 'Altro' }}</nz-tag>
-              </td>
-              <td>
-                <span>{{ folderNameOf(doc) }}</span>
-              </td>
-              <td>
-                @if (doc.latest_version) {
-                  <div>{{ doc.latest_version.original_name }}</div>
-                  <div class="text-muted">
-                    v{{ doc.latest_version.version_number }} &bull;
-                    {{ (doc.latest_version.size / 1024) | number: '1.0-1' }} KB
-                  </div>
-                } @else if (doc.current_version) {
-                  <span class="text-muted">v{{ doc.current_version }}</span>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(doc.status)">
-                  {{ doc.status | uppercase }}
-                </nz-tag>
-                @if (doc.is_checked_out) {
-                  <nz-tag nzColor="warning">{{ 'DMS.LBL_CHECK_OUT' | translate }}</nz-tag>
-                }
-              </td>
-              <td>
-                @if (doc.legal_hold) {
-                  <nz-tag nzColor="error">
-                    <span nz-icon nzType="lock"></span>
-                    {{ 'DMS.LBL_LEGAL_HOLD' | translate }}
-                  </nz-tag>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="default"
-                    nzSize="small"
-                    (click)="openDrawer(doc)"
-                  >
-                    <span nz-icon nzType="eye"></span>
-                  </button>
+        <strong>{{ doc.title }}</strong>
+      </button>
+      @if (doc.description) {
+        <div class="text-muted">{{ doc.description }}</div>
+      }
+      </ng-template>
+      <ng-template #typeTpl let-doc>
+      <nz-tag>{{ doc.document_type || 'Altro' }}</nz-tag>
+      </ng-template>
+      <ng-template #versionTpl let-doc>
+      @if (doc.latest_version) {
+        <div>{{ doc.latest_version.original_name }}</div>
+        <div class="text-muted">
+          v{{ doc.latest_version.version_number }} &bull;
+          {{ (doc.latest_version.size / 1024) | number: '1.0-1' }} KB
+        </div>
+      } @else if (doc.current_version) {
+        <span class="text-muted">v{{ doc.current_version }}</span>
+      } @else {
+        <span class="text-muted">-</span>
+      }
+      </ng-template>
+      <ng-template #statusTpl let-doc>
+      <nz-tag [nzColor]="getStatusColor(doc.status)">
+        {{ doc.status | uppercase }}
+      </nz-tag>
+      @if (doc.is_checked_out) {
+        <nz-tag nzColor="warning">{{ 'DMS.LBL_CHECK_OUT' | translate }}</nz-tag>
+      }
+      </ng-template>
+      <ng-template #protectionTpl let-doc>
+      @if (doc.legal_hold) {
+        <nz-tag nzColor="error">
+          <span nz-icon nzType="lock"></span>
+          {{ 'DMS.LBL_LEGAL_HOLD' | translate }}
+        </nz-tag>
+      } @else {
+        <span class="text-muted">-</span>
+      }
+      </ng-template>
+      <ng-template #docActionsTpl let-doc>
+      <nz-space>
+        <button
+          *nzSpaceItem
+          nz-button
+          nzType="default"
+          nzSize="small"
+          (click)="openDrawer(doc)"
+        >
+          <span nz-icon nzType="eye"></span>
+        </button>
 
-                  @if (!doc.checked_out_by) {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="default"
-                      nzSize="small"
-                      (click)="openCheckOutModal(doc)"
-                    >
-                      <span nz-icon nzType="edit"></span>
-                      {{ 'DMS.LBL_CHECK_OUT_2' | translate }}
-                    </button>
-                  } @else {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="primary"
-                      nzSize="small"
-                      (click)="openCheckInModal(doc)"
-                    >
-                      <span nz-icon nzType="upload"></span>
-                      {{ 'DMS.LBL_CHECK_IN' | translate }}
-                    </button>
-                  }
+        @if (!doc.checked_out_by) {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="openCheckOutModal(doc)"
+          >
+            <span nz-icon nzType="edit"></span>
+            {{ 'DMS.LBL_CHECK_OUT_2' | translate }}
+          </button>
+        } @else {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="primary"
+            nzSize="small"
+            (click)="openCheckInModal(doc)"
+          >
+            <span nz-icon nzType="upload"></span>
+            {{ 'DMS.LBL_CHECK_IN' | translate }}
+          </button>
+        }
 
-                  @if (!doc.legal_hold) {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="default"
-                      nzSize="small"
-                      (click)="openLegalHoldModal(doc)"
-                    >
-                      <span nz-icon nzType="lock"></span>
-                    </button>
-                  } @else {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="default"
-                      nzSize="small"
-                      (click)="releaseLegalHold(doc)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                      {{ 'DMS.LBL_SBLOCCA' | translate }}
-                    </button>
-                  }
+        @if (!doc.legal_hold) {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="openLegalHoldModal(doc)"
+          >
+            <span nz-icon nzType="lock"></span>
+          </button>
+        } @else {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="releaseLegalHold(doc)"
+          >
+            <span nz-icon nzType="check"></span>
+            {{ 'DMS.LBL_SBLOCCA' | translate }}
+          </button>
+        }
 
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzDanger
-                    nzSize="small"
-                    (click)="deleteDocument(doc)"
-                    appIconAction="delete"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+        <button
+          *nzSpaceItem
+          nz-button
+          nzDanger
+          nzSize="small"
+          (click)="deleteDocument(doc)"
+          appIconAction="delete"
+        ></button>
+      </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 2: CARTELLE & GERARCHIA -->

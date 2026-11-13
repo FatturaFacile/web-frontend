@@ -11,6 +11,8 @@ import {
   LeaveCalendarParams,
   LeaveTypePayload,
   LeaveTypeResource,
+  PaginatedResponse,
+  QueryFilterParams,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
@@ -20,8 +22,10 @@ export class HrLeaveApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/hr`;
 
-  getLeaveTypes(): Observable<ApiResponse<LeaveTypeResource[]>> {
-    return this.http.get<ApiResponse<LeaveTypeResource[]>>(`${this.base}/leave-types`);
+  getLeaveTypes(params?: QueryFilterParams): Observable<PaginatedResponse<LeaveTypeResource>> {
+    return this.http.get<PaginatedResponse<LeaveTypeResource>>(`${this.base}/leave-types`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createLeaveType(payload: LeaveTypePayload): Observable<ApiResponse<LeaveTypeResource>> {
@@ -32,8 +36,10 @@ export class HrLeaveApiService {
     return this.http.put<ApiResponse<LeaveTypeResource>>(`${this.base}/leave-types/${id}`, payload);
   }
 
-  getAccrualPolicies(): Observable<ApiResponse<LeaveAccrualPolicyResource[]>> {
-    return this.http.get<ApiResponse<LeaveAccrualPolicyResource[]>>(`${this.base}/leave-accrual-policies`);
+  getAccrualPolicies(params?: QueryFilterParams): Observable<PaginatedResponse<LeaveAccrualPolicyResource>> {
+    return this.http.get<PaginatedResponse<LeaveAccrualPolicyResource>>(`${this.base}/leave-accrual-policies`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createAccrualPolicy(payload: LeaveAccrualPolicyPayload): Observable<ApiResponse<LeaveAccrualPolicyResource>> {
@@ -51,9 +57,9 @@ export class HrLeaveApiService {
     return this.http.delete<void>(`${this.base}/leave-accrual-policies/${id}`);
   }
 
-  getLeaveBalances(employeeId?: string): Observable<ApiResponse<LeaveBalanceResource[]>> {
-    return this.http.get<ApiResponse<LeaveBalanceResource[]>>(`${this.base}/leave-balances`, {
-      params: toHttpParams({ employee_id: employeeId }),
+  getLeaveBalances(employeeId?: string, params?: QueryFilterParams): Observable<PaginatedResponse<LeaveBalanceResource>> {
+    return this.http.get<PaginatedResponse<LeaveBalanceResource>>(`${this.base}/leave-balances`, {
+      params: toHttpParams({ ...params, employee_id: employeeId }),
     });
   }
 

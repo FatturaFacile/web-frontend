@@ -29,14 +29,14 @@
                 [placeholder]="'WORKSHOP.SEARCH_PLACEHOLDER' | translate"
                 [ngModel]="filterFolderSearch()"
                 (ngModelChange)="filterFolderSearch.set($event)"
-                (keyup.enter)="loadFolders()"
+                (keyup.enter)="applyFolderFilters()"
               />
             </nz-input-wrapper>
 
             <nz-select
               class="status-select"
               [ngModel]="filterFolderStatus()"
-              (ngModelChange)="filterFolderStatus.set($event); loadFolders()"
+              (ngModelChange)="filterFolderStatus.set($event); applyFolderFilters()"
               [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
               nzAllowClear
             >
@@ -57,55 +57,14 @@
         </div>
 
         <!-- Folders Table -->
-        <nz-table
-          #foldersTable
-          nzShowSizeChanger
-          [nzData]="folders()"
-          [nzTotal]="foldersTotal()"
-          [nzLoading]="foldersLoading()"
-          [nzPageIndex]="foldersPageIndex()"
-          [nzPageSize]="foldersPageSize()"
-          [nzFrontPagination]="false"
-          (nzQueryParams)="onFoldersTableQueryChange($event)"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'folder_number' | gridSort" [nzFilters]="'folder_number' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'folder_number' | gridFilterFn">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
-              <th [nzSortFn]="'kind' | gridSort" [nzFilters]="'kind' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'kind' | gridFilterFn">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MILEAGE_IN' | translate }}</th>
-              <th [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
-              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: foldersTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (folder of foldersTable.data; track folder.id) {
-              <tr>
-                <td>
-                  <strong>{{ folder.folder_number }}</strong>
-                </td>
-                <td>
-                  <div>{{ folder.license_plate || folder.vehicle_id }}</div>
-                  <small class="text-muted">{{ folder.vehicle_model || folder.vin }}</small>
-                </td>
-                <td>{{ folder.customer_name || '-' }}</td>
-                <td>
-                  <nz-tag>{{ folder.kind | uppercase }}</nz-tag>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="getFolderStatusColor(folder.status)">
-                    {{ folder.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>{{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}</td>
-                <td>{{ folder.total_net | money: folder.currency }}</td>
-                <td>
-                  <strong>{{ folder.total_gross | money: folder.currency }}</strong>
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="foldersGrid"
+          [columns]="folderColumns()"
+          [actionsTemplate]="folderActions"
+          exportFileName="workshop-folders"
+        />
+
+        <ng-template #folderActions let-folder>
                   <nz-space>
                     <button
                       *nzSpaceItem
@@ -181,11 +140,7 @@
                       <span nz-icon nzType="dollar"></span>
                     </button>
                   </nz-space>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
 
@@ -197,7 +152,7 @@
             <nz-select
               class="status-select"
               [ngModel]="filterStockStatus()"
-              (ngModelChange)="filterStockStatus.set($event); loadStock()"
+              (ngModelChange)="filterStockStatus.set($event); applyStockFilters()"
               [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
               nzAllowClear
             >
@@ -214,70 +169,14 @@
           </div>
         </div>
 
-        <nz-table
-          #stockTable
-          nzShowSizeChanger
-          [nzData]="stockUnits()"
-          [nzTotal]="stockTotal()"
-          [nzLoading]="stockLoading()"
-          [nzPageIndex]="stockPageIndex()"
-          [nzPageSize]="stockPageSize()"
-          [nzFrontPagination]="false"
-          (nzQueryParams)="onStockTableQueryChange($event)"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'stock_number' | gridSort" [nzFilters]="'stock_number' | gridFilterList: stockTable.nzData" [nzFilterFn]="'stock_number' | gridFilterFn">{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
-              <th [nzSortFn]="'make' | gridSort" [nzFilters]="'make' | gridFilterList: stockTable.nzData" [nzFilterFn]="'make' | gridFilterFn">{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
-              <th [nzSortFn]="'condition' | gridSort" [nzFilters]="'condition' | gridFilterList: stockTable.nzData" [nzFilterFn]="'condition' | gridFilterFn">{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
-              <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: stockTable.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PURCHASE_COST' | translate }}</th>
-              <th [nzSortFn]="'list_price' | gridSort" [nzFilters]="'list_price' | gridFilterList: stockTable.nzData" [nzFilterFn]="'list_price' | gridFilterFn">{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
-              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: stockTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th [nzSortFn]="'buyer_name' | gridSort" [nzFilters]="'buyer_name' | gridFilterList: stockTable.nzData" [nzFilterFn]="'buyer_name' | gridFilterFn">{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (unit of stockTable.data; track unit.id) {
-              <tr>
-                <td>
-                  <strong>{{ unit.stock_number }}</strong>
-                  @if (unit.vin) {
-                    <br /><small class="text-muted">{{ unit.vin }}</small>
-                  }
-                </td>
-                <td>
-                  <strong>{{ unit.make }} {{ unit.model }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="unit.condition === 'new' ? 'cyan' : 'orange'">
-                    {{ unit.condition | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  {{ unit.year || '-' }} / {{ unit.mileage_km ? (unit.mileage_km | number) + ' km' : '-' }}
-                </td>
-                <td>
-                  {{ unit.purchase_price ? (unit.purchase_price | money: unit.currency) : '-' }}
-                </td>
-                <td>
-                  <strong>{{ unit.list_price | money: unit.currency }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="getStockStatusColor(unit.status)">
-                    {{ unit.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  @if (unit.buyer_name) {
-                    {{ unit.buyer_name }}
-                    <br /><small class="text-muted">{{ unit.sold_at | date: 'mediumDate' }}</small>
-                  } @else {
-                    -
-                  }
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="stockGrid"
+          [columns]="stockColumns()"
+          [actionsTemplate]="stockActions"
+          exportFileName="vehicle-stock"
+        />
+
+        <ng-template #stockActions let-unit>
                   @if (unit.status !== 'sold') {
                     <button
                       nz-button
@@ -289,54 +188,21 @@
                       {{ 'WORKSHOP.ACTION_SELL' | translate }}
                     </button>
                   }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
 
     <!-- TAB 3: TAGLIANDI & MANUTENZIONI PERIODICHE -->
     <nz-tab [nzTitle]="'WORKSHOP.TAB_RECURRING' | translate">
       <nz-card>
-        <nz-table
-          #recurringTable
-          [nzData]="recurringServices()"
-          [nzLoading]="recurringLoading()"
-          [nzFrontPagination]="true"
-        >
-          <thead>
-            <tr>
-              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
-              <th [nzSortFn]="'license_plate' | gridSort" [nzFilters]="'license_plate' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'license_plate' | gridFilterFn">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th [nzSortFn]="'service_type' | gridSort" [nzFilters]="'service_type' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'service_type' | gridFilterFn">{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
-              <th [nzSortFn]="'interval' | gridSort" [nzFilters]="'interval' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'interval' | gridFilterFn">{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
-              <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
-              <th [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: recurringTable.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (rec of recurringTable.data; track rec.id) {
-              <tr>
-                <td>
-                  <strong>{{ rec.name }}</strong>
-                </td>
-                <td>{{ rec.license_plate || rec.vehicle_id }}</td>
-                <td>
-                  <nz-tag>{{ rec.service_type }}</nz-tag>
-                </td>
-                <td>{{ rec.interval }}</td>
-                <td>{{ rec.start_date | date: 'mediumDate' }}</td>
-                <td>{{ rec.unit_price | money: rec.currency }}</td>
-                <td>
-                  <nz-tag [nzColor]="rec.is_active ? 'success' : 'default'">
-                    {{ (rec.is_active ? 'WORKSHOP.ACTIVE' : 'WORKSHOP.STOPPED') | translate }}
-                  </nz-tag>
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="recurringGrid"
+          [columns]="recurringColumns()"
+          [actionsTemplate]="recurringActions"
+          exportFileName="recurring-services"
+        />
+
+        <ng-template #recurringActions let-rec>
                   @if (rec.is_active) {
                     <button
                       nz-button
@@ -351,11 +217,7 @@
                       {{ 'WORKSHOP.ACTION_STOP' | translate }}
                     </button>
                   }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
   </nz-tabs>
@@ -1000,3 +862,49 @@
     </form>
   </ng-container>
 </nz-modal>
+
+<!-- Cell templates of the server-driven grids (value = cell value, $implicit = row) -->
+<ng-template #folderNumberTpl let-folder><strong>{{ folder.folder_number }}</strong></ng-template>
+<ng-template #folderVehicleTpl let-folder>
+  <div>{{ folder.license_plate || folder.vehicle_id }}</div>
+  <small class="text-muted">{{ folder.vehicle_model || folder.vin }}</small>
+</ng-template>
+<ng-template #kindTpl let-folder><nz-tag>{{ folder.kind | uppercase }}</nz-tag></ng-template>
+<ng-template #folderStatusTpl let-folder>
+  <nz-tag [nzColor]="getFolderStatusColor(folder.status)">{{ folder.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #mileageTpl let-folder>{{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}</ng-template>
+<ng-template #moneyTpl let-row let-v="value">{{ v ? (v | money: row.currency) : '-' }}</ng-template>
+<ng-template #strongMoneyTpl let-row let-v="value"><strong>{{ v | money: row.currency }}</strong></ng-template>
+<ng-template #stockNumberTpl let-unit>
+  <strong>{{ unit.stock_number }}</strong>
+  @if (unit.vin) {
+    <br /><small class="text-muted">{{ unit.vin }}</small>
+  }
+</ng-template>
+<ng-template #makeModelTpl let-unit><strong>{{ unit.make }} {{ unit.model }}</strong></ng-template>
+<ng-template #conditionTpl let-unit>
+  <nz-tag [nzColor]="unit.condition === 'new' ? 'cyan' : 'orange'">{{ unit.condition | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #yearKmTpl let-unit>
+  {{ unit.year || '-' }} / {{ unit.mileage_km ? (unit.mileage_km | number) + ' km' : '-' }}
+</ng-template>
+<ng-template #stockStatusTpl let-unit>
+  <nz-tag [nzColor]="getStockStatusColor(unit.status)">{{ unit.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #buyerTpl let-unit>
+  @if (unit.buyer_name) {
+    {{ unit.buyer_name }}
+    <br /><small class="text-muted">{{ unit.sold_at | date: 'mediumDate' }}</small>
+  } @else {
+    -
+  }
+</ng-template>
+<ng-template #strongTpl let-v="value"><strong>{{ v }}</strong></ng-template>
+<ng-template #plainTagTpl let-v="value"><nz-tag>{{ v }}</nz-tag></ng-template>
+<ng-template #dateTpl let-v="value">{{ v | date: 'mediumDate' }}</ng-template>
+<ng-template #activeTpl let-rec>
+  <nz-tag [nzColor]="rec.is_active ? 'success' : 'default'">
+    {{ (rec.is_active ? 'WORKSHOP.ACTIVE' : 'WORKSHOP.STOPPED') | translate }}
+  </nz-tag>
+</ng-template>

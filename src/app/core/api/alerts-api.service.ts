@@ -15,6 +15,7 @@ import { toHttpParams } from '../http/laravel-http.utils';
 export interface AlertFilterParams extends QueryFilterParams {
   alertable_type?: string;
   alertable_id?: string;
+  severity?: string;
 }
 
 @Service()

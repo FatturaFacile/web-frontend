@@ -97,10 +97,10 @@ describe('ContractRegisterComponent', () => {
     getContractObligations: vi.fn().mockReturnValue(of({ success: true, data: mockObligations })),
     addObligation: vi.fn().mockReturnValue(of({ success: true, data: mockObligations[0] })),
     getContractHistory: vi.fn().mockReturnValue(of({ success: true, data: mockHistory })),
-    getAllObligations: vi.fn().mockReturnValue(of({ success: true, data: mockObligations, meta: { total: 1 } })),
+    getAllObligations: vi.fn().mockReturnValue(of({ success: true, data: mockObligations, meta: { total: 1, last_page: 1 } })),
     completeObligation: vi.fn().mockReturnValue(of({ success: true, data: { ...mockObligations[0], status: 'completed' } })),
     waiveObligation: vi.fn().mockReturnValue(of({ success: true, data: { ...mockObligations[0], status: 'waived' } })),
-    getAlerts: vi.fn().mockReturnValue(of({ success: true, data: mockAlerts })),
+    getAlerts: vi.fn().mockReturnValue(of({ success: true, data: mockAlerts, meta: { total: 1, last_page: 1 } })),
     acknowledgeAlert: vi.fn().mockReturnValue(of({ success: true, data: { success: true } })),
   };
 
@@ -192,12 +192,16 @@ describe('ContractRegisterComponent', () => {
     expect(component.contractObligations().length).toBe(1);
   });
 
-  it('switches to obligations and alerts tabs, completes obligation and acknowledges alert', () => {
+  it('switches to obligations and alerts tabs, completes obligation and acknowledges alert', async () => {
+    const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
     component.onTabChange(1);
+    await vi.waitFor(() => expect(mockContractApi.getAllObligations).toHaveBeenCalled());
+    await settle();
     expect(mockContractApi.getAllObligations).toHaveBeenCalled();
-    expect(component.globalObligations().length).toBe(1);
+    const obligationsGrid = (component as unknown as { obligationsGrid: { items: () => ContractObligationResource[] } }).obligationsGrid;
+    expect(obligationsGrid.items().length).toBe(1);
 
-    const ob = component.globalObligations()[0];
+    const ob = obligationsGrid.items()[0];
     component.openCompleteObligationModal(ob);
     expect(component.completeModalVisible()).toBe(true);
     component.submitCompleteObligation();
@@ -205,13 +209,18 @@ describe('ContractRegisterComponent', () => {
 
     // Tab 2: Alerts
     component.onTabChange(2);
+    await vi.waitFor(() => expect(mockContractApi.getAlerts).toHaveBeenCalled());
+    await settle();
     expect(mockContractApi.getAlerts).toHaveBeenCalled();
-    expect(component.alerts().length).toBe(1);
+    const alertsGrid = (component as unknown as { alertsGrid: { items: () => ContractAlertResource[] } }).alertsGrid;
+    expect(alertsGrid.items().length).toBe(1);
 
-    const alert = component.alerts()[0];
+    const alert = alertsGrid.items()[0];
+    const callsBefore = mockContractApi.getAlerts.mock.calls.length;
     component.acknowledgeAlert(alert);
     expect(mockContractApi.acknowledgeAlert).toHaveBeenCalledWith(alert.id);
-    expect(alert.is_acknowledged).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockContractApi.getAlerts.mock.calls.length).toBeGreaterThan(callsBefore);
   });
 
   it('does not call the API when the forms are submitted empty and requires the end date of a supplier contract', () => {

@@ -4,7 +4,7 @@ export type ContractStatus = 'draft' | 'active' | 'expired' | 'terminated' | 're
 
 export type ContractObligationType = 'obligation' | 'milestone';
 
-export type ContractObligationStatus = 'pending' | 'completed' | 'waived' | 'overdue';
+export type ContractObligationStatus = 'open' | 'completed' | 'waived';
 
 export type ContractAlertType = 'notice_deadline' | 'expiry';
 
@@ -149,7 +149,7 @@ export interface ContractRegisterParams {
 export interface ContractObligationParams {
   contract_kind?: ContractKind;
   status?: ContractObligationStatus;
-  due_before?: string;
+  overdue?: boolean;
   page?: number;
   per_page?: number;
 }

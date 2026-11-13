@@ -12,9 +12,8 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { reportHttpError } from '../shared/hr-http.util';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -70,7 +69,7 @@ export class TalentComponent implements OnInit {
   protected readonly reviewsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.reviews',
     canWrite: this.canWrite(),
-    list: () => this.api.getPerformanceReviews().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getPerformanceReviews(query)),
     create: (payload) => this.api.submitPerformanceReview(payload as never),
     rowActions: [
       {
@@ -119,11 +118,12 @@ export class TalentComponent implements OnInit {
   protected readonly coursesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.courses',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getTrainingCourses().pipe(
-        tap((res) => this.courses.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.api.getTrainingCourses().subscribe({ next: (res) => this.courses.set(res.data) });
+      }
+      return crudPage(this.api.getTrainingCourses(query));
+    },
     create: (payload) => this.api.createTrainingCourse(payload as never),
     fields: [
       { key: 'course_code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
@@ -140,7 +140,7 @@ export class TalentComponent implements OnInit {
   protected readonly recordsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.records',
     canWrite: this.canWrite(),
-    list: () => this.api.getTrainingRecords().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getTrainingRecords(query)),
     create: (payload) => this.api.assignTraining(payload as never),
     rowActions: [
       {
@@ -167,7 +167,7 @@ export class TalentComponent implements OnInit {
   protected readonly certificationsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.certifications',
     canWrite: false,
-    list: () => this.api.getCertifications().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getCertifications(query)),
     fields: [
       { key: 'code', labelKey: 'hrmCommon.code', type: 'text' },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text' },

@@ -58,7 +58,7 @@ const CASES: Case[] = [
   },
   {
     name: 'getRecurringJournals',
-    call: (s) => s.getRecurringJournals('active'),
+    call: (s) => s.getRecurringJournals({ status: 'active' }),
     method: 'GET',
     path: '/recurring-journals',
     params: { status: 'active' },
@@ -173,7 +173,7 @@ const CASES: Case[] = [
   },
   {
     name: 'getFxRevaluations',
-    call: (s) => s.getFxRevaluations('2026-12-31'),
+    call: (s) => s.getFxRevaluations({ revaluation_date: '2026-12-31' }),
     method: 'GET',
     path: '/fx-revaluations',
     params: { revaluation_date: '2026-12-31' },
@@ -271,7 +271,7 @@ const CASES: Case[] = [
     path: '/vat-registers/sales',
     params: { ...range, format: 'json' },
   },
-  { name: 'getBudgets', call: (s) => s.getBudgets('y1'), method: 'GET', path: '/budgets', params: { fiscal_year_id: 'y1' } },
+  { name: 'getBudgets', call: (s) => s.getBudgets({ fiscal_year_id: 'y1' }), method: 'GET', path: '/budgets', params: { fiscal_year_id: 'y1' } },
   { name: 'getBudget', call: (s) => s.getBudget('b1'), method: 'GET', path: '/budgets/b1' },
   {
     name: 'createBudget',

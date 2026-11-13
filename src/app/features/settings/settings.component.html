@@ -95,13 +95,7 @@
 
     <!-- TAB 2: FILIALI -->
     <nz-tab [nzTitle]="'settings.tabs.branches' | translate">
-      <app-base-table
-        [data]="branches()"
-        [columns]="branchColumns()"
-        [loading]="loadingBranches()"
-        [total]="branches().length"
-        [scroll]="{ x: '800px' }"
-      />
+      <app-base-table [grid]="branchGrid" [columns]="branchColumns()" [scroll]="{ x: '800px' }" [exportFileName]="'branches'" />
     </nz-tab>
 
     <!-- TAB 3: UTENTI -->
@@ -138,13 +132,7 @@
           <nz-icon nzType="sync" /> {{ 'settings.messages.ratesSynced' | translate }}
         </button>
       </div>
-      <app-base-table
-        [data]="auditLogs()"
-        [columns]="auditColumns()"
-        [loading]="loadingAudit()"
-        [total]="auditLogs().length"
-        [scroll]="{ x: '1000px' }"
-      />
+      <app-base-table [grid]="auditGrid" [columns]="auditColumns()" [scroll]="{ x: '1000px' }" [exportFileName]="'audit-log'" />
     </nz-tab>
   </nz-tabs>
 </nz-card>
@@ -176,8 +164,10 @@
   </nz-tag>
 </ng-template>
 
-<ng-template #hqTpl let-val="value">
+<ng-template #primaryTpl let-val="value">
   <nz-tag [nzColor]="val ? 'blue' : 'default'">
-    {{ val ? "SEDE CENTRALE" : "FILIALE" }}
+    {{ (val ? 'COLUMNS.SEDE_CENTRALE' : 'COLUMNS.FILIALE') | translate }}
   </nz-tag>
 </ng-template>
+
+<ng-template #auditUserTpl let-row>{{ row.user?.name ?? '-' }}</ng-template>

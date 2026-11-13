@@ -2,9 +2,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
+  PaginatedResponse,
   TesseraSanitariaExpense,
+  TesseraSanitariaExpenseFilterParams,
   TesseraSanitariaExpenseRequest,
   TesseraSanitariaSettings,
   TesseraSanitariaSettingsRequest,
@@ -26,18 +29,9 @@ export class TesseraSanitariaApiService {
     return this.http.put<ApiResponse<TesseraSanitariaSettings>>(`${this.base}/settings`, payload);
   }
 
-  getExpenses(params?: {
-    year?: number;
-    page?: number;
-    per_page?: number;
-  }): Observable<ApiResponse<TesseraSanitariaExpense[]>> {
-    let httpParams = new HttpParams();
-    if (params?.year) httpParams = httpParams.set('year', params.year.toString());
-    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
-    if (params?.per_page) httpParams = httpParams.set('per_page', params.per_page.toString());
-
-    return this.http.get<ApiResponse<TesseraSanitariaExpense[]>>(`${this.base}/expenses`, {
-      params: httpParams,
+  getExpenses(params?: TesseraSanitariaExpenseFilterParams): Observable<PaginatedResponse<TesseraSanitariaExpense>> {
+    return this.http.get<PaginatedResponse<TesseraSanitariaExpense>>(`${this.base}/expenses`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 

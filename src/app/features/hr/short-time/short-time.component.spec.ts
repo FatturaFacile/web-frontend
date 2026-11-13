@@ -52,6 +52,7 @@ describe('Short-time work', () => {
           kind: 'bad_weather',
           cause: 'Snow',
           starts_on: '2026-01-10',
+          claims_count: 1,
           claims: [
             { id: 'cl1', year: 2026, month: 1, status: 'draft', total_compensation: '100.00' },
           ],
@@ -87,8 +88,9 @@ describe('Short-time work', () => {
     const config = (
       fixture.componentInstance as unknown as { casesConfig(): CrudConfig<Row> }
     ).casesConfig();
-    const rows = await new Promise<Row[]>((resolve) => config.list().subscribe(resolve));
-    expect(rows[0]['claims_count']).toBe(1);
+    const page = await new Promise<{ data: Row[] }>((resolve) => config.gridList?.({ page: 1 }).subscribe(resolve));
+    expect(api.getCases).toHaveBeenCalledWith({ page: 1 });
+    expect(page.data[0]['claims_count']).toBe(1);
     config.create?.({ kind: 'short_time', cause: 'Orders', starts_on: '2026-02-01' }).subscribe();
     expect(api.createCase).toHaveBeenCalledWith({
       kind: 'short_time',
@@ -106,7 +108,7 @@ describe('Short-time work', () => {
       selected(): { id: string } | null;
     };
     const config = page.casesConfig();
-    await new Promise<void>((resolve) => config.list().subscribe(() => resolve()));
+    await new Promise<void>((resolve) => config.gridList?.({ page: 1 }).subscribe(() => resolve()));
     config.rowActions?.[0].run({ id: 'c1' });
     expect(page.claimModalOpen()).toBe(true);
     expect(page.selected()?.id).toBe('c1');

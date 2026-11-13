@@ -358,7 +358,7 @@ describe('PortalComponent', () => {
   });
 
   it('should load the stock movement history page by page', () => {
-    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', 1);
+    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', { page: 1 });
     expect(component.stockMovements().length).toBe(1);
     expect(component.stockMovementsHasMore()).toBe(true);
 
@@ -369,7 +369,7 @@ describe('PortalComponent', () => {
       }),
     );
     component.loadMoreStockMovements();
-    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', 2);
+    expect(apiMock.getStockMovements).toHaveBeenCalledWith('test-token-777', { page: 2 });
     expect(component.stockMovements().map((m) => m.id)).toEqual(['mv-1', 'mv-2']);
     expect(component.stockMovementsHasMore()).toBe(false);
   });

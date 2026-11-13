@@ -1,5 +1,6 @@
+import { tap } from 'rxjs';
 import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -24,11 +25,11 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  FetchGridModel,
   BomType,
   CreateBomPayload,
   CreateProductionOrderPayload,
@@ -42,10 +43,11 @@ import {
   MfgShortageResource,
   MfgWorkCenterResource,
   MrpRunType,
+  QueryFilterParams,
   RunMrpPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { toDayKey, toTimestamp } from '@shared/utils/date-validators';
 import { formErrorTip } from '../inventory/form-error-tip';
 import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
@@ -81,12 +83,16 @@ function withinTwoYearsOf(startKey: string): ValidatorFn {
   };
 }
 
+/** List filters of the production orders and BOMs grids (the column filters travel in the grid model itself). */
+interface MfgListFilter extends QueryFilterParams {
+  status?: string;
+}
+
 @Component({
   selector: 'app-manufacturing',
   styleUrl: './manufacturing.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,
@@ -96,7 +102,6 @@ function withinTwoYearsOf(startKey: string): ValidatorFn {
     UpperCasePipe,
     MoneyPipe,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzIconModule,
@@ -115,7 +120,7 @@ function withinTwoYearsOf(startKey: string): ValidatorFn {
   ],
   templateUrl: './manufacturing.component.html',
 })
-export class ManufacturingComponent implements OnInit {
+export class ManufacturingComponent {
   private readonly api = inject(ManufacturingApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -127,42 +132,32 @@ export class ManufacturingComponent implements OnInit {
 
   readonly selectedTab = signal<number>(0);
 
-  // --- Production Orders State ---
-  readonly orders = signal<MfgProductionOrderResource[]>([]);
-  readonly loadingOrders = signal(false);
-  readonly ordersTotal = signal(0);
-  readonly ordersPage = signal(1);
+  // --- Server-driven grids (paging, sorting, column filters, grouping and export run on the API) ---
+  readonly ordersGrid = new FetchGridModel<MfgProductionOrderResource, MfgListFilter>((query) =>
+    this.api.getProductionOrders(query).pipe(
+      tap({ error: () => this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_GLI_ORDINI_DI_PRODUZIONE')) }),
+    ),
+  );
+  readonly bomsGrid = new FetchGridModel<MfgBomResource, MfgListFilter>((query) =>
+    this.api.getBoms(query).pipe(tap({ error: () => this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_LE_DISTINTE_BASE')) })),
+  );
+  readonly mrpGrid = new FetchGridModel<MfgMrpRunResource>((query) => this.api.getMrpRuns(query));
+  readonly plannedGrid = new FetchGridModel<MfgPlannedOrderResource>((query) => this.api.getPlannedOrders(query));
+  readonly shortagesGrid = new FetchGridModel<MfgShortageResource>((query) => this.api.getShortages(query));
+  readonly workCentersGrid = new FetchGridModel<MfgWorkCenterResource>((query) => this.api.getWorkCenters(query));
+  readonly routingsGrid = new FetchGridModel<MfgRoutingResource>((query) => this.api.getRoutings(query));
+
+  readonly orders = this.ordersGrid.items;
+  readonly boms = this.bomsGrid.items;
+  readonly mrpRuns = this.mrpGrid.items;
+  readonly plannedOrders = this.plannedGrid.items;
+  readonly shortages = this.shortagesGrid.items;
+  readonly workCenters = this.workCentersGrid.items;
+  readonly routings = this.routingsGrid.items;
+
   readonly ordersSearch = signal('');
   readonly ordersStatusFilter = signal<string | null>(null);
-
-  // --- BOMs State ---
-  readonly boms = signal<MfgBomResource[]>([]);
-  readonly loadingBoms = signal(false);
-  readonly bomsTotal = signal(0);
-  readonly bomsPage = signal(1);
   readonly bomsSearch = signal('');
-
-  // --- MRP State ---
-  readonly mrpRuns = signal<MfgMrpRunResource[]>([]);
-  readonly loadingMrp = signal(false);
-  readonly mrpTotal = signal(0);
-  readonly mrpPage = signal(1);
-
-  readonly plannedOrders = signal<MfgPlannedOrderResource[]>([]);
-  readonly loadingPlanned = signal(false);
-  readonly plannedTotal = signal(0);
-  readonly plannedPage = signal(1);
-
-  readonly shortages = signal<MfgShortageResource[]>([]);
-  readonly loadingShortages = signal(false);
-  readonly shortagesTotal = signal(0);
-  readonly shortagesPage = signal(1);
-
-  // --- Work Centers & Routings State ---
-  readonly workCenters = signal<MfgWorkCenterResource[]>([]);
-  readonly loadingWorkCenters = signal(false);
-  readonly routings = signal<MfgRoutingResource[]>([]);
-  readonly loadingRoutings = signal(false);
 
   // --- KPI Computed Metrics ---
   readonly kpiTotalOrders = computed(() => this.orders().length);
@@ -257,45 +252,121 @@ export class ManufacturingComponent implements OnInit {
     return formErrorTip(form, path, this.translate);
   }
 
-  ngOnInit(): void {
-    this.loadOrders();
-    this.loadBoms();
-    this.loadMrpRuns();
-    this.loadPlannedOrders();
-    this.loadShortages();
-    this.loadWorkCenters();
-    this.loadRoutings();
+  private readonly strongTpl = viewChild<TemplateRef<unknown>>('strongTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly dateTimeTpl = viewChild<TemplateRef<unknown>>('dateTimeTpl');
+  private readonly moneyTpl = viewChild<TemplateRef<unknown>>('moneyTpl');
+  private readonly orderStatusTpl = viewChild<TemplateRef<unknown>>('orderStatusTpl');
+  private readonly bomStatusTpl = viewChild<TemplateRef<unknown>>('bomStatusTpl');
+  private readonly revisionTpl = viewChild<TemplateRef<unknown>>('revisionTpl');
+  private readonly plainTagTpl = viewChild<TemplateRef<unknown>>('plainTagTpl');
+  private readonly planTypeTpl = viewChild<TemplateRef<unknown>>('planTypeTpl');
+  private readonly warningTagTpl = viewChild<TemplateRef<unknown>>('warningTagTpl');
+  private readonly activeTagTpl = viewChild<TemplateRef<unknown>>('activeTagTpl');
+  private readonly successTagTpl = viewChild<TemplateRef<unknown>>('successTagTpl');
+  private readonly mrpStatusTpl = viewChild<TemplateRef<unknown>>('mrpStatusTpl');
+  private readonly dashTpl = viewChild<TemplateRef<unknown>>('dashTpl');
+  private readonly yesNoTpl = viewChild<TemplateRef<unknown>>('yesNoTpl');
+  private readonly componentsTpl = viewChild<TemplateRef<unknown>>('componentsTpl');
+  private readonly operationsTpl = viewChild<TemplateRef<unknown>>('operationsTpl');
+  private readonly hoursTpl = viewChild<TemplateRef<unknown>>('hoursTpl');
+  private readonly levelTpl = viewChild<TemplateRef<unknown>>('levelTpl');
+
+  protected readonly orderColumns = computed<TableColumnDef<MfgProductionOrderResource>[]>(() => [
+    { key: 'order_number', header: 'MFG.LBL_N_ORDINE', customCellTemplate: this.strongTpl() },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO_DESCRIZIONE', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'target_quantity', header: 'MFG.LBL_Q_TA_PREVISTA', align: 'right', valueGetter: (r) => `${r.target_quantity} ${r.uom}` },
+    { key: 'completed_quantity', header: 'MFG.LBL_Q_TA_PRODOTTA', align: 'right', valueGetter: (r) => `${r.completed_quantity} ${r.uom}` },
+    { key: 'planned_start_date', header: 'MFG.LBL_INIZIO_PREVISTO', customCellTemplate: this.dateTpl() },
+    { key: 'planned_end_date', header: 'MFG.LBL_FINE_PREVISTA', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.orderStatusTpl() },
+    { key: 'actual_cost_total', header: 'MFG.LBL_COSTI_TOTALI', align: 'right', customCellTemplate: this.moneyTpl() },
+  ]);
+
+  protected readonly bomColumns = computed<TableColumnDef<MfgBomResource>[]>(() => [
+    { key: 'bom_number', header: 'MFG.LBL_N_DISTINTA', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME_DISTINTA' },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'revision', header: 'MFG.LBL_REVISIONE', customCellTemplate: this.revisionTpl() },
+    { key: 'bom_type', header: 'MFG.LBL_TIPO' },
+    { key: 'base_quantity', header: 'MFG.LBL_Q_TA_BASE', align: 'right', valueGetter: (r) => `${r.base_quantity} ${r.uom}` },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.bomStatusTpl() },
+    { key: 'components_count', header: 'MFG.LBL_COMPONENTI', valueGetter: (r) => r.components_count ?? r.components?.length ?? 0, customCellTemplate: this.componentsTpl() },
+  ]);
+
+  protected readonly mrpColumns = computed<TableColumnDef<MfgMrpRunResource>[]>(() => [
+    { key: 'run_number', header: 'MFG.LBL_N_CALCOLO_MRP', customCellTemplate: this.strongTpl() },
+    { key: 'run_type', header: 'MFG.LBL_TIPO', customCellTemplate: this.plainTagTpl() },
+    { key: 'horizon_start_date', header: 'MFG.LBL_ORIZZONTE_INIZIO', customCellTemplate: this.dateTpl() },
+    { key: 'horizon_end_date', header: 'MFG.LBL_ORIZZONTE_FINE', customCellTemplate: this.dateTpl() },
+    { key: 'total_items_processed', header: 'MFG.LBL_ARTICOLI_ELABORATI', align: 'right' },
+    { key: 'total_planned_orders', header: 'MFG.LBL_ORDINI_PIANIFICATI', align: 'right' },
+    { key: 'total_shortages', header: 'MFG.LBL_FABBISOGNI_MANCANTI', align: 'right' },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.mrpStatusTpl() },
+    { key: 'created_at', header: 'MFG.LBL_DATA_ESECUZIONE', customCellTemplate: this.dateTimeTpl() },
+  ]);
+
+  protected readonly plannedColumns = computed<TableColumnDef<MfgPlannedOrderResource>[]>(() => [
+    { key: 'planned_order_number', header: 'MFG.LBL_CODICE_PIANIFICATO', customCellTemplate: this.strongTpl() },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'order_type', header: 'MFG.LBL_TIPO', customCellTemplate: this.planTypeTpl() },
+    { key: 'quantity', header: 'MFG.LBL_QUANTITA_NETTA', align: 'right', valueGetter: (r) => `${r.quantity} ${r.uom}` },
+    { key: 'bom_level', header: 'MFG.LBL_LIVELLO_DISTINTA', customCellTemplate: this.levelTpl() },
+    { key: 'start_date', header: 'MFG.LBL_DATA_INIZIO', customCellTemplate: this.dateTpl() },
+    { key: 'due_date', header: 'MFG.LBL_DATA_SCADENZA', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.plainTagTpl() },
+  ]);
+
+  protected readonly shortageColumns = computed<TableColumnDef<MfgShortageResource>[]>(() => [
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id, customCellTemplate: this.strongTpl() },
+    { key: 'required_date', header: 'MFG.LBL_DATA_NECESSARIA', customCellTemplate: this.dateTpl() },
+    { key: 'gross_requirement', header: 'MFG.LBL_FABBISOGNO_LORDO', align: 'right' },
+    { key: 'available_inventory', header: 'MFG.LBL_DISPONIBILITA_ATTUALE', align: 'right' },
+    { key: 'safety_stock', header: 'MFG.LBL_SCORTA_SICUREZZA', align: 'right' },
+    { key: 'net_shortage', header: 'MFG.LBL_MANCANZA_NETTA', align: 'right' },
+    { key: 'recommended_action', header: 'MFG.LBL_AZIONE_CONSIGLIATA', customCellTemplate: this.warningTagTpl() },
+  ]);
+
+  protected readonly workCenterColumns = computed<TableColumnDef<MfgWorkCenterResource>[]>(() => [
+    { key: 'work_center_code', header: 'MFG.LBL_CODICE_CENTRO', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME' },
+    { key: 'department_code', header: 'MFG.LBL_REPARTO', customCellTemplate: this.dashTpl() },
+    { key: 'capacity_hours_per_day', header: 'MFG.LBL_CAPACITA_GIORNALIERA_ORE', align: 'right', customCellTemplate: this.hoursTpl() },
+    { key: 'hourly_cost_rate', header: 'MFG.LBL_COSTO_ORARIO_H', align: 'right', customCellTemplate: this.moneyTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.activeTagTpl() },
+  ]);
+
+  protected readonly routingColumns = computed<TableColumnDef<MfgRoutingResource>[]>(() => [
+    { key: 'routing_number', header: 'MFG.LBL_N_CICLO', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME_CICLO' },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'revision', header: 'MFG.LBL_REVISIONE', customCellTemplate: this.revisionTpl() },
+    { key: 'is_default', header: 'MFG.LBL_PREDEFINITO', customCellTemplate: this.yesNoTpl() },
+    { key: 'operations_count', header: 'MFG.LBL_OPERAZIONI', valueGetter: (r) => r.operations_count ?? r.operations?.length ?? 0, customCellTemplate: this.operationsTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.successTagTpl() },
+  ]);
+
+  constructor() {
+    this.ordersGrid.setPageSize(15);
+    this.bomsGrid.setPageSize(15);
+  }
+
+  searchOrders(term: string): void {
+    this.ordersSearch.set(term);
+    this.ordersGrid.setFilter({ search: term.trim() || undefined });
+  }
+
+  filterOrdersByStatus(status: string | null): void {
+    this.ordersStatusFilter.set(status);
+    this.ordersGrid.setFilter({ status: status ?? undefined });
+  }
+
+  searchBoms(term: string): void {
+    this.bomsSearch.set(term);
+    this.bomsGrid.setFilter({ search: term.trim() || undefined });
   }
 
   // --- Orders Logic ---
-
-  loadOrders(page = 1): void {
-    this.loadingOrders.set(true);
-    this.ordersPage.set(page);
-
-    const params: Record<string, string | number> = {
-      page,
-      per_page: 15,
-    };
-    if (this.ordersSearch().trim()) {
-      params['search'] = this.ordersSearch().trim();
-    }
-    if (this.ordersStatusFilter()) {
-      params['status'] = this.ordersStatusFilter()!;
-    }
-
-    this.api.getProductionOrders(params).subscribe({
-      next: (res) => {
-        this.orders.set(res?.data || []);
-        this.ordersTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingOrders.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_GLI_ORDINI_DI_PRODUZIONE'));
-        this.loadingOrders.set(false);
-      },
-    });
-  }
 
   openCreateOrderModal(): void {
     this.orderForm.reset({
@@ -357,7 +428,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_ORDINE_DI_PRODUZIONE_CREATO_CON_SUCCESSO'));
         this.isSubmittingOrder.set(false);
         this.isCreateOrderModalVisible.set(false);
-        this.loadOrders(1);
+        this.ordersGrid.reload();
       },
       error: (err) => {
         // 422 carries the reason (no released BOM revision on the start date, item bought not made, ...)
@@ -376,7 +447,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.releaseProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_RILASCIATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_RILASCIO_DELL_ORDINE')),
         });
@@ -393,7 +464,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.startProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_AVVIATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_AVVIO_DELL_ORDINE')),
         });
@@ -410,7 +481,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.completeProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_COMPLETATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_COMPLETAMENTO_DELL_ORDINE')),
         });
@@ -428,7 +499,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.closeProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_CHIUSO_E_VARIANZE_SALDATE'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CHIUSURA_DELL_ORDINE')),
         });
@@ -453,7 +524,7 @@ export class ManufacturingComponent implements OnInit {
         this.isCancellingOrder.set(false);
         this.cancellingOrder.set(null);
         this.message.success(this.translate.instant('MFG.MSG_ORDINE_ANNULLATO'));
-        this.loadOrders(this.ordersPage());
+        this.ordersGrid.reload();
       },
       error: (err) => {
         this.isCancellingOrder.set(false);
@@ -463,31 +534,6 @@ export class ManufacturingComponent implements OnInit {
   }
 
   // --- BOMs Logic ---
-
-  loadBoms(page = 1): void {
-    this.loadingBoms.set(true);
-    this.bomsPage.set(page);
-
-    const params: Record<string, string | number> = {
-      page,
-      per_page: 15,
-    };
-    if (this.bomsSearch().trim()) {
-      params['search'] = this.bomsSearch().trim();
-    }
-
-    this.api.getBoms(params).subscribe({
-      next: (res) => {
-        this.boms.set(res?.data || []);
-        this.bomsTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingBoms.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_LE_DISTINTE_BASE'));
-        this.loadingBoms.set(false);
-      },
-    });
-  }
 
   openCreateBomModal(): void {
     while (this.bomComponentsFormArray.length !== 0) {
@@ -560,7 +606,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.BOM_CREATED_DRAFT'));
         this.isSubmittingBom.set(false);
         this.isCreateBomModalVisible.set(false);
-        this.loadBoms(1);
+        this.bomsGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELLA_DISTINTA'));
@@ -578,7 +624,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.activateBom(bom.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_DISTINTA_BASE_ATTIVATA'));
-            this.loadBoms(this.bomsPage());
+            this.bomsGrid.reload();
           },
           error: (err) =>
             this.message.error(
@@ -600,7 +646,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.reviseBom(bom.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_NUOVA_REVISIONE_CREATA'));
-            this.loadBoms(1);
+            this.bomsGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_REVISIONE_DELLA_DISTINTA')),
         });
@@ -620,51 +666,6 @@ export class ManufacturingComponent implements OnInit {
   }
 
   // --- MRP Logic ---
-
-  loadMrpRuns(page = 1): void {
-    this.loadingMrp.set(true);
-    this.mrpPage.set(page);
-    this.api.getMrpRuns({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.mrpRuns.set(res?.data || []);
-        this.mrpTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingMrp.set(false);
-      },
-      error: () => {
-        this.loadingMrp.set(false);
-      },
-    });
-  }
-
-  loadPlannedOrders(page = 1): void {
-    this.loadingPlanned.set(true);
-    this.plannedPage.set(page);
-    this.api.getPlannedOrders({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.plannedOrders.set(res?.data || []);
-        this.plannedTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingPlanned.set(false);
-      },
-      error: () => {
-        this.loadingPlanned.set(false);
-      },
-    });
-  }
-
-  loadShortages(page = 1): void {
-    this.loadingShortages.set(true);
-    this.shortagesPage.set(page);
-    this.api.getShortages({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.shortages.set(res?.data || []);
-        this.shortagesTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingShortages.set(false);
-      },
-      error: () => {
-        this.loadingShortages.set(false);
-      },
-    });
-  }
 
   openRunMrpModal(): void {
     this.mrpForm.reset({
@@ -700,9 +701,9 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_ELABORAZIONE_MRP_COMPLETATA'));
         this.isSubmittingMrp.set(false);
         this.isRunMrpModalVisible.set(false);
-        this.loadMrpRuns(1);
-        this.loadPlannedOrders(1);
-        this.loadShortages(1);
+        this.mrpGrid.reload();
+        this.plannedGrid.reload();
+        this.shortagesGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_ELABORAZIONE_MRP'));
@@ -720,8 +721,8 @@ export class ManufacturingComponent implements OnInit {
         this.api.convertPlannedOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_PIANIFICATO_CONVERTITO_CON_SUCCESSO'));
-            this.loadPlannedOrders(this.plannedPage());
-            this.loadOrders(1);
+            this.plannedGrid.reload();
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CONVERSIONE')),
         });
@@ -730,28 +731,6 @@ export class ManufacturingComponent implements OnInit {
   }
 
   // --- Work Centers & Routings Logic ---
-
-  loadWorkCenters(): void {
-    this.loadingWorkCenters.set(true);
-    this.api.getWorkCenters().subscribe({
-      next: (res) => {
-        this.workCenters.set(res?.data || []);
-        this.loadingWorkCenters.set(false);
-      },
-      error: () => this.loadingWorkCenters.set(false),
-    });
-  }
-
-  loadRoutings(): void {
-    this.loadingRoutings.set(true);
-    this.api.getRoutings().subscribe({
-      next: (res) => {
-        this.routings.set(res?.data || []);
-        this.loadingRoutings.set(false);
-      },
-      error: () => this.loadingRoutings.set(false),
-    });
-  }
 
   openCreateWorkCenterModal(): void {
     this.workCenterForm.reset({
@@ -788,7 +767,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_CENTRO_DI_LAVORO_CREATO'));
         this.isSubmittingWorkCenter.set(false);
         this.isCreateWorkCenterModalVisible.set(false);
-        this.loadWorkCenters();
+        this.workCentersGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DEL_CENTRO'));

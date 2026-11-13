@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -20,6 +20,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  FetchGridModel,
   HospitalityApiService,
   HospitalityKitchenTicket,
   HospitalityOrder,
@@ -41,7 +42,7 @@ import {
   RetailPosSession,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { positiveNumber } from '@shared/utils/decimal-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -50,6 +51,7 @@ import { validationTipKey } from '@shared/utils/validation-tip';
   selector: 'app-hospitality',
   styleUrl: './hospitality.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
@@ -112,11 +114,13 @@ export class HospitalityComponent implements OnInit {
   readonly ticketsLoading = signal<boolean>(false);
 
   // --- TAB 4: RESERVATIONS ---
-  readonly reservations = signal<HospitalityReservation[]>([]);
+  readonly reservationsGrid = new FetchGridModel<HospitalityReservation, { date: string; page?: number; per_page?: number; search?: string }>(
+    (query) => this.api.getReservations(query),
+  );
+  readonly reservations = this.reservationsGrid.items;
   /** Day shown in the reservations tab (Y-m-d): the API lists one day at a time. */
   readonly reservationDate = signal<string>(new Date().toLocaleDateString('en-CA'));
   readonly openPosSessions = signal<RetailPosSession[]>([]);
-  readonly reservationsLoading = signal<boolean>(false);
 
   // Derived metrics
   readonly totalActiveCovers = computed(() =>
@@ -196,7 +200,28 @@ export class HospitalityComponent implements OnInit {
     return control?.hasError('required') ? 'COMMON.FIELD_REQUIRED' : validationTipKey(control) || 'COMMON.VALIDATION.INVALID_VALUE';
   }
 
+  private readonly resGuestTpl = viewChild<TemplateRef<unknown>>('resGuestTpl');
+  private readonly resPartyTpl = viewChild<TemplateRef<unknown>>('resPartyTpl');
+  private readonly resStartsTpl = viewChild<TemplateRef<unknown>>('resStartsTpl');
+  private readonly resDurationTpl = viewChild<TemplateRef<unknown>>('resDurationTpl');
+  private readonly resStatusTpl = viewChild<TemplateRef<unknown>>('resStatusTpl');
+
+  protected readonly reservationColumns = computed<TableColumnDef<HospitalityReservation>[]>(() => [
+    { key: 'guest_name', header: 'HOSPITALITY.GUEST_NAME', customCellTemplate: this.resGuestTpl() },
+    { key: 'guest_phone', header: 'HOSPITALITY.GUEST_PHONE', valueGetter: (r) => r.guest_phone || '-' },
+    { key: 'party_size', header: 'HOSPITALITY.PARTY_SIZE', customCellTemplate: this.resPartyTpl() },
+    { key: 'starts_at', header: 'HOSPITALITY.DATE_TIME', customCellTemplate: this.resStartsTpl() },
+    { key: 'duration_minutes', header: 'HOSPITALITY.DURATION', customCellTemplate: this.resDurationTpl() },
+    { key: 'status', header: 'HOSPITALITY.STATUS', valueGetter: (r) => this.reservationStatusLabel(r.status), valueLabel: (value) => this.reservationStatusLabel(value), customCellTemplate: this.resStatusTpl() },
+    { key: 'notes', header: 'HOSPITALITY.NOTES', valueGetter: (r) => r.notes || '-' },
+  ]);
+
+  protected reservationStatusLabel(status: string): string {
+    return this.translate.instant('HOSPITALITY.RES_' + status.toUpperCase());
+  }
+
   constructor() {
+    this.reservationsGrid.setFilter({ date: this.reservationDate() });
     // A mixed payment needs the cash part (greater than zero), the other methods do not.
     this.payForm.controls.payment_method.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((method) => {
       const cash = this.payForm.controls.cash_amount;
@@ -209,7 +234,6 @@ export class HospitalityComponent implements OnInit {
     this.loadRooms();
     this.loadOrders();
     this.loadKitchenTickets();
-    this.loadReservations();
   }
 
   // --- ROOMS & TABLES METHODS ---
@@ -586,16 +610,7 @@ export class HospitalityComponent implements OnInit {
 
   // --- RESERVATIONS METHODS ---
   loadReservations(): void {
-    this.reservationsLoading.set(true);
-    this.api.getReservations({ date: this.reservationDate() }).subscribe({
-      next: (res) => {
-        this.reservations.set(res.data || []);
-        this.reservationsLoading.set(false);
-      },
-      error: () => {
-        this.reservationsLoading.set(false);
-      },
-    });
+    this.reservationsGrid.reload();
   }
 
   openCreateReservationModal(): void {
@@ -614,7 +629,7 @@ export class HospitalityComponent implements OnInit {
   onReservationDateChange(date: string): void {
     if (date) {
       this.reservationDate.set(date);
-      this.loadReservations();
+      this.reservationsGrid.setFilter({ date });
     }
   }
 

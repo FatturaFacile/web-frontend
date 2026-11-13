@@ -1,4 +1,5 @@
 /** CRM accounts, activities, segments, scoring rules, campaigns, reports and forecasts. */
+import { QueryFilterParams } from './api.models';
 
 export type CrmAccountTier = 'strategic' | 'enterprise' | 'mid_market' | 'smb' | 'standard';
 export type CrmAccountStatus = 'prospect' | 'active' | 'inactive' | 'churned';
@@ -226,6 +227,10 @@ export interface CrmCampaignMember {
   email?: string | null;
 }
 
+export interface CrmCampaignMemberFilterParams extends QueryFilterParams {
+  status?: string;
+}
+
 export interface CrmCampaignMemberPayload {
   contact_id?: string | null;
   lead_id?: string | null;
@@ -255,6 +260,10 @@ export interface CrmForecast {
   weighted_amount?: string | null;
   is_locked?: boolean | null;
   [key: string]: unknown;
+}
+
+export interface CrmForecastFilterParams extends QueryFilterParams {
+  period?: string;
 }
 
 export interface CrmForecastGeneratePayload {

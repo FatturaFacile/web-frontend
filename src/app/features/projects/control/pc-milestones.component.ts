@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -7,63 +7,42 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { applyServerErrors, AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectMilestone } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { applyServerErrors, AuthStore, FetchGridModel, I18nService, PermissionsService, ProjectControlApiService, ProjectMilestone, QueryFilterParams } from '@core';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-pc-milestones',
   styleUrl: './pc-milestones.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
-    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+    BaseTableComponent,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" class="mb-4" appIconAction="create" (click)="openModal(null)"></button>
     }
-    <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PRJ.NAME' | translate }}</th>
-          <th [nzSortFn]="'milestone_date' | gridSort" [nzFilters]="'milestone_date' | gridFilterList: table.nzData" [nzFilterFn]="'milestone_date' | gridFilterFn">{{ 'PRJ.DATE' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'billing_amount' | gridSort" [nzFilters]="'billing_amount' | gridFilterList: table.nzData" [nzFilterFn]="'billing_amount' | gridFilterFn">{{ 'PRJ.BILLING_AMOUNT' | translate }}</th>
-          <th nzAlign="right" [nzSortFn]="'billing_percentage' | gridSort" [nzFilters]="'billing_percentage' | gridFilterList: table.nzData" [nzFilterFn]="'billing_percentage' | gridFilterFn">{{ 'PRJ.BILLING_PERCENTAGE' | translate }}</th>
-          <th>{{ 'PRJ.STATUS' | translate }}</th>
-          <th>{{ 'PRJ.ACTIONS' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (milestone of table.data; track milestone.id) {
-          <tr>
-            <td>{{ milestone.name }}</td>
-            <td>{{ milestone.milestone_date }}</td>
-            <td nzAlign="right">{{ milestone.billing_amount | money: currency() }}</td>
-            <td nzAlign="right">{{ milestone.billing_percentage }}%</td>
-            <td>
-              <nz-tag [nzColor]="milestone.is_completed ? 'green' : 'default'">{{ (milestone.is_completed ? 'PRJ.COMPLETED' : 'PRJ.PLANNED') | translate }}</nz-tag>
-              @if (milestone.is_billed) {
-                <nz-tag nzColor="blue">{{ 'PRJ.BILLED' | translate }}</nz-tag>
-              }
-            </td>
-            <td>
-              @if (canWrite) {
-                @if (!milestone.is_billed) {
-                  <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openModal(milestone)"></button>
-                }
-                @if (!milestone.is_completed) {
-                  <button nz-button nzSize="small" type="button" (click)="complete(milestone)">{{ 'PRJ.COMPLETE' | translate }}</button>
-                }
-                @if (milestone.is_completed && !milestone.is_billed) {
-                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="billTarget.set(milestone)">{{ 'PRJ.BILL' | translate }}</button>
-                }
-              }
-            </td>
-          </tr>
+    <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="project-milestones" />
+    <ng-template #amountTpl let-milestone>{{ milestone.billing_amount | money: currency() }}</ng-template>
+    <ng-template #percentageTpl let-milestone>{{ milestone.billing_percentage }}%</ng-template>
+    <ng-template #statusTpl let-milestone>
+      <nz-tag [nzColor]="milestone.is_completed ? 'green' : 'default'">{{ (milestone.is_completed ? 'PRJ.COMPLETED' : 'PRJ.PLANNED') | translate }}</nz-tag>
+      @if (milestone.is_billed) {
+        <nz-tag nzColor="blue">{{ 'PRJ.BILLED' | translate }}</nz-tag>
+      }
+    </ng-template>
+    <ng-template #actionsTpl let-milestone>
+      @if (canWrite) {
+        @if (!milestone.is_billed) {
+          <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openModal(milestone)"></button>
         }
-      </tbody>
-    </nz-table>
+        @if (!milestone.is_completed) {
+          <button nz-button nzSize="small" type="button" (click)="complete(milestone)">{{ 'PRJ.COMPLETE' | translate }}</button>
+        }
+        @if (milestone.is_completed && !milestone.is_billed) {
+          <button nz-button nzSize="small" nzType="primary" type="button" (click)="billTarget.set(milestone)">{{ 'PRJ.BILL' | translate }}</button>
+        }
+      }
+    </ng-template>
 
     <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.MILESTONE_FORM' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="save" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
@@ -100,7 +79,7 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
     </nz-modal>
   `,
 })
-export class PcMilestonesComponent implements OnInit {
+export class PcMilestonesComponent {
   readonly projectId = input.required<string>();
 
   private readonly api = inject(ProjectControlApiService);
@@ -110,8 +89,34 @@ export class PcMilestonesComponent implements OnInit {
   protected readonly currency = inject(AuthStore).activeCurrency;
   protected readonly canWrite = inject(PermissionsService).canWrite('projects');
 
-  protected readonly items = signal<ProjectMilestone[]>([]);
-  protected readonly loading = signal(false);
+  /** Milestones of the project: paging, sorting, filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ProjectMilestone, QueryFilterParams>((query) => this.api.getMilestones(this.projectId(), query));
+
+  private readonly amountTpl = viewChild<TemplateRef<{ $implicit: ProjectMilestone; value: unknown }>>('amountTpl');
+  private readonly percentageTpl = viewChild<TemplateRef<{ $implicit: ProjectMilestone; value: unknown }>>('percentageTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: ProjectMilestone; value: unknown }>>('statusTpl');
+
+  private milestoneState(milestone: ProjectMilestone): string {
+    return milestone.is_billed ? 'billed' : milestone.is_completed ? 'completed' : 'planned';
+  }
+
+  protected readonly columns = computed<TableColumnDef<ProjectMilestone>[]>(() => {
+    this.i18n.currentLanguage();
+    const label = (state: string): string => this.i18n.translate({ billed: 'PRJ.BILLED', completed: 'PRJ.COMPLETED' }[state] ?? 'PRJ.PLANNED');
+    return [
+      { key: 'name', header: 'PRJ.NAME' },
+      { key: 'milestone_date', header: 'PRJ.DATE' },
+      { key: 'billing_amount', header: 'PRJ.BILLING_AMOUNT', align: 'right', customCellTemplate: this.amountTpl() },
+      { key: 'billing_percentage', header: 'PRJ.BILLING_PERCENTAGE', align: 'right', customCellTemplate: this.percentageTpl() },
+      {
+        key: 'state',
+        header: 'PRJ.STATUS',
+        valueGetter: (milestone) => label(this.milestoneState(milestone)),
+        valueLabel: label,
+        customCellTemplate: this.statusTpl(),
+      },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -126,19 +131,8 @@ export class PcMilestonesComponent implements OnInit {
     billing_percentage: this.fb.control<number | null>(null),
   });
 
-  ngOnInit(): void {
-    this.load();
-  }
-
   protected load(): void {
-    this.loading.set(true);
-    this.api.getMilestones(this.projectId()).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.reload();
   }
 
   protected openModal(milestone: ProjectMilestone | null): void {

@@ -32,11 +32,10 @@ describe('SettingsComponent', () => {
             id: 'br-1',
             name: 'Milano HQ',
             code: 'HQ',
-            city: 'Milano',
-            country: 'IT',
-            is_headquarters: true,
+            is_primary: true,
           },
         ],
+        meta: { total: 1, current_page: 1, last_page: 1, per_page: 10 },
       }),
     ),
     getTenantUsers: vi.fn().mockReturnValue(
@@ -68,13 +67,15 @@ describe('SettingsComponent', () => {
         data: [
           {
             id: 'log-1',
-            created_at: '2026-11-08T10:00:00Z',
-            user_name: 'Admin User',
-            event: 'login',
-            auditable_type: 'auth',
+            event_timestamp: '2026-11-08T10:00:00Z',
+            user: { id: 'u-1', name: 'Admin User' },
+            action: 'LOGIN',
+            event: 'LOGIN',
+            module_code: 'auth',
             ip_address: '127.0.0.1',
           },
         ],
+        meta: { total: 1, current_page: 1, last_page: 1, per_page: 10 },
       }),
     ),
     syncExchangeRates: vi.fn().mockReturnValue(of({ data: { synced_count: 5 } })),
@@ -108,8 +109,9 @@ describe('SettingsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('creates the component and loads initial tenant data', () => {
+  it('creates the component and loads initial tenant data', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(component).toBeTruthy();
     expect(mockSettingsApi.getTenantSettings).toHaveBeenCalled();
     expect(mockSettingsApi.getBranches).toHaveBeenCalled();

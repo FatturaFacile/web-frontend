@@ -7,7 +7,7 @@ import {
   CrossBorderEmployee,
   WithholdingTaxParameters,
   EmployeeResource,
-  FrontierWorkerResource,
+  FrontierOverview,
   HireEmployeePayload,
   LeaveRequestResource,
   PaginatedResponse,
@@ -117,9 +117,10 @@ export class HrApiService {
     });
   }
 
-  getFrontierWorkers(params?: QueryFilterParams): Observable<PaginatedResponse<FrontierWorkerResource>> {
-    return this.http.get<PaginatedResponse<FrontierWorkerResource>>(`${this.payrollBase}/frontier-workers`, {
-      params: params ? toHttpParams(params) : undefined,
+  /** The frontier workers of a year, assessed in PHP (not a list endpoint). */
+  getFrontierWorkers(year: number): Observable<ApiResponse<FrontierOverview>> {
+    return this.http.get<ApiResponse<FrontierOverview>>(`${this.payrollBase}/frontier-workers`, {
+      params: toHttpParams({ year }),
     });
   }
 }

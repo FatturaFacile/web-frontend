@@ -8,57 +8,40 @@
   }
 </div>
 
-<nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
-  <thead>
-    <tr>
-      <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'hrmCommon.title' | translate }}</th>
-      <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th [nzSortFn]="'expiry_date' | gridSort" [nzFilters]="'expiry_date' | gridFilterList: table.nzData" [nzFilterFn]="'expiry_date' | gridFilterFn">{{ 'hrmEmp.expiryDate' | translate }}</th>
-      <th [nzSortFn]="'retention_until' | gridSort" [nzFilters]="'retention_until' | gridFilterList: table.nzData" [nzFilterFn]="'retention_until' | gridFilterFn">{{ 'hrmEmp.retentionUntil' | translate }}</th>
-      <th>{{ 'hrmEmp.flags' | translate }}</th>
-      <th>{{ 'hrmCommon.actions' | translate }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (doc of table.data; track doc.id) {
-      <tr>
-        <td>{{ doc.title }}</td>
-        <td>{{ 'hrmEmp.docType.' + doc.document_type | translate }}</td>
-        <td>{{ doc.expiry_date | date: 'mediumDate' }}</td>
-        <td>{{ doc.retention_until | date: 'mediumDate' }}</td>
-        <td>
-          @if (doc.contains_health_data) {
-            <nz-tag nzColor="red">{{ 'hrmEmp.healthData' | translate }}</nz-tag>
-          }
-          @if (doc.is_confidential) {
-            <nz-tag nzColor="orange">{{ 'hrmEmp.confidential' | translate }}</nz-tag>
-          }
-          @if (doc.visible_to_employee) {
-            <nz-tag nzColor="blue">{{ 'hrmEmp.visibleToEmployee' | translate }}</nz-tag>
-          }
-        </td>
-        <td>
-          <button nz-button nzSize="small" type="button" (click)="download(doc)">
-            <nz-icon nzType="download" />
-            {{ 'hrmCommon.download' | translate }}
-          </button>
-          @if (canWrite()) {
-            <button
-              nz-button
-              nzSize="small"
-              nzDanger
-              type="button"
-              nz-popconfirm
-              [nzPopconfirmTitle]="'hrmShared.confirmDelete' | translate"
-              (nzOnConfirm)="remove(doc)"
-              appIconAction="delete"
-            ></button>
-          }
-        </td>
-      </tr>
-    }
-  </tbody>
-</nz-table>
+<app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{}" exportFileName="employee-documents" />
+
+<ng-template #typeTpl let-doc>{{ 'hrmEmp.docType.' + doc.document_type | translate }}</ng-template>
+<ng-template #expiryTpl let-doc>{{ doc.expiry_date | date: 'mediumDate' }}</ng-template>
+<ng-template #retentionTpl let-doc>{{ doc.retention_until | date: 'mediumDate' }}</ng-template>
+<ng-template #flagsTpl let-doc>
+  @if (doc.contains_health_data) {
+    <nz-tag nzColor="red">{{ 'hrmEmp.healthData' | translate }}</nz-tag>
+  }
+  @if (doc.is_confidential) {
+    <nz-tag nzColor="orange">{{ 'hrmEmp.confidential' | translate }}</nz-tag>
+  }
+  @if (doc.visible_to_employee) {
+    <nz-tag nzColor="blue">{{ 'hrmEmp.visibleToEmployee' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #actionsTpl let-doc>
+  <button nz-button nzSize="small" type="button" (click)="download(doc)">
+    <nz-icon nzType="download" />
+    {{ 'hrmCommon.download' | translate }}
+  </button>
+  @if (canWrite()) {
+    <button
+      nz-button
+      nzSize="small"
+      nzDanger
+      type="button"
+      nz-popconfirm
+      [nzPopconfirmTitle]="'hrmShared.confirmDelete' | translate"
+      (nzOnConfirm)="remove(doc)"
+      appIconAction="delete"
+    ></button>
+  }
+</ng-template>
 
 <nz-modal
   okAction="save"

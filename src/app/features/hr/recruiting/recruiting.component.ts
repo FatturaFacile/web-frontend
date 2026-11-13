@@ -8,9 +8,8 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { ApplicationHireComponent } from './application-hire.component';
 import { RecruitingSettingsComponent } from './recruiting-settings.component';
 
@@ -66,14 +65,20 @@ export class RecruitingComponent implements OnInit {
     this.stages().map((s) => ({ value: s.id, label: s.name })),
   );
 
+  /** The posting options of the applications need every posting, not the filtered page of the grid. */
+  private loadPostings(): void {
+    this.api.getJobPostings().subscribe({ next: (res) => this.postings.set(res.data) });
+  }
+
   protected readonly postingsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmRecruiting.postings',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getJobPostings().pipe(
-        tap((res) => this.postings.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.loadPostings();
+      }
+      return crudPage(this.api.getJobPostings(query));
+    },
     create: (payload) => this.api.createJobPosting(payload as never),
     rowActions: [
       {
@@ -103,9 +108,11 @@ export class RecruitingComponent implements OnInit {
   protected readonly applicationsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmRecruiting.applications',
     canWrite: this.canWrite(),
-    list: () => {
-      this.api.getPipelineStages().subscribe({ next: (res) => this.stages.set(res.data) });
-      return this.api.getJobApplications({ per_page: 100 }).pipe(map((res) => res.data as unknown as Row[]));
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.api.getPipelineStages().subscribe({ next: (res) => this.stages.set(res.data) });
+      }
+      return crudPage(this.api.getJobApplications(query));
     },
     create: (payload) => this.api.createJobApplication(payload as never),
     remove: (id) => this.api.deleteJobApplication(id),
@@ -151,9 +158,9 @@ export class RecruitingComponent implements OnInit {
         createOnly: true,
         options: () => this.postingOptions(),
       },
-      { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true, maxLength: 100 },
-      { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', required: true, maxLength: 100 },
-      { key: 'email', labelKey: 'hrmRecruiting.email', type: 'text', required: true, maxLength: 180 },
+      { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true, maxLength: 100, noGrid: true },
+      { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', required: true, maxLength: 100, noGrid: true },
+      { key: 'email', labelKey: 'hrmRecruiting.email', type: 'text', required: true, maxLength: 180, noGrid: true },
       { key: 'phone', labelKey: 'hrmRecruiting.phone', type: 'text', nullable: true, maxLength: 50, column: false },
       { key: 'source', labelKey: 'hrmRecruiting.source', type: 'text', nullable: true, maxLength: 60, column: false },
       { key: 'cover_note', labelKey: 'hrmRecruiting.coverNote', type: 'textarea', nullable: true, maxLength: 20000, column: false },

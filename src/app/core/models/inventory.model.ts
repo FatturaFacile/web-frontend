@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 /** A catalog product as the API returns it (Product model: the money fields arrive as decimal strings). */
 export interface ProductItem {
   id: string;
@@ -14,6 +16,25 @@ export interface ProductItem {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+/** Query of GET /inventory/movements (grid parameters travel in the same object). */
+export interface StockMovementFilterParams extends QueryFilterParams {
+  stock_item_id?: string;
+  warehouse_id?: string;
+  movement_type?: string;
+}
+
+/** Query of GET /inventory/adjustments. */
+export interface InventoryAdjustmentFilterParams extends QueryFilterParams {
+  warehouse_id?: string;
+  status?: string;
+}
+
+/** Query of GET /inventory/counts. */
+export interface InventoryCountFilterParams extends QueryFilterParams {
+  warehouse_id?: string;
+  status?: string;
 }
 
 export interface ProductFilterParams {

@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -24,20 +24,23 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  FetchGridModel,
   I18nService,
   serverErrorMessage,
   WorkflowApiService,
   WorkflowAuditEntryResource,
   WorkflowAuditVerification,
   WorkflowCreateDelegationRequest,
+  WorkflowDefinitionParams,
   WorkflowDefinitionResource,
   WorkflowDelegationModel,
   WorkflowEscalationRule,
+  WorkflowInstanceParams,
   WorkflowInstanceResource,
   WorkflowInstanceStatus,
   WorkflowSaveDefinitionRequest,
@@ -45,9 +48,11 @@ import {
   WorkflowSlaReport,
   WorkflowStartWorkflowRequest,
   WorkflowTask,
+  WorkflowTaskParams,
+  QueryFilterParams,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { endsNotBefore, inFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -87,6 +92,7 @@ function escalationAfterReminderValidator(control: AbstractControl<number>): Val
   selector: 'app-workflows',
   styleUrl: './workflows.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
@@ -116,7 +122,7 @@ function escalationAfterReminderValidator(control: AbstractControl<number>): Val
   ],
   templateUrl: './workflows.component.html',
 })
-export class WorkflowsComponent implements OnInit {
+export class WorkflowsComponent {
   private readonly translate = inject(TranslateService);
   private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -128,11 +134,9 @@ export class WorkflowsComponent implements OnInit {
   protected selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: INBOX / TASKS ---
-  protected readonly tasks = signal<WorkflowTask[]>([]);
-  protected readonly tasksLoading = signal<boolean>(false);
-  protected readonly tasksTotal = signal<number>(0);
-  protected readonly tasksPageIndex = signal<number>(1);
-  protected readonly tasksPageSize = signal<number>(10);
+  /** Inbox of the user: paging, sorting, column filters and grouping run on the API. */
+  protected readonly tasksGrid = new FetchGridModel<WorkflowTask, WorkflowTaskParams>((query) => this.workflowApi.getMyTasks(query));
+  protected readonly tasks = computed(() => this.tasksGrid.items());
   protected readonly taskFilterCode = signal<string>('');
 
   // Decision Modal
@@ -143,11 +147,10 @@ export class WorkflowsComponent implements OnInit {
   protected decisionSubmitting = signal<boolean>(false);
 
   // --- TAB 2: INSTANCES ---
-  protected readonly instances = signal<WorkflowInstanceResource[]>([]);
-  protected readonly instancesLoading = signal<boolean>(false);
-  protected readonly instancesTotal = signal<number>(0);
-  protected readonly instancesPageIndex = signal<number>(1);
-  protected readonly instancesPageSize = signal<number>(10);
+  protected readonly instancesGrid = new FetchGridModel<WorkflowInstanceResource, WorkflowInstanceParams>((query) =>
+    this.workflowApi.getInstances(query),
+  );
+  protected readonly instances = computed(() => this.instancesGrid.items());
   protected readonly instanceStatusFilter = signal<WorkflowInstanceStatus | ''>('');
 
   // Start Instance Modal
@@ -173,11 +176,10 @@ export class WorkflowsComponent implements OnInit {
   protected auditInstanceId = signal<string>('');
 
   // --- TAB 3: DEFINITIONS ---
-  protected readonly definitions = signal<WorkflowDefinitionResource[]>([]);
-  protected readonly definitionsLoading = signal<boolean>(false);
-  protected readonly definitionsTotal = signal<number>(0);
-  protected readonly definitionsPageIndex = signal<number>(1);
-  protected readonly definitionsPageSize = signal<number>(10);
+  protected readonly definitionsGrid = new FetchGridModel<WorkflowDefinitionResource, WorkflowDefinitionParams>((query) =>
+    this.workflowApi.getDefinitions(query),
+  );
+  protected readonly definitions = computed(() => this.definitionsGrid.items());
   protected readonly definitionSearch = signal<string>('');
 
   // Create Definition Modal
@@ -191,8 +193,9 @@ export class WorkflowsComponent implements OnInit {
   });
 
   // --- TAB 4: DELEGATIONS & ESCALATION RULES ---
-  protected readonly delegations = signal<WorkflowDelegationModel[]>([]);
-  protected readonly delegationsLoading = signal<boolean>(false);
+  protected readonly delegationsGrid = new FetchGridModel<WorkflowDelegationModel, QueryFilterParams>((query) =>
+    this.workflowApi.getDelegations(query),
+  );
   protected createDelegationVisible = signal<boolean>(false);
   protected delegationSubmitting = signal<boolean>(false);
   protected readonly delegationForm = this.fb.group({
@@ -203,8 +206,9 @@ export class WorkflowsComponent implements OnInit {
     reason: ['', [Validators.maxLength(1000)]],
   });
 
-  protected readonly escalationRules = signal<WorkflowEscalationRule[]>([]);
-  protected readonly rulesLoading = signal<boolean>(false);
+  protected readonly rulesGrid = new FetchGridModel<WorkflowEscalationRule, QueryFilterParams>((query) =>
+    this.workflowApi.getEscalationRules(query),
+  );
   protected createRuleVisible = signal<boolean>(false);
   protected ruleSubmitting = signal<boolean>(false);
   protected readonly ruleForm = this.fb.group({
@@ -246,56 +250,166 @@ export class WorkflowsComponent implements OnInit {
     return key ? this.i18n.translate(key) : '';
   }
 
+  // --- Server-driven grid columns ---
+  private readonly taskProcessTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskProcessTpl');
+  private readonly taskDocumentTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskDocumentTpl');
+  private readonly taskStepTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskStepTpl');
+  private readonly taskInitiatorTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskInitiatorTpl');
+  private readonly taskDueTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskDueTpl');
+  private readonly taskStateTpl = viewChild<TemplateRef<{ $implicit: WorkflowTask; value: unknown }>>('taskStateTpl');
+  private readonly instanceIdTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceIdTpl');
+  private readonly instanceProcessTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceProcessTpl');
+  private readonly instanceDocumentTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceDocumentTpl');
+  private readonly instanceStatusTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceStatusTpl');
+  private readonly instanceStartedTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceStartedTpl');
+  private readonly instanceCompletedTpl = viewChild<TemplateRef<{ $implicit: WorkflowInstanceResource; value: unknown }>>('instanceCompletedTpl');
+  private readonly definitionCodeTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionCodeTpl');
+  private readonly definitionNameTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionNameTpl');
+  private readonly definitionTargetTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionTargetTpl');
+  private readonly definitionVersionTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionVersionTpl');
+  private readonly definitionPublishedTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionPublishedTpl');
+  private readonly definitionActiveTpl = viewChild<TemplateRef<{ $implicit: WorkflowDefinitionResource; value: unknown }>>('definitionActiveTpl');
+  private readonly delegationScopeTpl = viewChild<TemplateRef<{ $implicit: WorkflowDelegationModel; value: unknown }>>('delegationScopeTpl');
+  private readonly delegationPeriodTpl = viewChild<TemplateRef<{ $implicit: WorkflowDelegationModel; value: unknown }>>('delegationPeriodTpl');
+  private readonly delegationStateTpl = viewChild<TemplateRef<{ $implicit: WorkflowDelegationModel; value: unknown }>>('delegationStateTpl');
+  private readonly ruleNameTpl = viewChild<TemplateRef<{ $implicit: WorkflowEscalationRule; value: unknown }>>('ruleNameTpl');
+  private readonly ruleReminderTpl = viewChild<TemplateRef<{ $implicit: WorkflowEscalationRule; value: unknown }>>('ruleReminderTpl');
+  private readonly ruleEscalationTpl = viewChild<TemplateRef<{ $implicit: WorkflowEscalationRule; value: unknown }>>('ruleEscalationTpl');
+  private readonly ruleTargetTpl = viewChild<TemplateRef<{ $implicit: WorkflowEscalationRule; value: unknown }>>('ruleTargetTpl');
+
+  private taskState(task: WorkflowTask): string {
+    return task.escalated_at ? 'escalated' : task.is_overdue ? 'overdue' : 'pending';
+  }
+
+  protected readonly taskColumns = computed<TableColumnDef<WorkflowTask>[]>(() => {
+    this.i18n.currentLanguage();
+    const label = (state: string): string =>
+      this.i18n.translate({ escalated: 'WORKFLOWS.LBL_ESCALATED', overdue: 'WORKFLOWS.LBL_SLA_BREACH' }[state] ?? 'WORKFLOWS.STATE_PENDING');
+    return [
+      { key: 'workflow_name', serverKey: 'instance.definition.name', header: 'WORKFLOWS.PROCESS', customCellTemplate: this.taskProcessTpl() },
+      { key: 'approvable_type', serverKey: 'instance.approvable_type', header: 'WORKFLOWS.DOCUMENT', customCellTemplate: this.taskDocumentTpl() },
+      { key: 'node_name', serverKey: 'node.name', header: 'WORKFLOWS.STEP', customCellTemplate: this.taskStepTpl() },
+      {
+        key: 'initiator_name',
+        serverKey: 'instance.creator.name',
+        header: 'WORKFLOWS.INITIATOR',
+        valueGetter: (task) => task.initiator_name || this.i18n.translate('WORKFLOWS.SYSTEM'),
+        valueLabel: (value) => value,
+        customCellTemplate: this.taskInitiatorTpl(),
+      },
+      { key: 'due_at', header: 'WORKFLOWS.DUE_AT', customCellTemplate: this.taskDueTpl() },
+      {
+        key: 'state',
+        header: 'COMMON.STATUS',
+        valueGetter: (task) => label(this.taskState(task)),
+        valueLabel: label,
+        customCellTemplate: this.taskStateTpl(),
+      },
+    ];
+  });
+
+  protected readonly instanceColumns = computed<TableColumnDef<WorkflowInstanceResource>[]>(() => [
+    { key: 'id', header: 'ID', filterable: false, groupable: false, customCellTemplate: this.instanceIdTpl() },
+    {
+      key: 'process',
+      serverKey: 'definition.name',
+      header: 'WORKFLOWS.PROCESS',
+      valueGetter: (inst) => inst.definition?.name || inst.workflow_definition_id,
+      customCellTemplate: this.instanceProcessTpl(),
+    },
+    { key: 'approvable_type', header: 'WORKFLOWS.DOCUMENT', customCellTemplate: this.instanceDocumentTpl() },
+    {
+      key: 'status',
+      header: 'COMMON.STATUS',
+      valueGetter: (inst) => inst.status.toUpperCase(),
+      valueLabel: (value) => value.toUpperCase(),
+      customCellTemplate: this.instanceStatusTpl(),
+    },
+    { key: 'started_at', header: 'WORKFLOWS.STARTED_AT', customCellTemplate: this.instanceStartedTpl() },
+    { key: 'completed_at', header: 'WORKFLOWS.COMPLETED_AT', customCellTemplate: this.instanceCompletedTpl() },
+  ]);
+
+  protected readonly definitionColumns = computed<TableColumnDef<WorkflowDefinitionResource>[]>(() => {
+    this.i18n.currentLanguage();
+    const published = (status: string): string => this.i18n.translate(status === 'published' ? 'WORKFLOWS.LBL_PUBBLICATO' : 'WORKFLOWS.LBL_BOZZA');
+    return [
+      { key: 'code', header: 'WORKFLOWS.CODE', customCellTemplate: this.definitionCodeTpl() },
+      { key: 'name', header: 'COMMON.NAME', customCellTemplate: this.definitionNameTpl() },
+      { key: 'target_entity_type', header: 'WORKFLOWS.TARGET_DOC', customCellTemplate: this.definitionTargetTpl() },
+      { key: 'version', header: 'WORKFLOWS.VERSION', customCellTemplate: this.definitionVersionTpl() },
+      {
+        key: 'status',
+        header: 'WORKFLOWS.PUBLISHED',
+        valueGetter: (def) => published(def.status),
+        valueLabel: published,
+        customCellTemplate: this.definitionPublishedTpl(),
+      },
+      {
+        key: 'is_active',
+        serverKey: 'activity',
+        header: 'COMMON.STATUS',
+        valueGetter: (def) => this.i18n.translate(def.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_INACTIVE'),
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_INACTIVE'),
+        customCellTemplate: this.definitionActiveTpl(),
+      },
+    ];
+  });
+
+  protected readonly delegationColumns = computed<TableColumnDef<WorkflowDelegationModel>[]>(() => {
+    this.i18n.currentLanguage();
+    const scope = (value: string): string => this.i18n.translate('WORKFLOWS.SCOPE_' + (value || 'all').toUpperCase());
+    return [
+      {
+        key: 'delegate_user_name',
+        serverKey: 'delegate.name',
+        header: 'WORKFLOWS.DELEGATED_TO',
+        valueGetter: (del) => del.delegate_user_name || del.delegate_user_id,
+      },
+      {
+        key: 'scope',
+        header: 'WORKFLOWS.SCOPE',
+        valueGetter: (del) => scope(del.scope ?? 'all'),
+        valueLabel: scope,
+        customCellTemplate: this.delegationScopeTpl(),
+      },
+      { key: 'starts_at', header: 'WORKFLOWS.VALID_PERIOD', customCellTemplate: this.delegationPeriodTpl() },
+      {
+        key: 'is_active',
+        serverKey: 'state',
+        header: 'COMMON.STATUS',
+        valueGetter: (del) => this.i18n.translate(del.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_EXPIRED'),
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_EXPIRED'),
+        customCellTemplate: this.delegationStateTpl(),
+      },
+    ];
+  });
+
+  protected readonly ruleColumns = computed<TableColumnDef<WorkflowEscalationRule>[]>(() => [
+    { key: 'name', header: 'COMMON.NAME', customCellTemplate: this.ruleNameTpl() },
+    { key: 'reminder_hours', header: 'WORKFLOWS.REMINDER_H', customCellTemplate: this.ruleReminderTpl() },
+    { key: 'escalation_hours', header: 'WORKFLOWS.ESCALATION_H', customCellTemplate: this.ruleEscalationTpl() },
+    { key: 'escalate_to_type', header: 'WORKFLOWS.ESCALATE_TO', customCellTemplate: this.ruleTargetTpl() },
+  ]);
+
   // --- TAB 5: SLA REPORT ---
   protected readonly slaReport = signal<WorkflowSlaReport | null>(null);
   protected readonly slaLoading = signal<boolean>(false);
 
-  ngOnInit(): void {
-    this.loadTasks();
-  }
-
   protected onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
-    if (index === 0 && this.tasks().length === 0) {
-      this.loadTasks();
-    } else if (index === 1 && this.instances().length === 0) {
-      this.loadInstances();
-    } else if (index === 2 && this.definitions().length === 0) {
-      this.loadDefinitions();
-    } else if (index === 3) {
-      this.loadDelegations();
-      this.loadEscalationRules();
-    } else if (index === 4) {
+    if (index === 4) {
       this.loadSlaReport();
     }
   }
 
   // --- TASKS ACTIONS ---
   protected loadTasks(): void {
-    this.tasksLoading.set(true);
-    this.workflowApi
-      .getMyTasks({
-        workflow_code: this.taskFilterCode() || undefined,
-        page: this.tasksPageIndex(),
-        per_page: this.tasksPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.tasks.set(res.data);
-          this.tasksTotal.set(res.meta?.total ?? res.data.length);
-          this.tasksLoading.set(false);
-        },
-        error: () => {
-          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ATTIVITA_IN'));
-          this.tasksLoading.set(false);
-        },
-      });
+    this.tasksGrid.reload();
   }
 
-  protected onTasksTableQueryChange(params: NzTableQueryParams): void {
-    this.tasksPageIndex.set(params.pageIndex);
-    this.tasksPageSize.set(params.pageSize);
-    this.loadTasks();
+  protected onTaskCodeChange(code: string): void {
+    this.taskFilterCode.set(code);
+    this.tasksGrid.setFilter({ definition_code: code || undefined });
   }
 
   protected openDecisionModal(task: WorkflowTask, decision: 'approved' | 'rejected'): void {
@@ -338,30 +452,12 @@ export class WorkflowsComponent implements OnInit {
 
   // --- INSTANCES ACTIONS ---
   protected loadInstances(): void {
-    this.instancesLoading.set(true);
-    this.workflowApi
-      .getInstances({
-        status: (this.instanceStatusFilter() || undefined) as WorkflowInstanceStatus | undefined,
-        page: this.instancesPageIndex(),
-        per_page: this.instancesPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.instances.set(res.data);
-          this.instancesTotal.set(res.meta?.total ?? res.data.length);
-          this.instancesLoading.set(false);
-        },
-        error: () => {
-          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ISTANZE_DI'));
-          this.instancesLoading.set(false);
-        },
-      });
+    this.instancesGrid.reload();
   }
 
-  protected onInstancesTableQueryChange(params: NzTableQueryParams): void {
-    this.instancesPageIndex.set(params.pageIndex);
-    this.instancesPageSize.set(params.pageSize);
-    this.loadInstances();
+  protected onInstanceStatusChange(status: WorkflowInstanceStatus | ''): void {
+    this.instanceStatusFilter.set(status);
+    this.instancesGrid.setFilter({ status: status || undefined });
   }
 
   protected openStartModal(): void {
@@ -443,30 +539,12 @@ export class WorkflowsComponent implements OnInit {
 
   // --- DEFINITIONS ACTIONS ---
   protected loadDefinitions(): void {
-    this.definitionsLoading.set(true);
-    this.workflowApi
-      .getDefinitions({
-        search: this.definitionSearch() || undefined,
-        page: this.definitionsPageIndex(),
-        per_page: this.definitionsPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.definitions.set(res.data);
-          this.definitionsTotal.set(res.meta?.total ?? res.data.length);
-          this.definitionsLoading.set(false);
-        },
-        error: () => {
-          this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DEFINIZIONI_DI'));
-          this.definitionsLoading.set(false);
-        },
-      });
+    this.definitionsGrid.reload();
   }
 
-  protected onDefinitionsTableQueryChange(params: NzTableQueryParams): void {
-    this.definitionsPageIndex.set(params.pageIndex);
-    this.definitionsPageSize.set(params.pageSize);
-    this.loadDefinitions();
+  protected onDefinitionSearchChange(term: string): void {
+    this.definitionSearch.set(term);
+    this.definitionsGrid.setFilter({ search: term || undefined });
   }
 
   protected openCreateDefModal(): void {
@@ -527,17 +605,7 @@ export class WorkflowsComponent implements OnInit {
 
   // --- DELEGATIONS & RULES ACTIONS ---
   protected loadDelegations(): void {
-    this.delegationsLoading.set(true);
-    this.workflowApi.getDelegations().subscribe({
-      next: (res) => {
-        this.delegations.set(res.data);
-        this.delegationsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DELEGHE'));
-        this.delegationsLoading.set(false);
-      },
-    });
+    this.delegationsGrid.reload();
   }
 
   protected openCreateDelegationModal(): void {
@@ -594,17 +662,7 @@ export class WorkflowsComponent implements OnInit {
   }
 
   protected loadEscalationRules(): void {
-    this.rulesLoading.set(true);
-    this.workflowApi.getEscalationRules().subscribe({
-      next: (res) => {
-        this.escalationRules.set(res.data);
-        this.rulesLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('WORKFLOWS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_REGOLE_DI'));
-        this.rulesLoading.set(false);
-      },
-    });
+    this.rulesGrid.reload();
   }
 
   protected openCreateRuleModal(): void {

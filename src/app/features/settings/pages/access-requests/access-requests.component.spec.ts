@@ -8,6 +8,9 @@ import { AdminApiService } from '@core';
 import { icons } from '../../../../icons-provider';
 import { AccessRequestsComponent } from './access-requests.component';
 
+/** The grid reloads after a short debounce. */
+const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 400));
+
 interface Submittable { submit(p: object): { subscribe(o?: object): void } }
 
 const request = {
@@ -66,8 +69,10 @@ describe('AccessRequestsComponent', () => {
     });
   });
 
-  it('lists the pending requests by default and filters by status', () => {
+  it('lists the pending requests by default and filters by status', async () => {
     const { page, fixture } = setup();
+    await settle();
+    fixture.detectChanges();
     expect(api.getTenantAccessRequests).toHaveBeenCalledWith({
       status: 'pending',
       per_page: 20,
@@ -75,6 +80,7 @@ describe('AccessRequestsComponent', () => {
     });
     expect(fixture.nativeElement.textContent).toContain('Acme SA');
     page.setStatus(null);
+    await settle();
     expect(api.getTenantAccessRequests).toHaveBeenLastCalledWith({
       status: null,
       per_page: 20,
@@ -82,13 +88,15 @@ describe('AccessRequestsComponent', () => {
     });
   });
 
-  it('approves with the chosen role and reloads', () => {
+  it('approves with the chosen role and reloads', async () => {
     api.approveTenantAccessRequest.mockReturnValue(of({ data: request }));
     const { page } = setup();
+    await settle();
     page.open(request, 'approve');
     page.decisionConfig().submit({ role: 'accountant' }).subscribe();
     expect(api.approveTenantAccessRequest).toHaveBeenCalledWith('r1', { role: 'accountant' });
     expect(page.decision()).toBeNull();
+    await settle();
     expect(api.getTenantAccessRequests).toHaveBeenCalledTimes(2);
   });
 
@@ -125,11 +133,12 @@ describe('AccessRequestsComponent', () => {
     expect(api.setDocumentQuota).toHaveBeenLastCalledWith('t1', null);
   });
 
-  it('tells a user who is not a platform administrator that the operation is forbidden', () => {
+  it('tells a user who is not a platform administrator that the operation is forbidden', async () => {
     api.getTenantAccessRequests.mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 403 })),
     );
     setup();
+    await settle();
     expect(message.error).toHaveBeenCalled();
   });
 });

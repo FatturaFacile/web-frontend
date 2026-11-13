@@ -122,12 +122,18 @@ describe('ConstructionComponent', () => {
     status: 'active',
   };
 
+  /** A list response as the grids read it: rows plus pagination meta. */
+  const page = <T>(rows: T[]) => ({
+    data: rows,
+    meta: { current_page: 1, from: 1, to: rows.length, last_page: 1, per_page: 15, total: rows.length },
+  });
+
   const mockConstructionApi = {
-    getSites: vi.fn().mockReturnValue(of({ data: [mockSite] })),
+    getSites: vi.fn().mockReturnValue(of(page([mockSite]))),
     createSite: vi.fn().mockReturnValue(of({ data: mockSite })),
-    getProgressBillings: vi.fn().mockReturnValue(of({ data: [mockSal] })),
+    getProgressBillings: vi.fn().mockReturnValue(of(page([mockSal]))),
     createProgressBilling: vi.fn().mockReturnValue(of({ data: mockSal })),
-    getBids: vi.fn().mockReturnValue(of({ data: [mockBid] })),
+    getBids: vi.fn().mockReturnValue(of(page([mockBid]))),
     getBid: vi.fn().mockReturnValue(of({ data: { ...mockBid, positions: [mockPosition] }, meta: { net_total: '25200.00' } })),
     createBid: vi.fn().mockReturnValue(of({ data: mockBid })),
     changeBidStatus: vi.fn().mockReturnValue(of({ data: { ...mockBid, status: 'accepted' } })),
@@ -136,14 +142,14 @@ describe('ConstructionComponent', () => {
     getBidBillings: vi.fn().mockReturnValue(of({ data: [mockBidBilling] })),
     issueBidBilling: vi.fn().mockReturnValue(of({ data: mockBidBilling })),
     getBudgetControl: vi.fn().mockReturnValue(of({ data: mockBudgetControl })),
-    getSiteDiary: vi.fn().mockReturnValue(of({ data: [mockDiary] })),
+    getSiteDiary: vi.fn().mockReturnValue(of(page([mockDiary]))),
     writeSiteDiary: vi.fn().mockReturnValue(of({ data: mockDiary })),
-    getSiteDocuments: vi.fn().mockReturnValue(of({ data: [mockDocument] })),
+    getSiteDocuments: vi.fn().mockReturnValue(of(page([mockDocument]))),
     addSiteDocument: vi.fn().mockReturnValue(of({ data: mockDocument })),
     getExpiringDocuments: vi.fn().mockReturnValue(of({ data: [] })),
     getSubcontractors: vi.fn().mockReturnValue(of({ data: [mockSubcontractor] })),
     createSubcontractor: vi.fn().mockReturnValue(of({ data: mockSubcontractor })),
-    getSiteSubcontracts: vi.fn().mockReturnValue(of({ data: [mockSubcontract] })),
+    getSiteSubcontracts: vi.fn().mockReturnValue(of(page([mockSubcontract]))),
     createSiteSubcontract: vi.fn().mockReturnValue(of({ data: mockSubcontract })),
     certifySubcontractWork: vi.fn().mockReturnValue(of({ data: mockSubcontract })),
   };
@@ -177,7 +183,9 @@ describe('ConstructionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should initialize and load sites, progress billings, bids, documents, and subcontractors', () => {
+  it('should initialize and load sites, progress billings, bids, documents, and subcontractors', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(mockConstructionApi.getSites).toHaveBeenCalled();
     expect(mockConstructionApi.getProgressBillings).toHaveBeenCalled();
@@ -186,6 +194,9 @@ describe('ConstructionComponent', () => {
     expect(mockConstructionApi.getSubcontractors).toHaveBeenCalled();
     expect(component.sites().length).toBe(1);
     expect(component.bids().length).toBe(1);
+    expect(component.sitesGrid.items().length).toBe(1);
+    expect(component.bidsGrid.items().length).toBe(1);
+    expect(component.salGrid.totalCount()).toBe(1);
     expect(component.subcontractors().length).toBe(1);
     expect(component.contactNameOf('contact-1')).toBe('Residenza Bellavista SA');
   });

@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export type WorkspaceProvider = 'google' | 'microsoft';
 export type WorkspaceScope = 'calendar' | 'mail';
 export type WorkspaceItemKind = 'calendar_event' | 'email';
@@ -38,7 +40,7 @@ export interface WorkspaceItemResource {
   ends_at?: string | null;
 }
 
-export interface WorkspaceItemQueryParams {
+export interface WorkspaceItemQueryParams extends QueryFilterParams {
   kind?: WorkspaceItemKind | string;
   contact_id?: string;
   per_page?: number;

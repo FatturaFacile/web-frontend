@@ -1,8 +1,10 @@
 export interface SystemBackup {
   id: string;
   filename: string;
-  size_bytes: number;
-  status: 'completed' | 'in_progress' | 'failed';
+  file_size_bytes: number | null;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error_message?: string | null;
+  completed_at?: string | null;
   created_at: string;
 }
 

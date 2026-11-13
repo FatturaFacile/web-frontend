@@ -18,6 +18,19 @@ export interface TireHotelRecord {
   created_at: string | null;
   updated_at: string | null;
   deleted_at: string | null;
+  /** Vehicle data added by the seasonal switch plan. */
+  license_plate?: string | null;
+  make?: string | null;
+  vehicle_model?: string | null;
+}
+
+/** Laravel paginator nested in the success envelope, as returned by the seasonal switch plan. */
+export interface TireHotelRecordPage {
+  current_page: number;
+  data: TireHotelRecord[];
+  last_page: number;
+  per_page: number;
+  total: number;
 }
 
 /** Response of `POST /automotive/tire-hotel/check-in`. */

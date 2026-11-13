@@ -188,6 +188,8 @@ export interface DmsDocumentParams {
   folder_id?: string;
   document_type?: string;
   status?: DmsDocumentStatus;
+  /** Words that must all appear in title, description, type, file names, tags or metadata. */
+  q?: string;
   search?: string;
   tag?: string;
   page?: number;

@@ -133,14 +133,26 @@ export interface PayrollRunResource {
   created_at?: string;
 }
 
+/** A frontier worker as assessed by GET /payroll/frontier-workers (computed from the payroll profiles). */
 export interface FrontierWorkerResource {
-  id: string;
   employee_id: string;
-  employee_name?: string;
-  canton?: string;
-  italian_municipality?: string;
-  tax_regime?: string;
-  status: string;
+  employee_name: string;
+  work_canton: string | null;
+  regime: string;
+  suggested_regime: string;
+  tariff_letter: string | null;
+  nights_away: number;
+  exchange_of_information: boolean;
+  missing_exchange_data: string[];
+  issues: string[];
+}
+
+/** The year overview returned by GET /payroll/frontier-workers. */
+export interface FrontierOverview {
+  year: number;
+  parameters_year: number;
+  warnings: string[];
+  workers: FrontierWorkerResource[];
 }
 
 // Backward-compatible aliases

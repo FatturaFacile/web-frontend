@@ -33,6 +33,7 @@ import {
   MaintenancePlan,
   MaintenancePlanPayload,
   PaginatedResponse,
+  QueryFilterParams,
   WorkOrder,
   WorkOrderDetail,
   WorkOrderPart,
@@ -46,7 +47,7 @@ export class EamOpsApiService {
 
   // --- Maintenance plans ---
 
-  getMaintenancePlans(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<MaintenancePlan>> {
+  getMaintenancePlans(params?: QueryFilterParams): Observable<PaginatedResponse<MaintenancePlan>> {
     return this.http.get<PaginatedResponse<MaintenancePlan>>(`${this.base}/maintenance/plans`, {
       params: params ? toHttpParams(params) : undefined,
     });

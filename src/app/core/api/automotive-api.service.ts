@@ -1,15 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
   AutomotiveVehicle,
   AutomotiveVehiclePage,
   AutomotiveVehiclePayload,
+  PaginatedResponse,
+  QueryFilterParams,
   TireCheckInPayload,
   TireCheckInResult,
   TireHotelRecord,
+  TireHotelRecordPage,
 } from '../models';
 
 @Service()
@@ -19,6 +23,31 @@ export class AutomotiveApiService {
 
   getVehicles(): Observable<ApiResponse<AutomotiveVehiclePage>> {
     return this.http.get<ApiResponse<AutomotiveVehiclePage>>(`${this.base}/vehicles`);
+  }
+
+  /** Grid list of the vehicle registry (the API wraps the Laravel paginator in `data`; `grid_values` answers a plain list). */
+  listVehicles(params: QueryFilterParams = {}): Observable<PaginatedResponse<AutomotiveVehicle>> {
+    return this.http
+      .get<ApiResponse<AutomotiveVehiclePage | AutomotiveVehicle[]>>(`${this.base}/vehicles`, { params: toHttpParams(params) })
+      .pipe(
+        map((res) => {
+          const body = res.data;
+          const items = Array.isArray(body) ? body : body.data;
+          const total = Array.isArray(body) ? items.length : body.total;
+          return {
+            ...res,
+            data: items,
+            meta: {
+              current_page: Array.isArray(body) ? 1 : body.current_page,
+              from: null,
+              to: null,
+              last_page: Array.isArray(body) ? 1 : body.last_page,
+              per_page: Array.isArray(body) ? items.length : body.per_page,
+              total,
+            },
+          };
+        }),
+      );
   }
 
   getVehicle(id: string): Observable<ApiResponse<AutomotiveVehicle>> {
@@ -37,8 +66,30 @@ export class AutomotiveApiService {
     return this.http.delete<ApiResponse<void>>(`${this.base}/vehicles/${id}`);
   }
 
-  getSeasonalSwitchPlan(): Observable<ApiResponse<TireHotelRecord[]>> {
-    return this.http.get<ApiResponse<TireHotelRecord[]>>(`${this.base}/tire-hotel/seasonal-switch-plan`);
+  /** Grid list of the stored tire sets (the API wraps the Laravel paginator in `data`; `grid_values` answers a plain list). */
+  listSeasonalSwitchPlan(params: QueryFilterParams = {}): Observable<PaginatedResponse<TireHotelRecord>> {
+    return this.http
+      .get<ApiResponse<TireHotelRecordPage | TireHotelRecord[]>>(`${this.base}/tire-hotel/seasonal-switch-plan`, {
+        params: toHttpParams(params),
+      })
+      .pipe(
+        map((res) => {
+          const body = res.data;
+          const items = Array.isArray(body) ? body : body.data;
+          return {
+            ...res,
+            data: items,
+            meta: {
+              current_page: Array.isArray(body) ? 1 : body.current_page,
+              from: null,
+              to: null,
+              last_page: Array.isArray(body) ? 1 : body.last_page,
+              per_page: Array.isArray(body) ? items.length : body.per_page,
+              total: Array.isArray(body) ? items.length : body.total,
+            },
+          };
+        }),
+      );
   }
 
   checkInTires(payload: TireCheckInPayload): Observable<ApiResponse<TireCheckInResult>> {

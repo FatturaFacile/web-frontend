@@ -62,7 +62,7 @@ export interface SubscriptionContractItem {
 
 export interface SubscriptionContractResource {
   id: string;
-  contract_number: string;
+  subscription_number: string;
   name: string | null;
   customer_id: string;
   customer_name?: string | null;

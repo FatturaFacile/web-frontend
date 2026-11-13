@@ -86,6 +86,7 @@ export interface SalesOrderResource {
   total_gross: number;
   status: 'draft' | 'confirmed' | 'approved' | 'in_production' | 'shipped' | 'completed' | 'cancelled' | string;
   is_stock_reserved?: boolean;
+  inventory_status?: string;
   notes?: string | null;
   contact?: {
     id: string;

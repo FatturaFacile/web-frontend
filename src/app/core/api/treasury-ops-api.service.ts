@@ -30,6 +30,7 @@ import {
   LiquidityForecastParams,
   ManualReconciliationMatchPayload,
   PaginatedResponse,
+  QueryFilterParams,
   PaymentProposal,
   PaymentProposalExcluded,
   PaymentProposalStatus,
@@ -73,11 +74,7 @@ export class TreasuryOpsApiService {
     });
   }
 
-  getMovements(params?: {
-    movement_type?: TreasuryMovementType;
-    bank_account_id?: string;
-    per_page?: number;
-  }): Observable<PaginatedResponse<TreasuryMovement>> {
+  getMovements(params?: QueryFilterParams & { movement_type?: TreasuryMovementType; bank_account_id?: string }): Observable<PaginatedResponse<TreasuryMovement>> {
     return this.http.get<PaginatedResponse<TreasuryMovement>>(`${this.base}/movements`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -93,8 +90,10 @@ export class TreasuryOpsApiService {
 
   // --- Cash registers ---
 
-  getCashRegisters(): Observable<ApiResponse<CashRegister[]>> {
-    return this.http.get<ApiResponse<CashRegister[]>>(`${this.base}/cash-registers`);
+  getCashRegisters(params?: QueryFilterParams): Observable<PaginatedResponse<CashRegister>> {
+    return this.http.get<PaginatedResponse<CashRegister>>(`${this.base}/cash-registers`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getCashRegister(id: string): Observable<ApiResponse<CashRegister>> {
@@ -105,8 +104,10 @@ export class TreasuryOpsApiService {
     return this.http.post<ApiResponse<CashRegister>>(`${this.base}/cash-registers`, payload);
   }
 
-  getCashRegisterMovements(id: string): Observable<ApiResponse<CashRegisterMovement[]>> {
-    return this.http.get<ApiResponse<CashRegisterMovement[]>>(`${this.base}/cash-registers/${id}/movements`);
+  getCashRegisterMovements(id: string, params?: QueryFilterParams): Observable<PaginatedResponse<CashRegisterMovement>> {
+    return this.http.get<PaginatedResponse<CashRegisterMovement>>(`${this.base}/cash-registers/${id}/movements`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   addCashRegisterMovement(
@@ -120,15 +121,17 @@ export class TreasuryOpsApiService {
     return this.http.post<ApiResponse<CashRegisterClosing>>(`${this.base}/cash-registers/${id}/close`, payload);
   }
 
-  getCashRegisterClosings(id: string): Observable<ApiResponse<CashRegisterClosing[]>> {
-    return this.http.get<ApiResponse<CashRegisterClosing[]>>(`${this.base}/cash-registers/${id}/closings`);
+  getCashRegisterClosings(id: string, params?: QueryFilterParams): Observable<PaginatedResponse<CashRegisterClosing>> {
+    return this.http.get<PaginatedResponse<CashRegisterClosing>>(`${this.base}/cash-registers/${id}/closings`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   // --- Payment proposals ---
 
-  getPaymentProposals(status?: PaymentProposalStatus): Observable<ApiResponse<PaymentProposal[]>> {
-    return this.http.get<ApiResponse<PaymentProposal[]>>(`${this.base}/payment-proposals`, {
-      params: status ? toHttpParams({ status }) : undefined,
+  getPaymentProposals(params?: QueryFilterParams & { status?: PaymentProposalStatus }): Observable<PaginatedResponse<PaymentProposal>> {
+    return this.http.get<PaginatedResponse<PaymentProposal>>(`${this.base}/payment-proposals`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -167,8 +170,10 @@ export class TreasuryOpsApiService {
 
   // --- Reconciliation ---
 
-  getReconciliationRules(): Observable<ApiResponse<ReconciliationRule[]>> {
-    return this.http.get<ApiResponse<ReconciliationRule[]>>(`${this.bankingBase}/reconciliation-rules`);
+  getReconciliationRules(params?: QueryFilterParams): Observable<PaginatedResponse<ReconciliationRule>> {
+    return this.http.get<PaginatedResponse<ReconciliationRule>>(`${this.bankingBase}/reconciliation-rules`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createReconciliationRule(payload: ReconciliationRulePayload): Observable<ApiResponse<ReconciliationRule>> {
@@ -227,16 +232,20 @@ export class TreasuryOpsApiService {
     return this.http.get<ApiResponse<LiquidityForecast>>(`${this.base}/liquidity/forecast`, { params: httpParams });
   }
 
-  getForecastScenarios(): Observable<ApiResponse<ForecastScenario[]>> {
-    return this.http.get<ApiResponse<ForecastScenario[]>>(`${this.base}/forecast-scenarios`);
+  getForecastScenarios(params?: QueryFilterParams): Observable<PaginatedResponse<ForecastScenario>> {
+    return this.http.get<PaginatedResponse<ForecastScenario>>(`${this.base}/forecast-scenarios`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createForecastScenario(payload: ForecastScenarioPayload): Observable<ApiResponse<ForecastScenario>> {
     return this.http.post<ApiResponse<ForecastScenario>>(`${this.base}/forecast-scenarios`, payload);
   }
 
-  getRecurringItems(): Observable<ApiResponse<RecurringCashItem[]>> {
-    return this.http.get<ApiResponse<RecurringCashItem[]>>(`${this.base}/recurring-items`);
+  getRecurringItems(params?: QueryFilterParams): Observable<PaginatedResponse<RecurringCashItem>> {
+    return this.http.get<PaginatedResponse<RecurringCashItem>>(`${this.base}/recurring-items`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createRecurringItem(payload: RecurringCashItemPayload): Observable<ApiResponse<RecurringCashItem>> {
@@ -328,8 +337,8 @@ export class TreasuryOpsApiService {
 
   // --- Ri.Ba. ---
 
-  getRibaBatches(params?: { status?: string | null; bank_account_id?: string | null }): Observable<ApiResponse<RibaBatchSummary[]>> {
-    return this.http.get<ApiResponse<RibaBatchSummary[]>>(`${this.base}/riba/batches`, {
+  getRibaBatches(params?: QueryFilterParams & { status?: string | null; bank_account_id?: string | null }): Observable<PaginatedResponse<RibaBatchSummary>> {
+    return this.http.get<PaginatedResponse<RibaBatchSummary>>(`${this.base}/riba/batches`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
@@ -373,13 +382,8 @@ export class TreasuryOpsApiService {
 
   // --- Receivable collections ---
 
-  getCollections(params?: {
-    status?: string;
-    customer_id?: string;
-    per_page?: number;
-    page?: number;
-  }): Observable<{ data: ReceivableCollection[]; meta: { total: number; current_page: number; last_page: number } }> {
-    return this.http.get<{ data: ReceivableCollection[]; meta: { total: number; current_page: number; last_page: number } }>(`${this.base}/collections`, { params: params ? toHttpParams(params) : undefined });
+  getCollections(params?: QueryFilterParams & { status?: string; customer_id?: string }): Observable<PaginatedResponse<ReceivableCollection>> {
+    return this.http.get<PaginatedResponse<ReceivableCollection>>(`${this.base}/collections`, { params: params ? toHttpParams(params) : undefined });
   }
 
   getCollectionsAging(companyId?: string): Observable<Record<string, unknown>> {

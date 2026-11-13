@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -7,21 +7,26 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AccountingApiService,
   ApiResponse,
   AuthStore,
   ExtendedJournalStatus,
+  FetchGridModel,
   GeneralLedgerApiService,
   GlJournalEntry,
   I18nService,
   PermissionsService,
+  QueryFilterParams,
 } from '@core';
-import { MoneyPipe, TranslatePipe, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, TableColumnDef, TranslatePipe, ModalActionsDirective } from '@shared';
 import { Observable } from 'rxjs';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+
+interface JournalGridFilter extends QueryFilterParams {
+  status?: string;
+}
 
 const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
   draft: 'default',
@@ -35,8 +40,7 @@ const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
   selector: 'app-gl-journals',
   styleUrl: './gl-journals.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     FormsModule,
     NzButtonModule,
@@ -45,14 +49,13 @@ const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     MoneyPipe,
     TranslatePipe,
   ],
   templateUrl: './gl-journals.component.html',
 })
-export class GlJournalsComponent implements OnInit {
+export class GlJournalsComponent {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly accountingApi = inject(AccountingApiService);
   private readonly message = inject(NzMessageService);
@@ -63,21 +66,38 @@ export class GlJournalsComponent implements OnInit {
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
   protected readonly statuses: ExtendedJournalStatus[] = ['draft', 'pending_approval', 'rejected', 'posted', 'reversed'];
-  protected readonly items = signal<GlJournalEntry[]>([]);
-  protected readonly total = signal(0);
-  protected readonly loading = signal(false);
-  protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly grid = new FetchGridModel<GlJournalEntry, JournalGridFilter>((query) => this.api.getJournals(query));
   protected readonly statusFilter = signal<ExtendedJournalStatus | null>('pending_approval');
-  protected readonly expanded = signal<ReadonlySet<string>>(new Set());
-  protected readonly detail = signal<Record<string, GlJournalEntry>>({});
 
   protected readonly rejectTarget = signal<GlJournalEntry | null>(null);
   protected rejectReason = '';
 
-  ngOnInit(): void {
+  private readonly entryTpl = viewChild<TemplateRef<{ $implicit: GlJournalEntry; value: unknown }>>('entryTpl');
+  private readonly descriptionTpl = viewChild<TemplateRef<{ $implicit: GlJournalEntry; value: unknown }>>('descriptionTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: GlJournalEntry; value: unknown }>>('statusTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: GlJournalEntry; value: unknown }>>('totalTpl');
+
+  protected readonly columns = computed<TableColumnDef<GlJournalEntry>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'entry_number', header: 'GL.COL_ENTRY', customCellTemplate: this.entryTpl() },
+      { key: 'posting_date', header: 'GL.COL_DATE' },
+      { key: 'description', header: 'GL.COL_DESCRIPTION', customCellTemplate: this.descriptionTpl() },
+      {
+        key: 'status',
+        header: 'GL.STATUS',
+        valueLabel: (value) => this.i18n.translate('GL.JOURNAL_STATUS_' + value.toUpperCase()),
+        customCellTemplate: this.statusTpl(),
+      },
+      { key: 'total_amount', header: 'GL.COL_TOTAL', align: 'right', customCellTemplate: this.totalTpl() },
+      { key: 'auto_reverse_on', header: 'GL.COL_AUTO_REVERSE' },
+    ];
+  });
+
+  constructor() {
     this.lookups.load();
-    this.load();
+    this.grid.setPageSize(20);
+    this.grid.setFilter({ status: this.statusFilter() ?? undefined });
   }
 
   /** The approver must differ from author and submitter: the button is hidden for them (the server answers 403 anyway). */
@@ -92,52 +112,7 @@ export class GlJournalsComponent implements OnInit {
 
   protected setStatus(status: ExtendedJournalStatus | null): void {
     this.statusFilter.set(status);
-    this.pageIndex.set(1);
-    this.load();
-  }
-
-  protected setPage(page: number): void {
-    this.pageIndex.set(page);
-    this.load();
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api
-      .getJournals({
-        status: this.statusFilter() ?? undefined,
-        page: this.pageIndex(),
-        per_page: this.pageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.items.set(res.data ?? []);
-          this.total.set(res.meta?.total ?? 0);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-  }
-
-  protected toggle(entry: GlJournalEntry, open: boolean): void {
-    this.expanded.update((set) => {
-      const next = new Set(set);
-      if (open) {
-        next.add(entry.id);
-      } else {
-        next.delete(entry.id);
-      }
-      return next;
-    });
-    if (open && !this.detail()[entry.id]) {
-      this.api.getJournal(entry.id).subscribe({
-        next: (res) => this.detail.update((d) => ({ ...d, [entry.id]: res.data })),
-      });
-    }
-  }
-
-  protected linesOf(entry: GlJournalEntry): GlJournalEntry['lines'] {
-    return this.detail()[entry.id]?.lines ?? entry.lines ?? [];
+    this.grid.setFilter({ status: status ?? undefined });
   }
 
   protected submit(entry: GlJournalEntry): void {
@@ -174,8 +149,7 @@ export class GlJournalsComponent implements OnInit {
     call.subscribe({
       next: () => {
         this.message.success(this.i18n.translate(successKey));
-        this.detail.set({});
-        this.load();
+        this.grid.reload();
       },
     });
   }

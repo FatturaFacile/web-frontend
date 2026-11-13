@@ -80,12 +80,16 @@ describe('HrComponent', () => {
   };
 
   const mockFrontier: FrontierWorkerResource = {
-    id: 'fw-1',
     employee_id: 'emp-1',
     employee_name: 'Mario Rossi',
-    canton: 'TI',
-    italian_municipality: 'Como',
-    status: 'attivo',
+    work_canton: 'TI',
+    regime: 'new',
+    suggested_regime: 'new',
+    tariff_letter: 'G',
+    nights_away: 3,
+    exchange_of_information: true,
+    missing_exchange_data: [],
+    issues: [],
   };
 
   beforeEach(async () => {
@@ -103,7 +107,7 @@ describe('HrComponent', () => {
       submitTimesheet: vi.fn().mockReturnValue(of({ data: mockTimesheet })),
       approveTimesheet: vi.fn().mockReturnValue(of({ data: { ...mockTimesheet, status: 'approved' } })),
       getPayrollRuns: vi.fn().mockReturnValue(of({ data: [mockPayrollRun], meta: { total: 1 } })),
-      getFrontierWorkers: vi.fn().mockReturnValue(of({ data: [mockFrontier], meta: { total: 1 } })),
+      getFrontierWorkers: vi.fn().mockReturnValue(of({ data: { year: 2026, parameters_year: 2026, warnings: [], workers: [mockFrontier] } })),
     };
 
     messageService = {
@@ -138,15 +142,18 @@ describe('HrComponent', () => {
       return {} as NzModalRef;
     });
     fixture.detectChanges();
+    // the grid models load after their first debounce tick
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('initializes and loads employees, leaves, timesheets, payroll runs, and frontier workers', () => {
     expect(component).toBeTruthy();
     expect(component.employees().length).toBe(1);
     expect(component.leaveRequests().length).toBe(1);
-    expect(component.timesheets().length).toBe(1);
-    expect(component.payrollRuns().length).toBe(1);
+    expect(component.timesheetsGrid.items().length).toBe(1);
+    expect(component.payrollGrid.items().length).toBe(1);
     expect(component.frontierWorkers().length).toBe(1);
+    expect(apiService.getFrontierWorkers).toHaveBeenCalledWith(new Date().getFullYear());
     expect(component.kpiTotalEmployees()).toBe(1);
     expect(component.kpiProbationEmployees()).toBe(1);
     expect(component.kpiPendingLeaves()).toBe(1);

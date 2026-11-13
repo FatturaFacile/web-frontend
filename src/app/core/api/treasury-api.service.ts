@@ -22,8 +22,11 @@ export class TreasuryApiService {
 
   // --- Bank Accounts ---
 
-  getBankAccounts(): Observable<ApiResponse<BankAccountResource[]>> {
-    return this.http.get<ApiResponse<BankAccountResource[]>>(`${this.base}/bank-accounts`);
+  /** Without params it returns up to 200 accounts (pickers and balance totals need all of them, not a page). */
+  getBankAccounts(params: QueryFilterParams = { per_page: 200 }): Observable<PaginatedResponse<BankAccountResource>> {
+    return this.http.get<PaginatedResponse<BankAccountResource>>(`${this.base}/bank-accounts`, {
+      params: toHttpParams(params),
+    });
   }
 
   getBankAccount(id: string): Observable<ApiResponse<BankAccountResource>> {
@@ -98,8 +101,10 @@ export class TreasuryApiService {
 
   // --- Cash Forecasts & Liquidity ---
 
-  getCashForecasts(): Observable<ApiResponse<CashForecastResource[]>> {
-    return this.http.get<ApiResponse<CashForecastResource[]>>(`${this.base}/cash-forecasts`);
+  getCashForecasts(params?: QueryFilterParams): Observable<PaginatedResponse<CashForecastResource>> {
+    return this.http.get<PaginatedResponse<CashForecastResource>>(`${this.base}/cash-forecasts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   generateCashForecast(horizonDays = 30): Observable<ApiResponse<CashForecastResource>> {

@@ -17,13 +17,11 @@ export type UpdateTenantSettingsPayload = Partial<TenantSettings>;
 
 export interface BranchResource {
   id: string;
-  tenant_id: string;
+  tenant_id: string | null;
   name: string;
   code: string;
-  address: string;
-  city: string;
-  country: string;
-  is_headquarters: boolean;
+  address?: string | null;
+  is_primary: boolean;
 }
 
 export interface UserResource {
@@ -46,15 +44,17 @@ export interface RoleResource {
 
 export interface AuditLogResource {
   id: string;
-  user_id: string;
-  user_name?: string | null;
+  user_id?: string | null;
+  user?: { id: string; name: string } | null;
   event: string;
+  action: string;
+  module_code: string;
   auditable_type: string;
   auditable_id: string;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   ip_address?: string | null;
-  created_at: string;
+  event_timestamp: string;
 }
 
 export interface TenantPreferences {

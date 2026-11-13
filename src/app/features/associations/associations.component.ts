@@ -1,5 +1,5 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -16,19 +16,23 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AssociationsApiService,
   AssociationCourse,
+  AssociationCourseParams,
   AssociationCourseRequest,
   AssociationDonation,
+  AssociationDonationParams,
   AssociationDonationRequest,
   AssociationFeeAssignment,
+  AssociationFeeParams,
   AssociationFeeInstalment,
   AssociationFeePlan,
   AssociationMeeting,
+  AssociationMeetingParams,
   AssociationMeetingRequest,
   AssociationMember,
   AssociationMemberParams,
@@ -36,11 +40,13 @@ import {
   AssociationMemberStatus,
   AssociationPaymentMethod,
   AssociationReimbursement,
+  AssociationReimbursementParams,
   AssociationVolunteer,
   AuthStore,
+  FetchGridModel,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { endsNotBefore, notInFuture, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 const AMOUNT_PATTERN = /^\d{1,10}(\.\d{1,2})?$/;
@@ -52,10 +58,23 @@ function requiredWhen(siblingKey: string, siblingValue: string) {
     control.parent?.get(siblingKey)?.value === siblingValue && (control.value === null || control.value === '') ? { required: true } : null;
 }
 
+interface PersonName {
+  first_name?: string | null;
+  last_name?: string | null;
+  company_name?: string | null;
+}
+
+/** A row that belongs to a member of the registry (fee assignment, reimbursement). */
+interface MemberOwned {
+  member_id: string;
+  member?: { contact?: PersonName | null } | null;
+}
+
 @Component({
   selector: 'app-associations',
   styleUrl: './associations.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
@@ -86,7 +105,7 @@ function requiredWhen(siblingKey: string, siblingValue: string) {
   ],
   templateUrl: './associations.component.html',
 })
-export class AssociationsComponent implements OnInit {
+export class AssociationsComponent {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -98,11 +117,9 @@ export class AssociationsComponent implements OnInit {
   protected selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: MEMBERS / LIBRO SOCI ---
-  protected readonly members = signal<AssociationMember[]>([]);
-  protected readonly membersLoading = signal<boolean>(false);
-  protected readonly membersTotal = signal<number>(0);
-  protected readonly membersPageIndex = signal<number>(1);
-  protected readonly membersPageSize = signal<number>(10);
+  protected readonly membersGrid = new FetchGridModel<AssociationMember, AssociationMemberParams>((query) => this.associationApi.getMembers(query));
+  /** Loaded page of the registry: also the lookup of the member names and of the member pickers. */
+  protected readonly members = this.membersGrid.items;
   protected readonly memberSearch = signal<string>('');
   protected readonly memberStatusFilter = signal<AssociationMemberStatus | ''>('');
 
@@ -123,11 +140,8 @@ export class AssociationsComponent implements OnInit {
   protected memberFeeStanding = signal<{ is_in_good_standing: boolean; outstanding_amount: string } | null>(null);
 
   // --- TAB 2: FEES & PAYMENTS ---
-  protected readonly fees = signal<AssociationFeeAssignment[]>([]);
-  protected readonly feesLoading = signal<boolean>(false);
-  protected readonly feesTotal = signal<number>(0);
-  protected readonly feesPageIndex = signal<number>(1);
-  protected readonly feesPageSize = signal<number>(10);
+  protected readonly feesGrid = new FetchGridModel<AssociationFeeAssignment, AssociationFeeParams>((query) => this.associationApi.getFeeAssignments(query));
+  protected readonly fees = this.feesGrid.items;
 
   // Create Fee Modal
   protected createFeeModalVisible = signal<boolean>(false);
@@ -151,9 +165,8 @@ export class AssociationsComponent implements OnInit {
   protected paymentSubmitting = signal<boolean>(false);
 
   // --- TAB 3: COURSES ---
-  protected readonly courses = signal<AssociationCourse[]>([]);
-  protected readonly coursesLoading = signal<boolean>(false);
-  protected readonly coursesTotal = signal<number>(0);
+  protected readonly coursesGrid = new FetchGridModel<AssociationCourse, AssociationCourseParams>((query) => this.associationApi.getCourses(query));
+  protected readonly courses = this.coursesGrid.items;
   protected createCourseModalVisible = signal<boolean>(false);
   protected createCourseSubmitting = signal<boolean>(false);
   protected readonly courseForm = this.fb.group({
@@ -171,8 +184,8 @@ export class AssociationsComponent implements OnInit {
   protected enrolSubmitting = signal<boolean>(false);
 
   // --- TAB 4: DONATIONS & 5 PER MILLE ---
-  protected readonly donations = signal<AssociationDonation[]>([]);
-  protected readonly donationsLoading = signal<boolean>(false);
+  protected readonly donationsGrid = new FetchGridModel<AssociationDonation, AssociationDonationParams>((query) => this.associationApi.getDonations(query));
+  protected readonly donations = this.donationsGrid.items;
   protected readonly fivePerMille = signal<{ year: number; total_received: string } | null>(null);
   protected createDonationModalVisible = signal<boolean>(false);
   protected createDonationSubmitting = signal<boolean>(false);
@@ -188,8 +201,8 @@ export class AssociationsComponent implements OnInit {
   // --- TAB 5: VOLUNTEERS & REIMBURSEMENTS ---
   protected readonly volunteers = signal<AssociationVolunteer[]>([]);
   protected readonly volunteersLoading = signal<boolean>(false);
-  protected readonly reimbursements = signal<AssociationReimbursement[]>([]);
-  protected readonly reimbursementsLoading = signal<boolean>(false);
+  protected readonly reimbursementsGrid = new FetchGridModel<AssociationReimbursement, AssociationReimbursementParams>((query) => this.associationApi.getReimbursements(query));
+  protected readonly reimbursements = this.reimbursementsGrid.items;
 
   // Create Reimbursement Modal
   protected createReimbModalVisible = signal<boolean>(false);
@@ -207,8 +220,8 @@ export class AssociationsComponent implements OnInit {
   });
 
   // --- TAB 6: MEETINGS ---
-  protected readonly meetings = signal<AssociationMeeting[]>([]);
-  protected readonly meetingsLoading = signal<boolean>(false);
+  protected readonly meetingsGrid = new FetchGridModel<AssociationMeeting, AssociationMeetingParams>((query) => this.associationApi.getMeetings(query));
+  protected readonly meetings = this.meetingsGrid.items;
   protected createMeetingModalVisible = signal<boolean>(false);
   protected meetingSubmitting = signal<boolean>(false);
   protected readonly meetingForm = this.fb.group({
@@ -238,56 +251,26 @@ export class AssociationsComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.loadMembers();
-  }
-
   protected onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
-    if (index === 0) {
-      this.loadMembers();
-    } else if (index === 1) {
-      this.loadFees();
-    } else if (index === 2) {
-      this.loadCourses();
-    } else if (index === 3) {
-      this.loadDonations();
+    if (index === 3) {
       this.loadFivePerMille();
     } else if (index === 4) {
       this.loadVolunteers();
-      this.loadReimbursements();
-    } else if (index === 5) {
-      this.loadMeetings();
     }
   }
 
   // --- MEMBERS LOGIC ---
   protected loadMembers(): void {
-    this.membersLoading.set(true);
-    const params: AssociationMemberParams = {
-      status: (this.memberStatusFilter() || undefined) as AssociationMemberStatus | undefined,
-      search: this.memberSearch() || undefined,
-      page: this.membersPageIndex(),
-      per_page: this.membersPageSize(),
-    };
-
-    this.associationApi.getMembers(params).subscribe({
-      next: (res) => {
-        this.members.set(res.data);
-        this.membersTotal.set(res.meta?.total ?? res.data.length);
-        this.membersLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEL_LIBRO_SOCI'));
-        this.membersLoading.set(false);
-      },
-    });
+    this.membersGrid.reload();
   }
 
-  protected onMembersTableQueryChange(params: NzTableQueryParams): void {
-    this.membersPageIndex.set(params.pageIndex);
-    this.membersPageSize.set(params.pageSize);
-    this.loadMembers();
+  /** Page-level filters of the registry (search box and status select): everything else is a column filter. */
+  protected applyMemberFilters(): void {
+    this.membersGrid.setFilter({
+      status: this.memberStatusFilter() || undefined,
+      search: this.memberSearch() || undefined,
+    });
   }
 
   protected openCreateMemberModal(): void {
@@ -352,18 +335,7 @@ export class AssociationsComponent implements OnInit {
 
   // --- FEES LOGIC ---
   protected loadFees(): void {
-    this.feesLoading.set(true);
-    this.associationApi.getFeeAssignments({ page: this.feesPageIndex(), per_page: this.feesPageSize() }).subscribe({
-      next: (res) => {
-        this.fees.set(res.data);
-        this.feesTotal.set(res.meta?.total ?? res.data.length);
-        this.feesLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_QUOTE_ASSOCIATIVE'));
-        this.feesLoading.set(false);
-      },
-    });
+    this.feesGrid.reload();
   }
 
   protected openCreateFeeModal(): void {
@@ -474,18 +446,7 @@ export class AssociationsComponent implements OnInit {
 
   // --- COURSES LOGIC ---
   protected loadCourses(): void {
-    this.coursesLoading.set(true);
-    this.associationApi.getCourses().subscribe({
-      next: (res) => {
-        this.courses.set(res.data);
-        this.coursesTotal.set(res.meta?.total ?? res.data.length);
-        this.coursesLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEI_CORSI'));
-        this.coursesLoading.set(false);
-      },
-    });
+    this.coursesGrid.reload();
   }
 
   protected openCreateCourseModal(): void {
@@ -555,17 +516,7 @@ export class AssociationsComponent implements OnInit {
 
   // --- DONATIONS LOGIC ---
   protected loadDonations(): void {
-    this.donationsLoading.set(true);
-    this.associationApi.getDonations().subscribe({
-      next: (res) => {
-        this.donations.set(res.data);
-        this.donationsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_DONAZIONI'));
-        this.donationsLoading.set(false);
-      },
-    });
+    this.donationsGrid.reload();
   }
 
   protected loadFivePerMille(): void {
@@ -652,17 +603,7 @@ export class AssociationsComponent implements OnInit {
   }
 
   protected loadReimbursements(): void {
-    this.reimbursementsLoading.set(true);
-    this.associationApi.getReimbursements().subscribe({
-      next: (res) => {
-        this.reimbursements.set(res.data);
-        this.reimbursementsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DEI_RIMBORSI_SPESE'));
-        this.reimbursementsLoading.set(false);
-      },
-    });
+    this.reimbursementsGrid.reload();
   }
 
   protected openCreateReimbModal(): void {
@@ -738,17 +679,7 @@ export class AssociationsComponent implements OnInit {
 
   // --- MEETINGS LOGIC ---
   protected loadMeetings(): void {
-    this.meetingsLoading.set(true);
-    this.associationApi.getMeetings().subscribe({
-      next: (res) => {
-        this.meetings.set(res.data);
-        this.meetingsLoading.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ASSOCIATIONS.MSG_ERRORE_NEL_CARICAMENTO_DELLE_ASSEMBLEE'));
-        this.meetingsLoading.set(false);
-      },
-    });
+    this.meetingsGrid.reload();
   }
 
   protected openCreateMeetingModal(): void {
@@ -791,6 +722,112 @@ export class AssociationsComponent implements OnInit {
         this.meetingSubmitting.set(false);
       },
     });
+  }
+
+  // --- GRID COLUMNS ---
+  private readonly dateTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('dateTpl');
+  private readonly dateTimeTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('dateTimeTpl');
+  private readonly textTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('textTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('statusTpl');
+  private readonly moneyTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('moneyTpl');
+  private readonly memberTpl = viewChild<TemplateRef<{ $implicit: AssociationMember; value: unknown }>>('memberTpl');
+  private readonly taxCodeTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('taxCodeTpl');
+  private readonly certificateTpl = viewChild<TemplateRef<{ $implicit: AssociationMember; value: unknown }>>('certificateTpl');
+  private readonly rowMemberTpl = viewChild<TemplateRef<{ $implicit: MemberOwned; value: unknown }>>('rowMemberTpl');
+  private readonly feeDescriptionTpl = viewChild<TemplateRef<{ $implicit: unknown; value: unknown }>>('feeDescriptionTpl');
+  private readonly donationKindTpl = viewChild<TemplateRef<{ $implicit: AssociationDonation; value: unknown }>>('donationKindTpl');
+  private readonly donationAmountTpl = viewChild<TemplateRef<{ $implicit: AssociationDonation; value: unknown }>>('donationAmountTpl');
+  private readonly receiptTpl = viewChild<TemplateRef<{ $implicit: AssociationDonation; value: unknown }>>('receiptTpl');
+  private readonly meetingBodyTpl = viewChild<TemplateRef<{ $implicit: AssociationMeeting; value: unknown }>>('meetingBodyTpl');
+
+  protected readonly memberColumns = computed<TableColumnDef<AssociationMember>[]>(() => [
+    { key: 'first_name', serverKey: 'full_name', header: 'ASSOCIATIONS.FULL_NAME', valueGetter: (row) => this.personLabel(row), customCellTemplate: this.memberTpl() },
+    // The tax code is stored encrypted: the database cannot sort, filter or group it.
+    { key: 'tax_code', header: 'ASSOCIATIONS.FISCAL_CODE', sortable: false, filterable: false, groupable: false, customCellTemplate: this.taxCodeTpl() },
+    { key: 'joined_on', header: 'ASSOCIATIONS.JOIN_DATE', customCellTemplate: this.dateTpl() },
+    { key: 'has_medical_certificate', header: 'ASSOCIATIONS.MED_CERTIFICATE', sortable: false, filterable: false, groupable: false, exportable: false, customCellTemplate: this.certificateTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  protected readonly feeColumns = computed<TableColumnDef<AssociationFeeAssignment>[]>(() => [
+    { key: 'member_id', serverKey: 'member_name', header: 'ASSOCIATIONS.MEMBER', valueGetter: (row) => this.memberNameOfRow(row), customCellTemplate: this.rowMemberTpl() },
+    { key: 'description', header: 'COMMON.DESCRIPTION', customCellTemplate: this.feeDescriptionTpl() },
+    { key: 'starts_on', header: 'ASSOCIATIONS.STARTS_ON', customCellTemplate: this.dateTpl() },
+    { key: 'net_amount', header: 'ASSOCIATIONS.AMOUNT', customCellTemplate: this.moneyTpl() },
+    { key: 'ends_on', header: 'ASSOCIATIONS.ENDS_ON', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  protected readonly courseColumns = computed<TableColumnDef<AssociationCourse>[]>(() => [
+    { key: 'title', header: 'ASSOCIATIONS.COURSE_TITLE' },
+    { key: 'starts_on', header: 'ASSOCIATIONS.STARTS_ON', customCellTemplate: this.dateTpl() },
+    { key: 'capacity', header: 'ASSOCIATIONS.CAPACITY', align: 'right', customCellTemplate: this.textTpl() },
+    { key: 'ends_on', header: 'ASSOCIATIONS.ENDS_ON', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  protected readonly donationColumns = computed<TableColumnDef<AssociationDonation>[]>(() => [
+    {
+      key: 'kind',
+      header: 'ASSOCIATIONS.DONATION_KIND',
+      valueGetter: (row) => this.donationKindLabel(row.kind),
+      valueLabel: (value) => this.donationKindLabel(value),
+      customCellTemplate: this.donationKindTpl(),
+    },
+    { key: 'amount', header: 'ASSOCIATIONS.AMOUNT', align: 'right', customCellTemplate: this.donationAmountTpl() },
+    { key: 'received_on', header: 'ASSOCIATIONS.DATE', customCellTemplate: this.dateTpl() },
+    {
+      key: 'receipts',
+      header: 'ASSOCIATIONS.RECEIPT_NO',
+      sortable: false,
+      filterable: false,
+      groupable: false,
+      valueGetter: (row) => row.receipts?.[0]?.number ?? '',
+      customCellTemplate: this.receiptTpl(),
+    },
+  ]);
+
+  protected readonly reimbursementColumns = computed<TableColumnDef<AssociationReimbursement>[]>(() => [
+    { key: 'member_id', serverKey: 'member_name', header: 'ASSOCIATIONS.VOLUNTEER', valueGetter: (row) => this.memberNameOfRow(row), customCellTemplate: this.rowMemberTpl() },
+    { key: 'amount', header: 'ASSOCIATIONS.AMOUNT', align: 'right', customCellTemplate: this.moneyTpl() },
+    { key: 'description', header: 'COMMON.DESCRIPTION' },
+    { key: 'incurred_on', header: 'ASSOCIATIONS.DATE', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  protected readonly meetingColumns = computed<TableColumnDef<AssociationMeeting>[]>(() => [
+    { key: 'title', header: 'ASSOCIATIONS.MEETING_TITLE' },
+    {
+      key: 'body',
+      header: 'ASSOCIATIONS.MEETING_TYPE',
+      valueGetter: (row) => this.meetingBodyLabel(row.body),
+      valueLabel: (value) => this.meetingBodyLabel(value),
+      customCellTemplate: this.meetingBodyTpl(),
+    },
+    { key: 'scheduled_at', header: 'ASSOCIATIONS.DATE', customCellTemplate: this.dateTimeTpl() },
+    { key: 'location', header: 'ASSOCIATIONS.LOCATION', customCellTemplate: this.textTpl() },
+    { key: 'status', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  protected donationKindLabel(kind: string): string {
+    return this.translate.instant('ASSOCIATIONS.KIND_' + kind.toUpperCase());
+  }
+
+  protected meetingBodyLabel(body: string): string {
+    return this.translate.instant('ASSOCIATIONS.BODY_' + body.toUpperCase());
+  }
+
+  /** Display name of a person: the same text the server sorts and filters on (`full_name` / `member_name`). */
+  protected personLabel(person: PersonName | null | undefined): string {
+    if (!person) {
+      return '';
+    }
+    return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim() || (person.company_name ?? '');
+  }
+
+  /** Member of a fee or a reimbursement row: the list API embeds the contact, the loaded registry is the fallback. */
+  protected memberNameOfRow(row: MemberOwned): string {
+    return this.personLabel(row.member?.contact) || this.memberNameOf(row.member_id);
   }
 
   // --- HELPERS ---

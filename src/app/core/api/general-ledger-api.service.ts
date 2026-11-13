@@ -13,6 +13,7 @@ import {
   ChartAccountDetail,
   ChartAccountPayload,
   PaginatedResponse,
+  QueryFilterParams,
   CloseChecklist,
   CloseTask,
   CloseTaskStatus,
@@ -71,7 +72,7 @@ export class GeneralLedgerApiService {
 
   // --- Chart of accounts ---
 
-  getAccountList(params?: { type?: string; active?: string; per_page?: number }): Observable<PaginatedResponse<ChartAccountDetail>> {
+  getAccountList(params?: QueryFilterParams & { type?: string; active?: string }): Observable<PaginatedResponse<ChartAccountDetail>> {
     return this.http.get<PaginatedResponse<ChartAccountDetail>>(`${this.base}/accounts`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -95,7 +96,7 @@ export class GeneralLedgerApiService {
 
   // --- Journals: four-eyes workflow ---
 
-  getJournals(params?: { status?: string; fiscal_period_id?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<GlJournalEntry>> {
+  getJournals(params?: QueryFilterParams & { status?: string; fiscal_period_id?: string }): Observable<PaginatedResponse<GlJournalEntry>> {
     return this.http.get<PaginatedResponse<GlJournalEntry>>(`${this.base}/journals`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -123,9 +124,9 @@ export class GeneralLedgerApiService {
 
   // --- Recurring journals ---
 
-  getRecurringJournals(status?: RecurringStatus): Observable<ApiResponse<RecurringJournal[]>> {
-    return this.http.get<ApiResponse<RecurringJournal[]>>(`${this.base}/recurring-journals`, {
-      params: status ? toHttpParams({ status }) : undefined,
+  getRecurringJournals(params?: QueryFilterParams & { status?: RecurringStatus }): Observable<PaginatedResponse<RecurringJournal>> {
+    return this.http.get<PaginatedResponse<RecurringJournal>>(`${this.base}/recurring-journals`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -155,8 +156,8 @@ export class GeneralLedgerApiService {
 
   // --- Accruals and deferrals ---
 
-  getAccruals(params?: { accrual_type?: string; cutoff_date?: string }): Observable<ApiResponse<Accrual[]>> {
-    return this.http.get<ApiResponse<Accrual[]>>(`${this.base}/accruals`, {
+  getAccruals(params?: QueryFilterParams & { accrual_type?: string; cutoff_date?: string }): Observable<PaginatedResponse<Accrual>> {
+    return this.http.get<PaginatedResponse<Accrual>>(`${this.base}/accruals`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
@@ -196,8 +197,10 @@ export class GeneralLedgerApiService {
 
   // --- Fiscal years ---
 
-  getFiscalYears(): Observable<ApiResponse<GlFiscalYear[]>> {
-    return this.http.get<ApiResponse<GlFiscalYear[]>>(`${this.base}/fiscal-years`);
+  getFiscalYears(params?: QueryFilterParams): Observable<PaginatedResponse<GlFiscalYear>> {
+    return this.http.get<PaginatedResponse<GlFiscalYear>>(`${this.base}/fiscal-years`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getFiscalYear(id: string): Observable<ApiResponse<GlFiscalYear>> {
@@ -231,9 +234,9 @@ export class GeneralLedgerApiService {
 
   // --- FX revaluation of open receivables / payables ---
 
-  getFxRevaluations(revaluationDate?: string): Observable<ApiResponse<FxRevaluation[]>> {
-    return this.http.get<ApiResponse<FxRevaluation[]>>(`${this.base}/fx-revaluations`, {
-      params: revaluationDate ? toHttpParams({ revaluation_date: revaluationDate }) : undefined,
+  getFxRevaluations(params?: QueryFilterParams & { revaluation_date?: string }): Observable<PaginatedResponse<FxRevaluation>> {
+    return this.http.get<PaginatedResponse<FxRevaluation>>(`${this.base}/fx-revaluations`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -243,8 +246,10 @@ export class GeneralLedgerApiService {
 
   // --- Cost centres and profit centres ---
 
-  getCostCenters(): Observable<ApiResponse<Dimension[]>> {
-    return this.http.get<ApiResponse<Dimension[]>>(`${this.base}/cost-centers`);
+  getCostCenters(params?: QueryFilterParams): Observable<PaginatedResponse<Dimension>> {
+    return this.http.get<PaginatedResponse<Dimension>>(`${this.base}/cost-centers`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createCostCenter(payload: DimensionPayload): Observable<ApiResponse<Dimension>> {
@@ -255,8 +260,10 @@ export class GeneralLedgerApiService {
     return this.http.put<ApiResponse<Dimension>>(`${this.base}/cost-centers/${id}`, payload);
   }
 
-  getProfitCenters(): Observable<ApiResponse<Dimension[]>> {
-    return this.http.get<ApiResponse<Dimension[]>>(`${this.base}/profit-centers`);
+  getProfitCenters(params?: QueryFilterParams): Observable<PaginatedResponse<Dimension>> {
+    return this.http.get<PaginatedResponse<Dimension>>(`${this.base}/profit-centers`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createProfitCenter(payload: DimensionPayload): Observable<ApiResponse<Dimension>> {
@@ -319,9 +326,9 @@ export class GeneralLedgerApiService {
 
   // --- Budgets ---
 
-  getBudgets(fiscalYearId?: string): Observable<ApiResponse<Budget[]>> {
-    return this.http.get<ApiResponse<Budget[]>>(`${this.base}/budgets`, {
-      params: fiscalYearId ? toHttpParams({ fiscal_year_id: fiscalYearId }) : undefined,
+  getBudgets(params?: QueryFilterParams & { fiscal_year_id?: string }): Observable<PaginatedResponse<Budget>> {
+    return this.http.get<PaginatedResponse<Budget>>(`${this.base}/budgets`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 

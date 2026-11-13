@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,13 +14,15 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
+  FetchGridModel,
+  I18nService,
   PermissionsService,
   ReconciliationRule,
   ReconciliationRuleCategory,
   ReconciliationRulePayload,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, TableColumnDef, TranslatePipe } from '@shared';
 import { revalidateOnStartChange } from '@shared/utils/date-validators';
 import { atLeastField } from '@shared/utils/decimal-validators';
 
@@ -30,8 +32,7 @@ const nullableNumber = (value: string | null): number | null => (value === null 
   selector: 'app-tr-reconciliation-rules',
   styleUrl: './tr-reconciliation-rules.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,
@@ -51,8 +52,9 @@ const nullableNumber = (value: string | null): number | null => (value === null 
   ],
   templateUrl: './tr-reconciliation-rules.component.html',
 })
-export class TrReconciliationRulesComponent implements OnInit {
+export class TrReconciliationRulesComponent {
   private readonly api = inject(TreasuryOpsApiService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly canWrite = inject(PermissionsService).canWrite('treasury');
 
@@ -63,8 +65,36 @@ export class TrReconciliationRulesComponent implements OnInit {
     'internal_transfer',
     'generic_expense',
   ];
-  protected readonly items = signal<ReconciliationRule[]>([]);
-  protected readonly loading = signal(false);
+
+  /** Server-driven grid of the rules: paging, sorting, column filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ReconciliationRule>((query) => this.api.getReconciliationRules(query));
+
+  private readonly stateTpl = viewChild<TemplateRef<{ $implicit: ReconciliationRule; value: unknown }>>('stateTpl');
+
+  protected readonly columns = computed<TableColumnDef<ReconciliationRule>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'priority', align: 'right', header: this.i18n.translate('TR.PRIORITY'), width: '110px' },
+      { key: 'name', header: this.i18n.translate('TR.NAME') },
+      {
+        key: 'category',
+        valueLabel: (value) => this.i18n.translate('TR.CATEGORY_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.CATEGORY_' + row.category.toUpperCase()),
+        header: this.i18n.translate('TR.CATEGORY'),
+        width: '200px',
+      },
+      { key: 'ledger_account_code', header: this.i18n.translate('TR.LEDGER_ACCOUNT_CODE'), width: '160px' },
+      {
+        key: 'is_active',
+        serverKey: 'activity_state',
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'TR.ACTIVE' : 'TR.INACTIVE'),
+        valueGetter: (row) => this.i18n.translate(row.is_active ? 'TR.ACTIVE' : 'TR.INACTIVE'),
+        header: this.i18n.translate('TR.STATUS'),
+        width: '130px',
+        customCellTemplate: this.stateTpl(),
+      },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -90,21 +120,6 @@ export class TrReconciliationRulesComponent implements OnInit {
   constructor() {
     // The API requires max_amount >= min_amount.
     revalidateOnStartChange(this.form, 'min_amount', 'max_amount', inject(DestroyRef));
-  }
-
-  ngOnInit(): void {
-    this.load();
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getReconciliationRules().subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
   }
 
   protected openModal(rule: ReconciliationRule | null): void {
@@ -149,7 +164,7 @@ export class TrReconciliationRulesComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.modalOpen.set(false);
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -159,6 +174,6 @@ export class TrReconciliationRulesComponent implements OnInit {
   }
 
   protected remove(rule: ReconciliationRule): void {
-    this.api.deleteReconciliationRule(rule.id).subscribe({ next: () => this.load() });
+    this.api.deleteReconciliationRule(rule.id).subscribe({ next: () => this.grid.reload() });
   }
 }

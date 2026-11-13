@@ -10,7 +10,10 @@ import {
   InventoryCountSessionItem,
   PaginatedResponse,
   PriceListItem,
+  InventoryAdjustmentFilterParams,
+  InventoryCountFilterParams,
   ProductFilterParams,
+  StockMovementFilterParams,
   ProductItem,
   StockLevelItem,
   StockMovementItem,
@@ -120,13 +123,7 @@ export class InventoryApiService {
   }
 
   // Movements (Single/Double ledger with signed_quantity)
-  getMovements(params?: {
-    stock_item_id?: string;
-    warehouse_id?: string;
-    movement_type?: string;
-    page?: number;
-    per_page?: number;
-  }): Observable<PaginatedResponse<StockMovementItem>> {
+  getMovements(params?: StockMovementFilterParams): Observable<PaginatedResponse<StockMovementItem>> {
     return this.http.get<PaginatedResponse<StockMovementItem>>(`${this.base}/inventory/movements`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -137,12 +134,7 @@ export class InventoryApiService {
   }
 
   // Stock Adjustments
-  getAdjustments(params?: {
-    warehouse_id?: string;
-    status?: string;
-    page?: number;
-    per_page?: number;
-  }): Observable<PaginatedResponse<InventoryAdjustmentItem>> {
+  getAdjustments(params?: InventoryAdjustmentFilterParams): Observable<PaginatedResponse<InventoryAdjustmentItem>> {
     return this.http.get<PaginatedResponse<InventoryAdjustmentItem>>(`${this.base}/inventory/adjustments`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -169,7 +161,7 @@ export class InventoryApiService {
   }
 
   // Physical Inventory & ABC Cycle Counts
-  getCounts(params?: { page?: number; per_page?: number }): Observable<PaginatedResponse<InventoryCountSessionItem>> {
+  getCounts(params?: InventoryCountFilterParams): Observable<PaginatedResponse<InventoryCountSessionItem>> {
     return this.http.get<PaginatedResponse<InventoryCountSessionItem>>(`${this.base}/inventory/counts`, {
       params: params ? toHttpParams(params) : undefined,
     });

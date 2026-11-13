@@ -19,30 +19,16 @@
     }
   </div>
 
-  <nz-table [nzScroll]="{ x: '720px' }" #table nzSize="middle" [nzData]="budgets()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: table.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'GL.COL_NAME' | translate }}</th>
-        <th [nzSortFn]="'version' | gridSort" [nzFilters]="'version' | gridFilterList: table.nzData" [nzFilterFn]="'version' | gridFilterFn">{{ 'GL.BUDGET_VERSION' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: table.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'GL.STATUS' | translate }}</th>
-        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (budget of table.data; track budget.id) {
-        <tr>
-          <td>{{ budget.name }}</td>
-          <td>v{{ budget.version }}</td>
-          <td>
-            <nz-tag [nzColor]="budget.status === 'approved' ? 'green' : 'default'">{{ budget.status }}</nz-tag>
-          </td>
-          <td>
-            <button nz-button nzSize="small" type="button" (click)="open(budget)">{{ 'GL.OPEN' | translate }}</button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="grid" [columns]="budgetColumns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-budgets'" />
+
+  <ng-template #nameTpl let-budget>{{ budget.name }}</ng-template>
+  <ng-template #versionTpl let-budget>v{{ budget.version }}</ng-template>
+  <ng-template #statusTpl let-budget>
+    <nz-tag [nzColor]="budget.status === 'approved' ? 'green' : 'default'">{{ budget.status }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-budget>
+    <button nz-button nzSize="small" type="button" (click)="open(budget)">{{ 'GL.OPEN' | translate }}</button>
+  </ng-template>
 </nz-card>
 
 @if (selected(); as budget) {

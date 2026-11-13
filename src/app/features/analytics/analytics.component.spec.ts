@@ -2,7 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi, type Mocked } from 'vitest';
 import { of } from 'rxjs';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { icons } from '../../icons-provider';
 import { AnalyticsComponent } from './analytics.component';
 import {
   AnalyticsApiService,
@@ -118,7 +120,7 @@ describe('AnalyticsComponent', () => {
     analyticsApiSpy.getDueCalendar.mockReturnValue(of({ success: true, message: '', data: mockDueEntries }));
     analyticsApiSpy.getRevenueComparison.mockReturnValue(of({ success: true, message: '', data: mockRevenueComp }));
     analyticsApiSpy.getBreakdown.mockReturnValue(of({ success: true, message: '', data: mockBreakdown }));
-    analyticsApiSpy.getReportDefinitions.mockReturnValue(of({ success: true, message: '', data: mockReportDefs }));
+    analyticsApiSpy.getReportDefinitions.mockReturnValue(of({ success: true, message: '', data: mockReportDefs, meta: { total: mockReportDefs.length, current_page: 1, last_page: 1, per_page: 10 } }));
     analyticsApiSpy.createReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
     analyticsApiSpy.updateReportDefinition.mockReturnValue(of({ success: true, message: '', data: mockReportDefs[0] }));
     analyticsApiSpy.deleteReportDefinition.mockReturnValue(of({ success: true, message: '', data: undefined }));
@@ -132,6 +134,7 @@ describe('AnalyticsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AnalyticsComponent],
       providers: [
+        provideNzIcons(icons),
         { provide: AnalyticsApiService, useValue: analyticsApiSpy },
         { provide: NzMessageService, useValue: messageSpy },
         { provide: NzModalService, useValue: modalSpy },
@@ -143,8 +146,9 @@ describe('AnalyticsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create the component and load dashboard on init', () => {
+  it('should create the component and load dashboard on init', async () => {
     expect(component).toBeTruthy();
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(analyticsApiSpy.getKpis).toHaveBeenCalled();
     expect(analyticsApiSpy.getDueCalendar).toHaveBeenCalled();
     expect(analyticsApiSpy.getRevenueComparison).toHaveBeenCalled();

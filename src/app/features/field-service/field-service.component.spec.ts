@@ -103,16 +103,25 @@ describe('FieldServiceComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('creates the component and loads tickets on init', () => {
+  it('creates the component and loads tickets on init', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
-    expect(mockTicketApi.getTickets).toHaveBeenCalled();
-    expect(component.tickets().length).toBe(1);
-    expect(component.total()).toBe(1);
+    expect(mockTicketApi.getTickets).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 10 }));
+    expect(component.grid.items().length).toBe(1);
+    expect(component.grid.totalCount()).toBe(1);
   });
 
-  it('updates filters and triggers reload on search', () => {
+  it('maps the server columns of the computed ticket fields', () => {
+    const columns = component.columns();
+    expect(columns.find((column) => column.key === 'title')?.serverKey).toBe('subject');
+    expect(columns.find((column) => column.key === 'channel')?.serverKey).toBe('source');
+    expect(columns.some((column) => column.key === 'sla_state')).toBe(true);
+  });
+
+  it('updates filters and triggers reload on search', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     mockTicketApi.getTickets.mockClear();
 
     component.searchQuery.set('Stampante');
@@ -120,6 +129,7 @@ describe('FieldServiceComponent', () => {
     component.filterPriority.set('high');
     component.filterSlaState.set('ok');
     component.onSearch();
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     expect(mockTicketApi.getTickets).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -132,8 +142,9 @@ describe('FieldServiceComponent', () => {
     );
   });
 
-  it('resets filters properly', () => {
+  it('resets filters properly', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     mockTicketApi.getTickets.mockClear();
 
     component.searchQuery.set('test');
@@ -142,8 +153,8 @@ describe('FieldServiceComponent', () => {
 
     expect(component.searchQuery()).toBe('');
     expect(component.filterStatus()).toBe('');
-    expect(component.pageIndex()).toBe(1);
-    expect(mockTicketApi.getTickets).toHaveBeenCalled();
+    expect(component.grid.pageIndex()).toBe(1);
+    expect(component.grid.filterParams().status).toBeUndefined();
   });
 
   it('opens detail drawer with ticket id', () => {
@@ -157,12 +168,13 @@ describe('FieldServiceComponent', () => {
     expect(component.createDrawerOpen()).toBe(true);
   });
 
-  it('handles load error gracefully', () => {
+  it('reports a load error', async () => {
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     mockTicketApi.getTickets.mockReturnValueOnce(throwError(() => ({ message: 'Network error' })));
-    component.loadTickets();
+    component.grid.reload();
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(component.tickets()).toEqual([]);
-    expect(component.total()).toBe(0);
-    expect(mockMessage.error).toHaveBeenCalled();
+    expect(mockMessage.error).toHaveBeenCalledWith('Network error');
   });
 });

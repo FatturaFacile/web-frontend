@@ -1,7 +1,7 @@
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, TemplateRef, untracked, viewChildren } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { applyServerErrors, I18nService, isValidationError } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { applyServerErrors, FetchGridModel, I18nService, isValidationError, PaginatedResponse } from '@core';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -11,14 +11,15 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { reportHttpError } from '../hr-http.util';
 import { ReasonButtonComponent } from '../reason-button.component';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { CrudConfig, CrudField, CrudOption, CrudRowAction } from './crud.types';
 import { fieldErrorTip, fieldValidators, isFieldRequired, wireConditionalRequired } from './crud-validation';
 
 type Row = { id: string } & Record<string, unknown>;
+
+const EMPTY_PAGE = { success: true, message: '', data: [], meta: { total: 0 } } as unknown as PaginatedResponse<Row>;
 
 /**
  * Table + create/edit modal driven by a config. Used by every flat HR/payroll resource
@@ -28,8 +29,7 @@ type Row = { id: string } & Record<string, unknown>;
   selector: 'app-crud-table',
   styleUrl: './crud-table.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,
@@ -41,7 +41,6 @@ type Row = { id: string } & Record<string, unknown>;
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     TranslatePipe,
     ReasonButtonComponent,
   ],
@@ -53,7 +52,10 @@ export class CrudTableComponent {
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
+  /** Rows of a client-side config (`list`); a `gridList` config is driven by `grid` instead. */
   protected readonly rows = signal<Row[]>([]);
+  protected readonly grid = new FetchGridModel<Row>((query) => this.config().gridList?.(query) ?? of(EMPTY_PAGE));
+  protected readonly serverDriven = computed(() => this.config().gridList !== undefined);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly editing = signal<Row | null>(null);
@@ -61,6 +63,21 @@ export class CrudTableComponent {
   protected form = new FormGroup<Record<string, FormControl>>({});
 
   protected readonly columns = computed(() => this.config().fields.filter((f) => f.column !== false));
+  /** One cell template per column (translated enums and booleans), created in the template. */
+  private readonly cellTemplates = viewChildren<TemplateRef<unknown>>('cellTpl');
+  protected readonly tableColumns = computed<TableColumnDef<Row>[]>(() => {
+    const templates = this.cellTemplates();
+    return this.columns().map((field, index) => ({
+      key: field.key,
+      serverKey: field.serverKey,
+      header: field.labelKey,
+      align: field.type === 'decimal' || field.type === 'integer' ? ('right' as const) : undefined,
+      valueGetter: (row: Row) => this.cell(row, field),
+      valueLabel: (value: string) => this.rawLabel(field, value),
+      ...(field.noGrid && this.serverDriven() ? { sortable: false, filterable: false, groupable: false } : {}),
+      customCellTemplate: templates[index],
+    }));
+  });
   protected readonly formFields = computed(() =>
     this.config().fields.filter((f) => !f.noForm && !(f.createOnly && this.editing() !== null)),
   );
@@ -73,9 +90,13 @@ export class CrudTableComponent {
   }
 
   reload(): void {
+    const list = this.config().list;
+    if (!list) {
+      this.grid.reload();
+      return;
+    }
     this.loading.set(true);
-    this.config()
-      .list()
+    list()
       .subscribe({
         next: (rows) => {
           this.rows.set(rows);
@@ -95,6 +116,14 @@ export class CrudTableComponent {
 
   protected optionText(option: CrudOption): string {
     return option.labelKey ? this.i18n.translate(option.labelKey) : (option.label ?? option.value);
+  }
+
+  /** Text of a raw value the server returns for a column (filter list, group header). */
+  protected rawLabel(field: CrudField, value: string): string {
+    if (field.type === 'boolean') {
+      return this.i18n.translate(value === '1' || value === 'true' ? 'hrmCommon.yes' : 'hrmCommon.no');
+    }
+    return field.type === 'select' ? this.optionLabel(field, value) : value;
   }
 
   protected cell(row: Row, field: CrudField): string {

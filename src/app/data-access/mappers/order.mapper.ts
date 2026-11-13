@@ -18,6 +18,7 @@ export class OrderMapper {
         quantity: Number(item.quantity),
         unitPrice: Number(item.unit_price),
       })),
+      itemsCount: dto.items_count ?? (dto.items ?? []).length,
       totalAmount: Number(dto.total_gross),
     };
   }

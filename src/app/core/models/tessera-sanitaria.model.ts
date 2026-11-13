@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export type TesseraSanitariaExpenseType =
   | 'TK'
   | 'FC'
@@ -73,4 +75,9 @@ export interface TesseraSanitariaSummary {
   total_opposed: number;
   total_transmitted: number;
   total_pending: number;
+}
+
+/** Filters of the flagged expenses list (the grid adds sorting, column filters and paging). */
+export interface TesseraSanitariaExpenseFilterParams extends QueryFilterParams {
+  year?: number;
 }

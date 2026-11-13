@@ -16,6 +16,11 @@ import {
 } from '@core';
 import { AssociationsComponent } from './associations.component';
 
+/** Waits for the debounced grid models (a real timer: the debounce is not tracked by the test zone). */
+function settle(ms = 30): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('AssociationsComponent', () => {
   let fixture: ComponentFixture<AssociationsComponent>;
   let component: AssociationsComponent;
@@ -106,11 +111,11 @@ describe('AssociationsComponent', () => {
     generateDonationReceipt: vi.fn().mockReturnValue(of({ success: true, data: { receipt_number: 'RIC-2026-002' } })),
     getFivePerMille: vi.fn().mockReturnValue(of({ success: true, data: [] })),
     getVolunteers: vi.fn().mockReturnValue(of({ success: true, data: mockVolunteers })),
-    getReimbursements: vi.fn().mockReturnValue(of({ success: true, data: mockReimbursements })),
+    getReimbursements: vi.fn().mockReturnValue(of({ success: true, data: mockReimbursements, meta: { total: 1, last_page: 1 } })),
     createReimbursement: vi.fn().mockReturnValue(of({ success: true, data: mockReimbursements[0] })),
     decideReimbursement: vi.fn().mockReturnValue(of({ success: true, data: { ...mockReimbursements[0], status: 'approved' } })),
     payReimbursement: vi.fn().mockReturnValue(of({ success: true, data: { success: true } })),
-    getMeetings: vi.fn().mockReturnValue(of({ success: true, data: mockMeetings })),
+    getMeetings: vi.fn().mockReturnValue(of({ success: true, data: mockMeetings, meta: { total: 1, last_page: 1 } })),
     createMeeting: vi.fn().mockReturnValue(of({ success: true, data: mockMeetings[0] })),
   };
 
@@ -134,6 +139,8 @@ describe('AssociationsComponent', () => {
     fixture = TestBed.createComponent(AssociationsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    // The grids load their rows through a debounced model.
+    await settle();
   });
 
   it('initializes component and loads members list', () => {
@@ -141,6 +148,30 @@ describe('AssociationsComponent', () => {
     expect(mockAssociationApi.getMembers).toHaveBeenCalled();
     expect(component.members().length).toBe(1);
     expect(component.members()[0].first_name).toBe('Giulia');
+  });
+
+  it('sends the registry filters of the toolbar and the column filters of the grid to the API', async () => {
+    component['memberStatusFilter'].set('active');
+    component['memberSearch'].set('Giulia');
+    component['applyMemberFilters']();
+    component['membersGrid'].onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'full_name', order: 'ascend' }, filters: { full_name: ['Giulia Bernasconi'], status: 'act' } });
+    await settle(450);
+
+    const last = mockAssociationApi.getMembers.mock.calls.at(-1)?.[0];
+    expect(last).toMatchObject({
+      status: 'active',
+      search: 'Giulia',
+      sort_by: 'full_name',
+      sort_dir: 'asc',
+      filter: { full_name: ['Giulia Bernasconi'] },
+      filter_like: { status: 'act' },
+    });
+  });
+
+  it('shows the member of a fee from the contact embedded by the API', () => {
+    expect(component['memberNameOfRow']({ member_id: 'unknown', member: { contact: { first_name: 'Anna', last_name: 'Rossi' } } })).toBe('Anna Rossi');
+    expect(component['memberNameOfRow']({ member_id: 'mem-001-uuid' })).toBe('Giulia Bernasconi');
+    expect(component['personLabel']({ company_name: 'ASD Lugano' })).toBe('ASD Lugano');
   });
 
   it('submits create member modal form', () => {

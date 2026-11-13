@@ -64,7 +64,7 @@ describe('AiAssistantComponent', () => {
     mockAssistantApi = {
       ask: vi.fn().mockReturnValue(of({ success: true, data: mockAnswer })),
       getCatalogue: vi.fn().mockReturnValue(of({ success: true, data: mockCatalogue })),
-      getLogs: vi.fn().mockReturnValue(of({ success: true, data: mockLogs })),
+      getLogs: vi.fn().mockReturnValue(of({ success: true, data: mockLogs, meta: { total: mockLogs.length, current_page: 1, last_page: 1, per_page: 10 } })),
     };
 
     const translateMock = {
@@ -93,12 +93,13 @@ describe('AiAssistantComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should initialize and load catalogue and logs', () => {
+  it('should initialize and load catalogue and logs', async () => {
     expect(component).toBeTruthy();
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(mockAssistantApi.getCatalogue).toHaveBeenCalled();
     expect(mockAssistantApi.getLogs).toHaveBeenCalled();
     expect(component.catalogue().length).toBe(2);
-    expect(component.logs().length).toBe(2);
+    expect(component.logGrid.items().length).toBe(2);
   });
 
   it('should filter catalogue on search query', () => {
@@ -150,9 +151,10 @@ describe('AiAssistantComponent', () => {
     expect(component.getOutcomeColor('failed')).toBe('default');
   });
 
-  it('should filter logs by outcome', () => {
+  it('should filter logs by outcome', async () => {
     component.logFilterForm.patchValue({ outcome: 'answered' });
     component.loadLogs();
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     expect(mockAssistantApi.getLogs).toHaveBeenCalledWith(
       expect.objectContaining({ outcome: 'answered' })

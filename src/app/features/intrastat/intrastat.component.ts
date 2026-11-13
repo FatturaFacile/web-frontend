@@ -1,6 +1,7 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -23,11 +24,13 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  FetchGridModel,
   IntrastatApiService,
   IntrastatCodeList,
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
+  IntrastatDeclarationSummary,
   IntrastatExportChannel,
   IntrastatFlow,
   IntrastatGenerateRequest,
@@ -40,7 +43,7 @@ import {
   IntrastatSupplyKind,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Mirrors `required_if:channel,customs`. */
 function requiredForCustoms(control: AbstractControl) {
@@ -65,6 +68,7 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
   selector: 'app-intrastat',
   styleUrl: './intrastat.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
@@ -97,7 +101,7 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
   ],
   templateUrl: './intrastat.component.html',
 })
-export class IntrastatComponent implements OnInit {
+export class IntrastatComponent {
   private readonly api = inject(IntrastatApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
@@ -108,8 +112,20 @@ export class IntrastatComponent implements OnInit {
   readonly filterFlow = signal<string>('');
 
   // --- TAB 0: DECLARATIONS ---
-  readonly declarations = signal<IntrastatDeclaration[]>([]);
-  readonly declarationsLoading = signal<boolean>(false);
+  /** Totals over the whole filtered list, sent by the API next to each page of declarations. */
+  readonly summary = signal<IntrastatDeclarationSummary>({ sales_total_eur: 0, purchases_total_eur: 0, draft_count: 0, submitted_count: 0 });
+  readonly declarationsGrid = new FetchGridModel<IntrastatDeclaration, { flow?: string; year?: number; page?: number; per_page?: number; search?: string }>(
+    (query) =>
+      this.api.getDeclarations(query).pipe(
+        tap((res) => {
+          const summary = (res as { summary?: IntrastatDeclarationSummary }).summary;
+          if (summary) {
+            this.summary.set(summary);
+          }
+        }),
+      ),
+  );
+  readonly declarations = this.declarationsGrid.items;
   readonly selectedDeclaration = signal<IntrastatDeclaration | null>(null);
   readonly drawerVisible = signal<boolean>(false);
   readonly createModalVisible = signal<boolean>(false);
@@ -125,8 +141,8 @@ export class IntrastatComponent implements OnInit {
   readonly periodicityLoading = signal<boolean>(false);
 
   // --- TAB 3: PRODUCT PROFILES ---
-  readonly productProfiles = signal<IntrastatProductProfile[]>([]);
-  readonly productProfilesLoading = signal<boolean>(false);
+  readonly productProfilesGrid = new FetchGridModel<IntrastatProductProfile>((query) => this.api.getProductProfiles(query));
+  readonly productProfiles = this.productProfilesGrid.items;
   readonly profileModalVisible = signal<boolean>(false);
   readonly selectedProductProfile = signal<IntrastatProductProfile | null>(null);
 
@@ -150,22 +166,10 @@ export class IntrastatComponent implements OnInit {
   readonly exportResult = signal<{ file_name: string; content?: string } | null>(null);
 
   // Derived metrics
-  readonly totalSalesEur = computed(() =>
-    this.declarations()
-      .filter((d) => d.flow === 'sales')
-      .reduce((sum, d) => sum + (d.sections?.reduce((s, sec) => s + (sec.total_eur || 0), 0) || 0), 0),
-  );
-  readonly totalPurchasesEur = computed(() =>
-    this.declarations()
-      .filter((d) => d.flow === 'purchases')
-      .reduce((sum, d) => sum + (d.sections?.reduce((s, sec) => s + (sec.total_eur || 0), 0) || 0), 0),
-  );
-  readonly totalDraftCount = computed(
-    () => this.declarations().filter((d) => d.status === 'draft').length,
-  );
-  readonly totalSubmittedCount = computed(
-    () => this.declarations().filter((d) => d.status === 'submitted').length,
-  );
+  readonly totalSalesEur = computed(() => this.summary().sales_total_eur);
+  readonly totalPurchasesEur = computed(() => this.summary().purchases_total_eur);
+  readonly totalDraftCount = computed(() => this.summary().draft_count);
+  readonly totalSubmittedCount = computed(() => this.summary().submitted_count);
 
   // Forms
   readonly createForm = this.fb.group({
@@ -234,30 +238,51 @@ export class IntrastatComponent implements OnInit {
   readonly exportFormVisible = signal<boolean>(false);
   private readonly exportTarget = signal<IntrastatDeclaration | null>(null);
 
-  ngOnInit(): void {
-    this.loadDeclarations();
+  private readonly modelTpl = viewChild<TemplateRef<unknown>>('modelTpl');
+  private readonly flowTpl = viewChild<TemplateRef<unknown>>('flowTpl');
+  private readonly periodTpl = viewChild<TemplateRef<unknown>>('periodTpl');
+  private readonly referenceTpl = viewChild<TemplateRef<unknown>>('referenceTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly protocolTpl = viewChild<TemplateRef<unknown>>('protocolTpl');
+  private readonly profileIdTpl = viewChild<TemplateRef<unknown>>('profileIdTpl');
+  private readonly profileNameTpl = viewChild<TemplateRef<unknown>>('profileNameTpl');
+  private readonly profileCnTpl = viewChild<TemplateRef<unknown>>('profileCnTpl');
+
+  protected readonly declarationColumns = computed<TableColumnDef<IntrastatDeclaration>[]>(() => [
+    { key: 'model', header: 'INTRASTAT.MODEL', customCellTemplate: this.modelTpl() },
+    { key: 'flow', header: 'INTRASTAT.FLOW', valueGetter: (d) => this.flowLabel(d.flow), valueLabel: (value) => this.flowLabel(value), customCellTemplate: this.flowTpl() },
+    { key: 'period', serverKey: 'period_label', header: 'INTRASTAT.PERIOD', valueGetter: (d) => `${d.year} / ${d.periodicity}${d.period}`, customCellTemplate: this.periodTpl() },
+    { key: 'reference_number', header: 'INTRASTAT.REF_NUMBER', valueGetter: (d) => `#${d.reference_number}`, customCellTemplate: this.referenceTpl() },
+    { key: 'status', header: 'INTRASTAT.STATUS', valueGetter: (d) => d.status.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.statusTpl() },
+    { key: 'protocol_number', header: 'INTRASTAT.PROTOCOL', valueGetter: (d) => d.protocol_number || '-', customCellTemplate: this.protocolTpl() },
+  ]);
+
+  protected readonly profileColumns = computed<TableColumnDef<IntrastatProductProfile>[]>(() => [
+    { key: 'product_id', header: 'INTRASTAT.PRODUCT_ID', customCellTemplate: this.profileIdTpl() },
+    { key: 'product_name', serverKey: 'product.name', header: 'INTRASTAT.PRODUCT_NAME', valueGetter: (p) => p.product_name || '-', customCellTemplate: this.profileNameTpl() },
+    { key: 'cn8_code', header: 'INTRASTAT.CN8_CODE', customCellTemplate: this.profileCnTpl() },
+    { key: 'supply_kind', header: 'INTRASTAT.SUPPLY_KIND', valueGetter: (p) => (p.supply_kind ? this.supplyKindLabel(p.supply_kind) : '-'), valueLabel: (value) => this.supplyKindLabel(value) },
+    { key: 'origin_country_code', header: 'INTRASTAT.ORIGIN_COUNTRY', valueGetter: (p) => p.origin_country_code || '-' },
+  ]);
+
+  constructor() {
+    this.declarationsGrid.setFilter({ year: this.selectedYear() });
     this.loadPeriodicity();
-    this.loadProductProfiles();
     this.api.getCodes().subscribe({ next: (res) => this.codes.set(res.data), error: () => this.codes.set(null) });
   }
 
   // --- TAB 0: DECLARATIONS ---
   loadDeclarations(): void {
-    this.declarationsLoading.set(true);
-    this.api
-      .getDeclarations({
-        flow: this.filterFlow() || undefined,
-        year: this.selectedYear(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.declarations.set(res?.data || []);
-          this.declarationsLoading.set(false);
-        },
-        error: () => {
-          this.declarationsLoading.set(false);
-        },
-      });
+    this.declarationsGrid.setFilter({ flow: this.filterFlow() || undefined, year: this.selectedYear() });
+    this.declarationsGrid.reload();
+  }
+
+  protected flowLabel(flow: string): string {
+    return this.translate.instant(flow === 'sales' ? 'INTRASTAT.SALES' : 'INTRASTAT.PURCHASES');
+  }
+
+  protected supplyKindLabel(kind: string): string {
+    return this.translate.instant('INTRASTAT.SUPPLY_' + kind.toUpperCase());
   }
 
   openCreateModal(): void {
@@ -532,16 +557,7 @@ export class IntrastatComponent implements OnInit {
 
   // --- TAB 3: PRODUCT PROFILES ---
   loadProductProfiles(): void {
-    this.productProfilesLoading.set(true);
-    this.api.getProductProfiles().subscribe({
-      next: (res) => {
-        this.productProfiles.set(res?.data || []);
-        this.productProfilesLoading.set(false);
-      },
-      error: () => {
-        this.productProfilesLoading.set(false);
-      },
-    });
+    this.productProfilesGrid.reload();
   }
 
   openCreateProfileModal(): void {

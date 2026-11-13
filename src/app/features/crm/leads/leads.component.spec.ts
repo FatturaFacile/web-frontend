@@ -135,22 +135,27 @@ describe('LeadsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads leads on initialization', () => {
+  it('loads leads on initialization', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
     expect(mockCrmApi.getLeads).toHaveBeenCalled();
-    expect(component.leads()).toEqual(mockLeads);
-    expect(component.total()).toBe(1);
+    expect(component.grid.items()).toEqual(mockLeads);
+    expect(component.grid.totalCount()).toBe(1);
   });
 
-  it('filters leads by search term', () => {
+  it('filters leads by search term and sorts the name on the server column', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     const event = { target: { value: 'Alpha' } } as unknown as Event;
     component.onSearch(event);
+    component.grid.onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'display_name', order: 'descend' }, filters: {} });
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     expect(component.searchTerm()).toBe('Alpha');
+    expect(component.columns().find((c) => c.key === 'full_name')?.serverKey).toBe('display_name');
     expect(mockCrmApi.getLeads).toHaveBeenCalledWith(
-      expect.objectContaining({ search: 'Alpha', page: 1 }),
+      expect.objectContaining({ search: 'Alpha', page: 1, sort_by: 'display_name', sort_dir: 'desc' }),
     );
   });
 

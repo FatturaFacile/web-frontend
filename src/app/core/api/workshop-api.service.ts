@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   PaginatedResponse,
+  QueryFilterParams,
   WorkshopFolder,
   WorkshopFolderActionRequest,
   WorkshopFolderLine,
@@ -155,8 +156,10 @@ export class WorkshopApiService {
   }
 
   // --- RECURRING SERVICES (TAGLIANDI / REVISIONI) ---
-  getRecurringServices(): Observable<ApiResponse<WorkshopRecurringService[]>> {
-    return this.http.get<ApiResponse<WorkshopRecurringService[]>>(`${this.base}/recurring-services`);
+  getRecurringServices(params?: QueryFilterParams): Observable<PaginatedResponse<WorkshopRecurringService>> {
+    return this.http.get<PaginatedResponse<WorkshopRecurringService>>(`${this.base}/recurring-services`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createRecurringService(

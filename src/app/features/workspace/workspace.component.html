@@ -244,48 +244,25 @@
           </button>
         </div>
 
-        <nz-table
-          #itemsTable
-          [nzData]="filteredItems()"
-          [nzPageSize]="10"
-          [nzScroll]="{ x: '720px' }"
-          nzBordered
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th nzWidth="15%">{{ 'WORKSPACE.ITEM_TYPE' | translate }}</th>
-              <th nzWidth="40%" [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
-              <th nzWidth="25%" [nzSortFn]="'counterpart' | gridSort" [nzFilters]="'counterpart' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'counterpart' | gridFilterFn">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
-              <th nzWidth="20%" [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: itemsTable.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of itemsTable.data; track item.id) {
-              <tr>
-                <td>
-                  <nz-tag [nzColor]="getItemKindColor(item.kind)">
-                    {{ (item.kind === 'calendar_event' ? 'WORKSPACE.KIND_CALENDAR' : 'WORKSPACE.KIND_EMAIL') | translate }}
-                  </nz-tag>
-                </td>
-                <td class="cell-subject">{{ item.subject || '-' }}</td>
-                <td>{{ item.counterpart || '-' }}</td>
-                <td>
-                  @if (item.starts_at) {
-                    <span>{{ item.starts_at | date: 'dd/MM/yyyy HH:mm' }}</span>
-                    @if (item.ends_at) {
-                      <span class="cell-until">
-                        {{ 'WORKSPACE.UNTIL' | translate }} {{ item.ends_at | date: 'HH:mm' }}
-                      </span>
-                    }
-                  } @else {
-                    <span>-</span>
-                  }
-                </td>
-              </tr>
+        <app-base-table [grid]="items" [columns]="itemColumns()" [scroll]="{ x: '720px' }" exportFileName="workspace-items" />
+
+        <ng-template #kindTpl let-item>
+          <nz-tag [nzColor]="getItemKindColor(item.kind)">{{ kindLabel(item.kind) }}</nz-tag>
+        </ng-template>
+        <ng-template #subjectTpl let-item><span class="cell-subject">{{ item.subject || '-' }}</span></ng-template>
+        <ng-template #counterpartTpl let-item>{{ item.counterpart || '-' }}</ng-template>
+        <ng-template #dateTpl let-item>
+          @if (item.starts_at) {
+            <span>{{ item.starts_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+            @if (item.ends_at) {
+              <span class="cell-until">
+                {{ 'WORKSPACE.UNTIL' | translate }} {{ item.ends_at | date: 'HH:mm' }}
+              </span>
             }
-          </tbody>
-        </nz-table>
+          } @else {
+            <span>-</span>
+          }
+        </ng-template>
       </nz-card>
     </nz-tab>
   </nz-tabs>

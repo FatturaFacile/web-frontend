@@ -98,7 +98,7 @@ describe('SubscriptionApiService', () => {
     const mockContracts: SubscriptionContractResource[] = [
       {
         id: 'contract-1',
-        contract_number: 'SUB-2026-001',
+        subscription_number: 'SUB-2026-001',
         name: 'Alpha SA Plan',
         customer_id: 'cust-1',
         customer_name: 'Alpha SA',

@@ -2,15 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
-import { ApiResponse, RestoreBackupResult, SystemBackup } from '../models';
+import { toHttpParams } from '../http/laravel-http.utils';
+import { ApiResponse, PaginatedResponse, QueryFilterParams, RestoreBackupResult, SystemBackup } from '../models';
 
 @Service()
 export class SystemApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/system`;
 
-  getTenantBackups(): Observable<ApiResponse<SystemBackup[]>> {
-    return this.http.get<ApiResponse<SystemBackup[]>>(`${this.base}/backups`);
+  getTenantBackups(params?: QueryFilterParams): Observable<PaginatedResponse<SystemBackup>> {
+    return this.http.get<PaginatedResponse<SystemBackup>>(`${this.base}/backups`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createTenantBackup(): Observable<ApiResponse<SystemBackup>> {

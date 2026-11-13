@@ -14,13 +14,13 @@
             nz-input
             [placeholder]="'ASSOCIATIONS.SEARCH_MEMBERS' | translate"
             [ngModel]="memberSearch()"
-            (ngModelChange)="memberSearch.set($event); loadMembers()"
+            (ngModelChange)="memberSearch.set($event); applyMemberFilters()"
             class="filter-input"
           />
 
           <nz-select
             [ngModel]="memberStatusFilter()"
-            (ngModelChange)="memberStatusFilter.set($event); loadMembers()"
+            (ngModelChange)="memberStatusFilter.set($event); applyMemberFilters()"
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
@@ -40,88 +40,7 @@
         <button nz-button nzType="primary" appIconAction="create" (click)="openCreateMemberModal()"></button>
       </div>
 
-      <nz-table
-        #membersTable
-        nzShowSizeChanger
-        [nzData]="members()"
-        [nzFrontPagination]="false"
-        [nzLoading]="membersLoading()"
-        [nzTotal]="membersTotal()"
-        [nzPageIndex]="membersPageIndex()"
-        [nzPageSize]="membersPageSize()"
-        (nzQueryParams)="onMembersTableQueryChange($event)"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'member_number' | gridSort" [nzFilters]="'member_number' | gridFilterList: membersTable.nzData" [nzFilterFn]="'member_number' | gridFilterFn">{{ 'ASSOCIATIONS.MEMBER_NO' | translate }}</th>
-            <th [nzSortFn]="'first_name' | gridSort" [nzFilters]="'first_name' | gridFilterList: membersTable.nzData" [nzFilterFn]="'first_name' | gridFilterFn">{{ 'ASSOCIATIONS.FULL_NAME' | translate }}</th>
-            <th [nzSortFn]="'tax_code' | gridSort" [nzFilters]="'tax_code' | gridFilterList: membersTable.nzData" [nzFilterFn]="'tax_code' | gridFilterFn">{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</th>
-            <th [nzSortFn]="'joined_on' | gridSort" [nzFilters]="'joined_on' | gridFilterList: membersTable.nzData" [nzFilterFn]="'joined_on' | gridFilterFn">{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.MED_CERTIFICATE' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: membersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of membersTable.data; track m.id) {
-            <tr>
-              <td>
-                <strong>{{ m.member_number || '-' }}</strong>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="link-button"
-                  (click)="openMemberDrawer(m)"
-                >
-                  <strong>{{ m.first_name }} {{ m.last_name }}</strong>
-                </button>
-                @if (m.email) {
-                  <div class="text-muted">{{ m.email }}</div>
-                }
-              </td>
-              <td>
-                <code>{{ m.tax_code || '-' }}</code>
-              </td>
-              <td>{{ m.joined_on | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                @if (m.has_medical_certificate) {
-                  <nz-tag nzColor="success">{{ 'ASSOCIATIONS.LBL_VALIDO' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_MANCANTE' | translate }}</nz-tag>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(m.status)">
-                  {{ m.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzType="default"
-                    nzSize="small"
-                    (click)="openMemberDrawer(m)"
-                  >
-                    <span nz-icon nzType="eye"></span>
-                  </button>
-
-                  <button
-                    *nzSpaceItem
-                    nz-button
-                    nzDanger
-                    nzSize="small"
-                    appIconAction="delete"
-                    (click)="deleteMember(m)"
-                  ></button>
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="membersGrid" [columns]="memberColumns()" [actionsTemplate]="memberActionsTpl" exportFileName="members" />
     </nz-tab>
 
     <!-- TAB 2: QUOTE ASSOCIATIVE & INCASSI -->
@@ -134,72 +53,7 @@
         </button>
       </div>
 
-      <nz-table
-        #feesTable
-        nzShowSizeChanger
-        [nzData]="fees()"
-        [nzFrontPagination]="false"
-        [nzLoading]="feesLoading()"
-        [nzTotal]="feesTotal()"
-        [nzPageIndex]="feesPageIndex()"
-        [nzPageSize]="feesPageSize()"
-      >
-        <thead>
-          <tr>
-            <th>{{ 'ASSOCIATIONS.MEMBER' | translate }}</th>
-            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: feesTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
-            <th [nzSortFn]="'starts_on' | gridSort" [nzFilters]="'starts_on' | gridFilterList: feesTable.nzData" [nzFilterFn]="'starts_on' | gridFilterFn">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
-            <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: feesTable.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'ends_on' | gridSort" [nzFilters]="'ends_on' | gridFilterList: feesTable.nzData" [nzFilterFn]="'ends_on' | gridFilterFn">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: feesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (fee of feesTable.data; track fee.id) {
-            <tr>
-              <td>{{ memberNameOf(fee.member_id) }}</td>
-              <td>
-                <nz-tag>{{ fee.description }}</nz-tag>
-              </td>
-              <td>{{ fee.starts_on | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                <strong>{{ fee.net_amount | money: 'CHF' }}</strong>
-              </td>
-              <td>{{ fee.ends_on | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(fee.status)">
-                  {{ fee.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  @if (fee.status === 'active') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="primary"
-                      nzSize="small"
-                      (click)="openPaymentModal(fee)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                      {{ 'ASSOCIATIONS.COLLECT' | translate }}
-                    </button>
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzDanger
-                      nzSize="small"
-                      appIconAction="cancel"
-                      (click)="cancelFee(fee)"
-                    ></button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="feesGrid" [columns]="feeColumns()" [actionsTemplate]="feeActionsTpl" exportFileName="fee-assignments" />
     </nz-tab>
 
     <!-- TAB 3: CORSI & ATTIVITÀ SPORTIVE -->
@@ -212,46 +66,7 @@
         </button>
       </div>
 
-      <nz-table
-        #coursesTable
-        [nzData]="courses()"
-        [nzFrontPagination]="true"
-        [nzLoading]="coursesLoading()"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</th>
-            <th [nzSortFn]="'starts_on' | gridSort" [nzFilters]="'starts_on' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'starts_on' | gridFilterFn">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.CAPACITY' | translate }}</th>
-            <th [nzSortFn]="'ends_on' | gridSort" [nzFilters]="'ends_on' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'ends_on' | gridFilterFn">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: coursesTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (course of coursesTable.data; track course.id) {
-            <tr>
-              <td>
-                <strong>{{ course.title }}</strong>
-              </td>
-              <td>{{ course.starts_on | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ course.capacity ?? '-' }}</td>
-              <td>{{ course.ends_on | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(course.status)">
-                  {{ course.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <button nz-button nzType="default" nzSize="small" (click)="openEnrolModal(course)">
-                  <span nz-icon nzType="plus"></span>
-                  {{ 'ASSOCIATIONS.LBL_ISCRIVI' | translate }}
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="coursesGrid" [columns]="courseColumns()" [actionsTemplate]="courseActionsTpl" exportFileName="courses" />
     </nz-tab>
 
     <!-- TAB 4: DONAZIONI & 5 PER MILLE -->
@@ -272,56 +87,7 @@
         </button>
       </div>
 
-      <nz-table
-        #donTable
-        [nzData]="donations()"
-        [nzFrontPagination]="true"
-        [nzLoading]="donationsLoading()"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'purpose' | gridSort" [nzFilters]="'purpose' | gridFilterList: donTable.nzData" [nzFilterFn]="'purpose' | gridFilterFn">{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: donTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th [nzSortFn]="'received_on' | gridSort" [nzFilters]="'received_on' | gridFilterList: donTable.nzData" [nzFilterFn]="'received_on' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.RECEIPT_NO' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (d of donTable.data; track d.id) {
-            <tr>
-              <td>
-                <strong>{{ 'ASSOCIATIONS.KIND_' + d.kind.toUpperCase() | translate }}</strong>
-                @if (d.purpose) {
-                  <div class="text-muted">{{ d.purpose }}</div>
-                }
-              </td>
-              <td>
-                <strong>{{ d.amount | money: 'CHF' }}</strong>
-                @if (d.payment_method === 'cash') {
-                  <nz-tag nzColor="orange">{{ 'ASSOCIATIONS.LBL_CONTANTI' | translate }}</nz-tag>
-                }
-              </td>
-              <td>{{ d.received_on | date: 'dd/MM/yyyy' }}</td>
-              <td>
-                @if (d.receipts?.length) {
-                  <nz-tag nzColor="success">{{ d.receipts?.[0]?.number }}</nz-tag>
-                } @else {
-                  <span class="text-muted">{{ 'ASSOCIATIONS.LBL_NON_EMESSA' | translate }}</span>
-                }
-              </td>
-              <td nzAlign="right">
-                @if (!d.receipts?.length) {
-                  <button nz-button nzType="default" nzSize="small" (click)="generateReceipt(d)">
-                    <span nz-icon nzType="check"></span>
-                    {{ 'ASSOCIATIONS.LBL_RICEVUTA_FISCALE' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="donationsGrid" [columns]="donationColumns()" [actionsTemplate]="donationActionsTpl" exportFileName="donations" />
     </nz-tab>
 
     <!-- TAB 5: REGISTRO VOLONTARI RUNTS & RIMBORSI -->
@@ -366,46 +132,7 @@
             <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateReimbModal()"></button>
           </div>
 
-          <nz-table [nzData]="reimbursements()" [nzFrontPagination]="true" [nzLoading]="reimbursementsLoading()" #gridTbl5>
-            <thead>
-              <tr>
-                <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
-                <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-                <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'COMMON.DESCRIPTION' | translate }}</th>
-                <th [nzSortFn]="'incurred_on' | gridSort" [nzFilters]="'incurred_on' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'incurred_on' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl5.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-                <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (r of reimbursements(); track r.id) {
-                <tr>
-                  <td>{{ memberNameOf(r.member_id) }}</td>
-                  <td>
-                    <strong>{{ r.amount | money: 'CHF' }}</strong>
-                  </td>
-                  <td>{{ r.description }}</td>
-                  <td>{{ r.incurred_on | date: 'dd/MM/yyyy' }}</td>
-                  <td>
-                    <nz-tag [nzColor]="getStatusColor(r.status)">{{ r.status | uppercase }}</nz-tag>
-                  </td>
-                  <td nzAlign="right">
-                    <nz-space>
-                      @if (r.status === 'submitted') {
-                        <button *nzSpaceItem nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="decideReimb(r, true)"></button>
-                        <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="decideReimb(r, false)"></button>
-                      }
-                      @if (r.status === 'approved') {
-                        <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="payReimb(r)">
-                          {{ 'ASSOCIATIONS.LBL_LIQUIDA' | translate }}
-                        </button>
-                      }
-                    </nz-space>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="reimbursementsGrid" [columns]="reimbursementColumns()" [actionsTemplate]="reimbursementActionsTpl" exportFileName="reimbursements" />
         </div>
       </div>
     </nz-tab>
@@ -420,37 +147,103 @@
         </button>
       </div>
 
-      <nz-table [nzData]="meetings()" [nzFrontPagination]="true" [nzLoading]="meetingsLoading()" #gridTbl6>
-        <thead>
-          <tr>
-            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.MEETING_TYPE' | translate }}</th>
-            <th [nzSortFn]="'scheduled_at' | gridSort" [nzFilters]="'scheduled_at' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'scheduled_at' | gridFilterFn">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-            <th [nzSortFn]="'location' | gridSort" [nzFilters]="'location' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'location' | gridFilterFn">{{ 'ASSOCIATIONS.LOCATION' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl6.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of meetings(); track m.id) {
-            <tr>
-              <td>
-                <strong>{{ m.title }}</strong>
-              </td>
-              <td>
-                <nz-tag>{{ 'ASSOCIATIONS.BODY_' + m.body.toUpperCase() | translate }}</nz-tag>
-              </td>
-              <td>{{ m.scheduled_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ m.location || '-' }}</td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(m.status)">{{ m.status | uppercase }}</nz-tag>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="meetingsGrid" [columns]="meetingColumns()" exportFileName="meetings" />
     </nz-tab>
   </nz-tabs>
 </nz-card>
+
+<!-- Cell and action templates of the server-driven grids -->
+<ng-template #dateTpl let-value="value">{{ value | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #dateTimeTpl let-value="value">{{ value | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #textTpl let-value="value">{{ value ?? '-' }}</ng-template>
+<ng-template #taxCodeTpl let-value="value"><code>{{ value || '-' }}</code></ng-template>
+<ng-template #moneyTpl let-value="value"><strong>{{ value | money: 'CHF' }}</strong></ng-template>
+<ng-template #statusTpl let-row>
+  <nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #memberTpl let-m>
+  <button type="button" class="link-button" (click)="openMemberDrawer(m)">
+    <strong>{{ personLabel(m) }}</strong>
+  </button>
+  @if (m.email) {
+    <div class="text-muted">{{ m.email }}</div>
+  }
+</ng-template>
+<ng-template #certificateTpl let-m>
+  @if (m.has_medical_certificate) {
+    <nz-tag nzColor="success">{{ 'ASSOCIATIONS.LBL_VALIDO' | translate }}</nz-tag>
+  } @else {
+    <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_MANCANTE' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #memberActionsTpl let-m>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openMemberDrawer(m)">
+      <span nz-icon nzType="eye"></span>
+    </button>
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="delete" (click)="deleteMember(m)"></button>
+  </nz-space>
+</ng-template>
+<ng-template #rowMemberTpl let-row>{{ memberNameOfRow(row) }}</ng-template>
+<ng-template #feeDescriptionTpl let-value="value"><nz-tag>{{ value }}</nz-tag></ng-template>
+<ng-template #feeActionsTpl let-fee>
+  <nz-space>
+    @if (fee.status === 'active') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="openPaymentModal(fee)">
+        <span nz-icon nzType="check"></span>
+        {{ 'ASSOCIATIONS.COLLECT' | translate }}
+      </button>
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="cancelFee(fee)"></button>
+    }
+  </nz-space>
+</ng-template>
+<ng-template #courseActionsTpl let-course>
+  <button nz-button nzType="default" nzSize="small" (click)="openEnrolModal(course)">
+    <span nz-icon nzType="plus"></span>
+    {{ 'ASSOCIATIONS.LBL_ISCRIVI' | translate }}
+  </button>
+</ng-template>
+<ng-template #donationKindTpl let-d>
+  <strong>{{ donationKindLabel(d.kind) }}</strong>
+  @if (d.purpose) {
+    <div class="text-muted">{{ d.purpose }}</div>
+  }
+</ng-template>
+<ng-template #donationAmountTpl let-d>
+  <strong>{{ d.amount | money: 'CHF' }}</strong>
+  @if (d.payment_method === 'cash') {
+    <nz-tag nzColor="orange">{{ 'ASSOCIATIONS.LBL_CONTANTI' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #receiptTpl let-d>
+  @if (d.receipts?.length) {
+    <nz-tag nzColor="success">{{ d.receipts?.[0]?.number }}</nz-tag>
+  } @else {
+    <span class="text-muted">{{ 'ASSOCIATIONS.LBL_NON_EMESSA' | translate }}</span>
+  }
+</ng-template>
+<ng-template #donationActionsTpl let-d>
+  @if (!d.receipts?.length) {
+    <button nz-button nzType="default" nzSize="small" (click)="generateReceipt(d)">
+      <span nz-icon nzType="check"></span>
+      {{ 'ASSOCIATIONS.LBL_RICEVUTA_FISCALE' | translate }}
+    </button>
+  }
+</ng-template>
+<ng-template #reimbursementActionsTpl let-r>
+  <nz-space>
+    @if (r.status === 'submitted') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="decideReimb(r, true)"></button>
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="decideReimb(r, false)"></button>
+    }
+    @if (r.status === 'approved') {
+      <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="payReimb(r)">
+        {{ 'ASSOCIATIONS.LBL_LIQUIDA' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+<ng-template #meetingBodyTpl let-m><nz-tag>{{ meetingBodyLabel(m.body) }}</nz-tag></ng-template>
 
 <!-- MODAL: REGISTRA NUOVO SOCIO -->
 <nz-modal

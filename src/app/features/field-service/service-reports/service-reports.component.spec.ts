@@ -61,6 +61,8 @@ describe('ServiceReportsComponent', () => {
     fixture = TestBed.createComponent(ServiceReportsComponent);
     harness = fixture.componentInstance as unknown as ReportsHarness;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    fixture.detectChanges();
   });
 
   it('loads the reports with the paging parameters', () => {

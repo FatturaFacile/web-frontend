@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -33,16 +33,19 @@ import {
   AppointmentApiService,
   AppointmentCalendarItem,
   AppointmentConflictCheckResponse,
+  AppointmentFilterParams,
   CancelAppointmentRequest,
   ClientApiService,
   ContactResource,
   contactDisplayName,
   CreateAppointmentRequest,
+  FetchGridModel,
+  GridValue,
   SettingsApiService,
   TranslateService,
   UserResource,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, GridFilterFnPipe, GridFilterListPipe, GridSortPipe, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 
 /** Mirrors the API rule `ends_at: after:starts_at`. */
 function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
@@ -58,7 +61,6 @@ function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
   selector: 'app-appointments',
   styleUrl: './appointments.component.scss',
   imports: [
-    GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
@@ -68,6 +70,7 @@ function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
     NzCardModule,
     NzTabsModule,
     NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -102,9 +105,31 @@ export class AppointmentsComponent implements OnInit {
 
   readonly selectedTabIndex = signal<number>(0);
 
+  private readonly titleTpl = viewChild<TemplateRef<unknown>>('titleTpl');
+  private readonly contactTpl = viewChild<TemplateRef<unknown>>('contactTpl');
+  private readonly startsAtTpl = viewChild<TemplateRef<unknown>>('startsAtTpl');
+  private readonly endsAtTpl = viewChild<TemplateRef<unknown>>('endsAtTpl');
+  private readonly lifecycleTpl = viewChild<TemplateRef<unknown>>('lifecycleTpl');
+  private readonly addressTpl = viewChild<TemplateRef<unknown>>('addressTpl');
+
+  protected readonly appointmentColumns = computed<TableColumnDef<Appointment>[]>(() => {
+    return [
+      { key: 'title', header: 'APPOINTMENTS.TITLE_COL', customCellTemplate: this.titleTpl() },
+      { key: 'contact', serverKey: 'contact.name', header: 'APPOINTMENTS.CONTACT', valueGetter: (row) => row.contact?.name, customCellTemplate: this.contactTpl() },
+      { key: 'starts_at', header: 'APPOINTMENTS.STARTS_AT', customCellTemplate: this.startsAtTpl() },
+      { key: 'ends_at', header: 'APPOINTMENTS.ENDS_AT', customCellTemplate: this.endsAtTpl() },
+      { key: 'lifecycle', serverKey: 'lifecycle_status', header: 'APPOINTMENTS.STATUS', valueGetter: (row) => this.getStatusLabel(row), valueLabel: (value) => this.lifecycleLabel(value), customCellTemplate: this.lifecycleTpl() },
+      { key: 'address', header: 'APPOINTMENTS.ADDRESS', customCellTemplate: this.addressTpl() },
+    ];
+  });
+
   // --- APPOINTMENTS LIST ---
-  readonly appointments = signal<Appointment[]>([]);
-  readonly appointmentsLoading = signal<boolean>(false);
+  /** Server-driven grid of the list view: paging, sorting, column filters and grouping run on the API. */
+  readonly appointments = new FetchGridModel<Appointment, AppointmentFilterParams>((query) =>
+    this.api.getAppointments(query),
+  );
+  /** Appointments per lifecycle state over the whole filtered list (not only the loaded page). */
+  private readonly lifecycleCounts = signal<GridValue[]>([]);
   readonly filterDate = signal<string>('');
   readonly filterTechnicianId = signal<string>('');
 
@@ -123,17 +148,9 @@ export class AppointmentsComponent implements OnInit {
   readonly conflictChecking = signal<boolean>(false);
 
   // Derived metrics
-  readonly totalUpcoming = computed(() =>
-    this.appointments().filter((a) => !a.cancelled_at && new Date(a.starts_at) >= new Date()).length,
-  );
-
-  readonly totalCompleted = computed(() =>
-    this.appointments().filter((a) => !a.cancelled_at && !!a.service_report_id).length,
-  );
-
-  readonly totalCancelled = computed(() =>
-    this.appointments().filter((a) => !!a.cancelled_at).length,
-  );
+  readonly totalUpcoming = computed(() => this.lifecycleCount('scheduled') + this.lifecycleCount('confirmed'));
+  readonly totalCompleted = computed(() => this.lifecycleCount('completed'));
+  readonly totalCancelled = computed(() => this.lifecycleCount('cancelled'));
 
   // Modals visibility
   readonly appointmentModalVisible = signal<boolean>(false);
@@ -170,26 +187,25 @@ export class AppointmentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.settingsApi.getTenantUsers().subscribe({ next: (res) => this.users.set(res.data), error: () => this.users.set([]) });
-    this.loadAppointments();
+    this.loadLifecycleCounts();
     this.loadCalendar();
   }
 
   loadAppointments(): void {
-    this.appointmentsLoading.set(true);
-    this.api
-      .getAppointments({
-        date: this.filterDate() || undefined,
-        technician_id: this.filterTechnicianId() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.appointments.set(res?.data || []);
-          this.appointmentsLoading.set(false);
-        },
-        error: () => {
-          this.appointmentsLoading.set(false);
-        },
-      });
+    this.appointments.setFilter({
+      date: this.filterDate() || undefined,
+      technician_id: this.filterTechnicianId() || undefined,
+    });
+    this.appointments.reload();
+    this.loadLifecycleCounts();
+  }
+
+  private loadLifecycleCounts(): void {
+    this.appointments.loadValues('lifecycle_status').subscribe((values) => this.lifecycleCounts.set(values));
+  }
+
+  private lifecycleCount(state: string): number {
+    return this.lifecycleCounts().find((entry) => entry.value === state)?.count ?? 0;
   }
 
   loadCalendar(): void {
@@ -374,10 +390,28 @@ export class AppointmentsComponent implements OnInit {
   }
 
   getStatusLabel(app: Appointment): string {
-    if (app.cancelled_at) return this.translate.instant('APPOINTMENTS.STATUS_CANCELLED');
-    if (app.service_report_id) return this.translate.instant('APPOINTMENTS.STATUS_COMPLETED');
-    if (app.confirmed_at) return this.translate.instant('APPOINTMENTS.STATUS_CONFIRMED');
-    return this.translate.instant('APPOINTMENTS.STATUS_SCHEDULED');
+    return this.lifecycleLabel(this.lifecycleOf(app));
+  }
+
+  /** Same rule as Appointment::gridColumns() `lifecycle_status` on the API. */
+  private lifecycleOf(app: Appointment): string {
+    if (app.cancelled_at) return 'cancelled';
+    if (app.service_report_id) return 'completed';
+    if (app.confirmed_at) return 'confirmed';
+    return 'scheduled';
+  }
+
+  private lifecycleLabel(state: string): string {
+    switch (state) {
+      case 'cancelled':
+        return this.translate.instant('APPOINTMENTS.STATUS_CANCELLED');
+      case 'completed':
+        return this.translate.instant('APPOINTMENTS.STATUS_COMPLETED');
+      case 'confirmed':
+        return this.translate.instant('APPOINTMENTS.STATUS_CONFIRMED');
+      default:
+        return this.translate.instant('APPOINTMENTS.STATUS_SCHEDULED');
+    }
   }
 
   getEventsForDate(date: Date): AppointmentCalendarItem[] {

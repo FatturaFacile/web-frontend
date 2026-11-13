@@ -146,7 +146,7 @@ describe('ChildcareComponent', () => {
     addReferencePerson: vi.fn().mockReturnValue(of({ data: mockRefPerson })),
     grantPortalAccess: vi.fn().mockReturnValue(of({ data: { invitation_sent: true } })),
     getChildDocuments: vi.fn().mockReturnValue(of({ data: [mockDoc] })),
-    getNotes: vi.fn().mockReturnValue(of({ data: [mockDailyNote] })),
+    getNotes: vi.fn().mockReturnValue(of({ data: [mockDailyNote], meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 } })),
     createNote: vi.fn().mockReturnValue(of({ data: mockDailyNote })),
     getMonthlyRegister: vi.fn().mockReturnValue(of({ data: [mockAttendance] })),
     checkIn: vi.fn().mockReturnValue(of({ data: mockAttendance })),
@@ -155,7 +155,7 @@ describe('ChildcareComponent', () => {
     getFeePlans: vi.fn().mockReturnValue(of({ data: [mockFeePlan] })),
     createFeePlan: vi.fn().mockReturnValue(of({ data: mockFeePlan })),
     runBilling: vi.fn().mockReturnValue(of({ data: { run_id: 'run-1', total_billed: '500.00' } })),
-    getBills: vi.fn().mockReturnValue(of({ data: [mockBill] })),
+    getBills: vi.fn().mockReturnValue(of({ data: [mockBill], meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 } })),
     getDocumentRequirements: vi.fn().mockReturnValue(of({ data: [mockRequirement] })),
     createDocumentRequirement: vi.fn().mockReturnValue(of({ data: mockRequirement })),
     getOutstandingDocuments: vi.fn().mockReturnValue(of({ data: [] })),
@@ -185,7 +185,9 @@ describe('ChildcareComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should initialize and load children, groups, attendances, fee plans, and bills', () => {
+  it('should initialize and load children, groups, attendances, fee plans, and bills', async () => {
+    // The server-driven grids send their first request after a zero-delay debounce.
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
     expect(mockChildcareApi.getChildren).toHaveBeenCalled();
     expect(mockChildcareApi.getGroups).toHaveBeenCalled();
@@ -197,6 +199,10 @@ describe('ChildcareComponent', () => {
     expect(component.children().length).toBe(2);
     expect(component.groups().length).toBe(1);
     expect(component.bills().length).toBe(1);
+    expect(component.childGrid.items().length).toBe(2);
+    expect(component.noteGrid.items().length).toBe(1);
+    expect(component.billGrid.items().length).toBe(1);
+    expect(mockChildcareApi.getBills).toHaveBeenCalledWith(expect.objectContaining({ period: component.billingPeriod() }));
   });
 
   it('should enrol a new child', () => {
@@ -273,7 +279,7 @@ describe('ChildcareComponent', () => {
     expect(component.drawerVisible()).toBe(true);
     expect(mockChildcareApi.getReferencePersons).toHaveBeenCalledWith('ch-1-uuid');
     expect(mockChildcareApi.getChildDocuments).toHaveBeenCalledWith('ch-1-uuid');
-    expect(mockChildcareApi.getNotes).toHaveBeenCalledWith({ child_id: 'ch-1-uuid' });
+    expect(mockChildcareApi.getNotes).toHaveBeenCalledWith({ child_id: 'ch-1-uuid', per_page: 200 });
 
     component.openAddRefPersonModal();
     expect(component.refPersonModalVisible()).toBe(true);

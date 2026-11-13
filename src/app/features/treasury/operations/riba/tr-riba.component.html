@@ -1,39 +1,15 @@
 <nz-card>
   <nz-tabs>
     <nz-tab [nzTitle]="'TR.RIBA_BATCHES' | translate">
-      <nz-table #batchTable nzSize="middle" [nzData]="batches()" [nzLoading]="loading()" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'TR.REFERENCE' | translate }}</th>
-            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th [nzSortFn]="'execution_date' | gridSort" [nzFilters]="'execution_date' | gridFilterList: batchTable.nzData" [nzFilterFn]="'execution_date' | gridFilterFn">{{ 'TR.EXECUTION_DATE' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'item_count' | gridSort" [nzFilters]="'item_count' | gridFilterList: batchTable.nzData" [nzFilterFn]="'item_count' | gridFilterFn">{{ 'TR.ITEMS' | translate }}</th>
-            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: batchTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'TR.TOTAL' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: batchTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'TR.STATUS' | translate }}</th>
-            <th>{{ 'TR.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (batch of batchTable.data; track batch.id) {
-            <tr>
-              <td>{{ batch.batch_reference ?? batch.id }}</td>
-              <td>{{ banks.label(batch.bank_account_id) }}</td>
-              <td>{{ batch.execution_date }}</td>
-              <td nzAlign="right">{{ batch.item_count }}</td>
-              <td nzAlign="right">{{ batch.total_amount | money: batch.currency }}</td>
-              <td>
-                <nz-tag>{{ batch.status }}</nz-tag>
-              </td>
-              <td>
-                @if (canWrite) {
-                  <button nz-button nzSize="small" type="button" (click)="exportBatch(batch)">{{ 'TR.RIBA_EXPORT' | translate }}</button>
-                }
-                <button nz-button nzSize="small" type="button" (click)="downloadFile(batch)">{{ 'TR.RIBA_DOWNLOAD' | translate }}</button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="batchGrid" [columns]="batchColumns()" [actionsTemplate]="batchActionsTpl" [scroll]="{ x: '900px' }" [exportFileName]="'riba-batches'" />
+      <ng-template #batchAmountTpl let-batch>{{ batch.total_amount | money: batch.currency }}</ng-template>
+      <ng-template #batchStatusTpl let-batch><nz-tag>{{ batch.status }}</nz-tag></ng-template>
+      <ng-template #batchActionsTpl let-batch>
+        @if (canWrite) {
+          <button nz-button nzSize="small" type="button" (click)="exportBatch(batch)">{{ 'TR.RIBA_EXPORT' | translate }}</button>
+        }
+        <button nz-button nzSize="small" type="button" (click)="downloadFile(batch)">{{ 'TR.RIBA_DOWNLOAD' | translate }}</button>
+      </ng-template>
     </nz-tab>
 
     <nz-tab [nzTitle]="'TR.RIBA_PORTFOLIO' | translate">

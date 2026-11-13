@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   AbstractControl,
   FormsModule,
@@ -20,7 +20,6 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import {
@@ -28,6 +27,7 @@ import {
   AuthStore,
   CrmApiService,
   CrmLeadFilterParams,
+  FetchGridModel,
   I18nService,
   isValidationError,
   LeadResource,
@@ -37,7 +37,7 @@ import {
   StoreLeadPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 /** A lead needs a name: the company name or at least the last name. */
 const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
@@ -50,14 +50,12 @@ const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors
   selector: 'app-crm-leads',
   styleUrl: './leads.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -85,12 +83,43 @@ export class LeadsComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);
   protected readonly i18n = inject(I18nService);
 
-  readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly leads = signal<LeadResource[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(15);
+  readonly grid = new FetchGridModel<LeadResource, CrmLeadFilterParams>((query) => this.crmApi.getLeads(query));
+
+  private readonly nameTpl = viewChild<TemplateRef<unknown>>('nameTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly ratingTpl = viewChild<TemplateRef<unknown>>('ratingTpl');
+  private readonly scoreTpl = viewChild<TemplateRef<unknown>>('scoreTpl');
+  private readonly countryTpl = viewChild<TemplateRef<unknown>>('countryTpl');
+  private readonly budgetTpl = viewChild<TemplateRef<unknown>>('budgetTpl');
+
+  /** `full_name` is shown as the lead name, else the company name: the server sorts and filters by `display_name`. */
+  readonly columns = computed<TableColumnDef<LeadResource>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      {
+        key: 'full_name',
+        serverKey: 'display_name',
+        header: this.translate.instant('crmLeadScore.lblLeadCompany'),
+        valueGetter: (lead) => lead.full_name || lead.company_name || '',
+        customCellTemplate: this.nameTpl(),
+      },
+      { key: 'status', header: this.translate.instant('crmLeadScore.lblStatus'), customCellTemplate: this.statusTpl() },
+      {
+        key: 'rating',
+        header: this.translate.instant('crmLeadScore.lblRating'),
+        valueGetter: (lead) => lead.rating || 'N/A',
+        customCellTemplate: this.ratingTpl(),
+      },
+      { key: 'score', header: this.translate.instant('crmLeadScore.lblScore'), customCellTemplate: this.scoreTpl() },
+      { key: 'country', header: this.translate.instant('crmLeadScore.lblCountry'), customCellTemplate: this.countryTpl() },
+      {
+        key: 'estimated_budget',
+        header: this.translate.instant('crmLeadScore.lblEstimatedBudget'),
+        customCellTemplate: this.budgetTpl(),
+      },
+    ];
+  });
 
   // Filters
   readonly searchTerm = signal('');
@@ -148,56 +177,22 @@ export class LeadsComponent implements OnInit {
     this.leadForm.patchValue({
       country: this.authStore.activeJurisdiction() || 'CH',
     });
-    this.loadLeads();
-  }
-
-  loadLeads(): void {
-    this.loading.set(true);
-    const params: CrmLeadFilterParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
-      search: this.searchTerm() || undefined,
-      status: this.statusFilter() || undefined,
-      rating: this.ratingFilter() || undefined,
-    };
-
-    this.crmApi.getLeads(params).subscribe({
-      next: (res) => {
-        this.leads.set(res.data || []);
-        this.total.set(res.meta?.total || (res.data || []).length);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.leads.set([]);
-        this.total.set(0);
-        this.loading.set(false);
-      },
-    });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadLeads();
   }
 
   onSearch(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.searchTerm.set(val);
-    this.pageIndex.set(1);
-    this.loadLeads();
+    this.grid.setFilter({ search: val || undefined });
   }
 
   onStatusChange(status: string | null): void {
     this.statusFilter.set(status);
-    this.pageIndex.set(1);
-    this.loadLeads();
+    this.grid.setFilter({ status: status || undefined });
   }
 
   onRatingChange(rating: string | null): void {
     this.ratingFilter.set(rating);
-    this.pageIndex.set(1);
-    this.loadLeads();
+    this.grid.setFilter({ rating: rating || undefined });
   }
 
   openCreateDrawer(): void {
@@ -244,7 +239,7 @@ export class LeadsComponent implements OnInit {
         this.saving.set(false);
         this.createDrawerVisible.set(false);
         this.message.success(this.translate.instant('crmLeadScore.msgLeadCreatedSuccessfully'));
-        this.loadLeads();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -259,7 +254,7 @@ export class LeadsComponent implements OnInit {
     this.crmApi.recalculateLeadScores(lead.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('crmLeadScore.msgScoreRecalculated'));
-        this.loadLeads();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -285,7 +280,7 @@ export class LeadsComponent implements OnInit {
     this.crmApi.qualifyLead(lead.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsQualified'));
-        this.loadLeads();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -295,7 +290,7 @@ export class LeadsComponent implements OnInit {
     this.crmApi.disqualifyLead(lead.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsDisqualified'));
-        this.loadLeads();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -310,7 +305,7 @@ export class LeadsComponent implements OnInit {
         this.crmApi.convertLead(lead.id, { create_opportunity: true }).subscribe({
           next: () => {
             this.message.success(this.translate.instant('crmLeadScore.msgLeadSuccessfullyConverted'));
-            this.loadLeads();
+            this.grid.reload();
           },
           error: () => undefined,
         });
@@ -322,7 +317,7 @@ export class LeadsComponent implements OnInit {
     this.crmApi.deleteLead(lead.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('crmLeadScore.msgLeadDeleted'));
-        this.loadLeads();
+        this.grid.reload();
       },
       error: () => undefined,
     });

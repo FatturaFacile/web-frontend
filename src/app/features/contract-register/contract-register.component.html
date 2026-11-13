@@ -154,158 +154,102 @@
         <div class="filter-group">
           <nz-select
             [ngModel]="obligationStatusFilter()"
-            (ngModelChange)="obligationStatusFilter.set($event); loadGlobalObligations()"
+            (ngModelChange)="setObligationStatus($event)"
             nzPlaceHolder="Tutti gli stati"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI' | translate"></nz-option>
-            <nz-option nzValue="pending" [nzLabel]="'CONTRACTS.LBL_IN_ATTESA' | translate"></nz-option>
+            <nz-option nzValue="open" [nzLabel]="'CONTRACTS.LBL_IN_ATTESA' | translate"></nz-option>
             <nz-option nzValue="completed" [nzLabel]="'CONTRACTS.LBL_COMPLETATI' | translate"></nz-option>
             <nz-option nzValue="waived" [nzLabel]="'CONTRACTS.LBL_CONDONATI' | translate"></nz-option>
             <nz-option nzValue="overdue" [nzLabel]="'CONTRACTS.LBL_SCADUTI' | translate"></nz-option>
           </nz-select>
 
-          <button nz-button nzType="default" (click)="loadGlobalObligations()">
+          <button nz-button nzType="default" (click)="obligationsGrid.reload()">
             <span nz-icon nzType="reload"></span>
             {{ 'COMMON.RELOAD' | translate }}
           </button>
         </div>
       </div>
 
-      <nz-table
-        #obTable
-        nzShowSizeChanger
-        [nzData]="globalObligations()"
-        [nzFrontPagination]="false"
-        [nzLoading]="obligationsLoading()"
-        [nzTotal]="obligationsTotal()"
-        [nzPageIndex]="obligationsPageIndex()"
-        [nzPageSize]="obligationsPageSize()"
-        (nzQueryParams)="onObligationsTableQueryChange($event)"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: obTable.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'CONTRACTS.TYPE' | translate }}</th>
-            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: obTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CONTRACTS.TITLE_FIELD' | translate }}</th>
-            <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: obTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'CONTRACTS.DUE_DATE' | translate }}</th>
-            <th [nzSortFn]="'responsible_party' | gridSort" [nzFilters]="'responsible_party' | gridFilterList: obTable.nzData" [nzFilterFn]="'responsible_party' | gridFilterFn">{{ 'CONTRACTS.RESPONSIBLE' | translate }}</th>
-            <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: obTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'CONTRACTS.PENALTY' | translate }}</th>
-            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: obTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ob of obTable.data; track ob.id) {
-            <tr>
-              <td>
-                <nz-tag [nzColor]="ob.type === 'milestone' ? 'cyan' : 'orange'">
-                  {{ ob.type | uppercase }}
-                </nz-tag>
-              </td>
-              <td>
-                <strong>{{ ob.title }}</strong>
-                @if (ob.description) {
-                  <div class="text-muted">{{ ob.description }}</div>
-                }
-              </td>
-              <td>{{ ob.due_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ ob.responsible_party || '-' }}</td>
-              <td>
-                @if (ob.amount) {
-                  <span class="text-danger">{{ ob.amount | money: ob.currency }}</span>
-                } @else {
-                  <span class="text-muted">-</span>
-                }
-              </td>
-              <td>
-                <nz-tag [nzColor]="getStatusColor(ob.status)">
-                  {{ ob.status | uppercase }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <nz-space>
-                  @if (ob.status === 'pending') {
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="primary"
-                      nzSize="small"
-                      appIconAction="confirm"
-                      (click)="openCompleteObligationModal(ob)"
-                    ></button>
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzType="default"
-                      nzSize="small"
-                      (click)="openWaiveObligationModal(ob)"
-                    >
-                      {{ 'CONTRACTS.WAIVE' | translate }}
-                    </button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
+      <app-base-table
+        [grid]="obligationsGrid"
+        [columns]="obligationColumns()"
+        [actionsTemplate]="obligationActionsTpl"
+        exportFileName="contract-obligations"
+      />
+
+      <ng-template #obligationTypeTpl let-ob>
+        <nz-tag [nzColor]="ob.type === 'milestone' ? 'cyan' : 'orange'">{{ ob.type | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #obligationTitleTpl let-ob>
+        <strong>{{ ob.title }}</strong>
+        @if (ob.description) {
+          <div class="text-muted">{{ ob.description }}</div>
+        }
+      </ng-template>
+      <ng-template #obligationDueTpl let-ob>{{ ob.due_date | date: 'dd/MM/yyyy' }}</ng-template>
+      <ng-template #obligationAmountTpl let-ob>
+        @if (ob.amount) {
+          <span class="text-danger">{{ ob.amount | money: ob.currency }}</span>
+        } @else {
+          <span class="text-muted">-</span>
+        }
+      </ng-template>
+      <ng-template #obligationStatusTpl let-ob>
+        <nz-tag [nzColor]="getStatusColor(ob.status)">{{ ob.status | uppercase }}</nz-tag>
+      </ng-template>
+      <ng-template #obligationActionsTpl let-ob>
+        <nz-space>
+          @if (ob.status === 'open') {
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="primary"
+              nzSize="small"
+              appIconAction="confirm"
+              (click)="openCompleteObligationModal(ob)"
+            ></button>
+            <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openWaiveObligationModal(ob)">
+              {{ 'CONTRACTS.WAIVE' | translate }}
+            </button>
           }
-        </tbody>
-      </nz-table>
+        </nz-space>
+      </ng-template>
     </nz-tab>
 
     <!-- TAB 3: ALERTS & SCADENZE PREAVVISO -->
     <nz-tab [nzTitle]="'CONTRACTS.TAB_ALERTS' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="default" (click)="loadAlerts()">
+        <button nz-button nzType="default" (click)="alertsGrid.reload()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
         </button>
       </div>
 
-      <nz-table
-        [nzData]="alerts()"
-        [nzFrontPagination]="true"
-        [nzLoading]="alertsLoading()" #gridTbl11>
-        <thead>
-          <tr>
-            <th>{{ 'CONTRACTS.ALERT_TYPE' | translate }}</th>
-            <th [nzSortFn]="'contract_number' | gridSort" [nzFilters]="'contract_number' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'contract_number' | gridFilterFn">{{ 'CONTRACTS.CONTRACT' | translate }}</th>
-            <th [nzSortFn]="'due_on' | gridSort" [nzFilters]="'due_on' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'due_on' | gridFilterFn">{{ 'CONTRACTS.DUE_ON' | translate }}</th>
-            <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: gridTbl11.nzData" [nzFilterFn]="'message' | gridFilterFn">{{ 'CONTRACTS.MESSAGE' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
-            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (a of alerts(); track a.id) {
-            <tr>
-              <td>
-                <nz-tag [nzColor]="a.alert_type === 'notice_deadline' ? 'volcano' : 'red'">
-                  {{ a.alert_type === 'notice_deadline' ? 'TERMINE PREAVVISO' : 'SCADENZA CONTRATTO' }}
-                </nz-tag>
-              </td>
-              <td>
-                <strong>{{ a.contract_number }}</strong>
-                <div>{{ a.contract_title }}</div>
-              </td>
-              <td>
-                <strong>{{ a.due_on | date: 'dd/MM/yyyy' }}</strong>
-              </td>
-              <td>{{ a.message || '-' }}</td>
-              <td>
-                @if (a.is_acknowledged) {
-                  <nz-tag nzColor="success">{{ 'CONTRACTS.LBL_CONFERMATO' | translate }}</nz-tag>
-                } @else {
-                  <nz-tag nzColor="warning">{{ 'CONTRACTS.LBL_DA_VERIFICARE' | translate }}</nz-tag>
-                }
-              </td>
-              <td nzAlign="right">
-                @if (!a.is_acknowledged) {
-                  <button nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="acknowledgeAlert(a)"></button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="alertsGrid"
+        [columns]="alertColumns()"
+        [actionsTemplate]="alertActionsTpl"
+        exportFileName="contract-alerts"
+      />
+
+      <ng-template #alertTypeTpl let-a>
+        <nz-tag [nzColor]="a.alert_type === 'notice_deadline' ? 'volcano' : 'red'">{{ alertTypeLabel(a.alert_type) }}</nz-tag>
+      </ng-template>
+      <ng-template #alertContractTpl let-a>
+        <strong>{{ a.contract_number }}</strong>
+        <div>{{ a.contract_title }}</div>
+      </ng-template>
+      <ng-template #alertDueTpl let-a><strong>{{ a.due_on | date: 'dd/MM/yyyy' }}</strong></ng-template>
+      <ng-template #alertStatusTpl let-a>
+        <nz-tag [nzColor]="a.is_acknowledged ? 'success' : 'warning'">{{ alertStatusLabel(a.is_acknowledged ? 'acknowledged' : 'open') }}</nz-tag>
+      </ng-template>
+      <ng-template #alertActionsTpl let-a>
+        @if (!a.is_acknowledged) {
+          <button nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="acknowledgeAlert(a)"></button>
+        }
+      </ng-template>
     </nz-tab>
   </nz-tabs>
 </nz-card>

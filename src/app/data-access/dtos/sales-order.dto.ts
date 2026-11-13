@@ -13,4 +13,5 @@ export interface SalesOrderApiDto {
   created_at?: string | null;
   total_gross: string;
   items?: SalesOrderItemApiDto[];
+  items_count?: number;
 }

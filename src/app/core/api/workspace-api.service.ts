@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   AuthorizeWorkspaceRequest,
+  PaginatedResponse,
   WorkspaceAuthorizeResponse,
   WorkspaceCallbackRequest,
   WorkspaceConnectionResource,
@@ -69,9 +70,9 @@ export class WorkspaceApiService {
   /**
    * List synced calendar events and message metadata.
    */
-  getItems(params?: WorkspaceItemQueryParams): Observable<ApiResponse<WorkspaceItemResource[]>> {
-    return this.http.get<ApiResponse<WorkspaceItemResource[]>>(`${this.baseUrl}/items`, {
-      params: params ? toHttpParams(params as Record<string, unknown>) : undefined,
+  getItems(params?: WorkspaceItemQueryParams): Observable<PaginatedResponse<WorkspaceItemResource>> {
+    return this.http.get<PaginatedResponse<WorkspaceItemResource>>(`${this.baseUrl}/items`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 }

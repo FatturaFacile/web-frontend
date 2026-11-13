@@ -6,6 +6,7 @@ export interface AssociationMember {
   member_number?: string | null;
   first_name?: string | null;
   last_name?: string | null;
+  company_name?: string | null;
   email?: string | null;
   tax_code?: string | null;
   status: AssociationMemberStatus;
@@ -24,6 +25,11 @@ export interface AssociationMemberRequest {
   email?: string | null;
   tax_code?: string;
   joined_on?: string | null;
+}
+
+/** Contact of the member a row belongs to, as embedded by the fee and reimbursement lists. */
+export interface AssociationRowMember {
+  contact?: { first_name?: string | null; last_name?: string | null; company_name?: string | null } | null;
 }
 
 export type AssociationFeeAssignmentStatus = 'active' | 'cancelled' | string;
@@ -47,6 +53,8 @@ export interface AssociationFeeAssignment {
   net_amount: string;
   status: AssociationFeeAssignmentStatus;
   instalments?: AssociationFeeInstalment[];
+  /** Embedded by the list endpoint, so the grid shows the name of every row, not only of the loaded registry page. */
+  member?: AssociationRowMember | null;
 }
 
 /** Body of `POST /associations/fee-assignments` (AssignFeeRequest). */
@@ -157,6 +165,7 @@ export interface AssociationReimbursement {
   description: string;
   incurred_on: string;
   status: 'submitted' | 'approved' | 'rejected' | 'paid' | string;
+  member?: AssociationRowMember | null;
 }
 
 /** Body of `POST /associations/reimbursements` (StoreReimbursementRequest). */
@@ -195,6 +204,21 @@ export interface AssociationCourseParams {
 
 export interface AssociationDonationParams {
   year?: number;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AssociationReimbursementParams {
+  year?: number;
+  status?: string;
+  member_id?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AssociationMeetingParams {
+  body?: AssociationMeetingBody;
+  status?: string;
   page?: number;
   per_page?: number;
 }

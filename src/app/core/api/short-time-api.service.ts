@@ -10,7 +10,9 @@ import {
   ConstructionParametersPayload,
   ConstructionQuery,
   JointCommissionReport,
+  PaginatedResponse,
   PayrollGenericRecord,
+  QueryFilterParams,
   ShortTimeCasePayload,
   ShortTimeCaseRecord,
   ShortTimeClaim,
@@ -24,8 +26,10 @@ export class ShortTimeApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/payroll`;
 
-  getCases(): Observable<ApiResponse<ShortTimeCaseRecord[]>> {
-    return this.http.get<ApiResponse<ShortTimeCaseRecord[]>>(`${this.base}/short-time/cases`);
+  getCases(params?: QueryFilterParams): Observable<PaginatedResponse<ShortTimeCaseRecord>> {
+    return this.http.get<PaginatedResponse<ShortTimeCaseRecord>>(`${this.base}/short-time/cases`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createCase(payload: ShortTimeCasePayload): Observable<ApiResponse<ShortTimeCaseRecord>> {

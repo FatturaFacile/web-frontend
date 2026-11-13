@@ -114,9 +114,9 @@ describe('ProjectDetailDrawerComponent', () => {
   const mockProjectApi = {
     getFinancialSummary: vi.fn().mockReturnValue(of({ success: true, data: mockFinancials })),
     recalculateEvm: vi.fn().mockReturnValue(of({ success: true, data: null })),
-    getTasks: vi.fn().mockReturnValue(of({ success: true, data: mockTasks })),
+    getTasks: vi.fn().mockReturnValue(of({ success: true, data: mockTasks, meta: { total: mockTasks.length } })),
     createTask: vi.fn().mockReturnValue(of({ success: true, data: mockTasks[0] })),
-    getTimesheets: vi.fn().mockReturnValue(of({ success: true, data: mockTimesheets })),
+    getTimesheets: vi.fn().mockReturnValue(of({ success: true, data: mockTimesheets, meta: { total: mockTimesheets.length } })),
     createTimesheet: vi.fn().mockReturnValue(of({ success: true, data: mockTimesheets[0] })),
     submitTimesheet: vi.fn().mockReturnValue(of({ success: true, data: mockTimesheets[0] })),
     approveTimesheet: vi.fn().mockReturnValue(of({ success: true, data: mockTimesheets[0] })),
@@ -153,15 +153,16 @@ describe('ProjectDetailDrawerComponent', () => {
     fixture.componentRef.setInput('visible', true);
   });
 
-  it('loads financials, tasks, and timesheets on initialization', () => {
+  it('loads financials, tasks, and timesheets on initialization', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(component).toBeTruthy();
     expect(mockProjectApi.getFinancialSummary).toHaveBeenCalledWith('proj-1');
-    expect(mockProjectApi.getTasks).toHaveBeenCalledWith('proj-1');
-    expect(mockProjectApi.getTimesheets).toHaveBeenCalledWith('proj-1');
+    expect(mockProjectApi.getTasks).toHaveBeenCalledWith('proj-1', expect.objectContaining({ page: 1 }));
+    expect(mockProjectApi.getTimesheets).toHaveBeenCalledWith('proj-1', expect.objectContaining({ page: 1 }));
     expect(component.financialSummary()).toEqual(mockFinancials);
-    expect(component.tasks()).toEqual(mockTasks);
-    expect(component.timesheets()).toEqual(mockTimesheets);
+    expect(component.tasksGrid.items()).toEqual(mockTasks);
+    expect(component.timesheetsGrid.items()).toEqual(mockTimesheets);
   });
 
   it('recalculates EVM indicators', () => {

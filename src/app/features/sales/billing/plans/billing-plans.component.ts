@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   FormArray,
   FormsModule,
@@ -22,14 +22,16 @@ import {
   AuthStore,
   BillingApiService,
   BillingPlan,
+  BillingPlanFilterParams,
   BillingPlanItem,
   BillingPlanPayload,
   CoreOrder,
+  FetchGridModel,
   I18nService,
   PermissionsService,
   SalesCycleApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { DECIMAL_PATTERN, maxNumber } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { statusColor, todayIso } from '../../cycle/shared/sales-status';
@@ -39,7 +41,7 @@ import { statusColor, todayIso } from '../../cycle/shared/sales-status';
   selector: 'app-billing-plans',
   styleUrl: './billing-plans.component.scss',
   imports: [
-    GridExportDirective,
+    BaseTableComponent,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
     IconActionDirective,
@@ -62,7 +64,7 @@ import { statusColor, todayIso } from '../../cycle/shared/sales-status';
   ],
   templateUrl: './billing-plans.component.html',
 })
-export class BillingPlansComponent implements OnInit {
+export class BillingPlansComponent {
   private readonly api = inject(BillingApiService);
   private readonly salesApi = inject(SalesCycleApiService);
   private readonly message = inject(NzMessageService);
@@ -73,38 +75,40 @@ export class BillingPlansComponent implements OnInit {
   protected readonly canWrite = computed(() => this.permissions.canWrite('invoicing'));
   protected readonly statusColor = statusColor;
 
-  protected readonly plans = signal<BillingPlan[]>([]);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<BillingPlan, BillingPlanFilterParams>((query) =>
+    this.api.getBillingPlans(query),
+  );
   protected readonly selected = signal<BillingPlan | null>(null);
   protected readonly drawerOpen = signal(false);
   protected readonly createOpen = signal(false);
   protected readonly saving = signal(false);
   protected readonly orders = signal<CoreOrder[]>([]);
-  protected statusFilter: string | null = null;
   protected runUpTo = todayIso();
 
   protected readonly items: FormArray = this.fb.array([]);
   protected readonly form = this.fb.group({ sales_order_id: ['', Validators.required] });
 
-  ngOnInit(): void {
-    this.load();
-  }
+  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: BillingPlan; value: unknown }>>('numberTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: BillingPlan; value: unknown }>>('statusTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: BillingPlan; value: unknown }>>('totalTpl');
+  private readonly billedTpl = viewChild<TemplateRef<{ $implicit: BillingPlan; value: unknown }>>('billedTpl');
+  private readonly remainingTpl = viewChild<TemplateRef<{ $implicit: BillingPlan; value: unknown }>>('remainingTpl');
 
-  protected load(page = this.pageIndex()): void {
-    this.pageIndex.set(page);
-    this.loading.set(true);
-    this.api
-      .getBillingPlans({ page, per_page: 15, status: this.statusFilter ?? undefined })
-      .subscribe({
-        next: (res) => {
-          this.plans.set(res.data ?? []);
-          this.total.set(res.meta?.total ?? res.data?.length ?? 0);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+  protected readonly columns = computed<TableColumnDef<BillingPlan>[]>(() => {
+    this.i18n.currentLanguage();
+    const statusKey = (value: string) => this.i18n.translate('SC.PLANS.STATUS_' + value);
+    return [
+      { key: 'schedule_number', header: this.i18n.translate('SC.COMMON.NUMBER'), customCellTemplate: this.numberTpl() },
+      { key: 'status', valueGetter: (row) => statusKey(row.status), valueLabel: statusKey, header: this.i18n.translate('SC.COMMON.STATUS'), customCellTemplate: this.statusTpl() },
+      { key: 'total_amount', header: this.i18n.translate('SC.PLANS.TOTAL'), align: 'right', customCellTemplate: this.totalTpl() },
+      { key: 'billed_amount', header: this.i18n.translate('SC.PLANS.BILLED'), align: 'right', customCellTemplate: this.billedTpl() },
+      { key: 'remaining_amount', header: this.i18n.translate('SC.PLANS.REMAINING'), align: 'right', customCellTemplate: this.remainingTpl() },
+      { key: 'next_billing_date', header: this.i18n.translate('SC.PLANS.NEXT_BILLING') },
+    ];
+  });
+
+  protected filterStatus(status: string | null): void {
+    this.grid.setFilter({ status: status ?? undefined });
   }
 
   protected view(plan: BillingPlan): void {
@@ -176,7 +180,8 @@ export class BillingPlansComponent implements OnInit {
         this.saving.set(false);
         this.createOpen.set(false);
         this.message.success(this.i18n.translate('SC.COMMON.SAVED'));
-        this.load(1);
+        this.grid.setPage(1);
+        this.grid.reload();
         this.view(res.data);
       },
       error: (err: unknown) => {
@@ -191,7 +196,7 @@ export class BillingPlansComponent implements OnInit {
       next: () => {
         this.message.success(this.i18n.translate('SC.BILLING.INVOICE_CREATED'));
         this.refresh(plan.id);
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => this.message.error(apiErrorText(err)),
     });
@@ -202,7 +207,7 @@ export class BillingPlansComponent implements OnInit {
       next: () => {
         this.message.success(this.i18n.translate('SC.PLANS.CANCELLED'));
         this.refresh(plan.id);
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => this.message.error(apiErrorText(err)),
     });
@@ -212,7 +217,7 @@ export class BillingPlansComponent implements OnInit {
     this.api.runBillingPlans(this.runUpTo).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('SC.PLANS.RUN_DONE'));
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => this.message.error(apiErrorText(err)),
     });

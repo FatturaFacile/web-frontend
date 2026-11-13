@@ -95,78 +95,30 @@
       <!-- TAB 3: DEPRECIATION SCHEDULE -->
       <nz-tab [nzTitle]="'assetDetailDrawer.lblDepreciationSchedule' | translate">
         <div class="tab-content">
-          <nz-table
-            #schTable
-            [nzData]="schedules()"
-            [nzLoading]="loadingSchedules()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th [nzSortFn]="'period_code' | gridSort" [nzFilters]="'period_code' | gridFilterList: schTable.nzData" [nzFilterFn]="'period_code' | gridFilterFn">{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
-                <th [nzSortFn]="'ledger_type' | gridSort" [nzFilters]="'ledger_type' | gridFilterList: schTable.nzData" [nzFilterFn]="'ledger_type' | gridFilterFn">{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
-                <th [nzSortFn]="'opening_book_value' | gridSort" [nzFilters]="'opening_book_value' | gridFilterList: schTable.nzData" [nzFilterFn]="'opening_book_value' | gridFilterFn">{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
-                <th [nzSortFn]="'depreciation_amount' | gridSort" [nzFilters]="'depreciation_amount' | gridFilterList: schTable.nzData" [nzFilterFn]="'depreciation_amount' | gridFilterFn">{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
-                <th [nzSortFn]="'closing_book_value' | gridSort" [nzFilters]="'closing_book_value' | gridFilterList: schTable.nzData" [nzFilterFn]="'closing_book_value' | gridFilterFn">{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
-                <th [nzSortFn]="'accumulated_depreciation' | gridSort" [nzFilters]="'accumulated_depreciation' | gridFilterList: schTable.nzData" [nzFilterFn]="'accumulated_depreciation' | gridFilterFn">{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: schTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of schTable.data; track s.id) {
-                <tr>
-                  <td><strong>{{ s.period_code }}</strong></td>
-                  <td><nz-tag [nzColor]="getLedgerTypeColor(s.ledger_type)">{{ s.ledger_type }}</nz-tag></td>
-                  <td>{{ s.opening_book_value | money: asset().currency }}</td>
-                  <td><strong class="text-danger">{{ s.depreciation_amount | money: asset().currency }}</strong></td>
-                  <td>{{ s.closing_book_value | money: asset().currency }}</td>
-                  <td>{{ s.accumulated_depreciation | money: asset().currency }}</td>
-                  <td>
-                    <nz-tag [nzColor]="s.status === 'posted' ? 'green' : 'blue'">{{ s.status }}</nz-tag>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="schedulesGrid" [columns]="scheduleColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="depreciation-schedules" />
         </div>
       </nz-tab>
 
       <!-- TAB 4: MAINTENANCE WORK ORDERS -->
       <nz-tab [nzTitle]="'assetDetailDrawer.lblMaintenance' | translate">
         <div class="tab-content">
-          <nz-table
-            #woTable
-            [nzData]="workOrders()"
-            [nzLoading]="loadingWorkOrders()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th [nzSortFn]="'work_order_number' | gridSort" [nzFilters]="'work_order_number' | gridFilterList: woTable.nzData" [nzFilterFn]="'work_order_number' | gridFilterFn">{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
-                <th [nzSortFn]="'maintenance_type' | gridSort" [nzFilters]="'maintenance_type' | gridFilterList: woTable.nzData" [nzFilterFn]="'maintenance_type' | gridFilterFn">{{ 'assetDetailDrawer.lblType' | translate }}</th>
-                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: woTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
-                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: woTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
-                <th [nzSortFn]="'scheduled_date' | gridSort" [nzFilters]="'scheduled_date' | gridFilterList: woTable.nzData" [nzFilterFn]="'scheduled_date' | gridFilterFn">{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblTotalCost' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (wo of woTable.data; track wo.id) {
-                <tr>
-                  <td><strong>{{ wo.work_order_number || 'WO-N/A' }}</strong></td>
-                  <td><nz-tag>{{ wo.maintenance_type }}</nz-tag></td>
-                  <td><nz-tag nzColor="blue">{{ wo.priority }}</nz-tag></td>
-                  <td><nz-tag>{{ wo.status }}</nz-tag></td>
-                  <td>{{ wo.scheduled_date || '—' }}</td>
-                  <td>{{ wo.total_cost ? (wo.total_cost | money: asset().currency) : '—' }}</td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="workOrdersGrid" [columns]="workOrderColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="work-orders" />
         </div>
       </nz-tab>
     </nz-tabs>
   </ng-container>
 </nz-modal>
+
+<ng-template #periodTpl let-s><strong>{{ s.period_code }}</strong></ng-template>
+<ng-template #scheduleLedgerTpl let-s><nz-tag [nzColor]="getLedgerTypeColor(s.ledger_type)">{{ s.ledger_type }}</nz-tag></ng-template>
+<ng-template #openingTpl let-s>{{ s.opening_book_value | money: asset().currency }}</ng-template>
+<ng-template #depreciationTpl let-s><strong class="text-danger">{{ s.depreciation_amount | money: asset().currency }}</strong></ng-template>
+<ng-template #closingTpl let-s>{{ s.closing_book_value | money: asset().currency }}</ng-template>
+<ng-template #accumulatedTpl let-s>{{ s.accumulated_depreciation | money: asset().currency }}</ng-template>
+<ng-template #scheduleStatusTpl let-s><nz-tag [nzColor]="s.status === 'posted' ? 'green' : 'blue'">{{ s.status }}</nz-tag></ng-template>
+<ng-template #woNumberTpl let-wo><strong>{{ wo.work_order_number || 'WO-N/A' }}</strong></ng-template>
+<ng-template #woTypeTpl let-wo><nz-tag>{{ wo.maintenance_type }}</nz-tag></ng-template>
+<ng-template #woPriorityTpl let-wo><nz-tag nzColor="blue">{{ wo.priority }}</nz-tag></ng-template>
+<ng-template #woStatusTpl let-wo><nz-tag>{{ wo.status }}</nz-tag></ng-template>
+<ng-template #woDateTpl let-wo>{{ wo.scheduled_date || '—' }}</ng-template>
+<ng-template #woCostTpl let-wo>{{ wo.total_cost ? (wo.total_cost | money: asset().currency) : '—' }}</ng-template>

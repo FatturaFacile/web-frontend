@@ -48,7 +48,7 @@ describe('CRM engagement pages', () => {
     api.getCampaigns.mockReturnValue(of(page([])));
     api.getSegments.mockReturnValue(ok([]));
     api.getLeadScoringRules.mockReturnValue(ok([]));
-    api.getCampaignMembers.mockReturnValue(ok([]));
+    api.getCampaignMembers.mockReturnValue(of(page([])));
     api.getCampaignRoi.mockReturnValue(ok({}));
 
     await TestBed.configureTestingModule({
@@ -220,5 +220,16 @@ describe('CRM engagement pages', () => {
     api.recalculateLeadScores.mockReturnValue(ok());
     component['recalculate']();
     expect(api.recalculateLeadScores).toHaveBeenCalled();
+  });
+
+  it('lists the members of the open campaign through the paginated grid and maps the calculated columns', async () => {
+    const fixture = TestBed.createComponent(CampaignsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component['view']({ id: 'cp1', name: 'Spring' });
+    component['membersGrid'].onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'name', order: 'ascend' }, filters: {} });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(api.getCampaignMembers).toHaveBeenLastCalledWith('cp1', expect.objectContaining({ sort_by: 'name', sort_dir: 'asc' }));
+    expect(component['memberColumns']().map((c) => c.key)).toEqual(['name', 'email', 'status']);
   });
 });

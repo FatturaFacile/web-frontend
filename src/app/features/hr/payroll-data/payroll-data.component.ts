@@ -5,9 +5,9 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
+import { tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudField, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudField, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
@@ -78,7 +78,7 @@ export class PayrollDataComponent implements OnInit {
     return {
       titleKey: 'hrmPayData.inputs',
       canWrite: this.canWrite(),
-      list: () => this.api.getInputs({ employee_id: employeeId, per_page: 100 }).pipe(map((r) => r.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getInputs({ ...query, employee_id: employeeId })),
       create: (payload) => this.api.createInput(payload as never),
       update: (id, payload) => this.api.updateInput(id, payload as never),
       remove: (id) => this.api.deleteInput(id),
@@ -100,7 +100,7 @@ export class PayrollDataComponent implements OnInit {
     return {
       titleKey: 'hrmPayData.absences',
       canWrite: this.canWrite(),
-      list: () => this.api.getAbsences({ employee_id: employeeId, per_page: 100 }).pipe(map((r) => r.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getAbsences({ ...query, employee_id: employeeId })),
       create: (payload) => this.api.createAbsence(payload as never),
       update: (id, payload) => this.api.updateAbsence(id, payload as never),
       remove: (id) => this.api.deleteAbsence(id),
@@ -126,14 +126,14 @@ export class PayrollDataComponent implements OnInit {
     return {
       titleKey: 'hrmPayData.children',
       canWrite: this.canWrite(),
-      list: () => this.api.getChildren({ employee_id: employeeId, per_page: 100 }).pipe(map((r) => r.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getChildren({ ...query, employee_id: employeeId })),
       create: (payload) => this.api.createChild(payload as never),
       update: (id, payload) => this.api.updateChild(id, payload as never),
       remove: (id) => this.api.deleteChild(id),
       fields: [
         this.employeeField(),
-        { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true, maxLength: 100 },
-        { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', nullable: true, maxLength: 100 },
+        { key: 'first_name', labelKey: 'hrmRecruiting.firstName', type: 'text', required: true, maxLength: 100, noGrid: true },
+        { key: 'last_name', labelKey: 'hrmRecruiting.lastName', type: 'text', nullable: true, maxLength: 100, noGrid: true },
         { key: 'date_of_birth', labelKey: 'hrmPayData.dateOfBirth', type: 'date', required: true, maxMonthsAhead: 9 },
         { key: 'in_education', labelKey: 'hrmPayData.inEducation', type: 'boolean' },
         { key: 'education_end_date', labelKey: 'hrmPayData.educationEnd', type: 'date', nullable: true, column: false, notBefore: 'date_of_birth' },
@@ -147,16 +147,18 @@ export class PayrollDataComponent implements OnInit {
     return {
       titleKey: 'hrmPayData.profiles',
       canWrite: this.canWrite(),
-      list: () =>
-        this.api.getProfiles({ employee_id: employeeId, per_page: 100 }).pipe(
-          tap((r) => {
-            const map: Record<string, string> = {};
-            for (const profile of r.data as unknown as Row[]) {
-              map[profile.id] = String(profile['employee_id']);
+      gridList: (query) =>
+        crudPage(this.api.getProfiles({ ...query, employee_id: employeeId })).pipe(
+          tap((page) => {
+            if (!isRowsQuery(query)) {
+              return;
             }
-            this.profileEmployees.set(map);
+            const employeeOfProfile: Record<string, string> = {};
+            for (const profile of page.data) {
+              employeeOfProfile[profile.id] = String(profile['employee_id']);
+            }
+            this.profileEmployees.set(employeeOfProfile);
           }),
-          map((r) => r.data as unknown as Row[]),
         ),
       update: (id, payload) => this.api.saveProfile(this.profileEmployees()[id] ?? '', payload as never),
       fields: [

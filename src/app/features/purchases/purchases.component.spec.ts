@@ -178,21 +178,37 @@ describe('PurchasesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('creates the component and loads initial procurement data', () => {
+  /** The grids load through a debounced stream: lets the pending requests settle. */
+  const settle = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it('creates the component and loads initial procurement data', async () => {
+    await settle();
     expect(component).toBeTruthy();
     expect(procurementApiMock.getSuppliers).toHaveBeenCalled();
     expect(procurementApiMock.getPurchaseOrders).toHaveBeenCalled();
     expect(procurementApiMock.getGoodsReceipts).toHaveBeenCalled();
     expect(procurementApiMock.getThreeWayMatches).toHaveBeenCalled();
     expect(procurementApiMock.getSupplierInvoices).toHaveBeenCalled();
-    expect(component.orders()).toHaveLength(1);
-    expect(component.goodsReceipts()).toHaveLength(1);
+    expect(component['orderGrid'].items()).toHaveLength(1);
+    expect(component['receiptGrid'].items()).toHaveLength(1);
     expect(component.supplierName(mockOrder)).toBe('Acme Supplies');
   });
 
-  it('filters orders by the current statuses and supplier', () => {
+  it('points the calculated columns at the columns the API knows', () => {
+    const receiptLines = component['receiptColumns']().find((column) => column.key === 'lines');
+    expect(receiptLines?.serverKey).toBe('lines_count');
+    const supplier = component['invoiceColumns']().find((column) => column.key === 'supplier');
+    expect(supplier?.serverKey).toBe('supplier.name');
+    const match = component['matchColumns']().find((column) => column.key === 'po_number');
+    expect(match?.serverKey).toBe('purchaseOrder.po_number');
+    const status = component['orderColumns']().find((column) => column.key === 'status');
+    expect(status?.valueLabel?.('sent')).toBe(component.statusLabel('sent'));
+  });
+
+  it('filters orders by the current statuses and supplier', async () => {
     component.onStatusChange('partially_received');
     component.onSupplierChange('sup-1');
+    await settle(400);
     expect(procurementApiMock.getPurchaseOrders).toHaveBeenLastCalledWith(
       expect.objectContaining({ status: 'partially_received', supplier_id: 'sup-1' }),
     );

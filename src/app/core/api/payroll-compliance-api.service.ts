@@ -15,7 +15,9 @@ import {
   LabourCostReport,
   LegalParameterRecord,
   LegalParametersPayload,
+  PaginatedResponse,
   PayrollGenericRecord,
+  QueryFilterParams,
   SwissdecDeclaration,
   SwissdecReadiness,
   SwissdecStatus,
@@ -34,8 +36,10 @@ export class PayrollComplianceApiService {
 
   // --- Legal tables ---
 
-  getLegalParameters(): Observable<ApiResponse<LegalParameterRecord[]>> {
-    return this.http.get<ApiResponse<LegalParameterRecord[]>>(`${this.base}/legal-parameters`);
+  getLegalParameters(params?: QueryFilterParams): Observable<PaginatedResponse<LegalParameterRecord>> {
+    return this.http.get<PaginatedResponse<LegalParameterRecord>>(`${this.base}/legal-parameters`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   /** Sets the parameters of a topic (`frontier_italy`, `short_time_work`, `bad_weather`, `withholding_tax_statement`) for a year. */
@@ -47,8 +51,10 @@ export class PayrollComplianceApiService {
     return this.http.put<ApiResponse<LegalParameterRecord>>(`${this.base}/legal-parameters/${topic}/${year}`, payload);
   }
 
-  getAnnualParameters(): Observable<ApiResponse<AnnualParameterRecord[]>> {
-    return this.http.get<ApiResponse<AnnualParameterRecord[]>>(`${this.base}/annual-parameters`);
+  getAnnualParameters(params?: QueryFilterParams): Observable<PaginatedResponse<AnnualParameterRecord>> {
+    return this.http.get<PaginatedResponse<AnnualParameterRecord>>(`${this.base}/annual-parameters`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   /** Saves the company parameters of a country (`CH`, `IT`) and year. */

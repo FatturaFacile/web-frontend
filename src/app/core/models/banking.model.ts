@@ -1,18 +1,20 @@
 export type StatementStatus = 'imported' | 'reconciled' | 'partially_reconciled';
 export type StatementSourceFormat = 'camt053' | 'cbi' | 'csv' | 'xlsx';
 
+export type BankTransactionStatus = 'unmatched' | 'matched' | 'manual' | 'ignored';
+
 export interface BankStatement {
   id: string;
   file_name?: string;
-  iban: string;
+  account_iban: string;
   statement_date: string;
   opening_balance: number;
   closing_balance: number;
   currency: string;
   status: StatementStatus;
   source_format: StatementSourceFormat;
-  lines_count?: number;
-  reconciled_lines_count?: number;
+  total_entries?: number;
+  reconciled_entries?: number;
   created_at?: string;
 }
 
@@ -43,7 +45,8 @@ export interface BankAccountResource {
   bic_swift?: string | null;
   currency: 'EUR' | 'CHF' | string;
   account_type?: 'checking' | 'savings' | 'escrow' | 'credit_line' | string | null;
-  balance: number;
+  current_balance: number;
+  available_balance: number;
   opening_balance?: number | null;
   overdraft_limit?: number | null;
   credit_line_limit?: number | null;
@@ -70,15 +73,15 @@ export interface CreateBankAccountPayload {
 export interface BankTransactionResource {
   id: string;
   bank_account_id: string;
-  transaction_date: string;
+  booking_date: string;
   value_date?: string;
   amount: number;
   currency: string;
   description: string;
-  counterparty?: string | null;
   reference?: string | null;
-  reconciled: boolean;
-  category?: string | null;
+  matched_invoice_id?: string | null;
+  status: BankTransactionStatus;
+  bank_account?: { id: string; bank_name: string; iban: string } | null;
 }
 
 export interface ManualMatchPayload {
@@ -116,12 +119,11 @@ export interface PaymentBatchResource {
   id: string;
   batch_reference: string;
   bank_account_id: string;
-  bank_account_name?: string;
   payment_method: PaymentMethodType;
   execution_date: string;
   currency: string;
   total_amount: number;
-  total_count: number;
+  item_count: number;
   status: PaymentBatchStatus;
   lines: PaymentBatchLine[];
   created_at?: string;
@@ -146,13 +148,14 @@ export interface CreatePaymentBatchPayload {
 
 export interface CashForecastResource {
   id: string;
-  forecast_date: string;
+  forecast_number: string;
+  calculation_date: string;
   horizon_days: number;
-  opening_cash: number;
-  expected_inflows: number;
-  expected_outflows: number;
-  projected_cash: number;
-  deficit_identified: boolean;
-  currency: string;
-  notes?: string | null;
+  opening_cash_balance: number;
+  projected_inflows: number;
+  projected_outflows: number;
+  closing_cash_balance: number;
+  min_liquidity_threshold: number;
+  deficit_detected: boolean;
+  deficit_date?: string | null;
 }

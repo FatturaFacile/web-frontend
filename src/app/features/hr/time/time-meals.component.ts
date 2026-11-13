@@ -1,17 +1,22 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HrTimeApiService, I18nService, MealBookingPayload } from '@core';
-import { TranslatePipe, GridExportDirective } from '@shared';
+import { FetchGridModel, HrTimeApiService, I18nService, MealBookingPayload, PaginatedResponse, QueryFilterParams } from '@core';
+import { BaseTableComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { tap } from 'rxjs';
+import { of, tap } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
 import { CrudOption } from '../shared/crud/crud.types';
 import { reportHttpError } from '../shared/hr-http.util';
+
+type MealRow = Record<string, unknown>;
+
+type MealQuery = QueryFilterParams & { employee_id?: string | null; from?: string; to?: string };
+
+const EMPTY_PAGE = { success: true, message: '', data: [], meta: { total: 0 } } as unknown as PaginatedResponse<MealRow>;
 
 const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', 'manual'];
 
@@ -20,14 +25,13 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
   selector: 'app-time-meals',
   styleUrl: './time-meals.component.scss',
   imports: [
-    GridExportDirective,
+    BaseTableComponent,
     ActionFormComponent,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzInputModule,
     NzSelectModule,
-    NzTableModule,
     TranslatePipe,
   ],
   template: `
@@ -80,27 +84,9 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
         {{ 'hrmTimeX.show' | translate }}
       </button>
     </div>
-    @if (rows(); as list) {
-      <nz-table #table [nzData]="list" [nzFrontPagination]="false" nzSize="small">
-        <thead>
-          <tr>
-            <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th>{{ 'hrmTimeX.mealType' | translate }}</th>
-            <th>{{ 'hrmTime.occurredAt' | translate }}</th>
-            <th>{{ 'hrmTime.source' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of table.data; track $index) {
-            <tr>
-              <td>{{ employeeName(row['employee_id']) }}</td>
-              <td>{{ row['meal_type'] }}</td>
-              <td>{{ text(row['occurred_at']) | date: 'medium' }}</td>
-              <td>{{ row['source'] }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+    @if (searched()) {
+      <app-base-table [grid]="grid" [columns]="columns()" [size]="'small'" [scroll]="{}" exportFileName="meal-bookings" />
+      <ng-template #occurredTpl let-row>{{ text(row['occurred_at']) | date: 'medium' }}</ng-template>
     }
   `,
 })
@@ -115,8 +101,26 @@ export class TimeMealsComponent {
   protected readonly employeeId = signal<string | null>(null);
   protected readonly from = signal('');
   protected readonly to = signal('');
-  protected readonly rows = signal<Record<string, unknown>[] | null>(null);
-  protected readonly loading = signal(false);
+  protected readonly searched = signal(false);
+  /** Server-driven grid of the bookings of the period (it only loads once a period is chosen). */
+  protected readonly grid = new FetchGridModel<MealRow, MealQuery>((query) =>
+    query.from && query.to ? this.api.getMealBookings({ ...query, from: query.from, to: query.to }) : of(EMPTY_PAGE),
+  );
+  private readonly occurredTpl = viewChild<TemplateRef<unknown>>('occurredTpl');
+  protected readonly loading = computed(() => this.grid.loading());
+  protected readonly columns = computed<TableColumnDef<MealRow>[]>(() => {
+    return [
+      {
+        key: 'user_id',
+        header: 'hrmCommon.employee',
+        valueGetter: (row) => this.employeeName(row['user_id']),
+        valueLabel: (value) => this.employeeName(value),
+      },
+      { key: 'meal_type', header: 'hrmTimeX.mealType' },
+      { key: 'occurred_at', header: 'hrmTime.occurredAt', customCellTemplate: this.occurredTpl() },
+      { key: 'source', header: 'hrmTime.source' },
+    ];
+  });
   private readonly names = computed(
     () => new Map(this.employees().map((o) => [o.value, o.label ?? o.value])),
   );
@@ -170,18 +174,7 @@ export class TimeMealsComponent {
   }
 
   protected load(): void {
-    this.loading.set(true);
-    this.api
-      .getMealBookings({ employee_id: this.employeeId(), from: this.from(), to: this.to() })
-      .subscribe({
-        next: (res) => {
-          this.rows.set(res.data);
-          this.loading.set(false);
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
-          reportHttpError(err, this.message, this.i18n);
-        },
-      });
+    this.searched.set(true);
+    this.grid.setFilter({ employee_id: this.employeeId(), from: this.from(), to: this.to() });
   }
 }

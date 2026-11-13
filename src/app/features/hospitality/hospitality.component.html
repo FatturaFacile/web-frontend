@@ -276,62 +276,35 @@
         <button nz-button nzType="primary" (click)="openCreateReservationModal()" appIconAction="create"></button>
       </div>
 
-      <nz-table
-        #resTable
-        [nzData]="reservations()"
-        [nzLoading]="reservationsLoading()"
-        nzSize="middle"
-        [nzBordered]="true"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'guest_name' | gridSort" [nzFilters]="'guest_name' | gridFilterList: resTable.nzData" [nzFilterFn]="'guest_name' | gridFilterFn">{{ 'HOSPITALITY.GUEST_NAME' | translate }}</th>
-            <th [nzSortFn]="'guest_phone' | gridSort" [nzFilters]="'guest_phone' | gridFilterList: resTable.nzData" [nzFilterFn]="'guest_phone' | gridFilterFn">{{ 'HOSPITALITY.GUEST_PHONE' | translate }}</th>
-            <th [nzSortFn]="'party_size' | gridSort" [nzFilters]="'party_size' | gridFilterList: resTable.nzData" [nzFilterFn]="'party_size' | gridFilterFn">{{ 'HOSPITALITY.PARTY_SIZE' | translate }}</th>
-            <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: resTable.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'HOSPITALITY.DATE_TIME' | translate }}</th>
-            <th [nzSortFn]="'duration_minutes' | gridSort" [nzFilters]="'duration_minutes' | gridFilterList: resTable.nzData" [nzFilterFn]="'duration_minutes' | gridFilterFn">{{ 'HOSPITALITY.DURATION' | translate }}</th>
-            <th>{{ 'HOSPITALITY.STATUS' | translate }}</th>
-            <th [nzSortFn]="'notes' | gridSort" [nzFilters]="'notes' | gridFilterList: resTable.nzData" [nzFilterFn]="'notes' | gridFilterFn">{{ 'HOSPITALITY.NOTES' | translate }}</th>
-            <th>{{ 'HOSPITALITY.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (res of resTable.data; track res.id) {
-            <tr>
-              <td><strong>{{ res.guest_name }}</strong></td>
-              <td>{{ res.guest_phone || '-' }}</td>
-              <td>{{ res.party_size }} {{ 'HOSPITALITY.PEOPLE' | translate }}</td>
-              <td>{{ res.starts_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ res.duration_minutes }} min</td>
-              <td>
-                <nz-tag [nzColor]="res.status === 'booked' ? 'processing' : res.status === 'seated' ? 'success' : 'default'">
-                  {{ ('HOSPITALITY.RES_' + (res.status | uppercase)) | translate }}
-                </nz-tag>
-              </td>
-              <td>{{ res.notes || '-' }}</td>
-              <td>
-                <nz-space>
-                  @if (res.status === 'booked') {
-                    <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="seatReservation(res)">
-                      {{ 'HOSPITALITY.SEAT_GUESTS' | translate }}
-                    </button>
-                    <button
-                      *nzSpaceItem
-                      nz-button
-                      nzSize="small"
-                      nzDanger
-                      nz-popconfirm
-                      [nzPopconfirmTitle]="'HOSPITALITY.CONFIRM_CANCEL_RES' | translate"
-                      (nzOnConfirm)="cancelReservation(res)"
-                      appIconAction="cancel"
-                    ></button>
-                  }
-                </nz-space>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="reservationsGrid" [columns]="reservationColumns()" [actionsTemplate]="reservationActionsTpl" [bordered]="true" exportFileName="hospitality-reservations" />
+      <ng-template #resGuestTpl let-res><strong>{{ res.guest_name }}</strong></ng-template>
+      <ng-template #resPartyTpl let-res>{{ res.party_size }} {{ 'HOSPITALITY.PEOPLE' | translate }}</ng-template>
+      <ng-template #resStartsTpl let-res>{{ res.starts_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+      <ng-template #resDurationTpl let-res>{{ res.duration_minutes }} min</ng-template>
+      <ng-template #resStatusTpl let-res>
+        <nz-tag [nzColor]="res.status === 'booked' ? 'processing' : res.status === 'seated' ? 'success' : 'default'">
+          {{ ('HOSPITALITY.RES_' + (res.status | uppercase)) | translate }}
+        </nz-tag>
+      </ng-template>
+      <ng-template #reservationActionsTpl let-res>
+        <nz-space>
+        @if (res.status === 'booked') {
+          <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="seatReservation(res)">
+            {{ 'HOSPITALITY.SEAT_GUESTS' | translate }}
+          </button>
+          <button
+            *nzSpaceItem
+            nz-button
+            nzSize="small"
+            nzDanger
+            nz-popconfirm
+            [nzPopconfirmTitle]="'HOSPITALITY.CONFIRM_CANCEL_RES' | translate"
+            (nzOnConfirm)="cancelReservation(res)"
+            appIconAction="cancel"
+          ></button>
+        }
+        </nz-space>
+      </ng-template>
     </nz-tab>
   </nz-tabs>
 </nz-card>

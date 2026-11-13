@@ -22,6 +22,9 @@ import {
   HospitalityTable,
   HospitalityTableRequest,
   HospitalityVoidRequest,
+  LaravelPaginationMeta,
+  PaginatedResponse,
+  QueryFilterParams,
   KitchenTicketStatus,
   ReservationStatus,
 } from '../models';
@@ -182,10 +185,20 @@ export class HospitalityApiService {
 
   // --- RESERVATIONS ---
   /** The API lists the reservations of one day: `date` (Y-m-d) is required. */
-  getReservations(params: { date: string; room_id?: string; status?: string }): Observable<ApiResponse<HospitalityReservation[]>> {
-    return this.http.get<ApiResponse<HospitalityReservation[]>>(`${this.base}/reservations`, {
-      params: toHttpParams(params),
-    });
+  getReservations(
+    params: QueryFilterParams & { date: string; room_id?: string; status?: string },
+  ): Observable<PaginatedResponse<HospitalityReservation>> {
+    return this.http
+      .get<ApiResponse<HospitalityReservation[]> & { meta?: LaravelPaginationMeta }>(`${this.base}/reservations`, {
+        params: toHttpParams(params),
+      })
+      .pipe(
+        map((res) => {
+          const count = res.data?.length ?? 0;
+          const meta = res.meta ?? { current_page: params.page ?? 1, from: null, to: null, last_page: 1, per_page: count, total: count };
+          return { ...res, meta };
+        }),
+      );
   }
 
   createReservation(

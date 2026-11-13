@@ -9,10 +9,11 @@ import {
   CategorizePayload,
   ManualMatchPayload,
   PaginatedResponse,
+  QueryFilterParams,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
 
-export interface BankStatementFilterParams {
+export interface BankStatementFilterParams extends QueryFilterParams {
   status?: string;
   source_format?: string;
   iban?: string;

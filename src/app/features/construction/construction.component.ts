@@ -1,9 +1,10 @@
 import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { decimalPattern, positiveNumber } from '@shared/utils/decimal-validators';
+import { of } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -29,6 +30,9 @@ import {
   ConstructionSite,
   ConstructionSiteRequest,
   ConstructionSiteStatus,
+  FetchGridModel,
+  PaginatedResponse,
+  QueryFilterParams,
   ContactResource,
   TradesBid,
   TradesBidPosition,
@@ -47,7 +51,22 @@ import {
   TradesSubcontractorStatus,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+
+/** Page-level filters of the bids grid, sent next to the grid query. */
+interface BidListFilter extends QueryFilterParams {
+  status?: string;
+}
+
+/** Page returned for a site-scoped grid while no site is selected. */
+function emptyPage<T>(): PaginatedResponse<T> {
+  return {
+    success: true,
+    message: '',
+    data: [],
+    meta: { current_page: 1, from: null, to: null, last_page: 1, per_page: 0, total: 0 },
+  } as PaginatedResponse<T>;
+}
 
 const today = (): string => new Date().toISOString().substring(0, 10);
 
@@ -78,6 +97,7 @@ const notZero: ValidatorFn = (control: AbstractControl) => {
   selector: 'app-construction',
   styleUrl: './construction.component.scss',
   imports: [
+    BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ModalActionsDirective,
@@ -137,12 +157,13 @@ export class ConstructionComponent implements OnInit {
 
   // --- TAB 1: SITES & PROGRESS BILLINGS (SAL) ---
   readonly sites = signal<ConstructionSite[]>([]);
-  readonly sitesLoading = signal<boolean>(false);
-  readonly progressBillings = signal<ConstructionProgressBilling[]>([]);
+  /** Every site, for the site selectors; the sites table pages on the server through `sitesGrid`. */
+  readonly sitesGrid = new FetchGridModel<ConstructionSite>((query) => this.api.getSites(query));
+  readonly salGrid = new FetchGridModel<ConstructionProgressBilling>((query) => this.api.getProgressBillings(query));
 
   // --- TAB 2: TRADES BIDS (OFFERTE & APPALTI) ---
   readonly bids = signal<TradesBid[]>([]);
-  readonly bidsLoading = signal<boolean>(false);
+  readonly bidsGrid = new FetchGridModel<TradesBid, BidListFilter>((query) => this.api.getBids(query));
   readonly filterBidStatus = signal<string>('');
   readonly filterBidSearch = signal<string>('');
 
@@ -157,18 +178,24 @@ export class ConstructionComponent implements OnInit {
 
   // --- TAB 3: SITE DIARY (GIORNALE DEI LAVORI) ---
   readonly selectedDiarySiteId = signal<string>('');
-  readonly diaryEntries = signal<TradesSiteDiaryEntry[]>([]);
-  readonly diaryLoading = signal<boolean>(false);
+  readonly diaryGrid = new FetchGridModel<TradesSiteDiaryEntry>((query) => {
+    const siteId = this.activeSiteId();
+    return siteId ? this.api.getSiteDiary(siteId, query) : of(emptyPage<TradesSiteDiaryEntry>());
+  });
 
   // --- TAB 4: DOCUMENTS & SAFETY (POS / DURC) ---
-  readonly siteDocuments = signal<TradesSiteDocument[]>([]);
+  readonly documentsGrid = new FetchGridModel<TradesSiteDocument>((query) => {
+    const siteId = this.activeSiteId();
+    return siteId ? this.api.getSiteDocuments(siteId, query) : of(emptyPage<TradesSiteDocument>());
+  });
   readonly expiringDocuments = signal<TradesSiteDocument[]>([]);
-  readonly documentsLoading = signal<boolean>(false);
 
   // --- TAB 5: SUBCONTRACTS (SUBAPPALTI) ---
   readonly subcontractors = signal<TradesSubcontractor[]>([]);
-  readonly subcontracts = signal<TradesSubcontract[]>([]);
-  readonly subcontractsLoading = signal<boolean>(false);
+  readonly subcontractsGrid = new FetchGridModel<TradesSubcontract>((query) => {
+    const siteId = this.activeSiteId();
+    return siteId ? this.api.getSiteSubcontracts(siteId, query) : of(emptyPage<TradesSubcontract>());
+  });
 
   // Modals visibility
   readonly siteModalVisible = signal<boolean>(false);
@@ -315,6 +342,138 @@ export class ConstructionComponent implements OnInit {
     this.loadSubcontractors();
   }
 
+  // --- TABLE COLUMNS (server-driven grids) ---
+  private readonly codeTpl = viewChild<TemplateRef<unknown>>('codeTpl');
+  private readonly siteStatusTpl = viewChild<TemplateRef<unknown>>('siteStatusTpl');
+  private readonly siteClientTpl = viewChild<TemplateRef<unknown>>('siteClientTpl');
+  private readonly bidClientTpl = viewChild<TemplateRef<unknown>>('bidClientTpl');
+  private readonly subNameTpl = viewChild<TemplateRef<unknown>>('subNameTpl');
+  private readonly normTpl = viewChild<TemplateRef<unknown>>('normTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly eurTpl = viewChild<TemplateRef<unknown>>('eurTpl');
+  private readonly percentTpl = viewChild<TemplateRef<unknown>>('percentTpl');
+  private readonly salStatusTpl = viewChild<TemplateRef<unknown>>('salStatusTpl');
+  private readonly bidStatusTpl = viewChild<TemplateRef<unknown>>('bidStatusTpl');
+  private readonly weatherTpl = viewChild<TemplateRef<unknown>>('weatherTpl');
+  private readonly workersTpl = viewChild<TemplateRef<unknown>>('workersTpl');
+  private readonly incidentsTpl = viewChild<TemplateRef<unknown>>('incidentsTpl');
+  private readonly docKindTpl = viewChild<TemplateRef<unknown>>('docKindTpl');
+  private readonly docExpiryTpl = viewChild<TemplateRef<unknown>>('docExpiryTpl');
+  private readonly subPeriodTpl = viewChild<TemplateRef<unknown>>('subPeriodTpl');
+  private readonly subStatusTpl = viewChild<TemplateRef<unknown>>('subStatusTpl');
+
+  readonly bidActionsTemplate = viewChild<TemplateRef<{ $implicit: TradesBid }>>('bidActionsTpl');
+  readonly subcontractActionsTemplate = viewChild<TemplateRef<{ $implicit: TradesSubcontract }>>('subActionsTpl');
+
+  private upper(value: unknown): string {
+    return String(value ?? '').toUpperCase();
+  }
+
+  readonly siteColumns = computed<TableColumnDef<ConstructionSite>[]>(() => [
+    { key: 'code', header: 'CONSTRUCTION.COL_CODE', customCellTemplate: this.codeTpl() },
+    { key: 'name', header: 'CONSTRUCTION.FIELD_NAME' },
+    {
+      key: 'client_id',
+      serverKey: 'client.name',
+      header: 'CONSTRUCTION.COL_CLIENT',
+      valueGetter: (site) => this.contactNameOf(site.client_id),
+      customCellTemplate: this.siteClientTpl(),
+    },
+    { key: 'address', header: 'CONSTRUCTION.COL_LOCATION' },
+    {
+      key: 'status',
+      header: 'CONSTRUCTION.COL_STATUS',
+      valueGetter: (site) => this.siteStatusLabel(site.status),
+      valueLabel: (value) => this.siteStatusLabel(value),
+      customCellTemplate: this.siteStatusTpl(),
+    },
+    { key: 'sia_norm_reference', header: 'CONSTRUCTION.COL_NORM', customCellTemplate: this.normTpl() },
+  ]);
+
+  readonly salColumns = computed<TableColumnDef<ConstructionProgressBilling>[]>(() => [
+    { key: 'sal_number', header: 'CONSTRUCTION.COL_SAL_NUMBER', customCellTemplate: this.codeTpl() },
+    { key: 'period_start', header: 'CONSTRUCTION.COL_PERIOD_START', customCellTemplate: this.dateTpl() },
+    { key: 'period_end', header: 'CONSTRUCTION.COL_PERIOD_END', customCellTemplate: this.dateTpl() },
+    { key: 'gross_certified_amount', header: 'CONSTRUCTION.COL_GROSS_CERTIFIED', customCellTemplate: this.eurTpl() },
+    { key: 'retention_percentage', header: 'CONSTRUCTION.COL_RETENTION', customCellTemplate: this.percentTpl() },
+    { key: 'net_amount', header: 'CONSTRUCTION.COL_NET_AMOUNT', customCellTemplate: this.eurTpl() },
+    {
+      key: 'status',
+      header: 'CONSTRUCTION.COL_STATUS',
+      valueGetter: (sal) => this.upper(sal.status),
+      valueLabel: (value) => this.upper(value),
+      customCellTemplate: this.salStatusTpl(),
+    },
+  ]);
+
+  readonly bidColumns = computed<TableColumnDef<TradesBid>[]>(() => [
+    { key: 'bid_number', header: 'CONSTRUCTION.COL_BID_CODE', customCellTemplate: this.codeTpl() },
+    { key: 'title', header: 'CONSTRUCTION.COL_BID_TITLE' },
+    {
+      key: 'contact_id',
+      serverKey: 'contact.name',
+      header: 'CONSTRUCTION.COL_CLIENT',
+      valueGetter: (bid) => this.contactNameOf(bid.contact_id),
+      customCellTemplate: this.bidClientTpl(),
+    },
+    { key: 'currency', header: 'CONSTRUCTION.FIELD_CURRENCY' },
+    {
+      key: 'status',
+      header: 'CONSTRUCTION.COL_STATUS',
+      valueGetter: (bid) => this.upper(bid.status),
+      valueLabel: (value) => this.upper(value),
+      customCellTemplate: this.bidStatusTpl(),
+    },
+  ]);
+
+  readonly diaryColumns = computed<TableColumnDef<TradesSiteDiaryEntry>[]>(() => [
+    { key: 'entry_date', header: 'CONSTRUCTION.COL_DATE', customCellTemplate: this.dateTpl() },
+    { key: 'weather', header: 'CONSTRUCTION.COL_WEATHER', customCellTemplate: this.weatherTpl() },
+    { key: 'workers_present', header: 'CONSTRUCTION.COL_WORKERS', customCellTemplate: this.workersTpl() },
+    { key: 'incidents', header: 'CONSTRUCTION.FIELD_INCIDENTS', customCellTemplate: this.incidentsTpl() },
+    { key: 'work_performed', header: 'CONSTRUCTION.COL_WORK_PERFORMED' },
+  ]);
+
+  readonly documentColumns = computed<TableColumnDef<TradesSiteDocument>[]>(() => [
+    { key: 'title', header: 'CONSTRUCTION.COL_DOCUMENT_TITLE', customCellTemplate: this.codeTpl() },
+    {
+      key: 'kind',
+      header: 'CONSTRUCTION.COL_CATEGORY',
+      valueGetter: (doc) => this.documentKindLabel(doc.kind),
+      valueLabel: (value) => this.documentKindLabel(value),
+      customCellTemplate: this.docKindTpl(),
+    },
+    { key: 'expires_on', header: 'CONSTRUCTION.COL_EXPIRES_AT', customCellTemplate: this.docExpiryTpl() },
+  ]);
+
+  readonly subcontractColumns = computed<TableColumnDef<TradesSubcontract>[]>(() => [
+    {
+      key: 'subcontractor_id',
+      serverKey: 'subcontractor.name',
+      header: 'CONSTRUCTION.COL_SUBCONTRACTOR',
+      valueGetter: (sub) => this.subcontractorNameOf(sub.subcontractor_id),
+      customCellTemplate: this.subNameTpl(),
+    },
+    { key: 'description', header: 'CONSTRUCTION.COL_SCOPE' },
+    { key: 'contract_amount', header: 'CONSTRUCTION.COL_CONTRACT_AMOUNT', customCellTemplate: this.eurTpl() },
+    { key: 'starts_on', header: 'CONSTRUCTION.COL_PERIOD', customCellTemplate: this.subPeriodTpl() },
+    {
+      key: 'status',
+      header: 'CONSTRUCTION.COL_STATUS',
+      valueGetter: (sub) => this.upper(sub.status),
+      valueLabel: (value) => this.upper(value),
+      customCellTemplate: this.subStatusTpl(),
+    },
+  ]);
+
+  siteStatusLabel(status: string | null | undefined): string {
+    return status ? this.translate.instant('CONSTRUCTION.SITE_STATUS_' + status.toUpperCase()) : '';
+  }
+
+  documentKindLabel(kind: string | null | undefined): string {
+    return kind ? this.translate.instant('CONSTRUCTION.DOC_KIND_' + kind.toUpperCase()) : '';
+  }
+
   // --- CONTACTS ---
   loadContacts(): void {
     this.clientApi.list({ per_page: 200 }).subscribe({
@@ -342,29 +501,38 @@ export class ConstructionComponent implements OnInit {
 
   // --- SITES & SAL METHODS ---
   loadSites(): void {
-    this.sitesLoading.set(true);
-    this.api.getSites().subscribe({
+    this.sitesGrid.reload();
+    this.salGrid.reload();
+    this.api.getSites({ per_page: 200 }).subscribe({
       next: (res) => {
         const data = res.data || [];
         this.sites.set(data);
         if (data.length > 0 && !this.selectedDiarySiteId()) {
           this.selectedDiarySiteId.set(data[0].id || '');
-          this.loadDiary(data[0].id || '');
-          this.loadSiteSubcontracts(data[0].id || '');
         }
-        this.sitesLoading.set(false);
+        this.reloadSiteScopedGrids();
       },
       error: () => {
-        this.sitesLoading.set(false);
         this.message.error(this.translate.instant('CONSTRUCTION.LOAD_ERROR'));
       },
     });
+  }
 
-    this.api.getProgressBillings().subscribe({
-      next: (res) => {
-        this.progressBillings.set(res.data || []);
-      },
-    });
+  /** Site the diary, the documents and the subcontracts show: the selected one, else the first. */
+  activeSiteId(): string {
+    return this.selectedDiarySiteId() || this.sites()[0]?.id || '';
+  }
+
+  /** The site selector changed: the three site-scoped tables follow it. */
+  onSiteChange(siteId: string): void {
+    this.selectedDiarySiteId.set(siteId);
+    this.reloadSiteScopedGrids();
+  }
+
+  private reloadSiteScopedGrids(): void {
+    this.diaryGrid.reload();
+    this.documentsGrid.reload();
+    this.subcontractsGrid.reload();
   }
 
   openCreateSiteModal(): void {
@@ -453,30 +621,13 @@ export class ConstructionComponent implements OnInit {
 
   // --- TRADES BIDS METHODS ---
   loadBids(): void {
-    this.bidsLoading.set(true);
-    this.api.getBids().subscribe({
-      next: (res) => {
-        let list = res.data || [];
-        const status = this.filterBidStatus();
-        const search = this.filterBidSearch().toLowerCase().trim();
-        if (status) {
-          list = list.filter((b) => b.status === status);
-        }
-        if (search) {
-          list = list.filter(
-            (b) =>
-              b.bid_number.toLowerCase().includes(search) ||
-              b.title.toLowerCase().includes(search) ||
-              this.contactNameOf(b.contact_id).toLowerCase().includes(search),
-          );
-        }
-        this.bids.set(list);
-        this.bidsLoading.set(false);
-      },
-      error: () => {
-        this.bidsLoading.set(false);
-      },
-    });
+    this.bidsGrid.reload();
+    this.api.getBids({ per_page: 200 }).subscribe({ next: (res) => this.bids.set(res.data || []) });
+  }
+
+  /** Page-level filters of the bids grid: the search box and the status select. */
+  applyBidFilters(): void {
+    this.bidsGrid.setFilter({ search: this.filterBidSearch().trim(), status: this.filterBidStatus() });
   }
 
   openCreateBidModal(): void {
@@ -700,18 +851,8 @@ export class ConstructionComponent implements OnInit {
   }
 
   // --- DIARY METHODS ---
-  loadDiary(siteId: string): void {
-    if (!siteId) return;
-    this.diaryLoading.set(true);
-    this.api.getSiteDiary(siteId).subscribe({
-      next: (res) => {
-        this.diaryEntries.set(res.data || []);
-        this.diaryLoading.set(false);
-      },
-      error: () => {
-        this.diaryLoading.set(false);
-      },
-    });
+  loadDiary(): void {
+    this.diaryGrid.reload();
   }
 
   openCreateDiaryModal(): void {
@@ -745,7 +886,7 @@ export class ConstructionComponent implements OnInit {
         next: () => {
           this.message.success(this.translate.instant('CONSTRUCTION.DIARY_SAVED'));
           this.diaryModalVisible.set(false);
-          this.loadDiary(val.site_id);
+          this.loadDiary();
         },
         error: () => {
           this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
@@ -755,22 +896,7 @@ export class ConstructionComponent implements OnInit {
 
   // --- DOCUMENTS METHODS ---
   loadDocuments(): void {
-    this.documentsLoading.set(true);
-    const siteId = this.selectedDiarySiteId() || this.sites()[0]?.id;
-    if (siteId) {
-      this.api.getSiteDocuments(siteId).subscribe({
-        next: (res) => {
-          this.siteDocuments.set(res.data || []);
-          this.documentsLoading.set(false);
-        },
-        error: () => {
-          this.documentsLoading.set(false);
-        },
-      });
-    } else {
-      this.documentsLoading.set(false);
-    }
-
+    this.documentsGrid.reload();
     this.api.getExpiringDocuments().subscribe({
       next: (res) => {
         this.expiringDocuments.set(res.data || []);
@@ -832,18 +958,8 @@ export class ConstructionComponent implements OnInit {
     return this.subcontractors().find((candidate) => candidate.id === subcontractorId)?.name ?? subcontractorId;
   }
 
-  loadSiteSubcontracts(siteId: string): void {
-    if (!siteId) return;
-    this.subcontractsLoading.set(true);
-    this.api.getSiteSubcontracts(siteId).subscribe({
-      next: (res) => {
-        this.subcontracts.set(res.data || []);
-        this.subcontractsLoading.set(false);
-      },
-      error: () => {
-        this.subcontractsLoading.set(false);
-      },
-    });
+  loadSiteSubcontracts(): void {
+    this.subcontractsGrid.reload();
   }
 
   openCreateSubcontractorModal(): void {
@@ -919,7 +1035,7 @@ export class ConstructionComponent implements OnInit {
         next: () => {
           this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CREATED'));
           this.subcontractModalVisible.set(false);
-          this.loadSiteSubcontracts(val.site_id);
+          this.loadSiteSubcontracts();
         },
         error: () => {
           this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));
@@ -954,7 +1070,7 @@ export class ConstructionComponent implements OnInit {
         next: () => {
           this.message.success(this.translate.instant('CONSTRUCTION.SUBCONTRACT_CERTIFIED'));
           this.certifySubcontractModalVisible.set(false);
-          this.loadSiteSubcontracts(sub.construction_site_id);
+          this.loadSiteSubcontracts();
         },
         error: () => {
           this.message.error(this.translate.instant('CONSTRUCTION.ACTION_ERROR'));

@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   AbstractControl,
   FormGroup,
@@ -24,29 +24,34 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
   CreateInventoryCountPayload,
   CreateProductPayload,
+  FetchGridModel,
   InventoryAdjustmentItem,
   InventoryApiService,
   InventoryCountSessionItem,
+  ProductFilterParams,
   ProductItem,
   StockLevelItem,
+  StockMovementFilterParams,
   StockMovementItem,
   StockValuationAtDate,
   StockValuationMethod,
   StoreInventoryAdjustmentPayload,
+  InventoryAdjustmentFilterParams,
+  InventoryCountFilterParams,
   TransferStockPayload,
   TranslateService,
   WarehouseBinItem,
   WarehouseItem,
   applyServerErrors,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { formErrorTip } from './form-error-tip';
 
 /** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
@@ -98,6 +103,7 @@ function differentFromSourceBin(control: AbstractControl): ValidationErrors | nu
     NzGridModule,
     NzDividerModule,
     PageHeaderComponent,
+    BaseTableComponent,
     TranslatePipe,
   ],
   templateUrl: './inventory.component.html',
@@ -118,10 +124,8 @@ export class InventoryComponent implements OnInit {
   readonly selectedWarehouseFilter = signal<string | undefined>(undefined);
 
   // 1. Products Catalog
-  readonly products = signal<ProductItem[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
+  readonly productsGrid = new FetchGridModel<ProductItem, ProductFilterParams>((query) => this.inventoryApi.getProducts(query));
+  readonly products = this.productsGrid.items;
   readonly searchTerm = signal('');
   readonly createModalVisible = signal(false);
 
@@ -143,10 +147,8 @@ export class InventoryComponent implements OnInit {
   readonly totalShortfall = computed(() => this.stockLevels().reduce((sum, item) => sum + (item.shortfall || 0), 0));
 
   // 3. Movements & Transfers
-  readonly movements = signal<StockMovementItem[]>([]);
-  readonly movementsTotal = signal(0);
-  readonly movementsPage = signal(1);
-  readonly movementsPageSize = signal(10);
+  readonly movementsGrid = new FetchGridModel<StockMovementItem, StockMovementFilterParams>((query) => this.inventoryApi.getMovements(query));
+  readonly movements = this.movementsGrid.items;
   readonly movementTypeFilter = signal<string | undefined>(undefined);
   readonly transferModalVisible = signal(false);
 
@@ -168,10 +170,8 @@ export class InventoryComponent implements OnInit {
   );
 
   // 4. Adjustments
-  readonly adjustments = signal<InventoryAdjustmentItem[]>([]);
-  readonly adjustmentsTotal = signal(0);
-  readonly adjustmentsPage = signal(1);
-  readonly adjustmentsPageSize = signal(10);
+  readonly adjustmentsGrid = new FetchGridModel<InventoryAdjustmentItem, InventoryAdjustmentFilterParams>((query) => this.inventoryApi.getAdjustments(query));
+  readonly adjustments = this.adjustmentsGrid.items;
   readonly adjustmentModalVisible = signal(false);
   readonly adjustmentStatusFilter = signal<string | undefined>(undefined);
   /** Adjustment waiting for the rejection reason (opens the reject modal). */
@@ -196,10 +196,8 @@ export class InventoryComponent implements OnInit {
   });
 
   // 5. Counts (Physical Stocktaking)
-  readonly counts = signal<InventoryCountSessionItem[]>([]);
-  readonly countsTotal = signal(0);
-  readonly countsPage = signal(1);
-  readonly countsPageSize = signal(10);
+  readonly countsGrid = new FetchGridModel<InventoryCountSessionItem, InventoryCountFilterParams>((query) => this.inventoryApi.getCounts(query));
+  readonly counts = this.countsGrid.items;
   readonly countModalVisible = signal(false);
 
   readonly countForm = this.fb.group({
@@ -216,6 +214,100 @@ export class InventoryComponent implements OnInit {
   readonly valuationDate = signal(toIsoDay(new Date()));
   readonly valuationDateValue = computed(() => new Date(`${this.valuationDate()}T00:00:00`));
   readonly valuationMethod = signal<StockValuationMethod | undefined>(undefined);
+
+  private readonly movementDateTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementDateTpl');
+  private readonly movementNumberTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementNumberTpl');
+  private readonly movementTypeTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementTypeTpl');
+  private readonly movementQtyTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementQtyTpl');
+  private readonly movementSignedTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementSignedTpl');
+  private readonly movementCostTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementCostTpl');
+  private readonly movementValuationTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementValuationTpl');
+  private readonly movementRefTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementRefTpl');
+  private readonly movementNotesTpl = viewChild<TemplateRef<{ $implicit: StockMovementItem; value: unknown }>>('movementNotesTpl');
+
+  readonly movementColumns = computed<TableColumnDef<StockMovementItem>[]>(() => [
+    { key: 'created_at', header: 'INVENTORY.COL_DATE', customCellTemplate: this.movementDateTpl() },
+    { key: 'movement_number', header: 'INVENTORY.COL_MOVEMENT_NUM', valueGetter: (row) => row.movement_number || row.id.substring(0, 8), customCellTemplate: this.movementNumberTpl() },
+    { key: 'movement_type', header: 'INVENTORY.COL_TYPE', customCellTemplate: this.movementTypeTpl() },
+    { key: 'quantity', header: 'INVENTORY.COL_QTY', align: 'right', customCellTemplate: this.movementQtyTpl() },
+    { key: 'signed_quantity', header: 'INVENTORY.COL_SIGNED_QTY', align: 'right', valueGetter: (row) => row.signed_quantity ?? row.quantity, customCellTemplate: this.movementSignedTpl() },
+    { key: 'unit_cost', header: 'INVENTORY.COL_UNIT_COST', align: 'right', customCellTemplate: this.movementCostTpl() },
+    { key: 'total_valuation', header: 'INVENTORY.COL_VALUATION', align: 'right', valueGetter: (row) => row.total_valuation ?? row.unit_cost * row.quantity, customCellTemplate: this.movementValuationTpl() },
+    { key: 'reference_type', serverKey: 'origin_document_type', header: 'INVENTORY.COL_REF', valueGetter: (row) => row.reference_type ?? '', customCellTemplate: this.movementRefTpl() },
+    { key: 'notes', header: 'INVENTORY.COL_NOTES', customCellTemplate: this.movementNotesTpl() },
+  ]);
+
+  private readonly adjustmentNumberTpl = viewChild<TemplateRef<{ $implicit: InventoryAdjustmentItem; value: unknown }>>('adjustmentNumberTpl');
+  private readonly adjustmentReasonTpl = viewChild<TemplateRef<{ $implicit: InventoryAdjustmentItem; value: unknown }>>('adjustmentReasonTpl');
+  private readonly adjustmentChangeTpl = viewChild<TemplateRef<{ $implicit: InventoryAdjustmentItem; value: unknown }>>('adjustmentChangeTpl');
+  private readonly adjustmentStatusTpl = viewChild<TemplateRef<{ $implicit: InventoryAdjustmentItem; value: unknown }>>('adjustmentStatusTpl');
+  private readonly adjustmentDateTpl = viewChild<TemplateRef<{ $implicit: InventoryAdjustmentItem; value: unknown }>>('adjustmentDateTpl');
+
+  readonly adjustmentColumns = computed<TableColumnDef<InventoryAdjustmentItem>[]>(() => [
+    { key: 'adjustment_number', header: 'INVENTORY.COL_ADJ_NUMBER', customCellTemplate: this.adjustmentNumberTpl() },
+    { key: 'warehouse', serverKey: 'warehouse.name', header: 'INVENTORY.COL_WAREHOUSE', valueGetter: (row) => row.warehouse?.name ?? row.warehouse_id },
+    { key: 'reason', header: 'INVENTORY.COL_REASON', customCellTemplate: this.adjustmentReasonTpl() },
+    { key: 'net_valuation_change', header: 'INVENTORY.COL_VAL_CHANGE', align: 'right', valueGetter: (row) => row.net_valuation_change ?? 0, customCellTemplate: this.adjustmentChangeTpl() },
+    { key: 'status', header: 'COMMON.STATUS', align: 'center', valueGetter: (row) => this.adjustmentStatusLabel(row.status), valueLabel: (value) => this.adjustmentStatusLabel(value), customCellTemplate: this.adjustmentStatusTpl() },
+    { key: 'created_at', header: 'INVENTORY.COL_DATE', customCellTemplate: this.adjustmentDateTpl() },
+  ]);
+
+  private readonly countNumberTpl = viewChild<TemplateRef<{ $implicit: InventoryCountSessionItem; value: unknown }>>('countNumberTpl');
+  private readonly countTypeTpl = viewChild<TemplateRef<{ $implicit: InventoryCountSessionItem; value: unknown }>>('countTypeTpl');
+  private readonly countDateTpl = viewChild<TemplateRef<{ $implicit: InventoryCountSessionItem; value: unknown }>>('countDateTpl');
+  private readonly countStatusTpl = viewChild<TemplateRef<{ $implicit: InventoryCountSessionItem; value: unknown }>>('countStatusTpl');
+
+  readonly countColumns = computed<TableColumnDef<InventoryCountSessionItem>[]>(() => [
+    { key: 'session_number', header: 'INVENTORY.COL_SESSION_NUM', customCellTemplate: this.countNumberTpl() },
+    { key: 'warehouse', serverKey: 'warehouse.name', header: 'INVENTORY.COL_WAREHOUSE', valueGetter: (row) => row.warehouse?.name ?? row.warehouse_id },
+    { key: 'count_type', header: 'INVENTORY.COL_COUNT_TYPE', customCellTemplate: this.countTypeTpl() },
+    { key: 'scheduled_date', header: 'INVENTORY.COL_SCHEDULED_DATE', customCellTemplate: this.countDateTpl() },
+    { key: 'status', header: 'COMMON.STATUS', align: 'center', valueGetter: (row) => this.countStatusLabel(row.status), valueLabel: (value) => this.countStatusLabel(value), customCellTemplate: this.countStatusTpl() },
+  ]);
+
+  private readonly productSkuTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productSkuTpl');
+  private readonly productNameTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productNameTpl');
+  private readonly productUomTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productUomTpl');
+  private readonly productHsTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productHsTpl');
+  private readonly productCostTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productCostTpl');
+  private readonly productPriceTpl = viewChild<TemplateRef<{ $implicit: ProductItem; value: unknown }>>('productPriceTpl');
+
+  readonly productColumns = computed<TableColumnDef<ProductItem>[]>(() => [
+    { key: 'sku', header: 'INVENTORY.COL_SKU', customCellTemplate: this.productSkuTpl() },
+    { key: 'name', header: 'INVENTORY.COL_DESC', customCellTemplate: this.productNameTpl() },
+    { key: 'unit_measure', header: 'INVENTORY.LBL_UDM', customCellTemplate: this.productUomTpl() },
+    { key: 'hs_code', header: 'INVENTORY.COL_HS', valueGetter: (row) => row.hs_code ?? '', customCellTemplate: this.productHsTpl() },
+    { key: 'cost_price', header: 'INVENTORY.COL_UNIT_COST', customCellTemplate: this.productCostTpl() },
+    { key: 'sale_price', header: 'SALES.INVOICES.ITEM.PRICE', customCellTemplate: this.productPriceTpl() },
+  ]);
+
+  /** Text of an adjustment status (also used for the filter list and the group headers of the grid). */
+  adjustmentStatusLabel(status: string): string {
+    switch (status) {
+      case 'approved':
+        return this.translate.instant('COMMON.STATUS_APPROVED');
+      case 'rejected':
+        return this.translate.instant('COMMON.STATUS_REJECTED');
+      case 'pending_approval':
+        return this.translate.instant('COMMON.STATUS_PENDING');
+      case 'draft':
+        return this.translate.instant('INVENTORY.ADJ_STATUS.DRAFT');
+      default:
+        return status;
+    }
+  }
+
+  /** Text of a count session status. */
+  countStatusLabel(status: string): string {
+    switch (status) {
+      case 'reconciled':
+        return this.translate.instant('INVENTORY.STATUS.RECONCILED');
+      case 'in_progress':
+        return this.translate.instant('INVENTORY.STATUS.IN_PROGRESS');
+      default:
+        return status;
+    }
+  }
 
   errorTip(form: FormGroup, path: string): string {
     return formErrorTip(form, path, this.translate);
@@ -275,6 +367,7 @@ export class InventoryComponent implements OnInit {
 
   onWarehouseFilterChange(warehouseId: string | undefined): void {
     this.selectedWarehouseFilter.set(warehouseId);
+    this.movementsGrid.setFilter({ warehouse_id: warehouseId });
     this.loadStockLevels();
   }
 
@@ -319,32 +412,12 @@ export class InventoryComponent implements OnInit {
 
   // Movements
   loadMovements(): void {
-    this.loading.set(true);
-    this.inventoryApi
-      .getMovements({
-        warehouse_id: this.selectedWarehouseFilter(),
-        movement_type: this.movementTypeFilter(),
-        page: this.movementsPage(),
-        per_page: this.movementsPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.movements.set(res.data || []);
-          this.movementsTotal.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.movements.set([]);
-          this.movementsTotal.set(0);
-          this.loading.set(false);
-        },
-      });
+    this.movementsGrid.reload();
   }
 
-  onMovementsQueryParamsChange(params: NzTableQueryParams): void {
-    this.movementsPage.set(params.pageIndex);
-    this.movementsPageSize.set(params.pageSize);
-    this.loadMovements();
+  setMovementType(movementType: string | undefined): void {
+    this.movementTypeFilter.set(movementType);
+    this.movementsGrid.setFilter({ movement_type: movementType });
   }
 
   openTransferModal(): void {
@@ -397,31 +470,12 @@ export class InventoryComponent implements OnInit {
 
   // Adjustments
   loadAdjustments(): void {
-    this.loading.set(true);
-    this.inventoryApi
-      .getAdjustments({
-        status: this.adjustmentStatusFilter(),
-        page: this.adjustmentsPage(),
-        per_page: this.adjustmentsPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.adjustments.set(res.data || []);
-          this.adjustmentsTotal.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.adjustments.set([]);
-          this.adjustmentsTotal.set(0);
-          this.loading.set(false);
-        },
-      });
+    this.adjustmentsGrid.reload();
   }
 
-  onAdjustmentsQueryParamsChange(params: NzTableQueryParams): void {
-    this.adjustmentsPage.set(params.pageIndex);
-    this.adjustmentsPageSize.set(params.pageSize);
-    this.loadAdjustments();
+  setAdjustmentStatus(status: string | undefined): void {
+    this.adjustmentStatusFilter.set(status);
+    this.adjustmentsGrid.setFilter({ status });
   }
 
   openAdjustmentModal(): void {
@@ -524,30 +578,7 @@ export class InventoryComponent implements OnInit {
 
   // Counts
   loadCounts(): void {
-    this.loading.set(true);
-    this.inventoryApi
-      .getCounts({
-        page: this.countsPage(),
-        per_page: this.countsPageSize(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.counts.set(res.data || []);
-          this.countsTotal.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.counts.set([]);
-          this.countsTotal.set(0);
-          this.loading.set(false);
-        },
-      });
-  }
-
-  onCountsQueryParamsChange(params: NzTableQueryParams): void {
-    this.countsPage.set(params.pageIndex);
-    this.countsPageSize.set(params.pageSize);
-    this.loadCounts();
+    this.countsGrid.reload();
   }
 
   openCountModal(): void {
@@ -643,38 +674,13 @@ export class InventoryComponent implements OnInit {
 
   // Products (Existing Catalog Table)
   loadProducts(): void {
-    this.loading.set(true);
-    this.inventoryApi
-      .getProducts({
-        page: this.pageIndex(),
-        per_page: this.pageSize(),
-        search: this.searchTerm() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.products.set(res.data || []);
-          this.total.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.products.set([]);
-          this.total.set(0);
-          this.loading.set(false);
-        },
-      });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadProducts();
+    this.productsGrid.reload();
   }
 
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchTerm.set(value);
-    this.pageIndex.set(1);
-    this.loadProducts();
+    this.productsGrid.setFilter({ search: value || undefined });
   }
 
   openCreateModal(): void {

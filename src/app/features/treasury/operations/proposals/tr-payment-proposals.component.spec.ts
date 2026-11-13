@@ -39,7 +39,7 @@ describe('TrPaymentProposalsComponent', () => {
 
   async function create(createdBy: string) {
     TestBed.resetTestingModule();
-    api.getPaymentProposals.mockReturnValue(of({ success: true, message: '', data: [proposal(createdBy)] }));
+    api.getPaymentProposals.mockReturnValue(of({ success: true, message: '', data: [proposal(createdBy)], meta: { current_page: 1, from: 1, last_page: 1, per_page: 10, to: 1, total: 1 } }));
     await TestBed.configureTestingModule({
       imports: [TrPaymentProposalsComponent],
       providers: [
@@ -54,6 +54,7 @@ describe('TrPaymentProposalsComponent', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(TrPaymentProposalsComponent);
     fixture.detectChanges();
+    await vi.waitFor(() => expect(api.getPaymentProposals).toHaveBeenCalled());
     await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
@@ -70,7 +71,7 @@ describe('TrPaymentProposalsComponent', () => {
 
   it('offers the approval to somebody other than the author', async () => {
     const fixture = await create('someone-else');
-    expect(api.getPaymentProposals).toHaveBeenCalledWith('draft');
+    expect(api.getPaymentProposals).toHaveBeenCalledWith(expect.objectContaining({ status: 'draft' }));
     expect(actionLabels(fixture.nativeElement)).toHaveLength(2);
     (fixture.componentInstance as unknown as { approve(p: PaymentProposal): void }).approve(proposal('someone-else'));
     expect(api.approvePaymentProposal).toHaveBeenCalledWith('p1');

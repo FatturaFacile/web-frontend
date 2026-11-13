@@ -15,8 +15,24 @@ export interface PracticeActivityItem {
   is_billable?: boolean;
 }
 
+/** One user/case row of the activity control: logged time and amounts, billed and unbilled. */
+export interface PracticeActivityControlRow {
+  user_id: string | null;
+  user_name: string | null;
+  legal_case_id: string;
+  case_number: string | null;
+  client_id: string | null;
+  billed_minutes: number;
+  billed_amount: string;
+  unbilled_minutes: number;
+  unbilled_amount: string;
+}
+
 export interface PracticeActivityControlResponse {
-  activities: PracticeActivityItem[];
+  from?: string;
+  to?: string;
+  rows?: PracticeActivityControlRow[];
+  activities?: PracticeActivityItem[];
   total_hours?: number;
   total_amount?: string;
   unbilled_count?: number;
@@ -97,15 +113,15 @@ export interface PracticeRetainerApplyRequest {
 export interface PracticeRetainer {
   id: string;
   client_id: string;
-  client_name?: string;
+  client?: { id?: string; company_name?: string | null; first_name?: string | null; last_name?: string | null } | null;
   legal_case_id?: string | null;
-  case_title?: string | null;
+  legal_case?: { id: string; case_number: string; title: string } | null;
   received_on: string;
   amount: string;
-  balance: string;
+  applied_amount: string;
   reference?: string | null;
   notes?: string | null;
-  status: 'available' | 'partially_applied' | 'depleted' | 'voided';
+  status: 'open' | 'exhausted' | 'void';
   created_at?: string;
 }
 

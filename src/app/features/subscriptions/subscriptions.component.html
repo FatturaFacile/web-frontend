@@ -40,7 +40,7 @@
           type="text"
           nz-input
           [placeholder]="'subscriptions.lblSearchContractsByNumberCustomerPlan' | translate"
-          [value]="searchTerm()"
+          [value]="grid.filterParams().search ?? ''"
           (input)="onSearch($event)"
         />
       </nz-input-wrapper>
@@ -51,7 +51,7 @@
         class="filter-select"
         [nzPlaceHolder]="'Status: All'"
         nzAllowClear
-        [ngModel]="statusFilter()"
+        [ngModel]="grid.filterParams().status"
         (ngModelChange)="onStatusChange($event)"
       >
         <nz-option nzValue="active" [nzLabel]="'subscriptions.lblActive' | translate"></nz-option>
@@ -60,89 +60,63 @@
         <nz-option nzValue="cancelled" [nzLabel]="'subscriptions.lblCancelled' | translate"></nz-option>
       </nz-select>
 
-      <button nz-button nzType="default" (click)="loadContracts()">
+      <button nz-button nzType="default" (click)="grid.reload()">
         <nz-icon nzType="reload" />
         {{ 'subscriptions.lblRefresh' | translate }}
       </button>
     </div>
   </div>
 
-  <nz-table
-    #contractsTable
-    [nzData]="contracts()"
-    [nzLoading]="loading()"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzFrontPagination]="false"
-    (nzQueryParams)="onQueryParamsChange($event)"
-  >
-    <thead>
-      <tr>
-        <th [nzSortFn]="'contract_number' | gridSort" [nzFilters]="'contract_number' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'contract_number' | gridFilterFn">{{ 'subscriptions.lblContract' | translate }}</th>
-        <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'subscriptions.lblCustomer' | translate }}</th>
-        <th [nzSortFn]="'plan_name' | gridSort" [nzFilters]="'plan_name' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'plan_name' | gridFilterFn">{{ 'subscriptions.lblPlan' | translate }}</th>
-        <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'subscriptions.lblStatus' | translate }}</th>
-        <th [nzSortFn]="'mrr' | gridSort" [nzFilters]="'mrr' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'mrr' | gridFilterFn">{{ 'subscriptions.lblMrr' | translate }}</th>
-        <th [nzSortFn]="'current_period_start' | gridSort" [nzFilters]="'current_period_start' | gridFilterList: contractsTable.nzData" [nzFilterFn]="'current_period_start' | gridFilterFn">{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
-        <th nzWidth="240px">{{ 'subscriptions.lblActions' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (c of contractsTable.data; track c.id) {
-        <tr>
-          <td>
-            <div class="contract-info">
-              <strong>{{ c.contract_number }}</strong>
-              <span class="sub-text">{{ c.name || 'Recurring Subscription' }}</span>
-            </div>
-          </td>
-          <td>{{ c.customer_name || c.customer_id }}</td>
-          <td>
-            <nz-tag>{{ c.plan_name || 'Standard Plan' }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(c.status)">{{ c.status }}</nz-tag>
-          </td>
-          <td>
-            <strong>{{ c.mrr | money: c.currency }}</strong>
-          </td>
-          <td>
-            <span class="sub-text">
-              {{ c.current_period_start || c.start_date }} &rarr; {{ c.current_period_end || ('subscriptions.lblOngoing' | translate) }}
-            </span>
-          </td>
-          <td>
-            <nz-space>
-              @if (c.status === 'trialing' || c.status === 'draft') {
-                <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="activate(c)">
-                  {{ 'subscriptions.lblActivate' | translate }}
-                </button>
-              }
-              @if (c.status === 'active') {
-                <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="billNow(c)">
-                  {{ 'subscriptions.lblBillNow' | translate }}
-                </button>
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(c)">
-                  {{ 'subscriptions.lblPause' | translate }}
-                </button>
-              }
-              @if (c.status === 'paused') {
-                <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="reactivate(c)">
-                  {{ 'subscriptions.lblResume' | translate }}
-                </button>
-              }
-              @if (c.status !== 'cancelled') {
-                <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="cancel(c)">
-                  {{ 'subscriptions.lblCancel' | translate }}
-                </button>
-              }
-            </nz-space>
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" />
+
+  <ng-template #numberTpl let-c>
+    <div class="contract-info">
+      <strong>{{ c.subscription_number }}</strong>
+      <span class="sub-text">{{ c.name || ('subscriptions.lblRecurringSubscription' | translate) }}</span>
+    </div>
+  </ng-template>
+  <ng-template #customerTpl let-c>{{ c.customer_name || c.customer_id }}</ng-template>
+  <ng-template #planTpl let-c>
+    <nz-tag>{{ c.plan_name || ('subscriptions.lblStandardPlan' | translate) }}</nz-tag>
+  </ng-template>
+  <ng-template #statusTpl let-c>
+    <nz-tag [nzColor]="getStatusColor(c.status)">{{ c.status }}</nz-tag>
+  </ng-template>
+  <ng-template #mrrTpl let-c>
+    <strong>{{ c.mrr | money: c.currency }}</strong>
+  </ng-template>
+  <ng-template #periodTpl let-c>
+    <span class="sub-text">
+      {{ c.current_period_start || c.start_date }} &rarr; {{ c.current_period_end || ('subscriptions.lblOngoing' | translate) }}
+    </span>
+  </ng-template>
+  <ng-template #actionsTpl let-c>
+    <nz-space>
+      @if (c.status === 'trialing' || c.status === 'draft') {
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="activate(c)">
+          {{ 'subscriptions.lblActivate' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (c.status === 'active') {
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="billNow(c)">
+          {{ 'subscriptions.lblBillNow' | translate }}
+        </button>
+        <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(c)">
+          {{ 'subscriptions.lblPause' | translate }}
+        </button>
+      }
+      @if (c.status === 'paused') {
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="reactivate(c)">
+          {{ 'subscriptions.lblResume' | translate }}
+        </button>
+      }
+      @if (c.status !== 'cancelled') {
+        <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="cancel(c)">
+          {{ 'subscriptions.lblCancel' | translate }}
+        </button>
+      }
+    </nz-space>
+  </ng-template>
 </nz-card>
 
 <!-- Create Contract Modal -->

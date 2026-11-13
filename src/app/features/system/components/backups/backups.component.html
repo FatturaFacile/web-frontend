@@ -21,13 +21,7 @@
     </button>
   </div>
 
-  <app-base-table
-    [data]="items()"
-    [columns]="columns()"
-    [loading]="loading()"
-    [total]="items().length"
-    [actionsTemplate]="actionsTpl"
-  />
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'backups'" />
 
   <ng-template #dateTpl let-val="value">
     {{ val | date: "dd.MM.yyyy HH:mm:ss" }}
@@ -39,9 +33,9 @@
 
   <ng-template #statusTpl let-val="value">
     <nz-tag
-      [nzColor]="val === 'completed' ? 'success' : val === 'in_progress' ? 'processing' : 'error'"
+      [nzColor]="val === 'completed' ? 'success' : val === 'pending' || val === 'processing' ? 'processing' : 'error'"
     >
-      {{ val === "completed" ? "COMPLETATO" : val === "in_progress" ? "IN CORSO" : "FALLITO" }}
+      {{ 'system.backups.status.' + val | translate }}
     </nz-tag>
   </ng-template>
 

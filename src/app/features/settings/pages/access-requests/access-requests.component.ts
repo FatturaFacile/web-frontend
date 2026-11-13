@@ -1,20 +1,21 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminApiService,
+  FetchGridModel,
   I18nService,
+  QueryFilterParams,
   TenantAccessRequestRecord,
   TenantAccessRequestStatus,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable, tap } from 'rxjs';
 import {
@@ -25,6 +26,10 @@ import { CrudField } from '../../../hr/shared/crud/crud.types';
 import { reportHttpError } from '../../../hr/shared/hr-http.util';
 
 type Decision = 'approve' | 'move' | 'reject';
+
+interface AccessRequestFilter extends QueryFilterParams {
+  status?: TenantAccessRequestStatus | null;
+}
 
 const ROLES = [
   'owner',
@@ -46,8 +51,7 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
   selector: 'app-access-requests',
   styleUrl: './access-requests.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ActionFormComponent,
     DatePipe,
     FormsModule,
@@ -57,7 +61,6 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
     NzCardModule,
     NzModalModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     PageHeaderComponent,
     TranslatePipe,
@@ -88,75 +91,43 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
           }
         </nz-select>
       </div>
-      <nz-table
-        #table
-        nzSize="middle"
-        [nzFrontPagination]="false"
-        [nzData]="rows()"
-        [nzLoading]="loading()"
-        [nzTotal]="total()"
-        [nzPageIndex]="page()"
-        [nzPageSize]="pageSize"
-        (nzQueryParams)="onQuery($event)"
-      >
-        <thead>
-          <tr>
-            <th [nzSortFn]="'requested_company_name' | gridSort" [nzFilters]="'requested_company_name' | gridFilterList: table.nzData" [nzFilterFn]="'requested_company_name' | gridFilterFn">{{ 'adminAccess.company' | translate }}</th>
-            <th [nzSortFn]="'requested_tax_id' | gridSort" [nzFilters]="'requested_tax_id' | gridFilterList: table.nzData" [nzFilterFn]="'requested_tax_id' | gridFilterFn">{{ 'adminAccess.taxId' | translate }}</th>
-            <th [nzSortFn]="'requested_country' | gridSort" [nzFilters]="'requested_country' | gridFilterList: table.nzData" [nzFilterFn]="'requested_country' | gridFilterFn">{{ 'adminAccess.country' | translate }}</th>
-            <th [nzSortFn]="'user.name' | gridSort" [nzFilters]="'user.name' | gridFilterList: table.nzData" [nzFilterFn]="'user.name' | gridFilterFn">{{ 'adminAccess.user' | translate }}</th>
-            <th [nzSortFn]="'rejection_reason' | gridSort" [nzFilters]="'rejection_reason' | gridFilterList: table.nzData" [nzFilterFn]="'rejection_reason' | gridFilterFn">{{ 'hrmCommon.statusCol' | translate }}</th>
-            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: table.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'adminAccess.createdAt' | translate }}</th>
-            <th>{{ 'hrmCommon.actions' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of table.data; track row.id) {
-            <tr>
-              <td>{{ row.requested_company_name }}</td>
-              <td>{{ row.requested_tax_id }}</td>
-              <td>{{ row.requested_country }}</td>
-              <td>
-                {{ row.user.name }}<br /><span class="text-xs">{{ row.user.email }}</span>
-              </td>
-              <td>
-                <nz-tag [nzColor]="statusColor(row.status)">{{
-                  'adminAccess.statuses.' + row.status | translate
-                }}</nz-tag>
-                @if (row.rejection_reason) {
-                  <div class="text-xs">{{ row.rejection_reason }}</div>
-                }
-              </td>
-              <td>{{ row.created_at | date: 'medium' }}</td>
-              <td>
-                @if (row.status === 'pending') {
-                  <button
-                    nz-button
-                    nzType="primary"
-                    nzSize="small"
-                    type="button"
-                    (click)="open(row, 'approve')"
-                  >
-                    {{ 'adminAccess.approve' | translate }}
-                  </button>
-                  <button nz-button nzSize="small" type="button" (click)="open(row, 'move')">
-                    {{ 'adminAccess.move' | translate }}
-                  </button>
-                  <button
-                    nz-button
-                    nzDanger
-                    nzSize="small"
-                    type="button"
-                    (click)="open(row, 'reject')"
-                  >
-                    {{ 'adminAccess.reject' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'access-requests'" />
+
+      <ng-template #userTpl let-row>
+        {{ row.user.name }}<br /><span class="text-xs">{{ row.user.email }}</span>
+      </ng-template>
+      <ng-template #statusTpl let-row>
+        <nz-tag [nzColor]="statusColor(row.status)">{{ 'adminAccess.statuses.' + row.status | translate }}</nz-tag>
+        @if (row.rejection_reason) {
+          <div class="text-xs">{{ row.rejection_reason }}</div>
+        }
+      </ng-template>
+      <ng-template #createdTpl let-row>{{ row.created_at | date: 'medium' }}</ng-template>
+      <ng-template #actionsTpl let-row>
+        @if (row.status === 'pending') {
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="small"
+            type="button"
+            (click)="open(row, 'approve')"
+          >
+            {{ 'adminAccess.approve' | translate }}
+          </button>
+          <button nz-button nzSize="small" type="button" (click)="open(row, 'move')">
+            {{ 'adminAccess.move' | translate }}
+          </button>
+          <button
+            nz-button
+            nzDanger
+            nzSize="small"
+            type="button"
+            (click)="open(row, 'reject')"
+          >
+            {{ 'adminAccess.reject' | translate }}
+          </button>
+        }
+      </ng-template>
     </nz-card>
 
     <nz-card [nzTitle]="'adminAccess.quotaTitle' | translate">
@@ -177,18 +148,18 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
     </nz-modal>
   `,
 })
-export class AccessRequestsComponent implements OnInit {
+export class AccessRequestsComponent {
   private readonly api = inject(AdminApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
   protected readonly statuses = STATUSES;
-  protected readonly pageSize = 20;
-  protected readonly rows = signal<TenantAccessRequestRecord[]>([]);
-  protected readonly total = signal(0);
-  protected readonly page = signal(1);
+  protected readonly grid = new FetchGridModel<TenantAccessRequestRecord, AccessRequestFilter>((query) =>
+    this.api.getTenantAccessRequests(query).pipe(
+      tap({ error: (err: unknown) => reportHttpError(err, this.message, this.i18n) }),
+    ),
+  );
   protected readonly status = signal<TenantAccessRequestStatus | null>('pending');
-  protected readonly loading = signal(false);
   protected readonly selected = signal<TenantAccessRequestRecord | null>(null);
   protected readonly decision = signal<Decision | null>(null);
   protected readonly decisionTitle = computed(() =>
@@ -262,8 +233,38 @@ export class AccessRequestsComponent implements OnInit {
       ),
   };
 
-  ngOnInit(): void {
-    this.load();
+  private readonly userTpl = viewChild<TemplateRef<{ $implicit: TenantAccessRequestRecord; value: unknown }>>('userTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: TenantAccessRequestRecord; value: unknown }>>('statusTpl');
+  private readonly createdTpl = viewChild<TemplateRef<{ $implicit: TenantAccessRequestRecord; value: unknown }>>('createdTpl');
+
+  protected readonly columns = computed<TableColumnDef<TenantAccessRequestRecord>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'requested_company_name', header: 'adminAccess.company' },
+      { key: 'requested_tax_id', header: 'adminAccess.taxId' },
+      { key: 'requested_country', header: 'adminAccess.country' },
+      {
+        key: 'user',
+        serverKey: 'user.name',
+        header: 'adminAccess.user',
+        valueGetter: (row) => row.user?.name,
+        customCellTemplate: this.userTpl(),
+      },
+      {
+        key: 'status',
+        header: 'hrmCommon.statusCol',
+        filterable: false,
+        groupable: false,
+        valueLabel: (value) => this.i18n.translate('adminAccess.statuses.' + value),
+        customCellTemplate: this.statusTpl(),
+      },
+      { key: 'created_at', header: 'adminAccess.createdAt', customCellTemplate: this.createdTpl() },
+    ];
+  });
+
+  constructor() {
+    this.grid.setPageSize(20);
+    this.grid.setFilter({ status: this.status() });
   }
 
   protected statusColor(status: string): string {
@@ -272,15 +273,7 @@ export class AccessRequestsComponent implements OnInit {
 
   protected setStatus(status: TenantAccessRequestStatus | null): void {
     this.status.set(status);
-    this.page.set(1);
-    this.load();
-  }
-
-  protected onQuery(params: NzTableQueryParams): void {
-    if (params.pageIndex !== this.page()) {
-      this.page.set(params.pageIndex);
-      this.load();
-    }
+    this.grid.setFilter({ status });
   }
 
   protected open(request: TenantAccessRequestRecord, decision: Decision): void {
@@ -303,29 +296,8 @@ export class AccessRequestsComponent implements OnInit {
     return request.pipe(
       tap(() => {
         this.decision.set(null);
-        this.load();
+        this.grid.reload();
       }),
     );
-  }
-
-  private load(): void {
-    this.loading.set(true);
-    this.api
-      .getTenantAccessRequests({
-        status: this.status(),
-        per_page: this.pageSize,
-        page: this.page(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.rows.set(res.data);
-          this.total.set(res.meta?.total ?? res.data.length);
-          this.loading.set(false);
-        },
-        error: (err: unknown) => {
-          this.loading.set(false);
-          reportHttpError(err, this.message, this.i18n);
-        },
-      });
   }
 }

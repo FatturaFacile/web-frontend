@@ -12,6 +12,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuditLogResource,
   BranchResource,
+  FetchGridModel,
   RoleResource,
   SettingsApiService,
   UserResource,
@@ -49,19 +50,18 @@ export class SettingsComponent implements OnInit {
   protected isSavingTenant = signal(false);
   protected isSyncingRates = signal(false);
 
-  protected readonly branches = signal<BranchResource[]>([]);
+  protected readonly branchGrid = new FetchGridModel<BranchResource>((query) => this.api.getBranches(query));
+  protected readonly auditGrid = new FetchGridModel<AuditLogResource>((query) => this.api.getAuditLogs(query));
   protected readonly users = signal<UserResource[]>([]);
   protected readonly roles = signal<RoleResource[]>([]);
-  protected readonly auditLogs = signal<AuditLogResource[]>([]);
 
-  protected readonly loadingBranches = signal(false);
   protected readonly loadingUsers = signal(false);
   protected readonly loadingRoles = signal(false);
-  protected readonly loadingAudit = signal(false);
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly activeTpl = viewChild<TemplateRef<unknown>>('activeTpl');
-  private readonly hqTpl = viewChild<TemplateRef<unknown>>('hqTpl');
+  private readonly primaryTpl = viewChild<TemplateRef<unknown>>('primaryTpl');
+  private readonly auditUserTpl = viewChild<TemplateRef<unknown>>('auditUserTpl');
 
   protected readonly tenantForm = this.fb.group({
     name: this.fb.control<string>('Rossi Impianti S.r.l.', [Validators.required, Validators.maxLength(255)]),
@@ -77,15 +77,16 @@ export class SettingsComponent implements OnInit {
   });
 
   readonly branchColumns = computed<TableColumnDef<BranchResource>[]>(() => [
-    { key: 'name', header: 'COLUMNS.NOME_FILIALE', width: '220px', sortable: true },
+    { key: 'name', header: 'COLUMNS.NOME_FILIALE', width: '220px' },
     { key: 'code', header: 'COLUMNS.CODICE', width: '120px' },
-    { key: 'city', header: 'COLUMNS.CITTA', width: '160px' },
-    { key: 'country', header: 'COLUMNS.NAZIONE', width: '100px' },
+    { key: 'address', header: 'COLUMNS.INDIRIZZO', width: '240px' },
     {
-      key: 'is_headquarters',
+      key: 'is_primary',
+      serverKey: 'primary_state',
       header: 'COLUMNS.TIPOLOGIA',
       width: '150px',
-      customCellTemplate: this.hqTpl(),
+      valueLabel: (value) => this.translate.instant(value === 'primary' ? 'COLUMNS.SEDE_CENTRALE' : 'COLUMNS.FILIALE'),
+      customCellTemplate: this.primaryTpl(),
     },
   ]);
 
@@ -109,31 +110,33 @@ export class SettingsComponent implements OnInit {
 
   readonly auditColumns = computed<TableColumnDef<AuditLogResource>[]>(() => [
     {
-      key: 'created_at',
+      key: 'event_timestamp',
       header: 'COLUMNS.DATA_AND_ORA',
       width: '160px',
-      sortable: true,
       customCellTemplate: this.dateTpl(),
     },
-    { key: 'user_name', header: 'COLUMNS.UTENTE', width: '160px' },
-    { key: 'event', header: 'COLUMNS.AZIONE_EVENTO', width: '160px' },
-    { key: 'auditable_type', header: 'COLUMNS.MODULO', width: '180px' },
+    {
+      key: 'user',
+      serverKey: 'user.name',
+      header: 'COLUMNS.UTENTE',
+      width: '160px',
+      valueGetter: (row) => row.user?.name,
+      customCellTemplate: this.auditUserTpl(),
+    },
+    { key: 'action', header: 'COLUMNS.AZIONE_EVENTO', width: '160px' },
+    { key: 'module_code', header: 'COLUMNS.MODULO', width: '180px' },
     { key: 'ip_address', header: 'COLUMNS.INDIRIZZO_IP', width: '140px' },
   ]);
 
   ngOnInit(): void {
     this.loadTenantSettings();
-    this.loadBranches();
     this.loadUsers();
     this.loadRoles();
-    this.loadAuditLogs();
   }
 
   onTabChange(idx: number): void {
-    if (idx === 1 && this.branches().length === 0) this.loadBranches();
     if (idx === 2 && this.users().length === 0) this.loadUsers();
     if (idx === 3 && this.roles().length === 0) this.loadRoles();
-    if (idx === 4 && this.auditLogs().length === 0) this.loadAuditLogs();
   }
 
   loadTenantSettings(): void {
@@ -172,43 +175,6 @@ export class SettingsComponent implements OnInit {
       error: (err) => {
         this.isSavingTenant.set(false);
         this.message.error(err?.error?.detail || err?.message || this.translate.instant('settings.messages.error'));
-      },
-    });
-  }
-
-  loadBranches(): void {
-    this.loadingBranches.set(true);
-    this.api.getBranches().subscribe({
-      next: (res) => {
-        this.branches.set(res.data || []);
-        this.loadingBranches.set(false);
-      },
-      error: () => {
-        if (this.branches().length === 0) {
-          this.branches.set([
-            {
-              id: 'br-1',
-              tenant_id: 't-1',
-              name: 'Sede Milano HQ',
-              code: 'HQ-MI',
-              address: 'Via Manzoni 45',
-              city: 'Milano',
-              country: 'IT',
-              is_headquarters: true,
-            },
-            {
-              id: 'br-2',
-              tenant_id: 't-1',
-              name: 'Filiale Lugano Ticino',
-              code: 'BR-LUG',
-              address: 'Via Nassa 12',
-              city: 'Lugano',
-              country: 'CH',
-              is_headquarters: false,
-            },
-          ]);
-        }
-        this.loadingBranches.set(false);
       },
     });
   }
@@ -280,53 +246,6 @@ export class SettingsComponent implements OnInit {
           ]);
         }
         this.loadingRoles.set(false);
-      },
-    });
-  }
-
-  loadAuditLogs(): void {
-    this.loadingAudit.set(true);
-    this.api.getAuditLogs().subscribe({
-      next: (res) => {
-        this.auditLogs.set(res.data || []);
-        this.loadingAudit.set(false);
-      },
-      error: () => {
-        if (this.auditLogs().length === 0) {
-          this.auditLogs.set([
-            {
-              id: 'aud-1',
-              user_id: 'usr-1',
-              user_name: 'Marco Rossi',
-              event: 'LOGIN',
-              auditable_type: 'Authentication',
-              auditable_id: 'usr-1',
-              ip_address: '192.168.1.10',
-              created_at: '2026-10-31T09:15:00Z',
-            },
-            {
-              id: 'aud-2',
-              user_id: 'usr-1',
-              user_name: 'Marco Rossi',
-              event: 'CREATE',
-              auditable_type: 'SalesInvoice',
-              auditable_id: 'inv-42',
-              ip_address: '192.168.1.10',
-              created_at: '2026-10-31T10:20:00Z',
-            },
-            {
-              id: 'aud-3',
-              user_id: 'usr-2',
-              user_name: 'Chiara Bianchi',
-              event: 'UPDATE',
-              auditable_type: 'TenantSettings',
-              auditable_id: 't-it-01',
-              ip_address: '192.168.1.25',
-              created_at: '2026-10-30T16:05:00Z',
-            },
-          ]);
-        }
-        this.loadingAudit.set(false);
       },
     });
   }

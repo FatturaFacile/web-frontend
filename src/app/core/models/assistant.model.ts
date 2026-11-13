@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export type AssistantOutcome = 'answered' | 'unmatched' | 'forbidden' | 'failed';
 
 export interface AskAssistantRequest {
@@ -31,8 +33,7 @@ export interface AssistantLogResource {
   created_at: string;
 }
 
-export interface AssistantLogQueryParams {
-  per_page?: number;
+export interface AssistantLogQueryParams extends QueryFilterParams {
   outcome?: AssistantOutcome;
   user_id?: string;
   from?: string;

@@ -10,7 +10,7 @@
       nz-input
       type="search"
       [placeholder]="'alerts.searchPlaceholder' | translate"
-      [ngModel]="tableState.search()"
+      [ngModel]="grid.filterParams().search"
       (ngModelChange)="onSearchChange($event)"
     />
 
@@ -18,7 +18,7 @@
       class="filter"
       nzAllowClear
       [nzPlaceHolder]="'COMMON.SELECT' | translate"
-      [ngModel]="selectedSeverity"
+      [ngModel]="grid.filterParams().severity"
       (ngModelChange)="onSeverityFilterChange($event)"
     >
       <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativo' | translate" />
@@ -30,16 +30,7 @@
     <button nz-button nzType="primary" type="button" appIconAction="add" (click)="create()"></button>
   </div>
 
-  <app-base-table
-    [data]="items()"
-    [columns]="columns()"
-    [loading]="tableState.loading()"
-    [total]="tableState.total()"
-    [pageIndex]="tableState.pageIndex()"
-    [pageSize]="tableState.pageSize()"
-    [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
-  />
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" />
 
   <!-- Cell Templates -->
   <ng-template #titleTpl let-alert>
@@ -95,5 +86,5 @@
   [alert]="selectedAlert()"
   [open]="drawerOpen()"
   (openChange)="drawerOpen.set($event)"
-  (saved)="loadData()"
+  (saved)="grid.reload()"
 />

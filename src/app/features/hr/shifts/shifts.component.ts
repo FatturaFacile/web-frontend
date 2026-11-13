@@ -12,9 +12,9 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, of, tap } from 'rxjs';
+import { of } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { ShiftBoardComponent } from './shift-board.component';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -114,11 +114,12 @@ export class ShiftsComponent implements OnInit {
   protected readonly typesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmShift.types',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getShiftTypes().pipe(
-        tap((res) => this.shiftTypes.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.api.getShiftTypes().subscribe({ next: (res) => this.shiftTypes.set(res.data) });
+      }
+      return crudPage(this.api.getShiftTypes(query));
+    },
     create: (payload) => this.api.createShiftType(payload as never),
     update: (id, payload) => this.api.updateShiftType(id, payload as never),
     fields: [
@@ -142,11 +143,12 @@ export class ShiftsComponent implements OnInit {
   protected readonly sequencesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmShift.sequences',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getShiftSequences().pipe(
-        tap((res) => this.sequences.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.api.getShiftSequences().subscribe({ next: (res) => this.sequences.set(res.data) });
+      }
+      return crudPage(this.api.getShiftSequences(query));
+    },
     create: (payload) =>
       this.api.createShiftSequence({
         ...(payload as never as Record<string, unknown>),

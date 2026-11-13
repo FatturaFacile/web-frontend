@@ -1,14 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { I18nService, PayrollApiService, PayrollRunRecord } from '@core';
-import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { FetchGridModel, I18nService, PayrollApiService, PayrollRunRecord, QueryFilterParams } from '@core';
+import { BaseTableComponent, ModalActionsDirective, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { reportHttpError } from '../shared/hr-http.util';
 import { PayrollRunDetailComponent } from './payroll-run-detail.component';
 import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component';
@@ -18,15 +17,13 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
   selector: 'app-payroll-runs',
   styleUrl: './payroll-runs.component.scss',
   imports: [
-    GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    BaseTableComponent,
     ModalActionsDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzModalModule,
     NzInputModule,
-    NzTableModule,
     TranslatePipe,
     PayrollRunDetailComponent,
     PayrollRunStatusTagComponent,
@@ -52,36 +49,22 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
       }
     </div>
 
-    <nz-table #table [nzData]="runs()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
-      <thead>
-        <tr>
-          <th [nzSortFn]="'year' | gridSort" [nzFilters]="'year' | gridFilterList: table.nzData" [nzFilterFn]="'year' | gridFilterFn">{{ 'hrmCommon.year' | translate }}</th>
-          <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: table.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
-          <th [nzSortFn]="'country' | gridSort" [nzFilters]="'country' | gridFilterList: table.nzData" [nzFilterFn]="'country' | gridFilterFn">{{ 'hrmPayroll.country' | translate }}</th>
-          <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th [nzSortFn]="'payment_date' | gridSort" [nzFilters]="'payment_date' | gridFilterList: table.nzData" [nzFilterFn]="'payment_date' | gridFilterFn">{{ 'hrmPayroll.paymentDate' | translate }}</th>
-          <th [nzSortFn]="'reopen_count' | gridSort" [nzFilters]="'reopen_count' | gridFilterList: table.nzData" [nzFilterFn]="'reopen_count' | gridFilterFn">{{ 'hrmPayroll.reopenCount' | translate }}</th>
-          <th>{{ 'hrmCommon.actions' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (run of table.data; track run.id) {
-          <tr>
-            <td>{{ run.year }}</td>
-            <td>{{ run.month }}</td>
-            <td>{{ run.country }} ({{ run.currency }})</td>
-            <td><app-payroll-run-status-tag [status]="run.status" /></td>
-            <td>{{ run.payment_date | date: 'mediumDate' }}</td>
-            <td>{{ run.reopen_count }}</td>
-            <td>
-              <button nz-button nzSize="small" type="button" (click)="selectedId.set(run.id)">
-                {{ 'hrmCommon.view' | translate }}
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table
+      [grid]="grid"
+      [columns]="columns()"
+      [actionsTemplate]="actionsTpl"
+      [scroll]="{}"
+      exportFileName="payroll-runs"
+    />
+
+    <ng-template #countryTpl let-run>{{ run.country }} ({{ run.currency }})</ng-template>
+    <ng-template #statusTpl let-run><app-payroll-run-status-tag [status]="run.status" /></ng-template>
+    <ng-template #paymentDateTpl let-run>{{ run.payment_date | date: 'mediumDate' }}</ng-template>
+    <ng-template #actionsTpl let-run>
+      <button nz-button nzSize="small" type="button" (click)="selectedId.set(run.id)">
+        {{ 'hrmCommon.view' | translate }}
+      </button>
+    </ng-template>
 
     <nz-modal
       [nzVisible]="selectedId() !== null"
@@ -98,28 +81,44 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
     </nz-modal>
   `,
 })
-export class PayrollRunsComponent implements OnInit {
+export class PayrollRunsComponent {
   readonly canWrite = input(false);
 
   private readonly api = inject(PayrollApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
-  protected readonly runs = signal<PayrollRunRecord[]>([]);
-  protected readonly loading = signal(true);
+  /** Server-driven grid of the runs: paging, sorting, filters and grouping run over the whole dataset. */
+  protected readonly grid = new FetchGridModel<PayrollRunRecord, QueryFilterParams & { year?: number }>((query) =>
+    this.api.getRuns(query),
+  );
+  private readonly countryTpl = viewChild<TemplateRef<unknown>>('countryTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly paymentDateTpl = viewChild<TemplateRef<unknown>>('paymentDateTpl');
+
+  protected readonly columns = computed<TableColumnDef<PayrollRunRecord>[]>(() => {
+    return [
+      { key: 'year', header: 'hrmCommon.year' },
+      { key: 'month', header: 'hrmLeave.month' },
+      { key: 'country', header: 'hrmPayroll.country', customCellTemplate: this.countryTpl() },
+      { key: 'status', header: 'hrmCommon.statusCol', customCellTemplate: this.statusTpl() },
+      { key: 'payment_date', header: 'hrmPayroll.paymentDate', customCellTemplate: this.paymentDateTpl() },
+      { key: 'reopen_count', header: 'hrmPayroll.reopenCount', align: 'right' },
+    ];
+  });
   protected readonly calculating = signal(false);
   protected readonly selectedId = signal<string | null>(null);
   protected readonly year = signal<number>(new Date().getFullYear());
   protected readonly month = signal<number | null>(null);
   protected readonly paymentDate = signal('');
 
-  ngOnInit(): void {
-    this.reload();
+  constructor() {
+    this.grid.setFilter({ year: this.year() });
   }
 
   protected setYear(value: number): void {
     this.year.set(value);
-    this.reload();
+    this.grid.setFilter({ year: value || undefined });
   }
 
   protected canCalculate(): boolean {
@@ -132,17 +131,7 @@ export class PayrollRunsComponent implements OnInit {
   }
 
   protected reload(): void {
-    this.loading.set(true);
-    this.api.getRuns({ year: this.year() || undefined, per_page: 50 }).subscribe({
-      next: (res) => {
-        this.runs.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        reportHttpError(err, this.message, this.i18n);
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   protected calculate(): void {

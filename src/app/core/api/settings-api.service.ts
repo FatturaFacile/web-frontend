@@ -2,10 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
   AuditLogResource,
   BranchResource,
+  PaginatedResponse,
+  QueryFilterParams,
   DocumentQuota,
   DocumentTemplate,
   ResetUserTwoFactorResponse,
@@ -32,8 +35,10 @@ export class SettingsApiService {
     return this.http.put<ApiResponse<TenantSettings>>(`${this.base}/tenant`, payload);
   }
 
-  getBranches(): Observable<ApiResponse<BranchResource[]>> {
-    return this.http.get<ApiResponse<BranchResource[]>>(`${this.base}/branches`);
+  getBranches(params?: QueryFilterParams): Observable<PaginatedResponse<BranchResource>> {
+    return this.http.get<PaginatedResponse<BranchResource>>(`${this.base}/branches`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   syncExchangeRates(): Observable<ApiResponse<{ synced_count: number }>> {
@@ -48,8 +53,10 @@ export class SettingsApiService {
     return this.http.get<ApiResponse<RoleResource[]>>(`${this.base}/roles`);
   }
 
-  getAuditLogs(): Observable<ApiResponse<AuditLogResource[]>> {
-    return this.http.get<ApiResponse<AuditLogResource[]>>(`${this.base}/audit-logs`);
+  getAuditLogs(params?: QueryFilterParams & { module?: string; action?: string }): Observable<PaginatedResponse<AuditLogResource>> {
+    return this.http.get<PaginatedResponse<AuditLogResource>>(`${this.base}/audit-logs`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getTenantPreferences(): Observable<ApiResponse<TenantPreferences>> {

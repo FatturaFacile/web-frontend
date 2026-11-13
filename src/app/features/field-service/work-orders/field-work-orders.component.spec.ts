@@ -59,10 +59,12 @@ describe('FieldWorkOrdersComponent', () => {
     fixture = TestBed.createComponent(FieldWorkOrdersComponent);
     harness = fixture.componentInstance as unknown as Harness;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    fixture.detectChanges();
   });
 
   it('loads the first page of work orders', () => {
-    expect(api.getWorkOrders).toHaveBeenCalledWith({ page: 1, per_page: 20 });
+    expect(api.getWorkOrders).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 20 }));
     expect(fixture.nativeElement.textContent).toContain('WO-1');
   });
 

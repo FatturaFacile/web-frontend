@@ -65,17 +65,22 @@ export interface SubscriptionBillingRunPayload {
 
 export interface SubscriptionBillingRun {
   id: string;
+  run_number?: string | null;
   status?: string | null;
-  run_date?: string | null;
-  invoices_created?: number | null;
-  errors?: unknown[];
+  execution_date?: string | null;
+  successful_invoices_count?: number | null;
+  errors_log?: unknown;
   [key: string]: unknown;
 }
 
 export interface RevenueContract {
   id: string;
+  contract_number?: string | null;
+  total_transaction_price?: string | null;
+  currency?: string | null;
+  inception_date?: string | null;
   status?: string | null;
-  obligations?: unknown[];
+  performance_obligations?: unknown[];
   [key: string]: unknown;
 }
 

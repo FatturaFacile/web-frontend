@@ -65,7 +65,18 @@ describe('AppointmentsComponent', () => {
   };
 
   const apiSpy = {
-    getAppointments: vi.fn().mockReturnValue(of({ data: mockAppointments })),
+    getAppointments: vi.fn().mockImplementation((query: Record<string, unknown>) =>
+      of(
+        query['grid_values']
+          ? { data: [{ value: 'completed', count: 1 }, { value: 'scheduled', count: 3 }] }
+          : {
+              success: true,
+              message: 'ok',
+              data: mockAppointments,
+              meta: { current_page: 1, last_page: 1, per_page: 10, total: mockAppointments.length, from: 1, to: mockAppointments.length },
+            },
+      ),
+    ),
     getAppointment: vi.fn().mockReturnValue(of({ data: mockAppointments[0] })),
     createAppointment: vi.fn().mockReturnValue(of({ data: mockAppointments[0] })),
     getCalendar: vi.fn().mockReturnValue(of({ data: mockCalendar })),
@@ -107,6 +118,7 @@ describe('AppointmentsComponent', () => {
     fixture = TestBed.createComponent(AppointmentsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load appointments and calendar items', () => {
@@ -114,9 +126,10 @@ describe('AppointmentsComponent', () => {
     expect(apiSpy.getAppointments).toHaveBeenCalled();
     expect(apiSpy.getCalendar).toHaveBeenCalled();
 
-    expect(component.appointments()).toEqual(mockAppointments);
+    expect(component.appointments.items()).toEqual(mockAppointments);
     expect(component.calendarItems()).toEqual(mockCalendar);
     expect(component.totalCompleted()).toBe(1);
+    expect(component.totalUpcoming()).toBe(3);
   });
 
   it('should create new appointment and refresh list', () => {
