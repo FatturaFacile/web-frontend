@@ -16,7 +16,7 @@ import {
   ServiceReportPhotoStage,
   ServiceReportSummary,
 } from '@core';
-import { downloadBlob, MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { downloadBlob, MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
 
 const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'general', 'receipt'];
@@ -25,6 +25,8 @@ const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'ge
   selector: 'app-service-reports',
   styleUrl: './service-reports.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

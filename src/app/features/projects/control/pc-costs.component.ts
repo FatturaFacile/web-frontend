@@ -18,7 +18,7 @@ import {
   ProjectCostEntry,
   ProjectExpenseCategory,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   'travel_lodging',
@@ -34,7 +34,10 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
 @Component({
   selector: 'app-pc-costs',
   styleUrl: './pc-costs.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
       <nz-select class="w-field-md" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
@@ -51,12 +54,12 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzPageSize]="20">
       <thead>
         <tr>
-          <th>{{ 'PRJ.DATE' | translate }}</th>
-          <th>{{ 'PRJ.CATEGORY' | translate }}</th>
-          <th>{{ 'PRJ.DESCRIPTION' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.TOTAL' | translate }}</th>
+          <th [nzSortFn]="'incurred_date' | gridSort">{{ 'PRJ.DATE' | translate }}</th>
+          <th [nzSortFn]="'cost_category' | gridSort">{{ 'PRJ.CATEGORY' | translate }}</th>
+          <th [nzSortFn]="'description' | gridSort">{{ 'PRJ.DESCRIPTION' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort">{{ 'PRJ.TOTAL' | translate }}</th>
           <th>{{ 'PRJ.BILLABLE' | translate }}</th>
-          <th>{{ 'PRJ.APPROVAL_STATUS' | translate }}</th>
+          <th [nzSortFn]="'approval_status' | gridSort">{{ 'PRJ.APPROVAL_STATUS' | translate }}</th>
           <th>{{ 'PRJ.ACTIONS' | translate }}</th>
         </tr>
       </thead>

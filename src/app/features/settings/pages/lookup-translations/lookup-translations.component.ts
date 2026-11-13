@@ -6,7 +6,7 @@ import {
   PermissionsService,
   SaveLookupTranslationPayload,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -27,6 +27,8 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
   selector: 'app-lookup-translations',
   styleUrl: './lookup-translations.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     ActionFormComponent,
     FormsModule,
@@ -80,9 +82,9 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
       >
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.code' | translate }}</th>
-            <th>{{ 'lookupTranslations.label' | translate }}</th>
-            <th>{{ 'lookupTranslations.shortLabel' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'hrmCommon.code' | translate }}</th>
+            <th [nzSortFn]="'label' | gridSort">{{ 'lookupTranslations.label' | translate }}</th>
+            <th [nzSortFn]="'short_label' | gridSort">{{ 'lookupTranslations.shortLabel' | translate }}</th>
             @if (canWrite()) {
               <th>{{ 'hrmCommon.actions' | translate }}</th>
             }

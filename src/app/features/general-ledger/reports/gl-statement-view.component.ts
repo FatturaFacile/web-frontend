@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { LedgerStatementReport, StatementSection } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 interface SectionRow {
   key: string;
@@ -13,7 +13,10 @@ interface SectionRow {
 @Component({
   selector: 'app-gl-statement-view',
   styleUrl: './gl-statement-view.component.scss',
-  imports: [NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (report(); as r) {
       <p>
@@ -27,11 +30,11 @@ interface SectionRow {
         <nz-table nzSize="small" [nzData]="row.section.accounts" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'GL.COL_AMOUNT' | translate }}</th>
               @if (hasComparison()) {
-                <th nzAlign="right">{{ 'GL.COL_COMPARISON' | translate }}</th>
-                <th nzAlign="right">{{ 'GL.COL_VARIANCE' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'comparison_amount' | gridSort">{{ 'GL.COL_COMPARISON' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'variance' | gridSort">{{ 'GL.COL_VARIANCE' | translate }}</th>
               }
             </tr>
           </thead>

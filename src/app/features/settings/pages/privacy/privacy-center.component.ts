@@ -11,7 +11,7 @@ import {
   PrivacySubprocessor,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,8 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
   selector: 'app-privacy-center',
   styleUrl: './privacy-center.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -89,11 +91,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #dsrTable [nzData]="requests()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>{{ 'privacyCenter.regulation' | translate }}</th>
-                <th>{{ 'privacyCenter.requestType' | translate }}</th>
-                <th>{{ 'privacyCenter.subject' | translate }}</th>
-                <th>{{ 'privacyCenter.dueDate' | translate }}</th>
-                <th>{{ 'privacyCenter.statusLegalHold' | translate }}</th>
+                <th [nzSortFn]="'regulation' | gridSort">{{ 'privacyCenter.regulation' | translate }}</th>
+                <th [nzSortFn]="'request_type' | gridSort">{{ 'privacyCenter.requestType' | translate }}</th>
+                <th [nzSortFn]="'subject_type' | gridSort">{{ 'privacyCenter.subject' | translate }}</th>
+                <th [nzSortFn]="'due_at' | gridSort">{{ 'privacyCenter.dueDate' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'privacyCenter.statusLegalHold' | translate }}</th>
                 <th>{{ 'privacyCenter.actions' | translate }}</th>
               </tr>
             </thead>
@@ -142,11 +144,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #ropaTable [nzData]="activities()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>{{ 'privacyCenter.titleField' | translate }}</th>
-                <th>{{ 'privacyCenter.purpose' | translate }}</th>
-                <th>{{ 'privacyCenter.legalBasis' | translate }}</th>
-                <th>{{ 'privacyCenter.retention' | translate }}</th>
-                <th>{{ 'privacyCenter.status' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort">{{ 'privacyCenter.titleField' | translate }}</th>
+                <th [nzSortFn]="'purpose' | gridSort">{{ 'privacyCenter.purpose' | translate }}</th>
+                <th [nzSortFn]="'legal_basis' | gridSort">{{ 'privacyCenter.legalBasis' | translate }}</th>
+                <th [nzSortFn]="'retention_period' | gridSort">{{ 'privacyCenter.retention' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'privacyCenter.status' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -177,11 +179,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #subTable [nzData]="subprocessors()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>{{ 'privacyCenter.supplier' | translate }}</th>
-                <th>{{ 'privacyCenter.service' | translate }}</th>
-                <th>{{ 'privacyCenter.country' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'privacyCenter.supplier' | translate }}</th>
+                <th [nzSortFn]="'service_type' | gridSort">{{ 'privacyCenter.service' | translate }}</th>
+                <th [nzSortFn]="'country_code' | gridSort">{{ 'privacyCenter.country' | translate }}</th>
                 <th>{{ 'privacyCenter.adequacy' | translate }}</th>
-                <th>{{ 'privacyCenter.safeguard' | translate }}</th>
+                <th [nzSortFn]="'safeguard_mechanism' | gridSort">{{ 'privacyCenter.safeguard' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -212,11 +214,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #breachTable [nzData]="breaches()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>{{ 'privacyCenter.titleField' | translate }}</th>
-                <th>{{ 'privacyCenter.severity' | translate }}</th>
-                <th>{{ 'privacyCenter.discovered' | translate }}</th>
-                <th>{{ 'privacyCenter.deadline72' | translate }}</th>
-                <th>{{ 'privacyCenter.affectedRecords' | translate }}</th>
+                <th [nzSortFn]="'title' | gridSort">{{ 'privacyCenter.titleField' | translate }}</th>
+                <th [nzSortFn]="'severity' | gridSort">{{ 'privacyCenter.severity' | translate }}</th>
+                <th [nzSortFn]="'discovered_at' | gridSort">{{ 'privacyCenter.discovered' | translate }}</th>
+                <th [nzSortFn]="'notification_deadline_at' | gridSort">{{ 'privacyCenter.deadline72' | translate }}</th>
+                <th [nzSortFn]="'affected_records_count' | gridSort">{{ 'privacyCenter.affectedRecords' | translate }}</th>
                 <th>{{ 'privacyCenter.authorityNotification' | translate }}</th>
               </tr>
             </thead>
@@ -247,12 +249,12 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
           <nz-table #logTable [nzData]="accessLogs()" [nzLoading]="loading()" nzSize="small">
             <thead>
               <tr>
-                <th>{{ 'privacyCenter.dateTime' | translate }}</th>
-                <th>{{ 'privacyCenter.actor' | translate }}</th>
-                <th>{{ 'privacyCenter.action' | translate }}</th>
-                <th>{{ 'privacyCenter.subject' | translate }}</th>
-                <th>{{ 'privacyCenter.resource' | translate }}</th>
-                <th>IP</th>
+                <th [nzSortFn]="'accessed_at' | gridSort">{{ 'privacyCenter.dateTime' | translate }}</th>
+                <th [nzSortFn]="'actor_user_id' | gridSort">{{ 'privacyCenter.actor' | translate }}</th>
+                <th [nzSortFn]="'action' | gridSort">{{ 'privacyCenter.action' | translate }}</th>
+                <th [nzSortFn]="'subject_type' | gridSort">{{ 'privacyCenter.subject' | translate }}</th>
+                <th [nzSortFn]="'resource' | gridSort">{{ 'privacyCenter.resource' | translate }}</th>
+                <th [nzSortFn]="'ip_address' | gridSort">IP</th>
               </tr>
             </thead>
             <tbody>

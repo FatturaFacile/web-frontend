@@ -21,7 +21,7 @@ import {
   TreasuryMovementType,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { GlErrorAlertComponent } from '../../../general-ledger/shared/gl-error-alert.component';
 import { TrLookupStore } from '../tr-lookup.store';
 import { differentFrom, revalidateOnStartChange } from '@shared/utils/date-validators';
@@ -32,6 +32,8 @@ type ChargeType = 'bank_fee' | 'interest_income' | 'interest_expense';
   selector: 'app-tr-balances',
   styleUrl: './tr-balances.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

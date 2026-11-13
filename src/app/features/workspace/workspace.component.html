@@ -255,9 +255,9 @@
           <thead>
             <tr>
               <th nzWidth="15%">{{ 'WORKSPACE.ITEM_TYPE' | translate }}</th>
-              <th nzWidth="40%">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
-              <th nzWidth="25%">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
-              <th nzWidth="20%">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
+              <th nzWidth="40%" [nzSortFn]="'subject' | gridSort">{{ 'WORKSPACE.ITEM_SUBJECT' | translate }}</th>
+              <th nzWidth="25%" [nzSortFn]="'counterpart' | gridSort">{{ 'WORKSPACE.ITEM_COUNTERPART' | translate }}</th>
+              <th nzWidth="20%" [nzSortFn]="'starts_at' | gridSort">{{ 'WORKSPACE.ITEM_DATE' | translate }}</th>
             </tr>
           </thead>
           <tbody>

@@ -95,12 +95,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
-            <th>{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th>{{ 'COMMUNICATION.DRIVER' | translate }}</th>
-            <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
-            <th>{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
-            <th>{{ 'COMMUNICATION.DATE' | translate }}</th>
+            <th [nzSortFn]="'recipient' | gridSort">{{ 'COMMUNICATION.RECIPIENT' | translate }}</th>
+            <th [nzSortFn]="'channel' | gridSort">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th [nzSortFn]="'driver' | gridSort">{{ 'COMMUNICATION.DRIVER' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMUNICATION.STATUS' | translate }}</th>
+            <th [nzSortFn]="'provider_reference' | gridSort">{{ 'COMMUNICATION.PROVIDER_REF' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'COMMUNICATION.DATE' | translate }}</th>
             <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -238,10 +238,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
-            <th>{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
-            <th>{{ 'COMMUNICATION.LOCALE' | translate }}</th>
-            <th>{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'COMMUNICATION.TEMPLATE_CODE' | translate }}</th>
+            <th [nzSortFn]="'channel' | gridSort">{{ 'COMMUNICATION.CHANNEL' | translate }}</th>
+            <th [nzSortFn]="'locale' | gridSort">{{ 'COMMUNICATION.LOCALE' | translate }}</th>
+            <th [nzSortFn]="'subject' | gridSort">{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
             <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
             <th nzAlign="center">{{ 'COMMUNICATION.ACTIONS' | translate }}</th>
           </tr>

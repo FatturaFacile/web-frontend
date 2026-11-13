@@ -7,7 +7,7 @@ import {
   TenantAccessRequestRecord,
   TenantAccessRequestStatus,
 } from '@core';
-import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -46,6 +46,8 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
   selector: 'app-access-requests',
   styleUrl: './access-requests.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ActionFormComponent,
     DatePipe,
     FormsModule,
@@ -99,12 +101,12 @@ const STATUSES: TenantAccessRequestStatus[] = ['pending', 'approved', 'rejected'
       >
         <thead>
           <tr>
-            <th>{{ 'adminAccess.company' | translate }}</th>
-            <th>{{ 'adminAccess.taxId' | translate }}</th>
-            <th>{{ 'adminAccess.country' | translate }}</th>
-            <th>{{ 'adminAccess.user' | translate }}</th>
-            <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-            <th>{{ 'adminAccess.createdAt' | translate }}</th>
+            <th [nzSortFn]="'requested_company_name' | gridSort">{{ 'adminAccess.company' | translate }}</th>
+            <th [nzSortFn]="'requested_tax_id' | gridSort">{{ 'adminAccess.taxId' | translate }}</th>
+            <th [nzSortFn]="'requested_country' | gridSort">{{ 'adminAccess.country' | translate }}</th>
+            <th [nzSortFn]="'user.name' | gridSort">{{ 'adminAccess.user' | translate }}</th>
+            <th [nzSortFn]="'rejection_reason' | gridSort">{{ 'hrmCommon.statusCol' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'adminAccess.createdAt' | translate }}</th>
             <th>{{ 'hrmCommon.actions' | translate }}</th>
           </tr>
         </thead>

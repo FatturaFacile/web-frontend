@@ -122,11 +122,11 @@
       <nz-table #pbTable [nzData]="paymentBatches()" [nzLoading]="loadingBatches()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
-            <th>{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
-            <th>{{ 'treasury.lblMetodoPagamento' | translate }}</th>
-            <th>{{ 'treasury.lblDataEsecuzione' | translate }}</th>
-            <th class="num">{{ 'treasury.lblImportoTotale' | translate }}</th>
-            <th>{{ 'treasury.lblStato' | translate }}</th>
+            <th [nzSortFn]="'batch_reference' | gridSort">{{ 'treasury.lblRiferimentoDistinta' | translate }}</th>
+            <th [nzSortFn]="'payment_method' | gridSort">{{ 'treasury.lblMetodoPagamento' | translate }}</th>
+            <th [nzSortFn]="'execution_date' | gridSort">{{ 'treasury.lblDataEsecuzione' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_amount' | gridSort">{{ 'treasury.lblImportoTotale' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'treasury.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'treasury.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -192,12 +192,12 @@
       <nz-table #cfTable [nzData]="cashForecasts()" [nzLoading]="loadingForecasts()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '800px' }">
         <thead>
           <tr>
-            <th>{{ 'treasury.lblDataAnalisi' | translate }}</th>
-            <th>{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
-            <th class="num">{{ 'treasury.lblCassaIniziale' | translate }}</th>
-            <th class="num">{{ 'treasury.lblEntratePreviste' | translate }}</th>
-            <th class="num">{{ 'treasury.lblUscitePreviste' | translate }}</th>
-            <th class="num">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
+            <th [nzSortFn]="'forecast_date' | gridSort">{{ 'treasury.lblDataAnalisi' | translate }}</th>
+            <th [nzSortFn]="'horizon_days' | gridSort">{{ 'treasury.lblOrizzonteGiorni' | translate }}</th>
+            <th class="num" [nzSortFn]="'opening_cash' | gridSort">{{ 'treasury.lblCassaIniziale' | translate }}</th>
+            <th class="num" [nzSortFn]="'expected_inflows' | gridSort">{{ 'treasury.lblEntratePreviste' | translate }}</th>
+            <th class="num" [nzSortFn]="'expected_outflows' | gridSort">{{ 'treasury.lblUscitePreviste' | translate }}</th>
+            <th class="num" [nzSortFn]="'projected_cash' | gridSort">{{ 'treasury.lblSaldoFinalePrevisto' | translate }}</th>
             <th>{{ 'treasury.lblRischioDeficit' | translate }}</th>
           </tr>
         </thead>
@@ -228,7 +228,8 @@
   [nzVisible]="accountModalVisible()"
   [nzTitle]="'treasury.lblRegistraNuovoContoBancario' | translate"
   (nzOnCancel)="accountModalVisible.set(false)"
-  (nzOnOk)="submitAccount()"
+  (nzOnOk)="submitAccount()"
+
   okAction="save"
   [nzOkDisabled]="accountForm.invalid"
 >
@@ -291,7 +292,8 @@
   [nzVisible]="batchModalVisible()"
   [nzTitle]="'treasury.lblCreaDistintaDiPagamentoDispositiva' | translate"
   (nzOnCancel)="batchModalVisible.set(false)"
-  (nzOnOk)="submitBatch()"
+  (nzOnOk)="submitBatch()"
+
   okAction="create"
   [nzOkDisabled]="batchForm.invalid"
 >

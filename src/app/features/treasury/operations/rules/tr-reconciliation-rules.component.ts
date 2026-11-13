@@ -20,7 +20,7 @@ import {
   ReconciliationRulePayload,
   TreasuryOpsApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { revalidateOnStartChange } from '@shared/utils/date-validators';
 import { atLeastField } from '@shared/utils/decimal-validators';
 
@@ -30,6 +30,8 @@ const nullableNumber = (value: string | null): number | null => (value === null 
   selector: 'app-tr-reconciliation-rules',
   styleUrl: './tr-reconciliation-rules.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,

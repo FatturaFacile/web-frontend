@@ -103,14 +103,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_N_ORDINE' | translate }}</th>
-            <th>{{ 'MFG.LBL_ARTICOLO_DESCRIZIONE' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_Q_TA_PREVISTA' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_Q_TA_PRODOTTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_INIZIO_PREVISTO' | translate }}</th>
-            <th>{{ 'MFG.LBL_FINE_PREVISTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_COSTI_TOTALI' | translate }}</th>
+            <th [nzSortFn]="'order_number' | gridSort">{{ 'MFG.LBL_N_ORDINE' | translate }}</th>
+            <th [nzSortFn]="'item_code' | gridSort">{{ 'MFG.LBL_ARTICOLO_DESCRIZIONE' | translate }}</th>
+            <th class="num" [nzSortFn]="'target_quantity' | gridSort">{{ 'MFG.LBL_Q_TA_PREVISTA' | translate }}</th>
+            <th class="num" [nzSortFn]="'completed_quantity' | gridSort">{{ 'MFG.LBL_Q_TA_PRODOTTA' | translate }}</th>
+            <th [nzSortFn]="'planned_start_date' | gridSort">{{ 'MFG.LBL_INIZIO_PREVISTO' | translate }}</th>
+            <th [nzSortFn]="'planned_end_date' | gridSort">{{ 'MFG.LBL_FINE_PREVISTA' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th class="num" [nzSortFn]="'actual_cost_total' | gridSort">{{ 'MFG.LBL_COSTI_TOTALI' | translate }}</th>
             <th class="cell-actions">{{ 'MFG.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -205,14 +205,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_N_DISTINTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_REVISIONE' | translate }}</th>
-            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_Q_TA_BASE' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th>{{ 'MFG.LBL_COMPONENTI' | translate }}</th>
+            <th [nzSortFn]="'bom_number' | gridSort">{{ 'MFG.LBL_N_DISTINTA' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</th>
+            <th [nzSortFn]="'item_code' | gridSort">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th [nzSortFn]="'revision' | gridSort">{{ 'MFG.LBL_REVISIONE' | translate }}</th>
+            <th [nzSortFn]="'bom_type' | gridSort">{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th class="num" [nzSortFn]="'base_quantity' | gridSort">{{ 'MFG.LBL_Q_TA_BASE' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'components.length' | gridSort">{{ 'MFG.LBL_COMPONENTI' | translate }}</th>
             <th class="cell-actions">{{ 'MFG.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -283,15 +283,15 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_N_CALCOLO_MRP' | translate }}</th>
-            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th>{{ 'MFG.LBL_ORIZZONTE_INIZIO' | translate }}</th>
-            <th>{{ 'MFG.LBL_ORIZZONTE_FINE' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_ARTICOLI_ELABORATI' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_ORDINI_PIANIFICATI' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_FABBISOGNI_MANCANTI' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
-            <th>{{ 'MFG.LBL_DATA_ESECUZIONE' | translate }}</th>
+            <th [nzSortFn]="'run_number' | gridSort">{{ 'MFG.LBL_N_CALCOLO_MRP' | translate }}</th>
+            <th [nzSortFn]="'run_type' | gridSort">{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th [nzSortFn]="'horizon_start_date' | gridSort">{{ 'MFG.LBL_ORIZZONTE_INIZIO' | translate }}</th>
+            <th [nzSortFn]="'horizon_end_date' | gridSort">{{ 'MFG.LBL_ORIZZONTE_FINE' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_items_processed' | gridSort">{{ 'MFG.LBL_ARTICOLI_ELABORATI' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_planned_orders' | gridSort">{{ 'MFG.LBL_ORDINI_PIANIFICATI' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_shortages' | gridSort">{{ 'MFG.LBL_FABBISOGNI_MANCANTI' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'MFG.LBL_DATA_ESECUZIONE' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -332,14 +332,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_CODICE_PIANIFICATO' | translate }}</th>
-            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_TIPO' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_QUANTITA_NETTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_LIVELLO_DISTINTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_DATA_INIZIO' | translate }}</th>
-            <th>{{ 'MFG.LBL_DATA_SCADENZA' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'planned_order_number' | gridSort">{{ 'MFG.LBL_CODICE_PIANIFICATO' | translate }}</th>
+            <th [nzSortFn]="'item_code' | gridSort">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th [nzSortFn]="'order_type' | gridSort">{{ 'MFG.LBL_TIPO' | translate }}</th>
+            <th class="num" [nzSortFn]="'quantity' | gridSort">{{ 'MFG.LBL_QUANTITA_NETTA' | translate }}</th>
+            <th [nzSortFn]="'bom_level' | gridSort">{{ 'MFG.LBL_LIVELLO_DISTINTA' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort">{{ 'MFG.LBL_DATA_INIZIO' | translate }}</th>
+            <th [nzSortFn]="'due_date' | gridSort">{{ 'MFG.LBL_DATA_SCADENZA' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
             <th class="cell-actions">{{ 'MFG.LBL_AZIONE' | translate }}</th>
           </tr>
         </thead>
@@ -382,13 +382,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_DATA_NECESSARIA' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_FABBISOGNO_LORDO' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_DISPONIBILITA_ATTUALE' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_SCORTA_SICUREZZA' | translate }}</th>
-            <th class="num text-danger">{{ 'MFG.LBL_MANCANZA_NETTA' | translate }}</th>
-            <th>{{ 'MFG.LBL_AZIONE_CONSIGLIATA' | translate }}</th>
+            <th [nzSortFn]="'item_code' | gridSort">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th [nzSortFn]="'required_date' | gridSort">{{ 'MFG.LBL_DATA_NECESSARIA' | translate }}</th>
+            <th class="num" [nzSortFn]="'gross_requirement' | gridSort">{{ 'MFG.LBL_FABBISOGNO_LORDO' | translate }}</th>
+            <th class="num" [nzSortFn]="'available_inventory' | gridSort">{{ 'MFG.LBL_DISPONIBILITA_ATTUALE' | translate }}</th>
+            <th class="num" [nzSortFn]="'safety_stock' | gridSort">{{ 'MFG.LBL_SCORTA_SICUREZZA' | translate }}</th>
+            <th class="num text-danger" [nzSortFn]="'net_shortage' | gridSort">{{ 'MFG.LBL_MANCANZA_NETTA' | translate }}</th>
+            <th [nzSortFn]="'recommended_action' | gridSort">{{ 'MFG.LBL_AZIONE_CONSIGLIATA' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -424,12 +424,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</th>
-            <th>{{ 'MFG.LBL_NOME' | translate }}</th>
-            <th>{{ 'MFG.LBL_REPARTO' | translate }}</th>
-            <th class="num">{{ 'MFG.LBL_CAPACITA_GIORNALIERA_ORE' | translate }}</th>
+            <th [nzSortFn]="'work_center_code' | gridSort">{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'MFG.LBL_NOME' | translate }}</th>
+            <th [nzSortFn]="'department_code' | gridSort">{{ 'MFG.LBL_REPARTO' | translate }}</th>
+            <th class="num" [nzSortFn]="'capacity_hours_per_day' | gridSort">{{ 'MFG.LBL_CAPACITA_GIORNALIERA_ORE' | translate }}</th>
             <th class="num">{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -457,13 +457,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'MFG.LBL_N_CICLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_NOME_CICLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
-            <th>{{ 'MFG.LBL_REVISIONE' | translate }}</th>
+            <th [nzSortFn]="'routing_number' | gridSort">{{ 'MFG.LBL_N_CICLO' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'MFG.LBL_NOME_CICLO' | translate }}</th>
+            <th [nzSortFn]="'item_code' | gridSort">{{ 'MFG.LBL_ARTICOLO' | translate }}</th>
+            <th [nzSortFn]="'revision' | gridSort">{{ 'MFG.LBL_REVISIONE' | translate }}</th>
             <th>{{ 'MFG.LBL_PREDEFINITO' | translate }}</th>
-            <th>{{ 'MFG.LBL_OPERAZIONI' | translate }}</th>
-            <th>{{ 'MFG.LBL_STATO' | translate }}</th>
+            <th [nzSortFn]="'operations.length' | gridSort">{{ 'MFG.LBL_OPERAZIONI' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'MFG.LBL_STATO' | translate }}</th>
           </tr>
         </thead>
         <tbody>

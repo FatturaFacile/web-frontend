@@ -6,7 +6,7 @@ import {
   AssociationAreaRecord,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -19,7 +19,10 @@ import { recordText, saveBlob } from './save-blob';
 @Component({
   selector: 'app-area-activity',
   styleUrl: './area-activity.component.scss',
-  imports: [FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <h3>{{ 'ASSOC_AREA.CALENDAR' | translate }}</h3>
     @if (calendar().length === 0) {
@@ -28,9 +31,9 @@ import { recordText, saveBlob } from './save-blob';
       <nz-table nzSize="small" [nzData]="calendar()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.DATE' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.TIME' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.COURSE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'ASSOC_AREA.DATE' | translate }}</th>
+            <th [nzSortFn]="'starts_at' | gridSort">{{ 'ASSOC_AREA.TIME' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
             <th>{{ 'ASSOC_AREA.STATUS' | translate }}</th>
           </tr>
         </thead>

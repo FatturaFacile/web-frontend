@@ -48,7 +48,13 @@ html {
       font-weight: 600;
       letter-spacing: 0.02em;
       text-transform: uppercase;
+      // Every grid header is centered
+      text-align: center;
     }
+
+    // Keep the sort / filter icons next to the centered caption
+    .ant-table-thead > tr > th .ant-table-column-sorters { justify-content: center; gap: var(--space-2); }
+    .ant-table-thead > tr > th .ant-table-column-title { flex: 0 1 auto; }
 
     .ant-table-tbody > tr > td { border-bottom-color: var(--border-light); }
 
@@ -117,6 +123,31 @@ html {
   }
 
   .ant-modal-content { border-radius: var(--radius-lg); }
+
+  // Modals follow the screen width (capped on very large monitors) so forms can lay out in several columns
+  .ant-modal:not(.ant-modal-confirm) {
+    width: min(1100px, calc(100vw - 48px)) !important;
+    max-width: none;
+
+    .ant-modal-body {
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
+    }
+
+    // Forms: as many 300px+ columns as fit, so two inputs share a row. Wide content spans the full row.
+    .ant-modal-body form.ant-form,
+    .ant-modal-body form[nz-form] {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      column-gap: var(--space-4);
+      align-items: start;
+
+      > :not(nz-form-item),
+      > nz-form-item:has(textarea, nz-table, .ant-table-wrapper, nz-upload, .full-row) {
+        grid-column: 1 / -1;
+      }
+    }
+  }
   .ant-modal-header,
   .ant-drawer-header { background: var(--bg-elevated); border-bottom-color: var(--border-light); }
   .ant-modal-title,
@@ -163,4 +194,11 @@ html {
 
 .app-icon-action__icon {
   pointer-events: auto;
+}
+
+// Export bar injected above every nz-table by GridExportDirective
+.grid-export-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: var(--space-2);
 }

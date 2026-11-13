@@ -69,19 +69,21 @@ export class ClientsComponent {
       key: 'name',
       header: this.i18n.translate('CRM.CLIENTS.COLUMNS.NAME'),
       width: '240px',
-      sortable: true,
+      valueGetter: (c) => contactDisplayName(c),
       customCellTemplate: this.nameTpl(),
     },
     {
       key: 'type',
       header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TYPE'),
       width: '130px',
+      valueGetter: (c) => this.typeLabel(c.type),
       customCellTemplate: this.typeTpl(),
     },
     {
       key: 'vat_number',
       header: this.i18n.translate('CRM.CLIENTS.COLUMNS.TAX_ID'),
       width: '160px',
+      valueGetter: (c) => c.vat_number || c.fiscal_code || c.uid_number || '',
       customCellTemplate: this.taxTpl(),
     },
     {

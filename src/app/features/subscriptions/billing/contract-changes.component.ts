@@ -16,7 +16,7 @@ import {
   SubscriptionDunningCase,
   SubscriptionPlanResource,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective } from '@shared';
 
 type ChangeKind = 'upgrade' | 'downgrade' | 'quantity' | 'suspend' | 'collection';
 
@@ -26,7 +26,9 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 @Component({
   selector: 'app-contract-changes',
   styleUrl: './subscription-billing.scss',
-  imports: [FormsModule, NzAlertModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, NzTableModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    FormsModule, NzAlertModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, NzTableModule, TranslatePipe],
   templateUrl: './contract-changes.component.html',
 })
 export class ContractChangesComponent implements OnInit {

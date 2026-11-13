@@ -230,10 +230,10 @@
         <nz-table #outTable [nzData]="sdi.outbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>{{ 'SALES.LBL_AZIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th>{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort">{{ 'SALES.LBL_AZIONE' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort">{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort">{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -254,10 +254,10 @@
         <nz-table #inTable [nzData]="sdi.inbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
-              <th>{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th>{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort">{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort">{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort">{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -345,10 +345,10 @@
     <nz-table #instTable [nzData]="currentInstallments()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'SALES.LBL_RATA' | translate }}</th>
-          <th>{{ 'SALES.LBL_SCADENZA' | translate }}</th>
-          <th>{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
-          <th>{{ 'SALES.LBL_STATO' | translate }}</th>
+          <th [nzSortFn]="'installment_number' | gridSort">{{ 'SALES.LBL_RATA' | translate }}</th>
+          <th [nzSortFn]="'due_date' | gridSort">{{ 'SALES.LBL_SCADENZA' | translate }}</th>
+          <th [nzSortFn]="'amount' | gridSort">{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
+          <th [nzSortFn]="'status' | gridSort">{{ 'SALES.LBL_STATO' | translate }}</th>
         </tr>
       </thead>
       <tbody>

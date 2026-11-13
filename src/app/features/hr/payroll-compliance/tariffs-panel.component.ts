@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18nService, PayrollComplianceApiService, TariffSummaryRow } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -13,7 +13,9 @@ import { reportHttpError } from '../shared/hr-http.util';
 @Component({
   selector: 'app-tariffs-panel',
   styleUrl: './tariffs-panel.component.scss',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table
       #table

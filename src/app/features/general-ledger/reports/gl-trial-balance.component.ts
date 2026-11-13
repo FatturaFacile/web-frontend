@@ -6,14 +6,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DateRangeParams, GeneralLedgerApiService, LedgerTrialBalance } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 @Component({
   selector: 'app-gl-trial-balance',
   styleUrl: './gl-trial-balance.component.scss',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
       <label for="tb-from">{{ 'GL.FROM' | translate }}</label>
@@ -49,14 +52,14 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
       <nz-table nzSize="small" [nzData]="r.accounts" [nzPageSize]="50" [nzLoading]="loading()">
         <thead>
           <tr>
-            <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_OPENING' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_CLOSING' | translate }}</th>
+            <th [nzSortFn]="'account_code' | gridSort">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'opening_balance' | gridSort">{{ 'GL.COL_OPENING' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort">{{ 'GL.COL_DEBIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort">{{ 'GL.COL_CREDIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'closing_balance' | gridSort">{{ 'GL.COL_CLOSING' | translate }}</th>
             @if (r.compare_from) {
-              <th nzAlign="right">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
-              <th nzAlign="right">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_debit' | gridSort">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_credit' | gridSort">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
             }
           </tr>
         </thead>

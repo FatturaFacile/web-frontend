@@ -21,7 +21,7 @@ import {
   I18nService,
   SalesCycleApiService,
 } from '@core';
-import { IconActionDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import {
   apiErrorText,
   CREDIT_MANAGER_ROLES,
@@ -38,6 +38,8 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
   selector: 'app-customer-credit',
   styleUrl: './customer-credit.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     FormsModule,
     NzAlertModule,

@@ -45,12 +45,12 @@
         <nz-table #sitesTable [nzData]="sites()" [nzLoading]="sitesLoading()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_CODE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.FIELD_NAME' | translate }}</th>
+              <th [nzSortFn]="'code' | gridSort">{{ 'CONSTRUCTION.COL_CODE' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort">{{ 'CONSTRUCTION.FIELD_NAME' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_LOCATION' | translate }}</th>
+              <th [nzSortFn]="'address' | gridSort">{{ 'CONSTRUCTION.COL_LOCATION' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_NORM' | translate }}</th>
+              <th [nzSortFn]="'sia_norm_reference' | gridSort">{{ 'CONSTRUCTION.COL_NORM' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -75,13 +75,13 @@
         <nz-table #salTable [nzData]="progressBillings()" [nzFrontPagination]="true" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_PERIOD_START' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_PERIOD_END' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'sal_number' | gridSort">{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'period_start' | gridSort">{{ 'CONSTRUCTION.COL_PERIOD_START' | translate }}</th>
+              <th [nzSortFn]="'period_end' | gridSort">{{ 'CONSTRUCTION.COL_PERIOD_END' | translate }}</th>
+              <th [nzSortFn]="'gross_certified_amount' | gridSort">{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
+              <th [nzSortFn]="'retention_percentage' | gridSort">{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
+              <th [nzSortFn]="'net_amount' | gridSort">{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -141,11 +141,11 @@
         <nz-table #bidsTable [nzData]="bids()" [nzLoading]="bidsLoading()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_BID_CODE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_BID_TITLE' | translate }}</th>
+              <th [nzSortFn]="'bid_number' | gridSort">{{ 'CONSTRUCTION.COL_BID_CODE' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort">{{ 'CONSTRUCTION.COL_BID_TITLE' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_CLIENT' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.FIELD_CURRENCY' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'currency' | gridSort">{{ 'CONSTRUCTION.FIELD_CURRENCY' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
               <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -228,11 +228,11 @@
         <nz-table #diaryTable [nzData]="diaryEntries()" [nzLoading]="diaryLoading()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_WEATHER' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_WORKERS' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.FIELD_INCIDENTS' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_WORK_PERFORMED' | translate }}</th>
+              <th [nzSortFn]="'entry_date' | gridSort">{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'weather' | gridSort">{{ 'CONSTRUCTION.COL_WEATHER' | translate }}</th>
+              <th [nzSortFn]="'workers_present' | gridSort">{{ 'CONSTRUCTION.COL_WORKERS' | translate }}</th>
+              <th [nzSortFn]="'incidents' | gridSort">{{ 'CONSTRUCTION.FIELD_INCIDENTS' | translate }}</th>
+              <th [nzSortFn]="'work_performed' | gridSort">{{ 'CONSTRUCTION.COL_WORK_PERFORMED' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -261,7 +261,7 @@
         <nz-table #docTable [nzData]="siteDocuments()" [nzLoading]="documentsLoading()" [nzFrontPagination]="true">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort">{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
             </tr>
@@ -281,9 +281,9 @@
         <nz-table #expTable [nzData]="expiringDocuments()" [nzFrontPagination]="true" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort">{{ 'CONSTRUCTION.COL_DOCUMENT_TITLE' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_CATEGORY' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
+              <th [nzSortFn]="'expires_on' | gridSort">{{ 'CONSTRUCTION.COL_EXPIRES_AT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -306,10 +306,10 @@
           <thead>
             <tr>
               <th>{{ 'CONSTRUCTION.COL_SUBCONTRACTOR' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_SCOPE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_CONTRACT_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'CONSTRUCTION.COL_SCOPE' | translate }}</th>
+              <th [nzSortFn]="'contract_amount' | gridSort">{{ 'CONSTRUCTION.COL_CONTRACT_AMOUNT' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_PERIOD' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'CONSTRUCTION.COL_STATUS' | translate }}</th>
               <th nzRight>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -381,12 +381,12 @@
         <nz-table #posTable [nzData]="bidPositions()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_POS_CODE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_DESCRIPTION' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_UNIT' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_QTY' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_UNIT_PRICE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_SUBTOTAL' | translate }}</th>
+              <th [nzSortFn]="'position_code' | gridSort">{{ 'CONSTRUCTION.COL_POS_CODE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'CONSTRUCTION.COL_DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'unit' | gridSort">{{ 'CONSTRUCTION.COL_UNIT' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort">{{ 'CONSTRUCTION.COL_QTY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort">{{ 'CONSTRUCTION.COL_UNIT_PRICE' | translate }}</th>
+              <th [nzSortFn]="'total' | gridSort">{{ 'CONSTRUCTION.COL_SUBTOTAL' | translate }}</th>
               <th>{{ 'CONSTRUCTION.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -429,11 +429,11 @@
         <nz-table #bbTable [nzData]="bidBillings()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
-              <th>{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'sequence' | gridSort">{{ 'CONSTRUCTION.COL_SAL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'billing_date' | gridSort">{{ 'CONSTRUCTION.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'gross_this' | gridSort">{{ 'CONSTRUCTION.COL_GROSS_CERTIFIED' | translate }}</th>
+              <th [nzSortFn]="'retention_amount' | gridSort">{{ 'CONSTRUCTION.COL_RETENTION' | translate }}</th>
+              <th [nzSortFn]="'amount_invoiced' | gridSort">{{ 'CONSTRUCTION.COL_NET_AMOUNT' | translate }}</th>
               <th>{{ 'CONSTRUCTION.FIELD_BILLING_KIND' | translate }}</th>
             </tr>
           </thead>

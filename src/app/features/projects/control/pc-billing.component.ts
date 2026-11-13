@@ -8,14 +8,17 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectRevenueRecognition } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-alert.component';
 
 /** Time and materials billing, billing runs and revenue recognition of a project. */
 @Component({
   selector: 'app-pc-billing',
   styleUrl: './pc-billing.component.scss',
-  imports: [FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
   template: `
     <app-gl-error-alert [error]="error()" />
 
@@ -45,11 +48,11 @@ import { GlErrorAlertComponent } from '../../general-ledger/shared/gl-error-aler
     <nz-table #recognitionTable nzSize="small" [nzData]="recognitions()" [nzPageSize]="10">
       <thead>
         <tr>
-          <th>{{ 'PRJ.ACCOUNTING_DATE' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.COMPLETION' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.PERIOD_REVENUE' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.CUMULATIVE_REVENUE' | translate }}</th>
-          <th nzAlign="right">{{ 'PRJ.CONTRACT_ASSET' | translate }}</th>
+          <th [nzSortFn]="'accounting_period_date' | gridSort">{{ 'PRJ.ACCOUNTING_DATE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'completion_percentage' | gridSort">{{ 'PRJ.COMPLETION' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'period_revenue' | gridSort">{{ 'PRJ.PERIOD_REVENUE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'cumulative_recognized_revenue' | gridSort">{{ 'PRJ.CUMULATIVE_REVENUE' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'contract_asset_balance' | gridSort">{{ 'PRJ.CONTRACT_ASSET' | translate }}</th>
           <th>{{ 'PRJ.POSTED_TO_GL' | translate }}</th>
         </tr>
       </thead>

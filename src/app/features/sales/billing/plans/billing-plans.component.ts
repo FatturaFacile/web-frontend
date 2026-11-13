@@ -29,7 +29,7 @@ import {
   PermissionsService,
   SalesCycleApiService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { DECIMAL_PATTERN, maxNumber } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { statusColor, todayIso } from '../../cycle/shared/sales-status';
@@ -39,6 +39,8 @@ import { statusColor, todayIso } from '../../cycle/shared/sales-status';
   selector: 'app-billing-plans',
   styleUrl: './billing-plans.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

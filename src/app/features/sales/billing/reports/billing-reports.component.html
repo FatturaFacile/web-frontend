@@ -27,13 +27,13 @@
         <nz-table [nzScroll]="{ x: '760px' }" [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()">
           <thead>
             <tr>
-              <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
-              <th>{{ 'SC.COMMON.DATE' | translate }}</th>
-              <th>{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
-              <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-              <th class="num">{{ 'SC.COMMON.NET' | translate }}</th>
-              <th class="num">{{ 'SC.COMMON.TAX' | translate }}</th>
-              <th class="num">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+              <th [nzSortFn]="'invoice_number' | gridSort">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort">{{ 'SC.COMMON.DATE' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort">{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_net' | gridSort">{{ 'SC.COMMON.NET' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_tax' | gridSort">{{ 'SC.COMMON.TAX' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_gross' | gridSort">{{ 'SC.COMMON.TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -87,13 +87,13 @@
         <nz-table [nzScroll]="{ x: '760px' }" [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()">
           <thead>
             <tr>
-              <th>{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
-              <th class="num">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
-              <th class="num">1-30</th>
-              <th class="num">31-60</th>
-              <th class="num">61-90</th>
-              <th class="num">&gt;90</th>
-              <th class="num">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'current' | gridSort">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
+              <th class="num" [nzSortFn]="'days_1_30' | gridSort">1-30</th>
+              <th class="num" [nzSortFn]="'days_31_60' | gridSort">31-60</th>
+              <th class="num" [nzSortFn]="'days_61_90' | gridSort">61-90</th>
+              <th class="num" [nzSortFn]="'over_90' | gridSort">&gt;90</th>
+              <th class="num" [nzSortFn]="'total_open' | gridSort">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
             </tr>
           </thead>
           <tbody>

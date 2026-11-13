@@ -43,8 +43,7 @@ import {
   TableStateService,
   TranslatePipe,
   ModalActionsDirective,
-  IconActionDirective,
-} from '@shared';
+  IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { notInFuture } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
@@ -61,6 +60,8 @@ const INTRASTAT_FIRST_YEAR = 2022;
   selector: 'app-accounting',
   styleUrl: './accounting.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,

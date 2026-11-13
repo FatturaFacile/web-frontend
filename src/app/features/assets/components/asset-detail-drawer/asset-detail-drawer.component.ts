@@ -16,13 +16,15 @@ import {
   FixedAssetResource,
   MaintenanceWorkOrderResource,
 } from '@core';
-import { MoneyPipe, ModalActionsDirective } from '@shared';
+import { MoneyPipe, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-asset-detail-drawer',
   styleUrl: './asset-detail-drawer.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     TranslatePipe,
     NzModalModule,

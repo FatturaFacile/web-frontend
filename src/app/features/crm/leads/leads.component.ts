@@ -37,7 +37,7 @@ import {
   StoreLeadPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 /** A lead needs a name: the company name or at least the last name. */
 const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
@@ -50,6 +50,8 @@ const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors
   selector: 'app-crm-leads',
   styleUrl: './leads.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     FormsModule,

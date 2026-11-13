@@ -10,7 +10,7 @@ import {
   JointCommissionReport,
   ShortTimeApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -29,6 +29,8 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
   selector: 'app-construction-panel',
   styleUrl: './construction-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ActionFormComponent,
     FormsModule,
     MoneyPipe,
@@ -112,10 +114,10 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       >
         <thead>
           <tr>
-            <th>{{ 'hrmLeave.month' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.planned' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.balance' | translate }}</th>
+            <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
+            <th [nzSortFn]="'planned_hours' | gridSort">{{ 'hrmShortTime.construction.planned' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'balance_hours' | gridSort">{{ 'hrmShortTime.construction.balance' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -139,14 +141,14 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       <nz-table #reportTable [nzData]="r.rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmShortTime.construction.qualification' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.zone' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.headcount' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th>{{ 'hrmPayroll.gross' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
+            <th [nzSortFn]="'qualification' | gridSort">{{ 'hrmShortTime.construction.qualification' | translate }}</th>
+            <th [nzSortFn]="'zone' | gridSort">{{ 'hrmShortTime.construction.zone' | translate }}</th>
+            <th [nzSortFn]="'headcount' | gridSort">{{ 'hrmShortTime.construction.headcount' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'average_hourly' | gridSort">{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
+            <th [nzSortFn]="'minimum_hourly' | gridSort">{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
+            <th [nzSortFn]="'below_minimum.length' | gridSort">{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
           </tr>
         </thead>
         <tbody>

@@ -81,6 +81,19 @@
   .popover-content {
     padding: var(--space-1) 0 var(--space-2);
 
+    .filter-options {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      max-height: 200px;
+      margin-top: var(--space-2);
+      overflow-y: auto;
+
+      label {
+        margin-inline-start: 0;
+      }
+    }
+
     .filter-select {
       width: 100%;
     }

@@ -27,7 +27,7 @@ import {
   StoreFixedAssetPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, ModalActionsDirective, IconActionDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { AssetDetailDrawerComponent } from './components/asset-detail-drawer/asset-detail-drawer.component';
 import { TranslatePipe } from '@shared';
 
@@ -35,6 +35,8 @@ import { TranslatePipe } from '@shared';
   selector: 'app-assets',
   styleUrl: './assets.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     TranslatePipe,

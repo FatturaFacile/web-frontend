@@ -161,11 +161,11 @@
       <nz-table #fpTable [nzData]="fiscalPeriods()" [nzLoading]="loadingPeriods()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '720px' }">
         <thead>
           <tr>
-            <th>{{ 'accounting.lblNomePeriodo' | translate }}</th>
-            <th>{{ 'accounting.lblAnnoFiscale' | translate }}</th>
-            <th>{{ 'accounting.lblMeseRiferimento' | translate }}</th>
-            <th>{{ 'accounting.lblDataInizio' | translate }}</th>
-            <th>{{ 'accounting.lblDataFine' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'accounting.lblNomePeriodo' | translate }}</th>
+            <th [nzSortFn]="'year' | gridSort">{{ 'accounting.lblAnnoFiscale' | translate }}</th>
+            <th [nzSortFn]="'period_number' | gridSort">{{ 'accounting.lblMeseRiferimento' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort">{{ 'accounting.lblDataInizio' | translate }}</th>
+            <th [nzSortFn]="'end_date' | gridSort">{{ 'accounting.lblDataFine' | translate }}</th>
             <th>{{ 'accounting.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'accounting.lblAzioni' | translate }}</th>
           </tr>
@@ -212,9 +212,9 @@
         <thead>
           <tr>
             <th>{{ 'accounting.lblProtocolloDichiarazione' | translate }}</th>
-            <th>{{ 'accounting.lblAnnoPeriodo' | translate }}</th>
+            <th [nzSortFn]="'year' | gridSort">{{ 'accounting.lblAnnoPeriodo' | translate }}</th>
             <th>{{ 'accounting.lblFlusso' | translate }}</th>
-            <th>{{ 'accounting.lblStato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'accounting.lblStato' | translate }}</th>
             <th nzAlign="right">{{ 'accounting.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -266,13 +266,13 @@
         <nz-table #tbTable [nzData]="tb.items || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="15" [nzScroll]="{ x: '720px' }">
           <thead>
             <tr>
-              <th>{{ 'accounting.lblCodiceConto' | translate }}</th>
-              <th>{{ 'accounting.lblDenominazioneConto' | translate }}</th>
-              <th>{{ 'accounting.lblNatura' | translate }}</th>
-              <th class="num">{{ 'accounting.lblSaldoIniziale' | translate }}</th>
-              <th class="num">{{ 'accounting.lblMovimentiDare' | translate }}</th>
-              <th class="num">{{ 'accounting.lblMovimentiAvere' | translate }}</th>
-              <th class="num">{{ 'accounting.lblSaldoFinale' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort">{{ 'accounting.lblCodiceConto' | translate }}</th>
+              <th [nzSortFn]="'account_name' | gridSort">{{ 'accounting.lblDenominazioneConto' | translate }}</th>
+              <th [nzSortFn]="'account_type' | gridSort">{{ 'accounting.lblNatura' | translate }}</th>
+              <th class="num" [nzSortFn]="'opening_balance' | gridSort">{{ 'accounting.lblSaldoIniziale' | translate }}</th>
+              <th class="num" [nzSortFn]="'debit_movement' | gridSort">{{ 'accounting.lblMovimentiDare' | translate }}</th>
+              <th class="num" [nzSortFn]="'credit_movement' | gridSort">{{ 'accounting.lblMovimentiAvere' | translate }}</th>
+              <th class="num" [nzSortFn]="'closing_balance' | gridSort">{{ 'accounting.lblSaldoFinale' | translate }}</th>
             </tr>
           </thead>
           <tbody>

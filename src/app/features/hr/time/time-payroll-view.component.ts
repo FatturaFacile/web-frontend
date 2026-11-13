@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthStore, HrTimeApiService, I18nService, NightWorkBalance, TimePayrollView } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -16,6 +16,8 @@ import { reportHttpError } from '../shared/hr-http.util';
   selector: 'app-time-payroll-view',
   styleUrl: './time-payroll-view.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     MoneyPipe,
     NzButtonModule,
@@ -108,12 +110,12 @@ import { reportHttpError } from '../shared/hr-http.util';
       <nz-table #daysTable [nzData]="v.days" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.date' | translate }}</th>
-            <th>{{ 'hrmTimeX.recorded' | translate }}</th>
-            <th>{{ 'hrmTimeX.payrollMinutes' | translate }}</th>
-            <th>{{ 'hrmTimeX.adjustment' | translate }}</th>
-            <th>{{ 'hrmTimeX.night' | translate }}</th>
-            <th>{{ 'hrmTimeX.dailyAllowance' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'hrmCommon.date' | translate }}</th>
+            <th [nzSortFn]="'recorded_minutes' | gridSort">{{ 'hrmTimeX.recorded' | translate }}</th>
+            <th [nzSortFn]="'payroll_minutes' | gridSort">{{ 'hrmTimeX.payrollMinutes' | translate }}</th>
+            <th [nzSortFn]="'adjustment_minutes' | gridSort">{{ 'hrmTimeX.adjustment' | translate }}</th>
+            <th [nzSortFn]="'night_minutes' | gridSort">{{ 'hrmTimeX.night' | translate }}</th>
+            <th [nzSortFn]="'daily_allowance_amount' | gridSort">{{ 'hrmTimeX.dailyAllowance' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -152,12 +154,12 @@ import { reportHttpError } from '../shared/hr-http.util';
         <thead>
           <tr>
             <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th>{{ 'hrmTimeX.nightShifts' | translate }}</th>
+            <th [nzSortFn]="'ytd_night_shifts' | gridSort">{{ 'hrmTimeX.nightShifts' | translate }}</th>
             <th>{{ 'hrmTimeX.regularNightWorker' | translate }}</th>
-            <th>{{ 'hrmTimeX.accruedRest' | translate }}</th>
-            <th>{{ 'hrmTimeX.takenRest' | translate }}</th>
-            <th>{{ 'hrmTimeX.remainingRest' | translate }}</th>
-            <th>{{ 'hrmTimeX.cashSupplement' | translate }}</th>
+            <th [nzSortFn]="'accrued_rest_minutes' | gridSort">{{ 'hrmTimeX.accruedRest' | translate }}</th>
+            <th [nzSortFn]="'taken_rest_minutes' | gridSort">{{ 'hrmTimeX.takenRest' | translate }}</th>
+            <th [nzSortFn]="'remaining_rest_minutes' | gridSort">{{ 'hrmTimeX.remainingRest' | translate }}</th>
+            <th [nzSortFn]="'cash_supplement_minutes' | gridSort">{{ 'hrmTimeX.cashSupplement' | translate }}</th>
           </tr>
         </thead>
         <tbody>

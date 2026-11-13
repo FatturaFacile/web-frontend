@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { I18nService, PayrollApiService, PayrollCostAllocation, PayrollRunRecord } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -23,6 +23,8 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
   selector: 'app-payroll-run-detail',
   styleUrl: './payroll-run-detail.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     DatePipe,
     MoneyPipe,
     NzButtonModule,

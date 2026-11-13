@@ -45,7 +45,7 @@ import {
   RunMrpPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { toDayKey, toTimestamp } from '@shared/utils/date-validators';
 import { formErrorTip } from '../inventory/form-error-tip';
 import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
@@ -85,6 +85,8 @@ function withinTwoYearsOf(startKey: string): ValidatorFn {
   selector: 'app-manufacturing',
   styleUrl: './manufacturing.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

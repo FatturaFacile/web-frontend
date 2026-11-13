@@ -8,7 +8,7 @@ import {
   SwissdecStatus,
   SwissdecVersion,
 } from '@core';
-import { ModalActionsDirective, TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -25,6 +25,8 @@ import { reportHttpError } from '../shared/hr-http.util';
   selector: 'app-swissdec-panel',
   styleUrl: './swissdec-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     FormsModule,
     NzAlertModule,
@@ -123,8 +125,8 @@ import { reportHttpError } from '../shared/hr-http.util';
         <nz-table #issues [nzData]="r.persons" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmCommon.employee' | translate }}</th>
-              <th>{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
+              <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'issues.length' | gridSort">{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
             </tr>
           </thead>
           <tbody>

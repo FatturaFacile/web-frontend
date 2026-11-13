@@ -42,11 +42,11 @@
       <nz-table #slips [nzData]="r.payslips ?? []" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.employee' | translate }}</th>
-            <th>{{ 'hrmPayroll.gross' | translate }}</th>
-            <th>{{ 'hrmPayroll.deductions' | translate }}</th>
-            <th>{{ 'hrmPayroll.net' | translate }}</th>
-            <th>{{ 'hrmPayroll.employerContributions' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'employee_deductions' | gridSort">{{ 'hrmPayroll.deductions' | translate }}</th>
+            <th [nzSortFn]="'net_salary' | gridSort">{{ 'hrmPayroll.net' | translate }}</th>
+            <th [nzSortFn]="'employer_contributions' | gridSort">{{ 'hrmPayroll.employerContributions' | translate }}</th>
             <th>{{ 'hrmCommon.actions' | translate }}</th>
           </tr>
         </thead>
@@ -77,10 +77,10 @@
       <nz-table #events [nzData]="r.events ?? []" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.date' | translate }}</th>
-            <th>{{ 'hrmTime.action' | translate }}</th>
-            <th>{{ 'hrmTime.actor' | translate }}</th>
-            <th>{{ 'hrmCommon.reason' | translate }}</th>
+            <th [nzSortFn]="'occurred_at' | gridSort">{{ 'hrmCommon.date' | translate }}</th>
+            <th [nzSortFn]="'action' | gridSort">{{ 'hrmTime.action' | translate }}</th>
+            <th [nzSortFn]="'actor_name' | gridSort">{{ 'hrmTime.actor' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort">{{ 'hrmCommon.reason' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -100,10 +100,10 @@
         <nz-table #lines [nzData]="a.lines" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmCommon.employee' | translate }}</th>
-              <th>{{ 'hrmPayroll.target' | translate }}</th>
-              <th>{{ 'hrmCommon.hours' | translate }}</th>
-              <th>{{ 'hrmEmp.amount' | translate }}</th>
+              <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'target_type' | gridSort">{{ 'hrmPayroll.target' | translate }}</th>
+              <th [nzSortFn]="'hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
+              <th [nzSortFn]="'amount' | gridSort">{{ 'hrmEmp.amount' | translate }}</th>
             </tr>
           </thead>
           <tbody>

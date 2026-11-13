@@ -69,13 +69,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.CASE_NUMBER' | translate }}</th>
-            <th>{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th>{{ 'PRACTICE.SUBJECT' | translate }}</th>
-            <th>{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th>{{ 'PRACTICE.FEE' | translate }}</th>
+            <th [nzSortFn]="'num' | gridSort">{{ 'PRACTICE.CASE_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'client' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'subject' | gridSort">{{ 'PRACTICE.SUBJECT' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'fee' | gridSort">{{ 'PRACTICE.FEE' | translate }}</th>
             <th>{{ 'PRACTICE.AML_COMPLIANT' | translate }}</th>
-            <th>{{ 'PRACTICE.STATUS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'PRACTICE.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -150,13 +150,13 @@
         <thead>
           <tr>
             <th nzWidth="40px"></th>
-            <th>{{ 'PRACTICE.DATE' | translate }}</th>
-            <th>{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th>{{ 'PRACTICE.CASE' | translate }}</th>
-            <th>{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
-            <th>{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th>{{ 'PRACTICE.RATE' | translate }}</th>
-            <th>{{ 'PRACTICE.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'activity_date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'case_title' | gridSort">{{ 'PRACTICE.CASE' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'rate' | gridSort">{{ 'PRACTICE.RATE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.AMOUNT' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
           </tr>
         </thead>
@@ -209,13 +209,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.FEE_NOTE_NUM' | translate }}</th>
-            <th>{{ 'PRACTICE.DATE' | translate }}</th>
-            <th>{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th>{{ 'PRACTICE.NET_AMOUNT' | translate }}</th>
-            <th>{{ 'PRACTICE.CPA_CONTRIBUTION' | translate }}</th>
-            <th>{{ 'PRACTICE.WITHHOLDING' | translate }}</th>
-            <th>{{ 'PRACTICE.VAT' | translate }}</th>
+            <th [nzSortFn]="'fee_note_number' | gridSort">{{ 'PRACTICE.FEE_NOTE_NUM' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_id' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort">{{ 'PRACTICE.NET_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'social_contribution_rate' | gridSort">{{ 'PRACTICE.CPA_CONTRIBUTION' | translate }}</th>
+            <th [nzSortFn]="'withholding_tax_rate' | gridSort">{{ 'PRACTICE.WITHHOLDING' | translate }}</th>
+            <th [nzSortFn]="'vat_rate' | gridSort">{{ 'PRACTICE.VAT' | translate }}</th>
             <th>{{ 'PRACTICE.GROSS_AMOUNT' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
           </tr>
@@ -305,13 +305,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.DATE' | translate }}</th>
-            <th>{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th>{{ 'PRACTICE.CASE' | translate }}</th>
-            <th>{{ 'PRACTICE.INITIAL_AMOUNT' | translate }}</th>
-            <th>{{ 'PRACTICE.BALANCE_AVAILABLE' | translate }}</th>
+            <th [nzSortFn]="'received_on' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'case_title' | gridSort">{{ 'PRACTICE.CASE' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.INITIAL_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'balance' | gridSort">{{ 'PRACTICE.BALANCE_AVAILABLE' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
-            <th>{{ 'PRACTICE.REFERENCE' | translate }}</th>
+            <th [nzSortFn]="'reference' | gridSort">{{ 'PRACTICE.REFERENCE' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -371,9 +371,9 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.CLIENT' | translate }}</th>
-            <th>{{ 'PRACTICE.PERIOD_START' | translate }}</th>
-            <th>{{ 'PRACTICE.PERIOD_END' | translate }}</th>
+            <th [nzSortFn]="'client_name' | gridSort">{{ 'PRACTICE.CLIENT' | translate }}</th>
+            <th [nzSortFn]="'period_start' | gridSort">{{ 'PRACTICE.PERIOD_START' | translate }}</th>
+            <th [nzSortFn]="'period_end' | gridSort">{{ 'PRACTICE.PERIOD_END' | translate }}</th>
             <th>{{ 'PRACTICE.STATUS' | translate }}</th>
             <th>{{ 'PRACTICE.CHECKLIST_PROGRESS' | translate }}</th>
             <th>{{ 'PRACTICE.ACTIONS' | translate }}</th>
@@ -462,10 +462,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.DATE' | translate }}</th>
-            <th>{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
-            <th>{{ 'PRACTICE.HOURS' | translate }}</th>
-            <th>{{ 'PRACTICE.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'activity_date' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'PRACTICE.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'hours' | gridSort">{{ 'PRACTICE.HOURS' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.AMOUNT' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -490,9 +490,9 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PRACTICE.DATE' | translate }}</th>
-            <th>{{ 'PRACTICE.RETAINER_ID' | translate }}</th>
-            <th>{{ 'PRACTICE.DEDUCTED_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'applied_at' | gridSort">{{ 'PRACTICE.DATE' | translate }}</th>
+            <th [nzSortFn]="'retainer_id' | gridSort">{{ 'PRACTICE.RETAINER_ID' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'PRACTICE.DEDUCTED_AMOUNT' | translate }}</th>
           </tr>
         </thead>
         <tbody>

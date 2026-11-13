@@ -79,12 +79,12 @@
   >
     <thead>
       <tr>
-        <th>{{ 'subscriptions.lblContract' | translate }}</th>
-        <th>{{ 'subscriptions.lblCustomer' | translate }}</th>
-        <th>{{ 'subscriptions.lblPlan' | translate }}</th>
-        <th>{{ 'subscriptions.lblStatus' | translate }}</th>
-        <th>{{ 'subscriptions.lblMrr' | translate }}</th>
-        <th>{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
+        <th [nzSortFn]="'contract_number' | gridSort">{{ 'subscriptions.lblContract' | translate }}</th>
+        <th [nzSortFn]="'customer_name' | gridSort">{{ 'subscriptions.lblCustomer' | translate }}</th>
+        <th [nzSortFn]="'plan_name' | gridSort">{{ 'subscriptions.lblPlan' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort">{{ 'subscriptions.lblStatus' | translate }}</th>
+        <th [nzSortFn]="'mrr' | gridSort">{{ 'subscriptions.lblMrr' | translate }}</th>
+        <th [nzSortFn]="'current_period_start' | gridSort">{{ 'subscriptions.lblCurrentPeriod' | translate }}</th>
         <th nzWidth="240px">{{ 'subscriptions.lblActions' | translate }}</th>
       </tr>
     </thead>

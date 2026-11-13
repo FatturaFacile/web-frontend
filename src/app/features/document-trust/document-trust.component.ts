@@ -36,13 +36,15 @@ import {
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 
 @Component({
   selector: 'app-document-trust',
   styleUrl: './document-trust.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

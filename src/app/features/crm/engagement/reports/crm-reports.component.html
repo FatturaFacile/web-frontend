@@ -45,7 +45,7 @@
       <nz-table [nzData]="forecasts()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
+            <th [nzSortFn]="'period' | gridSort">{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.QUOTA' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.COMMIT' | translate }}</th>
             <th class="num">{{ 'CRMX.REPORTS.BEST_CASE' | translate }}</th>

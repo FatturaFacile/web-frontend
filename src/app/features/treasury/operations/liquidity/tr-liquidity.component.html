@@ -46,10 +46,10 @@
             <nz-table #dayTable nzSize="small" [nzData]="scenario.days" [nzPageSize]="15">
               <thead>
                 <tr>
-                  <th>{{ 'TR.DATE' | translate }}</th>
-                  <th nzAlign="right">{{ 'TR.TOTAL_INFLOWS' | translate }}</th>
-                  <th nzAlign="right">{{ 'TR.TOTAL_OUTFLOWS' | translate }}</th>
-                  <th nzAlign="right">{{ 'TR.BALANCE' | translate }}</th>
+                  <th [nzSortFn]="'date' | gridSort">{{ 'TR.DATE' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'inflows' | gridSort">{{ 'TR.TOTAL_INFLOWS' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'outflows' | gridSort">{{ 'TR.TOTAL_OUTFLOWS' | translate }}</th>
+                  <th nzAlign="right" [nzSortFn]="'balance' | gridSort">{{ 'TR.BALANCE' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,11 +75,11 @@
       <nz-table #scenarioTable nzSize="middle" [nzData]="scenarios()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'TR.CODE' | translate }}</th>
-            <th>{{ 'TR.NAME' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.COLLECTION_DELAY' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.SALES_GROWTH' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'TR.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'collection_delay_days' | gridSort">{{ 'TR.COLLECTION_DELAY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'disbursement_acceleration_days' | gridSort">{{ 'TR.DISBURSEMENT_ACCELERATION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'sales_growth_factor' | gridSort">{{ 'TR.SALES_GROWTH' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -103,11 +103,11 @@
       <nz-table #recurringTable nzSize="middle" [nzData]="recurring()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'TR.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
             <th>{{ 'TR.DIRECTION' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
             <th>{{ 'TR.FREQUENCY' | translate }}</th>
-            <th>{{ 'TR.NEXT_DATE' | translate }}</th>
+            <th [nzSortFn]="'next_date' | gridSort">{{ 'TR.NEXT_DATE' | translate }}</th>
             <th>{{ 'TR.ACTIONS' | translate }}</th>
           </tr>
         </thead>

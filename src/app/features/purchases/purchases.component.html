@@ -68,10 +68,10 @@
       >
         <thead>
           <tr>
-            <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
+            <th [nzSortFn]="'po_number' | gridSort">{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
             <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
             <th>{{ "PURCHASES.COL_ORDER_TYPE" | translate }}</th>
-            <th nzAlign="right">{{ "COMMON.AMOUNT" | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ "COMMON.AMOUNT" | translate }}</th>
             <th>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</th>
             <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
             <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
@@ -160,11 +160,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
+            <th [nzSortFn]="'receipt_number' | gridSort">{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
+            <th [nzSortFn]="'supplier_delivery_note_ref' | gridSort">{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_DATA_ARRIVO' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
+            <th [nzSortFn]="'inspection_status' | gridSort">{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
+            <th [nzSortFn]="'lines.length' | gridSort">{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -213,12 +213,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
+            <th [nzSortFn]="'id' | gridSort">{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
+            <th [nzSortFn]="'purchase_order_id' | gridSort">{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_STATO_CONCILIAZIONE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'po_total_amount' | gridSort">{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'invoice_total_amount' | gridSort">{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'variance_amount' | gridSort">{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
           </tr>
         </thead>
@@ -272,11 +272,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
+            <th [nzSortFn]="'invoice_number' | gridSort">{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_FORNITORE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_SCADENZA' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
             <th>{{ 'PURCHASES.COL_PAYMENT' | translate }}</th>
             <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
             <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
@@ -436,9 +436,9 @@
       <nz-table [nzData]="receiptOrderLines()" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'line_number' | gridSort">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_ordered' | gridSort">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_received' | gridSort">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_QTY_NOW' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_N_LOTTO' | translate }}</th>
           </tr>
@@ -484,8 +484,8 @@
       <nz-table [nzData]="selectedReceipt()?.lines ?? []" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
+            <th [nzSortFn]="'purchase_order_line_id' | gridSort">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_accepted' | gridSort">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_RELEASED' | translate }}</th>
             <th>{{ 'COMMON.NOTES' | translate }}</th>
           </tr>

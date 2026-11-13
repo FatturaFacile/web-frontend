@@ -12,8 +12,8 @@
       <nz-table [nzData]="terms()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CAT.CODE' | translate }}</th>
-            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'CAT.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'CAT.DAYS' | translate }}</th>
             <th>{{ 'CAT.END_OF_MONTH' | translate }}</th>
             <th>{{ 'CAT.DISCOUNT' | translate }}</th>
@@ -65,7 +65,7 @@
       <nz-table [nzData]="brands()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -105,7 +105,7 @@
       <nz-table [nzData]="categories()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'CAT.PARENT' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -147,8 +147,8 @@
       <nz-table [nzData]="units()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'CAT.CODE' | translate }}</th>
-            <th>{{ 'CAT.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'CAT.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'CAT.NAME' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>

@@ -6,7 +6,7 @@ import {
   PayrollComplianceApiService,
   WithholdingTaxParameters,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -19,7 +19,10 @@ import { reportHttpError } from '../shared/hr-http.util';
 @Component({
   selector: 'app-frontier-panel',
   styleUrl: './frontier-panel.component.scss',
-  imports: [ActionFormComponent, NzDescriptionsModule, NzTableModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    ActionFormComponent, NzDescriptionsModule, NzTableModule, TranslatePipe],
   template: `
     <h4>{{ 'hrmCompliance.frontier.nightsTitle' | translate }}</h4>
     <p>{{ 'hrmCompliance.frontier.nightsHint' | translate }}</p>
@@ -29,10 +32,10 @@ import { reportHttpError } from '../shared/hr-http.util';
     <nz-table #table [nzData]="commuters()" [nzFrontPagination]="false" nzSize="small">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.name' | translate }}</th>
-          <th>Email</th>
-          <th>{{ 'hrmCompliance.frontier.jobTitle' | translate }}</th>
-          <th>{{ 'hrmCompliance.frontier.hireDate' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort">{{ 'hrmCommon.name' | translate }}</th>
+          <th [nzSortFn]="'email' | gridSort">Email</th>
+          <th [nzSortFn]="'job_title' | gridSort">{{ 'hrmCompliance.frontier.jobTitle' | translate }}</th>
+          <th [nzSortFn]="'hire_date' | gridSort">{{ 'hrmCompliance.frontier.hireDate' | translate }}</th>
         </tr>
       </thead>
       <tbody>

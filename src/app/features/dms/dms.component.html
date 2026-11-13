@@ -67,11 +67,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'DMS.DOC_TITLE' | translate }}</th>
-            <th>{{ 'DMS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'DMS.DOC_TITLE' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort">{{ 'DMS.DOC_TYPE' | translate }}</th>
             <th>{{ 'DMS.FOLDER' | translate }}</th>
-            <th>{{ 'DMS.LATEST_VERSION' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'latest_version.original_name' | gridSort">{{ 'DMS.LATEST_VERSION' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th>{{ 'DMS.PROTECTION' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -220,7 +220,7 @@
       >
         <thead>
           <tr>
-            <th>{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
             <th>{{ 'DMS.ACCESS_ROLES' | translate }}</th>
             <th>{{ 'DMS.DOCUMENTS_COUNT' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
@@ -268,10 +268,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'COMMON.NAME' | translate }}</th>
-            <th>{{ 'DMS.DOC_TYPE' | translate }}</th>
-            <th>{{ 'DMS.RETENTION_PERIOD' | translate }}</th>
-            <th>{{ 'DMS.RETENTION_ACTION' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort">{{ 'DMS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'retention_months' | gridSort">{{ 'DMS.RETENTION_PERIOD' | translate }}</th>
+            <th [nzSortFn]="'action' | gridSort">{{ 'DMS.RETENTION_ACTION' | translate }}</th>
             <th>{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -350,8 +350,8 @@
           <nz-table [nzData]="tags()" [nzFrontPagination]="true" [nzLoading]="tagsLoading()">
             <thead>
               <tr>
-                <th>{{ 'COMMON.NAME' | translate }}</th>
-                <th>Badge</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">Badge</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -635,8 +635,8 @@
       <nz-table [nzData]="docVersions()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'DMS.LBL_VER' | translate }}</th>
-            <th>{{ 'DMS.LBL_FILE' | translate }}</th>
+            <th [nzSortFn]="'version_number' | gridSort">{{ 'DMS.LBL_VER' | translate }}</th>
+            <th [nzSortFn]="'original_name' | gridSort">{{ 'DMS.LBL_FILE' | translate }}</th>
             <th>SHA-256</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -669,9 +669,9 @@
         <nz-table [nzData]="docExtractions()" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'DMS.LBL_CAMPO' | translate }}</th>
-              <th>{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
-              <th>{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
+              <th [nzSortFn]="'field_name' | gridSort">{{ 'DMS.LBL_CAMPO' | translate }}</th>
+              <th [nzSortFn]="'extracted_value' | gridSort">{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
+              <th [nzSortFn]="'confidence' | gridSort">{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -725,7 +725,7 @@
           <thead>
             <tr>
               <th>{{ 'DMS.LBL_TIPO' | translate }}</th>
-              <th>{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
+              <th [nzSortFn]="'label' | gridSort">{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
               <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -752,9 +752,9 @@
       <nz-table [nzData]="docAuditTrail()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'DMS.LBL_EVENTO' | translate }}</th>
-            <th>{{ 'DMS.LBL_UTENTE' | translate }}</th>
-            <th>{{ 'DMS.LBL_DATA' | translate }}</th>
+            <th [nzSortFn]="'event_type' | gridSort">{{ 'DMS.LBL_EVENTO' | translate }}</th>
+            <th [nzSortFn]="'actor_name' | gridSort">{{ 'DMS.LBL_UTENTE' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'DMS.LBL_DATA' | translate }}</th>
           </tr>
         </thead>
         <tbody>

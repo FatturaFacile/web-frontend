@@ -2,13 +2,13 @@
 <nz-table #balanceTable [nzData]="balances()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
     <tr>
-      <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th>{{ 'hrmSelfService.entitlement' | translate }}</th>
-      <th>{{ 'hrmSelfService.carryover' | translate }}</th>
-      <th>{{ 'hrmSelfService.accrued' | translate }}</th>
-      <th>{{ 'hrmSelfService.used' | translate }}</th>
-      <th>{{ 'hrmSelfService.pending' | translate }}</th>
-      <th>{{ 'hrmSelfService.available' | translate }}</th>
+      <th [nzSortFn]="'fiscal_year' | gridSort">{{ 'hrmCommon.type' | translate }}</th>
+      <th [nzSortFn]="'entitlement_hours' | gridSort">{{ 'hrmSelfService.entitlement' | translate }}</th>
+      <th [nzSortFn]="'carryover_hours' | gridSort">{{ 'hrmSelfService.carryover' | translate }}</th>
+      <th [nzSortFn]="'accrued_hours' | gridSort">{{ 'hrmSelfService.accrued' | translate }}</th>
+      <th [nzSortFn]="'used_hours' | gridSort">{{ 'hrmSelfService.used' | translate }}</th>
+      <th [nzSortFn]="'pending_hours' | gridSort">{{ 'hrmSelfService.pending' | translate }}</th>
+      <th [nzSortFn]="'available_hours' | gridSort">{{ 'hrmSelfService.available' | translate }}</th>
     </tr>
   </thead>
   <tbody>
@@ -39,11 +39,11 @@
 <nz-table #requestTable [nzData]="requests()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
     <tr>
-      <th>{{ 'hrmSelfService.requestNumber' | translate }}</th>
+      <th [nzSortFn]="'request_number' | gridSort">{{ 'hrmSelfService.requestNumber' | translate }}</th>
       <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th>{{ 'hrmCommon.from' | translate }}</th>
-      <th>{{ 'hrmCommon.to' | translate }}</th>
-      <th>{{ 'hrmCommon.hours' | translate }}</th>
+      <th [nzSortFn]="'start_date' | gridSort">{{ 'hrmCommon.from' | translate }}</th>
+      <th [nzSortFn]="'end_date' | gridSort">{{ 'hrmCommon.to' | translate }}</th>
+      <th [nzSortFn]="'total_hours' | gridSort">{{ 'hrmCommon.hours' | translate }}</th>
       <th>{{ 'hrmCommon.statusCol' | translate }}</th>
       <th>{{ 'hrmCommon.actions' | translate }}</th>
     </tr>

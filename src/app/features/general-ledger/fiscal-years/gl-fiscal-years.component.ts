@@ -18,7 +18,7 @@ import {
   PermissionsService,
   TranslateService,
 } from '@core';
-import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dates';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
@@ -27,6 +27,8 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
   selector: 'app-gl-fiscal-years',
   styleUrl: './gl-fiscal-years.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

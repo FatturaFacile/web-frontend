@@ -70,14 +70,14 @@
         >
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'folder_number' | gridSort">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort">{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_MILEAGE_IN' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'total_net' | gridSort">{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort">{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -227,14 +227,14 @@
         >
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
+              <th [nzSortFn]="'stock_number' | gridSort">{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
+              <th [nzSortFn]="'make' | gridSort">{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
+              <th [nzSortFn]="'condition' | gridSort">{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
+              <th [nzSortFn]="'year' | gridSort">{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_PURCHASE_COST' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
+              <th [nzSortFn]="'list_price' | gridSort">{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'buyer_name' | gridSort">{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -308,12 +308,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort">{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
+              <th [nzSortFn]="'license_plate' | gridSort">{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
+              <th [nzSortFn]="'service_type' | gridSort">{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
+              <th [nzSortFn]="'interval' | gridSort">{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
+              <th [nzSortFn]="'start_date' | gridSort">{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
@@ -402,12 +402,12 @@
         <nz-table #linesTable [nzData]="folderLines()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_QTY' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VAT' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
+              <th [nzSortFn]="'line_type' | gridSort">{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort">{{ 'WORKSHOP.COL_QTY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'tax_rate' | gridSort">{{ 'WORKSHOP.COL_VAT' | translate }}</th>
+              <th [nzSortFn]="'subtotal' | gridSort">{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -474,10 +474,10 @@
         <nz-table #timeTable [nzData]="folderTimeEntries()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_TECH' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_START' | translate }}</th>
+              <th [nzSortFn]="'technician_name' | gridSort">{{ 'WORKSHOP.COL_TECH' | translate }}</th>
+              <th [nzSortFn]="'started_at' | gridSort">{{ 'WORKSHOP.COL_START' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_STOP' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
+              <th [nzSortFn]="'minutes' | gridSort">{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_BILLED' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
@@ -523,12 +523,12 @@
         <nz-table #historyTable [nzData]="vehicleHistory()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'folder_number' | gridSort">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_MILEAGE' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_DATE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort">{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

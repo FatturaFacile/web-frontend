@@ -10,7 +10,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { CrmApiService, CrmForecast, CrmReport, I18nService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { toTimestamp } from '@shared/utils/date-validators';
 
 const DECIMAL = /^\d+(\.\d{1,2})?$/;
@@ -20,6 +20,8 @@ const DECIMAL = /^\d+(\.\d{1,2})?$/;
   selector: 'app-crm-reports',
   styleUrl: './crm-reports.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,

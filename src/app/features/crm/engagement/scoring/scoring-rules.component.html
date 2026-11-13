@@ -19,10 +19,10 @@
   <nz-table [nzData]="rules()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
     <thead>
       <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.SCORING.TYPE' | translate }}</th>
-        <th>{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
-        <th class="num">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
+        <th [nzSortFn]="'field' | gridSort">{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
+        <th class="num" [nzSortFn]="'points' | gridSort">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>

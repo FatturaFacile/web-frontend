@@ -45,14 +45,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
-            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th>{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'quote_number' | gridSort">{{ 'SALES.COL_QUOTE_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
             <th>{{ 'SALES.COL_VALID_UNTIL' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_tax' | gridSort">{{ 'SALES.COL_TOTAL_TAX' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -165,14 +165,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
-            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th>{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'order_number' | gridSort">{{ 'SALES.COL_ORDER_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
             <th>{{ 'SALES.COL_DUE_DATE' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_net' | gridSort">{{ 'SALES.COL_TOTAL_NET' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_gross' | gridSort">{{ 'SALES.COL_TOTAL_GROSS' | translate }}</th>
             <th nzAlign="center">{{ 'SALES.LBL_STOCK' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -272,14 +272,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'SALES.COL_DDT_NUM' | translate }}</th>
-            <th>{{ 'SALES.COL_CLIENT' | translate }}</th>
-            <th>{{ 'SALES.COL_DATE' | translate }}</th>
-            <th>{{ 'SALES.COL_REASON' | translate }}</th>
-            <th nzAlign="right">{{ 'SALES.COL_PACKAGES' | translate }}</th>
+            <th [nzSortFn]="'ddt_number' | gridSort">{{ 'SALES.COL_DDT_NUM' | translate }}</th>
+            <th [nzSortFn]="'contact.name' | gridSort">{{ 'SALES.COL_CLIENT' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort">{{ 'SALES.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'transport_reason' | gridSort">{{ 'SALES.COL_REASON' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'packages_count' | gridSort">{{ 'SALES.COL_PACKAGES' | translate }}</th>
             <th nzAlign="right">{{ 'SALES.COL_WEIGHT' | translate }}</th>
-            <th>{{ 'SALES.COL_CARRIER' | translate }}</th>
-            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'carrier_name' | gridSort">{{ 'SALES.COL_CARRIER' | translate }}</th>
+            <th nzAlign="center" [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>

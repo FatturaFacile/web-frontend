@@ -27,7 +27,7 @@ import {
   StoreProjectPayload,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { RouterLink } from '@angular/router';
@@ -37,6 +37,8 @@ import { ProjectDetailDrawerComponent } from './components/project-detail-drawer
   selector: 'app-projects',
   styleUrl: './projects.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,

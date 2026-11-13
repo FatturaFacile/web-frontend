@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { AuthStore, PayrollApiService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -35,6 +35,8 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
   selector: 'app-hr-payroll',
   styleUrl: './payroll.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
@@ -78,12 +80,12 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
             <thead>
               <tr>
-                <th>Dipendente</th>
-                <th>Permesso</th>
-                <th>Scadenza</th>
+                <th [nzSortFn]="'employee_name' | gridSort">Dipendente</th>
+                <th [nzSortFn]="'permit_type' | gridSort">Permesso</th>
+                <th [nzSortFn]="'valid_until' | gridSort">Scadenza</th>
                 <th>Giorni Residui</th>
-                <th>Stato</th>
-                <th>Messaggio</th>
+                <th [nzSortFn]="'severity' | gridSort">Stato</th>
+                <th [nzSortFn]="'message' | gridSort">Messaggio</th>
               </tr>
             </thead>
             <tbody>

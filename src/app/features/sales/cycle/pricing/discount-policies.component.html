@@ -10,10 +10,10 @@
   <nz-table [nzScroll]="{ x: '720px' }" [nzData]="policies()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
     <thead>
       <tr>
-        <th>{{ 'SC.PRICING.CODE' | translate }}</th>
-        <th>{{ 'SC.PRICING.NAME' | translate }}</th>
-        <th>{{ 'SC.PRICING.DISCOUNT' | translate }}</th>
-        <th>{{ 'SC.PRICING.PRIORITY' | translate }}</th>
+        <th [nzSortFn]="'code' | gridSort">{{ 'SC.PRICING.CODE' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'SC.PRICING.NAME' | translate }}</th>
+        <th [nzSortFn]="'value' | gridSort">{{ 'SC.PRICING.DISCOUNT' | translate }}</th>
+        <th [nzSortFn]="'priority' | gridSort">{{ 'SC.PRICING.PRIORITY' | translate }}</th>
         <th>{{ 'SC.PRICING.FLAGS' | translate }}</th>
         <th>{{ 'SC.PRICING.VALIDITY' | translate }}</th>
         <th>{{ 'SC.PRICING.CUSTOMER' | translate }}</th>

@@ -32,7 +32,7 @@ import {
   TreasuryApiService,
   TranslateService,
 } from '@core';
-import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TableQueryParams, TableStateService, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TableQueryParams, TableStateService, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { ibanValidator } from '@shared/utils/iban-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -40,6 +40,8 @@ import { validationTipKey } from '@shared/utils/validation-tip';
   selector: 'app-treasury',
   styleUrl: './treasury.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

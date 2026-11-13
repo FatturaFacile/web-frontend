@@ -23,13 +23,15 @@ import {
   PermissionsService,
   RollingForecastReport,
 } from '@core';
-import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
   selector: 'app-gl-budgets',
   styleUrl: './gl-budgets.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     FormsModule,

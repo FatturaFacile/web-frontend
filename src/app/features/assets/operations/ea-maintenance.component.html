@@ -7,11 +7,11 @@
       <nz-table #planTable nzSize="middle" [nzData]="plans()" [nzLoading]="loading()" [nzPageSize]="20">
         <thead>
           <tr>
-            <th>{{ 'EA.CODE' | translate }}</th>
-            <th>{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'plan_code' | gridSort">{{ 'EA.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.TRIGGER' | translate }}</th>
             <th>{{ 'EA.NEXT_DUE' | translate }}</th>
-            <th nzAlign="right">{{ 'EA.ESTIMATED_COST' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'estimated_cost' | gridSort">{{ 'EA.ESTIMATED_COST' | translate }}</th>
             <th>{{ 'EA.STATUS' | translate }}</th>
             <th>{{ 'EA.ACTIONS' | translate }}</th>
           </tr>
@@ -43,7 +43,7 @@
       <nz-table #dueTable nzSize="middle" [nzData]="duePlans()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.NEXT_DUE' | translate }}</th>
             <th>{{ 'EA.ACTIONS' | translate }}</th>
           </tr>
@@ -218,9 +218,9 @@
       <nz-table #partTable nzSize="small" [nzData]="detail.parts" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'EA.PRODUCT' | translate }}</th>
-            <th nzAlign="right">{{ 'EA.QUANTITY' | translate }}</th>
-            <th nzAlign="right">{{ 'EA.TOTAL_COST' | translate }}</th>
+            <th [nzSortFn]="'product_id' | gridSort">{{ 'EA.PRODUCT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort">{{ 'EA.QUANTITY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort">{{ 'EA.TOTAL_COST' | translate }}</th>
           </tr>
         </thead>
         <tbody>

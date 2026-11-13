@@ -7,10 +7,10 @@
       <nz-table #locationTable nzSize="middle" [nzData]="locations()" [nzPageSize]="20">
         <thead>
           <tr>
-            <th>{{ 'EA.CODE' | translate }}</th>
-            <th>{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'EA.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.LOCATION_TYPE' | translate }}</th>
-            <th>{{ 'EA.CITY' | translate }}</th>
+            <th [nzSortFn]="'city' | gridSort">{{ 'EA.CITY' | translate }}</th>
             <th>{{ 'EA.STATUS' | translate }}</th>
             <th>{{ 'EA.ACTIONS' | translate }}</th>
           </tr>
@@ -43,10 +43,10 @@
       <nz-table #classTable nzSize="middle" [nzData]="classes()" [nzPageSize]="20">
         <thead>
           <tr>
-            <th>{{ 'EA.CODE' | translate }}</th>
-            <th>{{ 'EA.NAME' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort">{{ 'EA.CODE' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort">{{ 'EA.NAME' | translate }}</th>
             <th>{{ 'EA.CRITICALITY' | translate }}</th>
-            <th nzAlign="right">{{ 'EA.MAINTENANCE_INTERVAL' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'default_maintenance_interval_days' | gridSort">{{ 'EA.MAINTENANCE_INTERVAL' | translate }}</th>
             <th>{{ 'EA.REQUIRES_CALIBRATION' | translate }}</th>
           </tr>
         </thead>

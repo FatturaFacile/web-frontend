@@ -33,8 +33,7 @@ import {
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
-  TranslatePipe,
-} from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { CycleOrdersFacade } from '../cycle.facades';
 import { DeliveryNoteFormModalComponent, DeliveryNoteSource } from '../shared/delivery-note-form-modal.component';
 import { DocumentFormModalComponent } from '../shared/document-form-modal.component';
@@ -51,6 +50,8 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
   selector: 'app-cycle-orders',
   styleUrl: './orders.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

@@ -25,12 +25,12 @@
   >
     <thead>
       <tr>
-        <th>{{ 'FS_WORK_ORDERS.NUMBER' | translate }}</th>
+        <th [nzSortFn]="'work_order_number' | gridSort">{{ 'FS_WORK_ORDERS.NUMBER' | translate }}</th>
         <th>{{ 'FS_WORK_ORDERS.DATE' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.ADDRESS' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.HOURS' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.TOTAL' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
+        <th [nzSortFn]="'intervention_address' | gridSort">{{ 'FS_WORK_ORDERS.ADDRESS' | translate }}</th>
+        <th [nzSortFn]="'labor_hours' | gridSort">{{ 'FS_WORK_ORDERS.HOURS' | translate }}</th>
+        <th [nzSortFn]="'total_amount' | gridSort">{{ 'FS_WORK_ORDERS.TOTAL' | translate }}</th>
+        <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>

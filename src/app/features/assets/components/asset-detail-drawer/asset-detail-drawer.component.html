@@ -58,13 +58,13 @@
           >
             <thead>
               <tr>
-                <th>{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
+                <th [nzSortFn]="'ledger_type' | gridSort">{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
+                <th [nzSortFn]="'depreciation_method' | gridSort">{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblUsefulLife' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblRate' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblCost' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
+                <th [nzSortFn]="'cost' | gridSort">{{ 'assetDetailDrawer.lblCost' | translate }}</th>
+                <th [nzSortFn]="'accumulated_depreciation' | gridSort">{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
+                <th [nzSortFn]="'net_book_value' | gridSort">{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblPostsToGl' | translate }}</th>
               </tr>
             </thead>
@@ -104,13 +104,13 @@
           >
             <thead>
               <tr>
-                <th>{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'period_code' | gridSort">{{ 'assetDetailDrawer.lblPeriod' | translate }}</th>
+                <th [nzSortFn]="'ledger_type' | gridSort">{{ 'assetDetailDrawer.lblLedger' | translate }}</th>
+                <th [nzSortFn]="'opening_book_value' | gridSort">{{ 'assetDetailDrawer.lblOpeningValue' | translate }}</th>
+                <th [nzSortFn]="'depreciation_amount' | gridSort">{{ 'assetDetailDrawer.lblDeprAmount' | translate }}</th>
+                <th [nzSortFn]="'closing_book_value' | gridSort">{{ 'assetDetailDrawer.lblClosingValue' | translate }}</th>
+                <th [nzSortFn]="'accumulated_depreciation' | gridSort">{{ 'assetDetailDrawer.lblAccumulated' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -144,11 +144,11 @@
           >
             <thead>
               <tr>
-                <th>{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblType' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
-                <th>{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
+                <th [nzSortFn]="'work_order_number' | gridSort">{{ 'assetDetailDrawer.lblWoNumber' | translate }}</th>
+                <th [nzSortFn]="'maintenance_type' | gridSort">{{ 'assetDetailDrawer.lblType' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort">{{ 'assetDetailDrawer.lblPriority' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'assetDetailDrawer.lblStatus' | translate }}</th>
+                <th [nzSortFn]="'scheduled_date' | gridSort">{{ 'assetDetailDrawer.lblScheduledDate' | translate }}</th>
                 <th>{{ 'assetDetailDrawer.lblTotalCost' | translate }}</th>
               </tr>
             </thead>

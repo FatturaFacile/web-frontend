@@ -10,11 +10,11 @@
       <nz-table #balanceTable nzSize="middle" [nzScroll]="{ x: '640px' }" [nzData]="balances()" [nzLoading]="loading()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.BOOK_BALANCE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.STATEMENT_BALANCE' | translate }}</th>
+            <th [nzSortFn]="'bank_name' | gridSort">{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'book_balance' | gridSort">{{ 'TR.BOOK_BALANCE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'statement_balance' | gridSort">{{ 'TR.STATEMENT_BALANCE' | translate }}</th>
             <th>{{ 'TR.STATEMENT_DATE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'current_balance' | gridSort">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -54,12 +54,12 @@
       <nz-table #movementTable nzSize="middle" [nzData]="movements()" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'TR.DATE' | translate }}</th>
+            <th [nzSortFn]="'movement_date' | gridSort">{{ 'TR.DATE' | translate }}</th>
             <th>{{ 'TR.MOVEMENT_TYPE' | translate }}</th>
             <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
             <th>{{ 'TR.COUNTER_ACCOUNT' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
-            <th>{{ 'TR.DESCRIPTION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'TR.DESCRIPTION' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -92,12 +92,12 @@
         <thead>
           <tr>
             <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-            <th>{{ 'TR.CURRENCY' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.FX_CLOSING_RATE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.FX_FOREIGN_AMOUNT' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.FX_BOOK_VALUE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.FX_MARKET_VALUE' | translate }}</th>
-            <th nzAlign="right">{{ 'TR.FX_GAIN_LOSS' | translate }}</th>
+            <th [nzSortFn]="'currency' | gridSort">{{ 'TR.CURRENCY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'closing_rate' | gridSort">{{ 'TR.FX_CLOSING_RATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'foreign_amount' | gridSort">{{ 'TR.FX_FOREIGN_AMOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'book_value_base' | gridSort">{{ 'TR.FX_BOOK_VALUE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'revalued_market_base' | gridSort">{{ 'TR.FX_MARKET_VALUE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'unrealized_gain_loss' | gridSort">{{ 'TR.FX_GAIN_LOSS' | translate }}</th>
           </tr>
         </thead>
         <tbody>

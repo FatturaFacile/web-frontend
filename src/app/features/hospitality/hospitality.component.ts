@@ -41,7 +41,7 @@ import {
   RetailPosSession,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { positiveNumber } from '@shared/utils/decimal-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -50,6 +50,8 @@ import { validationTipKey } from '@shared/utils/validation-tip';
   selector: 'app-hospitality',
   styleUrl: './hospitality.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     DatePipe,

@@ -5,9 +5,9 @@
   <nz-table #table nzSize="middle" [nzScroll]="{ x: '640px' }" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
       <tr>
-        <th>{{ 'TR.CODE' | translate }}</th>
-        <th>{{ 'TR.NAME' | translate }}</th>
-        <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+        <th [nzSortFn]="'code' | gridSort">{{ 'TR.CODE' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'TR.NAME' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'current_balance' | gridSort">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
         <th>{{ 'TR.LAST_CLOSED' | translate }}</th>
         <th>{{ 'TR.ACTIONS' | translate }}</th>
       </tr>
@@ -48,11 +48,11 @@
         <nz-table #movementTable nzSize="small" [nzData]="movements()" [nzPageSize]="20">
           <thead>
             <tr>
-              <th>{{ 'TR.DATE' | translate }}</th>
+              <th [nzSortFn]="'movement_date' | gridSort">{{ 'TR.DATE' | translate }}</th>
               <th>{{ 'TR.DIRECTION' | translate }}</th>
-              <th>{{ 'TR.PAYMENT_METHOD' | translate }}</th>
-              <th>{{ 'TR.DESCRIPTION' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'payment_method' | gridSort">{{ 'TR.PAYMENT_METHOD' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort">{{ 'TR.DESCRIPTION' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort">{{ 'TR.AMOUNT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -77,13 +77,13 @@
         <nz-table #closingTable nzSize="small" [nzScroll]="{ x: '800px' }" [nzData]="closings()" [nzPageSize]="20">
           <thead>
             <tr>
-              <th>{{ 'TR.DATE' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.OPENING' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.TOTAL_IN' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.TOTAL_OUT' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.EXPECTED' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.COUNTED' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.CLOSING_DIFFERENCE' | translate }}</th>
+              <th [nzSortFn]="'closing_date' | gridSort">{{ 'TR.DATE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'opening_balance' | gridSort">{{ 'TR.OPENING' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_in' | gridSort">{{ 'TR.TOTAL_IN' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_out' | gridSort">{{ 'TR.TOTAL_OUT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'expected_balance' | gridSort">{{ 'TR.EXPECTED' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'counted_balance' | gridSort">{{ 'TR.COUNTED' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'difference' | gridSort">{{ 'TR.CLOSING_DIFFERENCE' | translate }}</th>
             </tr>
           </thead>
           <tbody>

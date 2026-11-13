@@ -29,11 +29,11 @@
     <thead>
       <tr>
         <th nzWidth="40px"></th>
-        <th>{{ 'GL.COL_ENTRY' | translate }}</th>
-        <th>{{ 'GL.COL_DATE' | translate }}</th>
-        <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th [nzSortFn]="'entry_number' | gridSort">{{ 'GL.COL_ENTRY' | translate }}</th>
+        <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
+        <th [nzSortFn]="'description' | gridSort">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
         <th>{{ 'GL.STATUS' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.COL_TOTAL' | translate }}</th>
+        <th nzAlign="right" [nzSortFn]="'total_amount' | gridSort">{{ 'GL.COL_TOTAL' | translate }}</th>
         <th>{{ 'GL.COL_AUTO_REVERSE' | translate }}</th>
         <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
       </tr>

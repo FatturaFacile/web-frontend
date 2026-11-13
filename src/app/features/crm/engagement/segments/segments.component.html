@@ -10,7 +10,7 @@
   <nz-table [nzData]="segments()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
     <thead>
       <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.SEGMENTS.ENTITY' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>

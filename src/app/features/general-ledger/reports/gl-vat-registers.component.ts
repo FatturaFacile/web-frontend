@@ -5,14 +5,17 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { AuthStore, GeneralLedgerApiService, VatRegister } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Sales or purchases VAT register of a date range. */
 @Component({
   selector: 'app-gl-vat-registers',
   styleUrl: './gl-vat-registers.component.scss',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="filters">
       <nz-select class="select-sm" [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
@@ -32,13 +35,13 @@ import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../share
       <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50">
         <thead>
           <tr>
-            <th>{{ 'GL.COL_PROTOCOL' | translate }}</th>
-            <th>{{ 'GL.COL_DATE' | translate }}</th>
-            <th>{{ 'GL.COL_DOCUMENT' | translate }}</th>
-            <th>{{ 'GL.COL_PARTNER' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_TAXABLE' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_VAT_RATE' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_VAT' | translate }}</th>
+            <th [nzSortFn]="'protocol_number' | gridSort">{{ 'GL.COL_PROTOCOL' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort">{{ 'GL.COL_DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'partner_name' | gridSort">{{ 'GL.COL_PARTNER' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'taxable_amount' | gridSort">{{ 'GL.COL_TAXABLE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_rate' | gridSort">{{ 'GL.COL_VAT_RATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_amount' | gridSort">{{ 'GL.COL_VAT' | translate }}</th>
           </tr>
         </thead>
         <tbody>

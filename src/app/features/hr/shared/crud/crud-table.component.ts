@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { applyServerErrors, I18nService, isValidationError } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -28,6 +28,8 @@ type Row = { id: string } & Record<string, unknown>;
   selector: 'app-crud-table',
   styleUrl: './crud-table.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,

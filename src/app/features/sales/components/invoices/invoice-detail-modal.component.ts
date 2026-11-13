@@ -8,7 +8,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
-import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 
 /**
  * Read-only detail of an invoice: number (assigned by the server), payment term and, for a foreign-currency invoice,
@@ -18,6 +18,8 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } 
   selector: 'app-invoice-detail-modal',
   styleUrl: './invoice-detail-modal.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -71,8 +73,8 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } 
           <nz-table #emailTable [nzData]="emails()" [nzFrontPagination]="false" nzSize="small" [nzLoading]="emailsLoading()">
             <thead>
               <tr>
-                <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_RECIPIENT' | translate }}</th>
-                <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_STATUS' | translate }}</th>
+                <th [nzSortFn]="'recipient' | gridSort">{{ 'SALES.INVOICES.DETAIL.EMAIL_RECIPIENT' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'SALES.INVOICES.DETAIL.EMAIL_STATUS' | translate }}</th>
                 <th>{{ 'SALES.INVOICES.DETAIL.EMAIL_SENT_AT' | translate }}</th>
               </tr>
             </thead>

@@ -44,7 +44,7 @@ import {
   serverErrorMessage,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe } from '@shared';
 
 const TEMPLATE_CODE_PATTERN = /^[a-z][a-z0-9_.]{1,99}$/;
 
@@ -111,6 +111,8 @@ const SMTP_PORT_PATTERN = /^\d{1,5}$/;
   selector: 'app-communication',
   styleUrl: './communication.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,

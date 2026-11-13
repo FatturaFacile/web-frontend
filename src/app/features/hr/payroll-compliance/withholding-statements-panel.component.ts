@@ -8,7 +8,7 @@ import {
   WithholdingStatementQuery,
   WithholdingStatementReport,
 } from '@core';
-import { ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -53,6 +53,8 @@ const CANTONS = [
   selector: 'app-withholding-statements-panel',
   styleUrl: './withholding-statements-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     ModalActionsDirective,
     FormsModule,
     MoneyPipe,
@@ -157,14 +159,14 @@ const CANTONS = [
         <nz-table #lines [nzData]="statement.lines" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmCommon.employee' | translate }}</th>
-              <th>{{ 'hrmLeave.month' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.tariff' | translate }}</th>
-              <th>{{ 'hrmPayroll.gross' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.basis' | translate }}</th>
-              <th>%</th>
-              <th>{{ 'hrmPayroll.withholdingTax' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.missing' | translate }}</th>
+              <th [nzSortFn]="'last_name' | gridSort">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'month' | gridSort">{{ 'hrmLeave.month' | translate }}</th>
+              <th [nzSortFn]="'tariff_code' | gridSort">{{ 'hrmCompliance.statements.tariff' | translate }}</th>
+              <th [nzSortFn]="'gross' | gridSort">{{ 'hrmPayroll.gross' | translate }}</th>
+              <th [nzSortFn]="'basis' | gridSort">{{ 'hrmCompliance.statements.basis' | translate }}</th>
+              <th [nzSortFn]="'rate_percent' | gridSort">%</th>
+              <th [nzSortFn]="'tax' | gridSort">{{ 'hrmPayroll.withholdingTax' | translate }}</th>
+              <th [nzSortFn]="'missing.length' | gridSort">{{ 'hrmCompliance.statements.missing' | translate }}</th>
             </tr>
           </thead>
           <tbody>

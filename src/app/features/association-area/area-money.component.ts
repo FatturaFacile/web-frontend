@@ -1,6 +1,6 @@
 import { Component, effect, inject, input, signal } from '@angular/core';
 import { AssociationAreaApiService, AssociationAreaFees, AssociationAreaRecord, I18nService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -13,7 +13,10 @@ import { recordText, saveBlob } from './save-blob';
 @Component({
   selector: 'app-area-money',
   styleUrl: './area-money.component.scss',
-  imports: [MoneyPipe, NzAlertModule, NzButtonModule, NzEmptyModule, NzTableModule, NzTagModule, TranslatePipe],
+  imports: [
+    GridExportDirective,
+    GridSortPipe,
+    MoneyPipe, NzAlertModule, NzButtonModule, NzEmptyModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     @if (fees(); as standing) {
       <nz-alert
@@ -24,11 +27,11 @@ import { recordText, saveBlob } from './save-blob';
       <nz-table class="area-gap" nzSize="small" [nzData]="standing.assignments" [nzShowPagination]="false" [nzScroll]="{ x: 'max-content' }">
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'ASSOC_AREA.DESCRIPTION' | translate }}</th>
             <th>{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.NET_AMOUNT' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.LESSONS_REMAINING' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.STATUS' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort">{{ 'ASSOC_AREA.NET_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'lessons_remaining' | gridSort">{{ 'ASSOC_AREA.LESSONS_REMAINING' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'ASSOC_AREA.STATUS' | translate }}</th>
             <th>{{ 'ASSOC_AREA.ACTIONS' | translate }}</th>
           </tr>
         </thead>

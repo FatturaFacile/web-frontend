@@ -75,12 +75,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'retail.lblNScontrino' | translate }}</th>
-            <th>{{ 'retail.lblDataEOra' | translate }}</th>
-            <th>{{ 'retail.lblCassiere' | translate }}</th>
-            <th>{{ 'retail.lblMetodoPagamento' | translate }}</th>
-            <th class="num">{{ 'retail.lblTotaleEuro' | translate }}</th>
-            <th>{{ 'retail.lblStato' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort">{{ 'retail.lblNScontrino' | translate }}</th>
+            <th [nzSortFn]="'issued_at' | gridSort">{{ 'retail.lblDataEOra' | translate }}</th>
+            <th [nzSortFn]="'cashier_name' | gridSort">{{ 'retail.lblCassiere' | translate }}</th>
+            <th [nzSortFn]="'payment_method' | gridSort">{{ 'retail.lblMetodoPagamento' | translate }}</th>
+            <th class="num" [nzSortFn]="'total_amount' | gridSort">{{ 'retail.lblTotaleEuro' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'retail.lblStato' | translate }}</th>
             <th class="cell-actions">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -171,11 +171,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'retail.lblCodiceCarta' | translate }}</th>
-            <th>{{ 'retail.lblClienteIdNome' | translate }}</th>
-            <th class="num">{{ 'retail.lblSaldoPuntiCredito' | translate }}</th>
-            <th>{{ 'retail.lblStato' | translate }}</th>
-            <th>{{ 'retail.lblDataEmissione' | translate }}</th>
+            <th [nzSortFn]="'card_number' | gridSort">{{ 'retail.lblCodiceCarta' | translate }}</th>
+            <th [nzSortFn]="'contact_id' | gridSort">{{ 'retail.lblClienteIdNome' | translate }}</th>
+            <th class="num" [nzSortFn]="'balance' | gridSort">{{ 'retail.lblSaldoPuntiCredito' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'retail.lblStato' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'retail.lblDataEmissione' | translate }}</th>
             <th class="cell-actions">{{ 'retail.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -450,10 +450,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'retail.lblData' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort">{{ 'retail.lblData' | translate }}</th>
             <th>{{ 'retail.lblTipo' | translate }}</th>
-            <th class="num">{{ 'retail.lblPunti' | translate }}</th>
-            <th>{{ 'retail.lblCausale' | translate }}</th>
+            <th class="num" [nzSortFn]="'amount' | gridSort">{{ 'retail.lblPunti' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'retail.lblCausale' | translate }}</th>
           </tr>
         </thead>
         <tbody>

@@ -103,13 +103,13 @@
       >
         <thead>
           <tr>
-            <th>{{ 'hrmEmp.lblMatricola' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th>{{ 'hrmEmp.lblEmailAziendale' | translate }}</th>
-            <th>{{ 'hrmEmp.lblTipoContratto' | translate }}</th>
-            <th>{{ 'hrmEmp.lblStato' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblRalRetribuzione' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDataAssunzione' | translate }}</th>
+            <th [nzSortFn]="'employee_number' | gridSort">{{ 'hrmEmp.lblMatricola' | translate }}</th>
+            <th [nzSortFn]="'full_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'work_email' | gridSort">{{ 'hrmEmp.lblEmailAziendale' | translate }}</th>
+            <th [nzSortFn]="'employment_type' | gridSort">{{ 'hrmEmp.lblTipoContratto' | translate }}</th>
+            <th [nzSortFn]="'employment_status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'base_annual_salary' | gridSort">{{ 'hrmEmp.lblRalRetribuzione' | translate }}</th>
+            <th [nzSortFn]="'hire_date' | gridSort">{{ 'hrmEmp.lblDataAssunzione' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -179,14 +179,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'hrmEmp.lblNRichiesta' | translate }}</th>
-            <th>{{ 'hrmEmp.lblIdDipendente' | translate }}</th>
-            <th>{{ 'hrmEmp.lblTipologia' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDataInizio' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDataFine' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblOreGiorni' | translate }}</th>
-            <th>{{ 'hrmEmp.lblMotivazione' | translate }}</th>
-            <th>{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'request_number' | gridSort">{{ 'hrmEmp.lblNRichiesta' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblIdDipendente' | translate }}</th>
+            <th [nzSortFn]="'leave_type_name' | gridSort">{{ 'hrmEmp.lblTipologia' | translate }}</th>
+            <th [nzSortFn]="'start_date' | gridSort">{{ 'hrmEmp.lblDataInizio' | translate }}</th>
+            <th [nzSortFn]="'end_date' | gridSort">{{ 'hrmEmp.lblDataFine' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'total_hours' | gridSort">{{ 'hrmEmp.lblOreGiorni' | translate }}</th>
+            <th [nzSortFn]="'reason' | gridSort">{{ 'hrmEmp.lblMotivazione' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -251,14 +251,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'hrmEmp.lblNRapporto' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDataLavorativa' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblOreOrdinarie' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblStraordinari' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblTotaleOre' | translate }}</th>
-            <th class="text-right">{{ 'hrmEmp.lblFatturabili' | translate }}</th>
-            <th>{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'timesheet_number' | gridSort">{{ 'hrmEmp.lblNRapporto' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'work_date' | gridSort">{{ 'hrmEmp.lblDataLavorativa' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'regular_hours' | gridSort">{{ 'hrmEmp.lblOreOrdinarie' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'overtime_hours' | gridSort">{{ 'hrmEmp.lblStraordinari' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'total_hours' | gridSort">{{ 'hrmEmp.lblTotaleOre' | translate }}</th>
+            <th class="text-right" [nzSortFn]="'billable_hours' | gridSort">{{ 'hrmEmp.lblFatturabili' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th class="text-center">{{ 'hrmEmp.lblAzioni' | translate }}</th>
           </tr>
         </thead>
@@ -307,12 +307,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'hrmEmp.lblPeriodoElaborazione' | translate }}</th>
-            <th>{{ 'hrmEmp.lblNazione' | translate }}</th>
-            <th>{{ 'hrmEmp.lblDipendentiElaborati' | translate }}</th>
+            <th [nzSortFn]="'month' | gridSort">{{ 'hrmEmp.lblPeriodoElaborazione' | translate }}</th>
+            <th [nzSortFn]="'country' | gridSort">{{ 'hrmEmp.lblNazione' | translate }}</th>
+            <th [nzSortFn]="'employees_count' | gridSort">{{ 'hrmEmp.lblDipendentiElaborati' | translate }}</th>
             <th class="text-right">{{ 'hrmEmp.lblMonteRetributivoLordo' | translate }}</th>
             <th class="text-right">{{ 'hrmEmp.lblTotaleNettoErogato' | translate }}</th>
-            <th>{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
             <th>{{ 'hrmEmp.lblDataCalcolo' | translate }}</th>
           </tr>
         </thead>
@@ -349,11 +349,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'hrmEmp.lblDipendente' | translate }}</th>
-            <th>{{ 'hrmEmp.lblComuneItalianoDiResidenza' | translate }}</th>
-            <th>{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
-            <th>{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
-            <th>{{ 'hrmEmp.lblStato' | translate }}</th>
+            <th [nzSortFn]="'employee_name' | gridSort">{{ 'hrmEmp.lblDipendente' | translate }}</th>
+            <th [nzSortFn]="'italian_municipality' | gridSort">{{ 'hrmEmp.lblComuneItalianoDiResidenza' | translate }}</th>
+            <th [nzSortFn]="'canton' | gridSort">{{ 'hrmEmp.lblCantoneSvizzeroDiImpiego' | translate }}</th>
+            <th [nzSortFn]="'tax_regime' | gridSort">{{ 'hrmEmp.lblRegimeFiscaleApplicato' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'hrmEmp.lblStato' | translate }}</th>
           </tr>
         </thead>
         <tbody>

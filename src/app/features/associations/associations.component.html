@@ -53,12 +53,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'ASSOCIATIONS.MEMBER_NO' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.FULL_NAME' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</th>
+            <th [nzSortFn]="'member_number' | gridSort">{{ 'ASSOCIATIONS.MEMBER_NO' | translate }}</th>
+            <th [nzSortFn]="'first_name' | gridSort">{{ 'ASSOCIATIONS.FULL_NAME' | translate }}</th>
+            <th [nzSortFn]="'tax_code' | gridSort">{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</th>
+            <th [nzSortFn]="'joined_on' | gridSort">{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.MED_CERTIFICATE' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -147,11 +147,11 @@
         <thead>
           <tr>
             <th>{{ 'ASSOCIATIONS.MEMBER' | translate }}</th>
-            <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'ends_on' | gridSort">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -220,11 +220,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort">{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.CAPACITY' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'ends_on' | gridSort">{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -280,9 +280,9 @@
       >
         <thead>
           <tr>
-            <th>{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+            <th [nzSortFn]="'purpose' | gridSort">{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</th>
+            <th [nzSortFn]="'amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'received_on' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.RECEIPT_NO' | translate }}</th>
             <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
@@ -340,9 +340,9 @@
             <thead>
               <tr>
                 <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
-                <th>{{ 'ASSOCIATIONS.INSURANCE_POLICY' | translate }}</th>
+                <th [nzSortFn]="'activity' | gridSort">{{ 'ASSOCIATIONS.INSURANCE_POLICY' | translate }}</th>
                 <th>{{ 'ASSOCIATIONS.INSURANCE_EXPIRY' | translate }}</th>
-                <th>{{ 'ASSOCIATIONS.REGISTERED_BOOK' | translate }}</th>
+                <th [nzSortFn]="'started_on' | gridSort">{{ 'ASSOCIATIONS.REGISTERED_BOOK' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -370,10 +370,10 @@
             <thead>
               <tr>
                 <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
-                <th>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
-                <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
-                <th>{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-                <th>{{ 'COMMON.STATUS' | translate }}</th>
+                <th [nzSortFn]="'amount' | gridSort">{{ 'ASSOCIATIONS.AMOUNT' | translate }}</th>
+                <th [nzSortFn]="'description' | gridSort">{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                <th [nzSortFn]="'incurred_on' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
                 <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -423,11 +423,11 @@
       <nz-table [nzData]="meetings()" [nzFrontPagination]="true" [nzLoading]="meetingsLoading()">
         <thead>
           <tr>
-            <th>{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort">{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</th>
             <th>{{ 'ASSOCIATIONS.MEETING_TYPE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.DATE' | translate }}</th>
-            <th>{{ 'ASSOCIATIONS.LOCATION' | translate }}</th>
-            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th [nzSortFn]="'scheduled_at' | gridSort">{{ 'ASSOCIATIONS.DATE' | translate }}</th>
+            <th [nzSortFn]="'location' | gridSort">{{ 'ASSOCIATIONS.LOCATION' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort">{{ 'COMMON.STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>

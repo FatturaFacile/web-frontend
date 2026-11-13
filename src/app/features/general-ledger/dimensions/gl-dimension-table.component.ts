@@ -8,7 +8,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, Dimension, GeneralLedgerApiService, PermissionsService } from '@core';
-import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 /** List with create/edit modal of cost centres or profit centres. */
@@ -16,6 +16,8 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   selector: 'app-gl-dimension-table',
   styleUrl: './gl-dimension-table.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe,
     IconActionDirective,
     ModalActionsDirective,
     ReactiveFormsModule,
@@ -35,8 +37,8 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'GL.COL_CODE' | translate }}</th>
-          <th>{{ 'GL.COL_NAME' | translate }}</th>
+          <th [nzSortFn]="'code' | gridSort">{{ 'GL.COL_CODE' | translate }}</th>
+          <th [nzSortFn]="'name' | gridSort">{{ 'GL.COL_NAME' | translate }}</th>
           <th>{{ 'GL.STATUS' | translate }}</th>
           <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
         </tr>

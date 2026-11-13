@@ -97,12 +97,12 @@
           />
         </th>
         <th nzWidth="120px">{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
-        <th>{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
-        <th nzWidth="100px">{{ 'FIELD_SERVICE.LBL_CANALE' | translate }}</th>
-        <th nzWidth="110px">{{ 'FIELD_SERVICE.LBL_PRIORITA' | translate }}</th>
-        <th nzWidth="130px">{{ "COMMON.STATUS" | translate }}</th>
-        <th nzWidth="140px">{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
-        <th nzWidth="150px">{{ 'FIELD_SERVICE.LBL_DATA_CREAZIONE' | translate }}</th>
+        <th [nzSortFn]="'title' | gridSort">{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
+        <th nzWidth="100px" [nzSortFn]="'channel' | gridSort">{{ 'FIELD_SERVICE.LBL_CANALE' | translate }}</th>
+        <th nzWidth="110px" [nzSortFn]="'priority' | gridSort">{{ 'FIELD_SERVICE.LBL_PRIORITA' | translate }}</th>
+        <th nzWidth="130px" [nzSortFn]="'status' | gridSort">{{ "COMMON.STATUS" | translate }}</th>
+        <th nzWidth="140px" [nzSortFn]="'sla_state' | gridSort">{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
+        <th nzWidth="150px" [nzSortFn]="'created_at' | gridSort">{{ 'FIELD_SERVICE.LBL_DATA_CREAZIONE' | translate }}</th>
         <th nzWidth="100px" nzAlign="center">{{ 'FIELD_SERVICE.LBL_AZIONI' | translate }}</th>
       </tr>
     </thead>

@@ -109,11 +109,11 @@
               >
                 <thead>
                   <tr>
-                    <th>{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
-                    <th>{{ 'PORTAL.DATE_START' | translate }}</th>
-                    <th>{{ 'PORTAL.DATE_END' | translate }}</th>
-                    <th>{{ 'PORTAL.TECHNICIAN' | translate }}</th>
-                    <th>{{ 'PORTAL.STATUS' | translate }}</th>
+                    <th [nzSortFn]="'title' | gridSort">{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
+                    <th [nzSortFn]="'start_at' | gridSort">{{ 'PORTAL.DATE_START' | translate }}</th>
+                    <th [nzSortFn]="'end_at' | gridSort">{{ 'PORTAL.DATE_END' | translate }}</th>
+                    <th [nzSortFn]="'technician_name' | gridSort">{{ 'PORTAL.TECHNICIAN' | translate }}</th>
+                    <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,11 +150,11 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'quote_number' | gridSort">{{ 'PORTAL.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'valid_until' | gridSort">{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'signed_by' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -211,12 +211,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.DUE_DATE' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th>{{ 'PORTAL.PAID' | translate }}</th>
-              <th>{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
+              <th [nzSortFn]="'invoice_number' | gridSort">{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort">{{ 'PORTAL.DUE_DATE' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'total_paid' | gridSort">{{ 'PORTAL.PAID' | translate }}</th>
+              <th [nzSortFn]="'payment_status' | gridSort">{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -256,10 +256,10 @@
           >
             <thead>
               <tr>
-                <th>{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
-                <th>{{ 'PORTAL.PLAN' | translate }}</th>
-                <th>{{ 'PORTAL.STATUS' | translate }}</th>
-                <th>{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
+                <th [nzSortFn]="'subscription_number' | gridSort">{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PLAN' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'next_billing_date' | gridSort">{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
                 <th>{{ 'PORTAL.AUTO_RENEW' | translate }}</th>
               </tr>
             </thead>
@@ -320,11 +320,11 @@
           >
             <thead>
               <tr>
-                <th>{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
-                <th>{{ 'PORTAL.SUBJECT' | translate }}</th>
-                <th>{{ 'PORTAL.PRIORITY' | translate }}</th>
-                <th>{{ 'PORTAL.STATUS' | translate }}</th>
-                <th>{{ 'PORTAL.CREATED_AT' | translate }}</th>
+                <th [nzSortFn]="'ticket_number' | gridSort">{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'subject' | gridSort">{{ 'PORTAL.SUBJECT' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort">{{ 'PORTAL.PRIORITY' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'created_at' | gridSort">{{ 'PORTAL.CREATED_AT' | translate }}</th>
                 <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -399,12 +399,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.SITE' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
+              <th [nzSortFn]="'report_number' | gridSort">{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'report_date' | gridSort">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'site_address' | gridSort">{{ 'PORTAL.SITE' | translate }}</th>
+              <th [nzSortFn]="'total_hours' | gridSort">{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
               <th>{{ 'PORTAL.SIGNED' | translate }}</th>
-              <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+              <th [nzSortFn]="'original_name' | gridSort">{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -455,11 +455,11 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.SKU' | translate }}</th>
-              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th>{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
-              <th>{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity_available' | gridSort">{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_reserved' | gridSort">{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -486,12 +486,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
+              <th [nzSortFn]="'executed_at' | gridSort">{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
               <th>{{ 'PORTAL.MOVEMENT_DIRECTION' | translate }}</th>
-              <th>{{ 'PORTAL.SKU' | translate }}</th>
-              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th>{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.QUANTITY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort">{{ 'PORTAL.QUANTITY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -534,13 +534,13 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DIRECTION' | translate }}</th>
-              <th>{{ 'PORTAL.ORIGIN' | translate }}</th>
-              <th>{{ 'PORTAL.DESTINATION' | translate }}</th>
-              <th>{{ 'PORTAL.PACKAGES' | translate }}</th>
-              <th>{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
-              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'dossier_number' | gridSort">{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'direction' | gridSort">{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th [nzSortFn]="'origin_country' | gridSort">{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th [nzSortFn]="'destination_country' | gridSort">{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th [nzSortFn]="'packages' | gridSort">{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th [nzSortFn]="'gross_weight_kg' | gridSort">{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort">{{ 'PORTAL.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
