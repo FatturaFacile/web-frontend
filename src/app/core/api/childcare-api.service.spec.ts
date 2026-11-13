@@ -73,8 +73,10 @@ describe('ChildcareApiService', () => {
 
   it('should fetch children list with pagination', () => {
     const mockResponse: PaginatedResponse<ChildcareChild> = {
+      success: true,
+      message: '',
       data: [mockChild],
-      meta: { current_page: 1, last_page: 1, per_page: 10, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 10, to: 1, total: 1 },
     };
 
     service.getChildren({ page: 1, per_page: 10, status: 'active' }).subscribe((res) => {
@@ -155,7 +157,7 @@ describe('ChildcareApiService', () => {
   });
 
   it('should run monthly billing and fetch bills', () => {
-    service.runBilling({ period: '2026-03' }).subscribe((res) => {
+    service.runBilling({ period: '2026-03', date: '2026-03-31' }).subscribe((res) => {
       expect(res.data.run_id).toBe('run-1');
       expect(res.data.total_billed).toBe('12500.00');
     });

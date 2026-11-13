@@ -20,18 +20,17 @@ describe('HospitalityComponent', () => {
   let component: HospitalityComponent;
   let fixture: ComponentFixture<HospitalityComponent>;
 
-  const mockRooms: HospitalityRoom[] = [
+  const mockRooms = [
     {
       id: 'r-1',
-      tenant_id: 't-1',
       name: 'Sala Principale',
       sort_order: 1,
       created_at: '2026-11-01',
       updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityRoom[];
 
-  const mockTables: HospitalityTable[] = [
+  const mockTables = [
     {
       id: 'tbl-1',
       room_id: 'r-1',
@@ -40,12 +39,10 @@ describe('HospitalityComponent', () => {
       shape: 'rectangle',
       is_active: true,
       status: 'free',
-      created_at: '2026-11-01',
-      updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityTable[];
 
-  const mockOrders: HospitalityOrder[] = [
+  const mockOrders = [
     {
       id: 'ord-1',
       table_id: 'tbl-1',
@@ -59,18 +56,16 @@ describe('HospitalityComponent', () => {
           description: 'Pasta Carbonara',
           quantity: 2,
           unit_price: '12.00',
-          total_price: '24.00',
           status: 'pending',
           course: 1,
-          created_at: '2026-11-01',
         },
       ],
       created_at: '2026-11-01',
       updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityOrder[];
 
-  const mockTickets: HospitalityKitchenTicket[] = [
+  const mockTickets = [
     {
       id: 'tick-1',
       order_id: 'ord-1',
@@ -86,9 +81,9 @@ describe('HospitalityComponent', () => {
       ],
       created_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityKitchenTicket[];
 
-  const mockReservations: HospitalityReservation[] = [
+  const mockReservations = [
     {
       id: 'res-1',
       guest_name: 'Mario Rossi',
@@ -98,9 +93,8 @@ describe('HospitalityComponent', () => {
       duration_minutes: 120,
       status: 'booked',
       created_at: '2026-11-01',
-      updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityReservation[];
 
   const apiSpy = {
     getRooms: vi.fn().mockReturnValue(of({ data: mockRooms })),

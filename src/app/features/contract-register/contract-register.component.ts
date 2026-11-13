@@ -108,7 +108,7 @@ export class ContractRegisterComponent implements OnInit {
   protected selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: CONTRACTS REGISTER ---
-  protected readonly contracts = signal<ContractResource[]>([]);
+  readonly contracts = signal<ContractResource[]>([]);
   protected readonly contractsLoading = signal<boolean>(false);
   protected readonly contractsTotal = signal<number>(0);
   protected readonly contractsPageIndex = signal<number>(1);
@@ -118,9 +118,9 @@ export class ContractRegisterComponent implements OnInit {
   protected readonly filterStatus = signal<ContractStatus | ''>('');
 
   // Create Contract Modal
-  protected createModalVisible = signal<boolean>(false);
+  createModalVisible = signal<boolean>(false);
   protected createSubmitting = signal<boolean>(false);
-  protected readonly contractForm = this.fb.group({
+  readonly contractForm = this.fb.group({
     kind: ['customer' as ContractKind, [Validators.required]],
     counterparty_id: ['', [Validators.required, uuidFormat]],
     contract_number: ['', [Validators.required, Validators.maxLength(60)]],
@@ -135,26 +135,26 @@ export class ContractRegisterComponent implements OnInit {
   });
 
   // Renew Contract Modal
-  protected renewModalVisible = signal<boolean>(false);
+  renewModalVisible = signal<boolean>(false);
   protected renewContractTarget = signal<ContractResource | null>(null);
   protected renewSubmitting = signal<boolean>(false);
-  protected readonly renewForm = this.fb.group({
+  readonly renewForm = this.fb.group({
     new_end_date: ['', [(control: AbstractControl<string>) => this.afterCurrentEnd(control)]],
   });
 
   // Send Notice / Disdetta Modal
-  protected noticeModalVisible = signal<boolean>(false);
+  noticeModalVisible = signal<boolean>(false);
   protected noticeContractTarget = signal<ContractResource | null>(null);
-  protected noticeDate = signal<string>('');
+  noticeDate = signal<string>('');
   /** Today (YYYY-MM-DD, local day): a notice cannot be dated in the future. */
   protected readonly today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   protected noticeSubmitting = signal<boolean>(false);
 
   // Detail Drawer
-  protected drawerVisible = signal<boolean>(false);
+  drawerVisible = signal<boolean>(false);
   protected selectedContract = signal<ContractResource | null>(null);
-  protected contractParties = signal<ContractPartyResource[]>([]);
-  protected contractObligations = signal<ContractObligationResource[]>([]);
+  contractParties = signal<ContractPartyResource[]>([]);
+  contractObligations = signal<ContractObligationResource[]>([]);
   protected contractHistory = signal<ContractStatusChangeResource[]>([]);
   protected drawerLoading = signal<boolean>(false);
 
@@ -162,7 +162,7 @@ export class ContractRegisterComponent implements OnInit {
   protected partyModalVisible = signal<boolean>(false);
   protected readonly partyRoles = PARTY_ROLES;
   protected readonly partyTypes = PARTY_TYPES;
-  protected readonly partyForm = this.fb.group({
+  readonly partyForm = this.fb.group({
     party_type: ['external' as (typeof PARTY_TYPES)[number], [Validators.required]],
     party_id: [''],
     role: ['signatory' as (typeof PARTY_ROLES)[number], [Validators.required]],
@@ -173,7 +173,7 @@ export class ContractRegisterComponent implements OnInit {
 
   // Add Obligation Modal inside Drawer
   protected obligationModalVisible = signal<boolean>(false);
-  protected readonly obligationForm = this.fb.group({
+  readonly obligationForm = this.fb.group({
     type: ['obligation' as const, [Validators.required]],
     title: ['', [Validators.required, Validators.maxLength(255)]],
     description: ['', [Validators.maxLength(5000)]],
@@ -210,7 +210,7 @@ export class ContractRegisterComponent implements OnInit {
 
   // Complete / Waive Obligation Modal
   protected actionObligationTarget = signal<ContractObligationResource | null>(null);
-  protected completeModalVisible = signal<boolean>(false);
+  completeModalVisible = signal<boolean>(false);
   protected completeNotes = signal<string>('');
   protected waiveModalVisible = signal<boolean>(false);
   protected waiveReason = signal<string>('');
@@ -286,7 +286,7 @@ export class ContractRegisterComponent implements OnInit {
     control.updateValueAndValidity({ emitEvent: false });
   }
 
-  protected errorTip(form: FormGroup, path: string): string {
+  errorTip(form: FormGroup, path: string): string {
     const control = form.get(path);
     if (control?.hasError('serverError')) {
       return serverErrorMessage(form, path) ?? '';
@@ -299,7 +299,7 @@ export class ContractRegisterComponent implements OnInit {
     this.loadContracts();
   }
 
-  protected onTabChange(index: number): void {
+  onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
     if (index === 0) {
       this.loadContracts();
@@ -340,7 +340,7 @@ export class ContractRegisterComponent implements OnInit {
     this.loadContracts();
   }
 
-  protected openCreateModal(): void {
+  openCreateModal(): void {
     this.contractForm.reset({
       kind: 'customer',
       counterparty_id: '',
@@ -357,7 +357,7 @@ export class ContractRegisterComponent implements OnInit {
     this.createModalVisible.set(true);
   }
 
-  protected submitCreateContract(): void {
+  submitCreateContract(): void {
     if (this.contractForm.invalid) {
       this.contractForm.markAllAsTouched();
       return;
@@ -381,7 +381,7 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   // --- RENEW CONTRACT ---
-  protected openRenewModal(contract: ContractResource): void {
+  openRenewModal(contract: ContractResource): void {
     this.renewContractTarget.set(contract);
     this.renewForm.reset({ new_end_date: '' });
     // Without a renewal term the API cannot compute the new end: the user must state it.
@@ -392,7 +392,7 @@ export class ContractRegisterComponent implements OnInit {
     this.renewModalVisible.set(true);
   }
 
-  protected submitRenewContract(): void {
+  submitRenewContract(): void {
     const contract = this.renewContractTarget();
     if (!contract) return;
     if (this.renewForm.invalid) {
@@ -418,13 +418,13 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   // --- SEND NOTICE / DISDETTA ---
-  protected openNoticeModal(contract: ContractResource): void {
+  openNoticeModal(contract: ContractResource): void {
     this.noticeContractTarget.set(contract);
     this.noticeDate.set(this.today);
     this.noticeModalVisible.set(true);
   }
 
-  protected submitNotice(): void {
+  submitNotice(): void {
     const contract = this.noticeContractTarget();
     if (!contract) return;
 
@@ -446,7 +446,7 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   // --- DRAWER & DETAILS ---
-  protected openDrawer(contract: ContractResource): void {
+  openDrawer(contract: ContractResource): void {
     this.selectedContract.set(contract);
     this.drawerVisible.set(true);
     this.drawerLoading.set(true);
@@ -473,7 +473,7 @@ export class ContractRegisterComponent implements OnInit {
     });
   }
 
-  protected openPartyModal(): void {
+  openPartyModal(): void {
     this.partyForm.reset({
       party_type: 'external',
       party_id: '',
@@ -486,7 +486,7 @@ export class ContractRegisterComponent implements OnInit {
     this.partyModalVisible.set(true);
   }
 
-  protected submitParty(): void {
+  submitParty(): void {
     const contract = this.selectedContract();
     if (!contract) return;
     if (this.partyForm.invalid) {
@@ -527,7 +527,7 @@ export class ContractRegisterComponent implements OnInit {
     });
   }
 
-  protected openObligationModal(): void {
+  openObligationModal(): void {
     const contract = this.selectedContract();
     this.obligationForm.reset({
       type: 'obligation',
@@ -542,7 +542,7 @@ export class ContractRegisterComponent implements OnInit {
     this.obligationModalVisible.set(true);
   }
 
-  protected submitObligation(): void {
+  submitObligation(): void {
     const contract = this.selectedContract();
     if (!contract) return;
     if (this.obligationForm.invalid) {
@@ -581,13 +581,13 @@ export class ContractRegisterComponent implements OnInit {
     });
   }
 
-  protected openCompleteObligationModal(ob: ContractObligationResource): void {
+  openCompleteObligationModal(ob: ContractObligationResource): void {
     this.actionObligationTarget.set(ob);
     this.completeNotes.set('');
     this.completeModalVisible.set(true);
   }
 
-  protected submitCompleteObligation(): void {
+  submitCompleteObligation(): void {
     const ob = this.actionObligationTarget();
     if (!ob) return;
 
@@ -634,7 +634,7 @@ export class ContractRegisterComponent implements OnInit {
     return this.i18n.translate(status === 'acknowledged' ? 'CONTRACTS.LBL_CONFERMATO' : 'CONTRACTS.LBL_DA_VERIFICARE');
   }
 
-  protected acknowledgeAlert(alert: ContractAlertResource): void {
+  acknowledgeAlert(alert: ContractAlertResource): void {
     this.contractApi.acknowledgeAlert(alert.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('CONTRACTS.MSG_PRESA_VISIONE_CONFERMATA'));

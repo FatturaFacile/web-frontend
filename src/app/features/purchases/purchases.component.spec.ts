@@ -25,7 +25,7 @@ describe('PurchasesComponent', () => {
   let component: PurchasesComponent;
   let procurementApiMock: Partial<ProcurementApiService>;
   let messageMock: Partial<NzMessageService>;
-  let authStoreMock: Partial<AuthStore>;
+  let authStoreMock: Record<string, unknown>;
 
   const mockOrder: PurchaseOrder = {
     id: 'po-1',

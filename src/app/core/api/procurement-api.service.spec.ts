@@ -54,7 +54,7 @@ describe('ProcurementApiService', () => {
     const req = httpTesting.expectOne(`${baseUrl}/purchase-orders`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(payload);
-    req.flush({ success: true, message: 'Created', data: { id: 'po-created', ...payload } as PurchaseOrder });
+    req.flush({ success: true, message: 'Created', data: { id: 'po-created', ...payload } as unknown as PurchaseOrder });
   });
 
   it('executes purchase order lifecycle actions (submit, approve, reject, send, cancel, close)', () => {

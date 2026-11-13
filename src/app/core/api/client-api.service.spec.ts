@@ -68,12 +68,11 @@ describe('ClientApiService', () => {
   });
 
   it('creates a new contact', () => {
-    const payload: ContactPayload = {
+    const payload = {
       type: 'client',
       company_name: 'Rossi Ltd',
       country: 'CH',
-      currency: 'CHF',
-    };
+    } as ContactPayload;
 
     service.create(payload).subscribe((res) => {
       expect(res.data.id).toBe('c-2');

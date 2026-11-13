@@ -105,9 +105,13 @@ describe('WorkshopComponent', () => {
   };
 
   const mockPaginatedFolders: PaginatedResponse<WorkshopFolder> = {
+    success: true,
+    message: '',
     data: [mockFolder],
     meta: {
       current_page: 1,
+      from: 1,
+      to: 1,
       last_page: 1,
       per_page: 10,
       total: 1,
@@ -115,9 +119,13 @@ describe('WorkshopComponent', () => {
   };
 
   const mockPaginatedStock: PaginatedResponse<WorkshopVehicleStockUnit> = {
+    success: true,
+    message: '',
     data: [mockStockUnit],
     meta: {
       current_page: 1,
+      from: 1,
+      to: 1,
       last_page: 1,
       per_page: 10,
       total: 1,

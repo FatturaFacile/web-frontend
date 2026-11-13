@@ -18,14 +18,14 @@ describe('DashboardComponent', () => {
 
   const mockKpi: KpiSummary = {
     revenue_month: 25000,
-    revenue_growth_pct: 10,
     open_receivables: 12000,
-    overdue_receivables: 1500,
+    revenue_ytd: 200000,
+    open_payables: 4000,
     pending_invoices_count: 5,
     active_alerts_count: 3,
   };
 
-  const mockInvoice: InvoiceResource = {
+  const mockInvoice = {
     id: 'inv-1',
     invoice_number: 'FAT-2026-001',
     issue_date: '2026-04-01',
@@ -34,7 +34,7 @@ describe('DashboardComponent', () => {
     balance_due: '1220.00',
     currency: 'EUR',
     status: 'issued',
-  };
+  } as unknown as InvoiceResource;
 
   beforeEach(async () => {
     dashboardApiMock = {

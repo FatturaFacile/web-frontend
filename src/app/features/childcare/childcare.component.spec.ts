@@ -126,9 +126,13 @@ describe('ChildcareComponent', () => {
   };
 
   const mockPaginatedChildren: PaginatedResponse<ChildcareChild> = {
+    success: true,
+    message: '',
     data: [mockChild, mockWaitlistChild],
     meta: {
       current_page: 1,
+      from: 1,
+      to: 2,
       last_page: 1,
       per_page: 10,
       total: 2,

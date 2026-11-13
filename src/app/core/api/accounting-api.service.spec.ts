@@ -72,7 +72,7 @@ describe('AccountingApiService', () => {
     expect(reqReverse.request.method).toBe('POST');
     reqReverse.flush({ success: true, message: 'Reversed', data: { id: 'j-1', status: 'reversed' } });
 
-    service.validateJournalBalance(payload.lines).subscribe((res) => {
+    service.validateJournalBalance(payload.lines as { account_id: string; debit_amount: number; credit_amount: number }[]).subscribe((res) => {
       expect(res.data.balanced).toBe(true);
     });
     const reqVal = httpTesting.expectOne(`${glBase}/journals/validate-balance`);

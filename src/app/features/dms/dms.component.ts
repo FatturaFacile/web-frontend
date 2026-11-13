@@ -168,9 +168,9 @@ export class DmsComponent implements OnInit {
   protected readonly selectedStatus = signal<DmsDocumentStatus | ''>('');
 
   // Create Document Modal
-  protected createDocModalVisible = signal<boolean>(false);
+  createDocModalVisible = signal<boolean>(false);
   protected createDocSubmitting = signal<boolean>(false);
-  protected readonly docForm = this.fb.group({
+  readonly docForm = this.fb.group({
     title: ['', [Validators.required, Validators.maxLength(255)]],
     folder_id: ['', [uuidFormat]],
     document_type: ['Invoice', [Validators.required, Validators.maxLength(100)]],
@@ -182,13 +182,13 @@ export class DmsComponent implements OnInit {
   protected readonly acceptedFileTypes = DMS_FILE_EXTENSIONS.map((extension) => `.${extension}`).join(',');
 
   // Check-Out Modal
-  protected checkOutModalVisible = signal<boolean>(false);
+  checkOutModalVisible = signal<boolean>(false);
   protected checkOutDoc = signal<DmsDocumentResource | null>(null);
-  protected checkOutNote = signal<string>('');
+  checkOutNote = signal<string>('');
   protected checkOutSubmitting = signal<boolean>(false);
 
   // Check-In Modal
-  protected checkInModalVisible = signal<boolean>(false);
+  checkInModalVisible = signal<boolean>(false);
   protected checkInDoc = signal<DmsDocumentResource | null>(null);
   protected checkInFile = signal<File | null>(null);
   protected checkInFileError = signal<string>('');
@@ -196,13 +196,13 @@ export class DmsComponent implements OnInit {
   protected checkInSubmitting = signal<boolean>(false);
 
   // Legal Hold Modal
-  protected legalHoldModalVisible = signal<boolean>(false);
+  legalHoldModalVisible = signal<boolean>(false);
   protected legalHoldDoc = signal<DmsDocumentResource | null>(null);
-  protected legalHoldReason = signal<string>('');
+  legalHoldReason = signal<string>('');
   protected legalHoldSubmitting = signal<boolean>(false);
 
   // Detail Drawer
-  protected drawerVisible = signal<boolean>(false);
+  drawerVisible = signal<boolean>(false);
   protected selectedDocument = signal<DmsDocumentResource | null>(null);
   protected docVersions = signal<DmsDocumentVersionResource[]>([]);
   protected docLinks = signal<DmsResolvedLink[]>([]);
@@ -224,7 +224,7 @@ export class DmsComponent implements OnInit {
   private readonly folderNames = computed(() => new Map(this.folders().map((f) => [f.id, f.name])));
   protected createFolderModalVisible = signal<boolean>(false);
   protected folderSubmitting = signal<boolean>(false);
-  protected readonly folderForm = this.fb.group({
+  readonly folderForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(190)]],
     parent_id: ['', [uuidFormat]],
     access_roles: [['admin', 'accountant']],
@@ -235,7 +235,7 @@ export class DmsComponent implements OnInit {
   protected readonly retentionLoading = signal<boolean>(false);
   protected createPolicyModalVisible = signal<boolean>(false);
   protected policySubmitting = signal<boolean>(false);
-  protected readonly policyForm = this.fb.group({
+  readonly policyForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(190)]],
     document_type: ['Invoice'],
     retention_months: [120, [Validators.required, Validators.min(1), Validators.max(1200)]],
@@ -254,7 +254,7 @@ export class DmsComponent implements OnInit {
   protected readonly aiLoading = signal<boolean>(false);
   protected createTagModalVisible = signal<boolean>(false);
   protected tagSubmitting = signal<boolean>(false);
-  protected readonly tagForm = this.fb.group({
+  readonly tagForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(80)]],
     color: ['#1890ff'],
   });
@@ -280,7 +280,7 @@ export class DmsComponent implements OnInit {
     this.loadFolders();
   }
 
-  protected onTabChange(index: number): void {
+  onTabChange(index: number): void {
     this.selectedTabIndex.set(index);
     if (index === 0) {
       this.refreshDocuments();
@@ -310,7 +310,7 @@ export class DmsComponent implements OnInit {
     this.grid.reload();
   }
 
-  protected openCreateDocModal(): void {
+  openCreateDocModal(): void {
     this.docForm.reset({
       title: '',
       folder_id: this.selectedFolderId() || '',
@@ -347,7 +347,7 @@ export class DmsComponent implements OnInit {
     return DMS_FILE_EXTENSIONS.includes(extension) ? '' : 'DMS.ERR_FILE_TYPE';
   }
 
-  protected submitCreateDoc(): void {
+  submitCreateDoc(): void {
     const fileError = this.fileErrorKey(this.docFile(), true);
     this.docFileError.set(fileError);
     if (this.docForm.invalid || fileError) {
@@ -399,13 +399,13 @@ export class DmsComponent implements OnInit {
   }
 
   // --- CHECK-OUT / CHECK-IN ---
-  protected openCheckOutModal(doc: DmsDocumentResource): void {
+  openCheckOutModal(doc: DmsDocumentResource): void {
     this.checkOutDoc.set(doc);
     this.checkOutNote.set('');
     this.checkOutModalVisible.set(true);
   }
 
-  protected submitCheckOut(): void {
+  submitCheckOut(): void {
     const doc = this.checkOutDoc();
     if (!doc) return;
 
@@ -424,7 +424,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected openCheckInModal(doc: DmsDocumentResource): void {
+  openCheckInModal(doc: DmsDocumentResource): void {
     this.checkInDoc.set(doc);
     this.checkInFile.set(null);
     this.checkInFileError.set('');
@@ -432,7 +432,7 @@ export class DmsComponent implements OnInit {
     this.checkInModalVisible.set(true);
   }
 
-  protected submitCheckIn(): void {
+  submitCheckIn(): void {
     const doc = this.checkInDoc();
     if (!doc) return;
     const fileError = this.fileErrorKey(this.checkInFile(), false);
@@ -457,13 +457,13 @@ export class DmsComponent implements OnInit {
   }
 
   // --- LEGAL HOLD ---
-  protected openLegalHoldModal(doc: DmsDocumentResource): void {
+  openLegalHoldModal(doc: DmsDocumentResource): void {
     this.legalHoldDoc.set(doc);
     this.legalHoldReason.set('');
     this.legalHoldModalVisible.set(true);
   }
 
-  protected submitLegalHold(): void {
+  submitLegalHold(): void {
     const doc = this.legalHoldDoc();
     if (!doc) return;
 
@@ -488,7 +488,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected releaseLegalHold(doc: DmsDocumentResource): void {
+  releaseLegalHold(doc: DmsDocumentResource): void {
     this.dmsApi.releaseLegalHold(doc.id).subscribe({
       next: () => {
         this.message.info(this.translate.instant('DMS.MSG_BLOCCO_PROBATORIO_RIMOSSO'));
@@ -501,7 +501,7 @@ export class DmsComponent implements OnInit {
   }
 
   // --- DETAIL DRAWER & VERIFY ---
-  protected openDrawer(doc: DmsDocumentResource): void {
+  openDrawer(doc: DmsDocumentResource): void {
     this.selectedDocument.set(doc);
     this.drawerVisible.set(true);
     this.drawerLoading.set(true);
@@ -533,7 +533,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected verifySha256(version: DmsDocumentVersionResource): void {
+  verifySha256(version: DmsDocumentVersionResource): void {
     const doc = this.selectedDocument();
     if (!doc) return;
 
@@ -551,7 +551,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected confirmExtraction(extr: DmsExtractionResource): void {
+  confirmExtraction(extr: DmsExtractionResource): void {
     this.dmsApi.confirmExtraction(extr.id, { confirmed_value: extr.extracted_value }).subscribe({
       next: () => {
         this.message.success(this.translate.instant('DMS.MSG_DATO_CONFERMATO', { field_name: extr.field_name }));
@@ -631,7 +631,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected openCreateFolderModal(): void {
+  openCreateFolderModal(): void {
     this.folderForm.reset({
       name: '',
       parent_id: '',
@@ -640,7 +640,7 @@ export class DmsComponent implements OnInit {
     this.createFolderModalVisible.set(true);
   }
 
-  protected submitCreateFolder(): void {
+  submitCreateFolder(): void {
     if (this.folderForm.invalid) {
       this.folderForm.markAllAsTouched();
       return;
@@ -687,7 +687,7 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected openCreatePolicyModal(): void {
+  openCreatePolicyModal(): void {
     this.policyForm.reset({
       name: '',
       document_type: 'Invoice',
@@ -698,7 +698,7 @@ export class DmsComponent implements OnInit {
     this.createPolicyModalVisible.set(true);
   }
 
-  protected submitCreatePolicy(): void {
+  submitCreatePolicy(): void {
     if (this.policyForm.invalid) {
       this.policyForm.markAllAsTouched();
       return;
@@ -745,12 +745,12 @@ export class DmsComponent implements OnInit {
     });
   }
 
-  protected openCreateTagModal(): void {
+  openCreateTagModal(): void {
     this.tagForm.reset({ name: '', color: '#1890ff' });
     this.createTagModalVisible.set(true);
   }
 
-  protected submitCreateTag(): void {
+  submitCreateTag(): void {
     if (this.tagForm.invalid) {
       this.tagForm.markAllAsTouched();
       return;

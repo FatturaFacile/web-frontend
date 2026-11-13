@@ -104,7 +104,7 @@ describe('ContractRegisterApiService', () => {
     expect(reqAdd.request.method).toBe('POST');
     reqAdd.flush({ success: true, data: { id: 'ob-1', ...payload, status: 'pending' } });
 
-    service.completeObligation('ob-1', { notes: 'Collaudo completato con esito positivo' }).subscribe((res) => {
+    service.completeObligation('ob-1', { note: 'Collaudo completato con esito positivo' }).subscribe((res) => {
       expect(res.data.status).toBe('completed');
     });
 
@@ -112,7 +112,7 @@ describe('ContractRegisterApiService', () => {
     expect(reqComp.request.method).toBe('POST');
     reqComp.flush({ success: true, data: { id: 'ob-1', status: 'completed' } });
 
-    service.waiveObligation('ob-1', { reason: 'Accordo stragiudiziale' }).subscribe((res) => {
+    service.waiveObligation('ob-1', { note: 'Accordo stragiudiziale' }).subscribe((res) => {
       expect(res.data.status).toBe('waived');
     });
 

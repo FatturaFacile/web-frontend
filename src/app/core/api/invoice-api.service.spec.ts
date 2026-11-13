@@ -35,7 +35,6 @@ describe('InvoiceApiService', () => {
     const payload: CreateInvoicePayload = {
       contact_id: 'c-1',
       invoice_type: 'sdi_electronic',
-      invoice_number: 'INV-2026-001',
       date: '2026-11-09',
       currency: 'EUR',
       jurisdiction: 'IT',

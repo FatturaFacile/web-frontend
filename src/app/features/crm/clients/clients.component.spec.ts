@@ -13,19 +13,14 @@ describe('ClientsComponent', () => {
   let fixture: ComponentFixture<ClientsComponent>;
   let component: ClientsComponent;
 
-  const mockContacts: ContactResource[] = [
+  const mockContacts = [
     {
       id: 'c-1',
-      tenant_id: 't-1',
       type: 'client',
       company_name: 'Alpha SA',
       country: 'CH',
-      currency: 'CHF',
-      is_active: true,
-      created_at: '2026-11-08',
-      updated_at: '2026-11-08',
     },
-  ];
+  ] as unknown as ContactResource[];
 
   const mockClientApi = {
     list: vi.fn().mockReturnValue(

@@ -43,9 +43,11 @@ describe('CommunicationComponent', () => {
 
   const mockChannels: CommunicationChannelResource[] = [
     {
+      id: 'ch-1',
       channel: 'email',
       driver: 'smtp',
       is_enabled: true,
+      has_credentials: true,
       settings: {
         host: 'smtp.sendgrid.net',
         port: 587,
@@ -53,9 +55,11 @@ describe('CommunicationComponent', () => {
       },
     },
     {
+      id: 'ch-2',
       channel: 'whatsapp',
       driver: 'twilio',
       is_enabled: false,
+      has_credentials: false,
       settings: {},
     },
   ];
@@ -73,11 +77,9 @@ describe('CommunicationComponent', () => {
   ];
 
   const mockPreview: CommunicationPreviewResponse = {
-    channel: 'email',
-    locale: 'it_IT',
     subject: 'Fattura INV-2026-0042',
     body: 'Gentile Mario Rossi, in allegato la fattura.',
-    variables: { name: 'Mario Rossi', number: 'INV-2026-0042' },
+    rendered_variables: { name: 'Mario Rossi', number: 'INV-2026-0042' },
   };
 
   const page = <T>(data: T[]) => ({

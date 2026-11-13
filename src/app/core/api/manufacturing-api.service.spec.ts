@@ -49,8 +49,10 @@ describe('ManufacturingApiService', () => {
     };
 
     const mockResponse: PaginatedResponse<MfgProductionOrderResource> = {
+      success: true,
+      message: '',
       data: [mockOrder],
-      meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 15, to: 1, total: 1 },
     };
 
     service.getProductionOrders({ page: 1 }).subscribe((res) => {
