@@ -8,7 +8,6 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
@@ -33,7 +32,7 @@ import {
   TreasuryApiService,
   TranslateService,
 } from '@core';
-import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { ibanValidator } from '@shared/utils/iban-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -49,7 +48,6 @@ import { validationTipKey } from '@shared/utils/validation-tip';
     DatePipe,
     MoneyPipe,
     NzTagModule,
-    NzTableModule,
     NzCardModule,
     NzButtonModule,
     NzInputModule,
@@ -66,7 +64,6 @@ import { validationTipKey } from '@shared/utils/validation-tip';
     BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
   ],
   templateUrl: './treasury.component.html',
 })

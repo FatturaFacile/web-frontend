@@ -215,7 +215,7 @@ describe('SalesOrdersComponent', () => {
   };
 
   /** The grids load through a debounced stream: lets the first request of every tab settle. */
-  const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 400));
 
   const mockMessage = {
     success: vi.fn(),
@@ -354,6 +354,8 @@ describe('SalesOrdersComponent', () => {
     mockSalesApi.createQuote.mockClear();
     mockSalesApi.createOrder.mockClear();
     mockSalesApi.createDeliveryNote.mockClear();
+    component.clients.set([]);
+    component.orderGrid.items.set([]);
     component.openQuoteModal();
     component.openOrderModal();
     component.openDdtModal();

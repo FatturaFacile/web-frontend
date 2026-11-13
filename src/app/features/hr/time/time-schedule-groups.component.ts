@@ -7,7 +7,6 @@ import {
 } from '@core';
 import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { map } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig, CrudOption, crudPage } from '../shared/crud/crud.types';

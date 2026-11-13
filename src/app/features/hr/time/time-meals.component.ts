@@ -10,7 +10,6 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { of, tap } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
 import { CrudOption } from '../shared/crud/crud.types';
-import { reportHttpError } from '../shared/hr-http.util';
 
 type MealRow = Record<string, unknown>;
 

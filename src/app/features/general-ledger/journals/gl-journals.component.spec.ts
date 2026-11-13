@@ -70,7 +70,6 @@ describe('GlJournalsComponent', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(GlJournalsComponent);
     fixture.detectChanges();
-    await fixture.whenStable();
     await settle();
     fixture.detectChanges();
     return fixture;

@@ -55,7 +55,6 @@ describe('TrPaymentProposalsComponent', () => {
     const fixture = TestBed.createComponent(TrPaymentProposalsComponent);
     fixture.detectChanges();
     await vi.waitFor(() => expect(api.getPaymentProposals).toHaveBeenCalled());
-    await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
   }

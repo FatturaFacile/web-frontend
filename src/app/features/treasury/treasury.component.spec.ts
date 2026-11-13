@@ -36,7 +36,8 @@ describe('TreasuryComponent', () => {
     bank_name: 'Banca Popolare',
     iban: 'IT60X0569601600000001234567',
     currency: 'EUR',
-    balance: 50000,
+    current_balance: 50000,
+    available_balance: 50000,
     is_active: true,
   };
 
@@ -100,7 +101,13 @@ describe('TreasuryComponent', () => {
       getBankAccounts: vi.fn().mockReturnValue(of({ data: [mockAccount] })),
       createBankAccount: vi.fn().mockReturnValue(of({ data: mockAccount })),
       deleteBankAccount: vi.fn().mockReturnValue(of(void 0)),
-      getBankTransactions: vi.fn().mockReturnValue(of({ data: [mockTx], meta: { total: 1 } })),
+      getBankTransactions: vi.fn().mockImplementation((query?: { grid_values?: string }) =>
+        of(
+          query?.grid_values
+            ? { data: [{ value: 'unmatched', count: 1 }] }
+            : { data: [mockTx], meta: { total: 1 } },
+        ),
+      ),
       reconcileTransactionsAutoMatch: vi.fn().mockReturnValue(of({ data: { matched_count: 3 } })),
       importCbiFile: vi.fn().mockReturnValue(of({ data: { imported_count: 4 } })),
       getPaymentBatches: vi.fn().mockReturnValue(of({ data: [mockBatch], meta: { total: 1 } })),
@@ -150,7 +157,8 @@ describe('TreasuryComponent', () => {
     fixture.detectChanges();
   });
 
-  it('creates the component and loads initial treasury data', () => {
+  it('creates the component and loads initial treasury data', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
     expect(component).toBeTruthy();
     expect(treasuryApiMock.getBankAccounts).toHaveBeenCalled();
     expect(treasuryApiMock.getBankTransactions).toHaveBeenCalled();
