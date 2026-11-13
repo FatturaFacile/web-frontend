@@ -8,7 +8,7 @@ import {
   AssociationAttendanceEntry,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -64,9 +64,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
             </nz-radio-group>
           </div>
         }
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="day() === ''" (click)="save(course.id)">
-          {{ 'ASSOC_AREA.SAVE_ATTENDANCE' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="day() === ''" (click)="save(course.id)"></button>
       </section>
     }
   `,

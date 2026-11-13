@@ -108,6 +108,7 @@
             nzBlock
             type="submit"
             [nzLoading]="isSubmitting()"
+            [disabled]="loginForm.invalid"
           >
             {{ "AUTH.SUBMIT_BTN" | translate }}
           </button>
@@ -253,6 +254,7 @@
               nzBlock
               type="submit"
               [nzLoading]="isSubmitting()"
+              [disabled]="!canSubmitChallenge()"
             >
               {{ 'TWO_FACTOR.CHALLENGE_Submit' | translate }}
             </button>

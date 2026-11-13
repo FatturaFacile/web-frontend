@@ -39,13 +39,14 @@
   </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="860"
   [nzTitle]="selected()?.ddt_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as n) {
       <nz-tag [nzColor]="statusColor(n.status)">{{ statusKey(n.status) | translate }}</nz-tag>
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
@@ -84,15 +85,13 @@
           }
           @if (n.status === 'draft') {
             <button
-              nz-button
+              nz-button appIconAction="delete"
               nzDanger
               type="button"
               nz-popconfirm
               [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
               (nzOnConfirm)="remove(n)"
-            >
-              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
-            </button>
+            ></button>
           } @else {
             <span class="note">{{ 'SC.DDT.DELETE_ONLY_DRAFT' | translate }}</span>
           }
@@ -100,4 +99,4 @@
       }
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>

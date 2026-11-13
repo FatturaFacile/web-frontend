@@ -50,9 +50,7 @@
       <div class="toolbar">
         <label for="credit-limit">{{ 'SC.CREDIT.NEW_LIMIT' | translate }}</label>
         <input nz-input id="credit-limit" class="search" inputmode="decimal" [(ngModel)]="newLimit" />
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!limitValid()" (click)="saveLimit()">
-          <nz-icon nzType="save" /> {{ 'SC.CREDIT.SAVE_LIMIT' | translate }}
-        </button>
+        <button nz-button appIconAction="save" nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!limitValid()" (click)="saveLimit()"></button>
       </div>
       <p class="note">{{ 'SC.CREDIT.RELEASE_HINT_LIST' | translate }}</p>
     } @else {

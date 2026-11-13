@@ -27,9 +27,7 @@
       >
         <nz-icon nzType="sync" /> {{ 'SC.PLANS.RUN' | translate }}
       </button>
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <nz-icon nzType="plus" /> {{ 'SC.PLANS.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="openCreate()"></button>
     }
   </div>
 
@@ -74,13 +72,14 @@
   </nz-table>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="760"
   [nzTitle]="selected()?.schedule_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as p) {
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
         <nz-descriptions-item [nzTitle]="'SC.COMMON.STATUS' | translate">{{ 'SC.PLANS.STATUS_' + p.status | translate }}</nz-descriptions-item>
@@ -141,7 +140,7 @@
       }
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <nz-modal
   [nzVisible]="createOpen()"
@@ -150,6 +149,7 @@
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!canSubmit()"
   (nzOnCancel)="createOpen.set(false)"
+  okAction="create"
   (nzOnOk)="submit()"
 >
   <ng-container *nzModalContent>
@@ -172,13 +172,9 @@
         <input nz-input inputmode="decimal" formControlName="percentage" placeholder="%" [attr.aria-label]="'SC.BILLING.PERCENTAGE' | translate" />
         <input nz-input inputmode="decimal" formControlName="amount" [placeholder]="'SC.BILLING.AMOUNT' | translate" [attr.aria-label]="'SC.BILLING.AMOUNT' | translate" />
         <input nz-input type="date" formControlName="target_date" [attr.aria-label]="'SC.PLANS.TARGET_DATE' | translate" />
-        <button nz-button nzType="text" nzDanger type="button" [disabled]="items.length <= 1" [attr.aria-label]="'SC.LINES.REMOVE' | translate" (click)="removeItem(i)">
-          <nz-icon nzType="delete" />
-        </button>
+        <button nz-button appIconAction="delete" nzType="text" nzDanger type="button" [disabled]="items.length <= 1" (click)="removeItem(i)"></button>
       </div>
     }
-    <button nz-button nzType="dashed" type="button" (click)="addItem()">
-      <nz-icon nzType="plus" /> {{ 'SC.PLANS.ADD_ITEM' | translate }}
-    </button>
+    <button nz-button appIconAction="add" nzType="dashed" type="button" (click)="addItem()"></button>
   </ng-container>
 </nz-modal>

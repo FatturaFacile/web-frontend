@@ -8,7 +8,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 
 /**
  * Read-only detail of an invoice: number (assigned by the server), payment term and, for a foreign-currency invoice,
@@ -18,6 +18,8 @@ import { MoneyPipe, TranslatePipe } from '@shared';
   selector: 'app-invoice-detail-modal',
   styleUrl: './invoice-detail-modal.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     MoneyPipe,
     NzModalModule,
@@ -94,9 +96,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
         }
       </ng-container>
       <ng-template #footer>
-        <button nz-button nzType="primary" type="button" (click)="open.set(false)">
-          {{ 'COMMON.CLOSE' | translate }}
-        </button>
+        <button nz-button appIconAction="close" nzType="primary" type="button" (click)="open.set(false)"></button>
       </ng-template>
     </nz-modal>
   `,

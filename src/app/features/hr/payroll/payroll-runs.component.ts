@@ -3,9 +3,9 @@ import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { I18nService, PayrollApiService, PayrollRunRecord } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -18,10 +18,11 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
   selector: 'app-payroll-runs',
   styleUrl: './payroll-runs.component.scss',
   imports: [
+    ModalActionsDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
-    NzDrawerModule,
+    NzModalModule,
     NzInputModule,
     NzTableModule,
     TranslatePipe,
@@ -80,18 +81,19 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
       </tbody>
     </nz-table>
 
-    <nz-drawer
+    <nz-modal
       [nzVisible]="selectedId() !== null"
       [nzTitle]="'hrmPayroll.run' | translate"
-      nzWidth="860"
-      (nzOnClose)="closeDetail()"
+      [nzWidth]="860"
+      [nzFooter]="null"
+      (nzOnCancel)="closeDetail()"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         @if (selectedId(); as id) {
           <app-payroll-run-detail [runId]="id" [canWrite]="canWrite()" (changed)="reload()" />
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class PayrollRunsComponent implements OnInit {

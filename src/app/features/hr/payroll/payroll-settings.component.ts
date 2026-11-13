@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { applyServerErrors, I18nService, isValidationError, PayrollApiService, PayrollSettingsPayload } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -54,7 +54,7 @@ const FIELDS: Record<'swiss' | 'italian', SettingsField[]> = {
 @Component({
   selector: 'app-payroll-settings',
   styleUrl: './payroll-settings.component.scss',
-  imports: [ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzSkeletonModule, TranslatePipe],
+  imports: [IconActionDirective, ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzSkeletonModule],
   template: `
     @if (loading()) {
       <nz-skeleton [nzActive]="true" />
@@ -74,7 +74,7 @@ const FIELDS: Record<'swiss' | 'italian', SettingsField[]> = {
           </nz-form-item>
         }
         @if (canWrite()) {
-          <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'hrmCommon.save' | translate }}</button>
+          <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="form.invalid" appIconAction="save"></button>
         }
       </form>
     }

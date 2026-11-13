@@ -13,7 +13,7 @@ import {
   I18nService,
   SalesCycleApiService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { apiErrorText } from '../shared/sales-api-helpers';
 
 export type OrderBillingMode = 'partial' | 'down-payment' | 'deposit';
@@ -28,7 +28,7 @@ const isValidPercentage = (value: string): boolean =>
 @Component({
   selector: 'app-order-billing-modal',
   styleUrl: './order-billing-modal.component.scss',
-  imports: [FormsModule, NzAlertModule, NzInputModule, NzModalModule, TranslatePipe],
+  imports: [ModalActionsDirective, FormsModule, NzAlertModule, NzInputModule, NzModalModule, TranslatePipe],
   template: `
     <nz-modal
       [nzVisible]="visible()"

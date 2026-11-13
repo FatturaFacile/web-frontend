@@ -14,7 +14,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCalendarModule } from 'ng-zorro-antd/calendar';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -43,7 +42,7 @@ import {
   TranslateService,
   UserResource,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 /** Mirrors the API rule `ends_at: after:starts_at`. */
 function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
@@ -59,6 +58,8 @@ function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
   selector: 'app-appointments',
   styleUrl: './appointments.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -72,7 +73,6 @@ function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

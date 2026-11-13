@@ -15,7 +15,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CoreDocumentLine, CoreDocumentLinePayload } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, TranslatePipe } from '@shared';
 import { SalesLookupsService } from './sales-lookups.service';
 
 export const DECIMAL_PATTERN = /^\d+(\.\d{1,4})?$/;
@@ -93,7 +93,7 @@ export function linesToPayload(lines: FormArray<LineGroup>): CoreDocumentLinePay
 @Component({
   selector: 'app-document-lines-editor',
   styleUrl: './document-lines-editor.component.scss',
-  imports: [ReactiveFormsModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, TranslatePipe],
+  imports: [IconActionDirective, ReactiveFormsModule, NzButtonModule, NzIconModule, NzInputModule, NzSelectModule, TranslatePipe],
   template: `
     <div class="lines" role="group" [attr.aria-label]="'SC.LINES.TITLE' | translate">
       @for (line of lines().controls; track line; let i = $index) {
@@ -150,21 +150,16 @@ export function linesToPayload(lines: FormArray<LineGroup>): CoreDocumentLinePay
             [attr.aria-label]="'SC.LINES.DISCOUNT' | translate"
           />
           <button
-            nz-button
+            nz-button appIconAction="delete"
             nzType="text"
             nzDanger
             type="button"
             [disabled]="lines().length <= 1"
-            [attr.aria-label]="'SC.LINES.REMOVE' | translate"
             (click)="remove(i)"
-          >
-            <nz-icon nzType="delete" />
-          </button>
+          ></button>
         </div>
       }
-      <button nz-button nzType="dashed" type="button" (click)="add()">
-        <nz-icon nzType="plus" /> {{ 'SC.LINES.ADD' | translate }}
-      </button>
+      <button nz-button appIconAction="add" nzType="dashed" type="button" (click)="add()"></button>
     </div>
   `,
 })

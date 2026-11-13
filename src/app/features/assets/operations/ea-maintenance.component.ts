@@ -30,12 +30,14 @@ import {
   WorkOrder,
   WorkOrderDetail,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 @Component({
   selector: 'app-ea-maintenance',
   styleUrl: './ea-maintenance.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     NzAlertModule,

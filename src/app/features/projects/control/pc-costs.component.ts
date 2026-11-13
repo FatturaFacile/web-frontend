@@ -18,7 +18,7 @@ import {
   ProjectCostEntry,
   ProjectExpenseCategory,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 
 const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
   'travel_lodging',
@@ -34,7 +34,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
 @Component({
   selector: 'app-pc-costs',
   styleUrl: './pc-costs.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzSelectModule, NzSwitchModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <div class="row mb-4">
       <nz-select class="w-field-md" nzAllowClear [attr.aria-label]="'PRJ.APPROVAL_STATUS' | translate" [nzPlaceHolder]="'PRJ.APPROVAL_STATUS' | translate" [(ngModel)]="approvalFilter" (ngModelChange)="load()">
@@ -44,7 +44,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
       </nz-select>
       <span class="grow"></span>
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" (click)="openModal()">{{ 'PRJ.EXPENSE_NEW' | translate }}</button>
+        <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openModal()"></button>
       }
     </div>
 
@@ -85,7 +85,7 @@ const EXPENSE_CATEGORIES: ProjectExpenseCategory[] = [
       </tbody>
     </nz-table>
 
-    <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.EXPENSE_NEW' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
+    <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.EXPENSE_NEW' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="create" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
           <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />

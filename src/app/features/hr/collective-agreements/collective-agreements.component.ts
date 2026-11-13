@@ -1,8 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CollectiveAgreementResource, PayrollAgreementApiService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig } from '../shared/crud/crud.types';
@@ -13,7 +13,14 @@ type Row = { id: string } & Record<string, unknown>;
 @Component({
   selector: 'app-collective-agreements',
   styleUrl: './collective-agreements.component.scss',
-  imports: [NzCardModule, NzDrawerModule, PageHeaderComponent, TranslatePipe, CrudTableComponent],
+  imports: [
+    ModalActionsDirective,
+    NzCardModule,
+    NzModalModule,
+    PageHeaderComponent,
+    TranslatePipe,
+    CrudTableComponent,
+  ],
   template: `
     <app-page-header
       [title]="'hrmCcnl.title' | translate"
@@ -22,18 +29,19 @@ type Row = { id: string } & Record<string, unknown>;
     <nz-card>
       <app-crud-table [config]="agreementsConfig()" />
     </nz-card>
-    <nz-drawer
+    <nz-modal
       [nzVisible]="selected() !== null"
       [nzTitle]="selectedTitle()"
-      nzWidth="640"
-      (nzOnClose)="selected.set(null)"
+      [nzWidth]="640"
+      [nzFooter]="null"
+      (nzOnCancel)="selected.set(null)"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         @if (levelsConfig(); as config) {
           <app-crud-table [config]="config" />
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class CollectiveAgreementsComponent {

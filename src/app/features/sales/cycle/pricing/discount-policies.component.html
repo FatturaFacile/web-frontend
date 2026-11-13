@@ -4,9 +4,7 @@
   <div class="toolbar">
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="open(null)">
-        <nz-icon nzType="plus" /> {{ 'SC.PRICING.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="open(null)"></button>
     }
   </div>
   <nz-table [nzScroll]="{ x: '720px' }" [nzData]="policies()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
@@ -44,22 +42,17 @@
           <td>{{ p.contact_id ? lookups.contactName(p.contact_id) : '-' }}</td>
           <td>
             @if (canWrite()) {
-              <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'SC.COMMON.EDIT' | translate" (click)="open(p)">
-                <nz-icon nzType="edit" />
-              </button>
+              <button nz-button appIconAction="edit" nzType="text" nzSize="small" type="button" (click)="open(p)"></button>
               <button
-                nz-button
+                nz-button appIconAction="delete"
                 nzType="text"
                 nzDanger
                 nzSize="small"
                 type="button"
                 nz-popconfirm
-                [attr.aria-label]="'COMMON.DELETE' | translate"
                 [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
                 (nzOnConfirm)="remove(p)"
-              >
-                <nz-icon nzType="delete" />
-              </button>
+              ></button>
             }
           </td>
         </tr>
@@ -125,6 +118,7 @@
   [nzOkLoading]="saving()"
   [nzOkDisabled]="form.invalid"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
   (nzOnOk)="submit()"
 >
   <ng-container *nzModalContent>
@@ -219,14 +213,10 @@
           <input nz-input inputmode="decimal" formControlName="min_threshold" [placeholder]="'SC.PRICING.MIN_THRESHOLD' | translate" [attr.aria-label]="'SC.PRICING.MIN_THRESHOLD' | translate" />
           <input nz-input inputmode="decimal" formControlName="discount_percent" [placeholder]="'SC.PRICING.DISCOUNT_PERCENT' | translate" [attr.aria-label]="'SC.PRICING.DISCOUNT_PERCENT' | translate" />
           <input nz-input inputmode="decimal" formControlName="discount_fixed_amount" [placeholder]="'SC.PRICING.DISCOUNT_FIXED' | translate" [attr.aria-label]="'SC.PRICING.DISCOUNT_FIXED' | translate" />
-          <button nz-button nzType="text" nzDanger type="button" [attr.aria-label]="'SC.LINES.REMOVE' | translate" (click)="removeRule(i)">
-            <nz-icon nzType="delete" />
-          </button>
+          <button nz-button appIconAction="delete" nzType="text" nzDanger type="button" (click)="removeRule(i)"></button>
         </div>
       }
-      <button nz-button nzType="dashed" type="button" (click)="addRule()">
-        <nz-icon nzType="plus" /> {{ 'SC.PRICING.ADD_RULE' | translate }}
-      </button>
+      <button nz-button appIconAction="add" nzType="dashed" type="button" (click)="addRule()"></button>
     </form>
   </ng-container>
 </nz-modal>

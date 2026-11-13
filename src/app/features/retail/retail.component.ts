@@ -5,7 +5,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -32,7 +31,7 @@ import {
   UpdateLoyaltyCardPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { MoneyPipe, PageHeaderComponent, IconActionDirective, ModalActionsDirective } from '@shared';
 import { formErrorTip } from '../inventory/form-error-tip';
 import { positiveNumber } from '@shared/utils/decimal-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -42,6 +41,8 @@ import { TranslatePipe } from '@shared';
   selector: 'app-retail',
   styleUrl: './retail.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -63,7 +64,6 @@ import { TranslatePipe } from '@shared';
     NzModalModule,
     NzFormModule,
     NzDividerModule,
-    NzDrawerModule,
     PageHeaderComponent,
   ],
   templateUrl: './retail.component.html',

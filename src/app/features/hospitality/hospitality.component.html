@@ -3,14 +3,8 @@
   [subtitle]="'HOSPITALITY.SUBTITLE' | translate"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateOrderModal()">
-      <span nz-icon nzType="plus"></span>
-      {{ 'HOSPITALITY.NEW_ORDER' | translate }}
-    </button>
-    <button nz-button (click)="openCreateReservationModal()">
-      <span nz-icon nzType="plus"></span>
-      {{ 'HOSPITALITY.NEW_RESERVATION' | translate }}
-    </button>
+    <button nz-button nzType="primary" (click)="openCreateOrderModal()" appIconAction="create"></button>
+    <button nz-button (click)="openCreateReservationModal()" appIconAction="create"></button>
   </div>
 </app-page-header>
 
@@ -68,14 +62,8 @@
           </nz-select>
         </div>
         <div class="actions">
-          <button nz-button (click)="openCreateRoomModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'HOSPITALITY.NEW_ROOM' | translate }}
-          </button>
-          <button nz-button nzType="primary" (click)="openCreateTableModal()" [disabled]="!selectedRoomId()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'HOSPITALITY.NEW_TABLE' | translate }}
-          </button>
+          <button nz-button (click)="openCreateRoomModal()" appIconAction="create"></button>
+          <button nz-button nzType="primary" (click)="openCreateTableModal()" [disabled]="!selectedRoomId()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -145,10 +133,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'HOSPITALITY.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateOrderModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'HOSPITALITY.NEW_ORDER' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openCreateOrderModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -288,10 +273,7 @@
           <span nz-icon nzType="reload"></span>
           {{ 'HOSPITALITY.REFRESH' | translate }}
         </button>
-        <button nz-button nzType="primary" (click)="openCreateReservationModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'HOSPITALITY.NEW_RESERVATION' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateReservationModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -341,9 +323,8 @@
                       nz-popconfirm
                       [nzPopconfirmTitle]="'HOSPITALITY.CONFIRM_CANCEL_RES' | translate"
                       (nzOnConfirm)="cancelReservation(res)"
-                    >
-                      {{ 'HOSPITALITY.CANCEL' | translate }}
-                    </button>
+                      appIconAction="cancel"
+                    ></button>
                   }
                 </nz-space>
               </td>
@@ -356,13 +337,14 @@
 </nz-card>
 
 <!-- ORDER DETAILS DRAWER -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="640"
+  [nzWidth]="800"
   [nzTitle]="'HOSPITALITY.ORDER_DETAILS' | translate"
-  (nzOnClose)="closeOrderDrawer()"
+  (nzOnCancel)="closeOrderDrawer()"
+  [nzFooter]="null"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedOrder(); as ord) {
       <div class="drawer-header-info">
         <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
@@ -387,10 +369,7 @@
       </div>
 
       <div class="drawer-actions-bar">
-        <button nz-button nzType="primary" (click)="openAddItemModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'HOSPITALITY.ADD_ITEM' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openAddItemModal()" appIconAction="add"></button>
         <nz-space>
           <button *nzSpaceItem nz-button (click)="fireCourse(1)">
             {{ 'HOSPITALITY.FIRE_COURSE_1' | translate }}
@@ -449,9 +428,8 @@
                       nz-popconfirm
                       [nzPopconfirmTitle]="'HOSPITALITY.CONFIRM_VOID_ITEM' | translate"
                       (nzOnConfirm)="voidItem(item.id)"
-                    >
-                      <span nz-icon nzType="delete"></span>
-                    </button>
+                      appIconAction="delete"
+                    ></button>
                   } @else {
                     <nz-tag nzColor="default">{{ 'HOSPITALITY.VOIDED' | translate }}</nz-tag>
                   }
@@ -463,7 +441,7 @@
       </div>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: NEW ROOM -->
 <nz-modal
@@ -471,6 +449,7 @@
   [nzTitle]="'HOSPITALITY.NEW_ROOM' | translate"
   (nzOnCancel)="roomModalVisible.set(false)"
   (nzOnOk)="saveRoom()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="roomForm" nzLayout="vertical">
@@ -496,6 +475,7 @@
   [nzTitle]="'HOSPITALITY.NEW_TABLE' | translate"
   (nzOnCancel)="tableModalVisible.set(false)"
   (nzOnOk)="saveTable()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="tableForm" nzLayout="vertical">
@@ -540,6 +520,7 @@
   [nzTitle]="'HOSPITALITY.NEW_ORDER' | translate"
   (nzOnCancel)="orderModalVisible.set(false)"
   (nzOnOk)="saveOrder()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
@@ -575,6 +556,7 @@
   [nzTitle]="'HOSPITALITY.ADD_ITEM' | translate"
   (nzOnCancel)="addItemModalVisible.set(false)"
   (nzOnOk)="saveItem()"
+  okAction="add"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="addItemForm" nzLayout="vertical">
@@ -626,6 +608,7 @@
   [nzTitle]="'HOSPITALITY.MOVE_TABLE' | translate"
   (nzOnCancel)="moveOrderModalVisible.set(false)"
   (nzOnOk)="saveMoveOrder()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="moveOrderForm" nzLayout="vertical">
@@ -649,6 +632,7 @@
   [nzTitle]="'HOSPITALITY.PAY_ORDER' | translate"
   (nzOnCancel)="payModalVisible.set(false)"
   (nzOnOk)="savePayment()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="payForm" nzLayout="vertical">
@@ -696,6 +680,7 @@
   [nzTitle]="'HOSPITALITY.NEW_RESERVATION' | translate"
   (nzOnCancel)="reservationModalVisible.set(false)"
   (nzOnOk)="saveReservation()"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="reservationForm" nzLayout="vertical">

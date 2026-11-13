@@ -3,7 +3,6 @@ import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } f
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
@@ -13,6 +12,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { AlertsApiService, AlertFilterParams, AlertResource, AlertSeverity, TranslateService } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
   PageHeaderComponent,
   TableColumnDef,
   TableQueryParams,
@@ -33,7 +33,7 @@ import { AlertFormDrawerComponent } from './components/alert-form-drawer.compone
     NzButtonModule,
     NzInputModule,
     NzSelectModule,
-    NzIconModule,
+    IconActionDirective,
     NzPopconfirmModule,
     NzSwitchModule,
     BaseTableComponent,

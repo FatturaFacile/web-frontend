@@ -1,6 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -16,7 +16,7 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
 @Component({
   selector: 'app-reason-button',
   styleUrl: './reason-button.component.scss',
-  imports: [ReactiveFormsModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  imports: [ModalActionsDirective, ReactiveFormsModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <button nz-button nzSize="small" type="button" [nzDanger]="danger()" [nzLoading]="loading()" (click)="open()">
       {{ labelKey() | translate }}
@@ -24,9 +24,8 @@ export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
     <nz-modal
       [nzVisible]="visible()"
       [nzTitle]="labelKey() | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkDanger]="danger()"
+      [nzOkDisabled]="reason.invalid"
       (nzOnOk)="confirm()"
       (nzOnCancel)="visible.set(false)"
     >

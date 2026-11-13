@@ -17,7 +17,7 @@ import {
   TicketPriority,
   TicketStatus,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const ACTIONS: readonly BulkTicketAction[] = ['status', 'priority', 'assign', 'add_tags', 'remove_tags', 'macro'];
 const STATUSES: readonly TicketStatus[] = ['new', 'open', 'pending_customer', 'on_hold', 'resolved', 'closed'];
@@ -27,7 +27,7 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
 @Component({
   selector: 'app-ticket-bulk-modal',
   styleUrl: './ticket-bulk-modal.component.scss',
-  imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe, IconActionDirective, ModalActionsDirective],
   template: `
     <nz-modal
       [nzVisible]="open()"
@@ -94,10 +94,8 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
         }
       </ng-container>
       <ng-template #footer>
-        <button nz-button type="button" (click)="open.set(false)">{{ 'TICKET_BULK.CLOSE' | translate }}</button>
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!valid()" (click)="apply()">
-          {{ 'TICKET_BULK.APPLY' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="close" (click)="open.set(false)"></button>
+        <button nz-button nzType="primary" type="button" appIconAction="confirm" [nzLoading]="saving()" [disabled]="!valid()" (click)="apply()"></button>
       </ng-template>
     </nz-modal>
   `,

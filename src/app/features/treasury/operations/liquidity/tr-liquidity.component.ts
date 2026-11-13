@@ -22,13 +22,15 @@ import {
   RecurringCashItem,
   TreasuryOpsApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-tr-liquidity',
   styleUrl: './tr-liquidity.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     NzAlertModule,

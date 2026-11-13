@@ -1,8 +1,8 @@
 import { Component, effect, inject, input, model, output, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -17,14 +17,16 @@ import {
   LookupService,
   TranslateService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-expense-form-drawer',
   styleUrl: './expense-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,

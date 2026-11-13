@@ -23,7 +23,7 @@ import {
   PermissionsService,
   TreasuryOpsApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 import { GlLookupStore } from '../../../general-ledger/shared/gl-lookup.store';
 import { notInFuture } from '@shared/utils/date-validators';
 
@@ -31,6 +31,8 @@ import { notInFuture } from '@shared/utils/date-validators';
   selector: 'app-tr-cash-registers',
   styleUrl: './tr-cash-registers.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzAlertModule,
     NzButtonModule,

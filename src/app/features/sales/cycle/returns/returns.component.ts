@@ -5,7 +5,6 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -24,7 +23,15 @@ import {
   SalesReturn,
   SalesReturnItem,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams, TranslatePipe } from '@shared';
+import {
+  BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
+  PageHeaderComponent,
+  TableColumnDef,
+  TableQueryParams,
+  TranslatePipe,
+} from '@shared';
 import { CycleReturnsFacade } from '../cycle.facades';
 import { apiErrorText } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
@@ -44,13 +51,14 @@ interface ReceiveDraft {
   selector: 'app-cycle-returns',
   styleUrl: './returns.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzCheckboxModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,

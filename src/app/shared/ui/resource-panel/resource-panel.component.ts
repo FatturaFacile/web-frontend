@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PermissionsService, ResourceApiService, ResourceRow, unwrapResponse } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -15,6 +14,7 @@ import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable, of } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { IconActionDirective, ModalActionsDirective } from '../action-icon';
 import { ResourceDetailComponent } from './resource-detail.component';
 import { ResourceFormComponent } from './resource-form.component';
 import { ResourceLabelsService } from './resource-labels.service';
@@ -33,9 +33,10 @@ interface ActiveForm {
   styleUrl: './resource-panel.component.scss',
   imports: [
     FormsModule,
+    IconActionDirective,
+    ModalActionsDirective,
     RouterLink,
     NzButtonModule,
-    NzDrawerModule,
     NzEmptyModule,
     NzIconModule,
     NzInputModule,

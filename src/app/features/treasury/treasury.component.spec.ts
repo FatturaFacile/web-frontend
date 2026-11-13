@@ -1,3 +1,4 @@
+import { WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -253,7 +254,7 @@ describe('TreasuryComponent', () => {
 
   it('imports a CAMT file through the payment import, not the deprecated treasury endpoint', () => {
     const file = new File(['<xml/>'], 'camt053.xml', { type: 'text/xml' });
-    (component as unknown as { selectedFile: File | null }).selectedFile = file;
+    (component as unknown as { selectedFile: WritableSignal<File | null> }).selectedFile.set(file);
     (component as unknown as { importFormat: string }).importFormat = 'camt';
     component.submitImport();
     expect(billingApiMock.uploadPaymentImport).toHaveBeenCalledWith(file);

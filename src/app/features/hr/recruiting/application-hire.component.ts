@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { applyServerErrors, HrTalentApiService, I18nService, isValidationError } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -23,14 +23,20 @@ function weeklyHoursRangeValidator(control: AbstractControl): ValidationErrors |
 @Component({
   selector: 'app-application-hire',
   styleUrl: './application-hire.component.scss',
-  imports: [ReactiveFormsModule, NzFormModule, NzInputModule, NzModalModule, TranslatePipe],
+  imports: [
+    ModalActionsDirective,
+    ReactiveFormsModule,
+    NzFormModule,
+    NzInputModule,
+    NzModalModule,
+    TranslatePipe,
+  ],
   template: `
     <nz-modal
       [nzVisible]="applicationId() !== null"
       [nzTitle]="'hrmRecruiting.hire' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="saving()"
+      [nzOkDisabled]="form.invalid"
       (nzOnOk)="submit()"
       (nzOnCancel)="closed.emit()"
     >

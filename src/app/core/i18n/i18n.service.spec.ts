@@ -112,4 +112,32 @@ describe('I18nService', () => {
     const result = await service.loadInitialTranslations();
     expect(Array.isArray(result)).toBe(true);
   });
+
+  it('waitForInitialTranslations stays pending while the API fails and resolves once it recovers', async () => {
+    vi.useFakeTimers();
+    try {
+      let settled = false;
+      const waiting = service.waitForInitialTranslations().then(() => {
+        settled = true;
+      });
+
+      // Primo tentativo (it + en fallback): 502 su entrambe
+      httpTesting.match(() => true).forEach((req) => req.error(new ProgressEvent('error'), { status: 502 }));
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(settled).toBe(false);
+
+      // Secondo tentativo: l'API risponde
+      httpTesting.match(() => true).forEach((req) =>
+        req.flush({
+          locale: req.request.url.endsWith('/it') ? 'it' : 'en',
+          translations: { 'NAV.DASHBOARD': 'Ok' },
+        }),
+      );
+      await vi.advanceTimersByTimeAsync(0);
+      await waiting;
+      expect(settled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

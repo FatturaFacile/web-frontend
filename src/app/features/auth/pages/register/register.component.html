@@ -186,7 +186,7 @@
           }
         </ng-template>
 
-        <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+        <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()" [disabled]="form.invalid">
           {{ "AUTH.REGISTER_BTN" | translate }}
         </button>
       </form>

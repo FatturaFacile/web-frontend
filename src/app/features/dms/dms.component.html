@@ -51,10 +51,7 @@
           </button>
         </div>
 
-        <button nz-button nzType="primary" (click)="openCreateDocModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'DMS.NEW_DOCUMENT' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDocModal()"></button>
       </div>
 
       <nz-table
@@ -196,9 +193,8 @@
                     nzDanger
                     nzSize="small"
                     (click)="deleteDocument(doc)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                    appIconAction="delete"
+                  ></button>
                 </nz-space>
               </td>
             </tr>
@@ -210,10 +206,7 @@
     <!-- TAB 2: CARTELLE & GERARCHIA -->
     <nz-tab [nzTitle]="'DMS.TAB_FOLDERS' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreateFolderModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'DMS.NEW_FOLDER' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFolderModal()"></button>
         <button nz-button nzType="default" (click)="loadFolders()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -250,9 +243,7 @@
               </td>
               <td>{{ folder.documents_count ?? '-' }}</td>
               <td nzAlign="right">
-                <button nz-button nzDanger nzSize="small" (click)="deleteFolder(folder)">
-                  <span nz-icon nzType="delete"></span>
-                </button>
+                <button nz-button nzDanger nzSize="small" (click)="deleteFolder(folder)" appIconAction="delete"></button>
               </td>
             </tr>
           }
@@ -263,10 +254,7 @@
     <!-- TAB 3: POLICY DI CONSERVAZIONE (RETENTION) -->
     <nz-tab [nzTitle]="'DMS.TAB_RETENTION' | translate">
       <div class="tab-toolbar">
-        <button nz-button nzType="primary" (click)="openCreatePolicyModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'DMS.NEW_POLICY' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreatePolicyModal()"></button>
         <button nz-button nzType="default" (click)="loadRetentionPolicies()">
           <span nz-icon nzType="reload"></span>
           {{ 'COMMON.RELOAD' | translate }}
@@ -309,9 +297,7 @@
                 </nz-tag>
               </td>
               <td nzAlign="right">
-                <button nz-button nzDanger nzSize="small" (click)="deleteRetentionPolicy(policy)">
-                  <span nz-icon nzType="delete"></span>
-                </button>
+                <button nz-button nzDanger nzSize="small" (click)="deleteRetentionPolicy(policy)" appIconAction="delete"></button>
               </td>
             </tr>
           }
@@ -351,19 +337,14 @@
               ></nz-switch>
             </div>
 
-            <button nz-button nzType="primary" (click)="saveAiSettings()" class="mt-3">
-              {{ 'COMMON.SAVE' | translate }}
-            </button>
+            <button nz-button nzType="primary" appIconAction="save" (click)="saveAiSettings()" class="mt-3"></button>
           </div>
         </div>
 
         <div class="section-box">
           <div class="tab-toolbar">
             <h4>{{ 'DMS.TAGS_MANAGEMENT' | translate }}</h4>
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateTagModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'DMS.NEW_TAG' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateTagModal()"></button>
           </div>
 
           <nz-table [nzData]="tags()" [nzFrontPagination]="true" [nzLoading]="tagsLoading()">
@@ -382,9 +363,7 @@
                     <nz-tag [nzColor]="tag.color || 'blue'">{{ tag.name }}</nz-tag>
                   </td>
                   <td nzAlign="right">
-                    <button nz-button nzDanger nzSize="small" (click)="deleteTag(tag)">
-                      <span nz-icon nzType="delete"></span>
-                    </button>
+                    <button nz-button nzDanger nzSize="small" (click)="deleteTag(tag)" appIconAction="delete"></button>
                   </td>
                 </tr>
               }
@@ -398,10 +377,12 @@
 
 <!-- MODAL: CARICA NUOVO DOCUMENTO -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createDocModalVisible()"
   [nzTitle]="'DMS.NEW_DOCUMENT' | translate"
   [nzOkLoading]="createDocSubmitting()"
   (nzOnCancel)="createDocModalVisible.set(false)"
+  [nzOkDisabled]="docForm.invalid || !docFile() || !!docFileError()"
   (nzOnOk)="submitCreateDoc()"
 >
   <ng-container *nzModalContent>
@@ -488,6 +469,7 @@
   [nzTitle]="'DMS.CHECK_IN_TITLE' | translate"
   [nzOkLoading]="checkInSubmitting()"
   (nzOnCancel)="checkInModalVisible.set(false)"
+  [nzOkDisabled]="!checkInFile() || !!checkInFileError()"
   (nzOnOk)="submitCheckIn()"
 >
   <ng-container *nzModalContent>
@@ -513,6 +495,7 @@
   [nzTitle]="'DMS.LEGAL_HOLD_TITLE' | translate"
   [nzOkLoading]="legalHoldSubmitting()"
   (nzOnCancel)="legalHoldModalVisible.set(false)"
+  [nzOkDisabled]="!legalHoldReason().trim()"
   (nzOnOk)="submitLegalHold()"
 >
   <ng-container *nzModalContent>
@@ -535,10 +518,12 @@
 
 <!-- MODAL: CREA CARTELLA -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createFolderModalVisible()"
   [nzTitle]="'DMS.NEW_FOLDER' | translate"
   [nzOkLoading]="folderSubmitting()"
   (nzOnCancel)="createFolderModalVisible.set(false)"
+  [nzOkDisabled]="folderForm.invalid"
   (nzOnOk)="submitCreateFolder()"
 >
   <ng-container *nzModalContent>
@@ -555,10 +540,12 @@
 
 <!-- MODAL: CREA POLICY RETENTION -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createPolicyModalVisible()"
   [nzTitle]="'DMS.NEW_POLICY' | translate"
   [nzOkLoading]="policySubmitting()"
   (nzOnCancel)="createPolicyModalVisible.set(false)"
+  [nzOkDisabled]="policyForm.invalid"
   (nzOnOk)="submitCreatePolicy()"
 >
   <ng-container *nzModalContent>
@@ -594,10 +581,12 @@
 
 <!-- MODAL: CREA TAG -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createTagModalVisible()"
   [nzTitle]="'DMS.NEW_TAG' | translate"
   [nzOkLoading]="tagSubmitting()"
   (nzOnCancel)="createTagModalVisible.set(false)"
+  [nzOkDisabled]="tagForm.invalid"
   (nzOnOk)="submitCreateTag()"
 >
   <ng-container *nzModalContent>
@@ -613,13 +602,14 @@
 </nz-modal>
 
 <!-- DRAWER: DETTAGLIO DOCUMENTO, VERSIONI & OCR EXTRACTION -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="640"
+  [nzWidth]="900"
+  [nzFooter]="null"
   [nzTitle]="selectedDocument()?.title || ('DMS.DOCUMENT_DETAILS' | translate)"
-  (nzOnClose)="drawerVisible.set(false)"
+  (nzOnCancel)="drawerVisible.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedDocument(); as doc) {
       <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
         <nz-descriptions-item [nzTitle]="'DMS.DOC_TYPE' | translate">
@@ -705,18 +695,16 @@
                       nzType="primary"
                       nzSize="small"
                       (click)="confirmExtraction(extr)"
-                    >
-                      <span nz-icon nzType="check"></span>
-                    </button>
+                      appIconAction="confirm"
+                    ></button>
                     <button
                       *nzSpaceItem
                       nz-button
                       nzDanger
                       nzSize="small"
                       (click)="rejectExtraction(extr)"
-                    >
-                      <span nz-icon nzType="close"></span>
-                    </button>
+                      appIconAction="close"
+                    ></button>
                   </nz-space>
                 </td>
               </tr>
@@ -730,10 +718,7 @@
       <!-- LINK ENTITÀ ERP -->
       <div class="tab-toolbar mt-4">
         <h4>{{ 'DMS.LINKED_ENTITIES' | translate }}</h4>
-        <button nz-button nzType="default" nzSize="small" (click)="openLinkModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'DMS.LBL_COLLEGA' | translate }}
-        </button>
+        <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openLinkModal()"></button>
       </div>
       @if (docLinks().length > 0) {
         <nz-table [nzData]="docLinks()" [nzFrontPagination]="false" [nzShowPagination]="false">
@@ -752,9 +737,7 @@
                 </td>
                 <td>{{ l.label || l.linkable_id }}</td>
                 <td nzAlign="right">
-                  <button nz-button nzDanger nzSize="small" (click)="removeLink(l)">
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                  <button nz-button nzDanger nzSize="small" (click)="removeLink(l)" appIconAction="delete"></button>
                 </td>
               </tr>
             }
@@ -788,13 +771,15 @@
       </nz-table>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: COLLEGA ENTITÀ GESTIONALE -->
 <nz-modal
+  okAction="add"
   [nzVisible]="linkModalVisible()"
   [nzTitle]="'DMS.LINK_ENTITY_TITLE' | translate"
   (nzOnCancel)="linkModalVisible.set(false)"
+  [nzOkDisabled]="linkForm.invalid"
   (nzOnOk)="submitLink()"
 >
   <ng-container *nzModalContent>

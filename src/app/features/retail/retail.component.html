@@ -58,9 +58,7 @@
           <span nz-icon nzType="reload"></span> {{ 'retail.lblAggiorna' | translate }}
         </button>
 
-        <button nz-button nzType="primary" type="button" (click)="openCreateModal()">
-          <span nz-icon nzType="plus"></span> {{ 'retail.lblNuovoDocumentoCommerciale' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" (click)="openCreateModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -101,9 +99,7 @@
               </td>
               <td class="cell-actions">
                 @if (d.status === 'issued') {
-                  <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="voidDocument(d)">
-                    {{ 'retail.lblAnnulla' | translate }}
-                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="voidDocument(d)" appIconAction="cancel"></button>
                 } @else {
                   <span class="text-muted small">{{ 'retail.lblAnnullato' | translate }}</span>
                 }
@@ -162,9 +158,7 @@
           <span nz-icon nzType="reload"></span> {{ 'retail.lblAggiorna' | translate }}
         </button>
 
-        <button nz-button nzType="primary" type="button" (click)="openIssueCardModal()">
-          <span nz-icon nzType="plus"></span> {{ 'retail.lblNuovaCartaFedelta' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" (click)="openIssueCardModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -234,9 +228,8 @@
                   nzSize="small"
                   type="button"
                   (click)="deleteLoyaltyCard(card)"
-                >
-                  {{ 'retail.lblElimina' | translate }}
-                </button>
+                  appIconAction="delete"
+                ></button>
               </td>
             </tr>
           }
@@ -254,6 +247,7 @@
   (nzOnCancel)="isCreateModalVisible.set(false)"
   (nzOnOk)="submitDocument()"
   nzWidth="700px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="docForm" nzLayout="vertical">
@@ -301,16 +295,12 @@
                 <nz-option [nzValue]="0" nzLabel="0%"></nz-option>
               </nz-select>
             </div>
-            <button nz-button nzType="text" nzDanger type="button" (click)="removeLine($index)">
-              <span nz-icon nzType="delete"></span>
-            </button>
+            <button nz-button nzType="text" nzDanger type="button" (click)="removeLine($index)" appIconAction="delete"></button>
           </div>
         }
       </div>
 
-      <button nz-button nzType="dashed" nzBlock type="button" (click)="addLine()" class="add-line">
-        <span nz-icon nzType="plus"></span> {{ 'retail.lblAggiungiRiga' | translate }}
-      </button>
+      <button nz-button nzType="dashed" nzBlock type="button" (click)="addLine()" class="add-line" appIconAction="add"></button>
     </form>
   </ng-container>
 </nz-modal>
@@ -322,6 +312,7 @@
   [nzOkLoading]="isSubmittingLoyalty()"
   (nzOnCancel)="isIssueCardModalVisible.set(false)"
   (nzOnOk)="submitIssueCard()"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="issueCardForm" nzLayout="vertical">
@@ -382,6 +373,7 @@
   [nzOkLoading]="isSubmittingLoyalty()"
   (nzOnCancel)="isRecordTxModalVisible.set(false)"
   (nzOnOk)="submitRecordTx()"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     @if (selectedLoyaltyCard(); as card) {
@@ -429,13 +421,14 @@
 </nz-modal>
 
 <!-- DRAWER: STORICO MOVIMENTI CARTA FEDELTÀ -->
-<nz-drawer
+<nz-modal
   [nzVisible]="isLoyaltyDrawerVisible()"
-  [nzWidth]="500"
+  [nzWidth]="800"
   [nzTitle]="'retail.lblStoricoMovimentiCartaFedelta' | translate"
-  (nzOnClose)="closeLoyaltyDrawer()"
+  (nzOnCancel)="closeLoyaltyDrawer()"
+  [nzFooter]="null"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedLoyaltyCard(); as card) {
       <div class="mb-4">
         <h3 class="card-title">{{ card.card_number }}</h3>
@@ -482,4 +475,4 @@
       </nz-table>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>

@@ -5,7 +5,6 @@ import { AbstractControl, FormGroup, FormsModule, NonNullableFormBuilder, Reacti
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -39,7 +38,7 @@ import {
   StoreContractRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 import { decimalPattern } from '@shared/utils/decimal-validators';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { uuidFormat } from '@shared/utils/uuid-validator';
@@ -64,6 +63,8 @@ function requiredWith(otherKey: string): ValidatorFn {
   selector: 'app-contract-register',
   styleUrl: './contract-register.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
@@ -79,7 +80,6 @@ function requiredWith(otherKey: string): ValidatorFn {
     NzSwitchModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzIconModule,

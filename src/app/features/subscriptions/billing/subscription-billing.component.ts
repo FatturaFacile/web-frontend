@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -18,7 +18,7 @@ import {
   SubscriptionRevenueForecast,
   UsageEvent,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { ContractChangesComponent } from './contract-changes.component';
 
 const DECIMAL = /^\d+(\.\d{1,4})?$/;
@@ -28,10 +28,12 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
   selector: 'app-subscription-billing',
   styleUrl: './subscription-billing.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
-    NzDrawerModule,
+    NzModalModule,
     NzIconModule,
     NzInputModule,
     NzPopconfirmModule,

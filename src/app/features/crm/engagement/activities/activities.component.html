@@ -28,9 +28,7 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <nz-icon nzType="plus" /> {{ 'CRMX.ACTIVITIES.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
     }
   </div>
 
@@ -96,6 +94,7 @@
 </nz-card>
 
 <nz-modal
+  okAction="create"
   [nzVisible]="createOpen()"
   [nzTitle]="'CRMX.ACTIVITIES.NEW' | translate"
   nzWidth="640px"

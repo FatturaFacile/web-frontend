@@ -8,7 +8,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, Dimension, GeneralLedgerApiService, PermissionsService } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 /** List with create/edit modal of cost centres or profit centres. */
@@ -16,6 +16,8 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   selector: 'app-gl-dimension-table',
   styleUrl: './gl-dimension-table.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzButtonModule,
     NzFormModule,
@@ -28,9 +30,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   ],
   template: `
     @if (canWrite) {
-      <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)">
-        {{ 'GL.DIMENSION_NEW' | translate }}
-      </button>
+      <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -53,7 +53,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
             </td>
             <td>
               @if (canWrite) {
-                <button nz-button nzSize="small" type="button" (click)="openModal(item)">{{ 'GL.EDIT' | translate }}</button>
+                <button nz-button nzSize="small" type="button" (click)="openModal(item)" appIconAction="edit"></button>
               }
             </td>
           </tr>
@@ -67,6 +67,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
       [nzOkLoading]="saving()"
       (nzOnOk)="save()"
       (nzOnCancel)="modalOpen.set(false)"
+      okAction="save"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="form">

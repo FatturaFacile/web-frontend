@@ -2,7 +2,7 @@ import { Component, inject, input, OnInit, output, signal } from '@angular/core'
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 
@@ -16,15 +16,16 @@ import {
   FixedAssetResource,
   MaintenanceWorkOrderResource,
 } from '@core';
-import { MoneyPipe } from '@shared';
+import { MoneyPipe, ModalActionsDirective } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-asset-detail-drawer',
   styleUrl: './asset-detail-drawer.component.scss',
   imports: [
+    ModalActionsDirective,
     TranslatePipe,
-    NzDrawerModule,
+    NzModalModule,
     NzTabsModule,
     NzDescriptionsModule,
     NzBadgeModule,

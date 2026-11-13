@@ -46,7 +46,7 @@ import {
   WarehouseItem,
   applyServerErrors,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { formErrorTip } from './form-error-tip';
 
 /** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
@@ -71,6 +71,8 @@ function differentFromSourceBin(control: AbstractControl): ValidationErrors | nu
   selector: 'app-inventory',
   styleUrl: './inventory.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     FormsModule,
     DatePipe,

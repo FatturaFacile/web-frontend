@@ -3,7 +3,6 @@ import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
 import { AuthStore, CrmApiService, I18nService, LeadResource, TranslateService } from '@core';
@@ -112,10 +111,6 @@ describe('LeadsComponent', () => {
     info: vi.fn(),
   };
 
-  const mockModal = {
-    confirm: vi.fn(),
-  };
-
   const mockAuthStore = {
     activeJurisdiction: vi.fn().mockReturnValue('CH'),
     activeCurrency: vi.fn().mockReturnValue('CHF'),
@@ -133,7 +128,6 @@ describe('LeadsComponent', () => {
         { provide: TranslateService, useValue: mockTranslate },
         { provide: I18nService, useValue: mockTranslate },
         { provide: NzMessageService, useValue: mockMessage },
-        { provide: NzModalService, useValue: mockModal },
       ],
     }).compileComponents();
 

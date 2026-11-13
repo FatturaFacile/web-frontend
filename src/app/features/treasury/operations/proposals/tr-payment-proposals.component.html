@@ -14,7 +14,7 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'TR.PROPOSAL_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()" appIconAction="create"></button>
     }
   </div>
 
@@ -77,6 +77,8 @@
   [nzTitle]="'TR.PROPOSAL_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="create()"
+  okAction="create"
+  [nzOkDisabled]="form.invalid"
   (nzOnCancel)="createOpen.set(false)"
 >
   <ng-container *nzModalContent>
@@ -125,7 +127,6 @@
 <nz-modal
   [nzVisible]="rejectTarget() !== null"
   [nzTitle]="'TR.REJECT' | translate"
-  [nzOkText]="'TR.REJECT' | translate"
   [nzOkDanger]="true"
   [nzOkDisabled]="!rejectReason.trim()"
   (nzOnOk)="confirmReject()"

@@ -2,7 +2,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'EA.LOCATIONS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" class="mb-4" type="button" (click)="openLocation(null)">{{ 'EA.LOCATION_NEW' | translate }}</button>
+        <button nz-button nzType="primary" class="mb-4" type="button" appIconAction="add" (click)="openLocation(null)"></button>
       }
       <nz-table #locationTable nzSize="middle" [nzData]="locations()" [nzPageSize]="20">
         <thead>
@@ -27,7 +27,7 @@
               </td>
               <td>
                 @if (canWrite) {
-                  <button nz-button nzSize="small" type="button" (click)="openLocation(location)">{{ 'EA.EDIT' | translate }}</button>
+                  <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openLocation(location)"></button>
                 }
               </td>
             </tr>
@@ -38,7 +38,7 @@
 
     <nz-tab [nzTitle]="'EA.CLASSES' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" class="mb-4" type="button" (click)="openClass()">{{ 'EA.CLASS_NEW' | translate }}</button>
+        <button nz-button nzType="primary" class="mb-4" type="button" appIconAction="add" (click)="openClass()"></button>
       }
       <nz-table #classTable nzSize="middle" [nzData]="classes()" [nzPageSize]="20">
         <thead>
@@ -70,6 +70,8 @@
   [nzVisible]="modal() === 'location'"
   [nzTitle]="'EA.LOCATION_FORM' | translate"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="locationForm.invalid"
+  okAction="save"
   (nzOnOk)="saveLocation()"
   (nzOnCancel)="modal.set(null)"
 >
@@ -139,6 +141,8 @@
   [nzVisible]="modal() === 'class'"
   [nzTitle]="'EA.CLASS_NEW' | translate"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="classForm.invalid"
+  okAction="create"
   (nzOnOk)="saveClass()"
   (nzOnCancel)="modal.set(null)"
 >

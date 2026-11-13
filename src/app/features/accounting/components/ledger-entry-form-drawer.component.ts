@@ -9,17 +9,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AccountingApiService, CreateLedgerEntryPayload, TranslateService } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 /** Local calendar day as YYYY-MM-DD (no UTC shift). */
 export function toIsoDay(date: Date): string {
@@ -33,14 +32,15 @@ export function toIsoDay(date: Date): string {
   styleUrl: './ledger-entry-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,
     NzDatePickerModule,
     NzButtonModule,
     NzCheckboxModule,
-    NzIconModule,
     NzSelectModule,
     TranslatePipe,
   ],

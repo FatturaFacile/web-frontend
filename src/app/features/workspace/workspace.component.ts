@@ -24,12 +24,13 @@ import {
   WorkspaceScope,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-workspace',
   styleUrl: './workspace.component.scss',
   imports: [
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,

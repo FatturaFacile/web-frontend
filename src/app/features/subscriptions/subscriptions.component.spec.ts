@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
@@ -117,9 +116,6 @@ describe('SubscriptionsComponent', () => {
     error: vi.fn(),
   };
 
-  const mockModal = {
-    confirm: vi.fn(),
-  };
 
   const mockAuthStore = {
     activeCurrency: vi.fn().mockReturnValue('CHF'),
@@ -135,7 +131,6 @@ describe('SubscriptionsComponent', () => {
         { provide: SubscriptionApiService, useValue: mockSubApi },
         { provide: AuthStore, useValue: mockAuthStore },
         { provide: NzMessageService, useValue: mockMessage },
-        { provide: NzModalService, useValue: mockModal },
       ],
     }).compileComponents();
 

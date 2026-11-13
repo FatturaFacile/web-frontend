@@ -13,7 +13,6 @@ import {
 import { applyServerErrors, ResourceRow } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -21,6 +20,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { Observable, startWith } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { IconActionDirective } from '../action-icon/icon-action.directive';
 import { ResourceLabelsService } from './resource-labels.service';
 import { ResourceLookupService, ResourceOption } from './resource-lookup.service';
 import { ResourceField } from './resource-panel.types';
@@ -74,7 +74,7 @@ function positiveValidator(control: AbstractControl): ValidationErrors | null {
     ReactiveFormsModule,
     NzButtonModule,
     NzFormModule,
-    NzIconModule,
+    IconActionDirective,
     NzInputModule,
     NzInputNumberModule,
     NzSelectModule,

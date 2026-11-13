@@ -9,7 +9,7 @@ import {
   AssociationAreaProfile,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -89,7 +89,7 @@ import { saveBlob } from './save-blob';
             <input nz-input id="area-canton" formControlName="state_canton" />
           </nz-form-control>
         </nz-form-item>
-        <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'ASSOC_AREA.SAVE' | translate }}</button>
+        <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid"></button>
       </form>
 
       <h3 class="area-section">{{ 'ASSOC_AREA.CARD' | translate }}</h3>

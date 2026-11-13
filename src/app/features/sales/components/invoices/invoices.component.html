@@ -38,9 +38,7 @@
     <button nz-button nzType="default" type="button" (click)="sendBulkSdi()">
       <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_SDI_MASSIVO' | translate }}
     </button>
-    <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> {{ "SALES.INVOICES.NEW" | translate }}
-    </button>
+    <button nz-button appIconAction="create" nzType="primary" type="button" (click)="create()"></button>
   </div>
 
   <app-base-table
@@ -213,7 +211,7 @@
     }
   </ng-container>
   <ng-template #qrModalFooter>
-    <button nz-button nzType="primary" (click)="qrModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="qrModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>
 
@@ -277,7 +275,7 @@
     }
   </ng-container>
   <ng-template #sdiFooter>
-    <button nz-button nzType="primary" (click)="sdiLogsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="sdiLogsModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>
 
@@ -286,7 +284,9 @@
   [nzVisible]="creditNoteModalVisible()"
   [nzTitle]="'SALES.LBL_EMETTI_NOTA_DI_CREDITO' | translate"
   [nzOkLoading]="savingCreditNote()"
+  [nzOkDisabled]="creditNoteForm.invalid"
   (nzOnCancel)="creditNoteModalVisible.set(false)"
+  okAction="create"
   (nzOnOk)="submitCreditNote()"
 >
   <ng-container *nzModalContent>
@@ -368,6 +368,6 @@
     </nz-table>
   </ng-container>
   <ng-template #instFooter>
-    <button nz-button nzType="primary" (click)="installmentsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="installmentsModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>

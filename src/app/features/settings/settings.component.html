@@ -81,9 +81,14 @@
         </div>
 
         <div class="form-actions">
-          <button nz-button nzType="primary" type="submit" [nzLoading]="isSavingTenant()">
-            {{ 'settings.form.save' | translate }}
-          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            appIconAction="save"
+            [nzLoading]="isSavingTenant()"
+            [disabled]="tenantForm.invalid"
+          ></button>
         </div>
       </form>
     </nz-tab>

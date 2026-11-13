@@ -8,10 +8,7 @@
         <nz-icon nzType="sync" />
         {{ 'subscriptions.lblRunDunning' | translate }}
       </button>
-      <button *nzSpaceItem nz-button nzType="primary" (click)="openCreateModal()">
-        <nz-icon nzType="plus" />
-        {{ 'subscriptions.lblNewContract' | translate }}
-      </button>
+      <button *nzSpaceItem nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
     </nz-space>
   </div>
 </app-page-header>
@@ -154,6 +151,8 @@
   [nzTitle]="'subscriptions.lblNewSubscriptionContract' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateContract()"
+  okAction="create"
+  [nzOkDisabled]="contractForm.invalid"
   [nzOkLoading]="saving()"
   [nzWidth]="580"
 >

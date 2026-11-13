@@ -166,9 +166,7 @@
 
         <div class="spacer"></div>
 
-        <button nz-button nzType="primary" (click)="openTransferModal()">
-          <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.NEW_TRANSFER' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openTransferModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -245,9 +243,7 @@
     <!-- TAB 2: ADJUSTMENTS -->
     <nz-tab [nzTitle]="'INVENTORY.TABS.ADJUSTMENTS' | translate">
       <div class="toolbar">
-        <button nz-button nzType="primary" (click)="openAdjustmentModal()">
-          <nz-icon nzType="plus" /> {{ 'INVENTORY.ACTIONS.NEW_ADJUSTMENT' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openAdjustmentModal()" appIconAction="create"></button>
         <nz-select
           class="filter-select"
           [ngModel]="adjustmentStatusFilter()"
@@ -347,9 +343,7 @@
     <!-- TAB 3: PHYSICAL COUNTS -->
     <nz-tab [nzTitle]="'INVENTORY.TABS.COUNTS' | translate">
       <div class="toolbar">
-        <button nz-button nzType="primary" (click)="openCountModal()">
-          <nz-icon nzType="plus" /> {{ 'INVENTORY.ACTIONS.NEW_COUNT' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCountModal()" appIconAction="create"></button>
         <button nz-button nzType="default" (click)="loadCounts()" [nzLoading]="loading()">
           <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
         </button>
@@ -554,9 +548,7 @@
 
         <div class="spacer"></div>
 
-        <button nz-button nzType="primary" (click)="openCreateModal()">
-          <nz-icon nzType="plus" /> {{ 'COMMON.ADD' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="add"></button>
       </div>
 
       <nz-table
@@ -615,9 +607,8 @@
                   nz-popconfirm
                   [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
                   (nzOnConfirm)="deleteProduct(it)"
-                >
-                  <nz-icon nzType="delete" />
-                </button>
+                  appIconAction="delete"
+                ></button>
               </td>
             </tr>
           } @empty {
@@ -643,6 +634,7 @@
   (nzOnCancel)="transferModalVisible.set(false)"
   (nzOnOk)="submitTransfer()"
   nzWidth="600px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="transferForm" nzLayout="vertical">
@@ -721,6 +713,7 @@
   (nzOnCancel)="adjustmentModalVisible.set(false)"
   (nzOnOk)="submitAdjustment()"
   nzWidth="600px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="adjustmentForm" nzLayout="vertical">
@@ -810,6 +803,7 @@
   [nzOkDanger]="true"
   (nzOnCancel)="rejectingAdjustment.set(null)"
   (nzOnOk)="confirmRejectAdjustment()"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <nz-form-item>
@@ -836,6 +830,7 @@
   (nzOnCancel)="countModalVisible.set(false)"
   (nzOnOk)="submitCount()"
   nzWidth="500px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="countForm" nzLayout="vertical">
@@ -886,6 +881,7 @@
   [nzOkLoading]="saving()"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateProduct()"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="productForm" nzLayout="vertical">

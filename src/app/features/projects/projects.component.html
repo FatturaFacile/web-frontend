@@ -3,10 +3,7 @@
   subtitle="Manage enterprise projects, task schedules, EVM indicators, and billing milestones"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateModal()">
-      <nz-icon nzType="plus" />
-      {{ 'PRJ.LBL_NEW_PROJECT' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
   </div>
 </app-page-header>
 
@@ -124,8 +121,10 @@
   [nzVisible]="createModalVisible()"
   [nzTitle]="'PRJ.LBL_CREATE_NEW_PROJECT' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
+  okAction="create"
   (nzOnOk)="submitCreateProject()"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="projectForm.invalid"
   [nzWidth]="620"
 >
   <ng-container *nzModalContent>

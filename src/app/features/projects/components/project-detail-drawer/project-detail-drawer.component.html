@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="visible()"
-  [nzWidth]="850"
+  [nzWidth]="960"
   [nzTitle]="project().name + ' (' + project().project_number + ')'"
-  (nzOnClose)="onClose()"
+  [nzFooter]="null"
+  (nzOnCancel)="onClose()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <nz-tabs>
       <!-- TAB 1: OVERVIEW & EVM FINANCIALS -->
       <nz-tab [nzTitle]="'projectDetailDrawer.lblOverviewAndEvm' | translate">
@@ -72,10 +73,7 @@
       <nz-tab [nzTitle]="'projectDetailDrawer.lblTasksAndWbs' | translate">
         <div class="tab-content">
           <div class="tab-actions">
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateTaskModal()">
-              <nz-icon nzType="plus" />
-              {{ 'projectDetailDrawer.lblAddTask' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTaskModal()"></button>
           </div>
 
           <nz-table
@@ -119,10 +117,7 @@
       <nz-tab [nzTitle]="'projectDetailDrawer.lblTimesheets' | translate">
         <div class="tab-content">
           <div class="tab-actions">
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateTimesheetModal()">
-              <nz-icon nzType="plus" />
-              {{ 'projectDetailDrawer.lblLogTime' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTimesheetModal()"></button>
           </div>
 
           <nz-table
@@ -181,15 +176,17 @@
       </nz-tab>
     </nz-tabs>
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- Create Task Modal -->
 <nz-modal
   [nzVisible]="createTaskModalVisible()"
   [nzTitle]="'projectDetailDrawer.lblAddProjectTask' | translate"
+  okAction="add"
   (nzOnCancel)="createTaskModalVisible.set(false)"
   (nzOnOk)="submitCreateTask()"
   [nzOkLoading]="savingTask()"
+  [nzOkDisabled]="taskForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="taskForm" nzLayout="vertical">
@@ -248,9 +245,11 @@
 <nz-modal
   [nzVisible]="createTimesheetModalVisible()"
   [nzTitle]="'projectDetailDrawer.lblLogTimeEntry' | translate"
+  okAction="add"
   (nzOnCancel)="createTimesheetModalVisible.set(false)"
   (nzOnOk)="submitCreateTimesheet()"
   [nzOkLoading]="savingTimesheet()"
+  [nzOkDisabled]="timesheetForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="timesheetForm" nzLayout="vertical">

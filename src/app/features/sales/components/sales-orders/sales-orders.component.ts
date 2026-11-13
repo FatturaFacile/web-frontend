@@ -35,13 +35,15 @@ import {
   applyServerErrors,
   contactDisplayName,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-sales-orders',
   styleUrl: './sales-orders.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     FormsModule,
     DatePipe,

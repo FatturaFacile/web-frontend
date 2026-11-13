@@ -231,10 +231,7 @@
             {{ 'COMMON.RELOAD' | translate }}
           </button>
         </div>
-        <button nz-button nzType="primary" (click)="openCreateDefModal()">
-          <span nz-icon nzType="plus"></span>
-          {{ 'WORKFLOWS.NEW_DEFINITION' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateDefModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -307,9 +304,8 @@
                     nzDanger
                     nzSize="small"
                     (click)="deleteDefinition(def)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                    appIconAction="delete"
+                  ></button>
                 </nz-space>
               </td>
             </tr>
@@ -324,10 +320,7 @@
         <div class="section-box">
           <div class="tab-toolbar">
             <h4>{{ 'WORKFLOWS.OUT_OF_OFFICE' | translate }}</h4>
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateDelegationModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'WORKFLOWS.ADD_DELEGATION' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" (click)="openCreateDelegationModal()" appIconAction="add"></button>
           </div>
 
           <nz-table
@@ -372,10 +365,7 @@
         <div class="section-box">
           <div class="tab-toolbar">
             <h4>{{ 'WORKFLOWS.ESCALATION_RULES' | translate }}</h4>
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateRuleModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'WORKFLOWS.ADD_RULE' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" (click)="openCreateRuleModal()" appIconAction="add"></button>
           </div>
 
           <nz-table
@@ -404,9 +394,7 @@
                     <nz-tag>{{ rule.escalate_to_type }}</nz-tag>
                   </td>
                   <td nzAlign="right">
-                    <button nz-button nzDanger nzSize="small" (click)="deleteEscalationRule(rule)">
-                      <span nz-icon nzType="delete"></span>
-                    </button>
+                    <button nz-button nzDanger nzSize="small" (click)="deleteEscalationRule(rule)" appIconAction="delete"></button>
                   </td>
                 </tr>
               }
@@ -495,6 +483,7 @@
   [nzOkLoading]="decisionSubmitting()"
   (nzOnCancel)="decisionModalVisible.set(false)"
   (nzOnOk)="submitDecision()"
+  [nzOkDisabled]="decisionType() === 'rejected' && !decisionComment().trim()"
 >
   <ng-container *nzModalContent>
     @if (selectedTask(); as t) {
@@ -532,6 +521,7 @@
   [nzOkLoading]="startSubmitting()"
   (nzOnCancel)="startModalVisible.set(false)"
   (nzOnOk)="submitStartWorkflow()"
+  [nzOkDisabled]="startForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="startForm" nzLayout="vertical">
@@ -630,7 +620,9 @@
   [nzTitle]="'WORKFLOWS.NEW_DEFINITION' | translate"
   [nzOkLoading]="createDefSubmitting()"
   (nzOnCancel)="createDefModalVisible.set(false)"
-  (nzOnOk)="submitCreateDefinition()"
+  (nzOnOk)="submitCreateDefinition()"
+  okAction="create"
+  [nzOkDisabled]="defForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="defForm" nzLayout="vertical">
@@ -675,7 +667,9 @@
   [nzTitle]="'WORKFLOWS.ADD_DELEGATION' | translate"
   [nzOkLoading]="delegationSubmitting()"
   (nzOnCancel)="createDelegationVisible.set(false)"
-  (nzOnOk)="submitCreateDelegation()"
+  (nzOnOk)="submitCreateDelegation()"
+  okAction="add"
+  [nzOkDisabled]="delegationForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="delegationForm" nzLayout="vertical">
@@ -727,7 +721,9 @@
   [nzTitle]="'WORKFLOWS.ADD_RULE' | translate"
   [nzOkLoading]="ruleSubmitting()"
   (nzOnCancel)="createRuleVisible.set(false)"
-  (nzOnOk)="submitCreateRule()"
+  (nzOnOk)="submitCreateRule()"
+  okAction="add"
+  [nzOkDisabled]="ruleForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="ruleForm" nzLayout="vertical">

@@ -6,9 +6,7 @@
 <nz-card>
   @if (canWrite()) {
     <div class="fwo-actions">
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <span nz-icon nzType="plus"></span>{{ 'FS_WORK_ORDERS.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
     </div>
   }
 
@@ -55,9 +53,7 @@
           <td>
             @if (canWrite()) {
               @if (order.status === 'draft') {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openEdit(order)">
-                  {{ 'RES.ACTION.EDIT' | translate }}
-                </button>
+                <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="openEdit(order)"></button>
                 <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
                   {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
                 </button>
@@ -163,20 +159,16 @@
               <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
               <nz-input-number formControlName="unit_price" [nzMin]="0" [nzStep]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_PRICE' | translate" />
               <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [attr.aria-label]="'FS_WORK_ORDERS.LINE_TAX' | translate" />
-              <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" [attr.aria-label]="'RES.ACTION.REMOVE_LINE' | translate">
-                <span nz-icon nzType="delete"></span>
-              </button>
+              <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" appIconAction="delete"></button>
             </div>
           }
         </div>
-        <button nz-button type="button" (click)="addLine()">
-          <span nz-icon nzType="plus"></span>{{ 'RES.ACTION.ADD_LINE' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="add" (click)="addLine()"></button>
       </fieldset>
     </form>
   </ng-container>
   <ng-template #formFooter>
-    <button nz-button type="button" (click)="formOpen.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="formOpen.set(false)"></button>
+    <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid" (click)="save()"></button>
   </ng-template>
 </nz-modal>

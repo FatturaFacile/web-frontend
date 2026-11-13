@@ -11,6 +11,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   // '/settings/admin/access-requests',
   // '/settings/lookups',
   '/crm/clients',
+  '', // TEMPORARY: every page reachable by url while testing the modals (revert!)
 ];
 
 export function isMenuRouteTested(

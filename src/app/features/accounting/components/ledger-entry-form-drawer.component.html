@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="open()"
   [nzTitle]="'accounting.form.title' | translate"
-  [nzWidth]="640"
-  (nzOnClose)="open.set(false)"
+  [nzWidth]="880"
+  [nzFooter]="null"
+  (nzOnCancel)="open.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item>
         <nz-form-label nzFor="fiscal_period_id">{{
@@ -75,9 +76,7 @@
       <!-- Dynamic Lines Section -->
       <div class="lines-header">
         <h4>{{ "accounting.form.linesTitle" | translate }}</h4>
-        <button nz-button nzType="dashed" nzSize="small" type="button" (click)="addLine()">
-          <nz-icon nzType="plus" /> {{ "SALES.INVOICES.FORM.ADD_ITEM" | translate }}
-        </button>
+        <button nz-button nzType="dashed" nzSize="small" type="button" appIconAction="add" (click)="addLine()"></button>
       </div>
 
       <div formArrayName="lines" class="lines-container">
@@ -112,11 +111,10 @@
               nzDanger
               nzSize="small"
               type="button"
+              appIconAction="delete"
               (click)="removeLine($index)"
               [disabled]="linesArray.length <= 2"
-            >
-              <nz-icon nzType="delete" />
-            </button>
+              ></button>
           </div>
         }
       </div>
@@ -136,19 +134,16 @@
       </div>
 
       <div class="footer-actions">
-        <button nz-button type="button" (click)="open.set(false)">
-          {{ "common.actions.cancel" | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
         <button
           nz-button
           nzType="primary"
           type="submit"
+          appIconAction="save"
           [nzLoading]="isSaving()"
-          [disabled]="totalDebit() !== totalCredit() || totalDebit() === 0"
-        >
-          {{ "common.actions.save" | translate }}
-        </button>
+          [disabled]="form.invalid || totalDebit() !== totalCredit() || totalDebit() === 0"
+        ></button>
       </div>
     </form>
   </ng-container>
-</nz-drawer>
+</nz-modal>

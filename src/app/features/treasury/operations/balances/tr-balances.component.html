@@ -47,8 +47,8 @@
         </nz-select>
         <span class="spacer"></span>
         @if (canWrite) {
-          <button nz-button nzType="primary" type="button" (click)="openModal('transfer')">{{ 'TR.TRANSFER_NEW' | translate }}</button>
-          <button nz-button type="button" (click)="openModal('charge')">{{ 'TR.CHARGE_NEW' | translate }}</button>
+          <button nz-button nzType="primary" type="button" (click)="openModal('transfer')" appIconAction="create"></button>
+          <button nz-button type="button" (click)="openModal('charge')" appIconAction="create"></button>
         }
       </div>
       <nz-table #movementTable nzSize="middle" [nzData]="movements()" [nzShowPagination]="false">
@@ -123,6 +123,8 @@
   [nzTitle]="'TR.TRANSFER_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveTransfer()"
+  okAction="create"
+  [nzOkDisabled]="transferForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
@@ -177,6 +179,8 @@
   [nzTitle]="'TR.CHARGE_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveCharge()"
+  okAction="create"
+  [nzOkDisabled]="chargeForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>

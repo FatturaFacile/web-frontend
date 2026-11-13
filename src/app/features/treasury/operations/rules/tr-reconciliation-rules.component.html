@@ -1,7 +1,7 @@
 <nz-card>
   <p>{{ 'TR.RULES_HINT' | translate }}</p>
   @if (canWrite) {
-    <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'TR.RULE_NEW' | translate }}</button>
+    <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
   }
   <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
     <thead>
@@ -26,7 +26,7 @@
           </td>
           <td>
             @if (canWrite) {
-              <button nz-button nzSize="small" type="button" (click)="openModal(rule)">{{ 'TR.EDIT' | translate }}</button>
+              <button nz-button nzSize="small" type="button" (click)="openModal(rule)" appIconAction="edit"></button>
               <button
                 nz-button
                 nzSize="small"
@@ -35,9 +35,8 @@
                 nz-popconfirm
                 [nzPopconfirmTitle]="'TR.CONFIRM_DELETE' | translate"
                 (nzOnConfirm)="remove(rule)"
-              >
-                {{ 'TR.DELETE' | translate }}
-              </button>
+                appIconAction="delete"
+              ></button>
             }
           </td>
         </tr>
@@ -52,6 +51,8 @@
   nzWidth="720px"
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
+  okAction="save"
+  [nzOkDisabled]="form.invalid"
   (nzOnCancel)="modalOpen.set(false)"
 >
   <ng-container *nzModalContent>

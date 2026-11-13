@@ -15,7 +15,7 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" [disabled]="!yearId()" (click)="openCreate()">{{ 'GL.BUDGET_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" [disabled]="!yearId()" (click)="openCreate()" appIconAction="create"></button>
     }
   </div>
 
@@ -50,7 +50,7 @@
     <div class="card-actions">
       @if (canWrite) {
         @if (isDraft()) {
-          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveLines()">{{ 'GL.SAVE' | translate }}</button>
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveLines()" appIconAction="save"></button>
           <button nz-button type="button" (click)="approve()">{{ 'GL.ACTION_APPROVE' | translate }}</button>
         } @else {
           <button nz-button type="button" (click)="newVersion()">{{ 'GL.BUDGET_NEW_VERSION' | translate }}</button>
@@ -74,12 +74,12 @@
             <nz-input-number class="period" formControlName="period_number" [nzMin]="1" [nzMax]="12" [attr.aria-label]="'GL.PERIOD' | translate" />
             <nz-input-number class="flex-1" formControlName="amount" [nzPrecision]="2" [attr.aria-label]="'GL.COL_AMOUNT' | translate" />
             @if (isDraft()) {
-              <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)">&times;</button>
+              <button nz-button nzType="text" type="button" [attr.aria-label]="'GL.REMOVE' | translate" (click)="removeLine($index)" appIconAction="delete"></button>
             }
           </div>
         }
         @if (isDraft()) {
-          <button nz-button type="button" (click)="addLine()">{{ 'GL.ADD_LINE' | translate }}</button>
+          <button nz-button type="button" (click)="addLine()" appIconAction="add"></button>
         }
       </nz-tab>
       <nz-tab [nzTitle]="'GL.BUDGET_VARIANCE' | translate">
@@ -154,6 +154,7 @@
   [nzOkLoading]="saving()"
   (nzOnOk)="create()"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form">

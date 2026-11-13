@@ -59,6 +59,7 @@ import {
   HighlightOutline,
   InboxOutline,
   SaveOutline,
+  SafetyCertificateOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -122,4 +123,5 @@ export const icons = [
   HighlightOutline,
   InboxOutline,
   SaveOutline,
+  SafetyCertificateOutline,
 ];

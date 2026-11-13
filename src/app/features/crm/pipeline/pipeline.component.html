@@ -8,10 +8,7 @@
         <nz-icon nzType="swap" />
         {{ 'CRMX.LBL_DETECT_DUPLICATES' | translate }}
       </button>
-      <button *nzSpaceItem nz-button nzType="primary" (click)="openCreateModal()">
-        <nz-icon nzType="plus" />
-        {{ 'CRMX.LBL_NEW_OPPORTUNITY' | translate }}
-      </button>
+      <button *nzSpaceItem nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
     </nz-space>
   </div>
 </app-page-header>
@@ -128,9 +125,8 @@
               nz-popconfirm
               nzPopconfirmTitle="Are you sure you want to delete this opportunity?"
               (nzOnConfirm)="deleteOpportunity(opp)"
-            >
-              <nz-icon nzType="delete" />
-            </button>
+              appIconAction="delete"
+            ></button>
           </td>
         </tr>
       }
@@ -140,9 +136,11 @@
 
 <!-- Create Opportunity Modal -->
 <nz-modal
+  okAction="create"
   [nzVisible]="createModalVisible()"
   [nzTitle]="'CRMX.LBL_NEW_OPPORTUNITY' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="oppForm.invalid"
   (nzOnOk)="submitCreateOpportunity()"
   [nzOkLoading]="saving()"
 >

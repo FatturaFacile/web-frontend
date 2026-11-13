@@ -154,3 +154,13 @@ html {
   .ant-divider { border-color: var(--border-color); }
   .ant-empty-description { color: var(--text-muted); }
 }
+
+// Icon-only action buttons (save, cancel, delete, add, confirm): see shared/ui/action-icon.
+.app-icon-action,
+.ant-modal-footer .ant-btn {
+  min-width: 40px;
+}
+
+.app-icon-action__icon {
+  pointer-events: auto;
+}

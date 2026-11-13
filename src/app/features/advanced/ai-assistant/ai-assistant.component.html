@@ -312,13 +312,14 @@
   </nz-tabs>
 
   <!-- Log Detail Drawer -->
-  <nz-drawer
+  <nz-modal
     [nzVisible]="isLogDrawerVisible()"
     [nzTitle]="'ASSISTANT.LOG_DETAIL_TITLE' | translate"
-    [nzWidth]="480"
-    (nzOnClose)="closeLogDrawer()"
+    [nzWidth]="720"
+    [nzFooter]="null"
+    (nzOnCancel)="closeLogDrawer()"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedLog(); as log) {
         <div class="log-detail-content">
           <div class="detail-group">
@@ -366,5 +367,5 @@
         </div>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 </div>

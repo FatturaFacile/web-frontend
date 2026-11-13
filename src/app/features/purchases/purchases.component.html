@@ -51,9 +51,7 @@
         </nz-select>
 
         <span class="spacer"></span>
-        <button nz-button nzType="primary" (click)="openCreateModal()">
-          <nz-icon nzType="plus" /> {{ 'PURCHASES.LBL_NUOVO_ORDINE' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
       </div>
 
       <nz-table
@@ -132,9 +130,7 @@
                     </button>
                   }
                   @if (canCancel(item)) {
-                    <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelOrder(item)">
-                      {{ 'PURCHASES.LBL_ANNULLA' | translate }}
-                    </button>
+                    <button nz-button nzSize="small" nzDanger nzType="text" appIconAction="cancel" (click)="cancelOrder(item)"></button>
                   }
                 </div>
               </td>
@@ -337,10 +333,10 @@
 <nz-modal
   [nzVisible]="createModalVisible()"
   [nzTitle]="'purchases.modal.createTitle' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="saving()"
   (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="orderForm.invalid"
+  okAction="save"
   (nzOnOk)="submitCreateOrder()"
 >
   <ng-container *nzModalContent>
@@ -412,11 +408,11 @@
 <nz-modal
   [nzVisible]="goodsReceiptModalVisible()"
   [nzTitle]="'PURCHASES.LBL_REGISTRA_RICEZIONE_MERCE_BOLLA_DDT_D' | translate"
-  [nzOkText]="'PURCHASES.LBL_REGISTRA_RICEZIONE' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="720px"
   [nzOkLoading]="saving()"
   (nzOnCancel)="goodsReceiptModalVisible.set(false)"
+  [nzOkDisabled]="receiptForm.invalid"
+  okAction="save"
   (nzOnOk)="submitGoodsReceipt()"
 >
   <ng-container *nzModalContent>
@@ -476,10 +472,10 @@
 <nz-modal
   [nzVisible]="inspectModalVisible()"
   [nzTitle]="'PURCHASES.LBL_ESITO_ISPEZIONE_QUALITA' | translate"
-  [nzOkText]="'PURCHASES.LBL_AGGIORNA_ESITO' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="640px"
   (nzOnCancel)="inspectModalVisible.set(false)"
+  [nzOkDisabled]="inspectForm.invalid"
+  okAction="save"
   (nzOnOk)="submitInspection()"
 >
   <ng-container *nzModalContent>
@@ -515,9 +511,9 @@
 <nz-modal
   [nzVisible]="executeMatchModalVisible()"
   [nzTitle]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE_3_WAY_MATCH' | translate"
-  [nzOkText]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   (nzOnCancel)="executeMatchModalVisible.set(false)"
+  [nzOkDisabled]="matchForm.invalid"
+  okAction="confirm"
   (nzOnOk)="submitExecuteMatch()"
 >
   <ng-container *nzModalContent>
@@ -557,11 +553,10 @@
 <nz-modal
   [nzVisible]="importSdiModalVisible()"
   [nzTitle]="'PURCHASES.LBL_IMPORTA_FATTURA_ELETTRONICA_XML_SDI_PASSIVO' | translate"
-  [nzOkText]="'PURCHASES.LBL_IMPORTA_XML' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!selectedXmlFile()"
   (nzOnCancel)="importSdiModalVisible.set(false)"
+  okAction="confirm"
   (nzOnOk)="submitImportSdi()"
 >
   <ng-container *nzModalContent>
@@ -582,6 +577,7 @@
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!reasonText().trim()"
   (nzOnCancel)="reasonRequest.set(null)"
+  okAction="confirm"
   (nzOnOk)="confirmReason()"
 >
   <ng-container *nzModalContent>

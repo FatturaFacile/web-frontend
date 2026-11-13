@@ -48,9 +48,7 @@
     <button nz-button type="button" (click)="exportCsv()" [nzLoading]="isExporting()">
       <nz-icon nzType="download" /> {{ 'expenses.actions.exportCsv' | translate }}
     </button>
-    <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> {{ 'expenses.actions.create' | translate }}
-    </button>
+    <button nz-button nzType="primary" type="button" appIconAction="create" (click)="create()"></button>
   </div>
 
   <app-base-table
@@ -95,11 +93,9 @@
         nzType="text"
         nzSize="small"
         type="button"
+        appIconAction="edit"
         (click)="edit(exp)"
-        [title]="'expenses.actions.edit' | translate"
-      >
-        <nz-icon nzType="edit" />
-      </button>
+      ></button>
       <button
         nz-button
         nzType="text"
@@ -110,11 +106,9 @@
         [nzPopconfirmTitle]="'expenses.confirmDelete' | translate"
         [nzOkText]="'common.actions.delete' | translate"
         [nzCancelText]="'common.actions.cancel' | translate"
+        appIconAction="delete"
         (nzOnConfirm)="delete(exp)"
-        [title]="'expenses.actions.delete' | translate"
-      >
-        <nz-icon nzType="delete" />
-      </button>
+      ></button>
     </div>
   </ng-template>
 </nz-card>

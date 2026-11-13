@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
@@ -12,12 +11,21 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable } from 'rxjs';
 import { ApiResponse, CoreDeliveryNote, I18nService, PermissionsService, SalesCycleApiService } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams, TranslatePipe } from '@shared';
+import {
+  BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
+  PageHeaderComponent,
+  TableColumnDef,
+  TableQueryParams,
+  TranslatePipe,
+} from '@shared';
 import { CycleDeliveryNotesFacade } from '../cycle.facades';
 import { DocumentLinesViewComponent } from '../shared/document-lines-view.component';
 import { apiErrorText } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { statusColor, statusKey } from '../shared/sales-status';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 
 const DDT_STATUSES = ['draft', 'issued', 'dispatched', 'delivered', 'invoiced'];
 
@@ -25,12 +33,14 @@ const DDT_STATUSES = ['draft', 'issued', 'dispatched', 'delivered', 'invoiced'];
   selector: 'app-cycle-delivery-notes',
   styleUrl: './delivery-notes.component.scss',
   imports: [
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzIconModule,
     NzPopconfirmModule,
     NzSelectModule,

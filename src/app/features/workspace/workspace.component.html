@@ -297,6 +297,7 @@
     [nzOkLoading]="isAuthorizing()"
     (nzOnCancel)="isAuthorizeModalVisible.set(false)"
     (nzOnOk)="submitAuthorize()"
+    [nzOkDisabled]="authForm.invalid"
   >
     <ng-container *nzModalContent>
       <form [formGroup]="authForm">
@@ -350,6 +351,7 @@
     [nzOkLoading]="isAuthorizing()"
     (nzOnCancel)="isCallbackModalVisible.set(false)"
     (nzOnOk)="submitCallback()"
+    [nzOkDisabled]="callbackForm.invalid"
   >
     <ng-container *nzModalContent>
       <form [formGroup]="callbackForm">

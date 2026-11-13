@@ -6,7 +6,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -41,7 +40,7 @@ import {
   IntrastatSupplyKind,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 /** Mirrors `required_if:channel,customs`. */
 function requiredForCustoms(control: AbstractControl) {
@@ -66,6 +65,8 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
   selector: 'app-intrastat',
   styleUrl: './intrastat.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     UpperCasePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -79,7 +80,6 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

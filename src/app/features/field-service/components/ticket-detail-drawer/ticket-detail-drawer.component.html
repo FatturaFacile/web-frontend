@@ -1,8 +1,9 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="open()"
+  [nzWidth]="960"
+  [nzFooter]="null"
   [nzTitle]="drawerTitle"
-  [nzWidth]="820"
-  (nzOnClose)="close()"
+  (nzOnCancel)="close()"
 >
   <ng-template #drawerTitle>
     <div class="drawer-title">
@@ -19,7 +20,7 @@
     </div>
   </ng-template>
 
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <nz-spin [nzSpinning]="loading()">
       @if (ticket()) {
         <!-- Action Toolbar -->
@@ -36,9 +37,7 @@
             </button>
           }
           @if (ticket()?.status !== 'closed') {
-            <button nz-button nzSize="small" nzDanger (click)="confirmClose()">
-              <i nz-icon nzType="close-circle"></i> {{ 'TICKET_TOOLS.LBL_CHIUDI' | translate }}
-            </button>
+            <button nz-button nzSize="small" nzDanger appIconAction="close" (click)="confirmClose()"></button>
           }
           @if (ticket()?.status === 'closed' || ticket()?.status === 'resolved') {
             <button nz-button nzSize="small" (click)="confirmReopen()">
@@ -176,9 +175,7 @@
               </nz-form-item>
 
               <div class="form-actions-end">
-                <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving()">
-                  {{ 'TICKET_TOOLS.LBL_SALVA_MODIFICHE' | translate }}
-                </button>
+                <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="isSaving()" [disabled]="form.invalid"></button>
               </div>
             </form>
           </nz-tab>
@@ -295,7 +292,7 @@
       }
     </nz-spin>
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL CAMBIA STATO -->
 <nz-modal
@@ -334,6 +331,7 @@
   [nzVisible]="assignModalVisible()"
   [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNA_TICKET' | translate"
   (nzOnCancel)="assignModalVisible.set(false)"
+  [nzOkDisabled]="!assignedUserId().trim()"
   (nzOnOk)="confirmAssign()"
 >
   <ng-container *nzModalContent>

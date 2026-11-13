@@ -152,7 +152,7 @@
     <input id="sr-caption" nz-input maxlength="255" [ngModel]="photoCaption()" (ngModelChange)="photoCaption.set($event)" />
   </ng-container>
   <ng-template #photoFooter>
-    <button nz-button type="button" (click)="photoTarget.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="photoTarget.set(null)"></button>
     <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!photoFile()" (click)="uploadPhoto()">
       {{ 'SERVICE_REPORTS.UPLOAD' | translate }}
     </button>

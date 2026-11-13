@@ -19,9 +19,7 @@
         />
 
         <span class="spacer"></span>
-        <button nz-button nzType="primary" type="button" (click)="drawerOpen.set(true)">
-          <nz-icon nzType="plus" /> {{ 'accounting.lblNuovaScrittura' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" appIconAction="add" (click)="drawerOpen.set(true)"></button>
       </div>
 
       <app-base-table
@@ -91,9 +89,7 @@
     <nz-tab [nzTitle]="'accounting.chartOfAccounts' | translate">
       <div class="tab-intro">
         <span class="text-muted">{{ 'accounting.lblPianoDeiContiMultiLivelloIt' | translate }}</span>
-        <button nz-button nzType="primary" (click)="openAccountModal()">
-          <nz-icon nzType="plus" /> {{ 'accounting.lblNuovoContoMastro' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="add" (click)="openAccountModal()"></button>
       </div>
 
       <app-base-table
@@ -209,9 +205,7 @@
     <nz-tab [nzTitle]="'accounting.lblDichiarazioniIntrastat' | translate">
       <div class="tab-intro">
         <span class="text-muted">{{ 'accounting.lblElenchiRiepilogativiCessioniEAcquistiIntracomunitari' | translate }}</span>
-        <button nz-button nzType="primary" (click)="openIntrastatModal()">
-          <nz-icon nzType="plus" /> {{ 'accounting.lblNuovaDichiarazioneIntrastat' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="add" (click)="openIntrastatModal()"></button>
       </div>
 
       <nz-table #intraTable [nzData]="intrastatDeclarations()" [nzLoading]="loadingIntrastat()" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10" [nzScroll]="{ x: '720px' }">
@@ -314,9 +308,9 @@
 <nz-modal
   [nzVisible]="accountModalVisible()"
   [nzTitle]="'accounting.lblNuovoContoMastroNelPianoDei' | translate"
-  [nzOkText]="'accounting.lblSalvaConto' | translate"
-  [nzCancelText]="'accounting.lblAnnulla' | translate"
+  okAction="save"
   (nzOnCancel)="accountModalVisible.set(false)"
+  [nzOkDisabled]="accountForm.invalid"
   (nzOnOk)="submitAccount()"
 >
   <ng-container *nzModalContent>
@@ -377,9 +371,9 @@
 <nz-modal
   [nzVisible]="calcVatModalVisible()"
   [nzTitle]="'accounting.lblCalcoloLiquidazionePeriodicaIva' | translate"
-  [nzOkText]="'accounting.lblCalcolaLiquidazione' | translate"
-  [nzCancelText]="'accounting.lblAnnulla' | translate"
+  okAction="confirm"
   (nzOnCancel)="calcVatModalVisible.set(false)"
+  [nzOkDisabled]="calcVatForm.invalid"
   (nzOnOk)="submitCalculateVat()"
 >
   <ng-container *nzModalContent>
@@ -417,9 +411,9 @@
 <nz-modal
   [nzVisible]="intrastatModalVisible()"
   [nzTitle]="'accounting.lblGeneraDichiarazioneIntrastat' | translate"
-  [nzOkText]="'accounting.lblGeneraModello' | translate"
-  [nzCancelText]="'accounting.lblAnnulla' | translate"
+  okAction="confirm"
   (nzOnCancel)="intrastatModalVisible.set(false)"
+  [nzOkDisabled]="intrastatForm.invalid"
   (nzOnOk)="submitGenerateIntrastat()"
 >
   <ng-container *nzModalContent>
@@ -471,9 +465,9 @@
 <nz-modal
   [nzVisible]="intrastatSubmitTarget() !== null"
   [nzTitle]="'accounting.lblTrasmetti' | translate"
-  [nzOkText]="'accounting.lblTrasmetti' | translate"
-  [nzCancelText]="'accounting.lblAnnulla' | translate"
+  okAction="confirm"
   (nzOnCancel)="intrastatSubmitTarget.set(null)"
+  [nzOkDisabled]="intrastatSubmitForm.invalid"
   (nzOnOk)="confirmSubmitIntrastat()"
 >
   <ng-container *nzModalContent>

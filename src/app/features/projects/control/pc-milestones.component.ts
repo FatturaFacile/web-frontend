@@ -10,15 +10,15 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, I18nService, PermissionsService, ProjectControlApiService, ProjectMilestone } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-pc-milestones',
   styleUrl: './pc-milestones.component.scss',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, IconActionDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" class="mb-4" (click)="openModal(null)">{{ 'PRJ.MILESTONE_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" class="mb-4" appIconAction="create" (click)="openModal(null)"></button>
     }
     <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
       <thead>
@@ -47,7 +47,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
             <td>
               @if (canWrite) {
                 @if (!milestone.is_billed) {
-                  <button nz-button nzSize="small" type="button" (click)="openModal(milestone)">{{ 'PRJ.EDIT' | translate }}</button>
+                  <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openModal(milestone)"></button>
                 }
                 @if (!milestone.is_completed) {
                   <button nz-button nzSize="small" type="button" (click)="complete(milestone)">{{ 'PRJ.COMPLETE' | translate }}</button>
@@ -62,7 +62,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       </tbody>
     </nz-table>
 
-    <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.MILESTONE_FORM' | translate" [nzOkLoading]="saving()" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
+    <nz-modal [nzVisible]="modalOpen()" [nzTitle]="'PRJ.MILESTONE_FORM' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="save" (nzOnOk)="save()" (nzOnCancel)="modalOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
           <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />

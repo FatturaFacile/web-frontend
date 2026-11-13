@@ -19,7 +19,7 @@ import {
   DashboardWidgetPlacement,
   I18nService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective } from '@shared';
 
 type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
 
@@ -28,6 +28,7 @@ type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
   selector: 'app-dashboard-builder',
   styleUrl: './dashboard-builder.component.scss',
   imports: [
+    IconActionDirective,
     FormsModule,
     JsonPipe,
     RouterLink,

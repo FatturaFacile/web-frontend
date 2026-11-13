@@ -42,6 +42,8 @@ import {
   TableQueryParams,
   TableStateService,
   TranslatePipe,
+  ModalActionsDirective,
+  IconActionDirective,
 } from '@shared';
 import { notInFuture } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
@@ -76,6 +78,8 @@ const INTRASTAT_FIRST_YEAR = 2022;
     NzGridModule,
     NzStatisticModule,
     NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzDatePickerModule,
     NzTableModule,
     NzDividerModule,

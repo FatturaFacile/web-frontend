@@ -3,10 +3,7 @@
   [subtitle]="'CUSTOMS.SUBTITLE' | translate"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateDossierModal()">
-      <nz-icon nzType="plus" />
-      {{ 'CUSTOMS.ACTIONS.NEW_DOSSIER' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDossierModal()"></button>
   </div>
 </app-page-header>
 
@@ -155,10 +152,7 @@
         </div>
 
         <div class="filter-controls">
-          <button nz-button nzType="primary" (click)="openCreateDeclarationModal()">
-            <nz-icon nzType="plus" />
-            {{ 'CUSTOMS.ACTIONS.NEW_DECLARATION' | translate }}
-          </button>
+          <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDeclarationModal()"></button>
           <button nz-button nzType="default" (click)="loadDeclarations(1)">
             <nz-icon nzType="reload" />
             {{ 'COMMON.REFRESH' | translate }}
@@ -250,11 +244,9 @@
                       nzType="link"
                       nzDanger
                       nzSize="small"
+                      appIconAction="cancel"
                       (click)="cancelDeclaration(decl.id)"
-                    >
-                      <nz-icon nzType="close" />
-                      {{ 'COMMON.CANCEL' | translate }}
-                    </button>
+                    ></button>
                   }
                 </nz-space>
               </td>
@@ -376,10 +368,7 @@
         <div nz-col [nzXs]="24" [nzLg]="12">
           <nz-card [nzTitle]="'CUSTOMS.TARIFF_GRIDS' | translate" [nzExtra]="gridExtra">
             <ng-template #gridExtra>
-              <button nz-button nzType="primary" nzSize="small" (click)="openCreateGridModal()">
-                <nz-icon nzType="plus" />
-                {{ 'CUSTOMS.ACTIONS.NEW_GRID' | translate }}
-              </button>
+              <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateGridModal()"></button>
             </ng-template>
 
             <nz-table
@@ -411,9 +400,7 @@
                       </nz-tag>
                     </td>
                     <td>
-                      <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteTariffGrid(g.id)">
-                        <nz-icon nzType="delete" />
-                      </button>
+                      <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteTariffGrid(g.id)" appIconAction="delete"></button>
                     </td>
                   </tr>
                 }
@@ -490,12 +477,12 @@
 
 <!-- MODAL: NUOVA PRATICA DOGANALE -->
 <nz-modal
+  okAction="save"
   [nzVisible]="createDossierModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.CREATE_DOSSIER_TITLE' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="submittingDossier()"
   (nzOnCancel)="createDossierModalVisible.set(false)"
+  [nzOkDisabled]="dossierForm.invalid"
   (nzOnOk)="submitDossierForm()"
 >
   <ng-container *nzModalContent>
@@ -617,12 +604,12 @@
 
 <!-- MODAL: NUOVA DICHIARAZIONE DOGANALE -->
 <nz-modal
+  okAction="save"
   [nzVisible]="createDeclarationModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.CREATE_DECLARATION_TITLE' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="submittingDeclaration()"
   (nzOnCancel)="createDeclarationModalVisible.set(false)"
+  [nzOkDisabled]="declarationForm.invalid"
   (nzOnOk)="submitDeclarationForm()"
 >
   <ng-container *nzModalContent>
@@ -702,9 +689,9 @@
 
 <!-- MODAL: PROFITABILITY -->
 <nz-modal
+  okAction="close"
   [nzVisible]="profitabilityModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.PROFITABILITY_TITLE' | translate"
-  [nzOkText]="'COMMON.CLOSE' | translate"
   [nzOkDisabled]="false"
   (nzOnCancel)="profitabilityModalVisible.set(false)"
   (nzOnOk)="profitabilityModalVisible.set(false)"

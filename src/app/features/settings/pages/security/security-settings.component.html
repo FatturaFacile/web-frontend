@@ -151,8 +151,8 @@
   [nzTitle]="'SECURITY.DISABLE_TITLE' | translate"
   (nzOnCancel)="showDisableModal.set(false)"
   (nzOnOk)="confirmDisable()"
-  [nzOkText]="'SECURITY.DISABLE_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="disableForm.invalid"
+  okAction="confirm"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>
@@ -201,8 +201,8 @@
   [nzTitle]="'SECURITY.REGENERATE_TITLE' | translate"
   (nzOnCancel)="showRegenerateModal.set(false)"
   (nzOnOk)="confirmRegenerate()"
-  [nzOkText]="'SECURITY.REGENERATE_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="passwordConfirmForm.invalid"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'SECURITY.REGENERATE_BODY' | translate }}</p>
@@ -224,8 +224,7 @@
   [nzTitle]="'SECURITY.NEW_CODES_TITLE' | translate"
   (nzOnCancel)="showCodesDialog.set(false)"
   (nzOnOk)="showCodesDialog.set(false)"
-  [nzOkText]="'SECURITY.CODES_SAVED_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <nz-alert
@@ -252,8 +251,8 @@
   [nzTitle]="'SECURITY.REVOKE_OTHERS' | translate"
   (nzOnCancel)="showRevokeOthersModal.set(false)"
   (nzOnOk)="confirmRevokeOthers()"
-  [nzOkText]="'SECURITY.REVOKE_OTHERS_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="passwordConfirmForm.invalid"
+  okAction="confirm"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>

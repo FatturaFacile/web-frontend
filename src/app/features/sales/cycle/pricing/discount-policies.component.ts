@@ -24,7 +24,7 @@ import {
   PriceLookupResult,
   SalesCycleApiService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { DECIMAL_PATTERN, maxNumber } from '../shared/document-lines-editor.component';
 import { apiErrorText, hasAnyRole, SALES_MANAGER_ROLES } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
@@ -36,6 +36,8 @@ import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-valid
   selector: 'app-discount-policies',
   styleUrl: './discount-policies.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     NzButtonModule,

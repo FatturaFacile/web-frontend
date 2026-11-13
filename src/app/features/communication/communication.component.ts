@@ -14,7 +14,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -45,7 +44,7 @@ import {
   serverErrorMessage,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 const TEMPLATE_CODE_PATTERN = /^[a-z][a-z0-9_.]{1,99}$/;
 
@@ -112,6 +111,8 @@ const SMTP_PORT_PATTERN = /^\d{1,5}$/;
   selector: 'app-communication',
   styleUrl: './communication.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
@@ -125,7 +126,6 @@ const SMTP_PORT_PATTERN = /^\d{1,5}$/;
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,

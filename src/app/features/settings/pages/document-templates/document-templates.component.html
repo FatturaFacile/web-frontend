@@ -47,9 +47,7 @@
           </td>
           <td>
             @if (canWrite()) {
-              <button nz-button nzType="link" nzSize="small" type="button" (click)="edit(row)">
-                {{ 'RES.ACTION.EDIT' | translate }}
-              </button>
+              <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="edit(row)"></button>
               @if (row.template) {
                 <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="reset(row)">
                   {{ 'DOCUMENT_TEMPLATES.RESET' | translate }}
@@ -93,9 +91,15 @@
     }
   </ng-container>
   <ng-template #footer>
-    <button nz-button type="button" (click)="editing.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!colorsValid()" (click)="save()">
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
+    <button nz-button type="button" appIconAction="cancel" (click)="editing.set(null)"></button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      appIconAction="save"
+      [nzLoading]="saving()"
+      [disabled]="!colorsValid()"
+      (click)="save()"
+    ></button>
   </ng-template>
 </nz-modal>

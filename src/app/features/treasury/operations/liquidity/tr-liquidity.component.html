@@ -70,7 +70,7 @@
 
     <nz-tab [nzTitle]="'TR.SCENARIOS' | translate">
       @if (canWrite) {
-        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('scenario')">{{ 'TR.SCENARIO_NEW' | translate }}</button>
+        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('scenario')" appIconAction="create"></button>
       }
       <nz-table #scenarioTable nzSize="middle" [nzData]="scenarios()" [nzShowPagination]="false">
         <thead>
@@ -98,7 +98,7 @@
 
     <nz-tab [nzTitle]="'TR.RECURRING_ITEMS' | translate">
       @if (canWrite) {
-        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('recurring')">{{ 'TR.RECURRING_NEW' | translate }}</button>
+        <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal('recurring')" appIconAction="create"></button>
       }
       <nz-table #recurringTable nzSize="middle" [nzData]="recurring()" [nzShowPagination]="false">
         <thead>
@@ -129,9 +129,8 @@
                     nz-popconfirm
                     [nzPopconfirmTitle]="'TR.CONFIRM_DELETE' | translate"
                     (nzOnConfirm)="removeRecurring(item)"
-                  >
-                    {{ 'TR.DELETE' | translate }}
-                  </button>
+                    appIconAction="delete"
+                  ></button>
                 }
               </td>
             </tr>
@@ -147,6 +146,8 @@
   [nzTitle]="'TR.SCENARIO_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveScenario()"
+  okAction="create"
+  [nzOkDisabled]="scenarioForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
@@ -193,6 +194,8 @@
   [nzTitle]="'TR.RECURRING_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveRecurring()"
+  okAction="create"
+  [nzOkDisabled]="recurringForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>

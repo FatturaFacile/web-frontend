@@ -308,10 +308,7 @@
 
         <nz-card [nzTitle]="'PORTAL.SUPPORT_TICKETS' | translate" [nzExtra]="ticketAction">
           <ng-template #ticketAction>
-            <button nz-button nzType="primary" (click)="openCreateTicketModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'PORTAL.NEW_TICKET' | translate }}
-            </button>
+            <button nz-button nzType="primary" (click)="openCreateTicketModal()" appIconAction="create"></button>
           </ng-template>
 
           <nz-table
@@ -447,10 +444,7 @@
         class="mb-4"
       >
         <ng-template #movementAction>
-          <button nz-button nzType="default" (click)="openMovementModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'PORTAL.NEW_MOVEMENT_REQUEST' | translate }}
-          </button>
+          <button nz-button nzType="default" (click)="openMovementModal()" appIconAction="create"></button>
         </ng-template>
 
         <nz-table
@@ -529,10 +523,7 @@
     <nz-tab [nzTitle]="'PORTAL.TAB_CUSTOMS' | translate">
       <nz-card [nzTitle]="'PORTAL.CUSTOMS_DOSSIERS' | translate" [nzExtra]="customsAction">
         <ng-template #customsAction>
-          <button nz-button nzType="primary" (click)="openShipmentModal()">
-            <span nz-icon nzType="send"></span>
-            {{ 'PORTAL.NEW_SHIPMENT_REQUEST' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openShipmentModal()" appIconAction="create"></button>
         </ng-template>
 
         <nz-table
@@ -579,6 +570,7 @@
     (nzOnCancel)="approveModalVisible.set(false)"
     (nzOnOk)="submitApproveQuote()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="approveForm" nzLayout="vertical">
@@ -615,6 +607,7 @@
     (nzOnCancel)="rejectModalVisible.set(false)"
     (nzOnOk)="submitRejectQuote()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="rejectForm" nzLayout="vertical">
@@ -644,6 +637,7 @@
     (nzOnCancel)="createTicketModalVisible.set(false)"
     (nzOnOk)="submitCreateTicket()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="ticketForm" nzLayout="vertical">
@@ -674,13 +668,14 @@
   </nz-modal>
 
   <!-- Ticket Conversation Drawer -->
-  <nz-drawer
+  <nz-modal
     [nzVisible]="ticketDrawerVisible()"
     [nzTitle]="('PORTAL.TICKET_DETAILS' | translate) + ': ' + (selectedTicket()?.ticket_number || '')"
-    (nzOnClose)="ticketDrawerVisible.set(false)"
-    [nzWidth]="640"
+    (nzOnCancel)="ticketDrawerVisible.set(false)"
+    [nzWidth]="800"
+    [nzFooter]="null"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedTicket(); as t) {
         <div class="ticket-header mb-4">
           <h4>{{ t.subject }}</h4>
@@ -732,7 +727,7 @@
         </form>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 
   <!-- CSAT Modal -->
   <nz-modal
@@ -741,6 +736,7 @@
     (nzOnCancel)="csatModalVisible.set(false)"
     (nzOnOk)="submitCsat()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="csatForm" nzLayout="vertical">
@@ -799,6 +795,7 @@
     (nzOnCancel)="movementModalVisible.set(false)"
     (nzOnOk)="submitMovementRequest()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="movementForm" nzLayout="vertical">
@@ -866,6 +863,7 @@
     (nzOnCancel)="shipmentModalVisible.set(false)"
     (nzOnOk)="submitShipmentRequest()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="shipmentForm" nzLayout="vertical">

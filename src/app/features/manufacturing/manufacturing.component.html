@@ -86,9 +86,7 @@
           </button>
         </div>
 
-        <button nz-button nzType="primary" (click)="openCreateOrderModal()">
-          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVO_ORDINE' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateOrderModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -142,9 +140,7 @@
                   <button nz-button nzType="link" nzSize="small" (click)="releaseOrder(o)">
                     {{ 'MFG.LBL_RILASCIA' | translate }}
                   </button>
-                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o)">
-                    {{ 'MFG.LBL_ANNULLA' | translate }}
-                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o)" appIconAction="cancel"></button>
                 }
                 @if (o.status === 'released') {
                   <button nz-button nzType="link" nzSize="small" (click)="startOrder(o)">
@@ -191,9 +187,7 @@
           </button>
         </div>
 
-        <button nz-button nzType="primary" (click)="openCreateBomModal()">
-          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVA_DISTINTA_BASE' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateBomModal()" appIconAction="create"></button>
       </div>
       <p class="text-muted">{{ 'MFG.BOM_DRAFT_HINT' | translate }}</p>
 
@@ -417,9 +411,7 @@
     <nz-tab [nzTitle]="'MFG.LBL_CENTRI_DI_LAVORO_AND_CICLI' | translate">
       <div class="toolbar">
         <h4 class="section-title">{{ 'MFG.LBL_CENTRI_DI_LAVORO' | translate }}</h4>
-        <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()">
-          <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_NUOVO_CENTRO_DI_LAVORO' | translate }}
-        </button>
+        <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()" appIconAction="create"></button>
       </div>
 
       <nz-table
@@ -506,6 +498,7 @@
   (nzOnCancel)="isCreateOrderModalVisible.set(false)"
   (nzOnOk)="submitCreateOrder()"
   nzWidth="600px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
@@ -575,12 +568,12 @@
 <nz-modal
   [nzVisible]="cancellingOrder() !== null"
   [nzTitle]="'MFG.CANCEL_TITLE' | translate"
-  [nzOkText]="'MFG.CANCEL_CONFIRM' | translate"
   [nzOkLoading]="isCancellingOrder()"
   [nzOkDisabled]="!cancelReason().trim()"
   [nzOkDanger]="true"
   (nzOnCancel)="cancellingOrder.set(null)"
   (nzOnOk)="confirmCancelOrder()"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>
@@ -610,6 +603,7 @@
   (nzOnCancel)="isCreateBomModalVisible.set(false)"
   (nzOnOk)="submitCreateBom()"
   nzWidth="750px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="bomForm" nzLayout="vertical">
@@ -673,16 +667,12 @@
             <div class="line-notes">
               <input nz-input formControlName="notes" [placeholder]="'MFG.LBL_NOTE_POSIZIONE' | translate" />
             </div>
-            <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)">
-              <span nz-icon nzType="delete"></span>
-            </button>
+            <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)" appIconAction="delete"></button>
           </div>
         }
       </div>
 
-      <button nz-button nzType="dashed" nzBlock (click)="addComponentRow()" class="add-line">
-        <span nz-icon nzType="plus"></span> {{ 'MFG.LBL_AGGIUNGI_COMPONENTE' | translate }}
-      </button>
+      <button nz-button nzType="dashed" nzBlock (click)="addComponentRow()" class="add-line" appIconAction="add"></button>
     </form>
   </ng-container>
 </nz-modal>
@@ -695,6 +685,7 @@
   (nzOnCancel)="isRunMrpModalVisible.set(false)"
   (nzOnOk)="submitRunMrp()"
   nzWidth="500px"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="mrpForm" nzLayout="vertical">
@@ -733,6 +724,7 @@
   (nzOnCancel)="isCreateWorkCenterModalVisible.set(false)"
   (nzOnOk)="submitCreateWorkCenter()"
   nzWidth="500px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="workCenterForm" nzLayout="vertical">

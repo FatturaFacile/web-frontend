@@ -16,10 +16,7 @@
       <span nz-icon nzType="sync"></span>
       {{ 'INTRASTAT.AUTO_GENERATE' | translate }}
     </button>
-    <button nz-button nzType="primary" (click)="openCreateModal()">
-      <span nz-icon nzType="plus"></span>
-      {{ 'INTRASTAT.NEW_DECLARATION' | translate }}
-    </button>
+    <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="create"></button>
   </div>
 </app-page-header>
 
@@ -79,10 +76,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'INTRASTAT.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'INTRASTAT.NEW_DECLARATION' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -185,10 +179,8 @@
                       nz-popconfirm
                       [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE' | translate"
                       (nzOnConfirm)="deleteDeclaration(item.id)"
-                    >
-                      <span nz-icon nzType="delete"></span>
-                      {{ 'INTRASTAT.DELETE' | translate }}
-                    </button>
+                      appIconAction="delete"
+                    ></button>
                   }
                 </nz-space>
               </td>
@@ -342,10 +334,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'INTRASTAT.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateProfileModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'INTRASTAT.NEW_PRODUCT_PROFILE' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openCreateProfileModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -383,10 +372,8 @@
                   nz-popconfirm
                   [nzPopconfirmTitle]="'INTRASTAT.CONFIRM_DELETE_PROFILE' | translate"
                   (nzOnConfirm)="deleteProductProfile(item.product_id)"
-                >
-                  <span nz-icon nzType="delete"></span>
-                  {{ 'INTRASTAT.DELETE' | translate }}
-                </button>
+                  appIconAction="delete"
+                ></button>
               </td>
             </tr>
           }
@@ -403,6 +390,7 @@
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateDeclaration()"
   nzWidth="600px"
+  okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="createForm" nzLayout="vertical">
@@ -478,6 +466,7 @@
   [nzTitle]="'INTRASTAT.MARK_SUBMITTED' | translate"
   (nzOnCancel)="submitModalVisible.set(false)"
   (nzOnOk)="confirmSubmit()"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="submitForm" nzLayout="vertical">
@@ -506,6 +495,7 @@
   [nzTitle]="'INTRASTAT.EXPORT_SETTINGS' | translate"
   (nzOnCancel)="exportFormVisible.set(false)"
   (nzOnOk)="confirmExport()"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="exportForm" nzLayout="vertical">
@@ -564,6 +554,7 @@
   (nzOnCancel)="exportModalVisible.set(false)"
   (nzOnOk)="exportModalVisible.set(false)"
   nzWidth="700px"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     @if (exportResult(); as res) {
@@ -581,21 +572,19 @@
 </nz-modal>
 
 <!-- DECLARATION LINES DRAWER -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="750"
+  [nzWidth]="800"
   [nzTitle]="'INTRASTAT.DECLARATION_LINES' | translate"
-  (nzOnClose)="closeDeclarationDrawer()"
+  (nzOnCancel)="closeDeclarationDrawer()"
+  [nzFooter]="null"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedDeclaration(); as d) {
       <div class="drawer-header-summary">
         <div><strong>{{ d.model }}</strong> - {{ d.year }} / {{ d.periodicity }}{{ d.period }}</div>
         <div>
-          <button nz-button nzType="primary" nzSize="small" (click)="openAddLineModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'INTRASTAT.ADD_ROW' | translate }}
-          </button>
+          <button nz-button nzType="primary" nzSize="small" (click)="openAddLineModal()" appIconAction="add"></button>
         </div>
       </div>
 
@@ -632,9 +621,8 @@
                   nzDanger
                   nzSize="small"
                   (click)="deleteLine(line.id)"
-                >
-                  <span nz-icon nzType="delete"></span>
-                </button>
+                  appIconAction="delete"
+                ></button>
               </td>
             </tr>
           }
@@ -642,7 +630,7 @@
       </nz-table>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- ADD LINE MODAL -->
 <nz-modal
@@ -651,6 +639,7 @@
   (nzOnCancel)="lineModalVisible.set(false)"
   (nzOnOk)="saveLine()"
   nzWidth="600px"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="lineForm" nzLayout="vertical">
@@ -726,6 +715,7 @@
   (nzOnCancel)="profileModalVisible.set(false)"
   (nzOnOk)="saveProductProfile()"
   nzWidth="600px"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="profileForm" nzLayout="vertical">

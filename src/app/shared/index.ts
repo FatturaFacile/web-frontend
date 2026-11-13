@@ -10,3 +10,4 @@ export * from './ui/resource-panel/resource-panel.component';
 export * from './ui/resource-panel/resource-panel.types';
 export * from './ui/resource-panel/resource-page.component';
 export * from './ui/resource-panel/resource-config.helpers';
+export * from './ui/action-icon';

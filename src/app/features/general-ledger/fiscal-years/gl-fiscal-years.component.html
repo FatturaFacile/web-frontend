@@ -3,7 +3,7 @@
 <nz-card>
   <div class="toolbar">
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.YEAR_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()" appIconAction="create"></button>
     }
   </div>
 
@@ -86,6 +86,7 @@
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form">
@@ -117,6 +118,7 @@
   [nzTitle]="'GL.LBL_RIAPERTURA_ESERCIZIO_FISCALE_PRE_ASSEMBLEA_GENERALE' | translate"
   (nzOnOk)="confirmReopenYear()"
   (nzOnCancel)="reopenModalOpen.set(false)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'GL.LBL_MOTIVAZIONE_OBBLIGATORIA_PER_LA_RIAPERTURA_E' | translate }}</p>
@@ -130,6 +132,7 @@
   [nzTitle]="'GL.LBL_APPROVAZIONE_ASSEMBLEA_GENERALE_AGM_CO_ART' | translate"
   (nzOnOk)="confirmAgmApproval()"
   (nzOnCancel)="agmModalOpen.set(false)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'GL.LBL_RIFERIMENTO_VERBALE_DELIBERA_ASSEMBLEA_GENERALE_BLOCCA' | translate }}</p>
@@ -143,6 +146,7 @@
   [nzTitle]="'GL.LBL_NOTA_INTEGRATIVA_SVIZZERA_ANHANG_CO_ART' | translate"
   (nzOnOk)="saveSwissAnhang()"
   (nzOnCancel)="anhangModalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <div class="anhang-form">

@@ -5,7 +5,7 @@ import {
   ScheduleGroupMemberPayload,
   ScheduleGroupRulesPayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
@@ -20,7 +20,13 @@ const ROUNDING_MODES: RoundingMode[] = ['none', 'nearest', 'employee_favour', 'e
 @Component({
   selector: 'app-time-schedule-groups',
   styleUrl: './time-schedule-groups.component.scss',
-  imports: [ActionFormComponent, NzModalModule, TranslatePipe, CrudTableComponent],
+  imports: [
+    ModalActionsDirective,
+    ActionFormComponent,
+    NzModalModule,
+    TranslatePipe,
+    CrudTableComponent,
+  ],
   template: `
     <app-crud-table [config]="groupsConfig()" />
 

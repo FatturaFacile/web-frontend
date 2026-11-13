@@ -11,7 +11,7 @@ import {
   PayslipDeliveryResult,
   TreasuryApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -30,6 +30,8 @@ interface AllocationRow {
   selector: 'app-payroll-run-delivery',
   styleUrl: './payroll-run-delivery.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -84,8 +86,6 @@ interface AllocationRow {
     <nz-modal
       [nzVisible]="confirmDeliver()"
       [nzTitle]="'hrmPayroll.deliver.deliver' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       (nzOnOk)="deliver()"
       (nzOnCancel)="confirmDeliver.set(false)"
     >
@@ -95,11 +95,10 @@ interface AllocationRow {
     </nz-modal>
 
     <nz-modal
+      okAction="create"
       [nzVisible]="batchesOpen()"
       [nzTitle]="'hrmPayroll.deliver.paymentBatches' | translate"
       nzWidth="640px"
-      [nzOkText]="'hrmPayroll.deliver.create' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="creating()"
       [nzOkDisabled]="!canCreate()"
       (nzOnOk)="createBatches()"
@@ -148,14 +147,11 @@ interface AllocationRow {
               type="button"
               [disabled]="rows().length < 2"
               (click)="removeRow(i)"
-            >
-              {{ 'hrmCommon.delete' | translate }}
-            </button>
+              appIconAction="delete"
+            ></button>
           </div>
         }
-        <button nz-button type="button" (click)="addRow()">
-          {{ 'hrmPayroll.deliver.addAllocation' | translate }}
-        </button>
+        <button nz-button type="button" (click)="addRow()" appIconAction="add"></button>
       </ng-container>
     </nz-modal>
   `,

@@ -18,7 +18,7 @@ import {
   ChangePasswordPayload,
   isValidationError,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../../auth/password-rules';
 
 type PasswordField = 'current' | 'password' | 'confirmation';
@@ -31,6 +31,7 @@ type PasswordField = 'current' | 'password' | 'confirmation';
   selector: 'app-profile-settings',
   styleUrl: './profile-settings.component.scss',
   imports: [
+    IconActionDirective,
     ReactiveFormsModule,
     NzAlertModule,
     NzButtonModule,

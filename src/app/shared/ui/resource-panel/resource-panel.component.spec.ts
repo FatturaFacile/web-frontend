@@ -58,7 +58,7 @@ describe('ResourcePanelComponent', () => {
     flushList();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('W-1');
-    expect(text).toContain('RES.A.new_wave');
+    expect(fixture.nativeElement.querySelector('button.app-icon-action i.fa-plus')).not.toBeNull();
     expect(text).toContain('RES.A.run_abc');
   });
 

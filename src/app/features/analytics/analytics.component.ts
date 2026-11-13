@@ -28,12 +28,14 @@ import {
   RevenueComparisonData,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, ModalActionsDirective, IconActionDirective } from '@shared';
 
 @Component({
   selector: 'app-analytics',
   styleUrl: './analytics.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,

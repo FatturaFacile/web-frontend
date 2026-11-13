@@ -145,7 +145,7 @@ let nextFormId = 0;
           nzType="primary"
           type="submit"
           [nzLoading]="saving()"
-          [disabled]="!canWrite()"
+          [disabled]="!canWrite() || form.invalid"
         >
           {{ config().submitLabelKey | translate }}
         </button>

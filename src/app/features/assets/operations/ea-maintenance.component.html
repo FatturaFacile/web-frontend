@@ -2,7 +2,7 @@
   <nz-tabs>
     <nz-tab [nzTitle]="'EA.PLANS' | translate">
       @if (canWrite) {
-        <button nz-button nzType="primary" class="mb-4" type="button" (click)="openPlanModal(null)">{{ 'EA.PLAN_NEW' | translate }}</button>
+        <button nz-button nzType="primary" class="mb-4" type="button" appIconAction="add" (click)="openPlanModal(null)"></button>
       }
       <nz-table #planTable nzSize="middle" [nzData]="plans()" [nzLoading]="loading()" [nzPageSize]="20">
         <thead>
@@ -29,7 +29,7 @@
               </td>
               <td>
                 @if (canWrite) {
-                  <button nz-button nzSize="small" type="button" (click)="openPlanModal(plan)">{{ 'EA.EDIT' | translate }}</button>
+                  <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openPlanModal(plan)"></button>
                   <button nz-button nzSize="small" nzType="primary" type="button" (click)="openWorkOrderFromPlan(plan)">{{ 'EA.OPEN_WORK_ORDER' | translate }}</button>
                 }
               </td>
@@ -71,6 +71,8 @@
   [nzTitle]="'EA.PLAN_FORM' | translate"
   nzWidth="720px"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="planForm.invalid"
+  okAction="save"
   (nzOnOk)="savePlan()"
   (nzOnCancel)="planModalOpen.set(false)"
 >
@@ -236,7 +238,7 @@
         <form class="part-form" nz-form [formGroup]="partForm">
           <input nz-input formControlName="product_id" [attr.aria-label]="'EA.PRODUCT_ID' | translate" [placeholder]="'EA.PRODUCT_ID' | translate" />
           <nz-input-number formControlName="quantity" [nzMin]="0" [nzPrecision]="4" [attr.aria-label]="'EA.QUANTITY' | translate" />
-          <button nz-button type="button" (click)="addPart(detail.data)">{{ 'EA.ADD_PART' | translate }}</button>
+          <button nz-button type="button" appIconAction="add" [disabled]="partForm.invalid" (click)="addPart(detail.data)"></button>
         </form>
         <div class="work-order-actions">
           @if (detail.data.status !== 'in_progress') {
@@ -254,6 +256,8 @@
   <nz-modal
     [nzVisible]="workOrderModal() === 'complete'"
     [nzTitle]="'EA.COMPLETE' | translate"
+    [nzOkDisabled]="completeForm.invalid"
+    okAction="confirm"
     (nzOnOk)="completeWorkOrder(detail.data)"
     (nzOnCancel)="workOrderModal.set('detail')"
   >
@@ -316,6 +320,7 @@
     [nzVisible]="workOrderModal() === 'cancel'"
     [nzTitle]="'EA.CANCEL_WORK_ORDER' | translate"
     [nzOkDanger]="true"
+    okAction="confirm"
     (nzOnOk)="cancelWorkOrder(detail.data)"
     (nzOnCancel)="workOrderModal.set('detail')"
   >

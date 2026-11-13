@@ -27,9 +27,14 @@
           </div>
         </div>
         <div class="toolbar">
-          <button nz-button nzType="primary" type="button" [disabled]="!usageValid()" (click)="recordUsage()">
-            <nz-icon nzType="plus" /> {{ 'SUBX.USAGE.RECORD' | translate }}
-          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            appIconAction="add"
+            [disabled]="!usageValid()"
+            (click)="recordUsage()"
+          ></button>
         </div>
       }
       <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
@@ -152,13 +157,14 @@
   </nz-tabs>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="!!selectedRun()"
-  [nzWidth]="520"
+  [nzWidth]="720"
   [nzTitle]="'SUBX.RUNS.DETAIL' | translate"
-  (nzOnClose)="selectedRun.set(null)"
+  [nzFooter]="null"
+  (nzOnCancel)="selectedRun.set(null)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <pre class="json">{{ runJson() }}</pre>
   </ng-container>
-</nz-drawer>
+</nz-modal>

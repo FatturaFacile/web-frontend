@@ -8,7 +8,7 @@ import {
   ShortTimeClaim,
   ShortTimeClaimEmployeePayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -44,6 +44,8 @@ const hourField = (key: string): CrudField => ({
   selector: 'app-short-time-claim-modal',
   styleUrl: './short-time-claim-modal.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzButtonModule,
     NzCheckboxModule,
@@ -57,9 +59,8 @@ const hourField = (key: string): CrudField => ({
       [nzVisible]="open()"
       [nzTitle]="'hrmShortTime.claim.calculateTitle' | translate"
       nzWidth="960px"
-      [nzOkText]="'hrmShortTime.claim.calculate' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="saving()"
+      [nzOkDisabled]="form.invalid"
       (nzOnOk)="submit()"
       (nzOnCancel)="open.set(false)"
     >
@@ -126,15 +127,18 @@ const hourField = (key: string): CrudField => ({
                 <label nz-checkbox formControlName="consented">{{
                   'hrmShortTime.claim.consented' | translate
                 }}</label>
-                <button nz-button nzDanger nzSize="small" type="button" (click)="removeRow(i)">
-                  {{ 'hrmCommon.delete' | translate }}
-                </button>
+                <button
+                  nz-button
+                  nzDanger
+                  nzSize="small"
+                  type="button"
+                  (click)="removeRow(i)"
+                  appIconAction="delete"
+                ></button>
               </div>
             }
           </div>
-          <button nz-button type="button" (click)="addRow()">
-            {{ 'hrmShortTime.claim.addEmployee' | translate }}
-          </button>
+          <button nz-button type="button" (click)="addRow()" appIconAction="add"></button>
         </form>
       </ng-container>
     </nz-modal>
