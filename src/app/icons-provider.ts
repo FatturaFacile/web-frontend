@@ -60,6 +60,14 @@ import {
   InboxOutline,
   SaveOutline,
   SafetyCertificateOutline,
+  BarChartOutline,
+  HistoryOutline,
+  IdcardOutline,
+  KeyOutline,
+  MobileOutline,
+  SafetyOutline,
+  ToolOutline,
+  TransactionOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -124,4 +132,12 @@ export const icons = [
   InboxOutline,
   SaveOutline,
   SafetyCertificateOutline,
+  BarChartOutline,
+  HistoryOutline,
+  IdcardOutline,
+  KeyOutline,
+  MobileOutline,
+  SafetyOutline,
+  ToolOutline,
+  TransactionOutline,
 ];

@@ -12,6 +12,7 @@ export * from './interceptors/credentials.interceptor';
 export * from './interceptors/csrf-refresh.interceptor';
 export * from './interceptors/tenant-auth.interceptor';
 export * from './interceptors/error.interceptor';
+export * from './interceptors/paginated-response.interceptor';
 export * from './state/app.store';
 export * from './i18n';
 export * from './models';

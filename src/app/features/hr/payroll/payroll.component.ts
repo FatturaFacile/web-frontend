@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { PayrollApiService, PermissionsService } from '@core';
+import { AuthStore, PayrollApiService, PermissionsService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -115,12 +115,15 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
 export class PayrollComponent implements OnInit {
   private readonly api = inject(PayrollApiService);
   private readonly permissions = inject(PermissionsService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('payroll'));
   protected readonly permitAlerts = signal<SwissPermitAlertRow[]>([]);
 
   ngOnInit(): void {
-    this.loadPermitAlerts();
+    if (this.authStore.isSwissJurisdiction()) {
+      this.loadPermitAlerts();
+    }
   }
 
   protected loadPermitAlerts(): void {

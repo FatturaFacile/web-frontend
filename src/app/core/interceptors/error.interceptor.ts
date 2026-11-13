@@ -49,7 +49,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.includes('/association-area/') ||
           req.url.includes('/association-public/') ||
           // The family portal is token based: a refused token must not end the session of the staff user.
-          req.url.includes('/childcare-family/');
+          req.url.includes('/childcare-family/') ||
+          // The reception kiosk authenticates with its own key and secret: a refused kiosk must not end the staff session.
+          req.url.includes('/visitor-kiosk/');
 
         const body: ProblemDetails | null =
           typeof err.error === 'object' && err.error !== null
