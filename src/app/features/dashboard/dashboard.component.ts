@@ -60,12 +60,15 @@ export class DashboardComponent implements OnInit {
   readonly kpiSummary = signal<KpiSummary | null>(null);
   readonly recentInvoices = signal<InvoiceResource[]>([]);
 
+  // The tenant default currency sent by the API, not the one AuthStore derives from the country.
+  private readonly currency = computed(() => this.kpiSummary()?.kpis?.active_currency || null);
+
   readonly revenueDisplay = computed(() =>
-    this.formatAmount(this.kpiSummary()?.kpis?.total_revenue),
+    this.formatAmount(this.kpiSummary()?.kpis?.total_revenue, this.currency()),
   );
 
   readonly receivablesDisplay = computed(() =>
-    this.formatAmount(this.kpiSummary()?.kpis?.total_unpaid),
+    this.formatAmount(this.kpiSummary()?.kpis?.total_unpaid, this.currency()),
   );
 
   readonly invoicesCount = computed(() => {
@@ -107,11 +110,17 @@ export class DashboardComponent implements OnInit {
     return contactDisplayName(c);
   }
 
-  private formatAmount(val: number | null | undefined): string {
-    if (!isFiniteNumber(val)) return KPI_PLACEHOLDER;
-    return this.authStore.activeCurrency() === 'EUR'
-      ? `€ ${val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : `CHF ${val.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  private formatAmount(val: number | null | undefined, currency: string | null): string {
+    if (!isFiniteNumber(val) || !currency) return KPI_PLACEHOLDER;
+    const digits = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    switch (currency) {
+      case 'EUR':
+        return `€ ${val.toLocaleString('it-IT', digits)}`;
+      case 'CHF':
+        return `CHF ${val.toLocaleString('de-CH', digits)}`;
+      default:
+        return `${currency} ${val.toLocaleString('it-IT', digits)}`;
+    }
   }
 
   statusColor(status?: string): string {

@@ -63,7 +63,7 @@ describe('DashboardComponent', () => {
 
   async function setup(
     kpiResponse: Observable<unknown>,
-    currency: 'EUR' | 'CHF' = 'EUR',
+    authStoreCurrency: 'EUR' | 'CHF' = 'EUR',
   ): Promise<void> {
     const dashboardApiMock: Partial<DashboardApiService> = {
       getKpiSummary: vi.fn().mockReturnValue(kpiResponse),
@@ -88,7 +88,7 @@ describe('DashboardComponent', () => {
       ],
     }).compileComponents();
 
-    TestBed.inject(AuthStore).setCurrency(currency);
+    TestBed.inject(AuthStore).setCurrency(authStoreCurrency);
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -171,7 +171,7 @@ describe('DashboardComponent', () => {
   });
 
   it('formats CHF amounts with the de-CH locale', async () => {
-    await setup(of({ data: kpiSummaryResponse() }), 'CHF');
+    await setup(of({ data: withKpis({ active_currency: 'CHF' }) }));
 
     // The de-CH grouping separator comes from the runtime ICU data: U+0027 or U+2019 depending on the version.
     expect(component.receivablesDisplay()).toMatch(/^CHF 12['’]000\.50$/);
@@ -188,8 +188,9 @@ describe('DashboardComponent', () => {
 
   it('renders CHF amounts with several group separators verbatim', async () => {
     await setup(
-      of({ data: withKpis({ total_revenue: 1234567.89, total_unpaid: 9876543.21 }) }),
-      'CHF',
+      of({
+        data: withKpis({ total_revenue: 1234567.89, total_unpaid: 9876543.21, active_currency: 'CHF' }),
+      }),
     );
 
     const stats = statistics(await renderDeferred());
@@ -206,9 +207,27 @@ describe('DashboardComponent', () => {
   });
 
   it('shows a genuine CHF zero instead of the placeholder', async () => {
-    await setup(of({ data: withKpis({ total_unpaid: 0 }) }), 'CHF');
+    await setup(of({ data: withKpis({ total_unpaid: 0, active_currency: 'CHF' }) }));
 
     expect(component.receivablesDisplay()).toBe('CHF 0.00');
+  });
+
+  it('formats in EUR when the API says EUR and the AuthStore says CHF', async () => {
+    await setup(of({ data: withKpis({ active_currency: 'EUR' }) }), 'CHF');
+
+    expect(component.revenueDisplay()).toBe('€ 25.000,00');
+  });
+
+  it('formats in CHF when the API says CHF and the AuthStore says EUR', async () => {
+    await setup(of({ data: withKpis({ active_currency: 'CHF' }) }), 'EUR');
+
+    expect(component.revenueDisplay()).toMatch(/^CHF 25['’]000\.00$/);
+  });
+
+  it('prefixes other currencies with their ISO code', async () => {
+    await setup(of({ data: withKpis({ active_currency: 'USD' }) }));
+
+    expect(component.revenueDisplay()).toBe('USD 25.000,00');
   });
 
   describe('when KPI data is missing', () => {
@@ -262,6 +281,14 @@ describe('DashboardComponent', () => {
 
       expect(component.revenueDisplay()).toBe(PLACEHOLDER);
       expect(component.receivablesDisplay()).toBe('€ 12.000,50');
+      expect(component.invoicesCount()).toBe(42);
+    });
+
+    it('shows placeholders on the amount cards when active_currency is null', async () => {
+      await setup(of({ data: withKpis({ active_currency: null }) }));
+
+      expect(component.revenueDisplay()).toBe(PLACEHOLDER);
+      expect(component.receivablesDisplay()).toBe(PLACEHOLDER);
       expect(component.invoicesCount()).toBe(42);
     });
 
