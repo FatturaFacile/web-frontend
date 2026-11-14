@@ -30,7 +30,14 @@ describe('AccountingApiService', () => {
     });
     const req = httpTesting.expectOne(`${glBase}/accounts`);
     expect(req.request.method).toBe('GET');
-    req.flush({ success: true, message: 'OK', data: [{ id: 'acc-1', code: '1000' }, { id: 'acc-2', code: '2000' }] });
+    req.flush({
+      success: true,
+      message: 'OK',
+      data: [
+        { id: 'acc-1', code: '1000' },
+        { id: 'acc-2', code: '2000' },
+      ],
+    });
 
     service.getAccountsTree().subscribe((res) => {
       expect(res.data[0].account_code).toBe('1000');
@@ -56,7 +63,11 @@ describe('AccountingApiService', () => {
     });
     const reqCreate = httpTesting.expectOne(`${glBase}/journals`);
     expect(reqCreate.request.method).toBe('POST');
-    reqCreate.flush({ success: true, message: 'Created', data: { id: 'j-1', ...payload, status: 'draft' } });
+    reqCreate.flush({
+      success: true,
+      message: 'Created',
+      data: { id: 'j-1', ...payload, status: 'draft' },
+    });
 
     service.postJournal('j-1').subscribe((res) => {
       expect(res.data.status).toBe('posted');
@@ -70,11 +81,19 @@ describe('AccountingApiService', () => {
     });
     const reqReverse = httpTesting.expectOne(`${glBase}/journals/j-1/reverse`);
     expect(reqReverse.request.method).toBe('POST');
-    reqReverse.flush({ success: true, message: 'Reversed', data: { id: 'j-1', status: 'reversed' } });
-
-    service.validateJournalBalance(payload.lines as { account_id: string; debit_amount: number; credit_amount: number }[]).subscribe((res) => {
-      expect(res.data.balanced).toBe(true);
+    reqReverse.flush({
+      success: true,
+      message: 'Reversed',
+      data: { id: 'j-1', status: 'reversed' },
     });
+
+    service
+      .validateJournalBalance(
+        payload.lines as { account_id: string; debit_amount: number; credit_amount: number }[],
+      )
+      .subscribe((res) => {
+        expect(res.data.balanced).toBe(true);
+      });
     const reqVal = httpTesting.expectOne(`${glBase}/journals/validate-balance`);
     expect(reqVal.request.method).toBe('POST');
     reqVal.flush({ success: true, message: 'OK', data: { balanced: true, difference: 0 } });
@@ -108,7 +127,11 @@ describe('AccountingApiService', () => {
     });
     const reqCalc = httpTesting.expectOne(`${glBase}/tax-settlements/calculate`);
     expect(reqCalc.request.method).toBe('POST');
-    reqCalc.flush({ success: true, message: 'Calculated', data: { id: 'ts-1', balance: 1500, status: 'calculated' } });
+    reqCalc.flush({
+      success: true,
+      message: 'Calculated',
+      data: { id: 'ts-1', balance: 1500, status: 'calculated' },
+    });
 
     service.postTaxSettlement('ts-1').subscribe();
     const reqPost = httpTesting.expectOne(`${glBase}/tax-settlements/ts-1/post`);
@@ -122,12 +145,19 @@ describe('AccountingApiService', () => {
   });
 
   it('manages Intrastat declarations (generate, validate, submit)', () => {
-    service.generateIntrastatDeclaration({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 }).subscribe((res) => {
-      expect(res.data.id).toBe('intra-1');
-    });
+    service
+      .generateIntrastatDeclaration({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 })
+      .subscribe((res) => {
+        expect(res.data.id).toBe('intra-1');
+      });
     const reqGen = httpTesting.expectOne(`${intrastatBase}/declarations/generate`);
     expect(reqGen.request.method).toBe('POST');
-    expect(reqGen.request.body).toEqual({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 });
+    expect(reqGen.request.body).toEqual({
+      flow: 'sales',
+      year: 2026,
+      periodicity: 'M',
+      period: 10,
+    });
     reqGen.flush({ success: true, message: 'Generated', data: { id: 'intra-1', status: 'draft' } });
 
     service.validateIntrastatDeclaration('intra-1').subscribe((res) => {
@@ -137,21 +167,29 @@ describe('AccountingApiService', () => {
     expect(reqVal.request.method).toBe('POST');
     reqVal.flush({ success: true, message: 'Valid', data: { id: 'intra-1', status: 'validated' } });
 
-    service.submitIntrastatDeclaration('intra-1', { protocol_number: 'PROT-1' }).subscribe((res) => {
-      expect(res.data.status).toBe('submitted');
-    });
+    service
+      .submitIntrastatDeclaration('intra-1', { protocol_number: 'PROT-1' })
+      .subscribe((res) => {
+        expect(res.data.status).toBe('submitted');
+      });
     const reqSub = httpTesting.expectOne(`${intrastatBase}/declarations/intra-1/submit`);
     expect(reqSub.request.method).toBe('POST');
     expect(reqSub.request.body).toEqual({ protocol_number: 'PROT-1' });
-    reqSub.flush({ success: true, message: 'Submitted', data: { id: 'intra-1', status: 'submitted' } });
+    reqSub.flush({
+      success: true,
+      message: 'Submitted',
+      data: { id: 'intra-1', status: 'submitted' },
+    });
   });
 
   it('fetches trial balance financial statement', () => {
-    service.getTrialBalance(2026).subscribe((res) => {
+    service.getTrialBalance('period-1').subscribe((res) => {
       expect(res.data.total_debit).toBe(100000);
       expect(res.data.total_credit).toBe(100000);
     });
-    const req = httpTesting.expectOne(`${glBase}/financial-statements/trial-balance?year=2026`);
+    const req = httpTesting.expectOne(
+      `${glBase}/financial-statements/trial-balance?fiscal_period_id=period-1`,
+    );
     expect(req.request.method).toBe('GET');
     req.flush({
       success: true,

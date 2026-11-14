@@ -31,12 +31,16 @@ export class IntrastatApiService {
   /** Grid list: page-level filters (flow, year, status) plus the grid query (paging, sort, column filters, grid_values). */
   getDeclarations(
     params: QueryFilterParams & { flow?: string; year?: number; status?: string } = {},
-  ): Observable<PaginatedResponse<IntrastatDeclaration> & { summary?: IntrastatDeclarationSummary }> {
+  ): Observable<
+    PaginatedResponse<IntrastatDeclaration> & { summary?: IntrastatDeclarationSummary }
+  > {
     return this.http
-      .get<ApiResponse<IntrastatDeclaration[]> & { meta?: LaravelPaginationMeta; summary?: IntrastatDeclarationSummary }>(
-        `${this.base}/declarations`,
-        { params: toHttpParams(params) },
-      )
+      .get<
+        ApiResponse<IntrastatDeclaration[]> & {
+          meta?: LaravelPaginationMeta;
+          summary?: IntrastatDeclarationSummary;
+        }
+      >(`${this.base}/declarations`, { params: toHttpParams(params) })
       .pipe(map((res) => ({ ...res, meta: res.meta ?? plainListMeta(res.data, params) })));
   }
 
@@ -44,19 +48,29 @@ export class IntrastatApiService {
     return this.http.get<ApiResponse<IntrastatDeclaration>>(`${this.base}/declarations/${id}`);
   }
 
-  createDeclaration(payload: IntrastatDeclarationRequest): Observable<ApiResponse<IntrastatDeclaration>> {
+  createDeclaration(
+    payload: IntrastatDeclarationRequest,
+  ): Observable<ApiResponse<IntrastatDeclaration>> {
     return this.http.post<ApiResponse<IntrastatDeclaration>>(`${this.base}/declarations`, payload);
   }
 
-  generateDeclaration(payload: IntrastatGenerateRequest): Observable<ApiResponse<IntrastatDeclaration>> {
-    return this.http.post<ApiResponse<IntrastatDeclaration>>(`${this.base}/declarations/generate`, payload);
+  generateDeclaration(
+    payload: IntrastatGenerateRequest,
+  ): Observable<ApiResponse<IntrastatDeclaration>> {
+    return this.http.post<ApiResponse<IntrastatDeclaration>>(
+      `${this.base}/declarations/generate`,
+      payload,
+    );
   }
 
   updateDeclaration(
     id: string,
     payload: Partial<IntrastatDeclarationRequest>,
   ): Observable<ApiResponse<IntrastatDeclaration>> {
-    return this.http.put<ApiResponse<IntrastatDeclaration>>(`${this.base}/declarations/${id}`, payload);
+    return this.http.put<ApiResponse<IntrastatDeclaration>>(
+      `${this.base}/declarations/${id}`,
+      payload,
+    );
   }
 
   deleteDeclaration(id: string): Observable<{ message?: string }> {
@@ -108,19 +122,28 @@ export class IntrastatApiService {
   }
 
   /** The API answers with the telematic file as plain text; its name is in the Content-Disposition header. */
-  exportDeclaration(payload: IntrastatExportRequest): Observable<{ file_name: string; content: string }> {
-    return this.http.post(`${this.base}/exports`, payload, { observe: 'response', responseType: 'text' }).pipe(
-      map((res) => {
-        const disposition = res.headers.get('Content-Disposition') ?? '';
-        const match = /filename="?([^";]+)"?/i.exec(disposition);
-        return { content: res.body ?? '', file_name: match?.[1] ?? 'intrastat.txt' };
-      }),
-    );
+  exportDeclaration(
+    payload: IntrastatExportRequest,
+  ): Observable<{ file_name: string; content: string }> {
+    return this.http
+      .post(`${this.base}/exports`, payload, { observe: 'response', responseType: 'text' })
+      .pipe(
+        map((res) => {
+          const disposition = res.headers.get('Content-Disposition') ?? '';
+          const match = /filename="?([^";]+)"?/i.exec(disposition);
+          return { content: res.body ?? '', file_name: match?.[1] ?? 'intrastat.txt' };
+        }),
+      );
   }
 
-  getPeriodicity(year?: number): Observable<ApiResponse<IntrastatPeriodicityThresholds>> {
-    let httpParams = new HttpParams();
-    if (year) httpParams = httpParams.set('year', year.toString());
+  /** The API requires both the year and the quarter: they default to the current ones. */
+  getPeriodicity(
+    year: number = new Date().getFullYear(),
+    quarter: number = Math.floor(new Date().getMonth() / 3) + 1,
+  ): Observable<ApiResponse<IntrastatPeriodicityThresholds>> {
+    const httpParams = new HttpParams()
+      .set('year', year.toString())
+      .set('quarter', quarter.toString());
     return this.http.get<ApiResponse<IntrastatPeriodicityThresholds>>(`${this.base}/periodicity`, {
       params: httpParams,
     });
@@ -131,11 +154,16 @@ export class IntrastatApiService {
     return this.http.get<ApiResponse<IntrastatCodeList>>(`${this.base}/codes`);
   }
 
-  getProductProfiles(params: QueryFilterParams = {}): Observable<PaginatedResponse<IntrastatProductProfile>> {
+  getProductProfiles(
+    params: QueryFilterParams = {},
+  ): Observable<PaginatedResponse<IntrastatProductProfile>> {
     return this.http
-      .get<ApiResponse<IntrastatProductProfile[]> & { meta?: LaravelPaginationMeta }>(`${this.base}/product-profiles`, {
-        params: toHttpParams(params),
-      })
+      .get<ApiResponse<IntrastatProductProfile[]> & { meta?: LaravelPaginationMeta }>(
+        `${this.base}/product-profiles`,
+        {
+          params: toHttpParams(params),
+        },
+      )
       .pipe(map((res) => ({ ...res, meta: res.meta ?? plainListMeta(res.data, params) })));
   }
 
@@ -155,7 +183,17 @@ export class IntrastatApiService {
 }
 
 /** The `grid_values` answer is a plain list without meta: give it one so every response is a PaginatedResponse. */
-function plainListMeta(items: unknown[] | undefined, params: QueryFilterParams): LaravelPaginationMeta {
+function plainListMeta(
+  items: unknown[] | undefined,
+  params: QueryFilterParams,
+): LaravelPaginationMeta {
   const count = items?.length ?? 0;
-  return { current_page: params.page ?? 1, from: null, to: null, last_page: 1, per_page: count, total: count };
+  return {
+    current_page: params.page ?? 1,
+    from: null,
+    to: null,
+    last_page: 1,
+    per_page: count,
+    total: count,
+  };
 }

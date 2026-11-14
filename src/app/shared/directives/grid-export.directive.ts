@@ -119,10 +119,12 @@ export class GridExportDirective implements AfterViewInit, OnDestroy {
 
   private clearGroupRows(): void {
     this.host.querySelectorAll('.grid-group-row').forEach((row) => row.remove());
-    this.host.querySelectorAll<HTMLElement>('.ant-table-tbody > tr[data-grid-collapsed]').forEach((row) => {
-      row.style.display = '';
-      row.removeAttribute('data-grid-collapsed');
-    });
+    this.host
+      .querySelectorAll<HTMLElement>('.ant-table-tbody > tr[data-grid-collapsed]')
+      .forEach((row) => {
+        row.style.display = '';
+        row.removeAttribute('data-grid-collapsed');
+      });
   }
 
   private renderGroupRows(): void {
@@ -145,7 +147,9 @@ export class GridExportDirective implements AfterViewInit, OnDestroy {
     };
     for (const row of rows) {
       const label =
-        ((row.children.item(index) as HTMLElement | null)?.innerText ?? '').replace(/\s+/g, ' ').trim() || '—';
+        ((row.children.item(index) as HTMLElement | null)?.innerText ?? '')
+          .replace(/\s+/g, ' ')
+          .trim() || '—';
       if (label !== currentLabel || header === null) {
         finish();
         currentLabel = label;
@@ -190,7 +194,9 @@ export class GridExportDirective implements AfterViewInit, OnDestroy {
 
   private async export(): Promise<void> {
     const headers = Array.from(this.host.querySelectorAll<HTMLElement>('.ant-table-thead th'));
-    const rows = Array.from(this.host.querySelectorAll<HTMLElement>('.ant-table-tbody > tr.ant-table-row'));
+    const rows = Array.from(
+      this.host.querySelectorAll<HTMLElement>('.ant-table-tbody > tr.ant-table-row'),
+    );
     const keep = headers
       .map((th, index) => ({ index, title: (th.innerText ?? '').trim().split('\n')[0].trim() }))
       .filter((h) => h.title !== '');
@@ -198,7 +204,7 @@ export class GridExportDirective implements AfterViewInit, OnDestroy {
       header: h.title,
       values: rows.map((row) => toValue(row.children.item(h.index) as HTMLElement | null)),
     }));
-    await exportXlsx(columns, document.title ? document.title.split('|')[0].trim() || 'export' : 'export');
+    await exportXlsx(columns, 'export');
   }
 }
 

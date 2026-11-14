@@ -3,7 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { HrEmployeeApiService, I18nService, PermissionsService } from '@core';
+import { icons } from '../../../icons-provider';
 import { EmployeeDocumentsComponent } from './employee-documents.component';
 
 describe('EmployeeDocumentsComponent validation', () => {
@@ -29,6 +31,7 @@ describe('EmployeeDocumentsComponent validation', () => {
     TestBed.configureTestingModule({
       imports: [EmployeeDocumentsComponent],
       providers: [
+        provideNzIcons(icons),
         { provide: HrEmployeeApiService, useValue: api },
         { provide: PermissionsService, useValue: { canWrite: () => true } },
         { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn() } },
