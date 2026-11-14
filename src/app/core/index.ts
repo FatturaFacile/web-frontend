@@ -77,6 +77,12 @@ export * from './api/practice-api.service';
 export * from './api/appointment-api.service';
 export * from './api/communication-api.service';
 export * from './api/visitors-api.service';
+export * from './api/configurator-api.service';
+export * from './api/facility-api.service';
+export * from './api/governance-api.service';
+export * from './api/lease-accounting-api.service';
+export * from './api/travel-api.service';
+export * from './api/sustainability-api.service';
 export * from './api/tessera-sanitaria-api.service';
 export * from './api/intrastat-api.service';
 export * from './api/portal-api.service';
@@ -98,4 +104,4 @@ export * from './api/eam-ops-api.service';
 export * from './api/project-control-api.service';
 export * from './api/general-ledger-fiscal-api.service';
 export * from './api/privacy-api.service';
-
+export * from './api/supplier-portal-api.service';

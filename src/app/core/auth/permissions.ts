@@ -111,6 +111,19 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: ['owner', 'admin', 'sales', 'member'],
   },
   visitors: { read: ANY_MEMBER, write: ANY_MEMBER },
+  supplier_portal: {
+    read: [...FINANCE_READERS, 'purchasing', 'procurement_manager'],
+    write: [...FINANCE, 'purchasing', 'procurement_manager'],
+  },
+  travel: { read: ANY_MEMBER, write: ANY_MEMBER },
+  configurator: { read: ANY_MEMBER, write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'] },
+  facility: { read: ANY_MEMBER, write: ANY_MEMBER },
+  governance: { read: ANY_MEMBER, write: ANY_MEMBER },
+  sustainability: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'production', 'technician', 'procurement_manager', 'member'],
+  },
+  leases: { read: FINANCE_READERS, write: FINANCE },
   intrastat: {
     read: [...FINANCE_READERS, 'customs'],
     write: [...FINANCE, 'customs'],

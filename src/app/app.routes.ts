@@ -223,6 +223,54 @@ export const routes: Routes = [
       import('./features/visitors/visitors.routes').then((m) => m.VISITORS_ROUTES),
   },
   {
+    path: 'facility',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.FACILITY', title: 'PAGE_TITLE.FACILITY' },
+    loadChildren: () =>
+      import('./features/facility/facility.routes').then((m) => m.FACILITY_ROUTES),
+  },
+  {
+    path: 'supplier-portal',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.SUPPLIER_PORTAL', title: 'SUPPLIER_PORTAL.TITLE' },
+    loadChildren: () =>
+      import('./features/supplier-portal/supplier-portal.routes').then((m) => m.SUPPLIER_PORTAL_ROUTES),
+  },
+  {
+    path: 'travel',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.TRAVEL', title: 'PAGE_TITLE.VIAGGI_E_TRASFERTE' },
+    loadChildren: () => import('./features/travel/travel.routes').then((m) => m.TRAVEL_ROUTES),
+  },
+  {
+    path: 'configurator',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.CONFIGURATOR', title: 'PAGE_TITLE.CONFIGURATORE_PRODOTTI' },
+    loadChildren: () =>
+      import('./features/configurator/configurator.routes').then((m) => m.CONFIGURATOR_ROUTES),
+  },
+  {
+    path: 'governance',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.GOVERNANCE', title: 'PAGE_TITLE.GOVERNANCE_RISK_COMPLIANCE' },
+    loadChildren: () =>
+      import('./features/governance/governance.routes').then((m) => m.GOVERNANCE_ROUTES),
+  },
+  {
+    path: 'leases',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.LEASES', title: 'PAGE_TITLE.LEASES' },
+    loadChildren: () =>
+      import('./features/lease-accounting/lease-accounting.routes').then((m) => m.LEASE_ACCOUNTING_ROUTES),
+  },
+  {
+    path: 'sustainability',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.SUSTAINABILITY', title: 'PAGE_TITLE.SUSTAINABILITY_ESG' },
+    loadChildren: () =>
+      import('./features/sustainability/sustainability.routes').then((m) => m.SUSTAINABILITY_ROUTES),
+  },
+  {
     path: 'communication',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.COMMUNICATION', title: 'PAGE_TITLE.COMUNICAZIONI_MULTI_CANALE' },

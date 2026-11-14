@@ -1,0 +1,323 @@
+<div class="tab-toolbar">
+  <div class="filters">
+    <nz-select
+      class="status-filter"
+      [ngModel]="jurisdictionFilter()"
+      (ngModelChange)="jurisdictionFilter.set($event)"
+      [nzPlaceHolder]="'TRAVEL.FILTER_JURISDICTION' | translate"
+      nzAllowClear
+    >
+      @for (jurisdiction of jurisdictions; track jurisdiction) {
+        <nz-option [nzValue]="jurisdiction" [nzLabel]="'TRAVEL.JURISDICTION_' + jurisdiction | translate"></nz-option>
+      }
+    </nz-select>
+  </div>
+  @if (canMaintain()) {
+    <div class="actions">
+      @for (jurisdiction of jurisdictions; track jurisdiction) {
+        <button nz-button (click)="seedDefaults(jurisdiction)">
+          {{ 'TRAVEL.ADD_DEFAULTS_' + jurisdiction | translate }}
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<h3 class="section-title">{{ 'TRAVEL.PER_DIEM_RATES' | translate }}</h3>
+<p class="text-muted">{{ 'TRAVEL.PER_DIEM_RATES_HINT' | translate }}</p>
+@if (canMaintain()) {
+  <div class="actions-bar">
+    <button nz-button nzType="primary" appIconAction="add" (click)="openPerDiemModal()"></button>
+  </div>
+}
+<nz-table [nzData]="visiblePerDiemRates()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+  <thead>
+    <tr>
+      <th>{{ 'TRAVEL.JURISDICTION' | translate }}</th>
+      <th>{{ 'TRAVEL.YEAR' | translate }}</th>
+      <th>{{ 'TRAVEL.SCOPE' | translate }}</th>
+      <th>{{ 'TRAVEL.COUNTRY' | translate }}</th>
+      <th nzAlign="right">{{ 'TRAVEL.DAILY_AMOUNT' | translate }}</th>
+      <th nzAlign="right">{{ 'TRAVEL.TAX_FREE_DAILY_AMOUNT' | translate }}</th>
+      <th>{{ 'TRAVEL.DEDUCTIONS' | translate }}</th>
+      <th>{{ 'TRAVEL.DAY_THRESHOLDS' | translate }}</th>
+      @if (canMaintain()) {
+        <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (rate of visiblePerDiemRates(); track rate.id) {
+      <tr>
+        <td>{{ rate.jurisdiction }}</td>
+        <td>{{ rate.year }}</td>
+        <td>{{ 'TRAVEL.SCOPE_' + rate.scope.toUpperCase() | translate }}</td>
+        <td>{{ rate.country || ('TRAVEL.ANY_COUNTRY' | translate) }}</td>
+        <td nzAlign="right">{{ rate.daily_amount | money: rate.currency }}</td>
+        <td nzAlign="right">
+          @if (rate.tax_free_daily_amount) {
+            {{ rate.tax_free_daily_amount | money: rate.currency }}
+          } @else {
+            <nz-tag nzColor="green">{{ 'TRAVEL.ALL_TAX_FREE' | translate }}</nz-tag>
+          }
+        </td>
+        <td>
+          {{ 'TRAVEL.DEDUCTION_SUMMARY' | translate: { lodging: rate.lodging_deduction_percent, breakfast: rate.breakfast_deduction_percent, meal: rate.meal_deduction_percent } }}
+          @if (rate.deduct_each_meal) {
+            <nz-tag>{{ 'TRAVEL.EACH_MEAL' | translate }}</nz-tag>
+          }
+        </td>
+        <td>{{ rate.half_day_min_hours }} / {{ rate.full_day_min_hours }}</td>
+        @if (canMaintain()) {
+          <td nzAlign="center">
+            <button nz-button nzSize="small" appIconAction="edit" (click)="openPerDiemModal(rate)"></button>
+            <button
+              nz-button
+              nzSize="small"
+              nzDanger
+              appIconAction="delete"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'TRAVEL.CONFIRM_DELETE_RATE' | translate"
+              (nzOnConfirm)="deletePerDiemRate(rate)"
+            ></button>
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</nz-table>
+
+<h3 class="section-title">{{ 'TRAVEL.MILEAGE_RATES' | translate }}</h3>
+@if (canMaintain()) {
+  <div class="actions-bar">
+    <button nz-button nzType="primary" appIconAction="add" (click)="openMileageModal()"></button>
+  </div>
+}
+<nz-table [nzData]="visibleMileageRates()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+  <thead>
+    <tr>
+      <th>{{ 'TRAVEL.JURISDICTION' | translate }}</th>
+      <th>{{ 'TRAVEL.YEAR' | translate }}</th>
+      <th>{{ 'TRAVEL.VEHICLE_TYPE' | translate }}</th>
+      <th nzAlign="right">{{ 'TRAVEL.RATE_PER_KM' | translate }}</th>
+      @if (canMaintain()) {
+        <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (rate of visibleMileageRates(); track rate.id) {
+      <tr>
+        <td>{{ rate.jurisdiction }}</td>
+        <td>{{ rate.year }}</td>
+        <td>{{ 'TRAVEL.VEHICLE_' + rate.vehicle_type.toUpperCase() | translate }}</td>
+        <td nzAlign="right">{{ rate.rate_per_km }} {{ rate.currency }}</td>
+        @if (canMaintain()) {
+          <td nzAlign="center">
+            <button nz-button nzSize="small" appIconAction="edit" (click)="openMileageModal(rate)"></button>
+            <button
+              nz-button
+              nzSize="small"
+              nzDanger
+              appIconAction="delete"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'TRAVEL.CONFIRM_DELETE_RATE' | translate"
+              (nzOnConfirm)="deleteMileageRate(rate)"
+            ></button>
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</nz-table>
+
+<nz-modal
+  [(nzVisible)]="perDiemModalVisible"
+  [nzTitle]="'TRAVEL.PER_DIEM_RATE' | translate"
+  (nzOnCancel)="perDiemModalVisible.set(false)"
+  (nzOnOk)="savePerDiemRate()"
+  okAction="save"
+  [nzOkDisabled]="perDiemForm.invalid"
+  [nzOkLoading]="saving()"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="perDiemForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pdr-jurisdiction">{{ 'TRAVEL.JURISDICTION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'jurisdiction')">
+            <nz-select id="pdr-jurisdiction" formControlName="jurisdiction">
+              @for (jurisdiction of jurisdictions; track jurisdiction) {
+                <nz-option [nzValue]="jurisdiction" [nzLabel]="'TRAVEL.JURISDICTION_' + jurisdiction | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pdr-year">{{ 'TRAVEL.YEAR' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'year')">
+            <input nz-input id="pdr-year" type="number" formControlName="year" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pdr-scope">{{ 'TRAVEL.SCOPE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'scope')">
+            <nz-select id="pdr-scope" formControlName="scope">
+              @for (scope of scopes; track scope) {
+                <nz-option [nzValue]="scope" [nzLabel]="'TRAVEL.SCOPE_' + scope.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-country">{{ 'TRAVEL.COUNTRY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'country')" [nzExtra]="'TRAVEL.COUNTRY_HINT' | translate">
+            <input nz-input id="pdr-country" formControlName="country" maxlength="2" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pdr-currency">{{ 'TRAVEL.CURRENCY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'currency')">
+            <nz-select id="pdr-currency" formControlName="currency">
+              @for (currency of currencies; track currency) {
+                <nz-option [nzValue]="currency" [nzLabel]="currency"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pdr-daily">{{ 'TRAVEL.DAILY_AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'daily_amount')">
+            <input nz-input id="pdr-daily" formControlName="daily_amount" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="pdr-taxfree">{{ 'TRAVEL.TAX_FREE_DAILY_AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'tax_free_daily_amount')" [nzExtra]="'TRAVEL.TAX_FREE_HINT' | translate">
+          <input nz-input id="pdr-taxfree" formControlName="tax_free_daily_amount" inputmode="decimal" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-lodging">{{ 'TRAVEL.LODGING_DEDUCTION_PERCENT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'lodging_deduction_percent')">
+            <input nz-input id="pdr-lodging" formControlName="lodging_deduction_percent" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-breakfast">{{ 'TRAVEL.BREAKFAST_DEDUCTION_PERCENT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'breakfast_deduction_percent')">
+            <input nz-input id="pdr-breakfast" formControlName="breakfast_deduction_percent" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-meal">{{ 'TRAVEL.MEAL_DEDUCTION_PERCENT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'meal_deduction_percent')">
+            <input nz-input id="pdr-meal" formControlName="meal_deduction_percent" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-each">{{ 'TRAVEL.DEDUCT_EACH_MEAL' | translate }}</nz-form-label>
+          <nz-form-control [nzExtra]="'TRAVEL.DEDUCT_EACH_MEAL_HINT' | translate">
+            <nz-switch id="pdr-each" formControlName="deduct_each_meal"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-half">{{ 'TRAVEL.HALF_DAY_MIN_HOURS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'half_day_min_hours')">
+            <input nz-input id="pdr-half" type="number" formControlName="half_day_min_hours" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pdr-full">{{ 'TRAVEL.FULL_DAY_MIN_HOURS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'full_day_min_hours')">
+            <input nz-input id="pdr-full" type="number" formControlName="full_day_min_hours" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="pdr-notes">{{ 'TRAVEL.NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(perDiemForm, 'notes')">
+          <input nz-input id="pdr-notes" formControlName="notes" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="mileageModalVisible"
+  [nzTitle]="'TRAVEL.MILEAGE_RATE' | translate"
+  (nzOnCancel)="mileageModalVisible.set(false)"
+  (nzOnOk)="saveMileageRate()"
+  okAction="save"
+  [nzOkDisabled]="mileageForm.invalid"
+  [nzOkLoading]="saving()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mileageForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="mr-jurisdiction">{{ 'TRAVEL.JURISDICTION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'jurisdiction')">
+            <nz-select id="mr-jurisdiction" formControlName="jurisdiction">
+              @for (jurisdiction of jurisdictions; track jurisdiction) {
+                <nz-option [nzValue]="jurisdiction" [nzLabel]="'TRAVEL.JURISDICTION_' + jurisdiction | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="mr-year">{{ 'TRAVEL.YEAR' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'year')">
+            <input nz-input id="mr-year" type="number" formControlName="year" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="mr-vehicle">{{ 'TRAVEL.VEHICLE_TYPE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'vehicle_type')">
+            <nz-select id="mr-vehicle" formControlName="vehicle_type">
+              @for (vehicle of vehicleTypes; track vehicle) {
+                <nz-option [nzValue]="vehicle" [nzLabel]="'TRAVEL.VEHICLE_' + vehicle.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="mr-currency">{{ 'TRAVEL.CURRENCY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'currency')">
+            <nz-select id="mr-currency" formControlName="currency">
+              @for (currency of currencies; track currency) {
+                <nz-option [nzValue]="currency" [nzLabel]="currency"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="mr-rate">{{ 'TRAVEL.RATE_PER_KM' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'rate_per_km')">
+          <input nz-input id="mr-rate" formControlName="rate_per_km" inputmode="decimal" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="mr-notes">{{ 'TRAVEL.NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'notes')">
+          <input nz-input id="mr-notes" formControlName="notes" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

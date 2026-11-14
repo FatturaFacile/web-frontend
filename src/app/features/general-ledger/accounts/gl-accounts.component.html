@@ -22,10 +22,54 @@
       }
     </nz-select>
     <span class="spacer"></span>
+    @if (canWrite && templates().length > 0) {
+      <nz-select
+        class="type-filter"
+        [attr.aria-label]="'GL.TEMPLATE_SELECT' | translate"
+        [nzPlaceHolder]="'GL.TEMPLATE_SELECT' | translate"
+        [(ngModel)]="selectedTemplate"
+      >
+        @for (template of templates(); track template.key) {
+          <nz-option [nzValue]="template.key" [nzLabel]="template.name + ' (' + template.accounts + ')'" />
+        }
+      </nz-select>
+      <button
+        nz-button
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'GL.TEMPLATE_IMPORT_CONFIRM' | translate"
+        (nzOnConfirm)="importTemplate()"
+        [disabled]="!selectedTemplate || importing()"
+        [nzLoading]="importing()"
+      >
+        {{ 'GL.TEMPLATE_IMPORT' | translate }}
+      </button>
+    }
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
     }
   </div>
+
+  @if (importResult(); as result) {
+    <nz-alert
+      class="import-result"
+      nzType="success"
+      nzShowIcon
+      nzCloseable
+      [nzMessage]="
+        ('GL.TEMPLATE_IMPORT_DONE' | translate) +
+        ': ' +
+        ('GL.TEMPLATE_CREATED' | translate) +
+        ' ' +
+        result.created +
+        ', ' +
+        ('GL.TEMPLATE_SKIPPED' | translate) +
+        ' ' +
+        result.skipped
+      "
+      (nzOnClose)="importResult.set(null)"
+    />
+  }
 
   <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-accounts'" />
 

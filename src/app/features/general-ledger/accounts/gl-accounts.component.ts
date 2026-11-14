@@ -14,6 +14,8 @@ import {
   applyServerErrors,
   ChartAccountDetail,
   ChartAccountPayload,
+  ChartAccountTemplate,
+  ChartAccountTemplateImportResult,
   FetchGridModel,
   QueryFilterParams,
   GeneralLedgerApiService,
@@ -74,6 +76,10 @@ export class GlAccountsComponent {
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
+  protected readonly templates = signal<ChartAccountTemplate[]>([]);
+  protected readonly importing = signal(false);
+  protected readonly importResult = signal<ChartAccountTemplateImportResult | null>(null);
+  protected selectedTemplate: string | null = null;
   protected typeFilter: string | null = null;
   protected search = '';
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -125,6 +131,28 @@ export class GlAccountsComponent {
 
   constructor() {
     this.grid.setPageSize(25);
+    if (this.canWrite) {
+      this.api.getAccountTemplates().subscribe({ next: (response) => this.templates.set(response.data) });
+    }
+  }
+
+  /** Loads the selected standard chart; accounts whose code already exists are kept by the server. */
+  protected importTemplate(): void {
+    const key = this.selectedTemplate;
+    if (!key) {
+      return;
+    }
+    this.importing.set(true);
+    this.importResult.set(null);
+    this.api.importAccountTemplate(key).subscribe({
+      next: (response) => {
+        this.importing.set(false);
+        this.importResult.set(response.data);
+        this.lookups.load(true);
+        this.reload();
+      },
+      error: () => this.importing.set(false),
+    });
   }
 
   protected load(): void {
