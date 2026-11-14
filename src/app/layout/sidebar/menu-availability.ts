@@ -162,11 +162,11 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/treasury/operations',
   '/workflows',
   '/workspace',
-  // Still disabled:
+  // Still disabled (smoke test 2026-11-14, Enterprise Administrator of the demo tenant):
   // '/settings/admin/access-requests': needs a platform administrator (403 for the tenant admin)
   // '/hr/self-service': employee-only page (403 on /hr/me for a user without an employee record)
   // '/portal': token page, not testable from the menu (demo token 404)
-  // '/portal/family': token page, not testable from the menu (demo token 404)
+  // '/portal/family': token page, not testable from the menu ("Invalid or expired portal link")
   // '/visitors': kiosk page, needs a kiosk session (401)
 ];
 
