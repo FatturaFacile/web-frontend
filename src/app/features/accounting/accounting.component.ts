@@ -1,7 +1,23 @@
 import { DatePipe, JsonPipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+  TemplateRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { map, of, switchMap } from 'rxjs';
+import {
+  AbstractControl,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -43,7 +59,12 @@ import {
   TableStateService,
   TranslatePipe,
   ModalActionsDirective,
-  IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+  IconActionDirective,
+  GridExportDirective,
+  GridSortPipe,
+  GridFilterListPipe,
+  GridFilterFnPipe,
+} from '@shared';
 import { notInFuture } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
@@ -61,7 +82,9 @@ const INTRASTAT_FIRST_YEAR = 2022;
   styleUrl: './accounting.component.scss',
   imports: [
     GridExportDirective,
-    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    GridSortPipe,
+    GridFilterListPipe,
+    GridFilterFnPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -144,15 +167,31 @@ export class AccountingComponent implements OnInit {
 
   readonly calcVatForm = this.fb.group({
     period_type: this.fb.control<'monthly' | 'quarterly'>('monthly'),
-    year: this.fb.control(new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]),
-    period: this.fb.control(new Date().getMonth() + 1, [Validators.required, Validators.min(1), Validators.max(12)]),
+    year: this.fb.control(new Date().getFullYear(), [
+      Validators.required,
+      Validators.min(2000),
+      Validators.max(2100),
+    ]),
+    period: this.fb.control(new Date().getMonth() + 1, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(12),
+    ]),
   });
 
   readonly intrastatForm = this.fb.group({
     flow: this.fb.control<IntrastatFlow>('sales', [Validators.required]),
-    year: this.fb.control(new Date().getFullYear(), [Validators.required, Validators.min(INTRASTAT_FIRST_YEAR), Validators.max(2099)]),
+    year: this.fb.control(new Date().getFullYear(), [
+      Validators.required,
+      Validators.min(INTRASTAT_FIRST_YEAR),
+      Validators.max(2099),
+    ]),
     periodicity: this.fb.control<IntrastatPeriodicity>('M', [Validators.required]),
-    period: this.fb.control(new Date().getMonth() + 1, [Validators.required, Validators.min(1), Validators.max(12)]),
+    period: this.fb.control(new Date().getMonth() + 1, [
+      Validators.required,
+      Validators.min(1),
+      Validators.max(12),
+    ]),
   });
 
   /** Protocol assigned by the receiving channel, asked when a validated list is marked as submitted. */
@@ -164,19 +203,29 @@ export class AccountingComponent implements OnInit {
   constructor() {
     this.accountForm.controls.account_type.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((type) => this.accountForm.controls.normal_balance.setValue(defaultNormalBalance(type)));
+      .subscribe((type) =>
+        this.accountForm.controls.normal_balance.setValue(defaultNormalBalance(type)),
+      );
 
     // A quarterly list has periods 1 to 4, and the INTRA-2 purchases lists are monthly only.
-    this.intrastatForm.controls.flow.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((flow) => {
-      if (flow === 'purchases') {
-        this.intrastatForm.controls.periodicity.setValue('M');
-      }
-    });
-    this.intrastatForm.controls.periodicity.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((periodicity) => {
-      const period = this.intrastatForm.controls.period;
-      period.setValidators([Validators.required, Validators.min(1), Validators.max(periodicity === 'T' ? 4 : 12)]);
-      period.updateValueAndValidity();
-    });
+    this.intrastatForm.controls.flow.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((flow) => {
+        if (flow === 'purchases') {
+          this.intrastatForm.controls.periodicity.setValue('M');
+        }
+      });
+    this.intrastatForm.controls.periodicity.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((periodicity) => {
+        const period = this.intrastatForm.controls.period;
+        period.setValidators([
+          Validators.required,
+          Validators.min(1),
+          Validators.max(periodicity === 'T' ? 4 : 12),
+        ]);
+        period.updateValueAndValidity();
+      });
   }
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
@@ -184,7 +233,6 @@ export class AccountingComponent implements OnInit {
   private readonly accountTypeTpl = viewChild<TemplateRef<unknown>>('accountTypeTpl');
   private readonly normalBalanceTpl = viewChild<TemplateRef<unknown>>('normalBalanceTpl');
   private readonly vatStatusTpl = viewChild<TemplateRef<unknown>>('vatStatusTpl');
-
 
   readonly ledgerColumns = computed<TableColumnDef<JournalEntryResource>[]>(() => [
     {
@@ -347,25 +395,37 @@ export class AccountingComponent implements OnInit {
   postJournal(journal: JournalEntryResource): void {
     this.api.postJournal(journal.id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('accounting.msgScritturaContabilizzataALibroGiornale', { entry_number: journal.entry_number }));
+        this.message.success(
+          this.translate.instant('accounting.msgScritturaContabilizzataALibroGiornale', {
+            entry_number: journal.entry_number,
+          }),
+        );
         this.loadLedgerEntries();
       },
       error: () => {
-        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaContabilizzazioneDellaScrittura'));
+        this.message.error(
+          this.translate.instant('accounting.msgErroreDuranteLaContabilizzazioneDellaScrittura'),
+        );
       },
     });
   }
 
   reverseJournal(journal: JournalEntryResource): void {
     this.modal.confirm({
-      nzTitle: this.translate.instant('accounting.dlgStornareLaScrittura', { entry_number: journal.entry_number }),
+      nzTitle: this.translate.instant('accounting.dlgStornareLaScrittura', {
+        entry_number: journal.entry_number,
+      }),
       nzOkText: this.translate.instant('accounting.dlgStornaScrittura'),
       nzOkDanger: true,
       nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.reverseJournal(journal.id).subscribe({
           next: () => {
-            this.message.success(this.translate.instant('accounting.msgScritturaStornataConSuccesso', { entry_number: journal.entry_number }));
+            this.message.success(
+              this.translate.instant('accounting.msgScritturaStornataConSuccesso', {
+                entry_number: journal.entry_number,
+              }),
+            );
             this.loadLedgerEntries();
           },
           error: () => {
@@ -413,11 +473,15 @@ export class AccountingComponent implements OnInit {
     this.api.createAccount(payload).subscribe({
       next: () => {
         this.accountModalVisible.set(false);
-        this.message.success(this.translate.instant('accounting.msgContoMastroInseritoNelPianoDei'));
+        this.message.success(
+          this.translate.instant('accounting.msgContoMastroInseritoNelPianoDei'),
+        );
         this.loadChartOfAccounts();
       },
       error: () => {
-        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaCreazioneDelConto'));
+        this.message.error(
+          this.translate.instant('accounting.msgErroreDuranteLaCreazioneDelConto'),
+        );
       },
     });
   }
@@ -457,11 +521,17 @@ export class AccountingComponent implements OnInit {
     this.api.calculateTaxSettlement(payload).subscribe({
       next: (res) => {
         this.calcVatModalVisible.set(false);
-        this.message.success(this.translate.instant('accounting.msgLiquidazioneIvaCalcolataSaldo', { balance: res.data.balance }));
+        this.message.success(
+          this.translate.instant('accounting.msgLiquidazioneIvaCalcolataSaldo', {
+            balance: res.data.balance,
+          }),
+        );
         this.loadVatSettlements();
       },
       error: () => {
-        this.message.error(this.translate.instant('accounting.msgErroreDuranteIlCalcoloDellaLiquidazione'));
+        this.message.error(
+          this.translate.instant('accounting.msgErroreDuranteIlCalcoloDellaLiquidazione'),
+        );
       },
     });
   }
@@ -469,7 +539,9 @@ export class AccountingComponent implements OnInit {
   postVatSettlement(settlement: TaxSettlementResource): void {
     this.api.postTaxSettlement(settlement.id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('accounting.msgLiquidazioneIvaRegistrataALibroGiornale'));
+        this.message.success(
+          this.translate.instant('accounting.msgLiquidazioneIvaRegistrataALibroGiornale'),
+        );
         this.loadVatSettlements();
       },
     });
@@ -478,7 +550,9 @@ export class AccountingComponent implements OnInit {
   payVatSettlement(settlement: TaxSettlementResource): void {
     this.api.payTaxSettlement(settlement.id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('accounting.msgPagamentoIvaRegistratoModelloF24Debito'));
+        this.message.success(
+          this.translate.instant('accounting.msgPagamentoIvaRegistratoModelloF24Debito'),
+        );
         this.loadVatSettlements();
       },
     });
@@ -494,7 +568,8 @@ export class AccountingComponent implements OnInit {
         anchor.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.message.error(this.translate.instant('accounting.msgErroreDuranteIlDownloadXmlEstv')),
+      error: () =>
+        this.message.error(this.translate.instant('accounting.msgErroreDuranteIlDownloadXmlEstv')),
     });
   }
 
@@ -502,9 +577,14 @@ export class AccountingComponent implements OnInit {
     this.fiscalApi.getVatAnnualReconciliation(year).subscribe({
       next: (res) => {
         this.vatAnnualReconciliation.set(res.data);
-        this.message.success(this.translate.instant('accounting.msgRiconciliazioneAnnualeIvaArt72Liva', { year }));
+        this.message.success(
+          this.translate.instant('accounting.msgRiconciliazioneAnnualeIvaArt72Liva', { year }),
+        );
       },
-      error: () => this.message.error(this.translate.instant('accounting.msgErroreNelCalcoloDellaRiconciliazioneAnnuale')),
+      error: () =>
+        this.message.error(
+          this.translate.instant('accounting.msgErroreNelCalcoloDellaRiconciliazioneAnnuale'),
+        ),
     });
   }
 
@@ -526,15 +606,21 @@ export class AccountingComponent implements OnInit {
 
   closePeriod(period: FiscalPeriodResource): void {
     this.modal.confirm({
-      nzTitle: this.translate.instant('accounting.dlgChiudereDefinitivamenteIlPeriodoFiscale', { name: period.name }),
-      nzContent: this.translate.instant('accounting.dlgLaChiusuraBloccheraNuoveRegistrazioniContabili'),
+      nzTitle: this.translate.instant('accounting.dlgChiudereDefinitivamenteIlPeriodoFiscale', {
+        name: period.name,
+      }),
+      nzContent: this.translate.instant(
+        'accounting.dlgLaChiusuraBloccheraNuoveRegistrazioniContabili',
+      ),
       nzOkText: this.translate.instant('accounting.dlgChiudiPeriodo'),
       nzOkDanger: true,
       nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.closeFiscalPeriod(period.id).subscribe({
           next: () => {
-            this.message.success(this.translate.instant('accounting.msgPeriodoChiuso', { name: period.name }));
+            this.message.success(
+              this.translate.instant('accounting.msgPeriodoChiuso', { name: period.name }),
+            );
             this.loadFiscalPeriods();
           },
         });
@@ -544,13 +630,17 @@ export class AccountingComponent implements OnInit {
 
   reopenPeriod(period: FiscalPeriodResource): void {
     this.modal.confirm({
-      nzTitle: this.translate.instant('accounting.dlgRiaprireIlPeriodoFiscale', { name: period.name }),
+      nzTitle: this.translate.instant('accounting.dlgRiaprireIlPeriodoFiscale', {
+        name: period.name,
+      }),
       nzOkText: this.translate.instant('accounting.dlgRiapriPeriodo'),
       nzCancelText: this.translate.instant('accounting.dlgAnnulla'),
       nzOnOk: () => {
         this.api.reopenFiscalPeriod(period.id).subscribe({
           next: () => {
-            this.message.success(this.translate.instant('accounting.msgPeriodoRiaperto', { name: period.name }));
+            this.message.success(
+              this.translate.instant('accounting.msgPeriodoRiaperto', { name: period.name }),
+            );
             this.loadFiscalPeriods();
           },
         });
@@ -593,11 +683,17 @@ export class AccountingComponent implements OnInit {
     this.api.generateIntrastatDeclaration(this.intrastatForm.getRawValue()).subscribe({
       next: (res) => {
         this.intrastatModalVisible.set(false);
-        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatGenerata', { declaration_number: this.intrastatLabel(res.data) }));
+        this.message.success(
+          this.translate.instant('accounting.msgDichiarazioneIntrastatGenerata', {
+            declaration_number: this.intrastatLabel(res.data),
+          }),
+        );
         this.loadIntrastat();
       },
       error: () => {
-        this.message.error(this.translate.instant('accounting.msgErroreDuranteLaGenerazioneIntrastat'));
+        this.message.error(
+          this.translate.instant('accounting.msgErroreDuranteLaGenerazioneIntrastat'),
+        );
       },
     });
   }
@@ -611,7 +707,9 @@ export class AccountingComponent implements OnInit {
   validateIntrastat(dec: IntrastatDeclarationResource): void {
     this.api.validateIntrastatDeclaration(dec.id).subscribe({
       next: () => {
-        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatValidaFormalmentePerAgenzia'));
+        this.message.success(
+          this.translate.instant('accounting.msgDichiarazioneIntrastatValidaFormalmentePerAgenzia'),
+        );
         this.loadIntrastat();
       },
       error: () => this.loadIntrastat(),
@@ -641,7 +739,11 @@ export class AccountingComponent implements OnInit {
       .subscribe({
         next: () => {
           this.intrastatSubmitTarget.set(null);
-          this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatTrasmessaTelematicamente', { declaration_number: this.intrastatLabel(dec) }));
+          this.message.success(
+            this.translate.instant('accounting.msgDichiarazioneIntrastatTrasmessaTelematicamente', {
+              declaration_number: this.intrastatLabel(dec),
+            }),
+          );
           this.loadIntrastat();
         },
       });
@@ -651,16 +753,33 @@ export class AccountingComponent implements OnInit {
 
   loadTrialBalance(year = new Date().getFullYear()): void {
     this.loadingTrialBalance.set(true);
-    this.api.getTrialBalance(year).subscribe({
-      next: (res) => {
-        this.trialBalance.set(res.data);
-        this.loadingTrialBalance.set(false);
-      },
-      error: () => {
-        this.trialBalance.set(null);
-        this.loadingTrialBalance.set(false);
-      },
-    });
+    this.api
+      .getFiscalPeriods()
+      .pipe(
+        map((res) => this.pickFiscalPeriod(res.data ?? [], year)),
+        switchMap((period) => (period ? this.api.getTrialBalance(period.id) : of(null))),
+      )
+      .subscribe({
+        next: (res) => {
+          this.trialBalance.set(res?.data ?? null);
+          this.loadingTrialBalance.set(false);
+        },
+        error: () => {
+          this.trialBalance.set(null);
+          this.loadingTrialBalance.set(false);
+        },
+      });
+  }
+
+  /** The API wants one fiscal period: the one that contains today, otherwise the last one of the year. */
+  private pickFiscalPeriod(periods: FiscalPeriodResource[], year: number): FiscalPeriodResource | null {
+    const today = new Date().toISOString().slice(0, 10);
+    const ofYear = periods.filter((period) => period.year === year);
+    return (
+      ofYear.find((period) => period.start_date <= today && today <= period.end_date) ??
+      [...ofYear].sort((a, b) => a.period_number - b.period_number).at(-1) ??
+      null
+    );
   }
 
   onSearchChange(search: string): void {

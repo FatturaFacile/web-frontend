@@ -270,7 +270,7 @@ describe('AccountingComponent', () => {
 
   it('reloads trial balance successfully', () => {
     component.loadTrialBalance(2026);
-    expect(apiMock.getTrialBalance).toHaveBeenCalledWith(2026);
+    expect(apiMock.getTrialBalance).toHaveBeenCalledWith('fp-1');
     expect(component['trialBalance']()?.total_debit).toBe(5000);
   });
 });

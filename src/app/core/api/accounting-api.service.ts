@@ -65,19 +65,33 @@ export class AccountingApiService {
         description: l.description,
       })),
     };
-    return this.http.post<ApiResponse<JournalEntryResource>>(`${this.glBase}/journals`, normalizedPayload);
+    return this.http.post<ApiResponse<JournalEntryResource>>(
+      `${this.glBase}/journals`,
+      normalizedPayload,
+    );
   }
 
   postJournal(id: string): Observable<ApiResponse<JournalEntryResource>> {
-    return this.http.post<ApiResponse<JournalEntryResource>>(`${this.glBase}/journals/${id}/post`, {});
+    return this.http.post<ApiResponse<JournalEntryResource>>(
+      `${this.glBase}/journals/${id}/post`,
+      {},
+    );
   }
 
   reverseJournal(id: string): Observable<ApiResponse<JournalEntryResource>> {
-    return this.http.post<ApiResponse<JournalEntryResource>>(`${this.glBase}/journals/${id}/reverse`, {});
+    return this.http.post<ApiResponse<JournalEntryResource>>(
+      `${this.glBase}/journals/${id}/reverse`,
+      {},
+    );
   }
 
-  validateJournalBalance(lines: { account_id: string; debit_amount: number; credit_amount: number }[]): Observable<ApiResponse<{ balanced: boolean; difference: number }>> {
-    return this.http.post<ApiResponse<{ balanced: boolean; difference: number }>>(`${this.glBase}/journals/validate-balance`, { lines });
+  validateJournalBalance(
+    lines: { account_id: string; debit_amount: number; credit_amount: number }[],
+  ): Observable<ApiResponse<{ balanced: boolean; difference: number }>> {
+    return this.http.post<ApiResponse<{ balanced: boolean; difference: number }>>(
+      `${this.glBase}/journals/validate-balance`,
+      { lines },
+    );
   }
 
   // --- Fiscal Periods ---
@@ -87,60 +101,104 @@ export class AccountingApiService {
   }
 
   closeFiscalPeriod(id: string): Observable<ApiResponse<FiscalPeriodResource>> {
-    return this.http.post<ApiResponse<FiscalPeriodResource>>(`${this.glBase}/fiscal-periods/${id}/close`, {});
+    return this.http.post<ApiResponse<FiscalPeriodResource>>(
+      `${this.glBase}/fiscal-periods/${id}/close`,
+      {},
+    );
   }
 
   reopenFiscalPeriod(id: string): Observable<ApiResponse<FiscalPeriodResource>> {
-    return this.http.post<ApiResponse<FiscalPeriodResource>>(`${this.glBase}/fiscal-periods/${id}/reopen`, {});
+    return this.http.post<ApiResponse<FiscalPeriodResource>>(
+      `${this.glBase}/fiscal-periods/${id}/reopen`,
+      {},
+    );
   }
 
   // --- Tax & VAT Settlements ---
 
-  getTaxSettlements(params?: QueryFilterParams): Observable<PaginatedResponse<TaxSettlementResource>> {
-    return this.http.get<PaginatedResponse<TaxSettlementResource>>(`${this.glBase}/tax-settlements`, {
-      params: params ? toHttpParams(params) : undefined,
-    });
+  getTaxSettlements(
+    params?: QueryFilterParams,
+  ): Observable<PaginatedResponse<TaxSettlementResource>> {
+    return this.http.get<PaginatedResponse<TaxSettlementResource>>(
+      `${this.glBase}/tax-settlements`,
+      {
+        params: params ? toHttpParams(params) : undefined,
+      },
+    );
   }
 
-  calculateTaxSettlement(payload: CalculateTaxSettlementPayload): Observable<ApiResponse<TaxSettlementResource>> {
-    return this.http.post<ApiResponse<TaxSettlementResource>>(`${this.glBase}/tax-settlements/calculate`, payload);
+  calculateTaxSettlement(
+    payload: CalculateTaxSettlementPayload,
+  ): Observable<ApiResponse<TaxSettlementResource>> {
+    return this.http.post<ApiResponse<TaxSettlementResource>>(
+      `${this.glBase}/tax-settlements/calculate`,
+      payload,
+    );
   }
 
   postTaxSettlement(id: string): Observable<ApiResponse<TaxSettlementResource>> {
-    return this.http.post<ApiResponse<TaxSettlementResource>>(`${this.glBase}/tax-settlements/${id}/post`, {});
+    return this.http.post<ApiResponse<TaxSettlementResource>>(
+      `${this.glBase}/tax-settlements/${id}/post`,
+      {},
+    );
   }
 
   payTaxSettlement(id: string): Observable<ApiResponse<TaxSettlementResource>> {
-    return this.http.post<ApiResponse<TaxSettlementResource>>(`${this.glBase}/tax-settlements/${id}/pay`, {});
+    return this.http.post<ApiResponse<TaxSettlementResource>>(
+      `${this.glBase}/tax-settlements/${id}/pay`,
+      {},
+    );
   }
 
   // --- Intrastat Declarations ---
 
-  getIntrastatDeclarations(params?: QueryFilterParams): Observable<PaginatedResponse<IntrastatDeclarationResource>> {
-    return this.http.get<PaginatedResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations`, {
-      params: params ? toHttpParams(params) : undefined,
-    });
+  getIntrastatDeclarations(
+    params?: QueryFilterParams,
+  ): Observable<PaginatedResponse<IntrastatDeclarationResource>> {
+    return this.http.get<PaginatedResponse<IntrastatDeclarationResource>>(
+      `${this.intrastatBase}/declarations`,
+      {
+        params: params ? toHttpParams(params) : undefined,
+      },
+    );
   }
 
-  generateIntrastatDeclaration(payload: GenerateIntrastatPayload): Observable<ApiResponse<IntrastatDeclarationResource>> {
-    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/generate`, payload);
+  generateIntrastatDeclaration(
+    payload: GenerateIntrastatPayload,
+  ): Observable<ApiResponse<IntrastatDeclarationResource>> {
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(
+      `${this.intrastatBase}/declarations/generate`,
+      payload,
+    );
   }
 
   /** 200 when the list is valid (it becomes validated), 422 with the errors otherwise. */
   validateIntrastatDeclaration(id: string): Observable<ApiResponse<IntrastatDeclarationResource>> {
-    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/${id}/validate`, {});
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(
+      `${this.intrastatBase}/declarations/${id}/validate`,
+      {},
+    );
   }
 
-  submitIntrastatDeclaration(id: string, payload: SubmitIntrastatPayload): Observable<ApiResponse<IntrastatDeclarationResource>> {
-    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(`${this.intrastatBase}/declarations/${id}/submit`, payload);
+  submitIntrastatDeclaration(
+    id: string,
+    payload: SubmitIntrastatPayload,
+  ): Observable<ApiResponse<IntrastatDeclarationResource>> {
+    return this.http.post<ApiResponse<IntrastatDeclarationResource>>(
+      `${this.intrastatBase}/declarations/${id}/submit`,
+      payload,
+    );
   }
 
   // --- Financial Statements ---
 
-  getTrialBalance(year?: number): Observable<ApiResponse<TrialBalanceReport>> {
-    return this.http.get<ApiResponse<TrialBalanceReport>>(`${this.glBase}/financial-statements/trial-balance`, {
-      params: year ? toHttpParams({ year }) : undefined,
-    });
+  getTrialBalance(fiscalPeriodId: string): Observable<ApiResponse<TrialBalanceReport>> {
+    return this.http.get<ApiResponse<TrialBalanceReport>>(
+      `${this.glBase}/financial-statements/trial-balance`,
+      {
+        params: toHttpParams({ fiscal_period_id: fiscalPeriodId }),
+      },
+    );
   }
 
   // --- Backward Compatible Methods ---
@@ -149,11 +207,15 @@ export class AccountingApiService {
     return this.getAccounts();
   }
 
-  getLedgerEntries(params?: QueryFilterParams): Observable<PaginatedResponse<JournalEntryResource>> {
+  getLedgerEntries(
+    params?: QueryFilterParams,
+  ): Observable<PaginatedResponse<JournalEntryResource>> {
     return this.getJournals(params);
   }
 
-  createLedgerEntry(payload: CreateJournalEntryPayload): Observable<ApiResponse<JournalEntryResource>> {
+  createLedgerEntry(
+    payload: CreateJournalEntryPayload,
+  ): Observable<ApiResponse<JournalEntryResource>> {
     return this.createJournal(payload);
   }
 
