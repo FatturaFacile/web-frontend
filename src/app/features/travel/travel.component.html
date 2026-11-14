@@ -1,0 +1,211 @@
+<app-page-header [title]="'TRAVEL.TITLE' | translate" [subtitle]="'TRAVEL.SUBTITLE' | translate">
+  <div class="header-actions">
+    <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="create"></button>
+  </div>
+</app-page-header>
+
+<nz-card class="main-card">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <nz-tab [nzTitle]="'TRAVEL.TAB_TRIPS' | translate">
+      <div class="tab-toolbar">
+        <div class="filters">
+          <nz-select
+            class="status-filter"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="onStatusChange($event)"
+            [nzPlaceHolder]="'TRAVEL.FILTER_STATUS' | translate"
+            nzAllowClear
+          >
+            @for (status of statuses; track status) {
+              <nz-option [nzValue]="status" [nzLabel]="'TRAVEL.STATUS_' + status.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
+          <input
+            nz-input
+            class="search-input"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearch($event)"
+            [attr.aria-label]="'TRAVEL.SEARCH' | translate"
+            [placeholder]="'TRAVEL.SEARCH' | translate"
+          />
+        </div>
+        @if (isManager() && pendingApprovalCount() > 0) {
+          <nz-tag nzColor="processing">{{ 'TRAVEL.PENDING_APPROVAL' | translate: { count: pendingApprovalCount() } }}</nz-tag>
+        }
+      </div>
+
+      <nz-table
+        #tripsTable
+        [nzData]="trips()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzTotal]="meta()?.total ?? 0"
+        [nzPageIndex]="page()"
+        [nzPageSize]="meta()?.per_page ?? 25"
+        (nzPageIndexChange)="onPageChange($event)"
+        nzSize="small"
+        [nzBordered]="true"
+      >
+        <thead>
+          <tr>
+            <th>{{ 'TRAVEL.NUMBER' | translate }}</th>
+            @if (isManager()) {
+              <th>{{ 'TRAVEL.EMPLOYEE' | translate }}</th>
+            }
+            <th>{{ 'TRAVEL.DESTINATION' | translate }}</th>
+            <th>{{ 'TRAVEL.PURPOSE' | translate }}</th>
+            <th>{{ 'TRAVEL.DATES' | translate }}</th>
+            <th>{{ 'TRAVEL.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'TRAVEL.ESTIMATED_BUDGET' | translate }}</th>
+            <th nzAlign="right">{{ 'TRAVEL.ADVANCE' | translate }}</th>
+            <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (trip of tripsTable.data; track trip.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/travel', trip.id]"><strong>{{ trip.number }}</strong></a>
+              </td>
+              @if (isManager()) {
+                <td>{{ trip.employee?.name || '-' }}</td>
+              }
+              <td>{{ trip.destination_city }} ({{ trip.destination_country }})</td>
+              <td>{{ trip.purpose }}</td>
+              <td>{{ trip.start_date }} &rarr; {{ trip.end_date }}</td>
+              <td>
+                <nz-tag [nzColor]="statusColors[trip.status]">{{ 'TRAVEL.STATUS_' + trip.status.toUpperCase() | translate }}</nz-tag>
+              </td>
+              <td nzAlign="right">{{ trip.estimated_budget | money: trip.currency }}</td>
+              <td nzAlign="right">{{ trip.advance_amount | money: trip.currency }}</td>
+              <td nzAlign="center">
+                <a nz-button nzSize="small" [routerLink]="['/travel', trip.id]">{{ 'TRAVEL.OPEN' | translate }}</a>
+                @if (trip.status === 'draft') {
+                  <button nz-button nzSize="small" appIconAction="edit" (click)="openEditModal(trip)"></button>
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzDanger
+                    appIconAction="delete"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'TRAVEL.CONFIRM_DELETE_TRIP' | translate"
+                    (nzOnConfirm)="deleteTrip(trip)"
+                  ></button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TRAVEL.TAB_RATES' | translate">
+      <app-travel-rates [canMaintain]="canMaintainRates()" />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [(nzVisible)]="tripModalVisible"
+  [nzTitle]="(editingTripId() ? 'TRAVEL.EDIT_TRIP' : 'TRAVEL.NEW_TRIP') | translate"
+  (nzOnCancel)="tripModalVisible.set(false)"
+  (nzOnOk)="saveTrip()"
+  okAction="save"
+  [nzOkDisabled]="tripForm.invalid"
+  [nzOkLoading]="saving()"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="tripForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="trip-purpose">{{ 'TRAVEL.PURPOSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(tripForm, 'purpose')">
+          <input nz-input id="trip-purpose" formControlName="purpose" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-city">{{ 'TRAVEL.DESTINATION_CITY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'destination_city')">
+            <input nz-input id="trip-city" formControlName="destination_city" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-country">{{ 'TRAVEL.DESTINATION_COUNTRY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'destination_country')">
+            <input nz-input id="trip-country" formControlName="destination_country" maxlength="2" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-start">{{ 'TRAVEL.START_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'start_date')">
+            <input nz-input id="trip-start" type="date" formControlName="start_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-end">{{ 'TRAVEL.END_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'end_date')">
+            <input nz-input id="trip-end" type="date" formControlName="end_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="trip-departure">{{ 'TRAVEL.DEPARTURE_TIME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'departure_time')">
+            <input nz-input id="trip-departure" type="time" formControlName="departure_time" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="trip-return">{{ 'TRAVEL.RETURN_TIME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'return_time')">
+            <input nz-input id="trip-return" type="time" formControlName="return_time" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-jurisdiction">{{ 'TRAVEL.RATE_JURISDICTION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'rate_jurisdiction')">
+            <nz-select id="trip-jurisdiction" formControlName="rate_jurisdiction">
+              @for (jurisdiction of jurisdictions; track jurisdiction) {
+                <nz-option [nzValue]="jurisdiction" [nzLabel]="'TRAVEL.JURISDICTION_' + jurisdiction | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="trip-currency">{{ 'TRAVEL.CURRENCY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'currency')">
+            <nz-select id="trip-currency" formControlName="currency">
+              @for (currency of currencies; track currency) {
+                <nz-option [nzValue]="currency" [nzLabel]="currency"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="trip-budget">{{ 'TRAVEL.ESTIMATED_BUDGET' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'estimated_budget')">
+            <input nz-input id="trip-budget" formControlName="estimated_budget" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="trip-advance">{{ 'TRAVEL.ADVANCE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(tripForm, 'advance_amount')">
+            <input nz-input id="trip-advance" formControlName="advance_amount" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

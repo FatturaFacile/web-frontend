@@ -12,6 +12,8 @@ import {
   BudgetVarianceReport,
   ChartAccountDetail,
   ChartAccountPayload,
+  ChartAccountTemplate,
+  ChartAccountTemplateImportResult,
   PaginatedResponse,
   QueryFilterParams,
   CloseChecklist,
@@ -80,6 +82,14 @@ export class GeneralLedgerApiService {
 
   createAccount(payload: ChartAccountPayload): Observable<ApiResponse<ChartAccountDetail>> {
     return this.http.post<ApiResponse<ChartAccountDetail>>(`${this.base}/accounts`, payload);
+  }
+
+  getAccountTemplates(): Observable<ApiResponse<ChartAccountTemplate[]>> {
+    return this.http.get<ApiResponse<ChartAccountTemplate[]>>(`${this.base}/account-templates`);
+  }
+
+  importAccountTemplate(key: string): Observable<ApiResponse<ChartAccountTemplateImportResult>> {
+    return this.http.post<ApiResponse<ChartAccountTemplateImportResult>>(`${this.base}/account-templates/${key}/import`, {});
   }
 
   getAccount(id: string): Observable<ApiResponse<ChartAccountDetail>> {

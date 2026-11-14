@@ -247,6 +247,23 @@ export interface ChartAccountDetail {
   reporting_class: string | null;
 }
 
+/** One standard chart of accounts of GET /general-ledger/account-templates. */
+export interface ChartAccountTemplate {
+  key: string;
+  standard: string;
+  name: string;
+  country: string;
+  currency: string;
+  accounts: number;
+}
+
+/** Result of POST /general-ledger/account-templates/{template}/import. */
+export interface ChartAccountTemplateImportResult {
+  template: string;
+  created: number;
+  skipped: number;
+}
+
 export interface ChartAccountPayload {
   account_code: string;
   name: string;
