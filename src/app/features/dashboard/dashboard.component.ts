@@ -21,6 +21,13 @@ import {
 } from '@core';
 import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
+// Shown instead of 0 so that a missing metric is never mistaken for real data.
+const KPI_PLACEHOLDER = '—';
+
+function isFiniteNumber(val: unknown): val is number {
+  return typeof val === 'number' && Number.isFinite(val);
+}
+
 @Component({
   selector: 'app-dashboard',
   styleUrl: './dashboard.component.scss',
@@ -53,30 +60,20 @@ export class DashboardComponent implements OnInit {
   readonly kpiSummary = signal<KpiSummary | null>(null);
   readonly recentInvoices = signal<InvoiceResource[]>([]);
 
-  readonly revenueDisplay = computed(() => {
-    const kpi = this.kpiSummary();
-    const curr = this.authStore.activeCurrency();
-    const val = kpi?.revenue_month ?? 0;
-    return curr === 'EUR'
-      ? `€ ${val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : `CHF ${val.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  });
+  // The tenant default currency sent by the API, not the one AuthStore derives from the country.
+  private readonly currency = computed(() => this.kpiSummary()?.kpis?.active_currency || null);
 
-  readonly receivablesDisplay = computed(() => {
-    const kpi = this.kpiSummary();
-    const curr = this.authStore.activeCurrency();
-    const val = kpi?.open_receivables ?? 0;
-    return curr === 'EUR'
-      ? `€ ${val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : `CHF ${val.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  });
+  readonly revenueDisplay = computed(() =>
+    this.formatAmount(this.kpiSummary()?.kpis?.total_revenue, this.currency()),
+  );
 
-  readonly pendingCount = computed(() => {
-    return this.kpiSummary()?.pending_invoices_count ?? 0;
-  });
+  readonly receivablesDisplay = computed(() =>
+    this.formatAmount(this.kpiSummary()?.kpis?.total_unpaid, this.currency()),
+  );
 
-  readonly alertsCount = computed(() => {
-    return this.kpiSummary()?.active_alerts_count ?? 0;
+  readonly invoicesCount = computed(() => {
+    const val = this.kpiSummary()?.kpis?.invoices_count;
+    return isFiniteNumber(val) ? val : KPI_PLACEHOLDER;
   });
 
   ngOnInit(): void {
@@ -88,7 +85,7 @@ export class DashboardComponent implements OnInit {
 
     this.dashboardApi.getKpiSummary().subscribe({
       next: (res) => {
-        this.kpiSummary.set(res.data);
+        this.kpiSummary.set(res?.data ?? null);
       },
       error: () => {
         this.kpiSummary.set(null);
@@ -111,6 +108,19 @@ export class DashboardComponent implements OnInit {
     const c = item.client || item.contact;
     if (!c) return '-';
     return contactDisplayName(c);
+  }
+
+  private formatAmount(val: number | null | undefined, currency: string | null): string {
+    if (!isFiniteNumber(val) || !currency) return KPI_PLACEHOLDER;
+    const digits = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    switch (currency) {
+      case 'EUR':
+        return `€ ${val.toLocaleString('it-IT', digits)}`;
+      case 'CHF':
+        return `CHF ${val.toLocaleString('de-CH', digits)}`;
+      default:
+        return `${currency} ${val.toLocaleString('it-IT', digits)}`;
+    }
   }
 
   statusColor(status?: string): string {
