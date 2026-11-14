@@ -27,12 +27,23 @@ export const LOTS_PAGE: ResourcePageConfig = {
       detailPath: '/inventory/lots/{id}',
       list: {
         path: '/inventory/lots',
-        filters: [rf.lookup('stock_item_id', 'stockItems'), rf.select('lot_level', ['raw_material', 'packaged'])],
-        columns: [...cols('lot_number', 'stock_item_id'), tagCol('lot_level'), col('expiration_date', 'date'), col('is_quarantined', 'bool')],
+        filters: [
+          rf.lookup('stock_item_id', 'stockItems'),
+          rf.select('lot_level', ['raw_material', 'packaged']),
+        ],
+        columns: [
+          ...cols('lot_number', 'stock_item_id'),
+          tagCol('lot_level'),
+          col('expiration_date', 'date'),
+          col('is_quarantined', 'bool'),
+        ],
       },
       create: act('POST', 'RES.A.new_lot', '/inventory/lots', { fields: LOT_FIELDS }),
       rowActions: [
-        act('PATCH', 'RES.ACTION.EDIT', '/inventory/lots/{id}', { prefill: true, fields: LOT_FIELDS }),
+        act('PATCH', 'RES.ACTION.EDIT', '/inventory/lots/{id}', {
+          prefill: true,
+          fields: LOT_FIELDS,
+        }),
         act('GET', 'RES.A.traceability', '/inventory/lots/{id}/traceability', { showResult: true }),
         act('POST', 'RES.A.quarantine', '/inventory/lots/{id}/quarantine', {
           confirm: true,
@@ -65,7 +76,11 @@ export const LOTS_PAGE: ResourcePageConfig = {
       list: {
         path: '/inventory/lots/stock',
         report: true,
-        filters: [rf.lookup('stock_item_id', 'stockItems'), ...GENERAL_FILTERS, rf.text('certification_reference')],
+        filters: [
+          rf.lookup('stock_item_id', 'stockItems'),
+          ...GENERAL_FILTERS,
+          rf.text('certification_reference'),
+        ],
         columns: [],
       },
     },
@@ -77,7 +92,10 @@ export const LOTS_PAGE: ResourcePageConfig = {
         path: '/inventory/availability',
         report: true,
         manual: true,
-        filters: [req(rf.lookup('stock_item_id', 'stockItems')), req(rf.lookup('warehouse_id', 'warehouses'))],
+        filters: [
+          req(rf.lookup('stock_item_id', 'stockItems')),
+          req(rf.lookup('warehouse_id', 'warehouses')),
+        ],
         columns: [],
       },
     },
@@ -95,7 +113,11 @@ export const STOCK_REPORTS_PAGE: ResourcePageConfig = {
       list: {
         path: '/inventory/valuation/at-date',
         report: true,
-        filters: [...GENERAL_FILTERS, rf.text('valuation_method')],
+        filters: [
+          rf.date('date', { required: true, defaultValue: new Date().toISOString().slice(0, 10) }),
+          ...GENERAL_FILTERS,
+          rf.text('valuation_method'),
+        ],
         columns: [],
       },
     },
@@ -124,7 +146,11 @@ export const STOCK_REPORTS_PAGE: ResourcePageConfig = {
         path: '/inventory/quants/as-of',
         report: true,
         manual: true,
-        filters: [req(rf.lookup('warehouse_id', 'warehouses')), req(rf.datetime('at')), rf.lookup('stock_item_id', 'stockItems')],
+        filters: [
+          req(rf.lookup('warehouse_id', 'warehouses')),
+          req(rf.datetime('at')),
+          rf.lookup('stock_item_id', 'stockItems'),
+        ],
         columns: [],
       },
     },
@@ -132,13 +158,22 @@ export const STOCK_REPORTS_PAGE: ResourcePageConfig = {
       id: 'quant',
       titleKey: 'RES.P.quant_detail',
       module: 'inventory',
-      list: { path: '/inventory/quants/{quant_id}', report: true, manual: true, scope: req(rf.uuid('quant_id')), columns: [] },
+      list: {
+        path: '/inventory/quants/{quant_id}',
+        report: true,
+        manual: true,
+        scope: req(rf.uuid('quant_id')),
+        columns: [],
+      },
     },
     {
       id: 'delivery-notes',
       titleKey: 'RES.P.delivery_notes',
       module: 'inventory',
-      list: { path: '/inventory/delivery-notes', columns: [...cols('delivery_note_number', 'status'), col('date', 'date')] },
+      list: {
+        path: '/inventory/delivery-notes',
+        columns: [...cols('delivery_note_number', 'status'), col('date', 'date')],
+      },
     },
   ],
 };

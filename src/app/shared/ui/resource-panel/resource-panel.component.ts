@@ -19,7 +19,12 @@ import { ResourceDetailComponent } from './resource-detail.component';
 import { ResourceFormComponent } from './resource-form.component';
 import { ResourceLabelsService } from './resource-labels.service';
 import { ResourceLookupService, ResourceOption } from './resource-lookup.service';
-import { ResourceAction, ResourceColumn, ResourceField, ResourcePanelConfig } from './resource-panel.types';
+import {
+  ResourceAction,
+  ResourceColumn,
+  ResourceField,
+  ResourcePanelConfig,
+} from './resource-panel.types';
 import { getByPath, isPathResolvable, resolvePath, rowIdAliases } from './resource-panel.utils';
 
 interface ActiveForm {
@@ -75,7 +80,9 @@ export class ResourcePanelComponent implements OnInit {
   /** Fields of the open form: those bound to a scope value (`scopeValues`) only appear while the scope matches. */
   protected readonly formFields = computed(() => {
     const scope = this.scopeValue();
-    return (this.form()?.action.fields ?? []).filter((field) => !field.scopeValues || (scope !== null && field.scopeValues.includes(scope)));
+    return (this.form()?.action.fields ?? []).filter(
+      (field) => !field.scopeValues || (scope !== null && field.scopeValues.includes(scope)),
+    );
   });
   protected readonly result = signal<unknown>(null);
   protected readonly resultOpen = signal(false);
@@ -91,7 +98,9 @@ export class ResourcePanelComponent implements OnInit {
     const scope = this.scopeField();
     return { ...this.context(), ...(scope ? { [scope.key]: this.scopeValue() } : {}) };
   });
-  protected readonly ready = computed(() => isPathResolvable(this.config().list.path, this.scopeSources()));
+  protected readonly ready = computed(() =>
+    isPathResolvable(this.config().list.path, this.scopeSources()),
+  );
   protected readonly visibleToolbar = computed(() =>
     (this.config().toolbar ?? []).filter((action) => this.isAllowed(action)),
   );
@@ -99,10 +108,15 @@ export class ResourcePanelComponent implements OnInit {
   ngOnInit(): void {
     this.scopeOptionsStream().subscribe((options) => this.scopeOptions.set(options));
     for (const filter of this.config().list.filters ?? []) {
+      if (filter.defaultValue !== undefined) {
+        this.filters.update((current) => ({ ...current, [filter.key]: filter.defaultValue }));
+      }
       if (filter.lookup) {
         this.lookups
           .options(filter.lookup)
-          .subscribe((options) => this.filterLookups.update((all) => ({ ...all, [filter.key]: options })));
+          .subscribe((options) =>
+            this.filterLookups.update((all) => ({ ...all, [filter.key]: options })),
+          );
       }
     }
     if (!this.config().list.manual) {
@@ -159,7 +173,9 @@ export class ResourcePanelComponent implements OnInit {
     }
     const path = resolvePath(list.path, this.scopeSources());
     this.loading.set(true);
-    const query = list.report ? { ...this.filters() } : { ...this.filters(), page: this.pageIndex(), per_page: this.pageSize() };
+    const query = list.report
+      ? { ...this.filters() }
+      : { ...this.filters(), page: this.pageIndex(), per_page: this.pageSize() };
     this.api.list(path, query).subscribe({
       next: (result) => {
         this.rows.set(result.rows);
@@ -207,7 +223,9 @@ export class ResourcePanelComponent implements OnInit {
 
   private reportRecord(): ResourceRow | null {
     const data = unwrapResponse(this.report());
-    return typeof data === 'object' && data !== null && !Array.isArray(data) ? (data as ResourceRow) : null;
+    return typeof data === 'object' && data !== null && !Array.isArray(data)
+      ? (data as ResourceRow)
+      : null;
   }
 
   protected view(row: ResourceRow): void {
@@ -215,10 +233,12 @@ export class ResourcePanelComponent implements OnInit {
     if (!path) {
       return;
     }
-    this.api.request('GET', resolvePath(path, row, this.scopeSources(), rowIdAliases(path, row))).subscribe({
-      next: (data) => this.showResult(data),
-      error: (err: unknown) => this.notifyError(err),
-    });
+    this.api
+      .request('GET', resolvePath(path, row, this.scopeSources(), rowIdAliases(path, row)))
+      .subscribe({
+        next: (data) => this.showResult(data),
+        error: (err: unknown) => this.notifyError(err),
+      });
   }
 
   protected saveFn(): (body: Record<string, unknown>) => Observable<unknown> {
@@ -263,7 +283,11 @@ export class ResourcePanelComponent implements OnInit {
     return String(row['id'] ?? index);
   }
 
-  private execute(action: ResourceAction, row: ResourceRow | null, body: Record<string, unknown>): void {
+  private execute(
+    action: ResourceAction,
+    row: ResourceRow | null,
+    body: Record<string, unknown>,
+  ): void {
     this.request(action, row, body).subscribe({
       next: (result) => {
         if (!action.download) {
@@ -278,21 +302,34 @@ export class ResourcePanelComponent implements OnInit {
     });
   }
 
-  private request(action: ResourceAction, row: ResourceRow | null, body: Record<string, unknown>): Observable<unknown> {
+  private request(
+    action: ResourceAction,
+    row: ResourceRow | null,
+    body: Record<string, unknown>,
+  ): Observable<unknown> {
     const scope = this.scopeSources();
     const path = resolvePath(action.path, row, scope, body, rowIdAliases(action.path, row));
-    const pathOnly = [...action.path.matchAll(/\{(\w+)}/g)].map((m) => m[1]).filter((key) => !row?.[key] && !scope[key]);
+    const pathOnly = [...action.path.matchAll(/\{(\w+)}/g)]
+      .map((m) => m[1])
+      .filter((key) => !row?.[key] && !scope[key]);
     body = Object.fromEntries(Object.entries(body).filter(([key]) => !pathOnly.includes(key)));
     if (action.download) {
       return new Observable((subscriber) => {
-        this.api.blob(action.method, path, action.method === 'GET' ? undefined : body, action.method === 'GET' ? body : undefined).subscribe({
-          next: (blob) => {
-            this.saveBlob(blob, action.key);
-            subscriber.next(blob);
-            subscriber.complete();
-          },
-          error: (err: unknown) => subscriber.error(err),
-        });
+        this.api
+          .blob(
+            action.method,
+            path,
+            action.method === 'GET' ? undefined : body,
+            action.method === 'GET' ? body : undefined,
+          )
+          .subscribe({
+            next: (blob) => {
+              this.saveBlob(blob, action.key);
+              subscriber.next(blob);
+              subscriber.complete();
+            },
+            error: (err: unknown) => subscriber.error(err),
+          });
       });
     }
     if (action.method === 'GET') {
@@ -317,8 +354,21 @@ export class ResourcePanelComponent implements OnInit {
 
   private notifyError(err: unknown): void {
     const status = err instanceof Object && 'status' in err ? Number(err.status) : 0;
-    const key = status === 403 ? 'RES.ERR.FORBIDDEN' : status === 404 ? 'RES.ERR.NOT_FOUND' : status === 409 ? 'RES.ERR.CONFLICT' : 'RES.ERR.REQUEST_FAILED';
-    const detail = err instanceof Object && 'error' in err && err.error instanceof Object && 'message' in err.error ? String(err.error.message) : '';
+    const key =
+      status === 403
+        ? 'RES.ERR.FORBIDDEN'
+        : status === 404
+          ? 'RES.ERR.NOT_FOUND'
+          : status === 409
+            ? 'RES.ERR.CONFLICT'
+            : 'RES.ERR.REQUEST_FAILED';
+    const detail =
+      err instanceof Object &&
+      'error' in err &&
+      err.error instanceof Object &&
+      'message' in err.error
+        ? String(err.error.message)
+        : '';
     this.message.error(detail && status !== 403 ? detail : this.labels.text(key));
   }
 }

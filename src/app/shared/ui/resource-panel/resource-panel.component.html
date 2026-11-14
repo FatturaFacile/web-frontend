@@ -8,12 +8,13 @@
         nzAllowClear
         [nzOptions]="scopeOptions()"
         [ngModel]="scopeValue()"
+        [ngModelOptions]="{ standalone: true }"
         (ngModelChange)="setScope($event)"
         [nzPlaceHolder]="labels.field(scope.key, scope.labelKey)"
         [attr.aria-label]="labels.field(scope.key, scope.labelKey)"
       />
       } @else {
-        <input nz-input class="rp-filter" [ngModel]="scopeValue()" (ngModelChange)="setScope($event)" [ngModelOptions]="{ updateOn: 'blur' }" [placeholder]="labels.field(scope.key, scope.labelKey)" [attr.aria-label]="labels.field(scope.key, scope.labelKey)" />
+        <input nz-input class="rp-filter" [ngModel]="scopeValue()" (ngModelChange)="setScope($event)" [ngModelOptions]="{ standalone: true, updateOn: 'blur' }" [placeholder]="labels.field(scope.key, scope.labelKey)" [attr.aria-label]="labels.field(scope.key, scope.labelKey)" />
       }
     }
     @for (filter of config().list.filters ?? []; track filter.key) {
@@ -23,6 +24,7 @@
           nzAllowClear
           [nzOptions]="filterOptions(filter)"
           [ngModel]="filters()[filter.key]"
+          [ngModelOptions]="{ standalone: true }"
           (ngModelChange)="setFilter(filter.key, $event)"
           [nzPlaceHolder]="labels.field(filter.key, filter.labelKey)"
           [attr.aria-label]="labels.field(filter.key, filter.labelKey)"
@@ -33,6 +35,7 @@
           class="rp-filter"
           [type]="filter.type === 'date' ? 'date' : filter.type === 'datetime' ? 'datetime-local' : 'text'"
           [ngModel]="filters()[filter.key]"
+          [ngModelOptions]="{ standalone: true }"
           (ngModelChange)="setFilter(filter.key, $event)"
           [placeholder]="labels.field(filter.key, filter.labelKey)"
           [attr.aria-label]="labels.field(filter.key, filter.labelKey)"

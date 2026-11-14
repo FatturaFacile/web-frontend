@@ -1,55 +1,143 @@
 <ng-template #control let-field let-group="group" let-compact="compact">
-  <nz-form-item>
-    @if (!compact) {
-      <nz-form-label [nzRequired]="field.required" [nzFor]="'rf-' + field.key">{{ labels.field(field.key, field.labelKey) }}</nz-form-label>
-    }
-    <nz-form-control [nzErrorTip]="errorOf(group.get(field.key))">
-      @switch (field.type) {
-        @case ('textarea') {
-          <textarea nz-input rows="3" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)"></textarea>
-        }
-        @case ('json') {
-          <textarea nz-input rows="4" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)"></textarea>
-        }
-        @case ('integer') {
-          <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzMax]="field.max ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('file') {
-          <input type="file" [id]="'rf-' + field.key" (change)="onFileChosen(field.key, $event)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('date') {
-          <input nz-input type="date" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('datetime') {
-          <input nz-input type="datetime-local" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('time') {
-          <input nz-input type="time" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('switch') {
-          <nz-switch [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('tags') {
-          <nz-select nzMode="tags" class="rf-select" [formControl]="group.get(field.key)" [nzTokenSeparators]="[',']" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('multiselect') {
-          <nz-select nzMode="multiple" class="rf-select" [nzOptions]="options(field)" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('file') {
-          <input type="file" [id]="'rf-' + field.key" (change)="pickFile($event, group.get(field.key))" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('select') {
-          <nz-select class="rf-select" nzAllowClear [nzOptions]="options(field)" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @case ('lookup') {
-          <nz-select class="rf-select" nzAllowClear nzShowSearch [nzOptions]="options(field)" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
-        @default {
-          <input nz-input [id]="'rf-' + field.key" [type]="field.secret ? 'password' : 'text'" [attr.autocomplete]="field.secret ? 'new-password' : null" [formControl]="group.get(field.key)" [attr.inputmode]="field.type === 'decimal' ? 'decimal' : null" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
-        }
+  @if (group.get(field.key)) {
+    <nz-form-item>
+      @if (!compact) {
+        <nz-form-label [nzRequired]="field.required" [nzFor]="'rf-' + field.key">{{
+          labels.field(field.key, field.labelKey)
+        }}</nz-form-label>
       }
-    </nz-form-control>
-  </nz-form-item>
+      <nz-form-control [nzErrorTip]="errorOf(group.get(field.key))">
+        @switch (field.type) {
+          @case ('textarea') {
+            <textarea
+              nz-input
+              rows="3"
+              [id]="'rf-' + field.key"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            ></textarea>
+          }
+          @case ('json') {
+            <textarea
+              nz-input
+              rows="4"
+              [id]="'rf-' + field.key"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            ></textarea>
+          }
+          @case ('integer') {
+            <nz-input-number
+              class="rf-number"
+              [nzId]="'rf-' + field.key"
+              [nzMin]="field.min ?? null"
+              [nzMax]="field.max ?? null"
+              [nzStep]="1"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('file') {
+            <input
+              type="file"
+              [id]="'rf-' + field.key"
+              (change)="onFileChosen(field.key, $event)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('date') {
+            <input
+              nz-input
+              type="date"
+              [id]="'rf-' + field.key"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('datetime') {
+            <input
+              nz-input
+              type="datetime-local"
+              [id]="'rf-' + field.key"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('time') {
+            <input
+              nz-input
+              type="time"
+              [id]="'rf-' + field.key"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('switch') {
+            <nz-switch
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('tags') {
+            <nz-select
+              nzMode="tags"
+              class="rf-select"
+              [formControl]="group.get(field.key)"
+              [nzTokenSeparators]="[',']"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('multiselect') {
+            <nz-select
+              nzMode="multiple"
+              class="rf-select"
+              [nzOptions]="options(field)"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('file') {
+            <input
+              type="file"
+              [id]="'rf-' + field.key"
+              (change)="pickFile($event, group.get(field.key))"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('select') {
+            <nz-select
+              class="rf-select"
+              nzAllowClear
+              [nzOptions]="options(field)"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @case ('lookup') {
+            <nz-select
+              class="rf-select"
+              nzAllowClear
+              nzShowSearch
+              [nzOptions]="options(field)"
+              [formControl]="group.get(field.key)"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+          @default {
+            <input
+              nz-input
+              [id]="'rf-' + field.key"
+              [type]="field.secret ? 'password' : 'text'"
+              [attr.autocomplete]="field.secret ? 'new-password' : null"
+              [formControl]="group.get(field.key)"
+              [attr.inputmode]="field.type === 'decimal' ? 'decimal' : null"
+              [attr.aria-label]="labels.field(field.key, field.labelKey)"
+            />
+          }
+        }
+      </nz-form-control>
+    </nz-form-item>
+  }
 </ng-template>
 
 <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
@@ -61,17 +149,36 @@
           <div class="rf-line">
             @for (sub of field.fields; track sub.key) {
               <div class="rf-line-field">
-                <label class="rf-line-label" [for]="'rf-' + sub.key">{{ labels.field(sub.key, sub.labelKey) }}@if (sub.required) {<span class="rf-required" aria-hidden="true"> *</span>}</label>
-                <ng-container *ngTemplateOutlet="control; context: { $implicit: sub, group: line, compact: true }" />
+                <label class="rf-line-label" [for]="'rf-' + sub.key"
+                  >{{ labels.field(sub.key, sub.labelKey) }}
+                  @if (sub.required) {
+                    <span class="rf-required" aria-hidden="true"> *</span>
+                  }
+                </label>
+                <ng-container
+                  *ngTemplateOutlet="
+                    control;
+                    context: { $implicit: sub, group: line, compact: true }
+                  "
+                />
               </div>
             }
-            <button nz-button nzType="text" nzDanger type="button" appIconAction="delete" (click)="removeLine(field, i)"></button>
+            <button
+              nz-button
+              nzType="text"
+              nzDanger
+              type="button"
+              appIconAction="delete"
+              (click)="removeLine(field, i)"
+            ></button>
           </div>
         }
         <button nz-button type="button" appIconAction="add" (click)="addLine(field)"></button>
       </fieldset>
     } @else {
-      <ng-container *ngTemplateOutlet="control; context: { $implicit: field, group: form, compact: false }" />
+      <ng-container
+        *ngTemplateOutlet="control; context: { $implicit: field, group: form, compact: false }"
+      />
     }
   }
   @for (error of unmappedErrors(); track error) {
@@ -80,9 +187,24 @@
   <div class="rf-actions">
     <button nz-button type="button" appIconAction="cancel" (click)="cancelled.emit()"></button>
     @if (submitLabelKey() === 'RES.ACTION.SAVE') {
-      <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid"></button>
+      <button
+        nz-button
+        nzType="primary"
+        type="submit"
+        appIconAction="save"
+        [nzLoading]="saving()"
+        [disabled]="form.invalid"
+      ></button>
     } @else {
-      <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="form.invalid">{{ submitLabelKey() | translate }}</button>
+      <button
+        nz-button
+        nzType="primary"
+        type="submit"
+        [nzLoading]="saving()"
+        [disabled]="form.invalid"
+      >
+        {{ submitLabelKey() | translate }}
+      </button>
     }
   </div>
 </form>
