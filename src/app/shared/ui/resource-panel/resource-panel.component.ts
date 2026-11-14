@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PermissionsService, ResourceApiService, ResourceRow, unwrapResponse } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -15,6 +14,7 @@ import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable, of } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { IconActionDirective, ModalActionsDirective } from '../action-icon';
 import { ResourceDetailComponent } from './resource-detail.component';
 import { ResourceFormComponent } from './resource-form.component';
 import { ResourceLabelsService } from './resource-labels.service';
@@ -30,11 +30,13 @@ interface ActiveForm {
 /** Generic list / report panel with create form, row actions and toolbar actions driven by a config. */
 @Component({
   selector: 'app-resource-panel',
+  styleUrl: './resource-panel.component.scss',
   imports: [
     FormsModule,
+    IconActionDirective,
+    ModalActionsDirective,
     RouterLink,
     NzButtonModule,
-    NzDrawerModule,
     NzEmptyModule,
     NzIconModule,
     NzInputModule,
@@ -48,7 +50,6 @@ interface ActiveForm {
     TranslatePipe,
   ],
   templateUrl: './resource-panel.component.html',
-  styleUrl: './resource-panel.component.scss',
 })
 export class ResourcePanelComponent implements OnInit {
   private readonly api = inject(ResourceApiService);
@@ -71,6 +72,11 @@ export class ResourcePanelComponent implements OnInit {
   protected readonly filters = signal<Record<string, unknown>>({});
   protected readonly scopeValue = signal<string | null>(null);
   protected readonly form = signal<ActiveForm | null>(null);
+  /** Fields of the open form: those bound to a scope value (`scopeValues`) only appear while the scope matches. */
+  protected readonly formFields = computed(() => {
+    const scope = this.scopeValue();
+    return (this.form()?.action.fields ?? []).filter((field) => !field.scopeValues || (scope !== null && field.scopeValues.includes(scope)));
+  });
   protected readonly result = signal<unknown>(null);
   protected readonly resultOpen = signal(false);
 

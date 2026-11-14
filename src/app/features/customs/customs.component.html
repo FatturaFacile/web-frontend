@@ -3,10 +3,7 @@
   [subtitle]="'CUSTOMS.SUBTITLE' | translate"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateDossierModal()">
-      <nz-icon nzType="plus" />
-      {{ 'CUSTOMS.ACTIONS.NEW_DOSSIER' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDossierModal()"></button>
   </div>
 </app-page-header>
 
@@ -30,9 +27,9 @@
 
         <div class="filter-controls">
           <nz-select
+            class="status-filter"
             [ngModel]="dossierStatusFilter()"
             (ngModelChange)="dossierStatusFilter.set($event); loadDossiers(1)"
-            style="width: 180px;"
             [nzPlaceHolder]="'CUSTOMS.FILTER_STATUS' | translate"
             nzAllowClear
           >
@@ -65,12 +62,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.DOSSIER_NUMBER' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.ROUTE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.WEIGHT_VOL' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'dossier_number' | gridSort" [nzFilters]="'dossier_number' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'dossier_number' | gridFilterFn">{{ 'CUSTOMS.COLS.DOSSIER_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'direction' | gridSort" [nzFilters]="'direction' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'direction' | gridFilterFn">{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th [nzSortFn]="'service_type' | gridSort" [nzFilters]="'service_type' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'service_type' | gridFilterFn">{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+            <th [nzSortFn]="'origin_country' | gridSort" [nzFilters]="'origin_country' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'origin_country' | gridFilterFn">{{ 'CUSTOMS.COLS.ROUTE' | translate }}</th>
+            <th [nzSortFn]="'gross_weight_kg' | gridSort" [nzFilters]="'gross_weight_kg' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'gross_weight_kg' | gridFilterFn">{{ 'CUSTOMS.COLS.WEIGHT_VOL' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: dossiersTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -155,10 +152,7 @@
         </div>
 
         <div class="filter-controls">
-          <button nz-button nzType="primary" (click)="openCreateDeclarationModal()">
-            <nz-icon nzType="plus" />
-            {{ 'CUSTOMS.ACTIONS.NEW_DECLARATION' | translate }}
-          </button>
+          <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDeclarationModal()"></button>
           <button nz-button nzType="default" (click)="loadDeclarations(1)">
             <nz-icon nzType="reload" />
             {{ 'COMMON.REFRESH' | translate }}
@@ -179,12 +173,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.DECLARATION_NR' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATISTICAL_VALUE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.TOTAL_MASS' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'trader_declaration_number' | gridSort" [nzFilters]="'trader_declaration_number' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'trader_declaration_number' | gridFilterFn">{{ 'CUSTOMS.COLS.DECLARATION_NR' | translate }}</th>
+            <th [nzSortFn]="'mrn' | gridSort" [nzFilters]="'mrn' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'mrn' | gridFilterFn">{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th [nzSortFn]="'declaration_type' | gridSort" [nzFilters]="'declaration_type' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'declaration_type' | gridFilterFn">{{ 'CUSTOMS.COLS.TYPE' | translate }}</th>
+            <th [nzSortFn]="'total_statistical_value' | gridSort" [nzFilters]="'total_statistical_value' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'total_statistical_value' | gridFilterFn">{{ 'CUSTOMS.COLS.STATISTICAL_VALUE' | translate }}</th>
+            <th [nzSortFn]="'total_gross_mass' | gridSort" [nzFilters]="'total_gross_mass' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'total_gross_mass' | gridFilterFn">{{ 'CUSTOMS.COLS.TOTAL_MASS' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: declarationsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -250,11 +244,9 @@
                       nzType="link"
                       nzDanger
                       nzSize="small"
+                      appIconAction="cancel"
                       (click)="cancelDeclaration(decl.id)"
-                    >
-                      <nz-icon nzType="close" />
-                      {{ 'COMMON.CANCEL' | translate }}
-                    </button>
+                    ></button>
                   }
                 </nz-space>
               </td>
@@ -318,14 +310,14 @@
       >
         <thead>
           <tr>
-            <th>{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.VERSION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DOC_TYPE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DOC_DATE' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.DUTY_AMOUNT' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.VAT_AMOUNT' | translate }}</th>
-            <th>{{ 'CUSTOMS.COLS.SIGNATURE' | translate }}</th>
+            <th [nzSortFn]="'mrn' | gridSort" [nzFilters]="'mrn' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'mrn' | gridFilterFn">{{ 'CUSTOMS.COLS.MRN' | translate }}</th>
+            <th [nzSortFn]="'version' | gridSort" [nzFilters]="'version' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'version' | gridFilterFn">{{ 'CUSTOMS.COLS.VERSION' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'CUSTOMS.COLS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'direction' | gridSort" [nzFilters]="'direction' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'direction' | gridFilterFn">{{ 'CUSTOMS.COLS.DIRECTION' | translate }}</th>
+            <th [nzSortFn]="'document_date' | gridSort" [nzFilters]="'document_date' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'document_date' | gridFilterFn">{{ 'CUSTOMS.COLS.DOC_DATE' | translate }}</th>
+            <th [nzSortFn]="'duty_amount' | gridSort" [nzFilters]="'duty_amount' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'duty_amount' | gridFilterFn">{{ 'CUSTOMS.COLS.DUTY_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'vat_amount' | gridSort" [nzFilters]="'vat_amount' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'vat_amount' | gridFilterFn">{{ 'CUSTOMS.COLS.VAT_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'signature_status' | gridSort" [nzFilters]="'signature_status' | gridFilterList: assessmentsTable.nzData" [nzFilterFn]="'signature_status' | gridFilterFn">{{ 'CUSTOMS.COLS.SIGNATURE' | translate }}</th>
             <th>{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -376,10 +368,7 @@
         <div nz-col [nzXs]="24" [nzLg]="12">
           <nz-card [nzTitle]="'CUSTOMS.TARIFF_GRIDS' | translate" [nzExtra]="gridExtra">
             <ng-template #gridExtra>
-              <button nz-button nzType="primary" nzSize="small" (click)="openCreateGridModal()">
-                <nz-icon nzType="plus" />
-                {{ 'CUSTOMS.ACTIONS.NEW_GRID' | translate }}
-              </button>
+              <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateGridModal()"></button>
             </ng-template>
 
             <nz-table
@@ -392,9 +381,9 @@
             >
               <thead>
                 <tr>
-                  <th>{{ 'CUSTOMS.COLS.NAME' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.CURRENCY' | translate }}</th>
+                  <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridsTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CUSTOMS.COLS.NAME' | translate }}</th>
+                  <th [nzSortFn]="'service_type' | gridSort" [nzFilters]="'service_type' | gridFilterList: gridsTable.nzData" [nzFilterFn]="'service_type' | gridFilterFn">{{ 'CUSTOMS.COLS.SERVICE_TYPE' | translate }}</th>
+                  <th [nzSortFn]="'currency' | gridSort" [nzFilters]="'currency' | gridFilterList: gridsTable.nzData" [nzFilterFn]="'currency' | gridFilterFn">{{ 'CUSTOMS.COLS.CURRENCY' | translate }}</th>
                   <th>{{ 'CUSTOMS.COLS.ACTIVE' | translate }}</th>
                   <th>{{ 'COMMON.ACTIONS' | translate }}</th>
                 </tr>
@@ -411,9 +400,7 @@
                       </nz-tag>
                     </td>
                     <td>
-                      <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteTariffGrid(g.id)">
-                        <nz-icon nzType="delete" />
-                      </button>
+                      <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteTariffGrid(g.id)" appIconAction="delete"></button>
                     </td>
                   </tr>
                 }
@@ -434,9 +421,9 @@
             >
               <thead>
                 <tr>
-                  <th>{{ 'CUSTOMS.COLS.REQUEST_NR' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.CUSTOMER' | translate }}</th>
-                  <th>{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
+                  <th [nzSortFn]="'request_number' | gridSort" [nzFilters]="'request_number' | gridFilterList: shipmentsTable.nzData" [nzFilterFn]="'request_number' | gridFilterFn">{{ 'CUSTOMS.COLS.REQUEST_NR' | translate }}</th>
+                  <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: shipmentsTable.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'CUSTOMS.COLS.CUSTOMER' | translate }}</th>
+                  <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: shipmentsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CUSTOMS.COLS.STATUS' | translate }}</th>
                   <th>{{ 'COMMON.ACTIONS' | translate }}</th>
                 </tr>
               </thead>
@@ -490,24 +477,37 @@
 
 <!-- MODAL: NUOVA PRATICA DOGANALE -->
 <nz-modal
+  okAction="save"
   [nzVisible]="createDossierModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.CREATE_DOSSIER_TITLE' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="submittingDossier()"
   (nzOnCancel)="createDossierModalVisible.set(false)"
+  [nzOkDisabled]="dossierForm.invalid"
   (nzOnOk)="submitDossierForm()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="dossierForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.CUSTOMER' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'COMMON.REQUIRED' | translate">
-          <input
-            nz-input
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
             formControlName="customer_contact_id"
-            [placeholder]="'CUSTOMS.FORM.CUSTOMER_PLACEHOLDER' | translate"
-          />
+            nzShowSearch
+            [nzPlaceHolder]="'CUSTOMS.FORM.CUSTOMER_PLACEHOLDER' | translate"
+          >
+            @for (contact of contacts(); track contact.id) {
+              <nz-option [nzValue]="contact.id" [nzLabel]="contactLabel(contact)"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
@@ -515,7 +515,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DIRECTION' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-select formControlName="direction">
                 <nz-option nzValue="import" [nzLabel]="'CUSTOMS.LBL_IMPORT_CH_IT_EU' | translate"></nz-option>
                 <nz-option nzValue="export" [nzLabel]="'CUSTOMS.LBL_EXPORT_CH_IT_EU' | translate"></nz-option>
@@ -527,7 +527,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.SERVICE_TYPE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="service_type" [placeholder]="'CUSTOMS.LBL_ES_STANDARD_CUSTOMS' | translate" />
             </nz-form-control>
           </nz-form-item>
@@ -538,7 +538,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.ORIGIN_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="origin_country" placeholder="IT" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -546,7 +546,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.DESTINATION_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="destination_country" placeholder="CH" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -557,12 +557,11 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.GROSS_WEIGHT' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number
                 formControlName="gross_weight_kg"
                 [nzMin]="0"
                 [nzStep]="0.1"
-                style="width: 100%;"
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -570,12 +569,11 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.VOLUME' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number
                 formControlName="volume_m3"
                 [nzMin]="0"
                 [nzStep]="0.01"
-                style="width: 100%;"
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -583,12 +581,11 @@
         <div nz-col [nzSpan]="8">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.PACKAGES' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number
                 formControlName="packages"
                 [nzMin]="1"
                 [nzStep]="1"
-                style="width: 100%;"
               ></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -597,7 +594,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'CUSTOMS.FORM.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <textarea nz-input formControlName="notes" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -607,21 +604,30 @@
 
 <!-- MODAL: NUOVA DICHIARAZIONE DOGANALE -->
 <nz-modal
+  okAction="save"
   [nzVisible]="createDeclarationModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.CREATE_DECLARATION_TITLE' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="submittingDeclaration()"
   (nzOnCancel)="createDeclarationModalVisible.set(false)"
+  [nzOkDisabled]="declarationForm.invalid"
   (nzOnOk)="submitDeclarationForm()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="declarationForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <div nz-row [nzGutter]="16">
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'CUSTOMS.FORM.DECLARATION_TYPE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-select formControlName="declaration_type">
                 <nz-option nzValue="import" [nzLabel]="'CUSTOMS.LBL_IMPORT_E_DEC_PASSAR' | translate"></nz-option>
                 <nz-option nzValue="export" [nzLabel]="'CUSTOMS.LBL_EXPORT_E_DEC' | translate"></nz-option>
@@ -633,7 +639,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.CUSTOMS_OFFICE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="customs_office_number" placeholder="es. CH001234" />
             </nz-form-control>
           </nz-form-item>
@@ -644,7 +650,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.TRADER_DECL_NR' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="trader_declaration_number" placeholder="es. DEC-2026-001" />
             </nz-form-control>
           </nz-form-item>
@@ -652,7 +658,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.TRADER_REF' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="trader_reference" [placeholder]="'CUSTOMS.LBL_RIF_INTERNO' | translate" />
             </nz-form-control>
           </nz-form-item>
@@ -663,7 +669,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.DISPATCH_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="dispatch_country" placeholder="IT" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -671,7 +677,7 @@
         <div nz-col [nzSpan]="12">
           <nz-form-item>
             <nz-form-label>{{ 'CUSTOMS.FORM.DESTINATION_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="destination_country" placeholder="CH" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -683,9 +689,9 @@
 
 <!-- MODAL: PROFITABILITY -->
 <nz-modal
+  okAction="close"
   [nzVisible]="profitabilityModalVisible()"
   [nzTitle]="'CUSTOMS.MODAL.PROFITABILITY_TITLE' | translate"
-  [nzOkText]="'COMMON.CLOSE' | translate"
   [nzOkDisabled]="false"
   (nzOnCancel)="profitabilityModalVisible.set(false)"
   (nzOnOk)="profitabilityModalVisible.set(false)"

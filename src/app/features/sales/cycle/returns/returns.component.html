@@ -16,21 +16,14 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="createOpen.set(true)">
-        <nz-icon nzType="plus" /> {{ 'SC.RETURNS.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="createOpen.set(true)"></button>
     }
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <ng-template #numberTpl let-r><code>{{ r.return_number }}</code></ng-template>
@@ -45,13 +38,14 @@
   </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="820"
   [nzTitle]="selected()?.return_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as r) {
       <nz-tag [nzColor]="statusColor(r.status)">{{ statusKey(r.status) | translate }}</nz-tag>
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="details">
@@ -69,12 +63,12 @@
         }
       </nz-descriptions>
 
-      <nz-table [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '720px' }" [nzData]="r.items ?? []" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl47>
         <thead>
           <tr>
-            <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-            <th>{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
-            <th>{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'SC.RETURNS.QUANTITY' | translate }}</th>
+            <th [nzSortFn]="'quantity_received' | gridSort" [nzFilters]="'quantity_received' | gridFilterList: gridTbl47.nzData" [nzFilterFn]="'quantity_received' | gridFilterFn">{{ 'SC.RETURNS.QUANTITY_RECEIVED' | translate }}</th>
             <th>{{ 'SC.RETURNS.CONDITION' | translate }}</th>
             <th>{{ 'SC.RETURNS.RESTOCK' | translate }}</th>
           </tr>
@@ -142,7 +136,7 @@
       >
         <ng-container *nzModalContent>
           <label for="reject-reason">{{ 'SC.RETURNS.REJECTION_REASON' | translate }}</label>
-          <textarea nz-input id="reject-reason" rows="3" [(ngModel)]="rejectReason"></textarea>
+          <textarea nz-input id="reject-reason" rows="3" maxlength="1000" [(ngModel)]="rejectReason"></textarea>
         </ng-container>
       </nz-modal>
 
@@ -178,6 +172,6 @@
       </nz-modal>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <app-return-form-modal [(visible)]="createOpen" (saved)="onCreated($event)" />

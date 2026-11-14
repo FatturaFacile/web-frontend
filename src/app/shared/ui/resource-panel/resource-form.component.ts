@@ -13,7 +13,6 @@ import {
 import { applyServerErrors, ResourceRow } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -21,10 +20,14 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { Observable, startWith } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { IconActionDirective } from '../action-icon/icon-action.directive';
 import { ResourceLabelsService } from './resource-labels.service';
 import { ResourceLookupService, ResourceOption } from './resource-lookup.service';
 import { ResourceField } from './resource-panel.types';
 import { buildRequestBody, initialFormValue } from './resource-panel.utils';
+import { differentFrom, endsNotBefore, inFuture, notInFuture, notInPast } from '../../utils/date-validators';
+import { atLeastField } from '../../utils/decimal-validators';
+import { hasSharedRuleError, validationTipKey } from '../../utils/validation-tip';
 
 function jsonValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -39,15 +42,39 @@ function jsonValidator(control: AbstractControl): ValidationErrors | null {
   }
 }
 
+/** Runs a shape check on the parsed JSON of a filled field; invalid JSON is left to `jsonValidator`. */
+function jsonShapeValidator(check: (parsed: unknown) => boolean) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (typeof value !== 'string' || value.trim() === '') {
+      return null;
+    }
+    try {
+      return check(JSON.parse(value) as unknown) ? null : { jsonShape: true };
+    } catch {
+      return null;
+    }
+  };
+}
+
+function positiveValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return Number(value) > 0 ? null : { notPositive: true };
+}
+
 /** Dynamic reactive form generated from a list of `ResourceField`s. */
 @Component({
   selector: 'app-resource-form',
+  styleUrl: './resource-form.component.scss',
   imports: [
     NgTemplateOutlet,
     ReactiveFormsModule,
     NzButtonModule,
     NzFormModule,
-    NzIconModule,
+    IconActionDirective,
     NzInputModule,
     NzInputNumberModule,
     NzSelectModule,
@@ -55,7 +82,6 @@ function jsonValidator(control: AbstractControl): ValidationErrors | null {
     TranslatePipe,
   ],
   templateUrl: './resource-form.component.html',
-  styleUrl: './resource-form.component.scss',
 })
 export class ResourceFormComponent implements OnInit {
   private readonly lookups = inject(ResourceLookupService);
@@ -81,6 +107,14 @@ export class ResourceFormComponent implements OnInit {
     const value = initialFormValue(fields, this.initial());
     this.form = new FormGroup(Object.fromEntries(fields.map((f) => [f.key, this.createControl(f, value[f.key])])));
     for (const field of fields) {
+      const siblings = [field.notBefore, field.atLeastField, field.differentFrom, field.requiredIf?.field, field.prohibitedIf?.field];
+      for (const siblingKey of siblings) {
+        if (siblingKey) {
+          this.form.get(siblingKey)?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.form.get(field.key)?.updateValueAndValidity({ emitEvent: false });
+          });
+        }
+      }
       this.loadLookups(field, true);
       for (const sub of field.fields ?? []) {
         this.loadLookups(sub, false);
@@ -138,6 +172,18 @@ export class ResourceFormComponent implements OnInit {
     if (errors['json']) {
       return this.labels.text('RES.ERR.JSON');
     }
+    if (hasSharedRuleError(control)) {
+      return this.labels.text(validationTipKey(control));
+    }
+    if (errors['prohibited']) {
+      return this.labels.text('COMMON.VALIDATION.NOT_ALLOWED_HERE');
+    }
+    if (errors['max']) {
+      return this.labels.text('COMMON.VALIDATION.EXCEEDS_LIMIT');
+    }
+    if (errors['notPositive']) {
+      return this.labels.text('COMMON.VALIDATION.GREATER_THAN_ZERO');
+    }
     return this.labels.text('RES.ERR.INVALID');
   }
 
@@ -171,7 +217,10 @@ export class ResourceFormComponent implements OnInit {
     if (field.type === 'lines') {
       const lines = (Array.isArray(value) ? value : []) as ResourceRow[];
       const rows = lines.length > 0 || !field.required ? lines : [{}];
-      return new FormArray(rows.map((line) => this.createLineGroup(field.fields ?? [], line)));
+      return new FormArray(
+        rows.map((line) => this.createLineGroup(field.fields ?? [], line)),
+        field.required ? [Validators.required] : [],
+      );
     }
     return new FormControl(value, this.validatorsOf(field));
   }
@@ -189,11 +238,52 @@ export class ResourceFormComponent implements OnInit {
     if (field.maxLength) {
       validators.push(Validators.maxLength(field.maxLength));
     }
-    if (field.type === 'integer' && field.min !== undefined) {
+    if ((field.type === 'integer' || field.type === 'decimal') && field.min !== undefined) {
       validators.push(Validators.min(field.min));
+    }
+    if ((field.type === 'integer' || field.type === 'decimal') && field.max !== undefined) {
+      validators.push(Validators.max(field.max));
+    }
+    if (field.prohibitedIf) {
+      const { field: otherKey, value } = field.prohibitedIf;
+      validators.push((control: AbstractControl): ValidationErrors | null => {
+        const filled = control.value !== null && control.value !== undefined && control.value !== '';
+        return filled && control.parent?.get(otherKey)?.value === value ? { prohibited: true } : null;
+      });
+    }
+    if (field.requiredIf) {
+      const { field: otherKey, value } = field.requiredIf;
+      validators.push((control: AbstractControl): ValidationErrors | null => {
+        const blank = control.value === null || control.value === undefined || control.value === '';
+        return blank && control.parent?.get(otherKey)?.value === value ? { required: true } : null;
+      });
     }
     if (field.type === 'json') {
       validators.push(jsonValidator);
+      if (field.jsonCheck) {
+        validators.push(jsonShapeValidator(field.jsonCheck));
+      }
+    }
+    if (field.notBefore) {
+      validators.push(endsNotBefore(field.notBefore, { strict: field.strictlyAfter }));
+    }
+    if (field.notInFuture) {
+      validators.push(notInFuture);
+    }
+    if (field.inFuture) {
+      validators.push(inFuture);
+    }
+    if (field.differentFrom) {
+      validators.push(differentFrom(field.differentFrom));
+    }
+    if (field.positive) {
+      validators.push(positiveValidator);
+    }
+    if (field.notBeforeToday) {
+      validators.push(notInPast);
+    }
+    if (field.atLeastField) {
+      validators.push(atLeastField(field.atLeastField));
     }
     return validators;
   }

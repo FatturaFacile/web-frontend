@@ -21,7 +21,7 @@ import {
   LeadScoringRuleType,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const FIELDS = ['title', 'email', 'phone', 'company_name', 'website', 'country', 'estimated_budget', 'status', 'lead_source_code', 'campaign_id'];
 const OPERATORS = ['filled', 'empty', 'equals', 'not_equals', 'contains', 'in', 'gte', 'lte', 'business_email'];
@@ -59,7 +59,12 @@ const emptyDraft = (): RuleDraft => ({
 /** Lead scoring rules (field or activity based) and the recalculation of every lead score. */
 @Component({
   selector: 'app-lead-scoring-rules',
+  styleUrl: './scoring-rules.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
@@ -75,7 +80,6 @@ const emptyDraft = (): RuleDraft => ({
     TranslatePipe,
   ],
   templateUrl: './scoring-rules.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class ScoringRulesComponent {
   private readonly api = inject(CrmApiService);
@@ -133,6 +137,9 @@ export class ScoringRulesComponent {
   protected valid(): boolean {
     const d = this.draft;
     if (!d.name.trim() || d.points === null || Number.isNaN(d.points)) {
+      return false;
+    }
+    if (d.points < -100 || d.points > 100 || (d.max_points !== null && (d.max_points < 0 || d.max_points > 100)) || (d.sequence !== null && d.sequence < 0)) {
       return false;
     }
     return d.rule_type === 'field' ? !!d.field && !!d.operator : !!d.activity_type;

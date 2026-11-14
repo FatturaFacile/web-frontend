@@ -34,10 +34,10 @@ export interface DocumentSignature {
   document_id: string;
   format: 'sha256-integrity' | 'cades-bes-p7m' | string;
   driver: 'local' | 'cades' | string;
-  signature_sha256: string;
-  certificate_fingerprint?: string | null;
-  signer_subject?: string | null;
-  signed_at: string;
+  /** SHA-256 of the signed content (the API stores no separate hash of the signature). */
+  content_sha256: string;
+  /** The signing time: the moment the signature row was created. */
+  created_at: string;
   valid?: boolean;
 }
 
@@ -62,13 +62,11 @@ export interface PreservationRecord {
   id: string;
   document_type: DocumentTrustType;
   document_id: string;
-  driver: 'local' | 'accredited' | string;
-  mode: 'fingerprint_only' | 'accredited_sip' | string;
-  archive_identifier?: string | null;
-  package_sha256: string;
-  timestamped_at: string;
-  status: 'draft' | 'archived' | 'rejected' | string;
-  expiration_date?: string | null;
+  provider: 'local' | 'accredited' | string;
+  reference?: string | null;
+  content_sha256: string;
+  created_at: string;
+  status: 'fingerprint_only' | 'archived' | 'rejected' | string;
 }
 
 export interface PreserveDocumentRequest {

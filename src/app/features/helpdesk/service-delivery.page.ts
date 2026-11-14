@@ -5,7 +5,7 @@ const PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 const BILLING_TYPES = ['contract_included', 'time_and_materials', 'fixed_fee', 'non_billable', 'internal_cost'] as const;
 
 const WORK_ORDER_FIELDS = [
-  req(rf.text('title')),
+  req(rf.text('title', { maxLength: 255 })),
   rf.textarea('description'),
   rf.select('work_type', WORK_TYPES),
   rf.select('priority', PRIORITIES),
@@ -19,7 +19,7 @@ const WORK_ORDER_FIELDS = [
   rf.uuid('lead_technician_id'),
   rf.datetime('scheduled_start'),
   rf.datetime('scheduled_end'),
-  rf.text('location_address'),
+  rf.text('location_address', { maxLength: 255 }),
   rf.select('billing_type', BILLING_TYPES),
 ];
 
@@ -51,7 +51,7 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
           fields: [
             req(rf.uuid('technician_id')),
             req(rf.datetime('scheduled_start')),
-            req(rf.datetime('scheduled_end')),
+            req(rf.datetime('scheduled_end', { notBefore: 'scheduled_start', strictlyAfter: true })),
             rf.textarea('notes'),
           ],
         }),
@@ -67,19 +67,19 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
         }),
         act('POST', 'RES.A.issue_part', '/esm/work-orders/{id}/parts', {
           fields: [
-            req(rf.text('item_number')),
+            req(rf.text('item_number', { maxLength: 100 })),
             req(rf.decimal('quantity')),
             rf.decimal('unit_cost'),
             rf.decimal('unit_price'),
-            rf.text('description'),
+            rf.text('description', { maxLength: 255 }),
             rf.uuid('warehouse_id'),
           ],
         }),
         act('POST', 'RES.A.complete_work_order', '/esm/work-orders/{id}/complete', {
           fields: [
-            rf.textarea('completion_notes'),
-            rf.textarea('resolution_summary'),
-            rf.text('signed_by_customer_name'),
+            rf.textarea('completion_notes', { maxLength: 5000 }),
+            rf.textarea('resolution_summary', { maxLength: 5000 }),
+            rf.text('signed_by_customer_name', { maxLength: 150 }),
             rf.datetime('signed_at'),
           ],
         }),

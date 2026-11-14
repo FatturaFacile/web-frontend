@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -8,19 +8,20 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CrmActivity,
   CrmActivityPayload,
   CrmActivityPriority,
   CrmActivityType,
+  CrmActivityFilterParams,
   CrmApiService,
   CrmRelatedType,
+  FetchGridModel,
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const TYPES: CrmActivityType[] = ['task', 'call', 'meeting', 'note', 'email', 'follow_up'];
 const PRIORITIES: CrmActivityPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -52,7 +53,11 @@ const emptyDraft = (): ActivityDraft => ({
 /** CRM activities: tasks, calls and meetings with due date and reminder, completed with an outcome. */
 @Component({
   selector: 'app-crm-activities',
+  styleUrl: './activities.component.scss',
   imports: [
+    BaseTableComponent,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
@@ -61,13 +66,11 @@ const emptyDraft = (): ActivityDraft => ({
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     PageHeaderComponent,
     TranslatePipe,
   ],
   templateUrl: './activities.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class ActivitiesComponent {
   private readonly api = inject(CrmApiService);
@@ -81,10 +84,7 @@ export class ActivitiesComponent {
   protected readonly statuses = STATUSES;
   protected readonly relatedTypes = RELATED;
 
-  protected readonly items = signal<CrmActivity[]>([]);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<CrmActivity, CrmActivityFilterParams>((query) => this.api.getActivities(query));
   protected readonly createOpen = signal(false);
   protected readonly completeTarget = signal<CrmActivity | null>(null);
   protected readonly saving = signal(false);
@@ -93,28 +93,39 @@ export class ActivitiesComponent {
   protected draft: ActivityDraft = emptyDraft();
   protected outcome = '';
 
-  constructor() {
-    this.load(1);
-  }
+  private readonly subjectTpl = viewChild<TemplateRef<unknown>>('subjectTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
 
-  protected load(page = this.pageIndex()): void {
-    this.pageIndex.set(page);
-    this.loading.set(true);
-    this.api
-      .getActivities({
-        page,
-        per_page: 15,
-        type: this.typeFilter ?? undefined,
-        status: this.statusFilter ?? undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.items.set(res.data ?? []);
-          this.total.set(res.meta?.total ?? 0);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+  protected readonly columns = computed<TableColumnDef<CrmActivity>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'subject', header: this.i18n.translate('CRMX.ACTIVITIES.SUBJECT'), customCellTemplate: this.subjectTpl() },
+      {
+        key: 'type',
+        header: this.i18n.translate('CRMX.ACTIVITIES.TYPE'),
+        valueGetter: (a) => this.i18n.translate('CRMX.TYPE_' + a.type),
+        valueLabel: (value) => this.i18n.translate('CRMX.TYPE_' + value),
+      },
+      {
+        key: 'priority',
+        header: this.i18n.translate('CRMX.ACTIVITIES.PRIORITY'),
+        valueGetter: (a) => (a.priority ? this.i18n.translate('CRMX.PRIORITY_' + a.priority) : ''),
+        valueLabel: (value) => this.i18n.translate('CRMX.PRIORITY_' + value),
+      },
+      { key: 'due_date', header: this.i18n.translate('CRMX.ACTIVITIES.DUE_DATE') },
+      { key: 'reminder_at', header: this.i18n.translate('CRMX.ACTIVITIES.REMINDER') },
+      {
+        key: 'status',
+        header: this.i18n.translate('CRMX.COMMON.STATUS'),
+        valueGetter: (a) => this.i18n.translate('CRMX.STATUS_' + a.status),
+        valueLabel: (value) => this.i18n.translate('CRMX.STATUS_' + value),
+        customCellTemplate: this.statusTpl(),
+      },
+    ];
+  });
+
+  protected applyFilters(): void {
+    this.grid.setFilter({ type: this.typeFilter ?? undefined, status: this.statusFilter ?? undefined });
   }
 
   protected openCreate(): void {
@@ -144,7 +155,7 @@ export class ActivitiesComponent {
         this.saving.set(false);
         this.createOpen.set(false);
         this.message.success(this.i18n.translate('CRMX.COMMON.SAVED'));
-        this.load(1);
+        this.grid.reload();
       },
       error: () => this.saving.set(false),
     });
@@ -164,7 +175,7 @@ export class ActivitiesComponent {
       next: () => {
         this.completeTarget.set(null);
         this.message.success(this.i18n.translate('CRMX.ACTIVITIES.COMPLETED'));
-        this.load();
+        this.grid.reload();
       },
     });
   }
@@ -173,7 +184,7 @@ export class ActivitiesComponent {
     this.api.updateActivity(activity.id, { status: 'cancelled' }).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('CRMX.ACTIVITIES.CANCELLED'));
-        this.load();
+        this.grid.reload();
       },
     });
   }

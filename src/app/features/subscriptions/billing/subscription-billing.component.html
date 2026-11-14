@@ -27,38 +27,27 @@
           </div>
         </div>
         <div class="toolbar">
-          <button nz-button nzType="primary" type="button" [disabled]="!usageValid()" (click)="recordUsage()">
-            <nz-icon nzType="plus" /> {{ 'SUBX.USAGE.RECORD' | translate }}
-          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            appIconAction="add"
+            [disabled]="!usageValid()"
+            (click)="recordUsage()"
+          ></button>
         </div>
       }
-      <nz-table [nzData]="usage()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'SUBX.USAGE.METRIC' | translate }}</th>
-            <th>{{ 'SUBX.USAGE.ITEM_ID' | translate }}</th>
-            <th class="num">{{ 'SUBX.USAGE.QUANTITY' | translate }}</th>
-            <th>{{ 'SUBX.USAGE.TIMESTAMP' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (u of usage(); track u.id) {
-            <tr>
-              <td>{{ u.metric_code }}</td>
-              <td>{{ u.subscription_item_id }}</td>
-              <td class="num">{{ u.quantity }}</td>
-              <td>{{ u.event_timestamp ?? '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="usageGrid" [columns]="usageColumns()" />
     </nz-tab>
 
     <nz-tab [nzTitle]="'SUBX.RUNS.TITLE' | translate">
       @if (canWrite()) {
         <div class="toolbar">
           <label for="run-date">{{ 'SUBX.RUNS.RUN_DATE' | translate }}</label>
-          <input nz-input id="run-date" type="date" class="narrow" [(ngModel)]="runDate" />
+          <input nz-input id="run-date" type="date" class="narrow" [attr.max]="today" [class.ant-input-status-error]="runDateInvalid" [(ngModel)]="runDate" />
+          @if (runDateInvalid) {
+            <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}</span>
+          }
           <label for="run-lookahead">{{ 'SUBX.RUNS.LOOKAHEAD' | translate }}</label>
           <input nz-input id="run-lookahead" type="number" min="0" class="narrow" [(ngModel)]="lookaheadDays" />
           <button
@@ -66,6 +55,7 @@
             nzType="primary"
             type="button"
             nz-popconfirm
+            [disabled]="runDateInvalid"
             [nzPopconfirmTitle]="'SUBX.RUNS.CONFIRM' | translate"
             (nzOnConfirm)="runBilling()"
           >
@@ -73,42 +63,28 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="runs()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'SUBX.RUNS.RUN_DATE' | translate }}</th>
-            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
-            <th class="num">{{ 'SUBX.RUNS.INVOICES' | translate }}</th>
-            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of runs(); track r.id) {
-            <tr>
-              <td>{{ r.run_date ?? '-' }}</td>
-              <td>{{ r.status ?? '-' }}</td>
-              <td class="num">{{ r.invoices_created ?? '-' }}</td>
-              <td>
-                <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="viewRun(r)">
-                  <nz-icon nzType="eye" />
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="runGrid" [columns]="runColumns()" [actionsTemplate]="runActionsTpl" />
+      <ng-template #runActionsTpl let-r>
+        <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="viewRun(r)">
+          <nz-icon nzType="eye" />
+        </button>
+      </ng-template>
     </nz-tab>
 
     <nz-tab [nzTitle]="'SUBX.REVENUE.TITLE' | translate">
       @if (canWrite()) {
         <div class="toolbar">
           <label for="rev-period">{{ 'SUBX.REVENUE.PERIOD_DATE' | translate }}</label>
-          <input nz-input id="rev-period" type="date" class="narrow" [(ngModel)]="periodDate" />
+          <input nz-input id="rev-period" type="date" class="narrow" [attr.max]="today" [class.ant-input-status-error]="periodDateInvalid" [(ngModel)]="periodDate" />
+          @if (periodDateInvalid) {
+            <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}</span>
+          }
           <button
             nz-button
             nzType="primary"
             type="button"
             nz-popconfirm
+            [disabled]="periodDateInvalid"
             [nzPopconfirmTitle]="'SUBX.REVENUE.CONFIRM' | translate"
             (nzOnConfirm)="recognize()"
           >
@@ -116,22 +92,7 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="revenueContracts()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>{{ 'SUBX.COMMON.STATUS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of revenueContracts(); track c.id) {
-            <tr>
-              <td>{{ c.id }}</td>
-              <td>{{ c.status ?? '-' }}</td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="revenueGrid" [columns]="revenueColumns()" />
 
       <h4>{{ 'SUBX.REVENUE.FORECAST' | translate }}</h4>
       <div class="toolbar">
@@ -144,13 +105,14 @@
   </nz-tabs>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="!!selectedRun()"
-  [nzWidth]="520"
+  [nzWidth]="720"
   [nzTitle]="'SUBX.RUNS.DETAIL' | translate"
-  (nzOnClose)="selectedRun.set(null)"
+  [nzFooter]="null"
+  (nzOnCancel)="selectedRun.set(null)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <pre class="json">{{ runJson() }}</pre>
   </ng-container>
-</nz-drawer>
+</nz-modal>

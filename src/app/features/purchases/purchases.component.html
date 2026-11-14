@@ -51,96 +51,10 @@
         </nz-select>
 
         <span class="spacer"></span>
-        <button nz-button nzType="primary" (click)="openCreateModal()">
-          <nz-icon nzType="plus" /> {{ 'PURCHASES.LBL_NUOVO_ORDINE' | translate }}
-        </button>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
       </div>
 
-      <nz-table
-        #pTable
-        [nzData]="orders()"
-        [nzFrontPagination]="false"
-        [nzLoading]="loading()"
-        [nzTotal]="total()"
-        [nzPageIndex]="pageIndex()"
-        [nzPageSize]="pageSize()"
-        (nzQueryParams)="onQueryParamsChange($event)"
-        nzSize="middle"
-      >
-        <thead>
-          <tr>
-            <th>{{ "PURCHASES.COL_PROTOCOL" | translate }}</th>
-            <th>{{ "PURCHASES.COL_VENDOR" | translate }}</th>
-            <th>{{ "PURCHASES.COL_ORDER_TYPE" | translate }}</th>
-            <th>{{ "COMMON.AMOUNT" | translate }}</th>
-            <th>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</th>
-            <th>{{ "PURCHASES.COL_APPROVAL" | translate }}</th>
-            <th nzAlign="right">{{ "COMMON.ACTIONS" | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of pTable.data; track item.id) {
-            <tr>
-              <td>
-                <strong>{{ item.po_number }}</strong>
-              </td>
-              <td>{{ supplierName(item) }}</td>
-              <td>
-                <nz-tag>{{ ('PURCHASES.ORDER_TYPE.' + (item.order_type || 'standard')) | translate }}</nz-tag>
-              </td>
-              <td>
-                <strong>{{ item.total_amount | money: item.currency }}</strong>
-              </td>
-              <td>{{ item.expected_delivery_date ? (item.expected_delivery_date | date: "dd.MM.yyyy") : "-" }}</td>
-              <td>
-                <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
-              </td>
-              <td nzAlign="right">
-                <div class="actions">
-                  @if (item.status === 'draft') {
-                    <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
-                      {{ 'PURCHASES.LBL_INVIA_APPR' | translate }}
-                    </button>
-                  }
-                  @if (item.status === 'pending_approval') {
-                    <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
-                      {{ 'PURCHASES.LBL_APPROVA' | translate }}
-                    </button>
-                    <button nz-button nzSize="small" nzDanger (click)="reject(item)">
-                      {{ 'PURCHASES.LBL_RIFIUTA' | translate }}
-                    </button>
-                  }
-                  @if (item.status === 'approved') {
-                    <button nz-button nzSize="small" nzType="default" (click)="sendToSupplier(item)">
-                      <nz-icon nzType="send" /> {{ 'PURCHASES.LBL_INVIA_FORNITORE' | translate }}
-                    </button>
-                  }
-                  @if (canReceive(item)) {
-                    <button nz-button nzSize="small" nzType="primary" (click)="openGoodsReceiptModal(item)">
-                      <nz-icon nzType="check" /> {{ 'PURCHASES.LBL_RICEVI_MERCE' | translate }}
-                    </button>
-                  }
-                  @if (item.status === 'received') {
-                    <button nz-button nzSize="small" nzType="default" (click)="closeOrder(item)">
-                      {{ 'PURCHASES.CLOSE_ORDER' | translate }}
-                    </button>
-                  }
-                  @if (item.status === 'closed') {
-                    <button nz-button nzSize="small" nzType="default" (click)="reopenOrder(item)">
-                      {{ 'PURCHASES.REOPEN_ORDER' | translate }}
-                    </button>
-                  }
-                  @if (canCancel(item)) {
-                    <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelOrder(item)">
-                      {{ 'PURCHASES.LBL_ANNULLA' | translate }}
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="orderGrid" [columns]="orderColumns()" [actionsTemplate]="orderActionsTpl" [exportFileName]="'purchase-orders'" />
     </nz-tab>
 
     <!-- TAB 2: RICEZIONE MERCI (GOODS RECEIPTS) -->
@@ -152,47 +66,7 @@
         </button>
       </div>
 
-      <nz-table
-        #grTable
-        [nzData]="goodsReceipts()"
-        [nzLoading]="loadingReceipts()"
-        nzSize="middle"
-        [nzFrontPagination]="true"
-        [nzPageSize]="10"
-      >
-        <thead>
-          <tr>
-            <th>{{ 'PURCHASES.LBL_N_BOLLA_RICEZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_RIF_DDT_FORNITORE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_DATA_ARRIVO' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_STATO_ISPEZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_RIGHE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (gr of grTable.data; track gr.id) {
-            <tr>
-              <td><strong>{{ gr.receipt_number }}</strong></td>
-              <td><code>{{ gr.supplier_delivery_note_ref || '-' }}</code></td>
-              <td>{{ gr.received_date ? (gr.received_date | date: 'dd.MM.yyyy') : '-' }}</td>
-              <td>
-                <nz-tag [nzColor]="inspectionColor(gr.inspection_status)">
-                  {{ gr.inspection_status || '-' }}
-                </nz-tag>
-              </td>
-              <td>{{ gr.lines?.length || 0 }} articoli</td>
-              <td nzAlign="right">
-                @if (gr.inspection_required) {
-                  <button nz-button nzSize="small" nzType="default" (click)="openInspectModal(gr)">
-                    <nz-icon nzType="audit" /> {{ 'PURCHASES.LBL_ISPEZIONE' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="receiptGrid" [columns]="receiptColumns()" [actionsTemplate]="receiptActionsTpl" [exportFileName]="'goods-receipts'" />
     </nz-tab>
 
     <!-- TAB 3: 3-WAY MATCH & RICONCILIAZIONE -->
@@ -204,53 +78,7 @@
         </button>
       </div>
 
-      <nz-table
-        #twmTable
-        [nzData]="threeWayMatches()"
-        [nzLoading]="loadingMatches()"
-        nzSize="middle"
-        [nzFrontPagination]="true"
-        [nzPageSize]="10"
-      >
-        <thead>
-          <tr>
-            <th>{{ 'PURCHASES.LBL_ID_MATCH' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_PO_ORDINE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_STATO_CONCILIAZIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_PO_TOTAL' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_INVOICE_TOTAL' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_VARIANCE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of twmTable.data; track m.id) {
-            <tr>
-              <td><code>{{ m.id }}</code></td>
-              <td>{{ m.purchase_order_id }}</td>
-              <td>
-                <nz-tag [nzColor]="matchStatusColor(m.match_status)">
-                  {{ ('PURCHASES.MATCH.' + m.match_status) | translate }}
-                </nz-tag>
-              </td>
-              <td>{{ m.po_total_amount | money: 'EUR' }}</td>
-              <td>{{ m.invoice_total_amount | money: 'EUR' }}</td>
-              <td>
-                <span [class.negative]="m.variance_amount !== 0">
-                  {{ m.variance_amount | money: 'EUR' }} ({{ m.variance_percentage }}%)
-                </span>
-              </td>
-              <td nzAlign="right">
-                @if (hasOpenVariance(m)) {
-                  <button nz-button nzSize="small" nzType="default" (click)="approveVariance(m)">
-                    {{ 'PURCHASES.LBL_APPROVA_TOLLERANZA' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="matchGrid" [columns]="matchColumns()" [actionsTemplate]="matchActionsTpl" [exportFileName]="'three-way-match'" />
     </nz-tab>
 
     <!-- TAB 4: FATTURE FORNITORE - AP INVOICES -->
@@ -262,88 +90,144 @@
         </button>
       </div>
 
-      <nz-table
-        #siTable
-        [nzData]="supplierInvoices()"
-        [nzLoading]="loadingInvoices()"
-        nzSize="middle"
-        [nzFrontPagination]="true"
-        [nzPageSize]="10"
-      >
-        <thead>
-          <tr>
-            <th>{{ 'PURCHASES.LBL_N_FATTURA_FORNITORE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_FORNITORE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_DATA_EMISSIONE' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_SCADENZA' | translate }}</th>
-            <th>{{ 'PURCHASES.LBL_TOTALE_LORDO' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_PAYMENT' | translate }}</th>
-            <th>{{ 'PURCHASES.COL_APPROVAL' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.LBL_AZIONI' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (inv of siTable.data; track inv.id) {
-            <tr>
-              <td><strong>{{ inv.invoice_number }}</strong></td>
-              <td>{{ invoiceSupplierName(inv) }}</td>
-              <td>{{ inv.date | date: 'dd.MM.yyyy' }}</td>
-              <td>{{ inv.due_date ? (inv.due_date | date: 'dd.MM.yyyy') : '-' }}</td>
-              <td><strong>{{ inv.total_amount | money: inv.currency }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="inv.payment_status === 'paid' ? 'success' : 'default'">
-                  {{ ('PURCHASES.PAYMENT.' + (inv.payment_status || 'unpaid')) | translate }}
-                </nz-tag>
-              </td>
-              <td>
-                <nz-tag [nzColor]="approvalColor(inv.approval_status)">
-                  {{ approvalLabel(inv.approval_status) }}
-                </nz-tag>
-              </td>
-              <td nzAlign="right">
-                <div class="actions">
-                  @if (canSubmitInvoiceApproval(inv)) {
-                    <button nz-button nzSize="small" nzType="default" (click)="submitInvoiceApproval(inv)">
-                      {{ 'PURCHASES.SUBMIT_INVOICE_APPROVAL' | translate }}
-                    </button>
-                  }
-                  @if (inv.payment_status !== 'paid') {
-                    <button
-                      nz-button
-                      nzSize="small"
-                      nzType="primary"
-                      [disabled]="isPaymentBlocked(inv)"
-                      [attr.title]="isPaymentBlocked(inv) ? ('PURCHASES.PAYMENT_BLOCKED' | translate) : null"
-                      (click)="markInvoicePaid(inv)"
-                    >
-                      {{ 'PURCHASES.LBL_SEGNA_PAGATA' | translate }}
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table [grid]="invoiceGrid" [columns]="invoiceColumns()" [actionsTemplate]="invoiceActionsTpl" [exportFileName]="'supplier-invoices'" />
     </nz-tab>
   </nz-tabs>
 </nz-card>
+
+<ng-template #orderNumberTpl let-item><strong>{{ item.po_number }}</strong></ng-template>
+<ng-template #orderTypeTpl let-item>
+  <nz-tag>{{ ('PURCHASES.ORDER_TYPE.' + (item.order_type || 'standard')) | translate }}</nz-tag>
+</ng-template>
+<ng-template #orderAmountTpl let-item><strong>{{ item.total_amount | money: item.currency }}</strong></ng-template>
+<ng-template #orderDeliveryTpl let-item>{{ item.expected_delivery_date ? (item.expected_delivery_date | date: "dd.MM.yyyy") : "-" }}</ng-template>
+<ng-template #orderStatusTpl let-item>
+  <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
+</ng-template>
+<ng-template #orderActionsTpl let-item>
+  <div class="actions">
+    @if (item.status === 'draft') {
+      <button nz-button nzSize="small" nzType="default" (click)="submitApproval(item)">
+        {{ 'PURCHASES.LBL_INVIA_APPR' | translate }}
+      </button>
+    }
+    @if (item.status === 'pending_approval') {
+      <button nz-button nzSize="small" nzType="primary" (click)="approve(item)">
+        {{ 'PURCHASES.LBL_APPROVA' | translate }}
+      </button>
+      <button nz-button nzSize="small" nzDanger (click)="reject(item)">
+        {{ 'PURCHASES.LBL_RIFIUTA' | translate }}
+      </button>
+    }
+    @if (item.status === 'approved') {
+      <button nz-button nzSize="small" nzType="default" (click)="sendToSupplier(item)">
+        <nz-icon nzType="send" /> {{ 'PURCHASES.LBL_INVIA_FORNITORE' | translate }}
+      </button>
+    }
+    @if (canReceive(item)) {
+      <button nz-button nzSize="small" nzType="primary" (click)="openGoodsReceiptModal(item)">
+        <nz-icon nzType="check" /> {{ 'PURCHASES.LBL_RICEVI_MERCE' | translate }}
+      </button>
+    }
+    @if (item.status === 'received') {
+      <button nz-button nzSize="small" nzType="default" (click)="closeOrder(item)">
+        {{ 'PURCHASES.CLOSE_ORDER' | translate }}
+      </button>
+    }
+    @if (item.status === 'closed') {
+      <button nz-button nzSize="small" nzType="default" (click)="reopenOrder(item)">
+        {{ 'PURCHASES.REOPEN_ORDER' | translate }}
+      </button>
+    }
+    @if (canCancel(item)) {
+      <button nz-button nzSize="small" nzDanger nzType="text" appIconAction="cancel" (click)="cancelOrder(item)"></button>
+    }
+  </div>
+</ng-template>
+
+<ng-template #receiptNumberTpl let-gr><strong>{{ gr.receipt_number }}</strong></ng-template>
+<ng-template #receiptRefTpl let-gr><code>{{ gr.supplier_delivery_note_ref || '-' }}</code></ng-template>
+<ng-template #receiptDateTpl let-gr>{{ gr.received_date ? (gr.received_date | date: 'dd.MM.yyyy') : '-' }}</ng-template>
+<ng-template #receiptInspectionTpl let-gr>
+  <nz-tag [nzColor]="inspectionColor(gr.inspection_status)">{{ gr.inspection_status || '-' }}</nz-tag>
+</ng-template>
+<ng-template #receiptLinesTpl let-gr>{{ gr.lines?.length || 0 }}</ng-template>
+<ng-template #receiptActionsTpl let-gr>
+  @if (gr.inspection_required) {
+    <button nz-button nzSize="small" nzType="default" (click)="openInspectModal(gr)">
+      <nz-icon nzType="audit" /> {{ 'PURCHASES.LBL_ISPEZIONE' | translate }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #matchIdTpl let-m><code>{{ m.id }}</code></ng-template>
+<ng-template #matchStatusTpl let-m>
+  <nz-tag [nzColor]="matchStatusColor(m.match_status)">{{ ('PURCHASES.MATCH.' + m.match_status) | translate }}</nz-tag>
+</ng-template>
+<ng-template #matchPoTotalTpl let-m>{{ m.po_total_amount | money: 'EUR' }}</ng-template>
+<ng-template #matchInvoiceTotalTpl let-m>{{ m.invoice_total_amount | money: 'EUR' }}</ng-template>
+<ng-template #matchVarianceTpl let-m>
+  <span [class.negative]="m.variance_amount !== 0">
+    {{ m.variance_amount | money: 'EUR' }} ({{ m.variance_percentage }}%)
+  </span>
+</ng-template>
+<ng-template #matchActionsTpl let-m>
+  @if (hasOpenVariance(m)) {
+    <button nz-button nzSize="small" nzType="default" (click)="approveVariance(m)">
+      {{ 'PURCHASES.LBL_APPROVA_TOLLERANZA' | translate }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #invoiceNumberTpl let-inv><strong>{{ inv.invoice_number }}</strong></ng-template>
+<ng-template #invoiceDateTpl let-inv>{{ inv.date | date: 'dd.MM.yyyy' }}</ng-template>
+<ng-template #invoiceDueTpl let-inv>{{ inv.due_date ? (inv.due_date | date: 'dd.MM.yyyy') : '-' }}</ng-template>
+<ng-template #invoiceTotalTpl let-inv><strong>{{ inv.total_amount | money: inv.currency }}</strong></ng-template>
+<ng-template #invoicePaymentTpl let-inv>
+  <nz-tag [nzColor]="inv.payment_status === 'paid' ? 'success' : 'default'">
+    {{ ('PURCHASES.PAYMENT.' + (inv.payment_status || 'unpaid')) | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #invoiceApprovalTpl let-inv>
+  <nz-tag [nzColor]="approvalColor(inv.approval_status)">{{ approvalLabel(inv.approval_status) }}</nz-tag>
+</ng-template>
+<ng-template #invoiceActionsTpl let-inv>
+  <div class="actions">
+    @if (canSubmitInvoiceApproval(inv)) {
+      <button nz-button nzSize="small" nzType="default" (click)="submitInvoiceApproval(inv)">
+        {{ 'PURCHASES.SUBMIT_INVOICE_APPROVAL' | translate }}
+      </button>
+    }
+    @if (inv.payment_status !== 'paid') {
+      <button
+        nz-button
+        nzSize="small"
+        nzType="primary"
+        [disabled]="isPaymentBlocked(inv)"
+        [attr.title]="isPaymentBlocked(inv) ? ('PURCHASES.PAYMENT_BLOCKED' | translate) : null"
+        (click)="markInvoicePaid(inv)"
+      >
+        {{ 'PURCHASES.LBL_SEGNA_PAGATA' | translate }}
+      </button>
+    }
+  </div>
+</ng-template>
 
 <!-- Modal: Crea Ordine di Acquisto -->
 <nz-modal
   [nzVisible]="createModalVisible()"
   [nzTitle]="'purchases.modal.createTitle' | translate"
-  [nzOkText]="'COMMON.SAVE' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="saving()"
   (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="orderForm.invalid"
+  okAction="save"
   (nzOnOk)="submitCreateOrder()"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="orderForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ "PURCHASES.COL_VENDOR" | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(orderForm.controls.supplier_id)">
           <nz-select formControlName="supplier_id" nzShowSearch [nzPlaceHolder]="'purchases.form.supplierPlaceholder' | translate">
             @for (s of suppliers(); track s.id) {
               <nz-option [nzValue]="s.id" [nzLabel]="s.company_name" />
@@ -355,14 +239,14 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ "PURCHASES.COL_EXPECTED_DELIVERY" | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.expected_delivery_date)">
             <nz-date-picker formControlName="expected_delivery_date" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
-          <nz-form-label nzRequired>{{ 'PURCHASES.LBL_VALUTA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-label>{{ 'PURCHASES.LBL_VALUTA' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.currency)">
             <nz-select formControlName="currency">
               <nz-option nzValue="CHF" [nzLabel]="'PURCHASES.LBL_CHF_SVIZZERA' | translate" />
               <nz-option nzValue="EUR" [nzLabel]="'PURCHASES.LBL_EUR_ITALIA_UE' | translate" />
@@ -373,7 +257,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ARTICOLO_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(orderForm.controls.item_description)">
           <input nz-input formControlName="item_description" [placeholder]="'PURCHASES.LBL_DESCRIZIONE_MATERIALE_O_SERVIZIO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -381,21 +265,21 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_QUANTITA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.quantity)">
             <nz-input-number formControlName="quantity" [nzMin]="0.0001" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.unit_price)">
             <nz-input-number formControlName="unit_price" [nzMin]="0" class="full-width" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(orderForm.controls.tax_rate)">
             <nz-input-number formControlName="tax_rate" [nzMin]="0" class="full-width" />
           </nz-form-control>
         </nz-form-item>
@@ -408,11 +292,11 @@
 <nz-modal
   [nzVisible]="goodsReceiptModalVisible()"
   [nzTitle]="'PURCHASES.LBL_REGISTRA_RICEZIONE_MERCE_BOLLA_DDT_D' | translate"
-  [nzOkText]="'PURCHASES.LBL_REGISTRA_RICEZIONE' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="720px"
   [nzOkLoading]="saving()"
   (nzOnCancel)="goodsReceiptModalVisible.set(false)"
+  [nzOkDisabled]="receiptForm.invalid"
+  okAction="save"
   (nzOnOk)="submitGoodsReceipt()"
 >
   <ng-container *nzModalContent>
@@ -420,25 +304,25 @@
       <div class="form-row">
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_RIFERIMENTO_DDT_FORNITORE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(receiptForm.controls.supplier_delivery_note_ref)">
             <input nz-input formControlName="supplier_delivery_note_ref" placeholder="Es. DDT-2026/8841" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item class="grow">
           <nz-form-label nzRequired>{{ 'PURCHASES.LBL_DATA_RICEZIONE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="tip(receiptForm.controls.received_date)">
             <input nz-input type="date" formControlName="received_date" />
           </nz-form-control>
         </nz-form-item>
       </div>
 
-      <nz-table [nzData]="receiptOrderLines()" [nzFrontPagination]="false" nzSize="small">
+      <nz-table [nzData]="receiptOrderLines()" [nzFrontPagination]="false" nzSize="small" #gridTbl35>
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
+            <th [nzSortFn]="'line_number' | gridSort" [nzFilters]="'line_number' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'line_number' | gridFilterFn">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_ordered' | gridSort" [nzFilters]="'quantity_ordered' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'quantity_ordered' | gridFilterFn">{{ 'PURCHASES.COL_ORDERED' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_received' | gridSort" [nzFilters]="'quantity_received' | gridFilterList: gridTbl35.nzData" [nzFilterFn]="'quantity_received' | gridFilterFn">{{ 'PURCHASES.COL_RECEIVED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_QTY_NOW' | translate }}</th>
             <th>{{ 'PURCHASES.LBL_N_LOTTO' | translate }}</th>
           </tr>
@@ -460,7 +344,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'PURCHASES.LBL_NOTE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(receiptForm.controls.notes)">
           <textarea nz-input rows="2" formControlName="notes" [placeholder]="'PURCHASES.LBL_NOTE_SU_IMBALLO_O_VERIFICA' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -472,20 +356,20 @@
 <nz-modal
   [nzVisible]="inspectModalVisible()"
   [nzTitle]="'PURCHASES.LBL_ESITO_ISPEZIONE_QUALITA' | translate"
-  [nzOkText]="'PURCHASES.LBL_AGGIORNA_ESITO' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   nzWidth="640px"
   (nzOnCancel)="inspectModalVisible.set(false)"
+  [nzOkDisabled]="inspectForm.invalid"
+  okAction="save"
   (nzOnOk)="submitInspection()"
 >
   <ng-container *nzModalContent>
     <p class="muted">{{ 'PURCHASES.INSPECT_HINT' | translate }}</p>
     <form nz-form [formGroup]="inspectForm" nzLayout="vertical">
-      <nz-table [nzData]="selectedReceipt()?.lines ?? []" [nzFrontPagination]="false" nzSize="small">
+      <nz-table [nzData]="selectedReceipt()?.lines ?? []" [nzFrontPagination]="false" nzSize="small" #gridTbl36>
         <thead>
           <tr>
-            <th>{{ 'PURCHASES.COL_LINE' | translate }}</th>
-            <th nzAlign="right">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
+            <th [nzSortFn]="'purchase_order_line_id' | gridSort" [nzFilters]="'purchase_order_line_id' | gridFilterList: gridTbl36.nzData" [nzFilterFn]="'purchase_order_line_id' | gridFilterFn">{{ 'PURCHASES.COL_LINE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity_accepted' | gridSort" [nzFilters]="'quantity_accepted' | gridFilterList: gridTbl36.nzData" [nzFilterFn]="'quantity_accepted' | gridFilterFn">{{ 'PURCHASES.COL_ACCEPTED' | translate }}</th>
             <th>{{ 'PURCHASES.COL_RELEASED' | translate }}</th>
             <th>{{ 'COMMON.NOTES' | translate }}</th>
           </tr>
@@ -511,37 +395,37 @@
 <nz-modal
   [nzVisible]="executeMatchModalVisible()"
   [nzTitle]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE_3_WAY_MATCH' | translate"
-  [nzOkText]="'PURCHASES.LBL_ESEGUI_CONCILIAZIONE' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   (nzOnCancel)="executeMatchModalVisible.set(false)"
+  [nzOkDisabled]="matchForm.invalid"
+  okAction="confirm"
   (nzOnOk)="submitExecuteMatch()"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="matchForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_ORDINE_DI_ACQUISTO_PO' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.purchase_order_id)">
           <input nz-input formControlName="purchase_order_id" [placeholder]="'PURCHASES.LBL_ID_O_UUID_ORDINE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_RICEZIONE_MERCE_GRN' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.purchase_receipt_id)">
           <input nz-input formControlName="purchase_receipt_id" [placeholder]="'PURCHASES.LBL_ID_RICEZIONE_MERCE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_ID_FATTURA_FORNITORE_AP' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.passive_invoice_id)">
           <input nz-input formControlName="passive_invoice_id" [placeholder]="'PURCHASES.LBL_ID_FATTURA_FORNITORE' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'PURCHASES.LBL_TOTALE_FATTURA_FORNITORE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="tip(matchForm.controls.invoice_total_amount)">
           <nz-input-number formControlName="invoice_total_amount" [nzMin]="0.01" class="full-width" />
         </nz-form-control>
       </nz-form-item>
@@ -553,11 +437,10 @@
 <nz-modal
   [nzVisible]="importSdiModalVisible()"
   [nzTitle]="'PURCHASES.LBL_IMPORTA_FATTURA_ELETTRONICA_XML_SDI_PASSIVO' | translate"
-  [nzOkText]="'PURCHASES.LBL_IMPORTA_XML' | translate"
-  [nzCancelText]="'PURCHASES.LBL_ANNULLA' | translate"
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!selectedXmlFile()"
   (nzOnCancel)="importSdiModalVisible.set(false)"
+  okAction="confirm"
   (nzOnOk)="submitImportSdi()"
 >
   <ng-container *nzModalContent>
@@ -578,6 +461,7 @@
   [nzOkLoading]="saving()"
   [nzOkDisabled]="!reasonText().trim()"
   (nzOnCancel)="reasonRequest.set(null)"
+  okAction="confirm"
   (nzOnOk)="confirmReason()"
 >
   <ng-container *nzModalContent>

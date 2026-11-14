@@ -23,11 +23,13 @@ import {
   CrmActivityUpdatePayload,
   CrmCampaign,
   CrmCampaignMember,
+  CrmCampaignMemberFilterParams,
   CrmCampaignMemberPayload,
   CrmCampaignPayload,
   CrmCampaignRoi,
   CrmDuplicateMatch,
   CrmForecast,
+  CrmForecastFilterParams,
   CrmForecastGeneratePayload,
   CrmPartyLink,
   CrmReport,
@@ -123,7 +125,7 @@ export class CrmApiService {
     });
   }
 
-  emailContactStatement(id: string, payload: { email: string; note?: string }): Observable<ApiResponse<unknown>> {
+  emailContactStatement(id: string, payload: { as_of?: string | null; to?: string | null } = {}): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/contacts/${id}/statement/email`, payload);
   }
 
@@ -209,31 +211,34 @@ export class CrmApiService {
     fiscal_code?: string;
     email?: string;
     phone?: string;
-  }): Observable<ApiResponse<CrmDuplicateMatch>> {
-    return this.http.get<ApiResponse<CrmDuplicateMatch>>(`${this.base}/duplicates`, {
+  }): Observable<CrmDuplicateMatch> {
+    return this.http.get<CrmDuplicateMatch>(`${this.base}/duplicates`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
 
-  getContactMerges(params?: QueryFilterParams): Observable<PaginatedResponse<ContactMergeRecord>> {
-    return this.http.get<PaginatedResponse<ContactMergeRecord>>(`${this.base}/contact-merges`, {
+  /** Bare `{ data, meta }` body (no success envelope). */
+  getContactMerges(params?: QueryFilterParams): Observable<{ data: ContactMergeRecord[]; meta: { current_page: number; total: number } }> {
+    return this.http.get<{ data: ContactMergeRecord[]; meta: { current_page: number; total: number } }>(`${this.base}/contact-merges`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
 
-  mergeContacts(payload: MergeContactsPayload): Observable<ApiResponse<ContactMergeRecord>> {
-    return this.http.post<ApiResponse<ContactMergeRecord>>(`${this.base}/contact-merges`, payload);
+  /** The API answers 201 with the bare merge record (no success envelope). */
+  mergeContacts(payload: MergeContactsPayload): Observable<ContactMergeRecord> {
+    return this.http.post<ContactMergeRecord>(`${this.base}/contact-merges`, payload);
   }
 
   // --- Consents ---
-  getConsents(params?: { contact_id?: string; lead_id?: string }): Observable<ApiResponse<ConsentResponse>> {
-    return this.http.get<ApiResponse<ConsentResponse>>(`${this.base}/consents`, {
+  getConsents(params?: { contact_id?: string; lead_id?: string }): Observable<ConsentResponse> {
+    return this.http.get<ConsentResponse>(`${this.base}/consents`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
 
-  storeConsent(payload: StoreConsentPayload): Observable<ApiResponse<ConsentHistoryItem>> {
-    return this.http.post<ApiResponse<ConsentHistoryItem>>(`${this.base}/consents`, payload);
+  /** The API answers 201 with the bare consent record (no success envelope). */
+  storeConsent(payload: StoreConsentPayload): Observable<ConsentHistoryItem> {
+    return this.http.post<ConsentHistoryItem>(`${this.base}/consents`, payload);
   }
 
   // --- Accounts ---
@@ -351,7 +356,7 @@ export class CrmApiService {
   }
 
   // --- Campaigns ---
-  getCampaigns(params?: { page?: number; per_page?: number; search?: string }): Observable<PaginatedResponse<CrmCampaign>> {
+  getCampaigns(params?: QueryFilterParams): Observable<PaginatedResponse<CrmCampaign>> {
     return this.http.get<PaginatedResponse<CrmCampaign>>(`${this.base}/campaigns`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -369,9 +374,9 @@ export class CrmApiService {
     return this.http.get<ApiResponse<CrmCampaignRoi>>(`${this.base}/campaigns/${id}/roi`);
   }
 
-  getCampaignMembers(id: string, status?: string): Observable<ApiResponse<CrmCampaignMember[]>> {
-    return this.http.get<ApiResponse<CrmCampaignMember[]>>(`${this.base}/campaigns/${id}/members`, {
-      params: status ? toHttpParams({ status }) : undefined,
+  getCampaignMembers(id: string, params?: CrmCampaignMemberFilterParams): Observable<PaginatedResponse<CrmCampaignMember>> {
+    return this.http.get<PaginatedResponse<CrmCampaignMember>>(`${this.base}/campaigns/${id}/members`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -406,7 +411,7 @@ export class CrmApiService {
     });
   }
 
-  getForecasts(params?: { period?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<CrmForecast>> {
+  getForecasts(params?: CrmForecastFilterParams): Observable<PaginatedResponse<CrmForecast>> {
     return this.http.get<PaginatedResponse<CrmForecast>>(`${this.base}/forecasts`, {
       params: params ? toHttpParams(params) : undefined,
     });

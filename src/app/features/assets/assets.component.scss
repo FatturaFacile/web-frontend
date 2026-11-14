@@ -1,9 +1,19 @@
+:host {
+  display: block;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .filter-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
 
   .search-box {
@@ -13,8 +23,9 @@
 
   .select-filters {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3);
     align-items: center;
+    flex-wrap: wrap;
 
     .filter-select {
       width: 150px;
@@ -28,22 +39,27 @@
 
   .asset-title {
     font-weight: 600;
-    color: #1890ff;
+    color: var(--text-link);
     cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .asset-sub {
-    font-size: 12px;
-    color: #8c8c8c;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
   }
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
 
   .form-col {
     flex: 1;
+    min-width: 0;
   }
 }
 
@@ -52,21 +68,21 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 16px;
+  padding: var(--space-4);
 
   .qr-meta {
-    margin-top: 16px;
+    margin-top: var(--space-4);
 
     .barcode-line {
-      font-size: 13px;
-      color: #595959;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
     }
 
     .payload-line {
-      font-size: 11px;
-      color: #8c8c8c;
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
       word-break: break-all;
-      margin-top: 4px;
+      margin-top: var(--space-1);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { HrTimeApiService, I18nService, TimePresenceRow } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -11,7 +11,11 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Who is in now: the state of every employee from the last punch. */
 @Component({
   selector: 'app-time-presence',
-  imports: [DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
+  styleUrl: './time-presence.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <div class="flex justify-between items-center mb-3">
       <h3 class="m-0">{{ 'hrmTimeX.presence' | translate }}</h3>
@@ -33,10 +37,10 @@ import { reportHttpError } from '../shared/hr-http.util';
     >
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-          <th>{{ 'hrmTimeX.since' | translate }}</th>
-          <th>{{ 'hrmTime.source' | translate }}</th>
+          <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: table.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+          <th [nzSortFn]="'state' | gridSort" [nzFilters]="'state' | gridFilterList: table.nzData" [nzFilterFn]="'state' | gridFilterFn">{{ 'hrmCommon.statusCol' | translate }}</th>
+          <th [nzSortFn]="'since' | gridSort" [nzFilters]="'since' | gridFilterList: table.nzData" [nzFilterFn]="'since' | gridFilterFn">{{ 'hrmTimeX.since' | translate }}</th>
+          <th [nzSortFn]="'source' | gridSort" [nzFilters]="'source' | gridFilterList: table.nzData" [nzFilterFn]="'source' | gridFilterFn">{{ 'hrmTime.source' | translate }}</th>
         </tr>
       </thead>
       <tbody>

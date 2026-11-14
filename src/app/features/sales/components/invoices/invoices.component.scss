@@ -1,3 +1,7 @@
+:host {
+  display: block;
+}
+
 .toolbar {
   display: flex;
   gap: 12px;
@@ -13,4 +17,30 @@
 }
 .spacer {
   flex: 1;
+}
+
+.qr-tag {
+  margin-left: 6px;
+}
+
+.qr-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.qr-details {
+  width: 100%;
+  font-size: var(--font-size-sm);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-3);
+
+  > nz-form-item {
+    flex: 1;
+    min-width: 0;
+  }
 }

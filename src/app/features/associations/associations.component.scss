@@ -1,20 +1,24 @@
+:host {
+  display: block;
+}
+
 .associations-card {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .tab-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -27,15 +31,15 @@
 }
 
 .text-muted {
-  font-size: 12px;
-  color: #8c8c8c;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
 .link-button {
   background: none;
   border: none;
   padding: 0;
-  color: #1890ff;
+  color: var(--text-link);
   cursor: pointer;
   text-align: left;
 
@@ -47,39 +51,40 @@
 .volunteers-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--space-6);
 }
 
 .section-box {
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
 }
 
 .fpm-summary-banner {
-  background-color: #e6f7ff;
-  border: 1px solid #91d5ff;
-  border-radius: 6px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
+  background-color: var(--status-info-bg);
+  border: 1px solid var(--status-info);
+  color: var(--status-info);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .fee-standing-box {
-  padding: 12px 16px;
-  border-radius: 6px;
-  background-color: #fff1f0;
-  border: 1px solid #ffa39e;
-  color: #cf1322;
-  margin-top: 16px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--status-danger-bg);
+  border: 1px solid var(--status-danger);
+  color: var(--status-danger);
+  margin-top: var(--space-4);
 
   &.in-good-standing {
-    background-color: #f6ffed;
-    border-color: #b7eb8f;
-    color: #389e0d;
+    background-color: var(--status-success-bg);
+    border-color: var(--status-success);
+    color: var(--status-success);
   }
 }
 
 .mb-4 {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-5);
 }

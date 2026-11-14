@@ -9,17 +9,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AccountingApiService, CreateLedgerEntryPayload, TranslateService } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 /** Local calendar day as YYYY-MM-DD (no UTC shift). */
 export function toIsoDay(date: Date): string {
@@ -30,21 +29,22 @@ export function toIsoDay(date: Date): string {
 
 @Component({
   selector: 'app-ledger-entry-form-drawer',
+  styleUrl: './ledger-entry-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,
     NzDatePickerModule,
     NzButtonModule,
     NzCheckboxModule,
-    NzIconModule,
     NzSelectModule,
     TranslatePipe,
   ],
   templateUrl: './ledger-entry-form-drawer.component.html',
-  styleUrl: './ledger-entry-form-drawer.component.scss',
 })
 export class LedgerEntryFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -67,9 +67,9 @@ export class LedgerEntryFormDrawerComponent {
   );
 
   protected readonly form = this.fb.group({
-    fiscal_period_id: this.fb.control<string>('', [Validators.required]),
+    fiscal_period_id: this.fb.control<string>(''),
     date: this.fb.control<Date | string>(new Date(), [Validators.required]),
-    description: this.fb.control<string>('', [Validators.required]),
+    description: this.fb.control<string>('', [Validators.required, Validators.maxLength(500)]),
     /** A draft waits for submit/approval; only a draft can be given an automatic reversal date. */
     save_as_draft: this.fb.control<boolean>(true),
     auto_reverse_on: this.fb.control<Date | null>(null),
@@ -157,7 +157,7 @@ export class LedgerEntryFormDrawerComponent {
       description?: string;
     }[];
     const payload: CreateLedgerEntryPayload = {
-      fiscal_period_id: val.fiscal_period_id,
+      fiscal_period_id: val.fiscal_period_id || undefined,
       posting_date: dateStr,
       description: val.description,
       status: val.save_as_draft ? 'draft' : 'posted',

@@ -6,25 +6,32 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DimensionReport, GeneralLedgerApiService, ReportDimension } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Result by cost centre, profit centre or project, in the accounting currency. */
 @Component({
   selector: 'app-gl-dimension-report',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  styleUrl: './gl-dimension-report.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
-      <nz-select style="min-width: 200px" [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
+    <div class="filters">
+      <nz-select class="select-md" [attr.aria-label]="'GL.DIMENSION' | translate" [(ngModel)]="dimension">
         @for (option of dimensions; track option) {
           <nz-option [nzValue]="option" [nzLabel]="'GL.DIMENSION_' + option.toUpperCase() | translate" />
         }
       </nz-select>
       <label for="dr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="dr-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input class="date-input" id="dr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="dr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="dr-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <input class="date-input" id="dr-to" nz-input type="date" [(ngModel)]="to" />
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
     @if (report(); as r) {
       <p>
@@ -33,13 +40,13 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
       </p>
       @for (group of r.groups; track group.dimension_id ?? group.dimension_code) {
         <h4>{{ group.dimension_code }} {{ group.dimension_name }} - {{ group.result | money: r.currency }}</h4>
-        <nz-table nzSize="small" [nzData]="group.accounts" [nzShowPagination]="false">
+        <nz-table nzSize="small" [nzData]="group.accounts" [nzShowPagination]="false" #gridTbl31>
           <thead>
             <tr>
-              <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }}</th>
-              <th nzAlign="right">{{ 'GL.COL_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: gridTbl31.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'GL.COL_AMOUNT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -63,6 +70,10 @@ export class GlDimensionReportComponent {
   protected readonly report = signal<DimensionReport | null>(null);
   protected readonly loading = signal(false);
   protected dimension: ReportDimension = 'cost_center';
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
 

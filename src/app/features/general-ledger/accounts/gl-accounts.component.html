@@ -1,15 +1,16 @@
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap">
+  <div class="toolbar">
     <input
+      class="search-input"
       nz-input
       type="search"
-      style="max-width: 260px"
       [attr.aria-label]="'GL.SEARCH' | translate"
       [placeholder]="'GL.SEARCH' | translate"
       [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
     />
     <nz-select
-      style="min-width: 180px"
+      class="type-filter"
       nzAllowClear
       [attr.aria-label]="'GL.ACCOUNT_TYPE' | translate"
       [nzPlaceHolder]="'GL.ACCOUNT_TYPE' | translate"
@@ -20,53 +21,35 @@
         <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
       }
     </nz-select>
-    <span style="flex: 1"></span>
+    <span class="spacer"></span>
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openModal(null)">{{ 'GL.ACCOUNT_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="filtered()" [nzLoading]="loading()" [nzPageSize]="25">
-    <thead>
-      <tr>
-        <th>{{ 'GL.COL_CODE' | translate }}</th>
-        <th>{{ 'GL.COL_NAME' | translate }}</th>
-        <th>{{ 'GL.ACCOUNT_TYPE' | translate }}</th>
-        <th>{{ 'GL.NORMAL_BALANCE' | translate }}</th>
-        <th>{{ 'GL.STATUS' | translate }}</th>
-        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (account of table.data; track account.id) {
-        <tr>
-          <td>{{ account.account_code }}</td>
-          <td>{{ account.name }}</td>
-          <td>{{ 'GL.ACCOUNT_TYPE_' + account.account_type.toUpperCase() | translate }}</td>
-          <td>{{ 'GL.NORMAL_' + account.normal_balance.toUpperCase() | translate }}</td>
-          <td>
-            <nz-tag [nzColor]="account.is_active ? 'green' : 'default'">{{ (account.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate }}</nz-tag>
-          </td>
-          <td>
-            @if (canWrite) {
-              <button nz-button nzSize="small" type="button" (click)="openModal(account)">{{ 'GL.EDIT' | translate }}</button>
-              <button
-                nz-button
-                nzSize="small"
-                nzDanger
-                type="button"
-                nz-popconfirm
-                [nzPopconfirmTitle]="'GL.CONFIRM_DELETE' | translate"
-                (nzOnConfirm)="remove(account)"
-              >
-                {{ 'GL.DELETE' | translate }}
-              </button>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-accounts'" />
+
+  <ng-template #codeTpl let-account>{{ account.account_code }}</ng-template>
+  <ng-template #typeTpl let-account>{{ 'GL.ACCOUNT_TYPE_' + account.account_type.toUpperCase() | translate }}</ng-template>
+  <ng-template #balanceTpl let-account>{{ 'GL.NORMAL_' + account.normal_balance.toUpperCase() | translate }}</ng-template>
+  <ng-template #statusTpl let-account>
+    <nz-tag [nzColor]="account.is_active ? 'green' : 'default'">{{ (account.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-account>
+    @if (canWrite) {
+      <button nz-button nzSize="small" type="button" (click)="openModal(account)" appIconAction="edit"></button>
+      <button
+        nz-button
+        nzSize="small"
+        nzDanger
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'GL.CONFIRM_DELETE' | translate"
+        (nzOnConfirm)="remove(account)"
+        appIconAction="delete"
+      ></button>
+    }
+  </ng-template>
 </nz-card>
 
 <nz-modal
@@ -75,10 +58,11 @@
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
@@ -128,7 +112,7 @@
           </nz-select>
         </nz-form-control>
       </nz-form-item>
-      <div style="display: flex; gap: 24px; flex-wrap: wrap">
+      <div class="checks">
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox formControlName="allows_manual_posting">{{ 'GL.ALLOWS_MANUAL_POSTING' | translate }}</label>
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->

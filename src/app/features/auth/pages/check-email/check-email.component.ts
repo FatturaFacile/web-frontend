@@ -7,6 +7,7 @@ import { ResendVerificationComponent } from '../../components/resend-verificatio
 
 @Component({
   selector: 'app-check-email',
+  styleUrl: './check-email.component.scss',
   imports: [RouterLink, NzAlertModule, NzCardModule, ResendVerificationComponent, TranslatePipe],
   template: `
     <main class="login-wrapper">
@@ -32,13 +33,6 @@ import { ResendVerificationComponent } from '../../components/resend-verificatio
         </nz-card>
       </div>
     </main>
-  `,
-  styleUrl: '../login/login.component.scss',
-  styles: `
-    .resend-title {
-      font-size: 15px;
-      margin: 16px 0 8px;
-    }
   `,
 })
 export class CheckEmailComponent {

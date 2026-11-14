@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
@@ -18,19 +18,28 @@ import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import {
   AnalyticsApiService,
+  applyServerErrors,
+  isValidationError,
   AnalyticsKpiReport,
   AnalyticsPeriodPreset,
   AnalyticsReportDefinition,
   BreakdownEntry,
   DueCalendarEntry,
+  FetchGridModel,
   RevenueComparisonData,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-analytics',
+  styleUrl: './analytics.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -53,7 +62,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './analytics.component.html',
-  styleUrl: './analytics.component.scss',
 })
 export class AnalyticsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -118,7 +126,43 @@ export class AnalyticsComponent implements OnInit {
   readonly selectedDimension = signal<string>('category');
 
   // Custom Report Definitions
-  readonly reportDefinitions = signal<AnalyticsReportDefinition[]>([]);
+  readonly reportGrid = new FetchGridModel<AnalyticsReportDefinition>((query) => this.analyticsApi.getReportDefinitions(query));
+
+  private readonly reportKpisTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportKpisTpl');
+  private readonly reportPeriodTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportPeriodTpl');
+  private readonly reportSharedTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportSharedTpl');
+  private readonly reportActionsTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition }>>('reportActionsTpl');
+
+  readonly reportColumns = computed<TableColumnDef<AnalyticsReportDefinition>[]>(() => [
+    { key: 'name', header: 'COMMON.NAME' },
+    { key: 'description', header: 'COMMON.DESCRIPTION' },
+    { key: 'kpis', header: 'ANALYTICS.KPIS', filterable: false, sortable: false, groupable: false, customCellTemplate: this.reportKpisTpl() },
+    {
+      key: 'period_preset',
+      header: 'ANALYTICS.PERIOD',
+      valueLabel: (value) => this.periodLabel(value),
+      customCellTemplate: this.reportPeriodTpl(),
+    },
+    {
+      key: 'is_shared',
+      serverKey: 'sharing_state',
+      header: 'ANALYTICS.SHARED',
+      valueLabel: (value) => this.translate.instant(value === 'shared' ? 'COMMON.YES' : 'COMMON.NO'),
+      customCellTemplate: this.reportSharedTpl(),
+    },
+  ]);
+
+  /** Translation of a period preset (the value the API stores), falling back to the preset itself. */
+  periodLabel(preset: string): string {
+    const keys: Record<string, string> = {
+      month_to_date: 'ANALYTICS.PERIOD_MTD',
+      last_month: 'ANALYTICS.PERIOD_LAST_MONTH',
+      quarter_to_date: 'ANALYTICS.PERIOD_QTD',
+      year_to_date: 'ANALYTICS.PERIOD_YTD',
+      last_30_days: 'ANALYTICS.PERIOD_LAST_30',
+    };
+    return keys[preset] ? this.translate.instant(keys[preset]) : preset;
+  }
   readonly selectedReportResult = signal<AnalyticsKpiReport | null>(null);
   readonly isReportModalVisible = signal<boolean>(false);
   readonly editingReportId = signal<string | null>(null);
@@ -134,7 +178,7 @@ export class AnalyticsComponent implements OnInit {
 
   readonly reportForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
-    description: [''],
+    description: ['', [Validators.maxLength(2000)]],
     kpis: [['sales', 'margin'], [Validators.required]],
     period_preset: ['last_month', [Validators.required]],
     compare: ['previous_year'],
@@ -157,7 +201,6 @@ export class AnalyticsComponent implements OnInit {
     this.loadDueCalendar();
     this.loadRevenueComparison();
     this.loadBreakdown();
-    this.loadReportDefinitions();
     this.loadBiFeed();
   }
 
@@ -239,12 +282,7 @@ export class AnalyticsComponent implements OnInit {
   }
 
   loadReportDefinitions(): void {
-    this.analyticsApi.getReportDefinitions().subscribe({
-      next: (res) => {
-        this.reportDefinitions.set(res.data || []);
-      },
-      error: () => undefined, // the error interceptor already notifies the user,
-    });
+    this.reportGrid.reload();
   }
 
   openCreateReportModal(): void {
@@ -295,8 +333,12 @@ export class AnalyticsComponent implements OnInit {
           this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_UPDATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
           this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_UPDATE_REPORT'));
         },
       });
@@ -308,8 +350,12 @@ export class AnalyticsComponent implements OnInit {
           this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_CREATED_SUCCESSFULLY'));
           this.loadReportDefinitions();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
           this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_CREATE_REPORT'));
         },
       });

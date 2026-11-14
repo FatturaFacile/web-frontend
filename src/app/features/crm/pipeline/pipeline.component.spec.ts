@@ -86,10 +86,7 @@ describe('PipelineComponent', () => {
     createQuoteFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'q-1' } })),
     createProjectFromOpportunity: vi.fn().mockReturnValue(of({ success: true, data: { id: 'p-1' } })),
     getDuplicates: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: { entity: 'contacts', mode: 'matches', data: [] },
-      }),
+      of({ entity: 'contacts', mode: 'matches', data: [] }),
     ),
   };
 
@@ -129,13 +126,27 @@ describe('PipelineComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads pipeline stages and opportunities on initialization', () => {
+  it('loads pipeline stages and opportunities on initialization', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
     expect(mockCrmApi.getPipelineStages).toHaveBeenCalled();
     expect(mockCrmApi.getOpportunities).toHaveBeenCalled();
     expect(component.stages()).toEqual(mockStages);
-    expect(component.opportunities()).toEqual(mockOpportunities);
+    expect(component.grid.items()).toEqual(mockOpportunities);
+  });
+
+  it('sends the search and the stage to the server and sorts the account by its relation column', async () => {
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    component.onSearch({ target: { value: 'Cloud' } } as unknown as Event);
+    component.onStageFilterChange('discovery');
+    component.grid.onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'account.name', order: 'ascend' }, filters: {} });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockCrmApi.getOpportunities).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: 'Cloud', stage_code: 'discovery', sort_by: 'account.name', sort_dir: 'asc' }),
+    );
+    expect(component.columns().find((c) => c.key === 'account')?.serverKey).toBe('account.name');
   });
 
   it('submits create opportunity form', () => {
@@ -163,6 +174,16 @@ describe('PipelineComponent', () => {
     expect(component.createModalVisible()).toBe(false);
   });
 
+  it('does not create an opportunity from an empty form', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+
+    component.submitCreateOpportunity();
+
+    expect(mockCrmApi.createOpportunity).not.toHaveBeenCalled();
+    expect(component.errorTip(component.oppForm.controls.name)).not.toBe('');
+  });
+
   it('changes opportunity stage', () => {
     fixture.detectChanges();
     component.changeStage(mockOpportunities[0], 'proposal');
@@ -186,5 +207,6 @@ describe('PipelineComponent', () => {
 
     expect(mockCrmApi.getDuplicates).toHaveBeenCalledWith({ entity: 'contacts' });
     expect(component.duplicateModalVisible()).toBe(true);
+    expect(component.duplicateResult()).toEqual({ entity: 'contacts', mode: 'matches', data: [] });
   });
 });

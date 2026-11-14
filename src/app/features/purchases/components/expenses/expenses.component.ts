@@ -11,29 +11,28 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { ExpensesApiService, ExpenseFilterParams, ExpenseResource, ExpenseStatus, TranslateService } from '@core';
 import {
-  BaseTableComponent,
-  PageHeaderComponent,
-  TableColumnDef,
-  TableQueryParams,
-  TableStateService,
-  TranslatePipe,
-} from '@shared';
+  ExpensesApiService,
+  ExpenseFilterParams,
+  ExpenseResource,
+  ExpenseStatus,
+  FetchGridModel,
+  TranslateService,
+} from '@core';
+import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 
 // Labels come from the expenses.statuses.* translations
 const STATUS_COLOR: Record<ExpenseStatus, string> = {
   draft: 'default',
-  pending_approval: 'processing',
+  submitted: 'processing',
   approved: 'success',
   rejected: 'error',
-  reimbursed: 'cyan',
-  paid: 'green',
 };
 
 @Component({
   selector: 'app-expenses',
+  styleUrl: './expenses.component.scss',
   imports: [
     FormsModule,
     CurrencyPipe,
@@ -50,39 +49,36 @@ const STATUS_COLOR: Record<ExpenseStatus, string> = {
     BaseTableComponent,
     PageHeaderComponent,
     ExpenseFormDrawerComponent,
+    IconActionDirective,
     TranslatePipe,
   ],
-  providers: [TableStateService],
   templateUrl: './expenses.component.html',
-  styleUrl: './expenses.component.scss',
 })
 export class ExpensesComponent implements OnInit {
   protected readonly api = inject(ExpensesApiService);
   protected readonly message = inject(NzMessageService);
   protected readonly translate = inject(TranslateService);
-  protected readonly tableState = inject(TableStateService<ExpenseResource, ExpenseFilterParams>);
-
-  protected readonly items = signal<ExpenseResource[]>([]);
+  protected readonly grid = new FetchGridModel<ExpenseResource, ExpenseFilterParams>((query) =>
+    this.api.listExpenses(query),
+  );
+  protected readonly items = this.grid.items;
   protected readonly drawerOpen = signal(false);
   protected readonly selectedExpense = signal<ExpenseResource | null>(null);
   protected readonly isExporting = signal(false);
 
   protected readonly filterStatuses: readonly ExpenseStatus[] = [
     'draft',
-    'pending_approval',
+    'submitted',
     'approved',
-    'reimbursed',
-    'paid',
+    'rejected',
   ];
 
   protected readonly totalAmount = computed(() => {
-    return this.items().reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    return this.items().reduce((acc, curr) => acc + (Number(curr.amount_gross) || 0), 0);
   });
 
-  protected readonly pendingCount = computed(() => {
-    return this.items().filter((i) => i.status === 'pending_approval' || i.status === 'draft')
-      .length;
-  });
+  /** Expenses still waiting for a decision, over the whole dataset (the status value list of the grid). */
+  protected readonly pendingCount = signal(0);
 
   private readonly dateTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('dateTpl');
@@ -90,6 +86,8 @@ export class ExpensesComponent implements OnInit {
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('amountTpl');
   private readonly statusTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('statusTpl');
+  private readonly categoryTpl =
+    viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('categoryTpl');
   private readonly merchantTpl =
     viewChild<TemplateRef<{ $implicit: ExpenseResource; value: unknown }>>('merchantTpl');
 
@@ -102,24 +100,27 @@ export class ExpensesComponent implements OnInit {
       customCellTemplate: this.dateTpl(),
     },
     {
-      key: 'description',
+      key: 'notes',
       header: 'expenses.columns.description',
       width: '280px',
       sortable: true,
     },
     {
-      key: 'merchant',
+      key: 'merchant_name',
       header: 'expenses.columns.merchant',
       width: '180px',
       customCellTemplate: this.merchantTpl(),
     },
     {
-      key: 'category_name',
+      key: 'category',
+      serverKey: 'category_label',
+      valueGetter: (row) => row.category?.name ?? '-',
+      customCellTemplate: this.categoryTpl(),
       header: 'expenses.columns.category',
       width: '150px',
     },
     {
-      key: 'amount',
+      key: 'amount_gross',
       header: 'expenses.columns.amount',
       width: '140px',
       align: 'right',
@@ -128,6 +129,8 @@ export class ExpensesComponent implements OnInit {
     },
     {
       key: 'status',
+      valueGetter: (row) => this.translate.instant('expenses.statuses.' + row.status),
+      valueLabel: (value) => this.translate.instant('expenses.statuses.' + value),
       header: 'expenses.columns.status',
       width: '140px',
       customCellTemplate: this.statusTpl(),
@@ -135,85 +138,33 @@ export class ExpensesComponent implements OnInit {
   ]);
 
   ngOnInit(): void {
-    this.loadData();
+    this.refreshPendingCount();
   }
 
+  /** Reloads the list after a change made by the drawer or a deletion. */
   loadData(): void {
-    this.tableState.setLoading(true);
-    const params = this.tableState.toBackendQueryParams() as ExpenseFilterParams;
+    this.grid.reload();
+    this.refreshPendingCount();
+  }
 
-    this.api.listExpenses(params).subscribe({
-      next: (res) => {
-        this.items.set(res.data || []);
-        if (res.meta) {
-          this.tableState.setTotal(res.meta.total);
-        } else {
-          this.tableState.setTotal(res.data?.length || 0);
-        }
-        this.tableState.setLoading(false);
-      },
-      error: () => {
-        // Fallback demo items if backend endpoint is unavailable in sandbox
-        if (this.items().length === 0) {
-          this.items.set([
-            {
-              id: 'exp-1',
-              expense_number: 'EXP-2026-001',
-              date: '2026-10-20',
-              description: 'Pranzo di lavoro con delegazione CH',
-              merchant: 'Ristorante Bellavista Lugano',
-              category_name: 'Pasti & Rappresentanza',
-              amount: 145.5,
-              currency: 'CHF',
-              status: 'approved',
-            },
-            {
-              id: 'exp-2',
-              expense_number: 'EXP-2026-002',
-              date: '2026-10-22',
-              description: 'Biglietto treno Milano Centrale - Zurigo HB',
-              merchant: 'Trenitalia / SBB',
-              category_name: 'Trasporti & Viaggi',
-              amount: 89.0,
-              currency: 'EUR',
-              status: 'paid',
-            },
-            {
-              id: 'exp-3',
-              expense_number: 'EXP-2026-003',
-              date: '2026-10-24',
-              description: 'Materiale di consumo ufficio',
-              merchant: 'Staples IT',
-              category_name: 'Cancelleria',
-              amount: 54.2,
-              currency: 'EUR',
-              status: 'draft',
-            },
-          ]);
-          this.tableState.setTotal(3);
-        }
-        this.tableState.setLoading(false);
-      },
+  private refreshPendingCount(): void {
+    this.grid.loadValues('status').subscribe((values) => {
+      this.pendingCount.set(
+        values
+          .filter((entry) => entry.value === 'submitted' || entry.value === 'draft')
+          .reduce((sum, entry) => sum + entry.count, 0),
+      );
     });
   }
 
   onSearchChange(search: string): void {
-    this.tableState.setSearch(search);
-    this.loadData();
+    this.grid.setFilter({ search: search || undefined });
+    this.refreshPendingCount();
   }
 
   onStatusFilterChange(status: string | null): void {
-    this.tableState.setFilter('status', status || undefined);
-    this.loadData();
-  }
-
-  onParamsChange(params: TableQueryParams): void {
-    this.tableState.setPage(params.pageIndex);
-    this.tableState.setPageSize(params.pageSize);
-    if (params.sort) {
-      this.tableState.setSort(params.sort.key, params.sort.order);
-    }
-    this.loadData();
+    this.grid.setFilter({ status: status || undefined });
+    this.refreshPendingCount();
   }
 
   create(): void {

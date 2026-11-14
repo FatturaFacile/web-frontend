@@ -8,7 +8,7 @@ import {
   WithholdingStatementQuery,
   WithholdingStatementReport,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -51,7 +51,11 @@ const CANTONS = [
 /** Withholding tax statement of a period, by canton: preview with the missing data, then closing (409/422 from the server). */
 @Component({
   selector: 'app-withholding-statements-panel',
+  styleUrl: './withholding-statements-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -64,7 +68,7 @@ const CANTONS = [
     TranslatePipe,
   ],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="ws-year">{{ 'hrmCommon.year' | translate }}</label>
         <input
@@ -79,9 +83,9 @@ const CANTONS = [
         <label for="ws-type">{{ 'hrmCompliance.statements.periodType' | translate }}</label>
         <nz-select
           id="ws-type"
-          style="width: 150px; display: block"
+          class="w-field-sm"
           [ngModel]="periodType()"
-          (ngModelChange)="periodType.set($event)"
+          (ngModelChange)="onPeriodTypeChange($event)"
         >
           @for (type of periodTypes; track type) {
             <nz-option
@@ -98,16 +102,21 @@ const CANTONS = [
           id="ws-period"
           type="number"
           min="1"
-          max="12"
+          [attr.max]="periodMax()"
           [ngModel]="period()"
           (ngModelChange)="period.set($event)"
         />
+        @if (!periodValid()) {
+          <div class="ant-form-item-explain-error" role="alert">
+            {{ 'COMMON.VALIDATION.EXCEEDS_LIMIT' | translate }} ({{ periodMax() }})
+          </div>
+        }
       </div>
       <div>
         <label for="ws-canton">{{ 'hrmPayroll.canton' | translate }}</label>
         <nz-select
           id="ws-canton"
-          style="width: 110px; display: block"
+          class="w-field-xs"
           nzAllowClear
           [ngModel]="canton()"
           (ngModelChange)="canton.set($event)"
@@ -117,14 +126,14 @@ const CANTONS = [
           }
         </nz-select>
       </div>
-      <button nz-button type="button" [nzLoading]="loading()" (click)="load()">
+      <button nz-button type="button" [nzLoading]="loading()" [disabled]="!periodValid()" (click)="load()">
         {{ 'hrmCompliance.statements.preview' | translate }}
       </button>
       <button
         nz-button
         nzType="primary"
         type="button"
-        [disabled]="!canWrite() || !report()"
+        [disabled]="!canWrite() || !report() || !canton() || !periodValid()"
         (click)="confirmOpen.set(true)"
       >
         {{ 'hrmCompliance.statements.close' | translate }}
@@ -150,14 +159,14 @@ const CANTONS = [
         <nz-table #lines [nzData]="statement.lines" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmCommon.employee' | translate }}</th>
-              <th>{{ 'hrmLeave.month' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.tariff' | translate }}</th>
-              <th>{{ 'hrmPayroll.gross' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.basis' | translate }}</th>
-              <th>%</th>
-              <th>{{ 'hrmPayroll.withholdingTax' | translate }}</th>
-              <th>{{ 'hrmCompliance.statements.missing' | translate }}</th>
+              <th [nzSortFn]="'last_name' | gridSort" [nzFilters]="'last_name' | gridFilterList: lines.nzData" [nzFilterFn]="'last_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: lines.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
+              <th [nzSortFn]="'tariff_code' | gridSort" [nzFilters]="'tariff_code' | gridFilterList: lines.nzData" [nzFilterFn]="'tariff_code' | gridFilterFn">{{ 'hrmCompliance.statements.tariff' | translate }}</th>
+              <th [nzSortFn]="'gross' | gridSort" [nzFilters]="'gross' | gridFilterList: lines.nzData" [nzFilterFn]="'gross' | gridFilterFn">{{ 'hrmPayroll.gross' | translate }}</th>
+              <th [nzSortFn]="'basis' | gridSort" [nzFilters]="'basis' | gridFilterList: lines.nzData" [nzFilterFn]="'basis' | gridFilterFn">{{ 'hrmCompliance.statements.basis' | translate }}</th>
+              <th [nzSortFn]="'rate_percent' | gridSort" [nzFilters]="'rate_percent' | gridFilterList: lines.nzData" [nzFilterFn]="'rate_percent' | gridFilterFn">%</th>
+              <th [nzSortFn]="'tax' | gridSort" [nzFilters]="'tax' | gridFilterList: lines.nzData" [nzFilterFn]="'tax' | gridFilterFn">{{ 'hrmPayroll.withholdingTax' | translate }}</th>
+              <th [nzSortFn]="'missing.length' | gridSort" [nzFilters]="'missing.length' | gridFilterList: lines.nzData" [nzFilterFn]="'missing.length' | gridFilterFn">{{ 'hrmCompliance.statements.missing' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -187,8 +196,6 @@ const CANTONS = [
     <nz-modal
       [nzVisible]="confirmOpen()"
       [nzTitle]="'hrmCompliance.statements.close' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="closing()"
       (nzOnOk)="closeStatement()"
       (nzOnCancel)="confirmOpen.set(false)"
@@ -212,6 +219,17 @@ export class WithholdingStatementsPanelComponent {
   protected readonly year = signal<number>(new Date().getFullYear());
   protected readonly periodType = signal<WithholdingPeriodType>('monthly');
   protected readonly period = signal<number>(1);
+  /** API: the period cannot exceed 12 (monthly), 4 (quarterly) or 1 (annual). */
+  protected readonly periodMax = computed(() => ({ monthly: 12, quarterly: 4, annual: 1 })[this.periodType()]);
+  protected readonly periodValid = computed(() => {
+    const period = this.period();
+    return Number.isInteger(period) && period >= 1 && period <= this.periodMax();
+  });
+
+  protected onPeriodTypeChange(type: WithholdingPeriodType): void {
+    this.periodType.set(type);
+    this.period.set(Math.min(this.period() || 1, this.periodMax()));
+  }
   protected readonly canton = signal<string | null>(null);
   protected readonly report = signal<WithholdingStatementReport | null>(null);
   protected readonly loading = signal(false);
@@ -232,6 +250,9 @@ export class WithholdingStatementsPanelComponent {
   }
 
   protected load(): void {
+    if (!this.periodValid()) {
+      return;
+    }
     this.loading.set(true);
     this.api.getWithholdingStatements(this.query()).subscribe({
       next: (res) => {

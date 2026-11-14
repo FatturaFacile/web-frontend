@@ -6,9 +6,9 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudField } from '../shared/crud/crud.types';
+import { CrudConfig, CrudField, crudPage } from '../shared/crud/crud.types';
 import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -18,9 +18,10 @@ const money = (key: string, labelKey: string): CrudField => ({ key, labelKey, ty
 /** Payslips and Swiss salary certificates of a year, with PDF download and certificate generation. */
 @Component({
   selector: 'app-payroll-documents',
+  styleUrl: './payroll-documents.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, NzTabsModule, TranslatePipe, CrudTableComponent],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="doc-year">{{ 'hrmCommon.year' | translate }}</label>
         <input nz-input id="doc-year" type="number" [ngModel]="year()" (ngModelChange)="year.set($event)" />
@@ -58,7 +59,7 @@ export class PayrollDocumentsComponent {
     return {
       titleKey: 'hrmPayroll.payslips',
       canWrite: false,
-      list: () => this.api.getPayslips({ year, per_page: 100 }).pipe(map((res) => res.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getPayslips({ ...query, year })),
       rowActions: [{ labelKey: 'hrmCommon.download', run: (row) => this.pdf(this.api.downloadPayslipPdf(row.id), 'payslip') }],
       fields: [
         { key: 'year', labelKey: 'hrmCommon.year', type: 'text' },
@@ -77,8 +78,7 @@ export class PayrollDocumentsComponent {
     return {
       titleKey: 'hrmPayroll.certificates',
       canWrite: false,
-      list: () =>
-        this.api.getSalaryCertificates({ year, per_page: 100 }).pipe(map((res) => res.data as unknown as Row[])),
+      gridList: (query) => crudPage(this.api.getSalaryCertificates({ ...query, year })),
       rowActions: [
         { labelKey: 'hrmCommon.download', run: (row) => this.pdf(this.api.downloadSalaryCertificatePdf(row.id), 'certificate') },
       ],

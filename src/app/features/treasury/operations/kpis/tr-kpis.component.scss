@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.date-input {
+  width: 160px;
+}
+
+.currency-input {
+  width: 90px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.hint {
+  margin-top: var(--space-3);
+}
+
+.position-card {
+  margin-top: var(--space-4);
+}
+
+.totals-table {
+  display: block;
+  margin-top: var(--space-4);
+}

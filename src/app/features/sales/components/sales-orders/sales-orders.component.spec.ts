@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -210,7 +211,11 @@ describe('SalesOrdersComponent', () => {
   const mockTranslate = {
     instant: vi.fn((k: string) => k),
     translate: vi.fn((k: string) => k),
+    currentLanguage: signal('it'),
   };
+
+  /** The grids load through a debounced stream: lets the first request of every tab settle. */
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 400));
 
   const mockMessage = {
     success: vi.fn(),
@@ -244,17 +249,19 @@ describe('SalesOrdersComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads quotes and lookups on initialization', () => {
+  it('loads quotes and lookups on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockClientApi.list).toHaveBeenCalled();
     expect(mockInventoryApi.getProducts).toHaveBeenCalled();
-    expect(mockSalesApi.getQuotes).toHaveBeenCalled();
+    expect(mockSalesApi.getQuotes).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 10 }));
     expect(component.quotes()).toEqual(mockQuotes);
   });
 
-  it('submits quote creation and handles approval/convert workflow', () => {
+  it('submits quote creation and handles approval/convert workflow', async () => {
     fixture.detectChanges();
+    await settle();
     component.openQuoteModal();
     expect(component.quoteModalVisible()).toBe(true);
 
@@ -285,9 +292,10 @@ describe('SalesOrdersComponent', () => {
     expect(mockSalesApi.convertQuoteToOrder).toHaveBeenCalledWith('q-1');
   });
 
-  it('loads orders and handles order actions (approve, reserve, invoice)', () => {
+  it('loads orders and handles order actions (approve, reserve, invoice)', async () => {
     fixture.detectChanges();
     component.onTabChange(1);
+    await settle();
     expect(component.selectedTabIndex()).toBe(1);
     expect(mockSalesApi.getOrders).toHaveBeenCalled();
     expect(component.orders().length).toBe(1);
@@ -302,9 +310,10 @@ describe('SalesOrdersComponent', () => {
     expect(mockSalesApi.invoiceOrder).toHaveBeenCalledWith('ord-1');
   });
 
-  it('loads delivery notes and handles dispatch, confirm, invoice', () => {
+  it('loads delivery notes and handles dispatch, confirm, invoice', async () => {
     fixture.detectChanges();
     component.onTabChange(2);
+    await settle();
     expect(component.selectedTabIndex()).toBe(2);
     expect(mockSalesApi.getDeliveryNotes).toHaveBeenCalled();
     expect(component.deliveryNotes().length).toBe(1);
@@ -319,8 +328,9 @@ describe('SalesOrdersComponent', () => {
     expect(mockSalesApi.invoiceDeliveryNote).toHaveBeenCalledWith('ddt-1');
   });
 
-  it('submits delivery note creation', () => {
+  it('submits delivery note creation', async () => {
     fixture.detectChanges();
+    await settle();
     component.openDdtModal('ord-1');
     expect(component.ddtModalVisible()).toBe(true);
 
@@ -336,5 +346,44 @@ describe('SalesOrdersComponent', () => {
     component.submitDdt();
     expect(mockSalesApi.createDeliveryNote).toHaveBeenCalled();
     expect(component.ddtModalVisible()).toBe(false);
+  });
+
+  it('does not call the API when the quote, order or delivery note forms are submitted empty', async () => {
+    fixture.detectChanges();
+    await settle();
+    mockSalesApi.createQuote.mockClear();
+    mockSalesApi.createOrder.mockClear();
+    mockSalesApi.createDeliveryNote.mockClear();
+    component.clients.set([]);
+    component.orderGrid.items.set([]);
+    component.openQuoteModal();
+    component.openOrderModal();
+    component.openDdtModal();
+
+    component.submitQuote();
+    component.submitOrder();
+    component.submitDdt();
+
+    expect(mockSalesApi.createQuote).not.toHaveBeenCalled();
+    expect(mockSalesApi.createOrder).not.toHaveBeenCalled();
+    expect(mockSalesApi.createDeliveryNote).not.toHaveBeenCalled();
+    expect(component.quoteForm.controls.contact_id.touched).toBe(true);
+  });
+
+  it('filters the quotes by status on the server and names the server key of every calculated column', async () => {
+    fixture.detectChanges();
+    await settle();
+
+    component.quoteGrid.setFilter({ status: 'approved' });
+    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockSalesApi.getQuotes).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'approved', page: 1 }));
+
+    const clientColumn = component['quoteColumns']().find((column) => column.key === 'contact');
+    expect(clientColumn?.serverKey).toBe('customer.name');
+    const stockColumn = component['orderColumns']().find((column) => column.key === 'inventory_status');
+    expect(stockColumn?.valueLabel?.('reserved')).toBe('SC.STATUS.reserved');
+    const statusColumn = component['quoteColumns']().find((column) => column.key === 'status');
+    expect(statusColumn?.valueLabel?.('pending_approval')).toBe('SALES.LBL_IN_APPROVAZIONE');
   });
 });

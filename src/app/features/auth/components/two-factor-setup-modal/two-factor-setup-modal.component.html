@@ -47,7 +47,7 @@
           </nz-form-item>
 
           <div class="modal-actions">
-            <button nz-button type="button" (click)="handleCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button nz-button type="button" (click)="handleCancel()" appIconAction="cancel"></button>
             <button
               nz-button
               nzType="primary"
@@ -69,7 +69,8 @@
 
         <div class="qrcode-wrapper">
           @if (otpauthUri()) {
-            <nz-qrcode [nzValue]="otpauthUri()" [nzSize]="180"></nz-qrcode>
+            <!-- A QR code must stay black on white to be scannable, whatever the theme -->
+            <nz-qrcode [nzValue]="otpauthUri()" [nzSize]="180" nzColor="#000000" nzBgColor="#ffffff"></nz-qrcode>
           }
           @if (secretKey()) {
             <div class="manual-key">
@@ -100,7 +101,7 @@
           </nz-form-item>
 
           <div class="modal-actions">
-            <button nz-button type="button" (click)="handleCancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button nz-button type="button" (click)="handleCancel()" appIconAction="cancel"></button>
             <button
               nz-button
               nzType="primary"
@@ -149,9 +150,8 @@
             nzType="primary"
             type="button"
             (click)="onFinish()"
-          >
-            {{ 'TWO_FACTOR.FINISH' | translate }}
-          </button>
+            appIconAction="confirm"
+          ></button>
         </div>
       </div>
     }

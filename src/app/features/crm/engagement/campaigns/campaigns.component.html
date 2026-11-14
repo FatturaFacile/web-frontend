@@ -4,59 +4,34 @@
   <div class="toolbar">
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <nz-icon nzType="plus" /> {{ 'CRMX.CAMPAIGNS.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
     }
   </div>
-  <nz-table
-    [nzData]="campaigns()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="15"
-    (nzPageIndexChange)="load($event)"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
-        <th>{{ 'CRMX.COMMON.CODE' | translate }}</th>
-        <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
-        <th>{{ 'CRMX.CAMPAIGNS.PERIOD' | translate }}</th>
-        <th class="num">{{ 'CRMX.CAMPAIGNS.BUDGET' | translate }}</th>
-        <th class="num">{{ 'CRMX.CAMPAIGNS.EXPECTED_REVENUE' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (c of campaigns(); track c.id) {
-        <tr>
-          <td>{{ c.name }}</td>
-          <td>{{ c.code ?? '-' }}</td>
-          <td><nz-tag>{{ c.status ? ('CRMX.CAMPAIGN_STATUS_' + c.status | translate) : '-' }}</nz-tag></td>
-          <td>{{ c.start_date ?? '...' }} / {{ c.end_date ?? '...' }}</td>
-          <td class="num">{{ c.budgeted_cost ?? '-' }}</td>
-          <td class="num">{{ c.expected_revenue ?? '-' }}</td>
-          <td>
-            <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(c)">
-              <nz-icon nzType="eye" />
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [actionsTemplate]="actionsTpl"
+    exportFileName="campaigns"
+  />
+
+  <ng-template #statusTpl let-c>
+    <nz-tag>{{ c.status ? ('CRMX.CAMPAIGN_STATUS_' + c.status | translate) : '-' }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-c>
+    <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'COMMON.DETAILS' | translate" (click)="view(c)">
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="!!selected()"
-  [nzWidth]="780"
+  [nzWidth]="900"
+  [nzFooter]="null"
   [nzTitle]="selected()?.name ?? ''"
-  (nzOnClose)="selected.set(null)"
+  (nzOnCancel)="selected.set(null)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as c) {
       <h4>{{ 'CRMX.CAMPAIGNS.ROI' | translate }}</h4>
       <dl class="kv">
@@ -83,50 +58,36 @@
           } @else {
             <input nz-input class="filter" [attr.aria-label]="'CRMX.CAMPAIGNS.MEMBER_ID' | translate" [placeholder]="'CRMX.CAMPAIGNS.MEMBER_ID' | translate" [(ngModel)]="memberRef" />
           }
-          <button nz-button type="button" [disabled]="!memberRef" (click)="addMember(c)">
-            <nz-icon nzType="plus" /> {{ 'CRMX.COMMON.ADD' | translate }}
-          </button>
+          <button nz-button type="button" appIconAction="add" [disabled]="!memberRef" (click)="addMember(c)"></button>
           <button nz-button nzType="primary" type="button" (click)="openSend()">
             <nz-icon nzType="send" /> {{ 'CRMX.CAMPAIGNS.SEND' | translate }}
           </button>
         </div>
       }
-      <nz-table [nzData]="members()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
-            <th>{{ 'CRMX.COMMON.EMAIL' | translate }}</th>
-            <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
-            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of members(); track m.id) {
-            <tr>
-              <td>{{ m.name ?? m.contact_id ?? m.lead_id }}</td>
-              <td>{{ m.email ?? '-' }}</td>
-              <td>{{ m.status ?? '-' }}</td>
-              <td>
-                @if (canWrite()) {
-                  <button
-                    nz-button
-                    nzType="text"
-                    nzDanger
-                    nzSize="small"
-                    type="button"
-                    nz-popconfirm
-                    [attr.aria-label]="'COMMON.DELETE' | translate"
-                    [nzPopconfirmTitle]="'CRMX.CAMPAIGNS.REMOVE_CONFIRM' | translate"
-                    (nzOnConfirm)="removeMember(c, m)"
-                  >
-                    <nz-icon nzType="delete" />
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="membersGrid"
+        [columns]="memberColumns()"
+        [actionsTemplate]="memberActionsTpl"
+        [scroll]="{ x: '600px' }"
+        [exportable]="false"
+        size="small"
+      />
+      <ng-template #memberNameTpl let-m>{{ m.name ?? m.contact_id ?? m.lead_id }}</ng-template>
+      <ng-template #memberActionsTpl let-m>
+        @if (canWrite()) {
+          <button
+            nz-button
+            nzType="text"
+            nzDanger
+            nzSize="small"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'CRMX.CAMPAIGNS.REMOVE_CONFIRM' | translate"
+            (nzOnConfirm)="removeMember(c, m)"
+            appIconAction="delete"
+          ></button>
+        }
+      </ng-template>
 
       <nz-modal
         [nzVisible]="sendOpen()"
@@ -145,9 +106,10 @@
       </nz-modal>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <nz-modal
+  okAction="create"
   [nzVisible]="createOpen()"
   [nzTitle]="'CRMX.CAMPAIGNS.NEW' | translate"
   nzWidth="680px"
@@ -160,11 +122,11 @@
     <div class="two-cols">
       <div>
         <label for="camp-name">{{ 'CRMX.COMMON.NAME' | translate }}</label>
-        <input nz-input id="camp-name" class="field" maxlength="255" [(ngModel)]="draft.name" />
+        <input nz-input id="camp-name" class="field" maxlength="200" [(ngModel)]="draft.name" />
       </div>
       <div>
         <label for="camp-code">{{ 'CRMX.COMMON.CODE' | translate }}</label>
-        <input nz-input id="camp-code" class="field" [(ngModel)]="draft.code" />
+        <input nz-input id="camp-code" class="field" maxlength="50" [(ngModel)]="draft.code" />
       </div>
       <div>
         <label for="camp-status">{{ 'CRMX.COMMON.STATUS' | translate }}</label>
@@ -182,6 +144,9 @@
       <div>
         <label for="camp-end">{{ 'CRMX.CAMPAIGNS.END' | translate }}</label>
         <input nz-input id="camp-end" type="date" class="field" [(ngModel)]="draft.end_date" />
+        @if (endsBeforeStart()) {
+          <div class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</div>
+        }
       </div>
       <div>
         <label for="camp-budget">{{ 'CRMX.CAMPAIGNS.BUDGET' | translate }}</label>
@@ -193,15 +158,15 @@
       </div>
       <div>
         <label for="camp-utm-source">{{ 'CRMX.LBL_UTM_SOURCE' | translate }}</label>
-        <input nz-input id="camp-utm-source" class="field" [(ngModel)]="draft.utm_source" />
+        <input nz-input id="camp-utm-source" class="field" maxlength="100" [(ngModel)]="draft.utm_source" />
       </div>
       <div>
         <label for="camp-utm-medium">{{ 'CRMX.LBL_UTM_MEDIUM' | translate }}</label>
-        <input nz-input id="camp-utm-medium" class="field" [(ngModel)]="draft.utm_medium" />
+        <input nz-input id="camp-utm-medium" class="field" maxlength="100" [(ngModel)]="draft.utm_medium" />
       </div>
       <div>
         <label for="camp-utm-campaign">{{ 'CRMX.LBL_UTM_CAMPAIGN' | translate }}</label>
-        <input nz-input id="camp-utm-campaign" class="field" [(ngModel)]="draft.utm_campaign" />
+        <input nz-input id="camp-utm-campaign" class="field" maxlength="100" [(ngModel)]="draft.utm_campaign" />
       </div>
     </div>
   </ng-container>

@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export type CommunicationChannelType = 'email' | 'whatsapp' | 'telegram' | 'sms';
 export type CommunicationDriverType = 'mail' | 'smtp' | 'twilio' | 'telegram' | 'local';
 export type CommunicationDeliveryStatus = 'sent' | 'simulated' | 'failed';
@@ -85,4 +87,21 @@ export interface CommunicationPreviewResponse {
   subject?: string;
   body: string;
   rendered_variables?: Record<string, string>;
+}
+
+/** Filters of the deliveries log (the grid adds sorting, column filters and paging). */
+export interface CommunicationDeliveryFilterParams extends QueryFilterParams {
+  document_id?: string;
+  channel?: string;
+  status?: string;
+  message_type?: string;
+  from?: string;
+  to?: string;
+}
+
+/** Filters of the templates list. */
+export interface CommunicationTemplateFilterParams extends QueryFilterParams {
+  code?: string;
+  channel?: string;
+  locale?: string;
 }

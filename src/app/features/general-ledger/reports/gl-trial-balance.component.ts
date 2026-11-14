@@ -6,25 +6,29 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { DateRangeParams, GeneralLedgerApiService, LedgerTrialBalance } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 @Component({
   selector: 'app-gl-trial-balance',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  styleUrl: './gl-trial-balance.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div class="filters" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
+    <div class="filters">
       <label for="tb-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="tb-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input class="date-input" id="tb-from" nz-input type="date" [(ngModel)]="from" />
       <label for="tb-to">{{ 'GL.TO' | translate }}</label>
-      <input id="tb-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
+      <input class="date-input" id="tb-to" nz-input type="date" [(ngModel)]="to" />
       <label for="tb-cfrom">{{ 'GL.COMPARE_FROM' | translate }}</label>
-      <input id="tb-cfrom" nz-input type="date" style="width: 160px" [(ngModel)]="compareFrom" />
+      <input class="date-input" id="tb-cfrom" nz-input type="date" [(ngModel)]="compareFrom" />
       <label for="tb-cto">{{ 'GL.COMPARE_TO' | translate }}</label>
-      <input id="tb-cto" nz-input type="date" style="width: 160px" [(ngModel)]="compareTo" />
+      <input class="date-input" id="tb-cto" nz-input type="date" [(ngModel)]="compareTo" />
       <nz-select
-        style="min-width: 200px"
+        class="select-md"
         nzAllowClear
         [attr.aria-label]="'GL.COST_CENTER' | translate"
         [nzPlaceHolder]="'GL.COST_CENTER' | translate"
@@ -34,7 +38,10 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
           <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
         }
       </nz-select>
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
 
     @if (report(); as r) {
@@ -42,17 +49,17 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
         <nz-tag>{{ 'GL.REPORT_CURRENCY' | translate }}: {{ r.currency }}</nz-tag>
         <nz-tag [nzColor]="r.is_balanced ? 'green' : 'red'">{{ (r.is_balanced ? 'GL.BALANCED' : 'GL.NOT_BALANCED') | translate }}</nz-tag>
       </p>
-      <nz-table nzSize="small" [nzData]="r.accounts" [nzPageSize]="50" [nzLoading]="loading()">
+      <nz-table nzSize="small" [nzData]="r.accounts" [nzPageSize]="50" [nzLoading]="loading()" #gridTbl33>
         <thead>
           <tr>
-            <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_OPENING' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_CLOSING' | translate }}</th>
+            <th [nzSortFn]="'account_code' | gridSort" [nzFilters]="'account_code' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'account_code' | gridFilterFn">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'opening_balance' | gridSort" [nzFilters]="'opening_balance' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'opening_balance' | gridFilterFn">{{ 'GL.COL_OPENING' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'closing_balance' | gridSort" [nzFilters]="'closing_balance' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'closing_balance' | gridFilterFn">{{ 'GL.COL_CLOSING' | translate }}</th>
             @if (r.compare_from) {
-              <th nzAlign="right">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
-              <th nzAlign="right">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_debit' | gridSort" [nzFilters]="'comparison_debit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'comparison_debit' | gridFilterFn">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_DEBIT' | translate }})</th>
+              <th nzAlign="right" [nzSortFn]="'comparison_credit' | gridSort" [nzFilters]="'comparison_credit' | gridFilterList: gridTbl33.nzData" [nzFilterFn]="'comparison_credit' | gridFilterFn">{{ 'GL.COL_COMPARISON' | translate }} ({{ 'GL.COL_CREDIT' | translate }})</th>
             }
           </tr>
         </thead>
@@ -81,6 +88,10 @@ export class GlTrialBalanceComponent {
 
   protected readonly report = signal<LedgerTrialBalance | null>(null);
   protected readonly loading = signal(false);
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to) || rangeEndsBeforeStart(this.compareFrom, this.compareTo);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
   protected compareFrom = '';

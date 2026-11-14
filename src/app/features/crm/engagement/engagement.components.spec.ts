@@ -26,6 +26,7 @@ describe('CRM engagement pages', () => {
     completeActivity: vi.fn(),
     updateActivity: vi.fn(),
     getCampaigns: vi.fn(),
+    createCampaign: vi.fn(),
     getCampaignMembers: vi.fn(),
     getCampaignRoi: vi.fn(),
     getSegments: vi.fn(),
@@ -47,7 +48,7 @@ describe('CRM engagement pages', () => {
     api.getCampaigns.mockReturnValue(of(page([])));
     api.getSegments.mockReturnValue(ok([]));
     api.getLeadScoringRules.mockReturnValue(ok([]));
-    api.getCampaignMembers.mockReturnValue(ok([]));
+    api.getCampaignMembers.mockReturnValue(of(page([])));
     api.getCampaignRoi.mockReturnValue(ok({}));
 
     await TestBed.configureTestingModule({
@@ -91,6 +92,24 @@ describe('CRM engagement pages', () => {
       notes: null,
     });
     expect(payload.reminder_at).toBe(new Date('2026-11-12T09:30').toISOString());
+  });
+
+  it('creates a campaign with the API field names and blocks an end date before the start date', () => {
+    const fixture = TestBed.createComponent(CampaignsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component['openCreate']();
+    component['draft'] = { ...component['draft'], name: 'Spring', start_date: '2026-05-10', end_date: '2026-05-01' };
+    expect(component['endsBeforeStart']()).toBe(true);
+    expect(component['validDraft']()).toBe(false);
+
+    component['draft'].end_date = '2026-05-31';
+    expect(component['validDraft']()).toBe(true);
+    api.createCampaign.mockReturnValue(ok());
+    component['save']();
+    expect(Object.keys(api.createCampaign.mock.calls[0][0]).sort()).toEqual(
+      ['budgeted_cost', 'code', 'end_date', 'expected_revenue', 'name', 'start_date', 'status', 'utm_campaign', 'utm_medium', 'utm_source'],
+    );
   });
 
   it('requires the related record id when a related type is chosen', () => {
@@ -201,5 +220,16 @@ describe('CRM engagement pages', () => {
     api.recalculateLeadScores.mockReturnValue(ok());
     component['recalculate']();
     expect(api.recalculateLeadScores).toHaveBeenCalled();
+  });
+
+  it('lists the members of the open campaign through the paginated grid and maps the calculated columns', async () => {
+    const fixture = TestBed.createComponent(CampaignsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component['view']({ id: 'cp1', name: 'Spring' });
+    component['membersGrid'].onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'name', order: 'ascend' }, filters: {} });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(api.getCampaignMembers).toHaveBeenLastCalledWith('cp1', expect.objectContaining({ sort_by: 'name', sort_dir: 'asc' }));
+    expect(component['memberColumns']().map((c) => c.key)).toEqual(['name', 'email', 'status']);
   });
 });

@@ -179,12 +179,14 @@
         <ng-template #requiredError let-control>
           @if (control.hasError("serverError")) {
             {{ control.getError("serverError") }}
+          } @else if (control.hasError("maxlength")) {
+            {{ "COMMON.VALIDATION.INVALID_VALUE" | translate }}
           } @else {
             {{ "COMMON.VALIDATION.REQUIRED" | translate }}
           }
         </ng-template>
 
-        <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+        <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()" [disabled]="form.invalid">
           {{ "AUTH.REGISTER_BTN" | translate }}
         </button>
       </form>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -13,13 +13,13 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzQRCodeComponent } from 'ng-zorro-antd/qr-code';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   AssetApiService,
   AssetCategoryResource,
   AssetFilterParams,
+  FetchGridModel,
   AssetTagData,
   AuthStore,
   FixedAssetResource,
@@ -27,18 +27,21 @@ import {
   StoreFixedAssetPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, ModalActionsDirective, IconActionDirective, TableColumnDef } from '@shared';
 import { AssetDetailDrawerComponent } from './components/asset-detail-drawer/asset-detail-drawer.component';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-assets',
+  styleUrl: './assets.component.scss',
   imports: [
+    BaseTableComponent,
+    ModalActionsDirective,
+    IconActionDirective,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -56,7 +59,6 @@ import { TranslatePipe } from '@shared';
     AssetDetailDrawerComponent,
   ],
   templateUrl: './assets.component.html',
-  styleUrl: './assets.component.scss',
 })
 export class AssetsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -65,13 +67,27 @@ export class AssetsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly authStore = inject(AuthStore);
 
-  readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly assets = signal<FixedAssetResource[]>([]);
   readonly categories = signal<AssetCategoryResource[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
+
+  /** Server-driven grid: paging, sorting, column filters, grouping and export run on the API. */
+  readonly grid = new FetchGridModel<FixedAssetResource, AssetFilterParams>((query) => this.assetApi.getAssets(query));
+
+  private readonly nameTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('nameTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('statusTpl');
+  private readonly conditionTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('conditionTpl');
+  private readonly costTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('costTpl');
+  private readonly carryingTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('carryingTpl');
+  private readonly rateTpl = viewChild<TemplateRef<{ $implicit: FixedAssetResource; value: unknown }>>('rateTpl');
+
+  protected readonly columns = computed<TableColumnDef<FixedAssetResource>[]>(() => [
+    { key: 'name', header: 'assets.lblAssetSerial', customCellTemplate: this.nameTpl() },
+    { key: 'status', header: 'assets.lblStatus', customCellTemplate: this.statusTpl() },
+    { key: 'condition', header: 'assets.lblCondition', customCellTemplate: this.conditionTpl() },
+    { key: 'acquisition_cost', header: 'assets.lblAcquisitionCost', align: 'right', customCellTemplate: this.costTpl() },
+    { key: 'carrying_value', header: 'assets.lblCarryingAmount', align: 'right', customCellTemplate: this.carryingTpl() },
+    { key: 'depreciation_rate_percent', header: 'assets.lblDeprRate', align: 'right', customCellTemplate: this.rateTpl() },
+  ]);
 
   // Filters
   readonly searchTerm = signal('');
@@ -88,20 +104,19 @@ export class AssetsComponent implements OnInit {
   readonly loadingTag = signal(false);
 
   readonly assetForm = this.fb.group({
-    name: this.fb.control('', [Validators.required]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
     category_id: this.fb.control('', [Validators.required]),
-    acquisition_cost: this.fb.control<number>(0, [Validators.required, Validators.min(1)]),
+    acquisition_cost: this.fb.control<number>(0, [Validators.required, Validators.min(1), Validators.max(9999999999999.99)]),
     depreciation_method: this.fb.control<'straight_line' | 'declining_balance' | 'double_declining_balance' | 'units_of_production'>('straight_line'),
-    useful_life_years: this.fb.control<number>(5, [Validators.required, Validators.min(1)]),
+    useful_life_years: this.fb.control<number>(5, [Validators.min(1), Validators.max(100)]),
     condition: this.fb.control<'new' | 'excellent' | 'good' | 'fair' | 'poor' | 'damaged'>('new'),
-    asset_number: this.fb.control(''),
-    serial_number: this.fb.control(''),
-    description: this.fb.control(''),
+    asset_number: this.fb.control('', [Validators.maxLength(60)]),
+    serial_number: this.fb.control('', [Validators.maxLength(100)]),
+    description: this.fb.control('', [Validators.maxLength(5000)]),
   });
 
   ngOnInit(): void {
     this.loadCategories();
-    this.loadAssets();
   }
 
   loadCategories(): void {
@@ -112,45 +127,18 @@ export class AssetsComponent implements OnInit {
   }
 
   loadAssets(): void {
-    this.loading.set(true);
-    const params: AssetFilterParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
-      search: this.searchTerm() || undefined,
-      status: this.statusFilter() || undefined,
-    };
-
-    this.assetApi.getAssets(params).subscribe({
-      next: (res) => {
-        this.assets.set(res.data || []);
-        this.total.set(res.meta?.total || (res.data || []).length);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.assets.set([]);
-        this.total.set(0);
-        this.loading.set(false);
-      },
-    });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadAssets();
+    this.grid.reload();
   }
 
   onSearch(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.searchTerm.set(val);
-    this.pageIndex.set(1);
-    this.loadAssets();
+    this.grid.setFilter({ search: val || undefined });
   }
 
   onStatusChange(status: string | null): void {
     this.statusFilter.set(status);
-    this.pageIndex.set(1);
-    this.loadAssets();
+    this.grid.setFilter({ status: status || undefined });
   }
 
   openCreateModal(): void {

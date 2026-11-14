@@ -33,7 +33,7 @@ describe('CommunicationComponent', () => {
       id: 'del-2',
       message_type: 'message',
       channel: 'whatsapp',
-      driver: 'whatsapp_cloud',
+      driver: 'twilio',
       recipient: '+393339999999',
       status: 'failed',
       error: 'Recipient number not registered on WhatsApp',
@@ -43,9 +43,11 @@ describe('CommunicationComponent', () => {
 
   const mockChannels: CommunicationChannelResource[] = [
     {
+      id: 'ch-1',
       channel: 'email',
       driver: 'smtp',
       is_enabled: true,
+      has_credentials: true,
       settings: {
         host: 'smtp.sendgrid.net',
         port: 587,
@@ -53,9 +55,11 @@ describe('CommunicationComponent', () => {
       },
     },
     {
+      id: 'ch-2',
       channel: 'whatsapp',
-      driver: 'whatsapp_cloud',
+      driver: 'twilio',
       is_enabled: false,
+      has_credentials: false,
       settings: {},
     },
   ];
@@ -73,20 +77,27 @@ describe('CommunicationComponent', () => {
   ];
 
   const mockPreview: CommunicationPreviewResponse = {
-    channel: 'email',
-    locale: 'it_IT',
     subject: 'Fattura INV-2026-0042',
     body: 'Gentile Mario Rossi, in allegato la fattura.',
-    variables: { name: 'Mario Rossi', number: 'INV-2026-0042' },
+    rendered_variables: { name: 'Mario Rossi', number: 'INV-2026-0042' },
   };
 
+  const page = <T>(data: T[]) => ({
+    success: true,
+    message: 'ok',
+    data,
+    meta: { current_page: 1, last_page: 1, per_page: 10, total: data.length, from: 1, to: data.length },
+  });
+
   const apiSpy = {
-    getDeliveries: vi.fn().mockReturnValue(of({ data: mockDeliveries })),
+    getDeliveries: vi.fn().mockImplementation((query: Record<string, unknown>) =>
+      of(query['grid_values'] ? { data: [{ value: 'sent', count: 1 }, { value: 'failed', count: 1 }] } : page(mockDeliveries)),
+    ),
     getDelivery: vi.fn().mockReturnValue(of({ data: mockDeliveries[0] })),
     getChannels: vi.fn().mockReturnValue(of({ data: mockChannels })),
     updateChannel: vi.fn().mockReturnValue(of({ data: mockChannels[0] })),
     testChannel: vi.fn().mockReturnValue(of({ success: true, message: 'Delivered' })),
-    getTemplates: vi.fn().mockReturnValue(of({ data: mockTemplates })),
+    getTemplates: vi.fn().mockImplementation(() => of(page(mockTemplates))),
     getTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
     createTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
     updateTemplate: vi.fn().mockReturnValue(of({ data: mockTemplates[0] })),
@@ -124,6 +135,7 @@ describe('CommunicationComponent', () => {
     fixture = TestBed.createComponent(CommunicationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load deliveries, channels, and templates', () => {
@@ -131,22 +143,22 @@ describe('CommunicationComponent', () => {
     expect(apiSpy.getDeliveries).toHaveBeenCalled();
     expect(apiSpy.getChannels).toHaveBeenCalled();
     expect(apiSpy.getTemplates).toHaveBeenCalled();
-    expect(component.deliveries().length).toBe(2);
+    expect(component.deliveries.items().length).toBe(2);
     expect(component.channels().length).toBe(2);
-    expect(component.templates().length).toBe(1);
+    expect(component.templates.items().length).toBe(1);
     expect(component.totalSent()).toBe(1);
     expect(component.totalFailed()).toBe(1);
     expect(component.activeChannelsCount()).toBe(1);
   });
 
-  it('should filter deliveries by channel and status', () => {
+  it('should filter deliveries by channel and status on the server', async () => {
     component.filterChannel.set('email');
     component.filterStatus.set('sent');
     component.loadDeliveries();
-    expect(apiSpy.getDeliveries).toHaveBeenCalledWith({
-      channel: 'email',
-      status: 'sent',
-    });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(apiSpy.getDeliveries).toHaveBeenCalledWith(
+      expect.objectContaining({ channel: 'email', status: 'sent', page: 1 }),
+    );
   });
 
   it('should open and close delivery drawer', () => {
@@ -326,5 +338,27 @@ describe('CommunicationComponent', () => {
     component.openTestChannelModal(mockChannels[0]);
     component.runChannelTest();
     expect(messageSpy.error).toHaveBeenCalledWith('COMMUNICATION.TEST_FAILED');
+  });
+
+  it('does not call the API when the quick send and template forms are submitted empty', () => {
+    component.sendQuickCommunication();
+    expect(apiSpy.sendMessage).not.toHaveBeenCalled();
+    expect(component.quickSendForm.controls.recipient.touched).toBe(true);
+
+    component.quickSendForm.patchValue({ mode: 'document', channel: 'email', recipient: '' });
+    component.sendQuickCommunication();
+    expect(apiSpy.sendDocument).not.toHaveBeenCalled();
+    expect(component.quickSendForm.controls.document_id.hasError('required')).toBe(true);
+    expect(component.quickSendForm.controls.recipient.hasError('required')).toBe(false);
+
+    component.quickSendForm.patchValue({ mode: 'message', channel: 'sms', recipient: 'not-a-phone', template_code: 'a.b' });
+    expect(component.quickSendForm.controls.recipient.hasError('recipientFormat')).toBe(true);
+
+    component.openCreateTemplateModal();
+    component.saveTemplate();
+    expect(apiSpy.createTemplate).not.toHaveBeenCalled();
+    expect(component.templateForm.controls.subject.hasError('required')).toBe(true);
+    component.templateForm.patchValue({ channel: 'sms' });
+    expect(component.templateForm.controls.subject.hasError('required')).toBe(false);
   });
 });

@@ -33,12 +33,12 @@ import {
 } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
-  TranslatePipe,
-} from '@shared';
+  TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
@@ -66,7 +66,12 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
 
 @Component({
   selector: 'app-invoices',
+  styleUrl: './invoices.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     FormsModule,
     CurrencyPipe,
@@ -93,7 +98,6 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     InvoiceDetailModalComponent,
   ],
   templateUrl: './invoices.component.html',
-  styleUrl: './invoices.component.scss',
 })
 export class InvoicesComponent {
   private readonly translate = inject(TranslateService);
@@ -127,13 +131,22 @@ export class InvoicesComponent {
   readonly savingCreditNote = signal(false);
   readonly creditNoteForm = this.fb.group({
     original_invoice_id: this.fb.control('', [Validators.required]),
-    date: this.fb.control(new Date().toISOString().substring(0, 10), [Validators.required]),
+    date: this.fb.control(new Date().toISOString().substring(0, 10)),
     notes: this.fb.control(''),
-    description: this.fb.control('Storno parziale / Nota di credito', [Validators.required]),
+    description: this.fb.control('Storno parziale / Nota di credito', [Validators.required, Validators.maxLength(255)]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.001)]),
     unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    tax_rate: this.fb.control(22, [Validators.required]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
   });
+
+  /** Error text of a credit note field: required or out of range. */
+  creditNoteTip(path: string): string {
+    const control = this.creditNoteForm.get(path);
+    if (control?.hasError('required')) {
+      return this.translate.instant('COMMON.VALIDATION.REQUIRED');
+    }
+    return control?.invalid ? this.translate.instant('COMMON.VALIDATION.INVALID_VALUE') : '';
+  }
 
   // Template views
   private readonly numberTpl =
@@ -195,6 +208,9 @@ export class InvoicesComponent {
     },
     {
       key: 'status',
+      serverKey: 'display_status',
+      valueGetter: (inv) => this.i18n.translate(this.statusOf(inv).key),
+      valueLabel: (value) => this.i18n.translate(this.statusKeyOf(value)),
       header: this.i18n.translate('SALES.INVOICES.COLUMNS.PAYMENT_STATUS'),
       width: '140px',
       customCellTemplate: this.statusTpl(),
@@ -230,13 +246,15 @@ export class InvoicesComponent {
     return STATUS[inv.status] ?? { key: 'SALES.INVOICES.STATUS.DRAFT', color: 'default' };
   }
 
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
+  /** Translation key of a `display_status` value of the server (see Invoice::gridColumns). */
+  private statusKeyOf(value: string): string {
+    if (value === 'proforma') {
+      return 'SALES.INVOICES.STATUS.PROFORMA';
     }
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
+    if (value === 'overdue') {
+      return 'SALES.INVOICES.STATUS.OVERDUE';
     }
+    return STATUS[value as InvoiceStatus]?.key ?? value;
   }
 
   protected create(): void {
@@ -358,7 +376,7 @@ export class InvoicesComponent {
     const formVal = this.creditNoteForm.getRawValue();
     const payload: CreateCreditNotePayload = {
       original_invoice_id: formVal.original_invoice_id,
-      date: formVal.date,
+      date: formVal.date || undefined,
       notes: formVal.notes || undefined,
       items: [
         {

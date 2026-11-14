@@ -2,61 +2,56 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--sidebar-bg, #0f172a);
+  background: var(--sidebar-bg);
 }
 
 .sidebar-brand {
-  height: 64px;
-  padding: 0 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.25);
-  border-bottom: 1px solid var(--sidebar-border, #1e293b);
+  flex-shrink: 0;
+  gap: var(--space-3);
+  height: var(--header-height);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--sidebar-border);
   white-space: nowrap;
   overflow: hidden;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.sidebar-brand.collapsed {
-  padding: 0;
-  justify-content: center;
+  &.collapsed {
+    padding: 0;
+    justify-content: center;
+  }
+
 }
 
 .brand-logo {
-  height: 38px;
-  width: 38px;
-  object-fit: contain;
   flex-shrink: 0;
-  transition: transform 0.2s;
-}
-
-.sidebar-brand:hover .brand-logo {
-  transform: scale(1.05);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .brand-text {
-  font-size: 18px;
+  color: var(--sidebar-text-active);
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
+
+  span {
+    color: var(--brand-cyan);
+  }
 }
 
 .sidebar-menu {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
   overflow-x: hidden;
-  border-right: none;
-  background: transparent !important;
-}
+  overflow-y: auto;
+  border-right: 0;
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-border) transparent;
 
-.sidebar-menu::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
 }
 
 .menu-item-link {
@@ -65,25 +60,30 @@
   width: 100%;
   color: inherit;
   text-decoration: none;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 .menu-section-title {
-  padding: 16px 24px 6px;
-  font-size: 0.75rem;
-  line-height: 1.33;
+  padding: var(--space-4) var(--space-5) 6px;
+  overflow: hidden;
+  color: var(--sidebar-text);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.33;
   list-style: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .menu-section-divider {
-  margin: 8px 16px;
-  border-top: 1px solid var(--sidebar-border, #1e293b);
+  margin: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--sidebar-border);
   list-style: none;
 }
 
@@ -94,97 +94,46 @@
 }
 
 .sidebar-icon {
-  font-size: 15px;
-  width: 20px;
-  margin-right: 12px;
-  text-align: center;
   flex-shrink: 0;
-  transition:
-    margin 0.2s,
-    font-size 0.2s;
+  width: 20px;
+  margin-right: var(--space-3);
+  font-size: 15px;
+  text-align: center;
 }
 
 .menu-title-text {
-  font-size: 13px;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
   overflow: hidden;
+  font-size: var(--font-size-sm);
+  letter-spacing: -0.01em;
   text-overflow: ellipsis;
-  transition:
-    opacity 0.2s,
-    width 0.2s;
+  white-space: nowrap;
 }
 
-/* COLLAPSED MINI-SIDEBAR CLEAN STATE */
+// Collapsed mini-sidebar: icons only
 .sidebar-collapsed {
   .menu-title-text {
-    display: none !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
-    opacity: 0 !important;
-    overflow: hidden !important;
+    display: none;
   }
 
   .sidebar-icon {
-    margin-right: 0 !important;
-    width: 100% !important;
-    font-size: 18px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-right: 0;
+    font-size: var(--font-size-lg);
   }
 
   .menu-item-link,
   .submenu-title-wrapper {
-    justify-content: center !important;
-    padding: 0 !important;
-  }
-}
-
-/* Deep overrides for ng-zorro menu in collapsed mode */
-:host ::ng-deep {
-  .ant-menu-dark {
-    background: transparent;
-  }
-
-  .ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
-    background-color: var(--primary-color, #0d9488) !important;
-    color: #ffffff !important;
-  }
-
-  .ant-menu-dark .ant-menu-item:hover,
-  .ant-menu-dark .ant-menu-submenu-title:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .ant-menu-inline-collapsed > .ant-menu-item,
-  .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
-    padding: 0 !important;
-    text-align: center !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-  }
-
-  .ant-menu-inline-collapsed .ant-menu-submenu-arrow {
-    display: none !important;
-  }
-
-  .ant-menu-inline-collapsed .menu-title-text {
-    display: none !important;
-  }
-
-  .ant-menu-inline-collapsed .sidebar-icon {
-    margin: 0 !important;
-    width: 100% !important;
+    justify-content: center;
+    padding: 0;
   }
 }
 
 .sidebar-search {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--sidebar-border, #1e293b);
+  padding: 10px var(--space-3);
+  border-bottom: 1px solid var(--sidebar-border);
 
   nz-input-wrapper {
     width: 100%;
@@ -192,32 +141,109 @@
 }
 
 .sidebar-search-clear {
-  border: 0;
   padding: 0 2px;
+  border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--sidebar-text);
   cursor: pointer;
 
   &:hover,
   &:focus-visible {
-    color: #ffffff;
+    color: var(--sidebar-text-active);
   }
 }
 
 .menu-search-empty {
-  padding: 16px 24px;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 13px;
+  padding: var(--space-4) var(--space-5);
+  color: var(--sidebar-text);
+  font-size: var(--font-size-sm);
   list-style: none;
 }
 
 // Entries that are not enabled yet (see TESTED_MENU_ROUTES): greyed out and not clickable
-.sidebar-menu .ant-menu-item-disabled,
-.sidebar-menu .ant-menu-submenu-disabled > .ant-menu-submenu-title {
-  opacity: 0.45;
-  cursor: not-allowed;
+.sidebar-menu {
+  .ant-menu-item-disabled,
+  .ant-menu-submenu-disabled > .ant-menu-submenu-title {
+    cursor: not-allowed;
+    opacity: 0.45;
 
-  .menu-item-link {
-    pointer-events: none;
+    .menu-item-link {
+      pointer-events: none;
+    }
+  }
+}
+
+// NG-ZORRO menu internals: the sidebar is dark in both themes
+:host ::ng-deep {
+  .sidebar-menu.ant-menu-dark,
+  .sidebar-menu .ant-menu-dark {
+    background: transparent;
+    color: var(--sidebar-text);
+  }
+
+  .sidebar-menu.ant-menu-dark .ant-menu-sub {
+    background: var(--sidebar-bg);
+  }
+
+  .sidebar-menu .ant-menu-item,
+  .sidebar-menu .ant-menu-submenu-title {
+    margin: 2px var(--space-2);
+    width: calc(100% - 16px);
+    border-radius: var(--radius-md);
+    color: var(--sidebar-text);
+  }
+
+  .sidebar-menu .ant-menu-item:hover,
+  .sidebar-menu .ant-menu-submenu-title:hover {
+    background: var(--sidebar-item-hover);
+    color: var(--sidebar-text-active);
+  }
+
+  .sidebar-menu .ant-menu-item.ant-menu-item-selected,
+  .sidebar-menu.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
+    background: var(--sidebar-item-active);
+    color: var(--sidebar-text-active);
+    font-weight: 600;
+  }
+
+  .sidebar-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: var(--sidebar-text-active);
+  }
+
+  .ant-menu-inline-collapsed > .ant-menu-item,
+  .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    text-align: center;
+  }
+
+  .ant-menu-inline-collapsed .ant-menu-submenu-arrow {
+    display: none;
+  }
+
+  // Quick search field on the dark surface
+  .sidebar-search {
+    .ant-input-affix-wrapper {
+      background: var(--sidebar-item-hover);
+      border-color: var(--sidebar-border);
+      color: var(--sidebar-text-active);
+    }
+
+    .ant-input {
+      background: transparent;
+      border-color: transparent;
+      color: var(--sidebar-text-active);
+
+      &::placeholder {
+        color: var(--sidebar-text);
+      }
+    }
+
+    .ant-input-prefix,
+    .anticon {
+      color: var(--sidebar-text);
+    }
   }
 }

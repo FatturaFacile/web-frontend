@@ -1,5 +1,9 @@
+:host {
+  display: block;
+}
+
 .stats-row {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 .toolbar {
   margin-bottom: 16px;
@@ -25,10 +29,10 @@
   gap: 12px;
 }
 .muted {
-  color: #666;
+  color: var(--text-secondary);
 }
 .negative {
-  color: #cf1322;
+  color: var(--status-danger);
 }
 .actions {
   display: flex;

@@ -14,6 +14,7 @@ const DATASETS: ExportDataset[] = ['invoices', 'purchases', 'payments', 'contact
 /** Files for the accountant: the archive of a period and the CSV of a dataset (Excel-compatible, semicolons). */
 @Component({
   selector: 'app-exports',
+  styleUrl: './exports.component.scss',
   imports: [ActionFormComponent, NzCardModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header

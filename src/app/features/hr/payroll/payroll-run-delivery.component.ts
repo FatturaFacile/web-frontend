@@ -11,7 +11,7 @@ import {
   PayslipDeliveryResult,
   TreasuryApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -28,7 +28,12 @@ interface AllocationRow {
 /** After the run is final: mail the payslip links to the employees and create the payment batches of the net pay (Treasury). */
 @Component({
   selector: 'app-payroll-run-delivery',
+  styleUrl: './payroll-run-delivery.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     MoneyPipe,
     NzAlertModule,
@@ -61,10 +66,10 @@ interface AllocationRow {
       <nz-table #batchTable class="mt-2" [nzData]="list" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmPayroll.deliver.reference' | translate }}</th>
-            <th>{{ 'hrmPayroll.deliver.items' | translate }}</th>
-            <th>{{ 'hrmPayroll.deliver.total' | translate }}</th>
-            <th>{{ 'hrmCommon.statusCol' | translate }}</th>
+            <th [nzSortFn]="'batch_reference' | gridSort" [nzFilters]="'batch_reference' | gridFilterList: batchTable.nzData" [nzFilterFn]="'batch_reference' | gridFilterFn">{{ 'hrmPayroll.deliver.reference' | translate }}</th>
+            <th [nzSortFn]="'item_count' | gridSort" [nzFilters]="'item_count' | gridFilterList: batchTable.nzData" [nzFilterFn]="'item_count' | gridFilterFn">{{ 'hrmPayroll.deliver.items' | translate }}</th>
+            <th [nzSortFn]="'total_amount' | gridSort" [nzFilters]="'total_amount' | gridFilterList: batchTable.nzData" [nzFilterFn]="'total_amount' | gridFilterFn">{{ 'hrmPayroll.deliver.total' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: batchTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'hrmCommon.statusCol' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -83,8 +88,6 @@ interface AllocationRow {
     <nz-modal
       [nzVisible]="confirmDeliver()"
       [nzTitle]="'hrmPayroll.deliver.deliver' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       (nzOnOk)="deliver()"
       (nzOnCancel)="confirmDeliver.set(false)"
     >
@@ -94,11 +97,10 @@ interface AllocationRow {
     </nz-modal>
 
     <nz-modal
+      okAction="create"
       [nzVisible]="batchesOpen()"
       [nzTitle]="'hrmPayroll.deliver.paymentBatches' | translate"
       nzWidth="640px"
-      [nzOkText]="'hrmPayroll.deliver.create' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="creating()"
       [nzOkDisabled]="!canCreate()"
       (nzOnOk)="createBatches()"
@@ -111,10 +113,10 @@ interface AllocationRow {
             <div class="flex-1">
               <label [attr.for]="'alloc-bank-' + i">{{
                 'hrmPayroll.deliver.bankAccount' | translate
-              }}</label>
+              }}<span class="required-mark" aria-hidden="true">*</span></label>
               <nz-select
                 [id]="'alloc-bank-' + i"
-                style="width: 100%"
+                class="w-full"
                 nzShowSearch
                 [ngModel]="row.bankAccountId"
                 (ngModelChange)="update(i, { bankAccountId: $event })"
@@ -128,7 +130,7 @@ interface AllocationRow {
               <label [attr.for]="'alloc-dep-' + i">{{ 'hrmOrg.department' | translate }}</label>
               <nz-select
                 [id]="'alloc-dep-' + i"
-                style="width: 100%"
+                class="w-full"
                 nzAllowClear
                 [ngModel]="row.departmentId"
                 (ngModelChange)="update(i, { departmentId: $event })"
@@ -147,14 +149,11 @@ interface AllocationRow {
               type="button"
               [disabled]="rows().length < 2"
               (click)="removeRow(i)"
-            >
-              {{ 'hrmCommon.delete' | translate }}
-            </button>
+              appIconAction="delete"
+            ></button>
           </div>
         }
-        <button nz-button type="button" (click)="addRow()">
-          {{ 'hrmPayroll.deliver.addAllocation' | translate }}
-        </button>
+        <button nz-button type="button" (click)="addRow()" appIconAction="add"></button>
       </ng-container>
     </nz-modal>
   `,

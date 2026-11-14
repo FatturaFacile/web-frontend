@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -12,29 +12,33 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
   CrmApiService,
   CrmDuplicateMatch,
+  CrmOpportunityFilterParams,
+  FetchGridModel,
   I18nService,
   OpportunityResource,
   PipelineStageResource,
   StoreOpportunityPayload,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, IconActionDirective, ModalActionsDirective } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-crm-pipeline',
+  styleUrl: './pipeline.component.scss',
   imports: [
+    BaseTableComponent,
+    ModalActionsDirective,
+    IconActionDirective,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -50,7 +54,6 @@ import { TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './pipeline.component.html',
-  styleUrl: './pipeline.component.scss',
 })
 export class PipelineComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -60,13 +63,43 @@ export class PipelineComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);
   protected readonly i18n = inject(I18nService);
 
-  readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly opportunities = signal<OpportunityResource[]>([]);
+  readonly grid = new FetchGridModel<OpportunityResource, CrmOpportunityFilterParams>((query) =>
+    this.crmApi.getOpportunities(query),
+  );
   readonly stages = signal<PipelineStageResource[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(15);
+
+  private readonly nameTpl = viewChild<TemplateRef<unknown>>('nameTpl');
+  private readonly amountTpl = viewChild<TemplateRef<unknown>>('amountTpl');
+  private readonly stageTpl = viewChild<TemplateRef<unknown>>('stageTpl');
+  private readonly categoryTpl = viewChild<TemplateRef<unknown>>('categoryTpl');
+
+  readonly columns = computed<TableColumnDef<OpportunityResource>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'name', header: this.i18n.translate('CRMX.LBL_OPPORTUNITY'), customCellTemplate: this.nameTpl() },
+      {
+        key: 'account',
+        serverKey: 'account.name',
+        header: this.i18n.translate('CRMX.LBL_ACCOUNT'),
+        valueGetter: (opp) => opp.account?.name ?? '',
+      },
+      { key: 'amount', header: this.i18n.translate('CRMX.LBL_AMOUNT'), customCellTemplate: this.amountTpl() },
+      {
+        key: 'stage',
+        serverKey: 'stage.name',
+        header: this.i18n.translate('CRMX.LBL_STAGE'),
+        valueGetter: (opp) => opp.stage?.name ?? '',
+        customCellTemplate: this.stageTpl(),
+      },
+      {
+        key: 'forecast_category',
+        header: this.i18n.translate('CRMX.LBL_FORECAST_CATEGORY'),
+        customCellTemplate: this.categoryTpl(),
+      },
+      { key: 'expected_close_date', header: this.i18n.translate('CRMX.LBL_EXPECTED_CLOSE') },
+    ];
+  });
 
   // Filters
   readonly searchTerm = signal('');
@@ -79,16 +112,15 @@ export class PipelineComponent implements OnInit {
   readonly checkingDuplicates = signal(false);
 
   readonly oppForm = this.fb.group({
-    name: this.fb.control('', [Validators.required]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(200)]),
     account_id: this.fb.control('', [Validators.required]),
     amount: this.fb.control<number>(0, [Validators.required, Validators.min(0)]),
-    stage_code: this.fb.control('discovery', [Validators.required]),
+    stage_code: this.fb.control('discovery', [Validators.maxLength(50)]),
     forecast_category: this.fb.control<'pipeline' | 'best_case' | 'commit' | 'closed' | 'omitted'>('pipeline'),
   });
 
   ngOnInit(): void {
     this.loadStages();
-    this.loadOpportunities();
   }
 
   loadStages(): void {
@@ -98,46 +130,15 @@ export class PipelineComponent implements OnInit {
     });
   }
 
-  loadOpportunities(): void {
-    this.loading.set(true);
-    this.crmApi
-      .getOpportunities({
-        page: this.pageIndex(),
-        per_page: this.pageSize(),
-        search: this.searchTerm() || undefined,
-        stage_code: this.stageFilter() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.opportunities.set(res.data || []);
-          this.total.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.opportunities.set([]);
-          this.total.set(0);
-          this.loading.set(false);
-        },
-      });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadOpportunities();
-  }
-
   onSearch(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.searchTerm.set(val);
-    this.pageIndex.set(1);
-    this.loadOpportunities();
+    this.grid.setFilter({ search: val || undefined });
   }
 
   onStageFilterChange(stage: string | null): void {
     this.stageFilter.set(stage);
-    this.pageIndex.set(1);
-    this.loadOpportunities();
+    this.grid.setFilter({ stage_code: stage || undefined });
   }
 
   openCreateModal(): void {
@@ -149,6 +150,14 @@ export class PipelineComponent implements OnInit {
       forecast_category: 'pipeline',
     });
     this.createModalVisible.set(true);
+  }
+
+  /** The error text of a control of the opportunity form. */
+  errorTip(control: AbstractControl): string {
+    if (control.hasError('required')) {
+      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
+    }
+    return control.invalid ? this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE') : '';
   }
 
   submitCreateOpportunity(): void {
@@ -173,7 +182,7 @@ export class PipelineComponent implements OnInit {
         this.saving.set(false);
         this.createModalVisible.set(false);
         this.message.success(this.translate.instant('CRMX.MSG_OPPORTUNITY_CREATED'));
-        this.loadOpportunities();
+        this.grid.reload();
       },
       error: () => {
         this.saving.set(false);
@@ -185,7 +194,7 @@ export class PipelineComponent implements OnInit {
     this.crmApi.updateOpportunityStage(opp.id, newStageCode).subscribe({
       next: () => {
         this.message.success(this.translate.instant('CRMX.MSG_STAGE_UPDATED'));
-        this.loadOpportunities();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -209,7 +218,7 @@ export class PipelineComponent implements OnInit {
     this.crmApi.deleteOpportunity(opp.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('CRMX.MSG_OPPORTUNITY_DELETED'));
-        this.loadOpportunities();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -219,7 +228,7 @@ export class PipelineComponent implements OnInit {
     this.checkingDuplicates.set(true);
     this.crmApi.getDuplicates({ entity: 'contacts' }).subscribe({
       next: (res) => {
-        this.duplicateResult.set(res.data);
+        this.duplicateResult.set(res);
         this.duplicateModalVisible.set(true);
         this.checkingDuplicates.set(false);
       },

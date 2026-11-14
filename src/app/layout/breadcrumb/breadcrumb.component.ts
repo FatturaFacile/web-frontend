@@ -12,9 +12,9 @@ interface BreadcrumbItem {
 
 @Component({
   selector: 'app-breadcrumb',
+  styleUrl: './breadcrumb.component.scss',
   imports: [RouterLink, NzBreadCrumbModule, TranslatePipe],
   templateUrl: './breadcrumb.component.html',
-  styleUrl: './breadcrumb.component.scss',
 })
 export class BreadcrumbComponent {
   private readonly router = inject(Router);

@@ -60,7 +60,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.pending_quotes"
                 [nzTitle]="'PORTAL.PENDING_QUOTES' | translate"
-                [nzValueStyle]="{ color: '#fa8c16' }"
+                [nzValueStyle]="{ color: 'var(--status-warning)' }"
                 [nzPrefix]="quoteIcon"
               ></nz-statistic>
               <ng-template #quoteIcon><span nz-icon nzType="file-text"></span></ng-template>
@@ -70,7 +70,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.unpaid_invoices"
                 [nzTitle]="'PORTAL.UNPAID_INVOICES' | translate"
-                [nzValueStyle]="{ color: '#f5222d' }"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
                 [nzPrefix]="invIcon"
               ></nz-statistic>
               <ng-template #invIcon><span nz-icon nzType="dollar"></span></ng-template>
@@ -80,7 +80,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.open_tickets"
                 [nzTitle]="'PORTAL.OPEN_TICKETS' | translate"
-                [nzValueStyle]="{ color: '#1890ff' }"
+                [nzValueStyle]="{ color: 'var(--status-info)' }"
                 [nzPrefix]="ticketIcon"
               ></nz-statistic>
               <ng-template #ticketIcon><span nz-icon nzType="team"></span></ng-template>
@@ -90,7 +90,7 @@
               <nz-statistic
                 [nzValue]="acc.summary.upcoming_appointments"
                 [nzTitle]="'PORTAL.UPCOMING_APPOINTMENTS' | translate"
-                [nzValueStyle]="{ color: '#52c41a' }"
+                [nzValueStyle]="{ color: 'var(--status-success)' }"
                 [nzPrefix]="calendarIcon"
               ></nz-statistic>
               <ng-template #calendarIcon><span nz-icon nzType="calendar"></span></ng-template>
@@ -109,11 +109,11 @@
               >
                 <thead>
                   <tr>
-                    <th>{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
-                    <th>{{ 'PORTAL.DATE_START' | translate }}</th>
-                    <th>{{ 'PORTAL.DATE_END' | translate }}</th>
-                    <th>{{ 'PORTAL.TECHNICIAN' | translate }}</th>
-                    <th>{{ 'PORTAL.STATUS' | translate }}</th>
+                    <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: aptTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'PORTAL.TITLE_FIELD' | translate }}</th>
+                    <th [nzSortFn]="'start_at' | gridSort" [nzFilters]="'start_at' | gridFilterList: aptTable.nzData" [nzFilterFn]="'start_at' | gridFilterFn">{{ 'PORTAL.DATE_START' | translate }}</th>
+                    <th [nzSortFn]="'end_at' | gridSort" [nzFilters]="'end_at' | gridFilterList: aptTable.nzData" [nzFilterFn]="'end_at' | gridFilterFn">{{ 'PORTAL.DATE_END' | translate }}</th>
+                    <th [nzSortFn]="'technician_name' | gridSort" [nzFilters]="'technician_name' | gridFilterList: aptTable.nzData" [nzFilterFn]="'technician_name' | gridFilterFn">{{ 'PORTAL.TECHNICIAN' | translate }}</th>
+                    <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: aptTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,11 +150,11 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'quote_number' | gridSort" [nzFilters]="'quote_number' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'quote_number' | gridFilterFn">{{ 'PORTAL.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">{{ 'PORTAL.VALID_UNTIL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'signed_by' | gridSort" [nzFilters]="'signed_by' | gridFilterList: quoteTable.nzData" [nzFilterFn]="'signed_by' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -211,12 +211,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.DUE_DATE' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
-              <th>{{ 'PORTAL.PAID' | translate }}</th>
-              <th>{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
+              <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: invTable.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'PORTAL.INVOICE_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: invTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: invTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'PORTAL.DUE_DATE' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: invTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'PORTAL.TOTAL_GROSS' | translate }}</th>
+              <th [nzSortFn]="'total_paid' | gridSort" [nzFilters]="'total_paid' | gridFilterList: invTable.nzData" [nzFilterFn]="'total_paid' | gridFilterFn">{{ 'PORTAL.PAID' | translate }}</th>
+              <th [nzSortFn]="'payment_status' | gridSort" [nzFilters]="'payment_status' | gridFilterList: invTable.nzData" [nzFilterFn]="'payment_status' | gridFilterFn">{{ 'PORTAL.PAYMENT_STATUS' | translate }}</th>
               <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -256,10 +256,10 @@
           >
             <thead>
               <tr>
-                <th>{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
-                <th>{{ 'PORTAL.PLAN' | translate }}</th>
-                <th>{{ 'PORTAL.STATUS' | translate }}</th>
-                <th>{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
+                <th [nzSortFn]="'subscription_number' | gridSort" [nzFilters]="'subscription_number' | gridFilterList: subTable.nzData" [nzFilterFn]="'subscription_number' | gridFilterFn">{{ 'PORTAL.SUB_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: subTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PLAN' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: subTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'next_billing_date' | gridSort" [nzFilters]="'next_billing_date' | gridFilterList: subTable.nzData" [nzFilterFn]="'next_billing_date' | gridFilterFn">{{ 'PORTAL.NEXT_BILLING' | translate }}</th>
                 <th>{{ 'PORTAL.AUTO_RENEW' | translate }}</th>
               </tr>
             </thead>
@@ -308,10 +308,7 @@
 
         <nz-card [nzTitle]="'PORTAL.SUPPORT_TICKETS' | translate" [nzExtra]="ticketAction">
           <ng-template #ticketAction>
-            <button nz-button nzType="primary" (click)="openCreateTicketModal()">
-              <span nz-icon nzType="plus"></span>
-              {{ 'PORTAL.NEW_TICKET' | translate }}
-            </button>
+            <button nz-button nzType="primary" (click)="openCreateTicketModal()" appIconAction="create"></button>
           </ng-template>
 
           <nz-table
@@ -323,11 +320,11 @@
           >
             <thead>
               <tr>
-                <th>{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
-                <th>{{ 'PORTAL.SUBJECT' | translate }}</th>
-                <th>{{ 'PORTAL.PRIORITY' | translate }}</th>
-                <th>{{ 'PORTAL.STATUS' | translate }}</th>
-                <th>{{ 'PORTAL.CREATED_AT' | translate }}</th>
+                <th [nzSortFn]="'ticket_number' | gridSort" [nzFilters]="'ticket_number' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'ticket_number' | gridFilterFn">{{ 'PORTAL.TICKET_NUMBER' | translate }}</th>
+                <th [nzSortFn]="'subject' | gridSort" [nzFilters]="'subject' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'subject' | gridFilterFn">{{ 'PORTAL.SUBJECT' | translate }}</th>
+                <th [nzSortFn]="'priority' | gridSort" [nzFilters]="'priority' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'priority' | gridFilterFn">{{ 'PORTAL.PRIORITY' | translate }}</th>
+                <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
+                <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: ticketsTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'PORTAL.CREATED_AT' | translate }}</th>
                 <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
               </tr>
             </thead>
@@ -402,12 +399,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DATE' | translate }}</th>
-              <th>{{ 'PORTAL.SITE' | translate }}</th>
-              <th>{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
+              <th [nzSortFn]="'report_number' | gridSort" [nzFilters]="'report_number' | gridFilterList: repTable.nzData" [nzFilterFn]="'report_number' | gridFilterFn">{{ 'PORTAL.REPORT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'report_date' | gridSort" [nzFilters]="'report_date' | gridFilterList: repTable.nzData" [nzFilterFn]="'report_date' | gridFilterFn">{{ 'PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'site_address' | gridSort" [nzFilters]="'site_address' | gridFilterList: repTable.nzData" [nzFilterFn]="'site_address' | gridFilterFn">{{ 'PORTAL.SITE' | translate }}</th>
+              <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: repTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'PORTAL.TOTAL_HOURS' | translate }}</th>
               <th>{{ 'PORTAL.SIGNED' | translate }}</th>
-              <th>{{ 'PORTAL.ACTIONS' | translate }}</th>
+              <th [nzSortFn]="'original_name' | gridSort" [nzFilters]="'original_name' | gridFilterList: repTable.nzData" [nzFilterFn]="'original_name' | gridFilterFn">{{ 'PORTAL.ACTIONS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -447,10 +444,7 @@
         class="mb-4"
       >
         <ng-template #movementAction>
-          <button nz-button nzType="default" (click)="openMovementModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'PORTAL.NEW_MOVEMENT_REQUEST' | translate }}
-          </button>
+          <button nz-button nzType="default" (click)="openMovementModal()" appIconAction="create"></button>
         </ng-template>
 
         <nz-table
@@ -461,21 +455,21 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.SKU' | translate }}</th>
-              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th>{{ 'PORTAL.WAREHOUSE' | translate }}</th>
-              <th>{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
-              <th>{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: stkTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: stkTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort" [nzFilters]="'lot_number' | gridFilterList: stkTable.nzData" [nzFilterFn]="'lot_number' | gridFilterFn">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity_available' | gridSort" [nzFilters]="'quantity_available' | gridFilterList: stkTable.nzData" [nzFilterFn]="'quantity_available' | gridFilterFn">{{ 'PORTAL.AVAILABLE_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_reserved' | gridSort" [nzFilters]="'quantity_reserved' | gridFilterList: stkTable.nzData" [nzFilterFn]="'quantity_reserved' | gridFilterFn">{{ 'PORTAL.RESERVED_QTY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (s of stkTable.data; track s.id) {
+            @for (s of stkTable.data; track stockLineKey(s) + s.lot_number) {
               <tr>
-                <td><code>{{ s.product_sku }}</code></td>
-                <td><strong>{{ s.product_name }}</strong></td>
-                <td>{{ s.warehouse_name }}</td>
-                <td>{{ s.available_qty }} {{ s.unit_of_measure }}</td>
-                <td>{{ s.reserved_qty }} {{ s.unit_of_measure }}</td>
+                <td><code>{{ s.sku }}</code></td>
+                <td><strong>{{ s.name }}</strong></td>
+                <td>{{ s.lot_number || '-' }}</td>
+                <td>{{ s.quantity_available }}</td>
+                <td>{{ s.quantity_reserved }}</td>
               </tr>
             }
           </tbody>
@@ -492,12 +486,12 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
+              <th [nzSortFn]="'executed_at' | gridSort" [nzFilters]="'executed_at' | gridFilterList: movTable.nzData" [nzFilterFn]="'executed_at' | gridFilterFn">{{ 'PORTAL.MOVEMENT_DATE' | translate }}</th>
               <th>{{ 'PORTAL.MOVEMENT_DIRECTION' | translate }}</th>
-              <th>{{ 'PORTAL.SKU' | translate }}</th>
-              <th>{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
-              <th>{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.QUANTITY' | translate }}</th>
+              <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: movTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'PORTAL.SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: movTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'PORTAL.PRODUCT_NAME' | translate }}</th>
+              <th [nzSortFn]="'lot_number' | gridSort" [nzFilters]="'lot_number' | gridFilterList: movTable.nzData" [nzFilterFn]="'lot_number' | gridFilterFn">{{ 'PORTAL.LOT_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: movTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'PORTAL.QUANTITY' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -529,10 +523,7 @@
     <nz-tab [nzTitle]="'PORTAL.TAB_CUSTOMS' | translate">
       <nz-card [nzTitle]="'PORTAL.CUSTOMS_DOSSIERS' | translate" [nzExtra]="customsAction">
         <ng-template #customsAction>
-          <button nz-button nzType="primary" (click)="openShipmentModal()">
-            <span nz-icon nzType="send"></span>
-            {{ 'PORTAL.NEW_SHIPMENT_REQUEST' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openShipmentModal()" appIconAction="create"></button>
         </ng-template>
 
         <nz-table
@@ -543,13 +534,13 @@
         >
           <thead>
             <tr>
-              <th>{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
-              <th>{{ 'PORTAL.DIRECTION' | translate }}</th>
-              <th>{{ 'PORTAL.ORIGIN' | translate }}</th>
-              <th>{{ 'PORTAL.DESTINATION' | translate }}</th>
-              <th>{{ 'PORTAL.PACKAGES' | translate }}</th>
-              <th>{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
-              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'dossier_number' | gridSort" [nzFilters]="'dossier_number' | gridFilterList: customsTable.nzData" [nzFilterFn]="'dossier_number' | gridFilterFn">{{ 'PORTAL.DOSSIER_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'direction' | gridSort" [nzFilters]="'direction' | gridFilterList: customsTable.nzData" [nzFilterFn]="'direction' | gridFilterFn">{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th [nzSortFn]="'origin_country' | gridSort" [nzFilters]="'origin_country' | gridFilterList: customsTable.nzData" [nzFilterFn]="'origin_country' | gridFilterFn">{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th [nzSortFn]="'destination_country' | gridSort" [nzFilters]="'destination_country' | gridFilterList: customsTable.nzData" [nzFilterFn]="'destination_country' | gridFilterFn">{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th [nzSortFn]="'packages' | gridSort" [nzFilters]="'packages' | gridFilterList: customsTable.nzData" [nzFilterFn]="'packages' | gridFilterFn">{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th [nzSortFn]="'gross_weight_kg' | gridSort" [nzFilters]="'gross_weight_kg' | gridFilterList: customsTable.nzData" [nzFilterFn]="'gross_weight_kg' | gridFilterFn">{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: customsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'PORTAL.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -579,19 +570,29 @@
     (nzOnCancel)="approveModalVisible.set(false)"
     (nzOnOk)="submitApproveQuote()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="approveForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SIGNER_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="signer_name" [placeholder]="'PORTAL.ENTER_SIGNER_NAME' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="notes" rows="3" [placeholder]="'PORTAL.ENTER_NOTES' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -606,12 +607,22 @@
     (nzOnCancel)="rejectModalVisible.set(false)"
     (nzOnOk)="submitRejectQuote()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="rejectForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.REJECTION_REASON' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="reason" rows="3" [placeholder]="'PORTAL.ENTER_REJECTION_REASON' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -626,19 +637,29 @@
     (nzOnCancel)="createTicketModalVisible.set(false)"
     (nzOnOk)="submitCreateTicket()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="ticketForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SUBJECT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="subject" [placeholder]="'PORTAL.ENTER_SUBJECT' | translate" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.DESCRIPTION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="description" rows="4" [placeholder]="'PORTAL.ENTER_DESCRIPTION' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -647,13 +668,14 @@
   </nz-modal>
 
   <!-- Ticket Conversation Drawer -->
-  <nz-drawer
+  <nz-modal
     [nzVisible]="ticketDrawerVisible()"
     [nzTitle]="('PORTAL.TICKET_DETAILS' | translate) + ': ' + (selectedTicket()?.ticket_number || '')"
-    (nzOnClose)="ticketDrawerVisible.set(false)"
-    [nzWidth]="640"
+    (nzOnCancel)="ticketDrawerVisible.set(false)"
+    [nzWidth]="800"
+    [nzFooter]="null"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedTicket(); as t) {
         <div class="ticket-header mb-4">
           <h4>{{ t.subject }}</h4>
@@ -683,9 +705,18 @@
         </div>
 
         <form nz-form [formGroup]="replyForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.REPLY_MESSAGE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <textarea nz-input formControlName="message" rows="3" [placeholder]="'PORTAL.ENTER_REPLY' | translate"></textarea>
             </nz-form-control>
           </nz-form-item>
@@ -696,7 +727,7 @@
         </form>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 
   <!-- CSAT Modal -->
   <nz-modal
@@ -705,19 +736,29 @@
     (nzOnCancel)="csatModalVisible.set(false)"
     (nzOnOk)="submitCsat()"
     [nzOkLoading]="loading()"
+    okAction="confirm"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="csatForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SCORE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-rate formControlName="score"></nz-rate>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.FEEDBACK' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="feedback" rows="3" [placeholder]="'PORTAL.ENTER_FEEDBACK' | translate"></textarea>
           </nz-form-control>
         </nz-form-item>
@@ -754,12 +795,35 @@
     (nzOnCancel)="movementModalVisible.set(false)"
     (nzOnOk)="submitMovementRequest()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="movementForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('inPast')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'PORTAL.PRODUCT_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="line" nzShowSearch>
+              @for (line of movementLines(); track line.key) {
+                <nz-option [nzValue]="line.key" [nzLabel]="line.label"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.REQUEST_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="request_type">
               <nz-option nzValue="withdrawal" [nzLabel]="'PORTAL.TYPE_WITHDRAWAL' | translate"></nz-option>
               <nz-option nzValue="return" [nzLabel]="'PORTAL.TYPE_RETURN' | translate"></nz-option>
@@ -770,15 +834,22 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.QUANTITY' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="quantity" [nzMin]="1" class="w-100"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="quantity" [nzMin]="0.0001" class="w-100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'PORTAL.REQUESTED_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="requested_date" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
-            <textarea nz-input formControlName="notes" rows="2"></textarea>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <textarea nz-input formControlName="notes" rows="2" maxlength="1000"></textarea>
           </nz-form-control>
         </nz-form-item>
       </form>
@@ -792,12 +863,22 @@
     (nzOnCancel)="shipmentModalVisible.set(false)"
     (nzOnOk)="submitShipmentRequest()"
     [nzOkLoading]="loading()"
+    okAction="create"
   >
     <ng-container *nzModalContent>
       <form nz-form [formGroup]="shipmentForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'PORTAL.SERVICE_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="service_type" />
           </nz-form-control>
         </nz-form-item>
@@ -805,14 +886,14 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.ORIGIN_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="origin_country" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.DESTINATION_COUNTRY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <input nz-input formControlName="destination_country" maxlength="2" />
             </nz-form-control>
           </nz-form-item>
@@ -821,14 +902,14 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.GROSS_WEIGHT_KG' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number formControlName="gross_weight_kg" [nzMin]="0.1" class="w-100"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
 
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'PORTAL.PACKAGES' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="fieldTip">
               <nz-input-number formControlName="packages" [nzMin]="1" class="w-100"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
@@ -836,7 +917,7 @@
 
         <nz-form-item>
           <nz-form-label>{{ 'PORTAL.NOTES' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <textarea nz-input formControlName="notes" rows="2"></textarea>
           </nz-form-control>
         </nz-form-item>

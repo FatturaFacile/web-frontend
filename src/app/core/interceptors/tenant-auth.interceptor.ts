@@ -91,7 +91,9 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
         const isAuthEndpoint =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
-          req.url.includes('/sanctum/csrf-cookie');
+          req.url.includes('/sanctum/csrf-cookie') ||
+          // The reception kiosk authenticates with its own key and secret: a refused kiosk must not end the staff session.
+          req.url.includes('/visitor-kiosk/');
 
         if (err.status === 401) {
           if (!isAuthEndpoint) {

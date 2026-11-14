@@ -1,6 +1,6 @@
 import { Component, effect, inject, input, signal } from '@angular/core';
 import { AssociationAreaApiService, AssociationAreaFees, AssociationAreaRecord, I18nService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -12,7 +12,11 @@ import { recordText, saveBlob } from './save-blob';
 /** Fees with the online payment link and the receipts of the selected person. */
 @Component({
   selector: 'app-area-money',
-  imports: [MoneyPipe, NzAlertModule, NzButtonModule, NzEmptyModule, NzTableModule, NzTagModule, TranslatePipe],
+  styleUrl: './area-money.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    MoneyPipe, NzAlertModule, NzButtonModule, NzEmptyModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     @if (fees(); as standing) {
       <nz-alert
@@ -20,14 +24,14 @@ import { recordText, saveBlob } from './save-blob';
         [nzMessage]="'ASSOC_AREA.STANDING_' + standing.standing | translate"
         nzShowIcon
       />
-      <nz-table class="area-gap" nzSize="small" [nzData]="standing.assignments" [nzShowPagination]="false" [nzScroll]="{ x: 'max-content' }">
+      <nz-table class="area-gap" nzSize="small" [nzData]="standing.assignments" [nzShowPagination]="false" [nzScroll]="{ x: 'max-content' }" #gridTbl3>
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.DESCRIPTION' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl3.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'ASSOC_AREA.DESCRIPTION' | translate }}</th>
             <th>{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.NET_AMOUNT' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.LESSONS_REMAINING' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.STATUS' | translate }}</th>
+            <th [nzSortFn]="'net_amount' | gridSort" [nzFilters]="'net_amount' | gridFilterList: gridTbl3.nzData" [nzFilterFn]="'net_amount' | gridFilterFn">{{ 'ASSOC_AREA.NET_AMOUNT' | translate }}</th>
+            <th [nzSortFn]="'lessons_remaining' | gridSort" [nzFilters]="'lessons_remaining' | gridFilterList: gridTbl3.nzData" [nzFilterFn]="'lessons_remaining' | gridFilterFn">{{ 'ASSOC_AREA.LESSONS_REMAINING' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: gridTbl3.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'ASSOC_AREA.STATUS' | translate }}</th>
             <th>{{ 'ASSOC_AREA.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -82,16 +86,6 @@ import { recordText, saveBlob } from './save-blob';
           }
         </tbody>
       </nz-table>
-    }
-  `,
-  styles: `
-    .area-gap {
-      display: block;
-      margin-top: 12px;
-    }
-
-    .area-section {
-      margin: 24px 0 12px;
     }
   `,
 })

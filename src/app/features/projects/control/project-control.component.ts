@@ -13,6 +13,7 @@ import { PcMilestonesComponent } from './pc-milestones.component';
 
 @Component({
   selector: 'app-project-control',
+  styleUrl: './project-control.component.scss',
   imports: [
     NzTabsModule,
     RouterLink,

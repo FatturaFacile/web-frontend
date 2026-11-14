@@ -59,14 +59,9 @@ describe('Billing pages', () => {
     billingApi.getBillingPlans.mockReturnValue(of(page([plan])));
     billingApi.getBillingPlan.mockReturnValue(of({ success: true, message: 'ok', data: plan }));
     salesApi.getOrders.mockReturnValue(of(page([])));
+    // The server returns only the billable delivery notes (`billable=true`): neither draft nor invoiced.
     salesApi.getDeliveryNotes.mockReturnValue(
-      of(
-        page([
-          { id: 'd1', ddt_number: 'DDT-1', contact_id: 'c1', date: '2026-11-01', status: 'dispatched' },
-          { id: 'd2', ddt_number: 'DDT-2', contact_id: 'c1', date: '2026-11-02', status: 'invoiced' },
-          { id: 'd3', ddt_number: 'DDT-3', contact_id: 'c1', date: '2026-11-03', status: 'draft' },
-        ]),
-      ),
+      of(page([{ id: 'd1', ddt_number: 'DDT-1', contact_id: 'c1', date: '2026-11-01', status: 'dispatched' }])),
     );
 
     await TestBed.configureTestingModule({
@@ -91,10 +86,15 @@ describe('Billing pages', () => {
     }).compileComponents();
   });
 
-  it('loads the billing plans and invoices one milestone', () => {
+  /** The grids load through a debounced stream: lets the first request settle. */
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+  it('loads the billing plans and invoices one milestone', async () => {
     const fixture = TestBed.createComponent(BillingPlansComponent);
     fixture.detectChanges();
-    expect(billingApi.getBillingPlans).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 15 }));
+    await settle();
+    expect(billingApi.getBillingPlans).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 10 }));
+    expect(fixture.componentInstance['grid'].items()).toEqual([plan]);
 
     billingApi.invoiceBillingPlanItem.mockReturnValue(of({ success: true, message: 'ok', data: {} }));
     fixture.componentInstance['invoiceItem'](plan, plan.items![0]);
@@ -126,13 +126,24 @@ describe('Billing pages', () => {
     expect(message.error).toHaveBeenCalledWith('Plan already billed');
   });
 
-  it('offers only billable delivery notes for deferred invoicing and sends the selection', () => {
+  it('filters the billing plans by status on the server', async () => {
+    const fixture = TestBed.createComponent(BillingPlansComponent);
+    fixture.detectChanges();
+    await settle();
+    fixture.componentInstance['filterStatus']('completed');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(billingApi.getBillingPlans).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'completed', page: 1 }));
+  });
+
+  it('offers only billable delivery notes for deferred invoicing and sends the selection', async () => {
     const fixture = TestBed.createComponent(DeferredBillingComponent);
     fixture.detectChanges();
+    await settle();
     const component = fixture.componentInstance;
-    expect(component['billable']().map((n) => n.id)).toEqual(['d1']);
+    expect(salesApi.getDeliveryNotes).toHaveBeenCalledWith(expect.objectContaining({ billable: true }));
+    expect(component['grid'].items().map((n) => n.id)).toEqual(['d1']);
 
-    component['toggle']('d1', true);
+    component['setSelection'](component['grid'].items());
     billingApi.createDeferredInvoice.mockReturnValue(of({ success: true, message: 'ok', data: {} }));
     component['createDeferred']();
     expect(billingApi.createDeferredInvoice).toHaveBeenCalledWith({ delivery_note_ids: ['d1'], due_date: null });

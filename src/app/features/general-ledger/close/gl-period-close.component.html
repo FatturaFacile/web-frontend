@@ -1,9 +1,9 @@
 <nz-card>
-  <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+  <div class="toolbar">
     <label for="gl-close-period">{{ 'GL.PERIOD' | translate }}</label>
     <nz-select
       id="gl-close-period"
-      style="min-width: 260px"
+      class="select-lg"
       nzShowSearch
       [ngModel]="periodId()"
       (ngModelChange)="selectPeriod($event)"
@@ -16,17 +16,17 @@
   </div>
 
   @if (blockingMessage(); as blocking) {
-    <nz-alert nzType="warning" nzShowIcon style="margin-bottom: 16px" [nzMessage]="'GL.CLOSE_BLOCKED' | translate" [nzDescription]="blocking" />
+    <nz-alert class="blocked-alert" nzType="warning" nzShowIcon [nzMessage]="'GL.CLOSE_BLOCKED' | translate" [nzDescription]="blocking" />
   }
 
   @if (checklist(); as list) {
-    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+    <div class="toolbar">
       <strong>{{ list.period_name }}</strong>
       <nz-tag [nzColor]="list.status === 'closed' ? 'default' : 'green'">{{ list.status }}</nz-tag>
       <nz-tag [nzColor]="list.can_close ? 'green' : 'red'">
         {{ (list.can_close ? 'GL.CAN_CLOSE' : 'GL.CANNOT_CLOSE') | translate }}
       </nz-tag>
-      <span style="flex: 1"></span>
+      <span class="spacer"></span>
       @if (canWrite) {
         @if (isClosed()) {
           <button nz-button type="button" (click)="reopenPeriod()">{{ 'GL.ACTION_REOPEN' | translate }}</button>
@@ -36,14 +36,14 @@
       }
     </div>
 
-    <h4>{{ 'GL.CHECKS' | translate }}</h4>
-    <nz-table nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()">
+    <h4 class="section-title">{{ 'GL.CHECKS' | translate }}</h4>
+    <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.checks" [nzShowPagination]="false" [nzLoading]="loading()" #gridTbl28>
       <thead>
         <tr>
-          <th>{{ 'GL.CHECK' | translate }}</th>
+          <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: gridTbl28.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'GL.CHECK' | translate }}</th>
           <th>{{ 'GL.BLOCKING' | translate }}</th>
           <th>{{ 'GL.STATUS' | translate }}</th>
-          <th nzAlign="right">{{ 'GL.COUNT' | translate }}</th>
+          <th nzAlign="right" [nzSortFn]="'count' | gridSort" [nzFilters]="'count' | gridFilterList: gridTbl28.nzData" [nzFilterFn]="'count' | gridFilterFn">{{ 'GL.COUNT' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -62,22 +62,22 @@
       </tbody>
     </nz-table>
 
-    <h4 style="margin-top: 24px">{{ 'GL.CLOSE_TASKS' | translate }}</h4>
+    <h4 class="section-title section-title-lg">{{ 'GL.CLOSE_TASKS' | translate }}</h4>
     @if (canWrite && !isClosed()) {
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px">
-        <input nz-input style="max-width: 360px" maxlength="255" [attr.aria-label]="'GL.TASK_TITLE' | translate" [placeholder]="'GL.TASK_TITLE' | translate" [(ngModel)]="newTitle" />
+      <div class="toolbar">
+        <input class="task-input" nz-input maxlength="255" [attr.aria-label]="'GL.TASK_TITLE' | translate" [placeholder]="'GL.TASK_TITLE' | translate" [(ngModel)]="newTitle" />
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [(ngModel)]="newBlocking">{{ 'GL.BLOCKING' | translate }}</label>
-        <button nz-button type="button" [disabled]="!newTitle.trim()" (click)="addTask()">{{ 'GL.ADD_TASK' | translate }}</button>
+        <button nz-button type="button" [disabled]="!newTitle.trim()" (click)="addTask()" appIconAction="add"></button>
       </div>
     }
     @if (list.tasks.length === 0) {
       <nz-empty [nzNotFoundContent]="'GL.NO_TASKS' | translate" />
     } @else {
-      <nz-table nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false">
+      <nz-table [nzScroll]="{ x: '720px' }" nzSize="small" [nzData]="list.tasks" [nzShowPagination]="false" #gridTbl29>
         <thead>
           <tr>
-            <th>{{ 'GL.TASK_TITLE' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl29.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'GL.TASK_TITLE' | translate }}</th>
             <th>{{ 'GL.BLOCKING' | translate }}</th>
             <th>{{ 'GL.STATUS' | translate }}</th>
             <th>{{ 'GL.COL_ACTIONS' | translate }}</th>

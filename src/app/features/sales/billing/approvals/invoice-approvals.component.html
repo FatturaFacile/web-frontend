@@ -4,16 +4,14 @@
   <div class="toolbar">
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <nz-icon nzType="plus" /> {{ 'SC.APPROVALS.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="openCreate()"></button>
     }
   </div>
-  <nz-table [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzScroll]="{ x: '760px' }" [nzData]="matrices()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle" #gridTbl37>
     <thead>
       <tr>
-        <th>{{ 'SC.PRICING.NAME' | translate }}</th>
-        <th>{{ 'SC.APPROVALS.TIERS' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl37.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'SC.PRICING.NAME' | translate }}</th>
+        <th [nzSortFn]="'tier_level' | gridSort" [nzFilters]="'tier_level' | gridFilterList: gridTbl37.nzData" [nzFilterFn]="'tier_level' | gridFilterFn">{{ 'SC.APPROVALS.TIERS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </thead>
@@ -31,18 +29,15 @@
           <td>
             @if (canWrite()) {
               <button
-                nz-button
+                nz-button appIconAction="delete"
                 nzType="text"
                 nzDanger
                 nzSize="small"
                 type="button"
                 nz-popconfirm
-                [attr.aria-label]="'COMMON.DELETE' | translate"
                 [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
                 (nzOnConfirm)="remove(m)"
-              >
-                <nz-icon nzType="delete" />
-              </button>
+              ></button>
             }
           </td>
         </tr>
@@ -61,6 +56,7 @@
   [nzOkLoading]="saving()"
   [nzOkDisabled]="form.invalid || tiers.invalid"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="create"
   (nzOnOk)="submit()"
 >
   <ng-container *nzModalContent>
@@ -91,13 +87,9 @@
         }
         <input nz-input inputmode="decimal" formControlName="threshold_min" [placeholder]="'SC.APPROVALS.THRESHOLD_MIN' | translate" [attr.aria-label]="'SC.APPROVALS.THRESHOLD_MIN' | translate" />
         <input nz-input inputmode="decimal" formControlName="threshold_max" [placeholder]="'SC.APPROVALS.THRESHOLD_MAX' | translate" [attr.aria-label]="'SC.APPROVALS.THRESHOLD_MAX' | translate" />
-        <button nz-button nzType="text" nzDanger type="button" [disabled]="tiers.length <= 1" [attr.aria-label]="'SC.LINES.REMOVE' | translate" (click)="removeTier(i)">
-          <nz-icon nzType="delete" />
-        </button>
+        <button nz-button appIconAction="delete" nzType="text" nzDanger type="button" [disabled]="tiers.length <= 1" (click)="removeTier(i)"></button>
       </div>
     }
-    <button nz-button nzType="dashed" type="button" (click)="addTier()">
-      <nz-icon nzType="plus" /> {{ 'SC.APPROVALS.ADD_TIER' | translate }}
-    </button>
+    <button nz-button appIconAction="add" nzType="dashed" type="button" (click)="addTier()"></button>
   </ng-container>
 </nz-modal>

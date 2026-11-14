@@ -20,6 +20,7 @@ import { EmployeeTransferComponent } from './employee-transfer.component';
 /** Employee file at `/hr/employees/:id`. */
 @Component({
   selector: 'app-employee-detail',
+  styleUrl: './employee-detail.component.scss',
   imports: [
     DatePipe,
     RouterLink,

@@ -132,9 +132,14 @@
         </button>
       }
 
-      <button nz-button nzType="primary" type="submit" [nzLoading]="isSubmitting()">
-        {{ 'PROFILE.PASSWORD_SUBMIT' | translate }}
-      </button>
+      <button
+        nz-button
+        nzType="primary"
+        type="submit"
+        appIconAction="save"
+        [nzLoading]="isSubmitting()"
+        [disabled]="form.invalid"
+      ></button>
     </form>
   </nz-card>
 </div>
@@ -142,6 +147,8 @@
 <ng-template #fieldError let-control>
   @if (control.hasError('serverError')) {
     {{ control.getError('serverError') }}
+  } @else if (control.hasError('maxlength')) {
+    {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
   } @else {
     {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
   }

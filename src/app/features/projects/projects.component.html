@@ -3,10 +3,7 @@
   subtitle="Manage enterprise projects, task schedules, EVM indicators, and billing milestones"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openCreateModal()">
-      <nz-icon nzType="plus" />
-      {{ 'PRJ.LBL_NEW_PROJECT' | translate }}
-    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
   </div>
 </app-page-header>
 
@@ -47,76 +44,42 @@
     </div>
   </div>
 
-  <nz-table
-    #projTable
-    [nzData]="projects()"
-    [nzLoading]="loading()"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzFrontPagination]="false"
-    (nzQueryParams)="onQueryParamsChange($event)"
-  >
-    <thead>
-      <tr>
-        <th>{{ 'PRJ.LBL_PROJECT' | translate }}</th>
-        <th>{{ 'PRJ.LBL_TYPE' | translate }}</th>
-        <th>{{ 'PRJ.LBL_STATUS' | translate }}</th>
-        <th>{{ 'PRJ.LBL_HEALTH' | translate }}</th>
-        <th>{{ 'PRJ.LBL_PROGRESS' | translate }}</th>
-        <th>{{ 'PRJ.LBL_CONTRACT_VALUE' | translate }}</th>
-        <th nzWidth="220px">{{ 'PRJ.LBL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (p of projTable.data; track p.id) {
-        <tr>
-          <td>
-            <div class="proj-info">
-              <button type="button" class="proj-title" (click)="openDetail(p)">{{ p.name }}</button>
-              <span class="proj-num">{{ p.project_number }}</span>
-            </div>
-          </td>
-          <td>
-            <nz-tag>{{ p.project_type }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(p.status)">{{ p.status }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag>
-          </td>
-          <td style="width: 130px">
-            <nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress>
-          </td>
-          <td>{{ p.contract_value | money: p.currency }}</td>
-          <td>
-            <nz-space>
-              <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
-                {{ 'PRJ.LBL_MANAGE' | translate }}
-              </button>
-              <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
-                {{ 'PRJ.CONTROL' | translate }}
-              </a>
-              @if (p.status === 'draft' || p.status === 'paused') {
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
-                  {{ 'PRJ.LBL_START' | translate }}
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="projects" />
+
+  <ng-template #nameTpl let-p>
+    <div class="proj-info">
+      <button type="button" class="proj-title" (click)="openDetail(p)">{{ p.name }}</button>
+      <span class="proj-num">{{ p.project_number }}</span>
+    </div>
+  </ng-template>
+  <ng-template #typeTpl let-p><nz-tag>{{ p.project_type }}</nz-tag></ng-template>
+  <ng-template #statusTpl let-p><nz-tag [nzColor]="getStatusColor(p.status)">{{ p.status }}</nz-tag></ng-template>
+  <ng-template #healthTpl let-p><nz-tag [nzColor]="getHealthColor(p.health_status)">{{ p.health_status }}</nz-tag></ng-template>
+  <ng-template #progressTpl let-p><nz-progress [nzPercent]="+p.progress_percentage || 0" nzSize="small"></nz-progress></ng-template>
+  <ng-template #valueTpl let-p>{{ p.contract_value | money: p.currency }}</ng-template>
+  <ng-template #actionsTpl let-p>
+    <nz-space>
+                <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(p)">
+                  {{ 'PRJ.LBL_MANAGE' | translate }}
                 </button>
-              }
-              @if (p.status === 'active') {
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
-                  {{ 'PRJ.LBL_PAUSE' | translate }}
-                </button>
-                <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
-                  {{ 'PRJ.LBL_COMPLETE' | translate }}
-                </button>
-              }
-            </nz-space>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+                <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
+                  {{ 'PRJ.CONTROL' | translate }}
+                </a>
+                @if (p.status === 'draft' || p.status === 'paused') {
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
+                    {{ 'PRJ.LBL_START' | translate }}
+                  </button>
+                }
+                @if (p.status === 'active') {
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="pause(p)">
+                    {{ 'PRJ.LBL_PAUSE' | translate }}
+                  </button>
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="complete(p)">
+                    {{ 'PRJ.LBL_COMPLETE' | translate }}
+                  </button>
+                }
+              </nz-space>
+  </ng-template>
 </nz-card>
 
 <!-- Create Project Modal -->
@@ -124,8 +87,10 @@
   [nzVisible]="createModalVisible()"
   [nzTitle]="'PRJ.LBL_CREATE_NEW_PROJECT' | translate"
   (nzOnCancel)="createModalVisible.set(false)"
+  okAction="create"
   (nzOnOk)="submitCreateProject()"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="projectForm.invalid"
   [nzWidth]="620"
 >
   <ng-container *nzModalContent>
@@ -133,13 +98,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Project number is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'project_number')">
             <input nz-input formControlName="project_number" placeholder="PRJ-2026-001" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_NAME' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Name is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'name')">
             <input nz-input formControlName="name" [placeholder]="'PRJ.LBL_E_G_ERP_IMPLEMENTATION' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -148,13 +113,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_CLIENT_CONTACT_ID_UUID' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Client ID is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'contact_id')">
             <input nz-input formControlName="contact_id" [placeholder]="'PRJ.LBL_CLIENT_CONTACT_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PROJECT_MANAGER_ID_UUID' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Manager is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'project_manager_user_id')">
             <input nz-input formControlName="project_manager_user_id" [placeholder]="'PRJ.LBL_USER_UUID' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -189,13 +154,13 @@
       <div class="form-row">
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_START' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Start date is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'planned_start_date')">
             <input nz-input formControlName="planned_start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="form-col">
           <nz-form-label nzRequired>{{ 'PRJ.LBL_PLANNED_END' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="End date is required">
+          <nz-form-control [nzErrorTip]="errorTip(projectForm, 'planned_end_date')">
             <input nz-input formControlName="planned_end_date" type="date" />
           </nz-form-control>
         </nz-form-item>
@@ -203,12 +168,12 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>Contract Value ({{ authStore.activeCurrency() }})</nz-form-label>
-        <nz-form-control nzErrorTip="Contract value is required">
+        <nz-form-control [nzErrorTip]="errorTip(projectForm, 'contract_value')">
           <nz-input-number
             formControlName="contract_value"
             [nzMin]="0"
             [nzStep]="1000"
-            style="width: 100%"
+           class="w-full"
           ></nz-input-number>
         </nz-form-control>
       </nz-form-item>

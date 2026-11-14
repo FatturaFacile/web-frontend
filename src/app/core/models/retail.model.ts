@@ -3,7 +3,7 @@ export interface CommercialDocumentLine {
   description: string;
   quantity: number;
   unit_price: number;
-  vat_rate: number;
+  tax_rate: number;
   total_amount: number;
 }
 
@@ -30,7 +30,7 @@ export interface StoreCommercialDocumentPayload {
     description: string;
     quantity: number;
     unit_price: number;
-    vat_rate?: number;
+    tax_rate: number;
   }[];
 }
 

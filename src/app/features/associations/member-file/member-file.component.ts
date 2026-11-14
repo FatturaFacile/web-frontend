@@ -10,6 +10,7 @@ import { MEMBER_FILE_PANELS } from '../pages/members.page';
 /** File of one member: guardians, authorizations, documents and medical certificates. */
 @Component({
   selector: 'app-association-member-file',
+  styleUrl: './member-file.component.scss',
   imports: [NzButtonModule, NzTabsModule, PageHeaderComponent, ResourcePanelComponent, RouterLink, TranslatePipe],
   template: `
     <app-page-header [title]="'RES.PAGE.ASSOC_MEMBER_FILE' | translate" />

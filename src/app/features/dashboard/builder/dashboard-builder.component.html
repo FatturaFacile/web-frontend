@@ -35,9 +35,7 @@
         <nz-option [nzValue]="widget.id" [nzLabel]="widget.title" />
       }
     </nz-select>
-    <button nz-button type="button" [disabled]="!widgetToAdd()" (click)="add()">
-      {{ 'DASHBOARD_BUILDER.ADD' | translate }}
-    </button>
+    <button nz-button type="button" appIconAction="add" [disabled]="!widgetToAdd()" (click)="add()"></button>
   </div>
 
   @if (placements().length === 0) {
@@ -79,9 +77,7 @@
               <button nz-button nzType="link" nzSize="small" type="button" [disabled]="last" (click)="move(i, 1)">
                 {{ 'DASHBOARD_BUILDER.DOWN' | translate }}
               </button>
-              <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="remove(i)">
-                {{ 'DASHBOARD_BUILDER.REMOVE' | translate }}
-              </button>
+              <button nz-button nzType="link" nzDanger nzSize="small" type="button" appIconAction="delete" (click)="remove(i)"></button>
             </td>
           </tr>
         }
@@ -90,9 +86,7 @@
   }
 
   <div class="db-toolbar">
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!dirty()" (click)="save()">
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
+    <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="!dirty()" (click)="save()"></button>
     <button nz-button nzDanger type="button" (click)="reset()">{{ 'DASHBOARD_BUILDER.RESET' | translate }}</button>
     <button nz-button type="button" [nzLoading]="previewLoading()" (click)="loadPreview()">
       {{ 'DASHBOARD_BUILDER.PREVIEW' | translate }}

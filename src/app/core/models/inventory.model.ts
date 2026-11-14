@@ -1,18 +1,40 @@
+import { QueryFilterParams } from './api.models';
+
+/** A catalog product as the API returns it (Product model: the money fields arrive as decimal strings). */
 export interface ProductItem {
   id: string;
   sku: string;
+  barcode?: string | null;
   name: string;
-  description?: string;
-  warehouse: string;
-  quantity: number;
-  unit_of_measure: string;
-  hs_code?: string;
-  price: number;
-  currency: 'EUR' | 'CHF';
-  tax_rate?: number;
-  status?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  description?: string | null;
+  unit_measure: string;
+  cost_price: number | string;
+  sale_price: number | string;
+  tax_rate: number | string;
+  hs_code?: string | null;
+  min_stock?: number | string | null;
+  is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+/** Query of GET /inventory/movements (grid parameters travel in the same object). */
+export interface StockMovementFilterParams extends QueryFilterParams {
+  stock_item_id?: string;
+  warehouse_id?: string;
+  movement_type?: string;
+}
+
+/** Query of GET /inventory/adjustments. */
+export interface InventoryAdjustmentFilterParams extends QueryFilterParams {
+  warehouse_id?: string;
+  status?: string;
+}
+
+/** Query of GET /inventory/counts. */
+export interface InventoryCountFilterParams extends QueryFilterParams {
+  warehouse_id?: string;
+  status?: string;
 }
 
 export interface ProductFilterParams {
@@ -23,17 +45,18 @@ export interface ProductFilterParams {
   status?: string;
 }
 
+/** Body of POST /inventory/products (StoreProductRequest): unit_measure, cost_price, sale_price and tax_rate are required. */
 export interface CreateProductPayload {
   sku: string;
   name: string;
-  description?: string;
-  warehouse: string;
-  quantity: number;
-  unit_of_measure: string;
-  hs_code?: string;
-  price: number;
-  currency: 'EUR' | 'CHF';
-  tax_rate?: number;
+  barcode?: string | null;
+  description?: string | null;
+  unit_measure: string;
+  cost_price: number;
+  sale_price: number;
+  tax_rate: number;
+  hs_code?: string | null;
+  min_stock?: number | null;
 }
 
 export interface WarehouseItem {

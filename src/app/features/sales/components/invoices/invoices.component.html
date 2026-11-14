@@ -35,30 +35,23 @@
     />
 
     <span class="spacer"></span>
-    <button nz-button nzType="default" type="button" (click)="sendBulkSdi()" style="margin-right: 8px">
+    <button nz-button nzType="default" type="button" (click)="sendBulkSdi()">
       <nz-icon nzType="send" /> {{ 'SALES.LBL_INVIA_SDI_MASSIVO' | translate }}
     </button>
-    <button nz-button nzType="primary" type="button" (click)="create()">
-      <nz-icon nzType="plus" /> {{ "SALES.INVOICES.NEW" | translate }}
-    </button>
+    <button nz-button appIconAction="create" nzType="primary" type="button" (click)="create()"></button>
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <!-- Cell Templates -->
   <ng-template #numberTpl let-inv>
     <strong>{{ inv.invoice_number }}</strong>
     @if (inv.has_swiss_qr) {
-      <nz-tag nzColor="red" style="margin-left: 6px">QR</nz-tag>
+      <nz-tag class="qr-tag" nzColor="red">QR</nz-tag>
     }
   </ng-template>
 
@@ -201,9 +194,9 @@
 >
   <ng-container *nzModalContent>
     @if (currentQrBill(); as qr) {
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <div class="qr-modal">
         <nz-qrcode [nzValue]="qr.payload || ''" [nzSize]="220"></nz-qrcode>
-        <div style="width: 100%; font-size: 13px;">
+        <div class="qr-details">
           <div><strong>{{ 'SALES.LBL_IBAN' | translate }}</strong> {{ qr.iban }}</div>
           <div><strong>{{ 'SALES.LBL_IMPORTO' | translate }}</strong> {{ qr.amount | money: qr.currency }}</div>
           <div><strong>{{ 'SALES.LBL_TIPO_RIFERIMENTO' | translate }}</strong> {{ qr.reference_type }}</div>
@@ -213,7 +206,7 @@
     }
   </ng-container>
   <ng-template #qrModalFooter>
-    <button nz-button nzType="primary" (click)="qrModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="qrModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>
 
@@ -232,10 +225,10 @@
         <nz-table #outTable [nzData]="sdi.outbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>{{ 'SALES.LBL_AZIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th>{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: outTable.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'SALES.LBL_AZIONE' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort" [nzFilters]="'transmitted_at' | gridFilterList: outTable.nzData" [nzFilterFn]="'transmitted_at' | gridFilterFn">{{ 'SALES.LBL_DATA_TRASMISSIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: outTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort" [nzFilters]="'details' | gridFilterList: outTable.nzData" [nzFilterFn]="'details' | gridFilterFn">{{ 'SALES.LBL_DETTAGLI' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -256,10 +249,10 @@
         <nz-table #inTable [nzData]="sdi.inbound || []" nzSize="small" [nzFrontPagination]="true" [nzPageSize]="5">
           <thead>
             <tr>
-              <th>{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
-              <th>{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
-              <th>{{ 'SALES.LBL_STATO' | translate }}</th>
-              <th>{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
+              <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: inTable.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'SALES.LBL_AZIONE_RICEVUTA' | translate }}</th>
+              <th [nzSortFn]="'transmitted_at' | gridSort" [nzFilters]="'transmitted_at' | gridFilterList: inTable.nzData" [nzFilterFn]="'transmitted_at' | gridFilterFn">{{ 'SALES.LBL_DATA_RICEZIONE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: inTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
+              <th [nzSortFn]="'details' | gridSort" [nzFilters]="'details' | gridFilterList: inTable.nzData" [nzFilterFn]="'details' | gridFilterFn">{{ 'SALES.LBL_DETTAGLI_CODICE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -277,7 +270,7 @@
     }
   </ng-container>
   <ng-template #sdiFooter>
-    <button nz-button nzType="primary" (click)="sdiLogsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="sdiLogsModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>
 
@@ -286,40 +279,42 @@
   [nzVisible]="creditNoteModalVisible()"
   [nzTitle]="'SALES.LBL_EMETTI_NOTA_DI_CREDITO' | translate"
   [nzOkLoading]="savingCreditNote()"
+  [nzOkDisabled]="creditNoteForm.invalid"
   (nzOnCancel)="creditNoteModalVisible.set(false)"
+  okAction="create"
   (nzOnOk)="submitCreditNote()"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="creditNoteForm" nzLayout="vertical">
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'SALES.LBL_DATA_EMISSIONE' | translate }}</nz-form-label>
+        <nz-form-label>{{ 'SALES.LBL_DATA_EMISSIONE' | translate }}</nz-form-label>
         <nz-form-control>
           <input nz-input type="date" formControlName="date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'SALES.LBL_DESCRIZIONE_VOCE' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_RIGA_NOTA_DI_CREDITO' | translate" />
+        <nz-form-control [nzErrorTip]="creditNoteTip('description')">
+          <input nz-input maxlength="255" formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_RIGA_NOTA_DI_CREDITO' | translate" />
         </nz-form-control>
       </nz-form-item>
-      <div style="display: flex; gap: 12px;">
-        <nz-form-item style="flex: 1;">
+      <div class="form-row">
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_QUANTITA' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="quantity" [nzMin]="0.01" style="width: 100%;"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('quantity')">
+            <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.01"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_PREZZO_UNITARIO' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="unit_price" [nzMin]="0" style="width: 100%;"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('unit_price')">
+            <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
-        <nz-form-item style="flex: 1;">
+        <nz-form-item>
           <nz-form-label nzRequired>{{ 'SALES.LBL_ALIQUOTA_IVA' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="tax_rate" [nzMin]="0" style="width: 100%;"></nz-input-number>
+          <nz-form-control [nzErrorTip]="creditNoteTip('tax_rate')">
+            <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -345,10 +340,10 @@
     <nz-table #instTable [nzData]="currentInstallments()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
       <thead>
         <tr>
-          <th>{{ 'SALES.LBL_RATA' | translate }}</th>
-          <th>{{ 'SALES.LBL_SCADENZA' | translate }}</th>
-          <th>{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
-          <th>{{ 'SALES.LBL_STATO' | translate }}</th>
+          <th [nzSortFn]="'installment_number' | gridSort" [nzFilters]="'installment_number' | gridFilterList: instTable.nzData" [nzFilterFn]="'installment_number' | gridFilterFn">{{ 'SALES.LBL_RATA' | translate }}</th>
+          <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: instTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'SALES.LBL_SCADENZA' | translate }}</th>
+          <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: instTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ 'SALES.LBL_IMPORTO_2' | translate }}</th>
+          <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: instTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'SALES.LBL_STATO' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -368,6 +363,6 @@
     </nz-table>
   </ng-container>
   <ng-template #instFooter>
-    <button nz-button nzType="primary" (click)="installmentsModalVisible.set(false)">{{ 'SALES.LBL_CHIUDI' | translate }}</button>
+    <button nz-button appIconAction="close" nzType="primary" (click)="installmentsModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>

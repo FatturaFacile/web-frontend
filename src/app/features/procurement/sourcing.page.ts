@@ -19,7 +19,7 @@ const CONTRACT_FIELDS = [
   req(rf.select('contract_type', ['framework', 'service_level', 'standard', 'blanket'])),
   rf.select('status', ['draft', 'active', 'expired', 'terminated']),
   req(rf.datetime('starts_at')),
-  req(rf.datetime('ends_at')),
+  req(rf.datetime('ends_at', { notBefore: 'starts_at' })),
   rf.decimal('total_committed_amount'),
   rf.text('payment_terms_code'),
   rf.text('incoterms'),
@@ -27,7 +27,7 @@ const CONTRACT_FIELDS = [
 
 const RFQ_FIELDS = [
   req(rf.text('title')),
-  req(rf.date('response_deadline')),
+  req(rf.date('response_deadline', { notBeforeToday: true })),
   rf.text('currency', { maxLength: 3 }),
   rf.uuid('purchase_requisition_id'),
   rf.uuid('cost_center_id'),
@@ -35,9 +35,9 @@ const RFQ_FIELDS = [
   req(rf.tags('supplier_ids')),
   rf.lines('lines', [
     req(rf.text('description')),
-    req(rf.decimal('quantity')),
-    rf.text('uom'),
-    rf.text('internal_sku'),
+    req(rf.decimal('quantity', { positive: true })),
+    rf.text('uom', { maxLength: 20 }),
+    rf.text('internal_sku', { maxLength: 100 }),
     rf.date('required_by_date'),
   ]),
 ];
@@ -46,7 +46,7 @@ const QUOTE_FIELDS = [
   req(rf.lookup('supplier_id', 'suppliers')),
   rf.text('quote_reference'),
   req(rf.date('quote_date')),
-  rf.date('valid_until'),
+  rf.date('valid_until', { notBefore: 'quote_date' }),
   rf.integer('lead_time_days', { min: 0 }),
   rf.textarea('notes'),
   req(
@@ -66,12 +66,12 @@ const CONTRACT_LINE_FIELDS = [
   rf.decimal('tax_rate'),
   rf.decimal('committed_quantity'),
   req(rf.date('price_valid_from')),
-  rf.date('price_valid_to'),
+  rf.date('price_valid_to', { notBefore: 'price_valid_from' }),
 ];
 
 const CALL_OFF_FIELDS = [
   rf.date('order_date'),
-  req(rf.date('expected_delivery_date')),
+  req(rf.date('expected_delivery_date', { notBefore: 'order_date' })),
   rf.uuid('cost_center_id'),
   rf.uuid('project_id'),
   rf.textarea('notes'),
@@ -125,7 +125,7 @@ export const SOURCING_PAGE: ResourcePageConfig = {
       rowActions: [
         act('PUT', 'RES.ACTION.EDIT', '/procurement/catalogs/{id}', { prefill: true, fields: CATALOG_FIELDS }),
         act('POST', 'RES.A.add_price', '/procurement/catalogs/{id}/prices', {
-          fields: [rf.text('currency', { maxLength: 3 }), rf.decimal('min_quantity'), req(rf.decimal('unit_price')), req(rf.date('valid_from')), rf.date('valid_to')],
+          fields: [rf.text('currency', { maxLength: 3 }), rf.decimal('min_quantity'), req(rf.decimal('unit_price')), req(rf.date('valid_from')), rf.date('valid_to', { notBefore: 'valid_from' })],
         }),
         act('GET', 'RES.A.applicable_price', '/procurement/catalogs/{id}/price', {
           fields: [rf.decimal('quantity'), rf.date('date')],
@@ -170,7 +170,7 @@ export const SOURCING_PAGE: ResourcePageConfig = {
       toolbar: [
         act('POST', 'RES.A.generate_suggestions', '/procurement/purchase-suggestions/generate', { confirm: true, showResult: true }),
         act('POST', 'RES.A.convert_suggestions', '/procurement/purchase-suggestions/convert', {
-          fields: [rf.tags('suggestion_ids')],
+          fields: [req(rf.tags('suggestion_ids'))],
           showResult: true,
         }),
       ],

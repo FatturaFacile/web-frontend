@@ -10,6 +10,7 @@ import { TranslatePipe } from '@shared';
  */
 @Component({
   selector: 'app-gl-error-alert',
+  styleUrl: './gl-error-alert.component.scss',
   imports: [NzAlertModule, RouterLink, TranslatePipe],
   template: `
     @if (message(); as text) {
@@ -19,7 +20,6 @@ import { TranslatePipe } from '@shared';
       </ng-template>
     }
   `,
-  styles: [':host { display: block; margin-bottom: 16px; }'],
 })
 export class GlErrorAlertComponent {
   readonly error = input<unknown>(null);

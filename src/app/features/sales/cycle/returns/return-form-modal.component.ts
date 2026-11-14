@@ -14,7 +14,7 @@ import {
   SalesReturn,
   SalesReturnPayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { apiErrorText } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { todayIso } from '../shared/sales-status';
@@ -31,7 +31,8 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
 /** Records a customer return request against a delivery note. */
 @Component({
   selector: 'app-return-form-modal',
-  imports: [FormsModule, NzAlertModule, NzCheckboxModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  styleUrl: './return-form-modal.component.scss',
+  imports: [ModalActionsDirective, FormsModule, NzAlertModule, NzCheckboxModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <nz-modal
       [nzVisible]="visible()"
@@ -40,6 +41,7 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
       [nzOkDisabled]="!valid()"
       nzWidth="820px"
       (nzOnCancel)="visible.set(false)"
+      okAction="create"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>
@@ -76,6 +78,8 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
                 inputmode="decimal"
                 [attr.aria-label]="'SC.RETURNS.QUANTITY' | translate"
                 [placeholder]="'SC.RETURNS.QUANTITY' | translate"
+                [class.ant-input-status-error]="exceedsDelivered(draft)"
+                [attr.title]="exceedsDelivered(draft) ? ('COMMON.VALIDATION.EXCEEDS_LIMIT' | translate) : null"
                 [(ngModel)]="draft.quantity"
               />
               <nz-select [(ngModel)]="draft.condition" [attr.aria-label]="'SC.RETURNS.CONDITION' | translate">
@@ -91,12 +95,6 @@ const DECIMAL = /^\d+(\.\d{1,4})?$/;
         <textarea nz-input id="ret-notes" rows="2" class="field" [(ngModel)]="notes"></textarea>
       </ng-container>
     </nz-modal>
-  `,
-  styles: `
-    .alert { display: block; margin-bottom: 12px; }
-    .field { display: block; width: 100%; margin: 4px 0 12px; }
-    .hint { color: var(--ant-color-text-secondary, #666); }
-    .row { display: grid; grid-template-columns: 1.5fr 110px 150px auto; gap: 8px; align-items: center; margin-bottom: 6px; }
   `,
 })
 export class ReturnFormModalComponent {
@@ -155,17 +153,26 @@ export class ReturnFormModalComponent {
     });
   }
 
+  /** A return cannot give back more than the delivery note line delivered. */
+  protected exceedsDelivered(draft: ReturnLineDraft): boolean {
+    return !!draft.quantity && Number(draft.quantity) > Number(draft.item.quantity);
+  }
+
   protected valid(): boolean {
     const entered = this.drafts().filter((d) => d.quantity);
     return (
       !!this.deliveryNoteId() &&
       this.reason.trim().length > 0 &&
       entered.length > 0 &&
-      entered.every((d) => DECIMAL.test(d.quantity))
+      entered.every((d) => DECIMAL.test(d.quantity) && Number(d.quantity) > 0 && !this.exceedsDelivered(d)) &&
+      this.notes.length <= 2000
     );
   }
 
   protected submit(): void {
+    if (!this.valid()) {
+      return;
+    }
     const payload: SalesReturnPayload = {
       delivery_note_id: this.deliveryNoteId(),
       warehouse_id: this.warehouseId,

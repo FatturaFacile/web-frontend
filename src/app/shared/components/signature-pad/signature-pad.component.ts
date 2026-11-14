@@ -8,6 +8,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
  */
 @Component({
   selector: 'app-signature-pad',
+  styleUrl: './signature-pad.component.scss',
   imports: [NzButtonModule, TranslatePipe],
   template: `
     <canvas
@@ -29,30 +30,6 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
         {{ 'SIGNATURE.CLEAR' | translate }}
       </button>
     </div>
-  `,
-  styles: `
-    .sig-canvas {
-      width: 100%;
-      max-width: 480px;
-      height: auto;
-      aspect-ratio: 8 / 3;
-      border: 1px dashed var(--ant-color-border, #bfbfbf);
-      border-radius: 6px;
-      background: #fff;
-      touch-action: none;
-      cursor: crosshair;
-    }
-    .sig-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 480px;
-      margin-top: 4px;
-    }
-    .sig-hint {
-      font-size: 12px;
-      opacity: 0.75;
-    }
   `,
 })
 export class SignaturePadComponent {

@@ -83,8 +83,8 @@
       <thead>
         <tr>
           <th>{{ 'SECURITY.COL_TYPE' | translate }}</th>
-          <th>{{ 'SECURITY.COL_DEVICE' | translate }}</th>
-          <th>{{ 'SECURITY.COL_IP' | translate }}</th>
+          <th [nzSortFn]="'user_agent' | gridSort" [nzFilters]="'user_agent' | gridFilterList: sessionsTable.nzData" [nzFilterFn]="'user_agent' | gridFilterFn">{{ 'SECURITY.COL_DEVICE' | translate }}</th>
+          <th [nzSortFn]="'ip_address' | gridSort" [nzFilters]="'ip_address' | gridFilterList: sessionsTable.nzData" [nzFilterFn]="'ip_address' | gridFilterFn">{{ 'SECURITY.COL_IP' | translate }}</th>
           <th>{{ 'SECURITY.COL_LAST_ACTIVITY' | translate }}</th>
           <th>{{ 'COMMON.STATUS' | translate }}</th>
           <th nzAlign="right">{{ 'COMMON.ACTION' | translate }}</th>
@@ -151,8 +151,8 @@
   [nzTitle]="'SECURITY.DISABLE_TITLE' | translate"
   (nzOnCancel)="showDisableModal.set(false)"
   (nzOnOk)="confirmDisable()"
-  [nzOkText]="'SECURITY.DISABLE_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="disableForm.invalid"
+  okAction="confirm"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>
@@ -165,8 +165,8 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.code)">
           <input
             nz-input
             id="disable-code"
@@ -178,8 +178,8 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('code')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.recoveryCode)">
           <input
             nz-input
             id="disable-recovery-code"
@@ -201,8 +201,8 @@
   [nzTitle]="'SECURITY.REGENERATE_TITLE' | translate"
   (nzOnCancel)="showRegenerateModal.set(false)"
   (nzOnOk)="confirmRegenerate()"
-  [nzOkText]="'SECURITY.REGENERATE_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="passwordConfirmForm.invalid"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'SECURITY.REGENERATE_BODY' | translate }}</p>
@@ -224,8 +224,7 @@
   [nzTitle]="'SECURITY.NEW_CODES_TITLE' | translate"
   (nzOnCancel)="showCodesDialog.set(false)"
   (nzOnOk)="showCodesDialog.set(false)"
-  [nzOkText]="'SECURITY.CODES_SAVED_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <nz-alert
@@ -233,11 +232,11 @@
       [nzMessage]="'SECURITY.NEW_CODES_WARNING' | translate"
       [nzDescription]="'SECURITY.NEW_CODES_BODY' | translate"
       nzShowIcon
-      style="margin-bottom: 16px"
+      class="mb-4"
     ></nz-alert>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+    <div class="recovery-codes">
       @for (code of newRecoveryCodes(); track $index) {
-        <div style="background: #f5f5f5; border: 1px dashed #bfbfbf; padding: 6px; text-align: center; font-family: monospace">
+        <div class="recovery-code">
           {{ code }}
         </div>
       }
@@ -252,8 +251,8 @@
   [nzTitle]="'SECURITY.REVOKE_OTHERS' | translate"
   (nzOnCancel)="showRevokeOthersModal.set(false)"
   (nzOnOk)="confirmRevokeOthers()"
-  [nzOkText]="'SECURITY.REVOKE_OTHERS_OK' | translate"
-  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="passwordConfirmForm.invalid"
+  okAction="confirm"
   [nzOkDanger]="true"
 >
   <ng-container *nzModalContent>

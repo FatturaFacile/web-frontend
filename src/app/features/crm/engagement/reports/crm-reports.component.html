@@ -8,6 +8,9 @@
         <input nz-input id="crm-from" type="date" class="filter" [(ngModel)]="from" />
         <label for="crm-to">{{ 'CRMX.REPORTS.TO' | translate }}</label>
         <input nz-input id="crm-to" type="date" class="filter" [(ngModel)]="to" />
+        @if (endsBeforeStart()) {
+          <div class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</div>
+        }
         <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="runReports()">
           <nz-icon nzType="reload" /> {{ 'CRMX.REPORTS.RUN' | translate }}
         </button>
@@ -39,45 +42,29 @@
           </button>
         </div>
       }
-      <nz-table [nzData]="forecasts()" nzSize="middle" [nzFrontPagination]="false" [nzShowPagination]="false">
-        <thead>
-          <tr>
-            <th>{{ 'CRMX.REPORTS.PERIOD' | translate }}</th>
-            <th class="num">{{ 'CRMX.REPORTS.QUOTA' | translate }}</th>
-            <th class="num">{{ 'CRMX.REPORTS.COMMIT' | translate }}</th>
-            <th class="num">{{ 'CRMX.REPORTS.BEST_CASE' | translate }}</th>
-            <th class="num">{{ 'CRMX.REPORTS.WEIGHTED' | translate }}</th>
-            <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
-            <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (f of forecasts(); track f.id) {
-            <tr>
-              <td>{{ f.period }}</td>
-              <td class="num">{{ f.quota_amount ?? '-' }}</td>
-              <td class="num">{{ f.commit_amount ?? '-' }}</td>
-              <td class="num">{{ f.best_case_amount ?? '-' }}</td>
-              <td class="num">{{ f.weighted_amount ?? '-' }}</td>
-              <td><nz-tag>{{ (f.is_locked ? 'CRMX.REPORTS.LOCKED' : 'CRMX.REPORTS.OPEN') | translate }}</nz-tag></td>
-              <td>
-                @if (canWrite() && !f.is_locked) {
-                  <button
-                    nz-button
-                    nzSize="small"
-                    type="button"
-                    nz-popconfirm
-                    [nzPopconfirmTitle]="'CRMX.REPORTS.LOCK_CONFIRM' | translate"
-                    (nzOnConfirm)="lock(f)"
-                  >
-                    <nz-icon nzType="lock" /> {{ 'CRMX.REPORTS.LOCK' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </nz-table>
+      <app-base-table
+        [grid]="grid"
+        [columns]="forecastColumns()"
+        [actionsTemplate]="forecastActionsTpl"
+        exportFileName="forecasts"
+      />
+      <ng-template #lockedTpl let-f>
+        <nz-tag>{{ (f.is_locked ? 'CRMX.REPORTS.LOCKED' : 'CRMX.REPORTS.OPEN') | translate }}</nz-tag>
+      </ng-template>
+      <ng-template #forecastActionsTpl let-f>
+        @if (canWrite() && !f.is_locked) {
+          <button
+            nz-button
+            nzSize="small"
+            type="button"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'CRMX.REPORTS.LOCK_CONFIRM' | translate"
+            (nzOnConfirm)="lock(f)"
+          >
+            <nz-icon nzType="lock" /> {{ 'CRMX.REPORTS.LOCK' | translate }}
+          </button>
+        }
+      </ng-template>
     </nz-tab>
   </nz-tabs>
 </nz-card>

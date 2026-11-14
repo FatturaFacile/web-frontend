@@ -21,10 +21,12 @@
         <app-header />
       </nz-header>
       <nz-content class="main-content">
-        <app-breadcrumb />
-        <main id="main-content" tabindex="-1" class="content-container">
-          <router-outlet></router-outlet>
-        </main>
+        <div class="content-container">
+          <app-breadcrumb />
+          <main id="main-content" tabindex="-1" class="main-outlet">
+            <router-outlet></router-outlet>
+          </main>
+        </div>
       </nz-content>
     </nz-layout>
   </nz-layout>

@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormsModule,
   NonNullableFormBuilder,
@@ -21,26 +22,32 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
   CreatePurchaseOrderPayload,
   ExecuteThreeWayMatchPayload,
+  FetchGridModel,
   GoodsReceipt,
+  GridValue,
   InspectGoodsReceiptPayload,
   ProcessGoodsReceiptPayload,
   ProcurementApiService,
   ProcurementSupplier,
   PurchaseOrder,
+  PurchaseOrderFilterParams,
   PurchaseOrderStatus,
   SupplierInvoice,
   ThreeWayMatchLog,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { apiErrorText } from '../sales/cycle/shared/sales-api-helpers';
+import { notInPast } from '@shared/utils/date-validators';
+import { validationTipKey } from '@shared/utils/validation-tip';
 
 /** Approval states of a supplier invoice in which it cannot be paid (the API refuses the payment too). */
 const PAYMENT_BLOCKING_APPROVALS: readonly string[] = ['pending', 'in_approval', 'rejected', 'match_blocked'];
@@ -70,7 +77,7 @@ function receiptLineGroup(fb: NonNullableFormBuilder, lineId: string) {
   return fb.group({
     purchase_order_line_id: fb.control(lineId),
     quantity_received: fb.control<number | null>(null, [Validators.min(0)]),
-    lot_number: fb.control(''),
+    lot_number: fb.control('', [Validators.maxLength(100)]),
   });
 }
 
@@ -84,7 +91,11 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
 
 @Component({
   selector: 'app-purchases',
+  styleUrl: './purchases.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -101,6 +112,8 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
     NzDatePickerModule,
     NzFormModule,
     NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzIconModule,
     NzEmptyModule,
     NzTabsModule,
@@ -109,7 +122,6 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
     TranslatePipe,
   ],
   templateUrl: './purchases.component.html',
-  styleUrl: './purchases.component.scss',
 })
 export class PurchasesComponent implements OnInit {
   protected readonly authStore = inject(AuthStore);
@@ -118,6 +130,12 @@ export class PurchasesComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  /** The error text of a control of the order, receipt or match forms. */
+  tip(control: AbstractControl): string {
+    const key = validationTipKey(control);
+    return key ? this.translate.instant(key) : '';
+  }
 
   readonly activeTabIndex = signal<number>(0);
 
@@ -135,14 +153,12 @@ export class PurchasesComponent implements OnInit {
   ];
 
   // --- Purchase Orders State ---
-  readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly orders = signal<PurchaseOrder[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
-  readonly selectedStatus = signal<PurchaseOrderStatus | undefined>(undefined);
-  readonly selectedSupplier = signal<string | undefined>(undefined);
+  protected readonly orderGrid = new FetchGridModel<PurchaseOrder, PurchaseOrderFilterParams>((query) =>
+    this.procurementApi.getPurchaseOrders(query),
+  );
+  readonly selectedStatus = computed(() => this.orderGrid.filterParams().status);
+  readonly selectedSupplier = computed(() => this.orderGrid.filterParams().supplier_id);
   readonly createModalVisible = signal(false);
   readonly suppliers = signal<ProcurementSupplier[]>([]);
   readonly supplierNames = computed(
@@ -150,21 +166,18 @@ export class PurchasesComponent implements OnInit {
   );
 
   // --- Goods Receipts State ---
-  readonly goodsReceipts = signal<GoodsReceipt[]>([]);
-  readonly loadingReceipts = signal(false);
+  protected readonly receiptGrid = new FetchGridModel<GoodsReceipt>((query) => this.procurementApi.getGoodsReceipts(query));
   readonly goodsReceiptModalVisible = signal(false);
   readonly selectedOrderForReceipt = signal<PurchaseOrder | null>(null);
   readonly inspectModalVisible = signal(false);
   readonly selectedReceipt = signal<GoodsReceipt | null>(null);
 
   // --- Three-Way Match State ---
-  readonly threeWayMatches = signal<ThreeWayMatchLog[]>([]);
-  readonly loadingMatches = signal(false);
+  protected readonly matchGrid = new FetchGridModel<ThreeWayMatchLog>((query) => this.procurementApi.getThreeWayMatches(query));
   readonly executeMatchModalVisible = signal(false);
 
   // --- Supplier Invoices State ---
-  readonly supplierInvoices = signal<SupplierInvoice[]>([]);
-  readonly loadingInvoices = signal(false);
+  protected readonly invoiceGrid = new FetchGridModel<SupplierInvoice>((query) => this.procurementApi.getSupplierInvoices(query));
   readonly importSdiModalVisible = signal(false);
   readonly selectedXmlFile = signal<File | null>(null);
 
@@ -172,31 +185,28 @@ export class PurchasesComponent implements OnInit {
   readonly reasonRequest = signal<ReasonRequest | null>(null);
   readonly reasonText = signal('');
 
-  // KPIs: counts only, the amounts are decimal strings and are shown per row
-  readonly pendingApprovalCount = computed(() => this.orders().filter((o) => o.status === 'pending_approval').length);
-  readonly openMatchVarianceCount = computed(
-    () => this.threeWayMatches().filter((m) => OPEN_MATCH_VARIANCES.includes(m.match_status)).length,
-  );
-  readonly blockedInvoiceCount = computed(
-    () => this.supplierInvoices().filter((i) => i.approval_status === 'match_blocked').length,
-  );
+  // KPIs: counts over the whole dataset (the status value lists of the grids), not just the loaded page
+  readonly pendingApprovalCount = signal(0);
+  readonly openMatchVarianceCount = signal(0);
+  readonly blockedInvoiceCount = signal(0);
 
   // Forms
   readonly orderForm = this.fb.group({
     supplier_id: this.fb.control('', [Validators.required]),
-    currency: this.fb.control<'CHF' | 'EUR'>('EUR', [Validators.required]),
-    expected_delivery_date: this.fb.control<Date | null>(null, [Validators.required]),
-    item_description: this.fb.control('', [Validators.required]),
+    currency: this.fb.control<'CHF' | 'EUR'>('EUR'),
+    // The order date is today and the API requires expected_delivery_date >= order_date.
+    expected_delivery_date: this.fb.control<Date | null>(null, [Validators.required, notInPast]),
+    item_description: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
     quantity: this.fb.control(1, [Validators.required, Validators.min(0.0001)]),
     unit_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
-    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0)]),
+    tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
   });
 
   readonly receiptForm = this.fb.group({
-    supplier_delivery_note_ref: this.fb.control('', [Validators.required]),
+    supplier_delivery_note_ref: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
     received_date: this.fb.control(toIsoDay(new Date()), [Validators.required]),
     inspection_required: this.fb.control(false),
-    notes: this.fb.control(''),
+    notes: this.fb.control('', [Validators.maxLength(2000)]),
     lines: this.fb.array<ReturnType<typeof receiptLineGroup>>([]),
   });
 
@@ -219,12 +229,103 @@ export class PurchasesComponent implements OnInit {
     return this.inspectForm.controls.lines;
   }
 
+  private readonly orderNumberTpl = viewChild<TemplateRef<unknown>>('orderNumberTpl');
+  private readonly orderTypeTpl = viewChild<TemplateRef<unknown>>('orderTypeTpl');
+  private readonly orderAmountTpl = viewChild<TemplateRef<unknown>>('orderAmountTpl');
+  private readonly orderDeliveryTpl = viewChild<TemplateRef<unknown>>('orderDeliveryTpl');
+  private readonly orderStatusTpl = viewChild<TemplateRef<unknown>>('orderStatusTpl');
+  private readonly receiptNumberTpl = viewChild<TemplateRef<unknown>>('receiptNumberTpl');
+  private readonly receiptRefTpl = viewChild<TemplateRef<unknown>>('receiptRefTpl');
+  private readonly receiptDateTpl = viewChild<TemplateRef<unknown>>('receiptDateTpl');
+  private readonly receiptInspectionTpl = viewChild<TemplateRef<unknown>>('receiptInspectionTpl');
+  private readonly receiptLinesTpl = viewChild<TemplateRef<unknown>>('receiptLinesTpl');
+  private readonly matchIdTpl = viewChild<TemplateRef<unknown>>('matchIdTpl');
+  private readonly matchStatusTpl = viewChild<TemplateRef<unknown>>('matchStatusTpl');
+  private readonly matchPoTotalTpl = viewChild<TemplateRef<unknown>>('matchPoTotalTpl');
+  private readonly matchInvoiceTotalTpl = viewChild<TemplateRef<unknown>>('matchInvoiceTotalTpl');
+  private readonly matchVarianceTpl = viewChild<TemplateRef<unknown>>('matchVarianceTpl');
+  private readonly invoiceNumberTpl = viewChild<TemplateRef<unknown>>('invoiceNumberTpl');
+  private readonly invoiceDateTpl = viewChild<TemplateRef<unknown>>('invoiceDateTpl');
+  private readonly invoiceDueTpl = viewChild<TemplateRef<unknown>>('invoiceDueTpl');
+  private readonly invoiceTotalTpl = viewChild<TemplateRef<unknown>>('invoiceTotalTpl');
+  private readonly invoicePaymentTpl = viewChild<TemplateRef<unknown>>('invoicePaymentTpl');
+  private readonly invoiceApprovalTpl = viewChild<TemplateRef<unknown>>('invoiceApprovalTpl');
+
+  protected readonly orderColumns = computed<TableColumnDef<PurchaseOrder>[]>(() => {
+    this.translate.currentLanguage();
+    const typeLabel = (value: string) => this.translate.instant('PURCHASES.ORDER_TYPE.' + (value || 'standard'));
+    return [
+      { key: 'po_number', header: this.translate.instant('PURCHASES.COL_PROTOCOL'), customCellTemplate: this.orderNumberTpl() },
+      { key: 'supplier', serverKey: 'supplier.company_name', valueGetter: (row) => this.supplierName(row), header: this.translate.instant('PURCHASES.COL_VENDOR') },
+      { key: 'order_type', valueGetter: (row) => typeLabel(row.order_type ?? ''), valueLabel: typeLabel, header: this.translate.instant('PURCHASES.COL_ORDER_TYPE'), customCellTemplate: this.orderTypeTpl() },
+      { key: 'total_amount', header: this.translate.instant('COMMON.AMOUNT'), align: 'right', customCellTemplate: this.orderAmountTpl() },
+      { key: 'expected_delivery_date', header: this.translate.instant('PURCHASES.COL_EXPECTED_DELIVERY'), customCellTemplate: this.orderDeliveryTpl() },
+      { key: 'status', valueGetter: (row) => this.statusLabel(row.status), valueLabel: (value) => this.statusLabel(value as PurchaseOrderStatus), header: this.translate.instant('PURCHASES.COL_APPROVAL'), customCellTemplate: this.orderStatusTpl() },
+    ];
+  });
+
+  protected readonly receiptColumns = computed<TableColumnDef<GoodsReceipt>[]>(() => {
+    this.translate.currentLanguage();
+    return [
+      { key: 'receipt_number', header: this.translate.instant('PURCHASES.LBL_N_BOLLA_RICEZIONE'), customCellTemplate: this.receiptNumberTpl() },
+      { key: 'supplier_delivery_note_ref', header: this.translate.instant('PURCHASES.LBL_RIF_DDT_FORNITORE'), customCellTemplate: this.receiptRefTpl() },
+      { key: 'received_date', header: this.translate.instant('PURCHASES.LBL_DATA_ARRIVO'), customCellTemplate: this.receiptDateTpl() },
+      { key: 'inspection_status', header: this.translate.instant('PURCHASES.LBL_STATO_ISPEZIONE'), customCellTemplate: this.receiptInspectionTpl() },
+      { key: 'lines', serverKey: 'lines_count', valueGetter: (row) => row.lines?.length ?? 0, header: this.translate.instant('PURCHASES.LBL_RIGHE'), customCellTemplate: this.receiptLinesTpl() },
+    ];
+  });
+
+  protected readonly matchColumns = computed<TableColumnDef<ThreeWayMatchLog>[]>(() => {
+    this.translate.currentLanguage();
+    const statusLabel = (value: string) => this.translate.instant('PURCHASES.MATCH.' + value);
+    return [
+      { key: 'id', header: this.translate.instant('PURCHASES.LBL_ID_MATCH'), customCellTemplate: this.matchIdTpl() },
+      { key: 'po_number', serverKey: 'purchaseOrder.po_number', valueGetter: (row) => row.po_number || row.purchase_order_id, header: this.translate.instant('PURCHASES.LBL_PO_ORDINE') },
+      { key: 'match_status', valueGetter: (row) => statusLabel(row.match_status), valueLabel: statusLabel, header: this.translate.instant('PURCHASES.LBL_STATO_CONCILIAZIONE'), customCellTemplate: this.matchStatusTpl() },
+      { key: 'po_total_amount', header: this.translate.instant('PURCHASES.COL_PO_TOTAL'), align: 'right', customCellTemplate: this.matchPoTotalTpl() },
+      { key: 'invoice_total_amount', header: this.translate.instant('PURCHASES.COL_INVOICE_TOTAL'), align: 'right', customCellTemplate: this.matchInvoiceTotalTpl() },
+      { key: 'variance_amount', header: this.translate.instant('PURCHASES.COL_VARIANCE'), align: 'right', customCellTemplate: this.matchVarianceTpl() },
+    ];
+  });
+
+  protected readonly invoiceColumns = computed<TableColumnDef<SupplierInvoice>[]>(() => {
+    this.translate.currentLanguage();
+    const paymentLabel = (value: string) => this.translate.instant('PURCHASES.PAYMENT.' + (value || 'unpaid'));
+    const approval = (value: string) => this.approvalLabel(value);
+    return [
+      { key: 'invoice_number', header: this.translate.instant('PURCHASES.LBL_N_FATTURA_FORNITORE'), customCellTemplate: this.invoiceNumberTpl() },
+      { key: 'supplier', serverKey: 'supplier.name', valueGetter: (row) => this.invoiceSupplierName(row), header: this.translate.instant('PURCHASES.LBL_FORNITORE') },
+      { key: 'date', header: this.translate.instant('PURCHASES.LBL_DATA_EMISSIONE'), customCellTemplate: this.invoiceDateTpl() },
+      { key: 'due_date', header: this.translate.instant('PURCHASES.LBL_SCADENZA'), customCellTemplate: this.invoiceDueTpl() },
+      { key: 'total_amount', header: this.translate.instant('PURCHASES.LBL_TOTALE_LORDO'), align: 'right', customCellTemplate: this.invoiceTotalTpl() },
+      { key: 'payment_status', valueGetter: (row) => paymentLabel(row.payment_status ?? ''), valueLabel: paymentLabel, header: this.translate.instant('PURCHASES.COL_PAYMENT'), customCellTemplate: this.invoicePaymentTpl() },
+      { key: 'approval_status', valueGetter: (row) => approval(row.approval_status ?? ''), valueLabel: approval, header: this.translate.instant('PURCHASES.COL_APPROVAL'), customCellTemplate: this.invoiceApprovalTpl() },
+    ];
+  });
+
   ngOnInit(): void {
     this.loadSuppliers();
-    this.loadOrders();
-    this.loadGoodsReceipts();
-    this.loadThreeWayMatches();
-    this.loadSupplierInvoices();
+    this.refreshKpis();
+  }
+
+  /** Sums the rows of the given statuses in a status value list of a grid. */
+  private static countOf(values: GridValue[], statuses: readonly string[]): number {
+    return values
+      .filter((entry) => entry.value !== null && statuses.includes(entry.value))
+      .reduce((sum, entry) => sum + entry.count, 0);
+  }
+
+  /** Refreshes the three KPI counters from the status value lists of the order, match and invoice grids. */
+  private refreshKpis(): void {
+    this.orderGrid.loadValues('status').subscribe((values) => {
+      this.pendingApprovalCount.set(PurchasesComponent.countOf(values, ['pending_approval']));
+    });
+    this.matchGrid.loadValues('match_status').subscribe((values) => {
+      this.openMatchVarianceCount.set(PurchasesComponent.countOf(values, OPEN_MATCH_VARIANCES));
+    });
+    this.invoiceGrid.loadValues('approval_status').subscribe((values) => {
+      this.blockedInvoiceCount.set(PurchasesComponent.countOf(values, ['match_blocked']));
+    });
   }
 
   // --- Purchase Orders Methods ---
@@ -237,44 +338,18 @@ export class PurchasesComponent implements OnInit {
   }
 
   loadOrders(): void {
-    this.loading.set(true);
-    this.procurementApi
-      .getPurchaseOrders({
-        page: this.pageIndex(),
-        per_page: this.pageSize(),
-        status: this.selectedStatus(),
-        supplier_id: this.selectedSupplier(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.orders.set(res.data || []);
-          this.total.set(res.meta?.total || (res.data || []).length);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.orders.set([]);
-          this.total.set(0);
-          this.loading.set(false);
-        },
-      });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadOrders();
+    this.orderGrid.reload();
+    this.refreshKpis();
   }
 
   onSupplierChange(supplierId: string | undefined): void {
-    this.selectedSupplier.set(supplierId);
-    this.pageIndex.set(1);
-    this.loadOrders();
+    this.orderGrid.setFilter({ supplier_id: supplierId });
+    this.refreshKpis();
   }
 
   onStatusChange(status: PurchaseOrderStatus | undefined): void {
-    this.selectedStatus.set(status);
-    this.pageIndex.set(1);
-    this.loadOrders();
+    this.orderGrid.setFilter({ status });
+    this.refreshKpis();
   }
 
   supplierName(order: PurchaseOrder): string {
@@ -390,17 +465,7 @@ export class PurchasesComponent implements OnInit {
   // --- Goods Receipts Methods ---
 
   loadGoodsReceipts(): void {
-    this.loadingReceipts.set(true);
-    this.procurementApi.getGoodsReceipts().subscribe({
-      next: (res) => {
-        this.goodsReceipts.set(res.data || []);
-        this.loadingReceipts.set(false);
-      },
-      error: () => {
-        this.goodsReceipts.set([]);
-        this.loadingReceipts.set(false);
-      },
-    });
+    this.receiptGrid.reload();
   }
 
   /** Loads the order with its lines, then opens the receipt form with one row per line. */
@@ -514,17 +579,8 @@ export class PurchasesComponent implements OnInit {
   // --- Three-Way Match Methods ---
 
   loadThreeWayMatches(): void {
-    this.loadingMatches.set(true);
-    this.procurementApi.getThreeWayMatches().subscribe({
-      next: (res) => {
-        this.threeWayMatches.set(res.data || []);
-        this.loadingMatches.set(false);
-      },
-      error: () => {
-        this.threeWayMatches.set([]);
-        this.loadingMatches.set(false);
-      },
-    });
+    this.matchGrid.reload();
+    this.refreshKpis();
   }
 
   openExecuteMatchModal(): void {
@@ -608,21 +664,17 @@ export class PurchasesComponent implements OnInit {
   // --- Supplier Invoices (AP) Methods ---
 
   loadSupplierInvoices(): void {
-    this.loadingInvoices.set(true);
-    this.procurementApi.getSupplierInvoices().subscribe({
-      next: (res) => {
-        this.supplierInvoices.set(res.data || []);
-        this.loadingInvoices.set(false);
-      },
-      error: () => {
-        this.supplierInvoices.set([]);
-        this.loadingInvoices.set(false);
-      },
-    });
+    this.invoiceGrid.reload();
+    this.refreshKpis();
   }
 
   invoiceSupplierName(invoice: SupplierInvoice): string {
-    return (invoice.supplier_id && this.supplierNames().get(invoice.supplier_id)) || invoice.supplier_id || '-';
+    return (
+      invoice.supplier_name ||
+      (invoice.supplier_id && this.supplierNames().get(invoice.supplier_id)) ||
+      invoice.supplier_id ||
+      '-'
+    );
   }
 
   isPaymentBlocked(invoice: SupplierInvoice): boolean {

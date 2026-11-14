@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
@@ -60,7 +59,7 @@ describe('SubscriptionsComponent', () => {
   const mockContracts: SubscriptionContractResource[] = [
     {
       id: 'contract-1',
-      contract_number: 'SUB-2026-001',
+      subscription_number: 'SUB-2026-001',
       name: 'Alpha Plan',
       customer_id: 'cust-1',
       customer_name: 'Alpha SA',
@@ -117,9 +116,6 @@ describe('SubscriptionsComponent', () => {
     error: vi.fn(),
   };
 
-  const mockModal = {
-    confirm: vi.fn(),
-  };
 
   const mockAuthStore = {
     activeCurrency: vi.fn().mockReturnValue('CHF'),
@@ -135,7 +131,6 @@ describe('SubscriptionsComponent', () => {
         { provide: SubscriptionApiService, useValue: mockSubApi },
         { provide: AuthStore, useValue: mockAuthStore },
         { provide: NzMessageService, useValue: mockMessage },
-        { provide: NzModalService, useValue: mockModal },
       ],
     }).compileComponents();
 
@@ -143,24 +138,29 @@ describe('SubscriptionsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads metrics, plans, and contracts on initialization', () => {
+  const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
+
+  it('loads metrics, plans, and contracts on initialization', async () => {
     fixture.detectChanges();
+    await settle();
     expect(component).toBeTruthy();
     expect(mockSubApi.getMetrics).toHaveBeenCalled();
     expect(mockSubApi.getPlans).toHaveBeenCalled();
     expect(mockSubApi.getContracts).toHaveBeenCalled();
     expect(component.metrics()).toEqual(mockMetrics);
     expect(component.plans()).toEqual(mockPlans);
-    expect(component.contracts()).toEqual(mockContracts);
-    expect(component.total()).toBe(1);
+    expect(component['grid'].items()).toEqual(mockContracts);
+    expect(component['grid'].totalCount()).toBe(1);
   });
 
-  it('filters contracts on search query change', () => {
+  it('filters contracts on search query change', async () => {
     fixture.detectChanges();
+    await settle();
     const event = { target: { value: 'Alpha' } } as unknown as Event;
     component.onSearch(event);
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(component.searchTerm()).toBe('Alpha');
+    expect(component['grid'].filterParams().search).toBe('Alpha');
     expect(mockSubApi.getContracts).toHaveBeenCalledWith(
       expect.objectContaining({ search: 'Alpha', page: 1 }),
     );
@@ -190,6 +190,16 @@ describe('SubscriptionsComponent', () => {
     );
     expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgSubscriptionContractCreated');
     expect(component.createModalVisible()).toBe(false);
+  });
+
+  it('does not create a contract from an empty form', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+
+    component.submitCreateContract();
+
+    expect(mockSubApi.createContract).not.toHaveBeenCalled();
+    expect(component.contractForm.controls.customer_id.hasError('required')).toBe(true);
   });
 
   it('triggers lifecycle actions on contracts (bill now, pause, reactivate)', () => {

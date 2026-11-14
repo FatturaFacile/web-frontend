@@ -1,5 +1,10 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .rd-empty {
-  color: var(--ant-color-text-secondary, #595959);
+  color: var(--text-muted);
 }
 
 .rd-list {
@@ -8,17 +13,18 @@
 
 .rd-row {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   grid-template-columns: minmax(120px, 200px) 1fr;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
 
   dt {
-    color: var(--ant-color-text-secondary, #595959);
+    color: var(--text-secondary);
     font-weight: 500;
   }
 
   dd {
     margin: 0;
+    color: var(--text-primary);
     overflow-wrap: anywhere;
   }
 }
@@ -28,19 +34,29 @@
 }
 
 .rd-table {
-  border-collapse: collapse;
-  font-size: 12px;
   width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
 
   th,
   td {
-    border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
-    padding: 4px 8px;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--border-light);
     text-align: left;
     vertical-align: top;
   }
 
   th {
-    background: var(--ant-color-fill-quaternary, #fafafa);
+    background: var(--bg-card-secondary);
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 576px) {
+  .rd-row {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }

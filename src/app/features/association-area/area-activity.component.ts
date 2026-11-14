@@ -6,7 +6,7 @@ import {
   AssociationAreaRecord,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -18,18 +18,22 @@ import { recordText, saveBlob } from './save-blob';
 /** Calendar of lessons, documents shared with the person and authorizations to sign as a guardian. */
 @Component({
   selector: 'app-area-activity',
-  imports: [FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
+  styleUrl: './area-activity.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzEmptyModule, NzInputModule, NzTableModule, NzTagModule, TranslatePipe],
   template: `
     <h3>{{ 'ASSOC_AREA.CALENDAR' | translate }}</h3>
     @if (calendar().length === 0) {
       <nz-empty />
     } @else {
-      <nz-table nzSize="small" [nzData]="calendar()" [nzShowPagination]="false">
+      <nz-table nzSize="small" [nzData]="calendar()" [nzShowPagination]="false" #gridTbl1>
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.DATE' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.TIME' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.COURSE' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'ASSOC_AREA.DATE' | translate }}</th>
+            <th [nzSortFn]="'starts_at' | gridSort" [nzFilters]="'starts_at' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'starts_at' | gridFilterFn">{{ 'ASSOC_AREA.TIME' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl1.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
             <th>{{ 'ASSOC_AREA.STATUS' | translate }}</th>
           </tr>
         </thead>
@@ -96,7 +100,7 @@ import { recordText, saveBlob } from './save-blob';
                   [ngModel]="signedName()"
                   (ngModelChange)="signedName.set($event)"
                 />
-                <button nz-button nzType="primary" type="button" [disabled]="signedName().trim() === ''" (click)="sign(text(authorization, 'id'))">
+                <button nz-button nzType="primary" type="button" [disabled]="signedName().trim().length < 3" (click)="sign(text(authorization, 'id'))">
                   {{ 'ASSOC_AREA.SIGN' | translate }}
                 </button>
               </div>
@@ -104,28 +108,6 @@ import { recordText, saveBlob } from './save-blob';
           </article>
         }
       }
-    }
-  `,
-  styles: `
-    .area-section {
-      margin: 24px 0 12px;
-    }
-
-    .area-authorization {
-      border: 1px solid var(--ant-color-border, #d9d9d9);
-      border-radius: 6px;
-      margin-bottom: 12px;
-      padding: 12px 16px;
-    }
-
-    .area-body {
-      white-space: pre-wrap;
-    }
-
-    .area-sign {
-      display: flex;
-      gap: 8px;
-      max-width: 480px;
     }
   `,
 })

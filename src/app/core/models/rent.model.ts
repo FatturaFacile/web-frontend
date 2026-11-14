@@ -5,7 +5,7 @@ export interface RentalVehicle {
   make?: string;
   type: string;
   client?: string;
-  vignette: boolean;
+  vignette?: boolean;
   returnDate?: string;
   status: 'available' | 'rented' | 'maintenance' | 'reserved' | string;
   daily_rate?: number;
@@ -37,7 +37,6 @@ export interface CheckInInspectionPayload {
   fuel_level: string;
   damage_markers?: string[];
   photos?: string[];
-  notes?: string;
 }
 
 export interface CheckOutInspectionPayload {
@@ -46,7 +45,6 @@ export interface CheckOutInspectionPayload {
   fuel_level: string;
   damage_markers?: string[];
   photos?: string[];
-  notes?: string;
 }
 
 export interface CreateRentalBookingRequest {

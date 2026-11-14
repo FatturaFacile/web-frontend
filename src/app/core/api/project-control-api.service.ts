@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import {
   ApiResponse,
+  PaginatedResponse,
   ProjectBillingInvoice,
   ProjectBudget,
   ProjectBudgetPayload,
@@ -28,6 +29,7 @@ import {
   ProjectResourceProfile,
   ProjectResourceProfilePayload,
   ProjectRevenueRecognition,
+  QueryFilterParams,
 } from '../models';
 
 /** Project controlling endpoints beyond `ProjectApiService`. */
@@ -60,8 +62,10 @@ export class ProjectControlApiService {
 
   // --- Milestones ---
 
-  getMilestones(projectId: string): Observable<ApiResponse<ProjectMilestone[]>> {
-    return this.http.get<ApiResponse<ProjectMilestone[]>>(`${this.base}/${projectId}/milestones`);
+  getMilestones(projectId: string, params?: QueryFilterParams): Observable<PaginatedResponse<ProjectMilestone>> {
+    return this.http.get<PaginatedResponse<ProjectMilestone>>(`${this.base}/${projectId}/milestones`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createMilestone(projectId: string, payload: ProjectMilestonePayload): Observable<ApiResponse<ProjectMilestone>> {
@@ -78,9 +82,9 @@ export class ProjectControlApiService {
 
   // --- Change orders ---
 
-  getChangeOrders(projectId: string, status?: string): Observable<ProjectPaged<ProjectChangeOrder>> {
-    return this.http.get<ProjectPaged<ProjectChangeOrder>>(`${this.base}/${projectId}/change-orders`, {
-      params: status ? toHttpParams({ status }) : undefined,
+  getChangeOrders(projectId: string, params?: QueryFilterParams & { status?: string }): Observable<PaginatedResponse<ProjectChangeOrder>> {
+    return this.http.get<PaginatedResponse<ProjectChangeOrder>>(`${this.base}/${projectId}/change-orders`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 
@@ -120,8 +124,10 @@ export class ProjectControlApiService {
     return this.http.get<ProjectPaged<Record<string, unknown>>>(`${this.base}/${projectId}/billing-events`);
   }
 
-  getRevenueRecognitions(projectId: string): Observable<ProjectPaged<ProjectRevenueRecognition>> {
-    return this.http.get<ProjectPaged<ProjectRevenueRecognition>>(`${this.base}/${projectId}/revenue-recognitions`);
+  getRevenueRecognitions(projectId: string, params?: QueryFilterParams): Observable<PaginatedResponse<ProjectRevenueRecognition>> {
+    return this.http.get<PaginatedResponse<ProjectRevenueRecognition>>(`${this.base}/${projectId}/revenue-recognitions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   runRevenueRecognition(
@@ -135,9 +141,9 @@ export class ProjectControlApiService {
 
   getCosts(
     projectId: string,
-    params?: { cost_category?: string; task_id?: string; approval_status?: string },
-  ): Observable<ProjectPaged<ProjectCostEntry>> {
-    return this.http.get<ProjectPaged<ProjectCostEntry>>(`${this.base}/${projectId}/costs`, {
+    params?: QueryFilterParams & { cost_category?: string; task_id?: string; approval_status?: string },
+  ): Observable<PaginatedResponse<ProjectCostEntry>> {
+    return this.http.get<PaginatedResponse<ProjectCostEntry>>(`${this.base}/${projectId}/costs`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }

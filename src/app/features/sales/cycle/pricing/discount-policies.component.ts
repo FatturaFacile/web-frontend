@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -24,16 +24,22 @@ import {
   PriceLookupResult,
   SalesCycleApiService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
-import { DECIMAL_PATTERN } from '../shared/document-lines-editor.component';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { DECIMAL_PATTERN, maxNumber } from '../shared/document-lines-editor.component';
 import { apiErrorText, hasAnyRole, SALES_MANAGER_ROLES } from '../shared/sales-api-helpers';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { todayIso } from '../shared/sales-status';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 /** Discount policies (priority, stackable, auto-apply, customer) and the price lookup of a product. */
 @Component({
   selector: 'app-discount-policies',
+  styleUrl: './discount-policies.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
@@ -52,7 +58,6 @@ import { todayIso } from '../shared/sales-status';
     TranslatePipe,
   ],
   templateUrl: './discount-policies.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class DiscountPoliciesComponent implements OnInit {
   private readonly api = inject(SalesCycleApiService);
@@ -82,8 +87,9 @@ export class DiscountPoliciesComponent implements OnInit {
     min_order_amount: ['', [Validators.pattern(DECIMAL_PATTERN)]],
     min_quantity: ['', [Validators.pattern(DECIMAL_PATTERN)]],
     valid_from: [''],
-    valid_to: [''],
-    priority: [100, [Validators.required, Validators.min(0)]],
+    valid_to: ['', endsNotBefore('valid_from', { dateOnly: true })],
+    // priority is optional for the API (sometimes|integer)
+    priority: [100 as number | null, [Validators.min(0), Validators.max(100000)]],
     is_stackable: [true],
     auto_apply: [false],
     is_active: [true],
@@ -96,6 +102,11 @@ export class DiscountPoliciesComponent implements OnInit {
   protected priceQuantity = '1';
   protected readonly priceResult = signal<PriceLookupResult | null>(null);
   protected readonly priceEntries = computed(() => Object.entries(this.priceResult() ?? {}));
+
+  constructor() {
+    // The API requires valid_to on or after valid_from.
+    revalidateOnStartChange(this.form, 'valid_from', 'valid_to', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.lookups.load();
@@ -118,7 +129,7 @@ export class DiscountPoliciesComponent implements OnInit {
       product_id: [rule?.['product_id'] ?? ''],
       contact_id: [rule?.['contact_id'] ?? ''],
       min_threshold: [rule?.['min_threshold'] ?? '', [Validators.pattern(DECIMAL_PATTERN)]],
-      discount_percent: [rule?.['discount_percent'] ?? '', [Validators.pattern(DECIMAL_PATTERN)]],
+      discount_percent: [rule?.['discount_percent'] ?? '', [Validators.pattern(DECIMAL_PATTERN), maxNumber(100)]],
       discount_fixed_amount: [rule?.['discount_fixed_amount'] ?? '', [Validators.pattern(DECIMAL_PATTERN)]],
     });
   }
@@ -185,7 +196,7 @@ export class DiscountPoliciesComponent implements OnInit {
       valid_from: v.valid_from || null,
       valid_to: v.valid_to || null,
       is_active: v.is_active,
-      priority: v.priority,
+      priority: v.priority ?? undefined,
       is_stackable: v.is_stackable,
       auto_apply: v.auto_apply,
       contact_id: v.contact_id || null,

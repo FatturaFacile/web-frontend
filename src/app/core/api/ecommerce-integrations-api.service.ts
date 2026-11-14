@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
@@ -10,13 +10,21 @@ import {
   CreatePaymentLinkRequest,
   EcommerceChannel,
   PaymentGatewaySettings,
+  PaginatedResponse,
   PaymentLink,
+  QueryFilterParams,
   RotateApiKeyResult,
   SyncChannelRequest,
   SyncChannelResult,
   UpdateEcommerceChannelRequest,
   UpdatePaymentGatewayRequest,
 } from '../models';
+import { toHttpParams } from '../http/laravel-http.utils';
+
+/** Query of the payment link grid: the invoice filter plus the standard paging parameters. */
+export interface PaymentLinkListParams extends QueryFilterParams {
+  invoice_id?: string;
+}
 
 @Service()
 export class EcommerceIntegrationsApiService {
@@ -26,8 +34,10 @@ export class EcommerceIntegrationsApiService {
   private readonly linksBase = `${environment.apiBaseUrl}/payment-links`;
 
   // Channels
-  getChannels(): Observable<ApiResponse<EcommerceChannel[]>> {
-    return this.http.get<ApiResponse<EcommerceChannel[]>>(`${this.ecomBase}/channels`);
+  getChannels(params?: QueryFilterParams): Observable<PaginatedResponse<EcommerceChannel>> {
+    return this.http.get<PaginatedResponse<EcommerceChannel>>(`${this.ecomBase}/channels`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getChannel(id: string): Observable<ApiResponse<EcommerceChannel>> {
@@ -58,8 +68,10 @@ export class EcommerceIntegrationsApiService {
   }
 
   // Developer API Keys
-  getApiKeys(): Observable<ApiResponse<ApiKeyItem[]>> {
-    return this.http.get<ApiResponse<ApiKeyItem[]>>(`${this.integBase}/api-keys`);
+  getApiKeys(params?: QueryFilterParams): Observable<PaginatedResponse<ApiKeyItem>> {
+    return this.http.get<PaginatedResponse<ApiKeyItem>>(`${this.integBase}/api-keys`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createApiKey(req: CreateApiKeyRequest): Observable<ApiResponse<ApiKeyItem>> {
@@ -84,12 +96,10 @@ export class EcommerceIntegrationsApiService {
   }
 
   // Hosted Payment Links
-  getPaymentLinks(invoiceId?: string): Observable<ApiResponse<PaymentLink[]>> {
-    let params = new HttpParams();
-    if (invoiceId) {
-      params = params.set('invoice_id', invoiceId);
-    }
-    return this.http.get<ApiResponse<PaymentLink[]>>(this.linksBase, { params });
+  getPaymentLinks(params?: PaymentLinkListParams): Observable<PaginatedResponse<PaymentLink>> {
+    return this.http.get<PaginatedResponse<PaymentLink>>(this.linksBase, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createPaymentLink(req: CreatePaymentLinkRequest): Observable<ApiResponse<PaymentLink>> {

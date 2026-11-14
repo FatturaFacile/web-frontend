@@ -10,6 +10,7 @@ interface TrNavItem {
 
 @Component({
   selector: 'app-treasury-operations-shell',
+  styleUrl: './treasury-operations-shell.component.scss',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NzMenuModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header [title]="'TR.TITLE' | translate" [subtitle]="'TR.SUBTITLE' | translate" />
@@ -26,16 +27,6 @@ interface TrNavItem {
       <router-outlet />
     </div>
   `,
-  styles: [
-    `
-      .tr-menu {
-        margin-bottom: 16px;
-      }
-      .tr-active {
-        font-weight: 600;
-      }
-    `,
-  ],
 })
 export class TreasuryOperationsShellComponent {
   protected readonly items: TrNavItem[] = [

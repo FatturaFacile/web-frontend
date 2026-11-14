@@ -16,6 +16,7 @@ import {
   PayrollRunRecord,
   PayrollSettingsPayload,
   PayrollSettingsRecord,
+  QueryFilterParams,
   PayrollYearEndReport,
   PayslipRecord,
   SalaryCertificateRecord,
@@ -53,7 +54,7 @@ export class PayrollApiService {
 
   // --- Runs ---
 
-  getRuns(params?: { year?: number; per_page?: number; page?: number }): Observable<PaginatedResponse<PayrollRunRecord>> {
+  getRuns(params?: QueryFilterParams & { year?: number }): Observable<PaginatedResponse<PayrollRunRecord>> {
     return this.http.get<PaginatedResponse<PayrollRunRecord>>(`${this.base}/runs`, {
       params: params ? toHttpParams(params) : undefined,
     });
@@ -143,9 +144,9 @@ export class PayrollApiService {
 
   // --- Wage types ---
 
-  getWageTypes(): Observable<PaginatedResponse<WageTypeRecord>> {
+  getWageTypes(params?: QueryFilterParams): Observable<PaginatedResponse<WageTypeRecord>> {
     return this.http.get<PaginatedResponse<WageTypeRecord>>(`${this.base}/wage-types`, {
-      params: toHttpParams({ per_page: 200 }),
+      params: toHttpParams({ per_page: 200, ...params }),
     });
   }
 
@@ -184,9 +185,9 @@ export class PayrollApiService {
 
   // --- Family allowances ---
 
-  getFamilyAllowanceRates(): Observable<PaginatedResponse<FamilyAllowanceRateRecord>> {
+  getFamilyAllowanceRates(params?: QueryFilterParams): Observable<PaginatedResponse<FamilyAllowanceRateRecord>> {
     return this.http.get<PaginatedResponse<FamilyAllowanceRateRecord>>(`${this.base}/family-allowance-rates`, {
-      params: toHttpParams({ per_page: 200 }),
+      params: toHttpParams({ per_page: 200, ...params }),
     });
   }
 
@@ -212,8 +213,8 @@ export class PayrollApiService {
     return this.http.post<ApiResponse<unknown>>(`${this.base}/setup`, {});
   }
 
-  getSettings(country: 'swiss' | 'italian'): Observable<ApiResponse<PayrollSettingsRecord>> {
-    return this.http.get<ApiResponse<PayrollSettingsRecord>>(this.settingsUrls[country]);
+  getSettings(country: 'swiss' | 'italian'): Observable<ApiResponse<PayrollSettingsRecord | null>> {
+    return this.http.get<ApiResponse<PayrollSettingsRecord | null>>(this.settingsUrls[country]);
   }
 
   saveSettings(country: 'swiss' | 'italian', payload: PayrollSettingsPayload): Observable<ApiResponse<PayrollSettingsRecord>> {

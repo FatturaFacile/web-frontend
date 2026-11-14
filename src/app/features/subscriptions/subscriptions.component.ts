@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,12 +14,12 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   AuthStore,
   CreateSubscriptionPayload,
+  FetchGridModel,
   isValidationError,
   SubscriptionApiService,
   SubscriptionContractFilterParams,
@@ -28,18 +28,21 @@ import {
   SubscriptionPlanResource,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef } from '@shared';
 import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-subscriptions',
+  styleUrl: './subscriptions.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
     NzStatisticModule,
-    NzTableModule,
     NzTagModule,
     NzBadgeModule,
     NzButtonModule,
@@ -56,7 +59,6 @@ import { TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './subscriptions.component.html',
-  styleUrl: './subscriptions.component.scss',
 })
 export class SubscriptionsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -68,16 +70,40 @@ export class SubscriptionsComponent implements OnInit {
 
   readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly contracts = signal<SubscriptionContractResource[]>([]);
   readonly plans = signal<SubscriptionPlanResource[]>([]);
   readonly metrics = signal<SubscriptionMetrics | null>(null);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
 
-  // Filters
-  readonly searchTerm = signal('');
-  readonly statusFilter = signal<string | null>(null);
+  protected readonly grid = new FetchGridModel<SubscriptionContractResource, SubscriptionContractFilterParams>((query) =>
+    this.subApi.getContracts(query),
+  );
+
+  private readonly numberTpl = viewChild<TemplateRef<unknown>>('numberTpl');
+  private readonly customerTpl = viewChild<TemplateRef<unknown>>('customerTpl');
+  private readonly planTpl = viewChild<TemplateRef<unknown>>('planTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly mrrTpl = viewChild<TemplateRef<unknown>>('mrrTpl');
+  private readonly periodTpl = viewChild<TemplateRef<unknown>>('periodTpl');
+
+  protected readonly columns = computed<TableColumnDef<SubscriptionContractResource>[]>(() => [
+    { key: 'subscription_number', header: 'subscriptions.lblContract', customCellTemplate: this.numberTpl() },
+    {
+      key: 'customer_name',
+      serverKey: 'customer.name',
+      valueGetter: (row) => row.customer_name || row.customer_id,
+      header: 'subscriptions.lblCustomer',
+      customCellTemplate: this.customerTpl(),
+    },
+    {
+      key: 'plan_name',
+      serverKey: 'plan.name',
+      valueGetter: (row) => row.plan_name ?? '',
+      header: 'subscriptions.lblPlan',
+      customCellTemplate: this.planTpl(),
+    },
+    { key: 'status', header: 'subscriptions.lblStatus', customCellTemplate: this.statusTpl() },
+    { key: 'mrr', header: 'subscriptions.lblMrr', align: 'right', customCellTemplate: this.mrrTpl() },
+    { key: 'current_period_start', header: 'subscriptions.lblCurrentPeriod', customCellTemplate: this.periodTpl() },
+  ]);
 
   // Modals
   readonly createModalVisible = signal(false);
@@ -86,17 +112,16 @@ export class SubscriptionsComponent implements OnInit {
   readonly contractForm = this.fb.group({
     customer_id: this.fb.control('', [Validators.required]),
     plan_id: this.fb.control('', [Validators.required]),
-    name: this.fb.control(''),
+    name: this.fb.control('', [Validators.maxLength(255)]),
     start_date: this.fb.control('', [Validators.required]),
-    quantity: this.fb.control<number>(1, [Validators.required, Validators.min(1)]),
-    trial_days: this.fb.control<number>(0),
+    quantity: this.fb.control<number>(1, [Validators.min(1), Validators.max(1000000)]),
+    trial_days: this.fb.control<number>(0, [Validators.min(0), Validators.max(730)]),
     auto_renew: this.fb.control<boolean>(true),
   });
 
   ngOnInit(): void {
     this.loadMetrics();
     this.loadPlans();
-    this.loadContracts();
   }
 
   loadMetrics(): void {
@@ -113,46 +138,13 @@ export class SubscriptionsComponent implements OnInit {
     });
   }
 
-  loadContracts(): void {
-    this.loading.set(true);
-    const params: SubscriptionContractFilterParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
-      search: this.searchTerm() || undefined,
-      status: this.statusFilter() || undefined,
-    };
-
-    this.subApi.getContracts(params).subscribe({
-      next: (res) => {
-        this.contracts.set(res.data || []);
-        this.total.set(res.meta?.total || (res.data || []).length);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.contracts.set([]);
-        this.total.set(0);
-        this.loading.set(false);
-      },
-    });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.loadContracts();
-  }
-
   onSearch(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
-    this.searchTerm.set(val);
-    this.pageIndex.set(1);
-    this.loadContracts();
+    const search = (event.target as HTMLInputElement).value;
+    this.grid.setFilter({ search: search || undefined });
   }
 
   onStatusChange(status: string | null): void {
-    this.statusFilter.set(status);
-    this.pageIndex.set(1);
-    this.loadContracts();
+    this.grid.setFilter({ status: status ?? undefined });
   }
 
   openCreateModal(): void {
@@ -191,7 +183,7 @@ export class SubscriptionsComponent implements OnInit {
         this.saving.set(false);
         this.createModalVisible.set(false);
         this.message.success(this.translate.instant('subscriptions.msgSubscriptionContractCreated'));
-        this.loadContracts();
+        this.grid.reload();
         this.loadMetrics();
       },
       error: (err: unknown) => {
@@ -207,7 +199,7 @@ export class SubscriptionsComponent implements OnInit {
     this.subApi.activateContract(contract.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('subscriptions.msgSubscriptionActivated'));
-        this.loadContracts();
+        this.grid.reload();
         this.loadMetrics();
       },
       error: () => undefined,
@@ -218,7 +210,7 @@ export class SubscriptionsComponent implements OnInit {
     this.subApi.pauseContract(contract.id, { reason: 'Customer requested pause' }).subscribe({
       next: () => {
         this.message.info(this.translate.instant('subscriptions.msgSubscriptionPaused'));
-        this.loadContracts();
+        this.grid.reload();
         this.loadMetrics();
       },
       error: () => undefined,
@@ -229,7 +221,7 @@ export class SubscriptionsComponent implements OnInit {
     this.subApi.reactivateContract(contract.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('subscriptions.msgSubscriptionResumed'));
-        this.loadContracts();
+        this.grid.reload();
         this.loadMetrics();
       },
       error: () => undefined,
@@ -240,7 +232,7 @@ export class SubscriptionsComponent implements OnInit {
     this.subApi.billContract(contract.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('subscriptions.msgInvoiceGeneratedForCurrentBillingPeriod'));
-        this.loadContracts();
+        this.grid.reload();
       },
       error: () => undefined,
     });
@@ -249,14 +241,14 @@ export class SubscriptionsComponent implements OnInit {
   cancel(contract: SubscriptionContractResource): void {
     this.modal.confirm({
       nzTitle: this.translate.instant('subscriptions.dlgCancelSubscription'),
-      nzContent: this.translate.instant('subscriptions.dlgAreYouSureYouWantTo', { contract_number: contract.contract_number }),
+      nzContent: this.translate.instant('subscriptions.dlgAreYouSureYouWantTo', { contract_number: contract.subscription_number }),
       nzOkText: this.translate.instant('subscriptions.dlgCancelSubscription'),
       nzOkDanger: true,
       nzOnOk: () => {
         this.subApi.cancelContract(contract.id, { cancel_at_period_end: true }).subscribe({
           next: () => {
             this.message.success(this.translate.instant('subscriptions.msgSubscriptionScheduledForCancellation'));
-            this.loadContracts();
+            this.grid.reload();
             this.loadMetrics();
           },
           error: () => undefined,

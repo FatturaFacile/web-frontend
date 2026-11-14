@@ -1,3 +1,12 @@
+:host {
+  display: block;
+
+  nz-input-number,
+  nz-date-picker {
+    width: 100%;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -20,7 +29,7 @@
 }
 .calc-label {
   font-size: 12px;
-  color: var(--text-secondary, #595959);
+  color: var(--text-secondary);
 }
 .remove {
   margin-bottom: 24px;
@@ -46,5 +55,5 @@
 }
 .hint {
   margin-top: 12px;
-  color: var(--ant-color-text-secondary, #666);
+  color: var(--text-secondary);
 }

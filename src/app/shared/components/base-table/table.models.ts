@@ -7,9 +7,29 @@ export interface TableColumnDef<TItem = unknown> {
   /** Translation key (rendered through the translate pipe) or plain text */
   header: string;
   width?: string;
+  /** Sorting is on by default; set to `false` to disable it. */
   sortable?: boolean;
+  /**
+   * Name the API knows the column by when the table is server-driven (`grid` input): a real column, a
+   * `relation.column` path, a column declared by the model in gridColumns() or a model accessor. Defaults to `key`.
+   */
+  serverKey?: string;
+  /** Value used for sorting, filtering and xlsx export (defaults to `item[key]`). */
+  valueGetter?: (item: TItem) => unknown;
+  /**
+   * Text shown for a raw value the server returns for this column (filter list, group header), e.g. a translation
+   * of an enum. Defaults to the value itself.
+   */
+  valueLabel?: (value: string) => string;
+  /** Custom comparator, overrides the default one. */
+  sortFn?: (a: TItem, b: TItem) => number;
   sortOrder?: SortOrder;
+  /** Filtering is on by default; set to `false` to disable it. */
   filterable?: boolean;
+  /** Grouping by this column is on by default; set to `false` to disable it. */
+  groupable?: boolean;
+  /** Excludes the column from the xlsx export. */
+  exportable?: boolean;
   filterType?: 'text' | 'select' | 'date-range' | 'custom';
   filterOptions?: { label: string; value: unknown }[];
   fixed?: 'left' | 'right';
@@ -35,3 +55,9 @@ export interface TableQueryParams {
 }
 
 export type TableDensity = 'default' | 'middle' | 'small';
+
+/** Per-column filter state: free text and/or a list of selected values. */
+export interface ColumnFilter {
+  text: string;
+  selected: string[];
+}

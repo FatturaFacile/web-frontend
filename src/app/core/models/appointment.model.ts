@@ -1,3 +1,5 @@
+import { QueryFilterParams } from './api.models';
+
 export interface AppointmentAttendee {
   id?: string;
   user_id: string;
@@ -126,4 +128,13 @@ export interface AppointmentCalendarItem {
 
 export interface CancelAppointmentRequest {
   reason: string;
+}
+
+/** Filters of the appointments list (the grid adds sorting, column filters and paging). */
+export interface AppointmentFilterParams extends QueryFilterParams {
+  technician_id?: string;
+  contact_id?: string;
+  ticket_id?: string;
+  status_id?: string;
+  date?: string;
 }

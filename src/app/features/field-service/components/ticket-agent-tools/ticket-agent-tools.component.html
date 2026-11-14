@@ -62,7 +62,7 @@
       <nz-option [nzValue]="user.id" [nzLabel]="user.name" />
     }
   </nz-select>
-  <button nz-button type="button" [disabled]="!watcherUserId()" (click)="addWatcher()">{{ 'TICKET_TOOLS.ADD' | translate }}</button>
+  <button nz-button type="button" appIconAction="add" [disabled]="!watcherUserId()" (click)="addWatcher()"></button>
 </div>
 
 <nz-divider [nzText]="'TICKET_TOOLS.AUTO_ASSIGN' | translate" nzOrientation="left" />

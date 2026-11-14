@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, model, output } from '@angular/core';
 import { HrEmployeeApiService, PositionReadinessLevel, PositionResource } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { tap } from 'rxjs';
 import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/action-form.component';
@@ -11,7 +11,8 @@ const READINESS: PositionReadinessLevel[] = ['ready_now', 'ready_1_2_years', 'de
 /** Names the successor of a position and how ready the person is. */
 @Component({
   selector: 'app-position-successor-dialog',
-  imports: [ActionFormComponent, NzModalModule, TranslatePipe],
+  styleUrl: './position-successor-dialog.component.scss',
+  imports: [ModalActionsDirective, ActionFormComponent, NzModalModule, TranslatePipe],
   template: `
     <nz-modal
       [nzVisible]="open()"

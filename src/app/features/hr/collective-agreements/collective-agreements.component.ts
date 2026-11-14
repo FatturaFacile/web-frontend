@@ -1,18 +1,26 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CollectiveAgreementResource, PayrollAgreementApiService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, crudPage } from '../shared/crud/crud.types';
 
 type Row = { id: string } & Record<string, unknown>;
 
 /** Collective agreements (CCNL) with their levels. Generic agreements are read-only. */
 @Component({
   selector: 'app-collective-agreements',
-  imports: [NzCardModule, NzDrawerModule, PageHeaderComponent, TranslatePipe, CrudTableComponent],
+  styleUrl: './collective-agreements.component.scss',
+  imports: [
+    ModalActionsDirective,
+    NzCardModule,
+    NzModalModule,
+    PageHeaderComponent,
+    TranslatePipe,
+    CrudTableComponent,
+  ],
   template: `
     <app-page-header
       [title]="'hrmCcnl.title' | translate"
@@ -21,18 +29,19 @@ type Row = { id: string } & Record<string, unknown>;
     <nz-card>
       <app-crud-table [config]="agreementsConfig()" />
     </nz-card>
-    <nz-drawer
+    <nz-modal
       [nzVisible]="selected() !== null"
       [nzTitle]="selectedTitle()"
-      nzWidth="640"
-      (nzOnClose)="selected.set(null)"
+      [nzWidth]="640"
+      [nzFooter]="null"
+      (nzOnCancel)="selected.set(null)"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         @if (levelsConfig(); as config) {
           <app-crud-table [config]="config" />
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class CollectiveAgreementsComponent {
@@ -50,14 +59,14 @@ export class CollectiveAgreementsComponent {
   protected readonly agreementsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmCcnl.agreements',
     canWrite: this.canWrite(),
-    list: () => this.api.getAgreements({ per_page: 100 }).pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getAgreements(query)),
     create: (payload) => this.api.createAgreement(payload as never),
     update: (id, payload) => this.api.updateAgreement(id, payload as never),
     remove: (id) => this.api.deleteAgreement(id),
     isReadonly: (row) => row['is_generic'] === true,
     rowActions: [{ labelKey: 'hrmCcnl.levels', run: (row) => this.selected.set(row as never) }],
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 30 },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
       { key: 'weekly_hours', labelKey: 'hrmCcnl.weeklyHours', type: 'decimal' },
       { key: 'installments', labelKey: 'hrmCcnl.installments', type: 'integer' },
@@ -81,8 +90,8 @@ export class CollectiveAgreementsComponent {
       update: (levelId, payload) => this.api.updateLevel(agreement.id, levelId, payload as never),
       remove: (levelId) => this.api.deleteLevel(agreement.id, levelId),
       fields: [
-        { key: 'level', labelKey: 'hrmCcnl.level', type: 'text', required: true, maxLength: 50 },
-        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', nullable: true },
+        { key: 'level', labelKey: 'hrmCcnl.level', type: 'text', required: true, maxLength: 30 },
+        { key: 'description', labelKey: 'hrmCommon.description', type: 'text', nullable: true, maxLength: 255 },
         { key: 'monthly_minimum', labelKey: 'hrmCcnl.monthlyMinimum', type: 'decimal', required: true },
       ],
     };

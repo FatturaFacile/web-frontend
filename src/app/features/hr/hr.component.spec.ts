@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -14,6 +14,7 @@ import {
   EmployeeResource,
   FrontierWorkerResource,
   HrApiService,
+  HrLeaveApiService,
   LeaveRequestResource,
   PayrollRunResource,
   TimesheetResource,
@@ -79,12 +80,16 @@ describe('HrComponent', () => {
   };
 
   const mockFrontier: FrontierWorkerResource = {
-    id: 'fw-1',
     employee_id: 'emp-1',
     employee_name: 'Mario Rossi',
-    canton: 'TI',
-    italian_municipality: 'Como',
-    status: 'attivo',
+    work_canton: 'TI',
+    regime: 'new',
+    suggested_regime: 'new',
+    tariff_letter: 'G',
+    nights_away: 3,
+    exchange_of_information: true,
+    missing_exchange_data: [],
+    issues: [],
   };
 
   beforeEach(async () => {
@@ -102,7 +107,7 @@ describe('HrComponent', () => {
       submitTimesheet: vi.fn().mockReturnValue(of({ data: mockTimesheet })),
       approveTimesheet: vi.fn().mockReturnValue(of({ data: { ...mockTimesheet, status: 'approved' } })),
       getPayrollRuns: vi.fn().mockReturnValue(of({ data: [mockPayrollRun], meta: { total: 1 } })),
-      getFrontierWorkers: vi.fn().mockReturnValue(of({ data: [mockFrontier], meta: { total: 1 } })),
+      getFrontierWorkers: vi.fn().mockReturnValue(of({ data: { year: 2026, parameters_year: 2026, warnings: [], workers: [mockFrontier] } })),
     };
 
     messageService = {
@@ -122,6 +127,10 @@ describe('HrComponent', () => {
         provideNzI18n(en_US),
         provideNzDateFnsAdapter(),
         { provide: HrApiService, useValue: apiService },
+        {
+          provide: HrLeaveApiService,
+          useValue: { getLeaveTypes: vi.fn().mockReturnValue(of({ data: [{ id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d', name: 'Ferie', is_active: true }] })) },
+        },
         { provide: NzMessageService, useValue: messageService },
       ],
     }).compileComponents();
@@ -133,15 +142,18 @@ describe('HrComponent', () => {
       return {} as NzModalRef;
     });
     fixture.detectChanges();
+    // the grid models load after their first debounce tick
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('initializes and loads employees, leaves, timesheets, payroll runs, and frontier workers', () => {
     expect(component).toBeTruthy();
     expect(component.employees().length).toBe(1);
     expect(component.leaveRequests().length).toBe(1);
-    expect(component.timesheets().length).toBe(1);
-    expect(component.payrollRuns().length).toBe(1);
+    expect(component.timesheetsGrid.items().length).toBe(1);
+    expect(component.payrollGrid.items().length).toBe(1);
     expect(component.frontierWorkers().length).toBe(1);
+    expect(apiService.getFrontierWorkers).toHaveBeenCalledWith(new Date().getFullYear());
     expect(component.kpiTotalEmployees()).toBe(1);
     expect(component.kpiProbationEmployees()).toBe(1);
     expect(component.kpiPendingLeaves()).toBe(1);
@@ -157,13 +169,16 @@ describe('HrComponent', () => {
       work_email: 'paolo.neri@example.com',
       base_annual_salary: 32000,
       hire_date: new Date('2026-06-01'),
-      employment_type: 'full_time',
+      employment_type: 'apprentice',
+      contract_type: 'fixed_term',
       weekly_hours: 40,
       probation_months: 6,
     });
 
     component.submitHire();
-    expect(apiService.createEmployee).toHaveBeenCalled();
+    expect(apiService.createEmployee).toHaveBeenCalledWith(
+      expect.objectContaining({ employment_type: 'apprentice', contract_type: 'fixed_term', hire_date: '2026-06-01' }),
+    );
     expect(component.isHireModalVisible()).toBe(false);
   });
 
@@ -172,7 +187,7 @@ describe('HrComponent', () => {
     expect(apiService.completeProbation).toHaveBeenCalledWith('emp-1');
 
     component.promoteEmployee(mockEmployee);
-    expect(apiService.promoteEmployee).toHaveBeenCalledWith('emp-1', { base_annual_salary: 38500 });
+    expect(apiService.promoteEmployee).toHaveBeenCalledWith('emp-1', { new_base_annual_salary: 38500 });
 
     component.terminateEmployee(mockEmployee);
     expect(apiService.terminateEmployee).toHaveBeenCalledWith('emp-1', expect.objectContaining({ reason: 'Cessazione consensuale' }));
@@ -183,16 +198,19 @@ describe('HrComponent', () => {
     expect(component.isLeaveModalVisible()).toBe(true);
 
     component.leaveForm.patchValue({
-      employee_id: 'emp-1',
-      leave_type_id: 'rol',
-      start_date: new Date('2026-09-01'),
-      end_date: new Date('2026-09-02'),
+      employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+      start_date: new Date(2026, 8, 1),
+      end_date: new Date(2026, 8, 2),
       total_hours: 16,
       reason: 'Visita medica',
     });
+    // the leave type comes from the API list (a UUID), not from a fixed category string
+    expect(component.leaveForm.controls.leave_type_id.value).toBe('0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d');
 
     component.submitLeaveRequest();
-    expect(apiService.submitLeaveRequest).toHaveBeenCalled();
+    expect(apiService.submitLeaveRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7', leave_type_id: '0b8f6c1e-7a52-4d3b-9c64-2e1f0a9b8c7d', start_date: '2026-09-01', end_date: '2026-09-02' }),
+    );
     expect(component.isLeaveModalVisible()).toBe(false);
 
     component.approveLeave(mockLeave);
@@ -207,7 +225,7 @@ describe('HrComponent', () => {
     expect(component.isTimesheetModalVisible()).toBe(true);
 
     component.timesheetForm.patchValue({
-      employee_id: 'emp-1',
+      employee_id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
       work_date: new Date('2026-04-15'),
       regular_hours: 8,
       overtime_hours: 2,
@@ -221,5 +239,32 @@ describe('HrComponent', () => {
 
     component.approveTimesheet(mockTimesheet);
     expect(apiService.approveTimesheet).toHaveBeenCalledWith('ts-1');
+  });
+  it('does not call the API when the hire, leave or timesheet form is submitted empty or invalid', () => {
+    vi.mocked(apiService.createEmployee as unknown as Mock).mockClear();
+    component.openHireModal();
+    component.hireForm.patchValue({ first_name: '', last_name: '', work_email: 'not-an-email' });
+    component.submitHire();
+    expect(apiService.createEmployee).not.toHaveBeenCalled();
+    expect(component.hireForm.controls.first_name.touched).toBe(true);
+
+    vi.mocked(apiService.submitLeaveRequest as unknown as Mock).mockClear();
+    component.openLeaveModal();
+    component.leaveForm.patchValue({ employee_id: '' });
+    component.submitLeaveRequest();
+    expect(apiService.submitLeaveRequest).not.toHaveBeenCalled();
+    component.leaveForm.patchValue({
+      employee_id: 'emp-1',
+      start_date: new Date('2026-09-10'),
+      end_date: new Date('2026-09-01'),
+    });
+    component.submitLeaveRequest();
+    expect(apiService.submitLeaveRequest).not.toHaveBeenCalled();
+
+    vi.mocked(apiService.submitTimesheet as unknown as Mock).mockClear();
+    component.openTimesheetModal();
+    component.timesheetForm.patchValue({ employee_id: '' });
+    component.submitTimesheet();
+    expect(apiService.submitTimesheet).not.toHaveBeenCalled();
   });
 });

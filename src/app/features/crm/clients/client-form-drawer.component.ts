@@ -1,22 +1,28 @@
-import { Component, effect, inject, input, model, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  AbstractControl,
   FormControl,
   NonNullableFormBuilder,
   ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 import {
   applyServerErrors,
   ClientApiService,
   ContactPayload,
+  contactBillingAddress,
+  ContactLegalType,
   ContactResource,
   ContactType,
   I18nService,
@@ -42,11 +48,22 @@ interface TextField {
 
 const nullable = (v: string): string | null => v.trim() || null;
 
+/** A value that is filled must have exactly this length (the SDI code is 7 characters or empty). */
+function exactLengthWhenFilled(length: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = String(control.value ?? '').trim();
+    return value === '' || value.length === length ? null : { exactLength: { requiredLength: length } };
+  };
+}
+
 @Component({
   selector: 'app-client-form-drawer',
+  styleUrl: './client-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzInputNumberModule,
@@ -55,7 +72,6 @@ const nullable = (v: string): string | null => v.trim() || null;
     TranslatePipe,
   ],
   templateUrl: './client-form-drawer.component.html',
-  styleUrl: './client-form-drawer.component.scss',
 })
 export class ClientFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -67,6 +83,16 @@ export class ClientFormDrawerComponent {
   readonly contact = input<ContactResource | null>(null);
   readonly saved = output<void>();
   readonly saving = signal(false);
+  /** True after the first attempt to save: the errors of the whole form are then shown. */
+  readonly submitted = signal(false);
+  /** The address is optional, but once one of its fields is filled street, postal code and city are required. */
+  readonly addressStarted = signal(false);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly legalTypeOptions: { label: string; value: ContactLegalType }[] = [
+    { label: 'CRM.CLIENTS.LEGAL_TYPES.COMPANY', value: 'company' },
+    { label: 'CRM.CLIENTS.LEGAL_TYPES.PERSON', value: 'person' },
+  ];
 
   readonly typeOptions: { label: string; value: ContactType }[] = [
     { label: 'CRM.CLIENTS.TYPES.CLIENT', value: 'client' },
@@ -100,20 +126,21 @@ export class ClientFormDrawerComponent {
 
   readonly form = this.fb.group({
     type: this.fb.control<ContactType>('client', Validators.required),
-    country: this.fb.control('CH', [Validators.required, Validators.maxLength(2)]),
-    company_name: this.fb.control(''),
-    first_name: this.fb.control(''),
-    last_name: this.fb.control(''),
-    email: this.fb.control('', Validators.email),
-    phone: this.fb.control(''),
-    vat_number: this.fb.control(''),
-    fiscal_code: this.fb.control(''),
-    uid_number: this.fb.control(''),
-    sdi_code: this.fb.control(''),
-    pec: this.fb.control('', Validators.email),
-    iban: this.fb.control(''),
-    qr_iban: this.fb.control(''),
-    payment_terms_days: new FormControl<number | null>(30),
+    legal_type: this.fb.control<ContactLegalType>('company', Validators.required),
+    country: this.fb.control('CH', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]),
+    company_name: this.fb.control('', [Validators.maxLength(255)]),
+    first_name: this.fb.control('', [Validators.maxLength(100)]),
+    last_name: this.fb.control('', [Validators.maxLength(100)]),
+    email: this.fb.control('', [Validators.email, Validators.maxLength(255)]),
+    phone: this.fb.control('', [Validators.maxLength(50)]),
+    vat_number: this.fb.control('', [Validators.maxLength(30)]),
+    fiscal_code: this.fb.control('', [Validators.maxLength(16)]),
+    uid_number: this.fb.control('', [Validators.maxLength(20)]),
+    sdi_code: this.fb.control('', [exactLengthWhenFilled(7)]),
+    pec: this.fb.control('', [Validators.email, Validators.maxLength(255)]),
+    iban: this.fb.control('', [Validators.maxLength(34)]),
+    qr_iban: this.fb.control('', [Validators.maxLength(34)]),
+    payment_terms_days: new FormControl<number | null>(30, [Validators.min(0)]),
     address: this.fb.group({
       street: this.fb.control(''),
       house_number: this.fb.control(''),
@@ -124,15 +151,27 @@ export class ClientFormDrawerComponent {
   });
 
   constructor() {
+    this.form.controls.address.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncAddressValidators());
+
+    this.form.controls.legal_type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncLegalTypeValidators());
+    this.syncLegalTypeValidators();
+
     effect(() => {
       if (!this.open()) {
         return;
       }
       const c = this.contact();
+      this.submitted.set(false);
       this.form.reset();
       if (c) {
+        const billing = contactBillingAddress(c);
         this.form.patchValue({
           type: c.type,
+          legal_type: c.legal_type ?? (c.company_name ? 'company' : 'person'),
           country: c.country,
           company_name: c.company_name ?? '',
           first_name: c.first_name ?? '',
@@ -148,21 +187,67 @@ export class ClientFormDrawerComponent {
           qr_iban: c.qr_iban ?? '',
           payment_terms_days: c.payment_terms_days,
           address: {
-            street: c.address?.street ?? '',
-            house_number: c.address?.house_number ?? '',
-            postal_code: c.address?.postal_code ?? '',
-            city: c.address?.city ?? '',
-            state_canton: c.address?.state_canton ?? '',
+            street: billing?.street ?? '',
+            house_number: billing?.house_number ?? '',
+            postal_code: billing?.postal_code ?? '',
+            city: billing?.city ?? '',
+            state_canton: billing?.state_canton ?? '',
           },
         });
       } else {
-        this.form.patchValue({ type: 'client', country: 'CH', payment_terms_days: 30 });
+        this.form.patchValue({ type: 'client', legal_type: 'company', country: 'CH', payment_terms_days: 30 });
       }
     });
   }
 
+  isCompany(): boolean {
+    return this.form.controls.legal_type.value === 'company';
+  }
+
+  /** The company name is required for a company, the last name for a person; the other one is optional. */
+  private syncLegalTypeValidators(): void {
+    const { company_name, last_name } = this.form.controls;
+    const company = this.isCompany();
+    const base = (max: number) => [Validators.maxLength(max)];
+    company_name.setValidators(company ? [Validators.required, ...base(255)] : base(255));
+    last_name.setValidators(company ? base(100) : [Validators.required, ...base(100)]);
+    company_name.updateValueAndValidity({ emitEvent: false });
+    last_name.updateValueAndValidity({ emitEvent: false });
+  }
+
+  /** Whether the label of the field shows the required asterisk for the chosen kind of contact. */
+  isRequiredField(key: string): boolean {
+    return (key === 'company_name' && this.isCompany()) || (key === 'last_name' && !this.isCompany());
+  }
+
+  /** The fields shown for the chosen kind: a person has no company name. */
+  visibleTextFields(): TextField[] {
+    return this.textFields.filter((f) => f.key !== 'company_name' || this.isCompany());
+  }
+
+  private syncAddressValidators(): void {
+    const address = this.form.controls.address;
+    const started = Object.values(address.getRawValue()).some((value) => String(value ?? '').trim() !== '');
+    if (started === this.addressStarted()) {
+      return;
+    }
+    this.addressStarted.set(started);
+    for (const key of ['street', 'postal_code', 'city'] as const) {
+      const control = address.controls[key];
+      if (started) {
+        control.addValidators(Validators.required);
+      } else {
+        control.removeValidators(Validators.required);
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
   errorTip(path: string): string {
     const control = this.form.get(path);
+    if (control?.hasError('maxlength') || control?.hasError('exactLength') || control?.hasError('pattern') || control?.hasError('min')) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
+    }
     if (control?.hasError('email')) {
       return this.i18n.translate('COMMON.VALIDATION.INVALID_EMAIL');
     }
@@ -173,6 +258,7 @@ export class ClientFormDrawerComponent {
   }
 
   submit(): void {
+    this.submitted.set(true);
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       return;
@@ -181,8 +267,9 @@ export class ClientFormDrawerComponent {
     const hasAddress = !!(v.address.street.trim() && v.address.city.trim());
     const payload: ContactPayload = {
       type: v.type,
+      legal_type: v.legal_type,
       country: v.country.toUpperCase(),
-      company_name: nullable(v.company_name),
+      company_name: v.legal_type === 'company' ? nullable(v.company_name) : null,
       first_name: nullable(v.first_name),
       last_name: nullable(v.last_name),
       email: nullable(v.email),

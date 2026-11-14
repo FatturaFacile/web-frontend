@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   ApiResponse,
   PaginatedResponse,
+  QueryFilterParams,
   WorkflowAuditEntryResource,
   WorkflowAuditVerification,
   WorkflowCreateDelegationRequest,
@@ -210,14 +211,19 @@ export class WorkflowApiService {
   }
 
   // --- DELEGATIONS ---
-  getDelegations(): Observable<ApiResponse<WorkflowDelegationModel[]>> {
-    return this.http.get<ApiResponse<WorkflowDelegationModel[]>>(`${this.base}/workflows/delegations`);
+  getDelegations(params?: QueryFilterParams): Observable<PaginatedResponse<WorkflowDelegationModel>> {
+    return this.http.get<PaginatedResponse<WorkflowDelegationModel>>(`${this.base}/workflows/delegations`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
+  /** The API answers with the bare delegation (no envelope): both shapes are accepted. */
   createDelegation(
     payload: WorkflowCreateDelegationRequest,
   ): Observable<ApiResponse<WorkflowDelegationModel>> {
-    return this.http.post<ApiResponse<WorkflowDelegationModel>>(`${this.base}/workflows/delegations`, payload);
+    return this.http
+      .post<ApiResponse<WorkflowDelegationModel> | WorkflowDelegationModel>(`${this.base}/workflows/delegations`, payload)
+      .pipe(map((res) => ('data' in res ? res : ({ success: true, data: res } as ApiResponse<WorkflowDelegationModel>))));
   }
 
   deleteDelegation(id: string): Observable<void> {
@@ -225,8 +231,10 @@ export class WorkflowApiService {
   }
 
   // --- ESCALATION RULES ---
-  getEscalationRules(): Observable<ApiResponse<WorkflowEscalationRule[]>> {
-    return this.http.get<ApiResponse<WorkflowEscalationRule[]>>(`${this.base}/workflows/escalation-rules`);
+  getEscalationRules(params?: QueryFilterParams): Observable<PaginatedResponse<WorkflowEscalationRule>> {
+    return this.http.get<PaginatedResponse<WorkflowEscalationRule>>(`${this.base}/workflows/escalation-rules`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   createEscalationRule(

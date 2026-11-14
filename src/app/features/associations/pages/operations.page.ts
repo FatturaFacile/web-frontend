@@ -111,7 +111,7 @@ const DEVICES_PANEL: ResourcePanelConfig = {
     columns: [...cols('name', 'device_key', 'area_id'), tagCol('direction'), col('is_active', 'bool'), col('last_seen_at', 'datetime')],
   },
   create: act('POST', 'RES.A.new_access_device', '/associations/access-devices', {
-    fields: [req(rf.uuid('area_id')), req(rf.text('name')), rf.select('direction', ['in', 'out', 'both'])],
+    fields: [req(rf.uuid('area_id')), req(rf.text('name', { maxLength: 255 })), rf.select('direction', ['in', 'out', 'both'])],
     showResult: true,
   }),
   toolbar: [

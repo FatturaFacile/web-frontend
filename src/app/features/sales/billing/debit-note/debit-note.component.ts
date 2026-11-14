@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -16,19 +16,25 @@ import {
   PermissionsService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import {
   createLineGroup,
   DocumentLinesEditorComponent,
   LineGroup,
+  LineGroupOptions,
   linesToPayload,
 } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../../cycle/shared/sales-lookups.service';
 import { todayIso } from '../../cycle/shared/sales-status';
 
+/** The API requires a unit price above zero and a discount below 100 on a debit note. */
+const DEBIT_LINE_RULES: LineGroupOptions = { positiveUnitPrice: true, discountBelow100: true };
+
 /** Debit note on an issued invoice (additional charges: interest, expenses, price adjustments). */
 @Component({
   selector: 'app-debit-note',
+  styleUrl: './debit-note.component.scss',
   imports: [
     ReactiveFormsModule,
     NzAlertModule,
@@ -43,7 +49,6 @@ import { todayIso } from '../../cycle/shared/sales-status';
     TranslatePipe,
   ],
   templateUrl: './debit-note.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class DebitNoteComponent implements OnInit {
   private readonly api = inject(BillingApiService);
@@ -55,16 +60,21 @@ export class DebitNoteComponent implements OnInit {
   protected readonly lookups = inject(SalesLookupsService);
   protected readonly canWrite = computed(() => this.permissions.canWrite('invoicing'));
 
+  protected readonly lineRules = DEBIT_LINE_RULES;
   protected readonly invoices = signal<InvoiceResource[]>([]);
   protected readonly saving = signal(false);
   protected readonly error = signal('');
-  protected readonly lines: FormArray<LineGroup> = this.fb.array([createLineGroup(this.fb)]);
+  protected readonly lines: FormArray<LineGroup> = this.fb.array([createLineGroup(this.fb, undefined, DEBIT_LINE_RULES)]);
   protected readonly form = this.fb.group({
     original_invoice_id: ['', Validators.required],
     date: [todayIso()],
-    due_date: [''],
-    notes: [''],
+    due_date: ['', endsNotBefore('date', { dateOnly: true })],
+    notes: ['', Validators.maxLength(2000)],
   });
+
+  constructor() {
+    revalidateOnStartChange(this.form, 'date', 'due_date', inject(DestroyRef));
+  }
 
   ngOnInit(): void {
     this.lookups.load();
@@ -104,7 +114,7 @@ export class DebitNoteComponent implements OnInit {
           this.message.success(this.i18n.translate('SC.DEBIT.CREATED'));
           this.form.reset({ original_invoice_id: '', date: todayIso(), due_date: '', notes: '' });
           this.lines.clear();
-          this.lines.push(createLineGroup(this.fb));
+          this.lines.push(createLineGroup(this.fb, undefined, DEBIT_LINE_RULES));
         },
         error: (err: unknown) => {
           this.saving.set(false);

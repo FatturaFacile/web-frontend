@@ -3,11 +3,21 @@
  *
  * Every other entry is shown greyed out and cannot be clicked, so the pages that are still to be tested are not
  * reachable by mistake. To enable an entry, add its route (the `route` of the entry in `sidebar.component.ts`) here;
- * a group is enabled as soon as one of its entries is. The pages stay reachable by URL: only the menu is locked.
+ * a group is enabled as soon as one of its entries is. The pages are locked by URL too: menuEnabledGuard (core/auth) sends a disabled page to the home page.
  */
-export const TESTED_MENU_ROUTES: readonly string[] = [];
+export const TESTED_MENU_ROUTES: readonly string[] = [
+  // '/workspace',
+  // '/system',
+  // '/settings/admin/access-requests',
+  // '/settings/lookups',
+  '/crm/clients',
+  '', // TEMPORARY: every page reachable by url while testing the modals (revert!)
+];
 
-export function isMenuRouteTested(route: string | undefined, tested: readonly string[] = TESTED_MENU_ROUTES): boolean {
+export function isMenuRouteTested(
+  route: string | undefined,
+  tested: readonly string[] = TESTED_MENU_ROUTES,
+): boolean {
   return route !== undefined && tested.includes(route);
 }
 

@@ -1,21 +1,24 @@
 import { Component, effect, inject, input, model, output, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AlertsApiService, AlertResource, AlertSeverity, TranslateService } from '@core';
-import { TranslatePipe } from '@shared';
+import { AlertsApiService, AlertResource, AlertSeverity, applyServerErrors, TranslateService } from '@core';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-alert-form-drawer',
+  styleUrl: './alert-form-drawer.component.scss',
   imports: [
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -25,7 +28,6 @@ import { TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './alert-form-drawer.component.html',
-  styleUrl: './alert-form-drawer.component.scss',
 })
 export class AlertFormDrawerComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -42,7 +44,7 @@ export class AlertFormDrawerComponent {
   protected readonly form = this.fb.group({
     title: this.fb.control<string>('', [Validators.required, Validators.maxLength(255)]),
     severity: this.fb.control<AlertSeverity>('info'),
-    message: this.fb.control<string>(''),
+    message: this.fb.control<string>('', [Validators.maxLength(2000)]),
     is_active: this.fb.control<boolean>(true),
   });
 
@@ -97,8 +99,9 @@ export class AlertFormDrawerComponent {
         this.open.set(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.isSaving.set(false);
+        applyServerErrors(this.form, err);
       },
     });
   }

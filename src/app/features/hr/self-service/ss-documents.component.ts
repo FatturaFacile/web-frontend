@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { EmployeeDocumentResource, HrSelfServiceApiService, I18nService } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -10,15 +10,19 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 
 @Component({
   selector: 'app-ss-documents',
-  imports: [DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
+  styleUrl: './ss-documents.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    DatePipe, NzButtonModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table #table [nzData]="documents()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
       <thead>
         <tr>
-          <th>{{ 'hrmCommon.title' | translate }}</th>
-          <th>{{ 'hrmCommon.type' | translate }}</th>
-          <th>{{ 'hrmSelfService.issueDate' | translate }}</th>
-          <th>{{ 'hrmSelfService.expiryDate' | translate }}</th>
+          <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: table.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'hrmCommon.title' | translate }}</th>
+          <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: table.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'hrmCommon.type' | translate }}</th>
+          <th [nzSortFn]="'issue_date' | gridSort" [nzFilters]="'issue_date' | gridFilterList: table.nzData" [nzFilterFn]="'issue_date' | gridFilterFn">{{ 'hrmSelfService.issueDate' | translate }}</th>
+          <th [nzSortFn]="'expiry_date' | gridSort" [nzFilters]="'expiry_date' | gridFilterList: table.nzData" [nzFilterFn]="'expiry_date' | gridFilterFn">{{ 'hrmSelfService.expiryDate' | translate }}</th>
           <th>{{ 'hrmCommon.actions' | translate }}</th>
         </tr>
       </thead>

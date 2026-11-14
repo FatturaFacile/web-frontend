@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  margin: var(--space-6) auto;
+  max-width: 480px;
+  padding: 0 var(--space-4);
+}
+
+.payslip-card {
+  width: 100%;
+}
+
+.payslip-alert {
+  margin-bottom: var(--space-4);
+}

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -10,9 +10,11 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { map, tap } from 'rxjs';
 import {
+  FetchGridModel,
+  PaginatedResponse,
   SlaState,
   TicketApiService,
   TicketListParams,
@@ -21,18 +23,20 @@ import {
   TicketStatus,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TicketCreateDrawerComponent } from './components/ticket-create-drawer/ticket-create-drawer.component';
 import { TicketBulkModalComponent } from './components/ticket-bulk-modal/ticket-bulk-modal.component';
 import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/ticket-detail-drawer.component';
 
 @Component({
   selector: 'app-field-service',
+  styleUrl: './field-service.component.scss',
   imports: [
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzCardModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -49,16 +53,30 @@ import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/t
   ],
   templateUrl: './field-service.component.html',
 })
-export class FieldServiceComponent implements OnInit {
+export class FieldServiceComponent {
   private readonly api = inject(TicketApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
 
-  readonly loading = signal(false);
-  readonly tickets = signal<TicketResource[]>([]);
-  readonly total = signal(0);
-  readonly pageIndex = signal(1);
-  readonly pageSize = signal(10);
+  /** Server-side grid: paging, sorting, column filters, grouping and export run over the whole ticket list. */
+  readonly grid = new FetchGridModel<TicketResource, TicketListParams>((query) =>
+    this.api.getTickets(query).pipe(
+      tap({
+        error: (err) =>
+          this.message.error(
+            err?.error?.detail || err?.message || this.translate.instant('fieldService.errors.loadFailed'),
+          ),
+      }),
+      map(
+        (res) =>
+          ({
+            ...res,
+            data: res?.data ?? [],
+            meta: { ...res?.meta, total: Number(res?.meta?.total ?? 0) },
+          }) as unknown as PaginatedResponse<TicketResource>,
+      ),
+    ),
+  );
 
   // Filters
   readonly searchQuery = signal('');
@@ -73,78 +91,45 @@ export class FieldServiceComponent implements OnInit {
 
   // Bulk selection
   readonly bulkOpen = signal(false);
-  readonly selectedIds = signal<ReadonlySet<string>>(new Set());
-  readonly selectedIdList = computed(() => [...this.selectedIds()]);
-  readonly allSelected = computed(
-    () => this.tickets().length > 0 && this.tickets().every((ticket) => this.selectedIds().has(ticket.id)),
-  );
+  readonly selectedTickets = signal<TicketResource[]>([]);
+  readonly selectedIdList = computed(() => this.selectedTickets().map((ticket) => ticket.id));
 
-  ngOnInit(): void {
-    this.loadTickets();
-  }
+  private readonly ticketTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('ticketTpl');
+  private readonly subjectTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('subjectTpl');
+  private readonly priorityTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('priorityTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('statusTpl');
+  private readonly slaTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('slaTpl');
+  private readonly createdTpl = viewChild<TemplateRef<{ $implicit: TicketResource; value: unknown }>>('createdTpl');
 
-  toggleOne(id: string, checked: boolean): void {
-    this.selectedIds.update((current) => {
-      const next = new Set(current);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
-  }
-
-  toggleAll(checked: boolean): void {
-    this.selectedIds.set(checked ? new Set(this.tickets().map((ticket) => ticket.id)) : new Set());
-  }
+  /** `title` and `channel` are accessors of the API model: `serverKey` names the real column; `sla_state` is a gridColumns() entry. */
+  readonly columns = computed<TableColumnDef<TicketResource>[]>(() => [
+    { key: 'ticket_number', header: 'FIELD_SERVICE.COL_TICKET_ID', width: '120px', customCellTemplate: this.ticketTpl() },
+    {
+      key: 'title',
+      serverKey: 'subject',
+      valueGetter: (ticket) => ticket.title || ticket.subject,
+      header: 'FIELD_SERVICE.COL_SUBJECT',
+      customCellTemplate: this.subjectTpl(),
+    },
+    { key: 'channel', serverKey: 'source', header: 'FIELD_SERVICE.LBL_CANALE', width: '100px' },
+    { key: 'priority', header: 'FIELD_SERVICE.LBL_PRIORITA', width: '110px', customCellTemplate: this.priorityTpl() },
+    { key: 'status', header: 'COMMON.STATUS', width: '130px', customCellTemplate: this.statusTpl() },
+    { key: 'sla_state', header: 'FIELD_SERVICE.COL_SLA', width: '140px', customCellTemplate: this.slaTpl() },
+    { key: 'created_at', header: 'FIELD_SERVICE.LBL_DATA_CREAZIONE', width: '150px', customCellTemplate: this.createdTpl() },
+  ]);
 
   onBulkDone(): void {
-    this.selectedIds.set(new Set());
-    this.loadTickets();
+    this.selectedTickets.set([]);
+    this.grid.reload();
   }
 
-  loadTickets(): void {
-    this.loading.set(true);
-
-    const params: TicketListParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
+  onSearch(): void {
+    this.grid.setFilter({
       status: (this.filterStatus() as TicketStatus) || undefined,
       priority: (this.filterPriority() as TicketPriority) || undefined,
       sla_state: (this.filterSlaState() as SlaState) || undefined,
       q: this.searchQuery().trim() || undefined,
-    };
-
-    this.api.getTickets(params).subscribe({
-      next: (res) => {
-        this.tickets.set(res?.data || []);
-        const totalRaw = res?.meta?.total;
-        const totalCount = typeof totalRaw === 'string' ? parseInt(totalRaw, 10) : totalRaw || 0;
-        this.total.set(isNaN(totalCount) ? 0 : totalCount);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.message.error(
-          err?.error?.detail || err?.message || this.translate.instant('fieldService.errors.loadFailed'),
-        );
-        this.tickets.set([]);
-        this.total.set(0);
-        this.loading.set(false);
-      },
     });
-  }
-
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    const { pageIndex, pageSize } = params;
-    this.pageIndex.set(pageIndex);
-    this.pageSize.set(pageSize);
-    this.loadTickets();
-  }
-
-  onSearch(): void {
-    this.pageIndex.set(1);
-    this.loadTickets();
   }
 
   resetFilters(): void {
@@ -152,8 +137,7 @@ export class FieldServiceComponent implements OnInit {
     this.filterStatus.set('');
     this.filterPriority.set('');
     this.filterSlaState.set('');
-    this.pageIndex.set(1);
-    this.loadTickets();
+    this.onSearch();
   }
 
   openCreate(): void {

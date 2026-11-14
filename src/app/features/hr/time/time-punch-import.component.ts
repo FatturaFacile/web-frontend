@@ -7,7 +7,7 @@ import {
   PunchImportResult,
   PunchType,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { defer, Observable, tap, throwError } from 'rxjs';
@@ -19,7 +19,11 @@ const SOURCES = ['badge', 'terminal'];
 /** Imports the punches of a badge reader or terminal. One punch per line: `external_id;badge_code;occurred_at;punch_type;meal_type`. */
 @Component({
   selector: 'app-time-punch-import',
-  imports: [ActionFormComponent, NzAlertModule, NzTableModule, TranslatePipe],
+  styleUrl: './time-punch-import.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ActionFormComponent, NzAlertModule, NzTableModule, TranslatePipe],
   template: `
     <nz-alert
       nzType="info"
@@ -40,8 +44,8 @@ const SOURCES = ['badge', 'terminal'];
         <nz-table #rejectedTable [nzData]="r.rejected" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmTimeX.externalId' | translate }}</th>
-              <th>{{ 'hrmCommon.reason' | translate }}</th>
+              <th [nzSortFn]="'external_id' | gridSort" [nzFilters]="'external_id' | gridFilterList: rejectedTable.nzData" [nzFilterFn]="'external_id' | gridFilterFn">{{ 'hrmTimeX.externalId' | translate }}</th>
+              <th [nzSortFn]="'reason' | gridSort" [nzFilters]="'reason' | gridFilterList: rejectedTable.nzData" [nzFilterFn]="'reason' | gridFilterFn">{{ 'hrmCommon.reason' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -74,7 +78,7 @@ export class TimePunchImportComponent {
         labelKey: 'hrmTimeX.readerId',
         type: 'text',
         required: true,
-        maxLength: 100,
+        maxLength: 120,
       },
       {
         key: 'source',

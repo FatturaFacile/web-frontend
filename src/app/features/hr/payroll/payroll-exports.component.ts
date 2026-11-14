@@ -25,9 +25,10 @@ const EXPORTS: ExportDefinition[] = [
 /** CSV exports of a year/month and the year-end report (the server decides the content). */
 @Component({
   selector: 'app-payroll-exports',
+  styleUrl: './payroll-exports.component.scss',
   imports: [FormsModule, NzButtonModule, NzInputModule, TranslatePipe],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="exp-year">{{ 'hrmCommon.year' | translate }}</label>
         <input nz-input id="exp-year" type="number" [ngModel]="year()" (ngModelChange)="year.set($event)" />

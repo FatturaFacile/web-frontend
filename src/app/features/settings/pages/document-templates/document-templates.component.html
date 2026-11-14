@@ -22,9 +22,9 @@
     <thead>
       <tr>
         <th>{{ 'DOCUMENT_TEMPLATES.TYPE' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</th>
-        <th>{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</th>
+        <th [nzSortFn]="'template.primary_color' | gridSort" [nzFilters]="'template.primary_color' | gridFilterList: table.nzData" [nzFilterFn]="'template.primary_color' | gridFilterFn">{{ 'DOCUMENT_TEMPLATES.PRIMARY_COLOR' | translate }}</th>
+        <th [nzSortFn]="'template.secondary_color' | gridSort" [nzFilters]="'template.secondary_color' | gridFilterList: table.nzData" [nzFilterFn]="'template.secondary_color' | gridFilterFn">{{ 'DOCUMENT_TEMPLATES.SECONDARY_COLOR' | translate }}</th>
+        <th [nzSortFn]="'template.footer_text' | gridSort" [nzFilters]="'template.footer_text' | gridFilterList: table.nzData" [nzFilterFn]="'template.footer_text' | gridFilterFn">{{ 'DOCUMENT_TEMPLATES.FOOTER' | translate }}</th>
         <th>{{ 'COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
@@ -47,9 +47,7 @@
           </td>
           <td>
             @if (canWrite()) {
-              <button nz-button nzType="link" nzSize="small" type="button" (click)="edit(row)">
-                {{ 'RES.ACTION.EDIT' | translate }}
-              </button>
+              <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="edit(row)"></button>
               @if (row.template) {
                 <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="reset(row)">
                   {{ 'DOCUMENT_TEMPLATES.RESET' | translate }}
@@ -93,9 +91,15 @@
     }
   </ng-container>
   <ng-template #footer>
-    <button nz-button type="button" (click)="editing.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!colorsValid()" (click)="save()">
-      {{ 'COMMON.SAVE' | translate }}
-    </button>
+    <button nz-button type="button" appIconAction="cancel" (click)="editing.set(null)"></button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      appIconAction="save"
+      [nzLoading]="saving()"
+      [disabled]="!colorsValid()"
+      (click)="save()"
+    ></button>
   </ng-template>
 </nz-modal>

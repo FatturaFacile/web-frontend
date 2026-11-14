@@ -8,7 +8,7 @@ import {
   SwissdecStatus,
   SwissdecVersion,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -23,7 +23,11 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Swissdec ELM: certification status, what is missing in the data of a year, the declaration and the (unavailable) transmission. */
 @Component({
   selector: 'app-swissdec-panel',
+  styleUrl: './swissdec-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
     FormsModule,
     NzAlertModule,
     NzButtonModule,
@@ -61,7 +65,7 @@ import { reportHttpError } from '../shared/hr-http.util';
       </nz-descriptions>
     }
 
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="sd-year">{{ 'hrmCommon.year' | translate }}</label>
         <input
@@ -76,7 +80,7 @@ import { reportHttpError } from '../shared/hr-http.util';
         <label for="sd-version">{{ 'hrmCompliance.swissdec.version' | translate }}</label>
         <nz-select
           id="sd-version"
-          style="width: 100px; display: block"
+          class="w-field-xs"
           [ngModel]="version()"
           (ngModelChange)="version.set($event)"
         >
@@ -121,8 +125,8 @@ import { reportHttpError } from '../shared/hr-http.util';
         <nz-table #issues [nzData]="r.persons" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmCommon.employee' | translate }}</th>
-              <th>{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
+              <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: issues.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+              <th [nzSortFn]="'issues.length' | gridSort" [nzFilters]="'issues.length' | gridFilterList: issues.nzData" [nzFilterFn]="'issues.length' | gridFilterFn">{{ 'hrmCompliance.swissdec.issues' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -152,8 +156,6 @@ import { reportHttpError } from '../shared/hr-http.util';
     <nz-modal
       [nzVisible]="confirmOpen()"
       [nzTitle]="'hrmCompliance.swissdec.transmit' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="loading()"
       (nzOnOk)="transmit()"
       (nzOnCancel)="confirmOpen.set(false)"
@@ -162,15 +164,6 @@ import { reportHttpError } from '../shared/hr-http.util';
         'hrmCompliance.swissdec.transmitConfirm' | translate
       }}</ng-container>
     </nz-modal>
-  `,
-  styles: `
-    .swissdec-json {
-      max-height: 360px;
-      overflow: auto;
-      padding: 12px;
-      font-size: 12px;
-      background: var(--ant-color-fill-quaternary, #fafafa);
-    }
   `,
 })
 export class SwissdecPanelComponent {

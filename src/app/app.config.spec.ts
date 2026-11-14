@@ -1,3 +1,4 @@
+import type { ProviderToken } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -35,7 +36,7 @@ describe('appConfig dependency graph', () => {
     ['AuthStore', AuthStore],
     ['AppStore', AppStore],
   ] as const)('resolves %s without a circular dependency', (_name, token) => {
-    expect(() => TestBed.inject(token)).not.toThrow();
+    expect(() => TestBed.inject(token as ProviderToken<unknown>)).not.toThrow();
   });
 
   it('runs the interceptor chain on an HTTP error without a circular dependency', () => {

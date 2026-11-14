@@ -34,6 +34,9 @@ function journal(status: GlJournalEntry['status'], id = 'j1'): GlJournalEntry {
   };
 }
 
+/** The grid reloads after a short debounce. */
+const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 400));
+
 describe('GlJournalsComponent', () => {
   const api = {
     getJournals: vi.fn(),
@@ -67,7 +70,7 @@ describe('GlJournalsComponent', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(GlJournalsComponent);
     fixture.detectChanges();
-    await fixture.whenStable();
+    await settle();
     fixture.detectChanges();
     return fixture;
   }
@@ -89,6 +92,7 @@ describe('GlJournalsComponent', () => {
     expect(api.getJournals).toHaveBeenCalledWith({ status: 'pending_approval', page: 1, per_page: 20 });
     const buttons = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('tbody button[nz-button]'));
     expect(buttons.length).toBe(2);
+    expect(fixture.nativeElement.textContent).toContain('Manual journal');
   });
 
   it('approves a journal and reloads the list', async () => {
@@ -96,6 +100,7 @@ describe('GlJournalsComponent', () => {
     const component = fixture.componentInstance as unknown as { approve(e: GlJournalEntry): void };
     component.approve(journal('pending_approval'));
     expect(api.approveJournal).toHaveBeenCalledWith('j1');
+    await settle();
     expect(api.getJournals).toHaveBeenCalledTimes(2);
   });
 

@@ -19,6 +19,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-header',
+  styleUrl: './header.component.scss',
   imports: [
     FormsModule,
     RouterLink,
@@ -31,7 +32,6 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
     TranslatePipe,
   ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
   private readonly translate = inject(TranslateService);

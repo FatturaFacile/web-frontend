@@ -1,6 +1,12 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import {
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -21,25 +27,55 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   EmployeeResource,
   EmploymentType,
+  FetchGridModel,
   FrontierWorkerResource,
   HireEmployeePayload,
   HrApiService,
+  HrLeaveApiService,
+  LeaveTypeResource,
   I18nService,
   LeaveRequestResource,
   PayrollRunResource,
+  QueryFilterParams,
   SubmitLeaveRequestPayload,
   SubmitTimesheetPayload,
   TerminateEmployeePayload,
   TimesheetResource,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import {
+  BaseTableComponent,
+  GridFilterFnPipe,
+  GridFilterListPipe,
+  GridSortPipe,
+  IconActionDirective,
+  ModalActionsDirective,
+  MoneyPipe,
+  PageHeaderComponent,
+  TableColumnDef,
+  TranslatePipe,
+} from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { toIsoDate } from '@shared/utils/iso-date';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
 import { reportHttpError } from './shared/hr-http.util';
 import { ReasonButtonComponent } from './shared/reason-button.component';
 
+/** Employment types accepted by the API (HireEmployeeRequest `in:`), with their label key. */
+const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contractor', 'apprentice', 'seasonal'] as const;
+
+/** Contract types accepted by the API (HireEmployeeRequest `in:`), labels in hrmEmp.contractType.*. */
+const CONTRACT_TYPES = ['permanent', 'fixed_term', 'apprenticeship', 'contractor', 'internship'] as const;
+
 @Component({
   selector: 'app-hr',
+  styleUrl: './hr.component.scss',
   imports: [
+    BaseTableComponent,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -69,6 +105,11 @@ import { ReasonButtonComponent } from './shared/reason-button.component';
 export class HrComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly api = inject(HrApiService);
+  private readonly leaveApi = inject(HrLeaveApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly employmentTypes = EMPLOYMENT_TYPES;
+  protected readonly contractTypes = CONTRACT_TYPES;
+  readonly leaveTypes = signal<LeaveTypeResource[]>([]);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -77,34 +118,109 @@ export class HrComponent implements OnInit {
 
   readonly selectedTab = signal<number>(0);
 
-  // --- Employees State ---
-  readonly employees = signal<EmployeeResource[]>([]);
-  readonly loadingEmployees = signal(false);
-  readonly employeesTotal = signal(0);
-  readonly employeesPage = signal(1);
+  // --- Employees State: a server-driven grid (paging, sorting, filters and grouping over the whole dataset) ---
+  readonly employeesGrid = new FetchGridModel<EmployeeResource, QueryFilterParams & { status?: string }>((query) =>
+    this.api.getEmployees(query),
+  );
+  /** Rows of the loaded page. */
+  readonly employees = computed(() => this.employeesGrid.items());
   readonly employeesSearch = signal('');
   readonly employeesStatusFilter = signal<string | null>(null);
 
   // --- Leave Requests State ---
-  readonly leaveRequests = signal<LeaveRequestResource[]>([]);
-  readonly loadingLeaves = signal(false);
-  readonly leavesTotal = signal(0);
-  readonly leavesPage = signal(1);
+  readonly leavesGrid = new FetchGridModel<LeaveRequestResource>((query) => this.api.getLeaveRequests(query));
+  readonly leaveRequests = computed(() => this.leavesGrid.items());
 
   // --- Timesheets State ---
-  readonly timesheets = signal<TimesheetResource[]>([]);
-  readonly loadingTimesheets = signal(false);
-  readonly timesheetsTotal = signal(0);
-  readonly timesheetsPage = signal(1);
+  readonly timesheetsGrid = new FetchGridModel<TimesheetResource>((query) => this.api.getTimesheets(query));
 
   // --- Payroll & Frontier State ---
-  readonly payrollRuns = signal<PayrollRunResource[]>([]);
-  readonly loadingPayroll = signal(false);
+  readonly payrollGrid = new FetchGridModel<PayrollRunResource>((query) => this.api.getPayrollRuns(query));
+  /** The frontier workers are assessed in PHP for one year (not a list endpoint): the table stays client-side. */
   readonly frontierWorkers = signal<FrontierWorkerResource[]>([]);
   readonly loadingFrontier = signal(false);
 
+  private readonly employeeNumberTpl = viewChild<TemplateRef<unknown>>('employeeNumberTpl');
+  private readonly employeeNameTpl = viewChild<TemplateRef<unknown>>('employeeNameTpl');
+  private readonly employmentTypeTpl = viewChild<TemplateRef<unknown>>('employmentTypeTpl');
+  private readonly employmentStatusTpl = viewChild<TemplateRef<unknown>>('employmentStatusTpl');
+  private readonly salaryTpl = viewChild<TemplateRef<unknown>>('salaryTpl');
+  private readonly hireDateTpl = viewChild<TemplateRef<unknown>>('hireDateTpl');
+  private readonly leaveNumberTpl = viewChild<TemplateRef<unknown>>('leaveNumberTpl');
+  private readonly leaveEmployeeTpl = viewChild<TemplateRef<unknown>>('leaveEmployeeTpl');
+  private readonly leaveTypeTpl = viewChild<TemplateRef<unknown>>('leaveTypeTpl');
+  private readonly leaveStartTpl = viewChild<TemplateRef<unknown>>('leaveStartTpl');
+  private readonly leaveEndTpl = viewChild<TemplateRef<unknown>>('leaveEndTpl');
+  private readonly leaveHoursTpl = viewChild<TemplateRef<unknown>>('leaveHoursTpl');
+  private readonly leaveReasonTpl = viewChild<TemplateRef<unknown>>('leaveReasonTpl');
+  private readonly leaveStatusTpl = viewChild<TemplateRef<unknown>>('leaveStatusTpl');
+  private readonly timesheetNumberTpl = viewChild<TemplateRef<unknown>>('timesheetNumberTpl');
+  private readonly timesheetEmployeeTpl = viewChild<TemplateRef<unknown>>('timesheetEmployeeTpl');
+  private readonly timesheetDateTpl = viewChild<TemplateRef<unknown>>('timesheetDateTpl');
+  private readonly timesheetRegularTpl = viewChild<TemplateRef<unknown>>('timesheetRegularTpl');
+  private readonly timesheetOvertimeTpl = viewChild<TemplateRef<unknown>>('timesheetOvertimeTpl');
+  private readonly timesheetTotalTpl = viewChild<TemplateRef<unknown>>('timesheetTotalTpl');
+  private readonly timesheetBillableTpl = viewChild<TemplateRef<unknown>>('timesheetBillableTpl');
+  private readonly timesheetStatusTpl = viewChild<TemplateRef<unknown>>('timesheetStatusTpl');
+  private readonly payrollPeriodTpl = viewChild<TemplateRef<unknown>>('payrollPeriodTpl');
+  private readonly payrollCountryTpl = viewChild<TemplateRef<unknown>>('payrollCountryTpl');
+  private readonly payrollGrossTpl = viewChild<TemplateRef<unknown>>('payrollGrossTpl');
+  private readonly payrollNetTpl = viewChild<TemplateRef<unknown>>('payrollNetTpl');
+  private readonly payrollStatusTpl = viewChild<TemplateRef<unknown>>('payrollStatusTpl');
+  private readonly payrollDateTpl = viewChild<TemplateRef<unknown>>('payrollDateTpl');
+
+  readonly employeeColumns = computed<TableColumnDef<EmployeeResource>[]>(() => {
+    return [
+      { key: 'employee_number', header: 'hrmEmp.lblMatricola', customCellTemplate: this.employeeNumberTpl() },
+      { key: 'full_name', header: 'hrmEmp.lblDipendente', customCellTemplate: this.employeeNameTpl() },
+      { key: 'work_email', header: 'hrmEmp.lblEmailAziendale' },
+      { key: 'employment_type', header: 'hrmEmp.lblTipoContratto', customCellTemplate: this.employmentTypeTpl() },
+      { key: 'employment_status', header: 'hrmEmp.lblStato', customCellTemplate: this.employmentStatusTpl() },
+      { key: 'base_annual_salary', header: 'hrmEmp.lblRalRetribuzione', align: 'right', customCellTemplate: this.salaryTpl() },
+      { key: 'hire_date', header: 'hrmEmp.lblDataAssunzione', customCellTemplate: this.hireDateTpl() },
+    ];
+  });
+
+  readonly leaveColumns = computed<TableColumnDef<LeaveRequestResource>[]>(() => {
+    return [
+      { key: 'request_number', header: 'hrmEmp.lblNRichiesta', customCellTemplate: this.leaveNumberTpl() },
+      { key: 'employee_name', serverKey: 'employee.full_name', header: 'hrmEmp.lblIdDipendente', customCellTemplate: this.leaveEmployeeTpl() },
+      { key: 'leave_type_name', serverKey: 'leaveType.name', header: 'hrmEmp.lblTipologia', customCellTemplate: this.leaveTypeTpl() },
+      { key: 'start_date', header: 'hrmEmp.lblDataInizio', customCellTemplate: this.leaveStartTpl() },
+      { key: 'end_date', header: 'hrmEmp.lblDataFine', customCellTemplate: this.leaveEndTpl() },
+      { key: 'total_hours', header: 'hrmEmp.lblOreGiorni', align: 'right', customCellTemplate: this.leaveHoursTpl() },
+      { key: 'reason', header: 'hrmEmp.lblMotivazione', sortable: false, filterable: false, groupable: false, customCellTemplate: this.leaveReasonTpl() },
+      { key: 'status', header: 'hrmEmp.lblStato', customCellTemplate: this.leaveStatusTpl() },
+    ];
+  });
+
+  readonly timesheetColumns = computed<TableColumnDef<TimesheetResource>[]>(() => {
+    return [
+      { key: 'timesheet_number', header: 'hrmEmp.lblNRapporto', customCellTemplate: this.timesheetNumberTpl() },
+      { key: 'employee_name', serverKey: 'employee.full_name', header: 'hrmEmp.lblDipendente', customCellTemplate: this.timesheetEmployeeTpl() },
+      { key: 'work_date', header: 'hrmEmp.lblDataLavorativa', customCellTemplate: this.timesheetDateTpl() },
+      { key: 'regular_hours', header: 'hrmEmp.lblOreOrdinarie', align: 'right', customCellTemplate: this.timesheetRegularTpl() },
+      { key: 'overtime_hours', header: 'hrmEmp.lblStraordinari', align: 'right', customCellTemplate: this.timesheetOvertimeTpl() },
+      { key: 'total_hours', header: 'hrmEmp.lblTotaleOre', align: 'right', customCellTemplate: this.timesheetTotalTpl() },
+      { key: 'billable_hours', header: 'hrmEmp.lblFatturabili', align: 'right', customCellTemplate: this.timesheetBillableTpl() },
+      { key: 'status', header: 'hrmEmp.lblStato', customCellTemplate: this.timesheetStatusTpl() },
+    ];
+  });
+
+  readonly payrollColumns = computed<TableColumnDef<PayrollRunResource>[]>(() => {
+    return [
+      { key: 'month', header: 'hrmEmp.lblPeriodoElaborazione', customCellTemplate: this.payrollPeriodTpl() },
+      { key: 'country', header: 'hrmEmp.lblNazione', customCellTemplate: this.payrollCountryTpl() },
+      { key: 'employees_count', header: 'hrmEmp.lblDipendentiElaborati', align: 'right' },
+      { key: 'total_gross', header: 'hrmEmp.lblMonteRetributivoLordo', align: 'right', customCellTemplate: this.payrollGrossTpl() },
+      { key: 'total_net', header: 'hrmEmp.lblTotaleNettoErogato', align: 'right', customCellTemplate: this.payrollNetTpl() },
+      { key: 'status', header: 'hrmEmp.lblStato', customCellTemplate: this.payrollStatusTpl() },
+      { key: 'created_at', header: 'hrmEmp.lblDataCalcolo', customCellTemplate: this.payrollDateTpl() },
+    ];
+  });
+
   // --- KPI Computed Metrics ---
-  readonly kpiTotalEmployees = computed(() => this.employees().length);
+  readonly kpiTotalEmployees = computed(() => this.employeesGrid.totalCount());
   readonly kpiActiveEmployees = computed(
     () => this.employees().filter((e) => e.employment_status === 'active').length
   );
@@ -112,19 +228,20 @@ export class HrComponent implements OnInit {
     () => this.employees().filter((e) => e.employment_status === 'probation').length
   );
   readonly kpiPendingLeaves = computed(
-    () => this.leaveRequests().filter((l) => l.status === 'pending').length
+    () => this.leavesGrid.items().filter((l) => l.status === 'pending').length
   );
 
   // --- Modals & Forms ---
   readonly isHireModalVisible = signal(false);
   readonly isSubmittingHire = signal(false);
   readonly hireForm = this.fb.group({
-    first_name: ['', [Validators.required]],
-    last_name: ['', [Validators.required]],
-    work_email: ['', [Validators.required, Validators.email]],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    work_email: ['', [Validators.required, Validators.email, Validators.maxLength(180)]],
     base_annual_salary: [30000, [Validators.required, Validators.min(0)]],
-    hire_date: [new Date(), [Validators.required]],
-    employment_type: ['full_time' as EmploymentType, [Validators.required]],
+    hire_date: [new Date() as Date | null],
+    employment_type: ['full_time' as EmploymentType],
+    contract_type: ['permanent' as (typeof CONTRACT_TYPES)[number]],
     weekly_hours: [40, [Validators.min(1), Validators.max(60)]],
     probation_months: [6, [Validators.min(0), Validators.max(12)]],
   });
@@ -132,65 +249,53 @@ export class HrComponent implements OnInit {
   readonly isLeaveModalVisible = signal(false);
   readonly isSubmittingLeave = signal(false);
   readonly leaveForm = this.fb.group({
-    employee_id: ['', [Validators.required]],
-    leave_type_id: ['vacation', [Validators.required]],
+    employee_id: ['', [Validators.required, uuidFormat]],
+    leave_type_id: ['', [Validators.required, uuidFormat]],
     start_date: [new Date(), [Validators.required]],
-    end_date: [new Date(Date.now() + 5 * 86400000), [Validators.required]],
-    total_hours: [40, [Validators.required, Validators.min(0.5)]],
-    reason: [''],
+    end_date: [new Date(Date.now() + 5 * 86400000), [Validators.required, endsNotBefore('start_date')]],
+    total_hours: [40, [Validators.required, Validators.min(0.5), Validators.max(2000)]],
+    reason: ['', Validators.maxLength(1000)],
   });
 
   readonly isTimesheetModalVisible = signal(false);
   readonly isSubmittingTimesheet = signal(false);
   readonly timesheetForm = this.fb.group({
-    employee_id: ['', [Validators.required]],
+    employee_id: ['', [Validators.required, uuidFormat]],
     work_date: [new Date(), [Validators.required]],
     regular_hours: [8, [Validators.required, Validators.min(0), Validators.max(24)]],
     overtime_hours: [0, [Validators.min(0), Validators.max(24)]],
     billable_hours: [8, [Validators.min(0), Validators.max(24)]],
-    description: [''],
+    description: ['', Validators.maxLength(1000)],
   });
 
+  constructor() {
+    revalidateOnStartChange(this.leaveForm, 'start_date', 'end_date', this.destroyRef);
+  }
+
+  /** Error text of a control of one of the modal forms, from the shared validation keys. */
+  fieldError(form: FormGroup, key: string): string {
+    return this.i18n.translate(validationTipKey(form.get(key)) || 'COMMON.VALIDATION.INVALID_VALUE');
+  }
+
   ngOnInit(): void {
-    this.loadEmployees();
-    this.loadLeaveRequests();
-    this.loadTimesheets();
-    this.loadPayrollRuns();
     this.loadFrontierWorkers();
   }
 
   // --- Employees Logic ---
 
-  loadEmployees(page = 1): void {
-    this.loadingEmployees.set(true);
-    this.employeesPage.set(page);
+  setEmployeesSearch(value: string): void {
+    this.employeesSearch.set(value);
+    this.employeesGrid.setFilter({ search: value.trim() || undefined });
+  }
 
-    const params: Record<string, string | number> = {
-      page,
-      per_page: 15,
-    };
-    if (this.employeesSearch().trim()) {
-      params['search'] = this.employeesSearch().trim();
-    }
-    if (this.employeesStatusFilter()) {
-      params['status'] = this.employeesStatusFilter()!;
-    }
-
-    this.api.getEmployees(params).subscribe({
-      next: (res) => {
-        this.employees.set(res?.data || []);
-        this.employeesTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingEmployees.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('hrmEmp.msgImpossibileCaricareIDipendenti'));
-        this.loadingEmployees.set(false);
-      },
-    });
+  setEmployeesStatus(value: string | null): void {
+    this.employeesStatusFilter.set(value);
+    this.employeesGrid.setFilter({ status: value ?? undefined });
   }
 
   openHireModal(): void {
     this.hireForm.reset({
+      contract_type: 'permanent',
       first_name: '',
       last_name: '',
       work_email: '',
@@ -216,11 +321,13 @@ export class HrComponent implements OnInit {
       last_name: val.last_name,
       work_email: val.work_email,
       base_annual_salary: Number(val.base_annual_salary),
-      hire_date:
-        val.hire_date instanceof Date
-          ? val.hire_date.toISOString().split('T')[0]
-          : String(val.hire_date),
-      employment_type: val.employment_type,
+      hire_date: val.hire_date
+        ? val.hire_date instanceof Date
+          ? toIsoDate(val.hire_date)
+          : String(val.hire_date)
+        : undefined,
+      employment_type: val.employment_type || undefined,
+      contract_type: val.contract_type || undefined,
       weekly_hours: Number(val.weekly_hours),
       probation_months: Number(val.probation_months),
     };
@@ -230,7 +337,7 @@ export class HrComponent implements OnInit {
         this.message.success(this.translate.instant('hrmEmp.msgNuovoDipendenteAssuntoConSuccesso'));
         this.isSubmittingHire.set(false);
         this.isHireModalVisible.set(false);
-        this.loadEmployees(1);
+        this.employeesGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLAssunzioneDelDipendente'));
@@ -248,7 +355,7 @@ export class HrComponent implements OnInit {
         this.api.completeProbation(emp.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('hrmEmp.msgPeriodoDiProvaConfermato'));
-            this.loadEmployees(this.employeesPage());
+            this.employeesGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaConfermaDellaProva')),
         });
@@ -267,10 +374,10 @@ export class HrComponent implements OnInit {
       nzOkText: this.translate.instant('hrmEmp.dlgPromuovi'),
       nzOnOk: () => {
         const newSalary = Number(emp.base_annual_salary) * 1.1;
-        this.api.promoteEmployee(emp.id, { base_annual_salary: Math.round(newSalary) }).subscribe({
+        this.api.promoteEmployee(emp.id, { new_base_annual_salary: Math.round(newSalary) }).subscribe({
           next: () => {
             this.message.success(this.translate.instant('hrmEmp.msgDipendentePromossoConSuccesso'));
-            this.loadEmployees(this.employeesPage());
+            this.employeesGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaPromozione')),
         });
@@ -286,13 +393,13 @@ export class HrComponent implements OnInit {
       nzOkText: this.translate.instant('hrmEmp.dlgTerminaRapporto'),
       nzOnOk: () => {
         const payload: TerminateEmployeePayload = {
-          termination_date: new Date().toISOString().split('T')[0],
+          termination_date: toIsoDate(new Date()),
           reason: 'Cessazione consensuale',
         };
         this.api.terminateEmployee(emp.id, payload).subscribe({
           next: () => {
             this.message.success(this.translate.instant('hrmEmp.msgRapportoDiLavoroTerminato'));
-            this.loadEmployees(this.employeesPage());
+            this.employeesGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaCessazioneDelRapporto')),
         });
@@ -302,29 +409,26 @@ export class HrComponent implements OnInit {
 
   // --- Leave Requests Logic ---
 
-  loadLeaveRequests(page = 1): void {
-    this.loadingLeaves.set(true);
-    this.leavesPage.set(page);
-    this.api.getLeaveRequests({ page, per_page: 15 }).subscribe({
-      next: (res) => {
-        this.leaveRequests.set(res?.data || []);
-        this.leavesTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingLeaves.set(false);
-      },
-      error: () => this.loadingLeaves.set(false),
-    });
-  }
-
   openLeaveModal(): void {
     this.leaveForm.reset({
       employee_id: this.employees()[0]?.id || '',
-      leave_type_id: 'vacation',
+      leave_type_id: '',
       start_date: new Date(),
       end_date: new Date(Date.now() + 5 * 86400000),
       total_hours: 40,
       reason: '',
     });
     this.isLeaveModalVisible.set(true);
+    this.leaveApi.getLeaveTypes().subscribe({
+      next: (res) => {
+        const types = (res?.data ?? []).filter((type) => type.is_active);
+        this.leaveTypes.set(types);
+        if (!this.leaveForm.controls.leave_type_id.value) {
+          this.leaveForm.controls.leave_type_id.setValue(types[0]?.id ?? '');
+        }
+      },
+      error: () => this.leaveTypes.set([]),
+    });
   }
 
   submitLeaveRequest(): void {
@@ -340,11 +444,11 @@ export class HrComponent implements OnInit {
       leave_type_id: val.leave_type_id,
       start_date:
         val.start_date instanceof Date
-          ? val.start_date.toISOString().split('T')[0]
+          ? toIsoDate(val.start_date)
           : String(val.start_date),
       end_date:
         val.end_date instanceof Date
-          ? val.end_date.toISOString().split('T')[0]
+          ? toIsoDate(val.end_date)
           : String(val.end_date),
       total_hours: Number(val.total_hours),
       reason: val.reason || null,
@@ -355,7 +459,7 @@ export class HrComponent implements OnInit {
         this.message.success(this.translate.instant('hrmEmp.msgRichiestaDiFeriePermessoInviata'));
         this.isSubmittingLeave.set(false);
         this.isLeaveModalVisible.set(false);
-        this.loadLeaveRequests(1);
+        this.leavesGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLInvioDellaRichiesta'));
@@ -368,7 +472,7 @@ export class HrComponent implements OnInit {
     this.api.approveLeaveRequest(req.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('hrmEmp.msgRichiestaApprovata'));
-        this.loadLeaveRequests(this.leavesPage());
+        this.leavesGrid.reload();
       },
       // 409: a running approval workflow decides, the request cannot be approved manually.
       error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
@@ -379,7 +483,7 @@ export class HrComponent implements OnInit {
     this.api.cancelLeaveRequest(req.id, reason).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('hrmLeave.requestCancelled'));
-        this.loadLeaveRequests(this.leavesPage());
+        this.leavesGrid.reload();
       },
       error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
@@ -389,26 +493,13 @@ export class HrComponent implements OnInit {
     this.api.rejectLeaveRequest(req.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('hrmEmp.msgRichiestaRifiutata'));
-        this.loadLeaveRequests(this.leavesPage());
+        this.leavesGrid.reload();
       },
       error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
   }
 
   // --- Timesheets Logic ---
-
-  loadTimesheets(page = 1): void {
-    this.loadingTimesheets.set(true);
-    this.timesheetsPage.set(page);
-    this.api.getTimesheets({ page, per_page: 15 }).subscribe({
-      next: (res) => {
-        this.timesheets.set(res?.data || []);
-        this.timesheetsTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingTimesheets.set(false);
-      },
-      error: () => this.loadingTimesheets.set(false),
-    });
-  }
 
   openTimesheetModal(): void {
     this.timesheetForm.reset({
@@ -434,7 +525,7 @@ export class HrComponent implements OnInit {
       employee_id: val.employee_id,
       work_date:
         val.work_date instanceof Date
-          ? val.work_date.toISOString().split('T')[0]
+          ? toIsoDate(val.work_date)
           : String(val.work_date),
       regular_hours: Number(val.regular_hours),
       overtime_hours: Number(val.overtime_hours),
@@ -447,7 +538,7 @@ export class HrComponent implements OnInit {
         this.message.success(this.translate.instant('hrmEmp.msgPresenzeOreRegistrateConSuccesso'));
         this.isSubmittingTimesheet.set(false);
         this.isTimesheetModalVisible.set(false);
-        this.loadTimesheets(1);
+        this.timesheetsGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLaRegistrazioneDelleOre'));
@@ -460,7 +551,7 @@ export class HrComponent implements OnInit {
     this.api.approveTimesheet(ts.id).subscribe({
       next: () => {
         this.message.success(this.translate.instant('hrmEmp.msgTimesheetApprovato'));
-        this.loadTimesheets(this.timesheetsPage());
+        this.timesheetsGrid.reload();
       },
       error: () => this.message.error(this.translate.instant('hrmEmp.msgErroreDuranteLApprovazioneDelTimesheet')),
     });
@@ -468,22 +559,11 @@ export class HrComponent implements OnInit {
 
   // --- Payroll & Frontier Logic ---
 
-  loadPayrollRuns(): void {
-    this.loadingPayroll.set(true);
-    this.api.getPayrollRuns().subscribe({
-      next: (res) => {
-        this.payrollRuns.set(res?.data || []);
-        this.loadingPayroll.set(false);
-      },
-      error: () => this.loadingPayroll.set(false),
-    });
-  }
-
   loadFrontierWorkers(): void {
     this.loadingFrontier.set(true);
-    this.api.getFrontierWorkers().subscribe({
+    this.api.getFrontierWorkers(new Date().getFullYear()).subscribe({
       next: (res) => {
-        this.frontierWorkers.set(res?.data || []);
+        this.frontierWorkers.set(res?.data?.workers ?? []);
         this.loadingFrontier.set(false);
       },
       error: () => this.loadingFrontier.set(false),

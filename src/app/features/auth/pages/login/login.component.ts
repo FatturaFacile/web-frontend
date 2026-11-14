@@ -34,6 +34,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
 
 @Component({
   selector: 'app-login',
+  styleUrl: './login.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -49,7 +50,6 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     TranslatePipe,
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -165,6 +165,12 @@ export class LoginComponent {
           this.errorMessage.set(this.i18n.translate('SSO.START_FAILED'));
         },
       });
+  }
+
+  protected canSubmitChallenge(): boolean {
+    const { code, recoveryCode } = this.challengeForm.getRawValue();
+
+    return this.useRecoveryCode() ? !!recoveryCode.trim() : !!code.trim();
   }
 
   protected onChallengeSubmit(): void {

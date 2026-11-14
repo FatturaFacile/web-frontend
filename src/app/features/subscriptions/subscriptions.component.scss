@@ -1,10 +1,15 @@
+:host {
+  display: block;
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 
   .metric-card {
-    background: #fafafa;
+    background: var(--bg-card);
     border-radius: 6px;
   }
 }
@@ -39,7 +44,7 @@
 
   .sub-text {
     font-size: 12px;
-    color: #8c8c8c;
+    color: var(--text-muted);
   }
 }
 
@@ -50,4 +55,8 @@
   .form-col {
     flex: 1;
   }
+}
+
+.list-card {
+  margin-top: var(--space-4);
 }

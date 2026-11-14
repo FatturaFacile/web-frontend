@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,22 +14,30 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import {
   applyServerErrors,
   BankBalanceSnapshot,
+  FetchGridModel,
   FxBankRevaluation,
   I18nService,
+  QueryFilterParams,
   PermissionsService,
   TreasuryMovement,
   TreasuryMovementType,
   TreasuryOpsApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlErrorAlertComponent } from '../../../general-ledger/shared/gl-error-alert.component';
 import { TrLookupStore } from '../tr-lookup.store';
+import { differentFrom, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 type ChargeType = 'bank_fee' | 'interest_income' | 'interest_expense';
 
 @Component({
   selector: 'app-tr-balances',
+  styleUrl: './tr-balances.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     NzAlertModule,
@@ -42,6 +50,7 @@ type ChargeType = 'bank_fee' | 'interest_income' | 'interest_expense';
     NzSelectModule,
     NzTableModule,
     NzTabsModule,
+    BaseTableComponent,
     GlErrorAlertComponent,
     MoneyPipe,
     TranslatePipe,
@@ -60,7 +69,6 @@ export class TrBalancesComponent implements OnInit {
   protected readonly chargeTypes: ChargeType[] = ['bank_fee', 'interest_income', 'interest_expense'];
 
   protected readonly balances = signal<BankBalanceSnapshot[]>([]);
-  protected readonly movements = signal<TreasuryMovement[]>([]);
   protected readonly revaluations = signal<FxBankRevaluation[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
@@ -70,12 +78,47 @@ export class TrBalancesComponent implements OnInit {
 
   protected balanceDate = '';
   protected movementTypeFilter: TreasuryMovementType | null = null;
+
+  /** Server-driven grid of the treasury movements: paging, sorting, column filters and grouping run on the API. */
+  protected readonly movementGrid = new FetchGridModel<TreasuryMovement, QueryFilterParams & { movement_type?: TreasuryMovementType }>((query) =>
+    this.api.getMovements(query),
+  );
+
+  private readonly movementAmountTpl = viewChild<TemplateRef<{ $implicit: TreasuryMovement; value: unknown }>>('movementAmountTpl');
+
+  protected readonly movementColumns = computed<TableColumnDef<TreasuryMovement>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'movement_date', header: this.i18n.translate('TR.DATE'), width: '120px' },
+      {
+        key: 'movement_type',
+        valueLabel: (value) => this.movementTypeLabel(value),
+        valueGetter: (row) => this.movementTypeLabel(row.movement_type),
+        header: this.i18n.translate('TR.MOVEMENT_TYPE'),
+        width: '170px',
+      },
+      {
+        key: 'bank_account_id',
+        serverKey: 'bankAccount.bank_name',
+        valueGetter: (row) => this.banks.label(row.bank_account_id),
+        header: this.i18n.translate('TR.BANK_ACCOUNT'),
+      },
+      {
+        key: 'counter_bank_account_id',
+        serverKey: 'counterBankAccount.bank_name',
+        valueGetter: (row) => (row.counter_bank_account_id ? this.banks.label(row.counter_bank_account_id) : ''),
+        header: this.i18n.translate('TR.COUNTER_ACCOUNT'),
+      },
+      { key: 'amount', align: 'right', header: this.i18n.translate('TR.AMOUNT'), width: '150px', customCellTemplate: this.movementAmountTpl() },
+      { key: 'description', header: this.i18n.translate('TR.DESCRIPTION') },
+    ];
+  });
   protected fxPeriodEnd = '';
   protected fxCurrency = '';
 
   protected readonly transferForm = this.fb.group({
     from_bank_account_id: this.fb.control('', Validators.required),
-    to_bank_account_id: this.fb.control('', Validators.required),
+    to_bank_account_id: this.fb.control('', [Validators.required, differentFrom('from_bank_account_id')]),
     amount: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     transfer_date: this.fb.control('', Validators.required),
     description: this.fb.control(''),
@@ -89,10 +132,14 @@ export class TrBalancesComponent implements OnInit {
     description: this.fb.control(''),
   });
 
+  constructor() {
+    // The API requires the two accounts of a transfer to differ.
+    revalidateOnStartChange(this.transferForm, 'from_bank_account_id', 'to_bank_account_id', inject(DestroyRef));
+  }
+
   ngOnInit(): void {
     this.banks.load();
     this.loadBalances();
-    this.loadMovements();
   }
 
   protected loadBalances(): void {
@@ -106,10 +153,13 @@ export class TrBalancesComponent implements OnInit {
     });
   }
 
-  protected loadMovements(): void {
-    this.api.getMovements({ movement_type: this.movementTypeFilter ?? undefined, per_page: 50 }).subscribe({
-      next: (res) => this.movements.set(res.data ?? []),
-    });
+  protected onMovementTypeChange(type: TreasuryMovementType | null): void {
+    this.movementTypeFilter = type;
+    this.movementGrid.setFilter({ movement_type: type ?? undefined });
+  }
+
+  private movementTypeLabel(type: string): string {
+    return this.i18n.translate('TR.MOVEMENT_' + type.toUpperCase());
   }
 
   protected openModal(kind: 'transfer' | 'charge'): void {
@@ -184,7 +234,7 @@ export class TrBalancesComponent implements OnInit {
         this.modal.set(null);
         this.message.success(this.i18n.translate('TR.MOVEMENT_SAVED'));
         this.loadBalances();
-        this.loadMovements();
+        this.movementGrid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);

@@ -1,26 +1,26 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CrmAccount,
   CrmAccountPayload,
   CrmAccountStatus,
   CrmAccountTier,
+  CrmAccountFilterParams,
   CrmApiService,
+  FetchGridModel,
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const TIERS: CrmAccountTier[] = ['strategic', 'enterprise', 'mid_market', 'smb', 'standard'];
 const STATUSES: CrmAccountStatus[] = ['prospect', 'active', 'inactive', 'churned'];
@@ -50,23 +50,24 @@ const emptyDraft = (): AccountDraft => ({
 /** CRM accounts linked to their contact, with tier, churn risk and health profile. */
 @Component({
   selector: 'app-crm-accounts',
+  styleUrl: './accounts.component.scss',
   imports: [
+    BaseTableComponent,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     PageHeaderComponent,
     TranslatePipe,
   ],
   templateUrl: './accounts.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class AccountsComponent {
   private readonly api = inject(CrmApiService);
@@ -77,10 +78,7 @@ export class AccountsComponent {
 
   protected readonly tiers = TIERS;
   protected readonly statuses = STATUSES;
-  protected readonly items = signal<CrmAccount[]>([]);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<CrmAccount, CrmAccountFilterParams>((query) => this.api.getAccounts(query));
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly editing = signal<CrmAccount | null>(null);
@@ -90,28 +88,33 @@ export class AccountsComponent {
   protected churnFilter: string | null = null;
   protected draft: AccountDraft = emptyDraft();
 
-  constructor() {
-    this.load(1);
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly tierTpl = viewChild<TemplateRef<unknown>>('tierTpl');
+
+  /** `name` is sorted/filtered by `display_name`: the linked contact's company name, else the account column. */
+  protected readonly columns = computed<TableColumnDef<CrmAccount>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'name', serverKey: 'display_name', header: this.i18n.translate('CRMX.COMMON.NAME') },
+      {
+        key: 'tier',
+        header: this.i18n.translate('CRMX.ACCOUNTS.TIER'),
+        valueGetter: (a) => this.tierLabel(a.tier),
+        valueLabel: (value) => this.tierLabel(value),
+        customCellTemplate: this.tierTpl(),
+      },
+      { key: 'status', header: this.i18n.translate('CRMX.COMMON.STATUS'), customCellTemplate: this.statusTpl() },
+      { key: 'industry', header: this.i18n.translate('CRMX.ACCOUNTS.INDUSTRY') },
+      { key: 'churn_risk', header: this.i18n.translate('CRMX.ACCOUNTS.CHURN_RISK') },
+    ];
+  });
+
+  protected tierLabel(tier: string | null | undefined): string {
+    return tier ? this.i18n.translate('CRMX.ACCOUNTS.TIER_' + tier) : '';
   }
 
-  protected load(page = this.pageIndex()): void {
-    this.pageIndex.set(page);
-    this.loading.set(true);
-    this.api
-      .getAccounts({
-        page,
-        per_page: 15,
-        tier: this.tierFilter ?? undefined,
-        churn_risk: this.churnFilter ?? undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.items.set(res.data ?? []);
-          this.total.set(res.meta?.total ?? 0);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+  protected applyFilters(): void {
+    this.grid.setFilter({ tier: this.tierFilter ?? undefined, churn_risk: this.churnFilter ?? undefined });
   }
 
   protected open(account: CrmAccount | null): void {
@@ -152,7 +155,7 @@ export class AccountsComponent {
         this.saving.set(false);
         this.modalOpen.set(false);
         this.message.success(this.i18n.translate('CRMX.COMMON.SAVED'));
-        this.load();
+        this.grid.reload();
       },
       error: () => this.saving.set(false),
     });
@@ -162,7 +165,7 @@ export class AccountsComponent {
     this.api.deleteAccount(account.id).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('CRMX.COMMON.DELETED'));
-        this.load();
+        this.grid.reload();
       },
     });
   }

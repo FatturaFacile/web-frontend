@@ -10,6 +10,7 @@ interface GlNavItem {
 
 @Component({
   selector: 'app-general-ledger-shell',
+  styleUrl: './general-ledger-shell.component.scss',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NzMenuModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header [title]="'GL.TITLE' | translate" [subtitle]="'GL.SUBTITLE' | translate" />
@@ -26,16 +27,6 @@ interface GlNavItem {
       <router-outlet />
     </div>
   `,
-  styles: [
-    `
-      .gl-menu {
-        margin-bottom: 16px;
-      }
-      .gl-active {
-        font-weight: 600;
-      }
-    `,
-  ],
 })
 export class GeneralLedgerShellComponent {
   protected readonly items: GlNavItem[] = [

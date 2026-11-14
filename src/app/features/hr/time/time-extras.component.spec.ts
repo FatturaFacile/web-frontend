@@ -333,12 +333,12 @@ describe('Working time extras', () => {
   });
 
   describe('meals', () => {
-    it('books a meal and reloads the period when one is selected', () => {
+    it('books a meal and reloads the period when one is selected', async () => {
       api.bookMeal.mockReturnValue(ok({}));
       api.getMealBookings.mockReturnValue(
         ok([
           {
-            employee_id: 'e1',
+            user_id: 'e1',
             meal_type: 'lunch',
             occurred_at: '2026-03-01T12:00:00Z',
             source: 'web',
@@ -359,11 +359,12 @@ describe('Working time extras', () => {
       meals.to.set('2026-03-31');
       meals.bookConfig().submit({ meal_type: 'lunch', source: 'web' }).subscribe();
       expect(api.bookMeal).toHaveBeenCalledWith({ meal_type: 'lunch', source: 'web' });
-      expect(api.getMealBookings).toHaveBeenCalledWith({
-        employee_id: null,
-        from: '2026-03-01',
-        to: '2026-03-31',
-      });
+      fixture.detectChanges();
+      // the meal grid loads the period after its first debounce tick
+      await new Promise((resolve) => setTimeout(resolve, 450));
+      expect(api.getMealBookings).toHaveBeenCalledWith(
+        expect.objectContaining({ employee_id: null, from: '2026-03-01', to: '2026-03-31' }),
+      );
       fixture.detectChanges();
       expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
     });

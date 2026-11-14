@@ -10,14 +10,18 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, AuthStore, PermissionsService, ProjectBudget, ProjectControlApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Budget of a project: category report, versions, revision, approval and baseline. */
 @Component({
   selector: 'app-pc-budget',
-  imports: [FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  styleUrl: './pc-budget.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzInputNumberModule, NzModalModule, ModalActionsDirective, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap">
+    <div class="row mb-4">
       @if (canWrite) {
         <button nz-button nzType="primary" type="button" (click)="openRevision()">{{ 'PRJ.BUDGET_REVISE' | translate }}</button>
         @if (budget(); as b) {
@@ -43,11 +47,11 @@ import { MoneyPipe, TranslatePipe } from '@shared';
         <nz-table #categoryTable nzSize="small" [nzData]="report.categories" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'PRJ.CATEGORY' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.BUDGET' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.COMMITTED' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.ACTUAL' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.AVAILABLE' | translate }}</th>
+              <th [nzSortFn]="'category' | gridSort" [nzFilters]="'category' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'category' | gridFilterFn">{{ 'PRJ.CATEGORY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'budget' | gridSort" [nzFilters]="'budget' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'budget' | gridFilterFn">{{ 'PRJ.BUDGET' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'committed' | gridSort" [nzFilters]="'committed' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'committed' | gridFilterFn">{{ 'PRJ.COMMITTED' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'actual' | gridSort" [nzFilters]="'actual' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'actual' | gridFilterFn">{{ 'PRJ.ACTUAL' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'available' | gridSort" [nzFilters]="'available' | gridFilterList: categoryTable.nzData" [nzFilterFn]="'available' | gridFilterFn">{{ 'PRJ.AVAILABLE' | translate }}</th>
               <th nzAlign="right">{{ 'PRJ.CONSUMED' | translate }}</th>
             </tr>
           </thead>
@@ -74,14 +78,14 @@ import { MoneyPipe, TranslatePipe } from '@shared';
         </nz-table>
       }
       @if (b.versions && b.versions.length > 0) {
-        <h4 style="margin-top: 16px">{{ 'PRJ.BUDGET_VERSIONS' | translate }}</h4>
+        <h4 class="mt-4">{{ 'PRJ.BUDGET_VERSIONS' | translate }}</h4>
         <nz-table #versionTable nzSize="small" [nzData]="b.versions" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>#</th>
+              <th [nzSortFn]="'version_number' | gridSort" [nzFilters]="'version_number' | gridFilterList: versionTable.nzData" [nzFilterFn]="'version_number' | gridFilterFn">#</th>
               <th>{{ 'PRJ.REASON' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.BUDGET_REVENUE' | translate }}</th>
-              <th nzAlign="right">{{ 'PRJ.BUDGET_COST' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_revenue_budget' | gridSort" [nzFilters]="'total_revenue_budget' | gridFilterList: versionTable.nzData" [nzFilterFn]="'total_revenue_budget' | gridFilterFn">{{ 'PRJ.BUDGET_REVENUE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total_cost_budget' | gridSort" [nzFilters]="'total_cost_budget' | gridFilterList: versionTable.nzData" [nzFilterFn]="'total_cost_budget' | gridFilterFn">{{ 'PRJ.BUDGET_COST' | translate }}</th>
               <th>{{ 'PRJ.BASELINE' | translate }}</th>
             </tr>
           </thead>
@@ -102,17 +106,17 @@ import { MoneyPipe, TranslatePipe } from '@shared';
       <nz-alert nzType="info" nzShowIcon [nzMessage]="'PRJ.NO_BUDGET' | translate" />
     }
 
-    <nz-modal [nzVisible]="revisionOpen()" [nzTitle]="'PRJ.BUDGET_REVISE' | translate" [nzOkLoading]="saving()" (nzOnOk)="saveRevision()" (nzOnCancel)="revisionOpen.set(false)">
+    <nz-modal [nzVisible]="revisionOpen()" [nzTitle]="'PRJ.BUDGET_REVISE' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="form.invalid" okAction="save" (nzOnOk)="saveRevision()" (nzOnCancel)="revisionOpen.set(false)">
       <ng-container *nzModalContent>
         @for (message of formErrors(); track message) {
-          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="message" class="mb-3" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="form">
           @for (field of fields; track field.control) {
             <nz-form-item>
               <nz-form-label [nzRequired]="field.control === 'total_revenue_budget'" [nzFor]="'bg-' + field.control">{{ field.labelKey | translate }}</nz-form-label>
               <nz-form-control [nzErrorTip]="'PRJ.REQUIRED' | translate">
-                <nz-input-number [id]="'bg-' + field.control" [formControlName]="field.control" [nzMin]="0" [nzPrecision]="2" style="width: 220px" />
+                <nz-input-number [id]="'bg-' + field.control" [formControlName]="field.control" [nzMin]="0" [nzPrecision]="2" />
               </nz-form-control>
             </nz-form-item>
           }

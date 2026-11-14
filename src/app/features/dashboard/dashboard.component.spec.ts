@@ -50,7 +50,7 @@ describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
 
-  const mockInvoice: InvoiceResource = {
+  const mockInvoice = {
     id: 'inv-1',
     invoice_number: 'FAT-2026-001',
     issue_date: '2026-04-01',
@@ -59,7 +59,7 @@ describe('DashboardComponent', () => {
     balance_due: '1220.00',
     currency: 'EUR',
     status: 'issued',
-  };
+  } as unknown as InvoiceResource;
 
   async function setup(
     kpiResponse: Observable<unknown>,

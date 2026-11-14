@@ -1,81 +1,96 @@
+:host {
+  display: block;
+}
+
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-
-  .stat-card {
-    border-radius: 8px;
-  }
-}
-
-.main-card {
-  border-radius: 8px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .tab-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
+
+  > nz-select {
+    width: 180px;
+  }
 
   .filter-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     flex-wrap: wrap;
 
     .label-inline {
       font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .date-input {
+      width: 140px;
+    }
+
+    nz-select {
+      width: 160px;
     }
   }
 
   .actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
   }
 }
 
+.progress-cell {
+  min-width: 160px;
+}
+
 .balances-container {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 
   h4 {
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
   }
 
   .balances-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 12px;
+    gap: var(--space-3);
 
     .balance-card {
-      border-radius: 8px;
-      border: 1px solid #d9d9d9;
-      background: #fafafa;
+      background: var(--bg-card-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
 
       .bal-client {
+        margin-bottom: var(--space-1);
+        font-size: var(--font-size-md);
         font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 4px;
       }
 
       .bal-value {
-        font-size: 18px;
+        margin-bottom: var(--space-1);
+        font-size: var(--font-size-lg);
         font-weight: 700;
-        color: #52c41a;
-        margin-bottom: 4px;
+        font-variant-numeric: tabular-nums;
+        color: var(--status-success);
       }
 
       .bal-sub {
-        font-size: 12px;
-        color: #8c8c8c;
+        font-size: var(--font-size-xs);
+        color: var(--text-muted);
       }
     }
   }
@@ -84,17 +99,18 @@
 .checklist-items-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 8px 0;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
 
   .checklist-item-row {
-    padding: 8px 12px;
-    background: #f5f5f5;
-    border-radius: 6px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-card-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
 
     .task-done {
       text-decoration: line-through;
-      color: #8c8c8c;
+      color: var(--text-muted);
     }
   }
 }
@@ -102,26 +118,23 @@
 .checklist-modal-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .total-big {
-  font-size: 16px;
-  color: #1890ff;
-}
-
-.text-success {
-  color: #52c41a;
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-color);
 }
 
 .form-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .form-row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
 }

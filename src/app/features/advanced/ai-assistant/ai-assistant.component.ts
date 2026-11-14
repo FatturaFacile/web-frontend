@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -9,7 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { AssistantApiService } from '../../../core/api/assistant-api.service';
 import {
@@ -21,10 +21,16 @@ import {
   AssistantOutcome,
 } from '../../../core/models';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { FetchGridModel, TranslateService } from '@core';
+import { BaseTableComponent, ModalActionsDirective, TableColumnDef, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-ai-assistant',
+  styleUrl: './ai-assistant.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ReactiveFormsModule,
     NzTabsModule,
     NzCardModule,
@@ -35,15 +41,16 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
     NzSpinModule,
     NzAlertModule,
     NzSelectModule,
-    NzDrawerModule,
+    NzModalModule,
+    ModalActionsDirective,
     NzFormModule,
     TranslatePipe,
   ],
   templateUrl: './ai-assistant.component.html',
-  styleUrl: './ai-assistant.component.scss',
 })
-export class AiAssistantComponent implements OnInit {
+export class AiAssistantComponent {
   private readonly assistantApi = inject(AssistantApiService);
+  private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
 
   // --- State Signals ---
@@ -55,7 +62,7 @@ export class AiAssistantComponent implements OnInit {
   // Catalogue & Logs
   readonly catalogue = signal<AssistantCatalogueEntry[]>([]);
   readonly catalogueSearch = signal<string>('');
-  readonly logs = signal<AssistantLogResource[]>([]);
+  readonly logGrid = new FetchGridModel<AssistantLogResource, AssistantLogQueryParams>((query) => this.assistantApi.getLogs(query));
   readonly selectedLog = signal<AssistantLogResource | null>(null);
   readonly isLogDrawerVisible = signal<boolean>(false);
 
@@ -92,9 +99,24 @@ export class AiAssistantComponent implements OnInit {
     return Object.keys(ans.rows[0]);
   });
 
-  ngOnInit(): void {
+  private readonly logOutcomeTpl = viewChild<TemplateRef<{ $implicit: AssistantLogResource; value: unknown }>>('logOutcomeTpl');
+  private readonly logResolverTpl = viewChild<TemplateRef<{ $implicit: AssistantLogResource; value: unknown }>>('logResolverTpl');
+
+  readonly logColumns = computed<TableColumnDef<AssistantLogResource>[]>(() => [
+    { key: 'created_at', header: 'ASSISTANT.LOG_DATE' },
+    { key: 'question', header: 'ASSISTANT.QUESTION' },
+    { key: 'resolver', header: 'ASSISTANT.RESOLVER', customCellTemplate: this.logResolverTpl() },
+    {
+      key: 'outcome',
+      header: 'ASSISTANT.OUTCOME',
+      valueLabel: (value) => this.translate.instant('ASSISTANT.OUTCOMES.' + value),
+      customCellTemplate: this.logOutcomeTpl(),
+    },
+    { key: 'row_count', header: 'ASSISTANT.ROW_COUNT', align: 'right' },
+  ]);
+
+  constructor() {
     this.loadCatalogue();
-    this.loadLogs();
   }
 
   loadCatalogue(): void {
@@ -114,20 +136,8 @@ export class AiAssistantComponent implements OnInit {
 
   loadLogs(): void {
     const outcomeVal = this.logFilterForm.controls.outcome.value;
-    const perPageVal = this.logFilterForm.controls.per_page.value ?? 25;
-    const params: AssistantLogQueryParams = {
-      per_page: perPageVal,
-      ...(outcomeVal && outcomeVal !== 'all' ? { outcome: outcomeVal as AssistantOutcome } : {}),
-    };
-
-    this.assistantApi.getLogs(params).subscribe({
-      next: (res) => {
-        this.logs.set(res.data ?? []);
-      },
-      error: (err: { message?: string }) => {
-        this.errorMessage.set(err.message ?? 'Impossibile caricare i log delle richieste.');
-      },
-    });
+    this.logGrid.setFilter({ outcome: outcomeVal && outcomeVal !== 'all' ? (outcomeVal as AssistantOutcome) : undefined });
+    this.logGrid.reload();
   }
 
   onAskSubmit(): void {

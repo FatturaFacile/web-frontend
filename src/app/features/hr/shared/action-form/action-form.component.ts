@@ -8,13 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { applyServerErrors, I18nService, isValidationError } from '@core';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -25,7 +19,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { Observable } from 'rxjs';
 import { CrudField, CrudOption } from '../crud/crud.types';
-import { decimalStringValidator } from '../hr-decimal.validator';
+import { fieldErrorTip, fieldValidators, isFieldRequired, wireConditionalRequired } from '../crud/crud-validation';
 import { reportHttpError } from '../hr-http.util';
 
 export interface ActionFormConfig {
@@ -37,6 +31,8 @@ export interface ActionFormConfig {
   successKey?: string;
   /** Empties the form after a successful submit. */
   resetOnSuccess?: boolean;
+  /** Cross-field check of the whole payload (API `min:1` on an array...): the i18n key of the problem, or null. */
+  validate?: (payload: Record<string, unknown>) => string | null;
 }
 
 let nextFormId = 0;
@@ -47,6 +43,7 @@ let nextFormId = 0;
  */
 @Component({
   selector: 'app-action-form',
+  styleUrl: './action-form.component.scss',
   imports: [
     ReactiveFormsModule,
     NzButtonModule,
@@ -58,10 +55,7 @@ let nextFormId = 0;
   ],
   template: `
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
-      <div
-        class="grid gap-x-3"
-        style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))"
-      >
+      <div class="action-form-grid">
         @for (field of config().fields; track field.key) {
           @if (field.type === 'boolean') {
             <nz-form-item>
@@ -74,7 +68,7 @@ let nextFormId = 0;
             </nz-form-item>
           } @else {
             <nz-form-item>
-              <nz-form-label [nzRequired]="field.required ?? false" [nzFor]="prefix + field.key">
+              <nz-form-label [nzRequired]="isRequired(field)" [nzFor]="prefix + field.key">
                 {{ field.labelKey | translate }}
               </nz-form-label>
               <nz-form-control [nzErrorTip]="errorTip(field.key)">
@@ -151,7 +145,7 @@ let nextFormId = 0;
           nzType="primary"
           type="submit"
           [nzLoading]="saving()"
-          [disabled]="!canWrite()"
+          [disabled]="!canWrite() || form.invalid"
         >
           {{ config().submitLabelKey | translate }}
         </button>
@@ -191,13 +185,11 @@ export class ActionFormComponent {
   }
 
   protected errorTip(key: string): string {
-    const control = this.form.get(key);
-    if (control?.errors?.['serverError']) {
-      return String(control.errors['serverError']);
-    }
-    return this.i18n.translate(
-      control?.errors?.['decimal'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required',
-    );
+    return fieldErrorTip(this.form.get(key), this.i18n);
+  }
+
+  protected isRequired(field: CrudField): boolean {
+    return isFieldRequired(field, this.form);
   }
 
   protected submit(): void {
@@ -205,9 +197,15 @@ export class ActionFormComponent {
       this.form.markAllAsTouched();
       return;
     }
+    const payload = this.buildPayload();
+    const problem = this.config().validate?.(payload);
+    if (problem) {
+      this.message.error(this.i18n.translate(problem));
+      return;
+    }
     this.saving.set(true);
     this.config()
-      .submit(this.buildPayload())
+      .submit(payload)
       .subscribe({
         next: (result) => {
           this.saving.set(false);
@@ -237,27 +235,11 @@ export class ActionFormComponent {
           : String(field.defaultValue ?? '');
       controls[field.key] = new FormControl(initial, {
         nonNullable: true,
-        validators: this.validators(field),
+        validators: fieldValidators(field),
       });
     }
     this.form = new FormGroup(controls);
-  }
-
-  private validators(field: CrudField): ValidatorFn[] {
-    const list: ValidatorFn[] = [];
-    if (field.required) {
-      list.push(Validators.required);
-    }
-    if (field.maxLength) {
-      list.push(Validators.maxLength(field.maxLength));
-    }
-    if (field.type === 'decimal') {
-      list.push(decimalStringValidator);
-    }
-    if (field.type === 'integer') {
-      list.push(Validators.pattern(/^\d*$/));
-    }
-    return list;
+    wireConditionalRequired(this.form, this.config().fields);
   }
 
   private buildPayload(): Record<string, unknown> {

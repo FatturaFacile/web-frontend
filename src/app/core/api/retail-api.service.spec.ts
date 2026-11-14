@@ -43,8 +43,10 @@ describe('RetailApiService', () => {
     };
 
     const mockResponse: PaginatedResponse<CommercialDocumentResource> = {
+      success: true,
+      message: '',
       data: [mockDoc],
-      meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 15, to: 1, total: 1 },
     };
 
     service.getCommercialDocuments({ page: 1 }).subscribe((res) => {
@@ -59,7 +61,7 @@ describe('RetailApiService', () => {
     // Create document
     const payload: StoreCommercialDocumentPayload = {
       payment_method: 'card',
-      lines: [{ description: 'Articolo Test', quantity: 1, unit_price: 25, vat_rate: 22 }],
+      lines: [{ description: 'Articolo Test', quantity: 1, unit_price: 25, tax_rate: 22 }],
     };
     service.createCommercialDocument(payload).subscribe((res) => {
       expect(res.data.id).toBe('doc-new');

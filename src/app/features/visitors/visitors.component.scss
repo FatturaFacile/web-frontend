@@ -32,7 +32,7 @@
     gap: 8px;
 
     .emergency-text {
-      color: #595959;
+      color: var(--text-secondary);
       font-size: 13px;
     }
   }
@@ -50,7 +50,7 @@
   }
 
   .toolbar-info {
-    color: #8c8c8c;
+    color: var(--text-muted);
     font-size: 13px;
   }
 }
@@ -64,10 +64,10 @@
 
   .kiosk-card {
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--elevated-shadow);
 
     .kiosk-desc {
-      color: #8c8c8c;
+      color: var(--text-muted);
       font-size: 13px;
       margin-bottom: 20px;
     }
@@ -75,15 +75,15 @@
 }
 
 .text-primary {
-  color: #1890ff;
+  color: var(--status-info);
 }
 
 .text-warning {
-  color: #faad14;
+  color: var(--status-warning);
 }
 
 .text-success {
-  color: #52c41a;
+  color: var(--status-success);
 }
 
 .form-row-2 {
@@ -93,7 +93,7 @@
 }
 
 .secret-box {
-  background: #f5f5f5;
+  background: var(--bg-card-secondary);
   padding: 16px;
   border-radius: 6px;
   margin-top: 16px;
@@ -103,7 +103,7 @@
 
   .secret-label {
     font-size: 12px;
-    color: #8c8c8c;
+    color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 600;
   }
@@ -111,7 +111,7 @@
   .secret-code {
     font-size: 15px;
     font-weight: bold;
-    color: #d4380d;
+    color: var(--status-danger);
     word-break: break-all;
   }
 }

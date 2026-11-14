@@ -14,6 +14,7 @@ export type ResourceFieldType =
   | 'decimal'
   | 'date'
   | 'datetime'
+  | 'time'
   | 'select'
   | 'lookup'
   | 'switch'
@@ -56,6 +57,34 @@ export interface ResourceField {
   /** Sub-fields of a `lines` repeater. */
   fields?: readonly ResourceField[];
   defaultValue?: unknown;
+  /** Mirrors `after_or_equal:<key>`: sibling date field this one cannot precede (`after:<key>` with `strictlyAfter`). */
+  notBefore?: string;
+  strictlyAfter?: boolean;
+  /** Mirrors `before_or_equal:today`. */
+  notInFuture?: boolean;
+  /** Mirrors `after:today` / `after:now`. */
+  inFuture?: boolean;
+  /** Mirrors `different:<key>`. */
+  differentFrom?: string;
+  /** Mirrors `gt:0` on a numeric field. */
+  positive?: boolean;
+  /** Mirrors `after_or_equal:today` on a date field (today is accepted). */
+  notBeforeToday?: boolean;
+  /** Mirrors `gte:<key>` on a numeric field: sibling numeric field this one cannot be below. */
+  atLeastField?: string;
+  /** Mirrors `max:<n>` / `lte:<n>` on an integer or decimal field (`min` applies to decimals too). */
+  max?: number;
+  /** For `json` fields: shape rules the API enforces (nested `array:`/`*.from` rules); false makes the field invalid. */
+  jsonCheck?: (parsed: unknown) => boolean;
+  /** Mirrors `prohibited_if:<field>,<value>`: the field must stay empty while the sibling field holds the value. */
+  prohibitedIf?: { field: string; value: string };
+  /**
+   * Only offered while the panel scope selector (`list.scope`) holds one of these values, for rules that depend on the
+   * scope: `tariff_code` is required for the `statistical-keys` master data and prohibited for the other types.
+   */
+  scopeValues?: readonly string[];
+  /** Mirrors `required_if:<field>,<value>`: required while the sibling field holds the value. */
+  requiredIf?: { field: string; value: string };
 }
 
 export type ResourceColumnType = 'text' | 'decimal' | 'date' | 'datetime' | 'tag' | 'bool';

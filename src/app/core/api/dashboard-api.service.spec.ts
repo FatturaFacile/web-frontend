@@ -63,7 +63,7 @@ describe('DashboardApiService', () => {
     expect(kpiData?.tenant?.name).toBe('Test Srl');
 
     const mockForecast: CashFlowForecastPoint[] = [
-      { date: '2026-05-01', projected_inflow: 20000, projected_outflow: 12000, net_balance: 8000 },
+      { date: '2026-05-01', projected_inflow: 20000, projected_outflow: 12000, net_cash_flow: 8000, projected_balance: 8000 },
     ];
     service.getCashFlowForecast().subscribe((res) => {
       expect(res.data.length).toBe(1);
@@ -73,7 +73,7 @@ describe('DashboardApiService', () => {
     cReq.flush({ data: mockForecast });
 
     const mockTax: TaxDeadline[] = [
-      { id: 'tax-1', description: 'Liquidazione IVA Trimestre 1', due_date: '2026-05-16', amount: 4500, status: 'pending' },
+      { id: 'tax-1', title: 'Liquidazione IVA Trimestre 1', due_date: '2026-05-16', jurisdiction: 'IT', amount: 4500, status: 'upcoming' },
     ];
     service.getTaxDeadlines().subscribe((res) => {
       expect(res.data.length).toBe(1);

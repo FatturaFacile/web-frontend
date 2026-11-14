@@ -19,7 +19,7 @@ import {
   InvoiceApprovalMatrixPayload,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { DECIMAL_PATTERN } from '../../cycle/shared/document-lines-editor.component';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 
@@ -28,7 +28,12 @@ const APPROVER_ROLES = ['owner', 'admin', 'accountant', 'sales_manager', 'sales'
 /** Approval matrices of sales invoices: amount tiers approved by a role or a user. */
 @Component({
   selector: 'app-invoice-approvals',
+  styleUrl: './invoice-approvals.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -44,7 +49,6 @@ const APPROVER_ROLES = ['owner', 'admin', 'accountant', 'sales_manager', 'sales'
     TranslatePipe,
   ],
   templateUrl: './invoice-approvals.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class InvoiceApprovalsComponent implements OnInit {
   private readonly api = inject(BillingApiService);

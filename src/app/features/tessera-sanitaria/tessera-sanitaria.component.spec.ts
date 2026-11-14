@@ -63,7 +63,14 @@ describe('TesseraSanitariaComponent', () => {
   };
 
   const apiSpy = {
-    getExpenses: vi.fn().mockReturnValue(of({ data: [mockExpense, mockOpposedExpense] })),
+    getExpenses: vi.fn().mockImplementation(() =>
+      of({
+        success: true,
+        message: 'ok',
+        data: [mockExpense, mockOpposedExpense],
+        meta: { current_page: 1, last_page: 1, per_page: 10, total: 2, from: 1, to: 2 },
+      }),
+    ),
     getExpense: vi.fn().mockReturnValue(of({ data: mockExpense })),
     flagExpense: vi.fn().mockReturnValue(of({ data: mockExpense })),
     removeExpenseFlag: vi.fn().mockReturnValue(of({ message: 'Removed' })),
@@ -101,25 +108,27 @@ describe('TesseraSanitariaComponent', () => {
     fixture = TestBed.createComponent(TesseraSanitariaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load expenses, summary, and settings', () => {
     expect(component).toBeTruthy();
-    expect(apiSpy.getExpenses).toHaveBeenCalledWith({ year: 2026 });
+    expect(apiSpy.getExpenses).toHaveBeenCalledWith(expect.objectContaining({ year: 2026, page: 1 }));
     expect(apiSpy.getSummary).toHaveBeenCalledWith(2026);
     expect(apiSpy.getSettings).toHaveBeenCalled();
 
-    expect(component.expenses().length).toBe(2);
+    expect(component.expenses.items().length).toBe(2);
     expect(component.totalExpensesAmount()).toBe(170.0);
     expect(component.totalTraceableAmount()).toBe(120.0);
     expect(component.totalOpposedCount()).toBe(1);
     expect(component.totalTransmittedCount()).toBe(1);
   });
 
-  it('should change year and reload expenses and summary', () => {
+  it('should change year and reload expenses and summary', async () => {
     component.changeYear(2025);
+    await new Promise((resolve) => setTimeout(resolve, 400));
     expect(component.selectedYear()).toBe(2025);
-    expect(apiSpy.getExpenses).toHaveBeenCalledWith({ year: 2025 });
+    expect(apiSpy.getExpenses).toHaveBeenCalledWith(expect.objectContaining({ year: 2025 }));
     expect(apiSpy.getSummary).toHaveBeenCalledWith(2025);
   });
 
@@ -154,6 +163,36 @@ describe('TesseraSanitariaComponent', () => {
     });
     expect(messageSpy.success).toHaveBeenCalledWith('STS.EXPENSE_FLAGGED');
     expect(component.flagModalVisible()).toBe(false);
+  });
+
+  it('should not flag an expense without document or patient fiscal code unless the patient opposes', () => {
+    component.openFlagModal();
+    component.flagForm.patchValue({ document_id: '', patient_fiscal_code: '', patient_opposition: false });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).not.toHaveBeenCalled();
+    expect(component.flagForm.controls.document_id.touched).toBe(true);
+
+    component.flagForm.patchValue({ document_id: 'inv-300', patient_fiscal_code: '' });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).not.toHaveBeenCalled();
+    expect(component.flagForm.controls.patient_fiscal_code.hasError('required')).toBe(true);
+
+    component.flagForm.patchValue({ patient_opposition: true });
+    component.submitFlagExpense();
+    expect(apiSpy.flagExpense).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends either tax_rate or vat_nature, never both (tax_rate prohibits vat_nature)', () => {
+    component.openFlagModal();
+    component.flagForm.patchValue({ document_id: 'inv-1', patient_opposition: true, vat_nature: 'N4' });
+    expect(component.flagForm.controls.tax_rate.value).toBeNull();
+    component.submitFlagExpense();
+    const sent = apiSpy.flagExpense.mock.calls.at(-1)?.[0];
+    expect(sent?.vat_nature).toBe('N4');
+    expect(sent?.tax_rate).toBeUndefined();
+
+    component.flagForm.patchValue({ tax_rate: 22 });
+    expect(component.flagForm.controls.vat_nature.value).toBe('');
   });
 
   it('should remove expense flag', () => {
@@ -223,6 +262,7 @@ describe('TesseraSanitariaComponent', () => {
       expense_type: 'SV',
       payment_date: '2026-03-01',
       amount: 100,
+      patient_fiscal_code: 'RSSMRA80A01H501Z',
     });
     component.submitFlagExpense();
     expect(messageSpy.error).toHaveBeenCalledWith('STS.ACTION_ERROR');

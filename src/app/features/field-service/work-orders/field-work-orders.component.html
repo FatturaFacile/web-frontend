@@ -6,78 +6,41 @@
 <nz-card>
   @if (canWrite()) {
     <div class="fwo-actions">
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <span nz-icon nzType="plus"></span>{{ 'FS_WORK_ORDERS.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
     </div>
   }
 
-  <nz-table
-    #table
-    nzSize="middle"
-    nzShowSizeChanger
-    [nzData]="orders()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzScroll]="{ x: 'max-content' }"
-    (nzQueryParams)="onQueryParams($event)"
-  >
-    <thead>
-      <tr>
-        <th>{{ 'FS_WORK_ORDERS.NUMBER' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.DATE' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.ADDRESS' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.HOURS' | translate }}</th>
-        <th>{{ 'FS_WORK_ORDERS.TOTAL' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (order of table.data; track order.id) {
-        <tr>
-          <td>
-            <strong>{{ order.work_order_number }}</strong>
-          </td>
-          <td>{{ order.date.slice(0, 16).replace('T', ' ') }}</td>
-          <td>{{ order.intervention_address }}</td>
-          <td>{{ order.labor_hours }}</td>
-          <td>{{ order.total_amount | money }}</td>
-          <td>
-            <nz-tag>{{ order.status }}</nz-tag>
-            @if (order.client_signed_by) {
-              <nz-tag nzColor="success">{{ order.client_signed_by }}</nz-tag>
-            }
-          </td>
-          <td>
-            @if (canWrite()) {
-              @if (order.status === 'draft') {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openEdit(order)">
-                  {{ 'RES.ACTION.EDIT' | translate }}
-                </button>
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
-                  {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
-                </button>
-              }
-              @if (order.status === 'draft' || order.status === 'completed') {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(order)">
-                  {{ 'FS_WORK_ORDERS.SIGN' | translate }}
-                </button>
-              }
-              @if ((order.status === 'completed' || order.status === 'signed') && !order.invoice_id) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(order)">
-                  {{ 'FS_WORK_ORDERS.INVOICE' | translate }}
-                </button>
-              }
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
+
+  <ng-template #numberTpl let-order><strong>{{ order.work_order_number }}</strong></ng-template>
+  <ng-template #dateTpl let-order>{{ order.date.slice(0, 16).replace('T', ' ') }}</ng-template>
+  <ng-template #totalTpl let-order>{{ order.total_amount | money }}</ng-template>
+  <ng-template #statusTpl let-order>
+    <nz-tag>{{ order.status }}</nz-tag>
+    @if (order.client_signed_by) {
+      <nz-tag nzColor="success">{{ order.client_signed_by }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-order>
+    @if (canWrite()) {
+      @if (order.status === 'draft') {
+        <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="openEdit(order)"></button>
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
+          {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (order.status === 'draft' || order.status === 'completed') {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(order)">
+          {{ 'FS_WORK_ORDERS.SIGN' | translate }}
+        </button>
+      }
+      @if ((order.status === 'completed' || order.status === 'signed') && !order.invoice_id) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(order)">
+          {{ 'FS_WORK_ORDERS.INVOICE' | translate }}
+        </button>
+      }
+    }
+  </ng-template>
 </nz-card>
 
 <app-signature-dialog
@@ -144,7 +107,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="fwo-notes">{{ 'FS_WORK_ORDERS.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldError('notes')">
           <textarea nz-input id="fwo-notes" rows="2" formControlName="notes"></textarea>
         </nz-form-control>
       </nz-form-item>
@@ -160,23 +123,19 @@
                 }
               </nz-select>
               <input nz-input formControlName="description" [attr.aria-label]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" [placeholder]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" />
-              <nz-input-number formControlName="quantity" [nzMin]="0" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
+              <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
               <nz-input-number formControlName="unit_price" [nzMin]="0" [nzStep]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_PRICE' | translate" />
               <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [attr.aria-label]="'FS_WORK_ORDERS.LINE_TAX' | translate" />
-              <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" [attr.aria-label]="'RES.ACTION.REMOVE_LINE' | translate">
-                <span nz-icon nzType="delete"></span>
-              </button>
+              <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" appIconAction="delete"></button>
             </div>
           }
         </div>
-        <button nz-button type="button" (click)="addLine()">
-          <span nz-icon nzType="plus"></span>{{ 'RES.ACTION.ADD_LINE' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="add" (click)="addLine()"></button>
       </fieldset>
     </form>
   </ng-container>
   <ng-template #formFooter>
-    <button nz-button type="button" (click)="formOpen.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">{{ 'COMMON.SAVE' | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="formOpen.set(false)"></button>
+    <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid" (click)="save()"></button>
   </ng-template>
 </nz-modal>

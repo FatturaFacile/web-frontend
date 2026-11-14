@@ -1,10 +1,18 @@
+:host {
+  display: block;
+}
+
 .kpi-row {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .depth-badge {
   display: block;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
-  color: var(--text-secondary, #475569);
+  color: var(--text-secondary);
+}
+
+.fa-icon-spaced {
+  margin-right: var(--space-2);
 }

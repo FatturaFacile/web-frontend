@@ -6,7 +6,7 @@ import {
   PermissionsService,
   SaveLookupTranslationPayload,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -25,7 +25,11 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
 /** The items of a lookup list (VAT rates, units, countries, payment methods) and their custom translations for the company. */
 @Component({
   selector: 'app-lookup-translations',
+  styleUrl: './lookup-translations.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
     ActionFormComponent,
     FormsModule,
     NzButtonModule,
@@ -43,12 +47,12 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
       [subtitle]="'lookupTranslations.subtitle' | translate"
     />
     <nz-card>
-      <div class="flex items-end gap-2 mb-3 flex-wrap">
+      <div class="filter-bar">
         <div>
           <label for="lk-category">{{ 'lookupTranslations.category' | translate }}</label>
           <nz-select
             id="lk-category"
-            style="width: 240px; display: block"
+            class="w-field-md"
             nzShowSearch
             nzAllowClear
             [ngModel]="category()"
@@ -78,9 +82,9 @@ const LOCALES = ['it', 'en', 'de', 'fr'];
       >
         <thead>
           <tr>
-            <th>{{ 'hrmCommon.code' | translate }}</th>
-            <th>{{ 'lookupTranslations.label' | translate }}</th>
-            <th>{{ 'lookupTranslations.shortLabel' | translate }}</th>
+            <th [nzSortFn]="'code' | gridSort" [nzFilters]="'code' | gridFilterList: table.nzData" [nzFilterFn]="'code' | gridFilterFn">{{ 'hrmCommon.code' | translate }}</th>
+            <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: table.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'lookupTranslations.label' | translate }}</th>
+            <th [nzSortFn]="'short_label' | gridSort" [nzFilters]="'short_label' | gridFilterList: table.nzData" [nzFilterFn]="'short_label' | gridFilterFn">{{ 'lookupTranslations.shortLabel' | translate }}</th>
             @if (canWrite()) {
               <th>{{ 'hrmCommon.actions' | translate }}</th>
             }
@@ -155,7 +159,7 @@ export class LookupTranslationsComponent {
           labelKey: 'lookupTranslations.shortLabel',
           type: 'text',
           nullable: true,
-          maxLength: 50,
+          maxLength: 15,
         },
         { key: 'description', labelKey: 'hrmCommon.description', type: 'textarea', nullable: true },
       ],

@@ -1,13 +1,22 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -17,7 +26,6 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
@@ -27,27 +35,35 @@ import {
   CreatePaymentLinkRequest,
   EcommerceChannel,
   EcommerceIntegrationsApiService,
+  FetchGridModel,
   PaymentGatewayProvider,
   PaymentGatewaySettings,
   PaymentLink,
+  PaymentLinkListParams,
   SyncChannelRequest,
   SyncEntityType,
   TranslateService,
   UpdateEcommerceChannelRequest,
   UpdatePaymentGatewayRequest,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { inFuture } from '@shared/utils/date-validators';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Component({
   selector: 'app-ecommerce-integrations',
+  styleUrl: './ecommerce-integrations.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzBadgeModule,
     NzButtonModule,
@@ -57,7 +73,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzFormModule,
     NzInputModule,
     NzSelectModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzAlertModule,
     NzSpinModule,
@@ -68,7 +83,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './ecommerce-integrations.component.html',
-  styleUrls: ['./ecommerce-integrations.component.scss'],
 })
 export class EcommerceIntegrationsComponent implements OnInit {
   private readonly api = inject(EcommerceIntegrationsApiService);
@@ -80,7 +94,10 @@ export class EcommerceIntegrationsComponent implements OnInit {
   readonly selectedTabIndex = signal<number>(0);
 
   // Channels
+  /** Every channel (up to the API page limit): the webhook cards of the second tab list all of them. */
   readonly channels = signal<EcommerceChannel[]>([]);
+  /** Server-side grids: paging, sorting, column filters, grouping and export run over the whole list. */
+  readonly channelGrid = new FetchGridModel<EcommerceChannel>((query) => this.api.getChannels(query));
   readonly selectedChannel = signal<EcommerceChannel | null>(null);
   readonly isChannelDrawerVisible = signal<boolean>(false);
   readonly isChannelModalVisible = signal<boolean>(false);
@@ -91,24 +108,24 @@ export class EcommerceIntegrationsComponent implements OnInit {
   readonly syncingChannelId = signal<string | null>(null);
 
   // API Keys
-  readonly apiKeys = signal<ApiKeyItem[]>([]);
+  readonly apiKeyGrid = new FetchGridModel<ApiKeyItem>((query) => this.api.getApiKeys(query));
   readonly isApiKeyModalVisible = signal<boolean>(false);
   readonly newlyGeneratedToken = signal<string | null>(null);
   readonly isTokenRevealModalVisible = signal<boolean>(false);
 
   // Payment Gateway & Links
   readonly paymentGateway = signal<PaymentGatewaySettings | null>(null);
-  readonly paymentLinks = signal<PaymentLink[]>([]);
+  readonly paymentLinkGrid = new FetchGridModel<PaymentLink, PaymentLinkListParams>((query) => this.api.getPaymentLinks(query));
   readonly isPaymentLinkModalVisible = signal<boolean>(false);
   readonly filterInvoiceId = signal<string>('');
 
   // Forms
   readonly channelForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
     driver: ['shopify', [Validators.required]],
-    store_url: [''],
-    api_key: [''],
-    api_secret: [''],
+    store_url: ['', [Validators.maxLength(255), this.storeUrlValidator()]],
+    api_key: ['', [Validators.maxLength(500), this.driverCredentialValidator(['woocommerce', 'prestashop'])]],
+    api_secret: ['', [Validators.maxLength(500), this.driverCredentialValidator(['woocommerce', 'shopify'])]],
     auto_sync_orders: [true],
     stock_push_enabled: [true],
     is_active: [true],
@@ -121,33 +138,99 @@ export class EcommerceIntegrationsComponent implements OnInit {
   });
 
   readonly apiKeyForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required]],
-    scope_reporting: [true],
-    expires_at: [''],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    scope_reporting: [true, [Validators.requiredTrue]],
+    expires_at: ['', [inFuture]],
   });
 
   readonly gatewayForm: FormGroup = this.fb.group({
     provider: ['stripe' as PaymentGatewayProvider, [Validators.required]],
-    secret_key: [''],
-    webhook_secret: [''],
+    secret_key: ['', [Validators.maxLength(255)]],
+    webhook_secret: ['', [Validators.maxLength(255)]],
     publishable_key: [''],
   });
 
   readonly paymentLinkForm: FormGroup = this.fb.group({
-    invoice_id: ['', [Validators.required]],
+    invoice_id: ['', [Validators.required, Validators.pattern(UUID_PATTERN)]],
   });
 
+  constructor() {
+    this.channelForm
+      .get('driver')!
+      .valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(() => this.revalidateChannelCredentials());
+  }
+
+  private readonly channelNameTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelNameTpl');
+  private readonly channelDriverTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelDriverTpl');
+  private readonly channelStatusTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelStatusTpl');
+  private readonly channelSyncTpl = viewChild<TemplateRef<{ $implicit: EcommerceChannel; value: unknown }>>('channelSyncTpl');
+  private readonly keyNameTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyNameTpl');
+  private readonly keyScopesTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyScopesTpl');
+  private readonly keyExpiresTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyExpiresTpl');
+  private readonly keyLastUsedTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyLastUsedTpl');
+  private readonly keyStatusTpl = viewChild<TemplateRef<{ $implicit: ApiKeyItem; value: unknown }>>('keyStatusTpl');
+  private readonly linkInvoiceTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkInvoiceTpl');
+  private readonly linkAmountTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkAmountTpl');
+  private readonly linkStatusTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkStatusTpl');
+  private readonly linkUrlTpl = viewChild<TemplateRef<{ $implicit: PaymentLink; value: unknown }>>('linkUrlTpl');
+
+  /** `status` is a column the API calculates (gridColumns of the model): active / inactive. */
+  readonly channelColumns = computed<TableColumnDef<EcommerceChannel>[]>(() => [
+    { key: 'name', header: 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME', customCellTemplate: this.channelNameTpl() },
+    { key: 'driver', header: 'ECOMMERCE_INTEGRATIONS.PLATFORM', customCellTemplate: this.channelDriverTpl() },
+    {
+      key: 'status',
+      valueGetter: (channel) => (channel.is_active ? 'active' : 'inactive'),
+      valueLabel: (value) => this.translate.instant(value === 'active' ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE'),
+      header: 'ECOMMERCE_INTEGRATIONS.STATUS',
+      customCellTemplate: this.channelStatusTpl(),
+    },
+    { key: 'last_sync_at', header: 'ECOMMERCE_INTEGRATIONS.LAST_SYNC', customCellTemplate: this.channelSyncTpl() },
+  ]);
+
+  /** `status` is calculated by the API from revoked_at: revoked / active. */
+  readonly apiKeyColumns = computed<TableColumnDef<ApiKeyItem>[]>(() => [
+    { key: 'name', header: 'ECOMMERCE_INTEGRATIONS.KEY_NAME', customCellTemplate: this.keyNameTpl() },
+    { key: 'scopes', header: 'ECOMMERCE_INTEGRATIONS.SCOPES', sortable: false, filterable: false, groupable: false, customCellTemplate: this.keyScopesTpl() },
+    { key: 'expires_at', header: 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT', customCellTemplate: this.keyExpiresTpl() },
+    { key: 'last_used_at', header: 'ECOMMERCE_INTEGRATIONS.LAST_USED', customCellTemplate: this.keyLastUsedTpl() },
+    {
+      key: 'status',
+      valueGetter: (key) => (this.isApiKeyRevoked(key) ? 'revoked' : 'active'),
+      valueLabel: (value) => this.translate.instant(value === 'revoked' ? 'ECOMMERCE_INTEGRATIONS.REVOKED' : 'ECOMMERCE_INTEGRATIONS.ACTIVE'),
+      header: 'ECOMMERCE_INTEGRATIONS.STATUS',
+      customCellTemplate: this.keyStatusTpl(),
+    },
+  ]);
+
+  readonly paymentLinkColumns = computed<TableColumnDef<PaymentLink>[]>(() => [
+    { key: 'invoice_id', header: 'ECOMMERCE_INTEGRATIONS.INVOICE_ID', customCellTemplate: this.linkInvoiceTpl() },
+    { key: 'amount', header: 'ECOMMERCE_INTEGRATIONS.AMOUNT', customCellTemplate: this.linkAmountTpl() },
+    { key: 'status', header: 'ECOMMERCE_INTEGRATIONS.STATUS', customCellTemplate: this.linkStatusTpl() },
+    { key: 'url', header: 'ECOMMERCE_INTEGRATIONS.PAYMENT_URL', sortable: false, filterable: false, groupable: false, exportable: false, customCellTemplate: this.linkUrlTpl() },
+  ]);
+
   ngOnInit(): void {
-    this.loadChannels();
-    this.loadApiKeys();
+    this.loadAllChannels();
     this.loadPaymentGateway();
-    this.loadPaymentLinks();
+  }
+
+  /** A key is revoked when the API says so (`is_revoked`) or when it carries a revocation date. */
+  isApiKeyRevoked(key: ApiKeyItem): boolean {
+    return key.is_revoked ?? !!key.revoked_at;
   }
 
   // --- Channels ---
+  /** Reloads the channel grid and the list the webhook cards show. */
   loadChannels(): void {
+    this.channelGrid.reload();
+    this.loadAllChannels();
+  }
+
+  private loadAllChannels(): void {
     this.loading.set(true);
-    this.api.getChannels().subscribe({
+    this.api.getChannels({ per_page: 200 }).subscribe({
       next: (res) => {
         this.channels.set(res.data ?? []);
         this.loading.set(false);
@@ -157,6 +240,59 @@ export class EcommerceIntegrationsComponent implements OnInit {
         this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.CHANNELS_LOAD_ERROR'));
       },
     });
+  }
+
+  /**
+   * Mirrors the credential rules of StoreEcommerceChannelRequest: WooCommerce needs the store URL, key and secret,
+   * Shopify the shop domain and the access token (secret field), PrestaShop the store URL and the key. When editing,
+   * the stored credentials are kept, so the secrets may stay empty (the store URL of WooCommerce/PrestaShop is
+   * prefilled and cannot be cleared).
+   */
+  private driverCredentialValidator(drivers: readonly string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const driver = control.parent?.get('driver')?.value as string | undefined;
+      if (this.isEditingChannel() || !driver || !drivers.includes(driver)) {
+        return null;
+      }
+      return String(control.value ?? '').trim() === '' ? { required: true } : null;
+    };
+  }
+
+  private storeUrlValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const driver = control.parent?.get('driver')?.value as string | undefined;
+      const value = String(control.value ?? '').trim();
+      if (!driver) {
+        return null;
+      }
+      if (value === '') {
+        const needed = driver !== 'shopify' || !this.isEditingChannel();
+        return needed ? { required: true } : null;
+      }
+      if (driver === 'shopify') {
+        const host = value.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+        return /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i.test(host) ? null : { pattern: true };
+      }
+      return /^https?:\/\/[^\s/]+\.[^\s/]+/i.test(value) ? null : { pattern: true };
+    };
+  }
+
+  /** Whether the channel field is mandatory for the chosen driver (drives the required marker of the label). */
+  isChannelFieldRequired(field: 'store_url' | 'api_key' | 'api_secret'): boolean {
+    const driver = this.channelForm.get('driver')?.value as string;
+    if (field === 'store_url') {
+      return driver !== 'shopify' || !this.isEditingChannel();
+    }
+    if (this.isEditingChannel()) {
+      return false;
+    }
+    return field === 'api_key' ? ['woocommerce', 'prestashop'].includes(driver) : ['woocommerce', 'shopify'].includes(driver);
+  }
+
+  private revalidateChannelCredentials(): void {
+    for (const name of ['store_url', 'api_key', 'api_secret']) {
+      this.channelForm.get(name)?.updateValueAndValidity();
+    }
   }
 
   openCreateChannelModal(): void {
@@ -171,6 +307,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
       stock_push_enabled: true,
       is_active: true,
     });
+    this.revalidateChannelCredentials();
     this.isChannelModalVisible.set(true);
   }
 
@@ -180,13 +317,14 @@ export class EcommerceIntegrationsComponent implements OnInit {
     this.channelForm.patchValue({
       name: ch.name,
       driver: ch.driver,
-      store_url: ch.store_url || (ch.credentials?.['store_url'] as string) || '',
-      api_key: (ch.credentials?.['api_key'] as string) || '',
+      store_url: ch.api_url || '',
+      api_key: '',
       api_secret: '',
-      auto_sync_orders: ch.settings?.auto_sync_orders ?? true,
-      stock_push_enabled: ch.settings?.stock_push_enabled ?? true,
+      auto_sync_orders: ch.sync_orders_enabled ?? true,
+      stock_push_enabled: ch.sync_stock_enabled ?? true,
       is_active: ch.is_active,
     });
+    this.revalidateChannelCredentials();
     this.isChannelModalVisible.set(true);
   }
 
@@ -202,27 +340,17 @@ export class EcommerceIntegrationsComponent implements OnInit {
     }
 
     const val = this.channelForm.value;
-    const credentials: Record<string, unknown> = {
-      store_url: val.store_url,
-    };
-    if (val.api_key) {
-      credentials['api_key'] = val.api_key;
-    }
-    if (val.api_secret) {
-      credentials['api_secret'] = val.api_secret;
-    }
-
-    const settings: Record<string, unknown> = {
-      auto_sync_orders: val.auto_sync_orders,
-      stock_push_enabled: val.stock_push_enabled,
-    };
+    const credentials = this.credentialsOf(val.driver, val.store_url, val.api_key, val.api_secret);
+    const apiUrl = val.driver === 'shopify' ? null : val.store_url || null;
 
     this.loading.set(true);
     if (this.isEditingChannel() && this.selectedChannel()) {
       const updateReq: UpdateEcommerceChannelRequest = {
         name: val.name,
+        api_url: apiUrl,
         credentials,
-        settings,
+        sync_orders_enabled: val.auto_sync_orders,
+        sync_stock_enabled: val.stock_push_enabled,
         is_active: val.is_active,
       };
       this.api.updateChannel(this.selectedChannel()!.id, updateReq).subscribe({
@@ -242,8 +370,11 @@ export class EcommerceIntegrationsComponent implements OnInit {
       const createReq: CreateEcommerceChannelRequest = {
         name: val.name,
         driver: val.driver,
+        api_url: apiUrl,
         credentials,
-        settings,
+        sync_orders_enabled: val.auto_sync_orders,
+        sync_stock_enabled: val.stock_push_enabled,
+        is_active: val.is_active,
       };
       this.api.createChannel(createReq).subscribe({
         next: () => {
@@ -259,6 +390,26 @@ export class EcommerceIntegrationsComponent implements OnInit {
         },
       });
     }
+  }
+
+  /** Credentials each driver needs (StoreEcommerceChannelRequest): WooCommerce key and secret, Shopify token and shop domain, PrestaShop key. */
+  private credentialsOf(driver: string, storeUrl: string, apiKey: string, apiSecret: string): Record<string, string> {
+    const credentials: Record<string, string> = {};
+    const set = (key: string, value: string): void => {
+      if (value) {
+        credentials[key] = value;
+      }
+    };
+    if (driver === 'woocommerce') {
+      set('consumer_key', apiKey);
+      set('consumer_secret', apiSecret);
+    } else if (driver === 'shopify') {
+      set('access_token', apiSecret);
+      set('shop_domain', storeUrl.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase());
+    } else if (driver === 'prestashop') {
+      set('api_key', apiKey);
+    }
+    return credentials;
   }
 
   deleteChannel(ch: EcommerceChannel): void {
@@ -354,14 +505,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
 
   // --- API Keys ---
   loadApiKeys(): void {
-    this.api.getApiKeys().subscribe({
-      next: (res) => {
-        this.apiKeys.set(res.data ?? []);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.API_KEYS_LOAD_ERROR'));
-      },
-    });
+    this.apiKeyGrid.reload();
   }
 
   openCreateApiKeyModal(): void {
@@ -512,18 +656,13 @@ export class EcommerceIntegrationsComponent implements OnInit {
   }
 
   // --- Payment Links ---
+  /** Applies the invoice filter of the toolbar. */
+  searchPaymentLinks(): void {
+    this.paymentLinkGrid.setFilter({ invoice_id: this.filterInvoiceId() || undefined });
+  }
+
   loadPaymentLinks(): void {
-    this.loading.set(true);
-    this.api.getPaymentLinks(this.filterInvoiceId() || undefined).subscribe({
-      next: (res) => {
-        this.paymentLinks.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.message.error(this.translate.instant('ECOMMERCE_INTEGRATIONS.PAYMENT_LINKS_LOAD_ERROR'));
-      },
-    });
+    this.paymentLinkGrid.reload();
   }
 
   openCreatePaymentLinkModal(): void {
@@ -587,7 +726,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
   }
 
   private replacePaymentLink(updated: PaymentLink): void {
-    this.paymentLinks.update((links) => links.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
+    this.paymentLinkGrid.items.update((links) => links.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)));
   }
 
   copyToClipboard(text: string): void {

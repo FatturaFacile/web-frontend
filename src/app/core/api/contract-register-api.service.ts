@@ -16,6 +16,7 @@ import {
   ContractStatusChangeResource,
   ContractTransitionRequest,
   PaginatedResponse,
+  QueryFilterParams,
   RenewContractRequest,
   StoreContractRequest,
   UpdateContractTermsRequest,
@@ -67,7 +68,7 @@ export class ContractRegisterApiService {
   sendNotice(
     kind: ContractKind,
     id: string,
-    payload: { notice_date: string; reason?: string },
+    payload: { notice_given_at?: string },
   ): Observable<ApiResponse<ContractResource>> {
     return this.http.post<ApiResponse<ContractResource>>(
       `${this.base}/contract-register/${kind}/${id}/notice`,
@@ -165,7 +166,7 @@ export class ContractRegisterApiService {
 
   completeObligation(
     obligationId: string,
-    payload?: { completed_at?: string; notes?: string },
+    payload?: { note?: string },
   ): Observable<ApiResponse<ContractObligationResource>> {
     return this.http.post<ApiResponse<ContractObligationResource>>(
       `${this.base}/contract-register/obligations/${obligationId}/complete`,
@@ -175,7 +176,7 @@ export class ContractRegisterApiService {
 
   waiveObligation(
     obligationId: string,
-    payload?: { reason?: string },
+    payload?: { note?: string },
   ): Observable<ApiResponse<ContractObligationResource>> {
     return this.http.post<ApiResponse<ContractObligationResource>>(
       `${this.base}/contract-register/obligations/${obligationId}/waive`,
@@ -184,8 +185,10 @@ export class ContractRegisterApiService {
   }
 
   // --- ALERTS ---
-  getAlerts(): Observable<ApiResponse<ContractAlertResource[]>> {
-    return this.http.get<ApiResponse<ContractAlertResource[]>>(`${this.base}/contract-register/alerts`);
+  getAlerts(params?: QueryFilterParams): Observable<PaginatedResponse<ContractAlertResource>> {
+    return this.http.get<PaginatedResponse<ContractAlertResource>>(`${this.base}/contract-register/alerts`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   acknowledgeAlert(id: string): Observable<ApiResponse<{ success: boolean }>> {

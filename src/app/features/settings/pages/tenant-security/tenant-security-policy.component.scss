@@ -22,7 +22,7 @@
     }
 
     .policy-desc {
-      color: #595959;
+      color: var(--text-secondary);
       margin: 0;
       max-width: 720px;
       font-size: 13px;
@@ -36,5 +36,5 @@
 }
 
 .text-muted {
-  color: #bfbfbf;
+  color: var(--text-muted);
 }

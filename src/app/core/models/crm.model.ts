@@ -177,9 +177,10 @@ export interface ContactMergeRecord {
 }
 
 export interface MergeContactsPayload {
-  survivor_contact_id: string;
-  merged_contact_id: string;
-  field_resolution?: Record<string, 'survivor' | 'merged'>;
+  survivor_id: string;
+  merged_id: string;
+  /** Fill the survivor's empty fields from the merged contact (API default true). */
+  fill_missing?: boolean;
 }
 
 export interface ConsentEffectiveItem {
@@ -209,13 +210,24 @@ export interface ConsentResponse {
   history: ConsentHistoryItem[];
 }
 
+export type ConsentSource =
+  | 'web_form'
+  | 'import'
+  | 'phone'
+  | 'in_person'
+  | 'api'
+  | 'unsubscribe_link'
+  | 'lead_conversion'
+  | 'contact_merge';
+
 export interface StoreConsentPayload {
   contact_id?: string | null;
   lead_id?: string | null;
   channel: string;
   purpose: string;
-  status: 'granted' | 'revoked' | 'pending';
-  source?: string;
+  status: 'granted' | 'withdrawn';
+  source: ConsentSource;
+  captured_at?: string | null;
   evidence?: string | null;
 }
 

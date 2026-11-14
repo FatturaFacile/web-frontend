@@ -17,7 +17,7 @@ import {
   TicketPriority,
   TicketStatus,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 const ACTIONS: readonly BulkTicketAction[] = ['status', 'priority', 'assign', 'add_tags', 'remove_tags', 'macro'];
 const STATUSES: readonly TicketStatus[] = ['new', 'open', 'pending_customer', 'on_hold', 'resolved', 'closed'];
@@ -26,7 +26,8 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
 /** Applies one action to the selected tickets and reports what worked for each of them. */
 @Component({
   selector: 'app-ticket-bulk-modal',
-  imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  styleUrl: './ticket-bulk-modal.component.scss',
+  imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe, IconActionDirective, ModalActionsDirective],
   template: `
     <nz-modal
       [nzVisible]="open()"
@@ -93,29 +94,10 @@ const PRIORITIES: readonly TicketPriority[] = ['low', 'medium', 'high', 'critica
         }
       </ng-container>
       <ng-template #footer>
-        <button nz-button type="button" (click)="open.set(false)">{{ 'TICKET_BULK.CLOSE' | translate }}</button>
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!valid()" (click)="apply()">
-          {{ 'TICKET_BULK.APPLY' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="close" (click)="open.set(false)"></button>
+        <button nz-button nzType="primary" type="button" appIconAction="confirm" [nzLoading]="saving()" [disabled]="!valid()" (click)="apply()"></button>
       </ng-template>
     </nz-modal>
-  `,
-  styles: `
-    .tb-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-    .tb-full {
-      width: 100%;
-    }
-    .tb-result {
-      margin-top: 16px;
-    }
-    .tb-error {
-      margin: 4px 0 0;
-      font-size: 12px;
-    }
   `,
 })
 export class TicketBulkModalComponent implements OnInit {

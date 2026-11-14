@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -7,13 +7,16 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { SystemApiService, SystemBackup } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { FetchGridModel, SystemApiService, SystemBackup } from '@core';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TranslateService } from '@core';
 
 @Component({
   selector: 'app-backups',
+  styleUrl: './backups.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     NzTagModule,
     NzCardModule,
@@ -26,76 +29,48 @@ import { TranslateService } from '@core';
     TranslatePipe,
   ],
   templateUrl: './backups.component.html',
-  styleUrl: './backups.component.scss',
 })
-export class BackupsComponent implements OnInit {
+export class BackupsComponent {
   private readonly api = inject(SystemApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
 
-  protected readonly items = signal<SystemBackup[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<SystemBackup>((query) => this.api.getTenantBackups(query));
   protected readonly isCreating = signal(false);
   protected readonly isUploadModalVisible = signal(false);
   protected readonly isUploading = signal(false);
-  private uploadFile: File | null = null;
+  protected readonly uploadFile = signal<File | null>(null);
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly sizeTpl = viewChild<TemplateRef<unknown>>('sizeTpl');
   private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
 
   readonly columns = computed<TableColumnDef<SystemBackup>[]>(() => [
-    { key: 'filename', header: 'COLUMNS.NOME_ARCHIVIO_ZIP', width: '320px', sortable: true },
+    { key: 'filename', header: 'COLUMNS.NOME_ARCHIVIO_ZIP', width: '320px' },
     {
-      key: 'size_bytes',
+      key: 'file_size_bytes',
       header: 'COLUMNS.DIMENSIONE',
       width: '140px',
       align: 'right',
       customCellTemplate: this.sizeTpl(),
     },
-    { key: 'status', header: 'COLUMNS.STATO', width: '150px', customCellTemplate: this.statusTpl() },
+    {
+      key: 'status',
+      header: 'COLUMNS.STATO',
+      width: '150px',
+      valueLabel: (value) => this.translate.instant('system.backups.status.' + value),
+      customCellTemplate: this.statusTpl(),
+    },
     {
       key: 'created_at',
       header: 'COLUMNS.DATA_CREAZIONE',
       width: '200px',
-      sortable: true,
       customCellTemplate: this.dateTpl(),
     },
   ]);
 
-  ngOnInit(): void {
-    this.loadBackups();
-  }
-
   loadBackups(): void {
-    this.loading.set(true);
-    this.api.getTenantBackups().subscribe({
-      next: (res) => {
-        this.items.set(res.data || []);
-        this.loading.set(false);
-      },
-      error: () => {
-        if (this.items().length === 0) {
-          this.items.set([
-            {
-              id: 'bk-1',
-              filename: 'fatturafacile-backup-2026-10-30-full.zip',
-              size_bytes: 48512000,
-              status: 'completed',
-              created_at: '2026-10-30T23:00:00Z',
-            },
-            {
-              id: 'bk-2',
-              filename: 'fatturafacile-backup-2026-10-23-full.zip',
-              size_bytes: 47200000,
-              status: 'completed',
-              created_at: '2026-10-23T23:00:00Z',
-            },
-          ]);
-        }
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   createBackup(): void {
@@ -108,8 +83,7 @@ export class BackupsComponent implements OnInit {
       },
       error: () => {
         this.isCreating.set(false);
-        this.message.success(this.translate.instant('system.backups.messages.completed'));
-        this.loadBackups();
+        this.message.error(this.translate.instant('settings.messages.error'));
       },
     });
   }
@@ -148,8 +122,7 @@ export class BackupsComponent implements OnInit {
         this.loadBackups();
       },
       error: () => {
-        this.items.update((l) => l.filter((x) => x.id !== b.id));
-        this.message.success(this.translate.instant('system.backups.messages.removed'));
+        this.message.error(this.translate.instant('settings.messages.error'));
       },
     });
   }
@@ -157,18 +130,19 @@ export class BackupsComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.uploadFile = input.files[0];
+      this.uploadFile.set(input.files[0]);
     }
   }
 
   submitUploadRestore(): void {
-    if (!this.uploadFile) {
+    const file = this.uploadFile();
+    if (!file) {
       this.message.warning(this.translate.instant('system.backups.messages.selectZip'));
       return;
     }
     this.isUploading.set(true);
     const fd = new FormData();
-    fd.append('file', this.uploadFile);
+    fd.append('file', file);
     this.api.restoreTenantBackupUpload(fd).subscribe({
       next: () => {
         this.isUploading.set(false);

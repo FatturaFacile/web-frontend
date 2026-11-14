@@ -1,12 +1,19 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCalendarModule } from 'ng-zorro-antd/calendar';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -26,21 +33,44 @@ import {
   AppointmentApiService,
   AppointmentCalendarItem,
   AppointmentConflictCheckResponse,
+  AppointmentFilterParams,
   CancelAppointmentRequest,
+  ClientApiService,
+  ContactResource,
+  contactDisplayName,
   CreateAppointmentRequest,
+  FetchGridModel,
+  GridValue,
+  SettingsApiService,
   TranslateService,
+  UserResource,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, GridFilterFnPipe, GridFilterListPipe, GridSortPipe, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+
+/** Mirrors the API rule `ends_at: after:starts_at`. */
+function endsAfterStarts(control: AbstractControl): ValidationErrors | null {
+  const startsAt = control.parent?.get('starts_at')?.value;
+  const endsAt = control.value;
+  if (!startsAt || !endsAt) {
+    return null;
+  }
+  return new Date(endsAt).getTime() > new Date(startsAt).getTime() ? null : { endsBeforeStart: true };
+}
 
 @Component({
   selector: 'app-appointments',
+  styleUrl: './appointments.component.scss',
   imports: [
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     ReactiveFormsModule,
     NzCardModule,
     NzTabsModule,
     NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     NzButtonModule,
     NzInputModule,
@@ -48,7 +78,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,
@@ -61,19 +90,46 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './appointments.component.html',
-  styleUrl: './appointments.component.scss',
 })
 export class AppointmentsComponent implements OnInit {
   private readonly api = inject(AppointmentApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly clientApi = inject(ClientApiService);
+  private readonly settingsApi = inject(SettingsApiService);
+
+  readonly contacts = signal<ContactResource[]>([]);
+  readonly users = signal<UserResource[]>([]);
+  protected readonly contactName = contactDisplayName;
 
   readonly selectedTabIndex = signal<number>(0);
 
+  private readonly titleTpl = viewChild<TemplateRef<unknown>>('titleTpl');
+  private readonly contactTpl = viewChild<TemplateRef<unknown>>('contactTpl');
+  private readonly startsAtTpl = viewChild<TemplateRef<unknown>>('startsAtTpl');
+  private readonly endsAtTpl = viewChild<TemplateRef<unknown>>('endsAtTpl');
+  private readonly lifecycleTpl = viewChild<TemplateRef<unknown>>('lifecycleTpl');
+  private readonly addressTpl = viewChild<TemplateRef<unknown>>('addressTpl');
+
+  protected readonly appointmentColumns = computed<TableColumnDef<Appointment>[]>(() => {
+    return [
+      { key: 'title', header: 'APPOINTMENTS.TITLE_COL', customCellTemplate: this.titleTpl() },
+      { key: 'contact', serverKey: 'contact.name', header: 'APPOINTMENTS.CONTACT', valueGetter: (row) => row.contact?.name, customCellTemplate: this.contactTpl() },
+      { key: 'starts_at', header: 'APPOINTMENTS.STARTS_AT', customCellTemplate: this.startsAtTpl() },
+      { key: 'ends_at', header: 'APPOINTMENTS.ENDS_AT', customCellTemplate: this.endsAtTpl() },
+      { key: 'lifecycle', serverKey: 'lifecycle_status', header: 'APPOINTMENTS.STATUS', valueGetter: (row) => this.getStatusLabel(row), valueLabel: (value) => this.lifecycleLabel(value), customCellTemplate: this.lifecycleTpl() },
+      { key: 'address', header: 'APPOINTMENTS.ADDRESS', customCellTemplate: this.addressTpl() },
+    ];
+  });
+
   // --- APPOINTMENTS LIST ---
-  readonly appointments = signal<Appointment[]>([]);
-  readonly appointmentsLoading = signal<boolean>(false);
+  /** Server-driven grid of the list view: paging, sorting, column filters and grouping run on the API. */
+  readonly appointments = new FetchGridModel<Appointment, AppointmentFilterParams>((query) =>
+    this.api.getAppointments(query),
+  );
+  /** Appointments per lifecycle state over the whole filtered list (not only the loaded page). */
+  private readonly lifecycleCounts = signal<GridValue[]>([]);
   readonly filterDate = signal<string>('');
   readonly filterTechnicianId = signal<string>('');
 
@@ -92,17 +148,9 @@ export class AppointmentsComponent implements OnInit {
   readonly conflictChecking = signal<boolean>(false);
 
   // Derived metrics
-  readonly totalUpcoming = computed(() =>
-    this.appointments().filter((a) => !a.cancelled_at && new Date(a.starts_at) >= new Date()).length,
-  );
-
-  readonly totalCompleted = computed(() =>
-    this.appointments().filter((a) => !a.cancelled_at && !!a.service_report_id).length,
-  );
-
-  readonly totalCancelled = computed(() =>
-    this.appointments().filter((a) => !!a.cancelled_at).length,
-  );
+  readonly totalUpcoming = computed(() => this.lifecycleCount('scheduled') + this.lifecycleCount('confirmed'));
+  readonly totalCompleted = computed(() => this.lifecycleCount('completed'));
+  readonly totalCancelled = computed(() => this.lifecycleCount('cancelled'));
 
   // Modals visibility
   readonly appointmentModalVisible = signal<boolean>(false);
@@ -110,47 +158,54 @@ export class AppointmentsComponent implements OnInit {
 
   // Forms
   readonly appointmentForm = this.fb.group({
-    title: ['', [Validators.required]],
-    contact_id: [''],
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    contact_id: ['', [Validators.required]],
     ticket_id: [''],
+    attendee_ids: [[] as string[]],
     starts_at: [new Date().toISOString().substring(0, 16), [Validators.required]],
-    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required]],
-    address: [''],
+    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required, endsAfterStarts]],
+    address: ['', [Validators.maxLength(255)]],
     description: [''],
     estimated_duration_minutes: [120, [Validators.min(15)]],
   });
 
   readonly cancelForm = this.fb.group({
-    reason: ['', [Validators.required]],
+    reason: ['', [Validators.required, Validators.maxLength(255)]],
   });
 
   readonly conflictForm = this.fb.group({
-    user_id: ['', [Validators.required]],
+    user_ids: [[] as string[], [Validators.required]],
     starts_at: [new Date().toISOString().substring(0, 16), [Validators.required]],
-    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required]],
+    ends_at: [new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16), [Validators.required, endsAfterStarts]],
   });
 
+  private readonly startsChangeSync = [this.appointmentForm, this.conflictForm].map((group) =>
+    group.controls.starts_at.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => group.controls.ends_at.updateValueAndValidity({ emitEvent: false })),
+  );
+
   ngOnInit(): void {
-    this.loadAppointments();
+    this.settingsApi.getTenantUsers().subscribe({ next: (res) => this.users.set(res.data), error: () => this.users.set([]) });
+    this.loadLifecycleCounts();
     this.loadCalendar();
   }
 
   loadAppointments(): void {
-    this.appointmentsLoading.set(true);
-    this.api
-      .getAppointments({
-        date: this.filterDate() || undefined,
-        technician_id: this.filterTechnicianId() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.appointments.set(res?.data || []);
-          this.appointmentsLoading.set(false);
-        },
-        error: () => {
-          this.appointmentsLoading.set(false);
-        },
-      });
+    this.appointments.setFilter({
+      date: this.filterDate() || undefined,
+      technician_id: this.filterTechnicianId() || undefined,
+    });
+    this.appointments.reload();
+    this.loadLifecycleCounts();
+  }
+
+  private loadLifecycleCounts(): void {
+    this.appointments.loadValues('lifecycle_status').subscribe((values) => this.lifecycleCounts.set(values));
+  }
+
+  private lifecycleCount(state: string): number {
+    return this.lifecycleCounts().find((entry) => entry.value === state)?.count ?? 0;
   }
 
   loadCalendar(): void {
@@ -175,12 +230,14 @@ export class AppointmentsComponent implements OnInit {
       title: '',
       contact_id: '',
       ticket_id: '',
+      attendee_ids: [],
       starts_at: new Date().toISOString().substring(0, 16),
       ends_at: new Date(Date.now() + 3600000 * 2).toISOString().substring(0, 16),
       address: '',
       description: '',
       estimated_duration_minutes: 120,
     });
+    this.clientApi.list({ per_page: 100 }).subscribe({ next: (res) => this.contacts.set(res.data), error: () => this.contacts.set([]) });
     this.appointmentModalVisible.set(true);
   }
 
@@ -194,8 +251,9 @@ export class AppointmentsComponent implements OnInit {
       title: val.title,
       starts_at: new Date(val.starts_at).toISOString(),
       ends_at: new Date(val.ends_at).toISOString(),
-      contact_id: val.contact_id || undefined,
+      contact_id: val.contact_id,
       ticket_id: val.ticket_id || undefined,
+      attendees: val.attendee_ids.length > 0 ? val.attendee_ids.map((userId) => ({ user_id: userId, role: 'technician' as const })) : undefined,
       address: val.address || undefined,
       description: val.description || undefined,
       estimated_duration_minutes: val.estimated_duration_minutes ? Number(val.estimated_duration_minutes) : undefined,
@@ -310,7 +368,7 @@ export class AppointmentsComponent implements OnInit {
       .checkConflicts({
         starts_at: new Date(val.starts_at).toISOString(),
         ends_at: new Date(val.ends_at).toISOString(),
-        user_ids: [val.user_id],
+        user_ids: val.user_ids,
       })
       .subscribe({
         next: (res) => {
@@ -332,10 +390,28 @@ export class AppointmentsComponent implements OnInit {
   }
 
   getStatusLabel(app: Appointment): string {
-    if (app.cancelled_at) return this.translate.instant('APPOINTMENTS.STATUS_CANCELLED');
-    if (app.service_report_id) return this.translate.instant('APPOINTMENTS.STATUS_COMPLETED');
-    if (app.confirmed_at) return this.translate.instant('APPOINTMENTS.STATUS_CONFIRMED');
-    return this.translate.instant('APPOINTMENTS.STATUS_SCHEDULED');
+    return this.lifecycleLabel(this.lifecycleOf(app));
+  }
+
+  /** Same rule as Appointment::gridColumns() `lifecycle_status` on the API. */
+  private lifecycleOf(app: Appointment): string {
+    if (app.cancelled_at) return 'cancelled';
+    if (app.service_report_id) return 'completed';
+    if (app.confirmed_at) return 'confirmed';
+    return 'scheduled';
+  }
+
+  private lifecycleLabel(state: string): string {
+    switch (state) {
+      case 'cancelled':
+        return this.translate.instant('APPOINTMENTS.STATUS_CANCELLED');
+      case 'completed':
+        return this.translate.instant('APPOINTMENTS.STATUS_COMPLETED');
+      case 'confirmed':
+        return this.translate.instant('APPOINTMENTS.STATUS_CONFIRMED');
+      default:
+        return this.translate.instant('APPOINTMENTS.STATUS_SCHEDULED');
+    }
   }
 
   getEventsForDate(date: Date): AppointmentCalendarItem[] {

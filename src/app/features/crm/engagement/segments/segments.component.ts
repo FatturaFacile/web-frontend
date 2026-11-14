@@ -2,7 +2,6 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -24,7 +23,7 @@ import {
   I18nService,
   PermissionsService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 const CONSENT_FIELD = 'consent';
 const NO_VALUE_OPERATORS: readonly string[] = ['is_null', 'not_null'];
@@ -42,11 +41,15 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
 /** Segments: saved filters on contacts or leads, used to target campaigns. */
 @Component({
   selector: 'app-crm-segments',
+  styleUrl: './segments.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,
@@ -59,7 +62,6 @@ const emptyFilter = (): FilterDraft => ({ field: '', operator: 'eq', value: '', 
     TranslatePipe,
   ],
   templateUrl: './segments.component.html',
-  styleUrl: '../engagement.scss',
 })
 export class SegmentsComponent {
   private readonly api = inject(CrmApiService);

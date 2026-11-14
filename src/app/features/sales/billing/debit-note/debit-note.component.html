@@ -32,10 +32,10 @@
           </nz-form-control>
         </nz-form-item>
       </div>
-      <app-document-lines-editor [lines]="lines" />
+      <app-document-lines-editor [lines]="lines" [lineOptions]="lineRules" />
       <nz-form-item class="section">
         <nz-form-label nzFor="debit-notes">{{ 'SC.COMMON.NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
           <textarea nz-input id="debit-notes" rows="2" formControlName="notes"></textarea>
         </nz-form-control>
       </nz-form-item>

@@ -19,14 +19,17 @@ import {
   DashboardWidgetPlacement,
   I18nService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, IconActionDirective, GridExportDirective } from '@shared';
 
 type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
 
 /** Dashboard builder: choose the widgets, their position and size, save or restore the factory layout. */
 @Component({
   selector: 'app-dashboard-builder',
+  styleUrl: './dashboard-builder.component.scss',
   imports: [
+    GridExportDirective,
+    IconActionDirective,
     FormsModule,
     JsonPipe,
     RouterLink,
@@ -43,29 +46,6 @@ type NumericPlacementKey = 'x' | 'y' | 'w' | 'h';
     TranslatePipe,
   ],
   templateUrl: './dashboard-builder.component.html',
-  styles: `
-    .db-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .db-name {
-      width: 240px;
-    }
-    .db-select {
-      min-width: 260px;
-    }
-    .db-spacer {
-      flex: 1;
-    }
-    .db-preview {
-      max-height: 320px;
-      overflow: auto;
-      font-size: 12px;
-    }
-  `,
 })
 export class DashboardBuilderComponent implements OnInit {
   private readonly api = inject(DashboardApiService);

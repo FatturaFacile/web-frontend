@@ -101,55 +101,29 @@
         </div>
 
         <!-- Transmissions Table -->
-        <nz-table
-          #txTable
-          [nzData]="transmissions()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.RECIPIENT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.PAYLOAD_SHA256' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (tx of txTable.data; track tx.id) {
-              <tr>
-                <td>
-                  <nz-tag [nzColor]="getNetworkBadgeColor(tx.network)">
-                    {{ tx.network | uppercase }}
-                  </nz-tag>
-                </td>
-                <td><strong>{{ tx.document_reference }}</strong></td>
-                <td><code>{{ tx.recipient_identifier }}</code></td>
-                <td>
-                  <span [title]="tx.payload_sha256">
-                    {{ tx.payload_sha256 | slice: 0:12 }}...
-                  </span>
-                </td>
-                <td>{{ tx.driver }}</td>
-                <td>
-                  <nz-tag [nzColor]="getStatusBadgeColor(tx.status)">
-                    {{ tx.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  <button nz-button nzType="link" nzSize="small" (click)="openTransmissionDetails(tx)">
-                    <span nz-icon nzType="eye"></span>
-                    {{ 'DOCUMENT_TRUST.DETAILS' | translate }}
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="transmissionGrid" [columns]="transmissionColumns()" [bordered]="true" [actionsTemplate]="txActionsTpl" />
+
+        <ng-template #txNetworkTpl let-tx>
+          <nz-tag [nzColor]="getNetworkBadgeColor(tx.network)">
+            {{ tx.network | uppercase }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #txReferenceTpl let-tx><strong>{{ tx.document_reference }}</strong></ng-template>
+        <ng-template #txRecipientTpl let-tx><code>{{ tx.recipient_identifier }}</code></ng-template>
+        <ng-template #txHashTpl let-tx>
+          <span [title]="tx.payload_sha256">{{ tx.payload_sha256 | slice: 0:12 }}...</span>
+        </ng-template>
+        <ng-template #txStatusTpl let-tx>
+          <nz-tag [nzColor]="getStatusBadgeColor(tx.status)">
+            {{ tx.status | uppercase }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #txActionsTpl let-tx>
+          <button nz-button nzType="link" nzSize="small" (click)="openTransmissionDetails(tx)">
+            <span nz-icon nzType="eye"></span>
+            {{ 'DOCUMENT_TRUST.DETAILS' | translate }}
+          </button>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 2: Digital Signatures & Verification -->
@@ -176,47 +150,19 @@
           </button>
         </div>
 
-        <nz-table
-          #sigTable
-          [nzData]="signatures()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNATURE_FORMAT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNATURE_HASH' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.SIGNED_AT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (sig of sigTable.data; track sig.id) {
-              <tr>
-                <td>{{ sig.document_type }}</td>
-                <td>
-                  <nz-tag nzColor="blue">{{ sig.format }}</nz-tag>
-                </td>
-                <td>{{ sig.driver }}</td>
-                <td>
-                  <span [title]="sig.signature_sha256">
-                    {{ sig.signature_sha256 | slice: 0:16 }}...
-                  </span>
-                </td>
-                <td>{{ sig.signed_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-                <td>
-                  <button nz-button nzType="primary" nzGhost nzSize="small" (click)="verifySignature(sig)">
-                    <span nz-icon nzType="check-circle"></span>
-                    {{ 'DOCUMENT_TRUST.VERIFY_INTEGRITY' | translate }}
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="signatureGrid" [columns]="signatureColumns()" [bordered]="true" [actionsTemplate]="sigActionsTpl" />
+
+        <ng-template #sigFormatTpl let-sig><nz-tag nzColor="blue">{{ sig.format }}</nz-tag></ng-template>
+        <ng-template #sigHashTpl let-sig>
+          <span [title]="sig.content_sha256">{{ sig.content_sha256 | slice: 0:16 }}...</span>
+        </ng-template>
+        <ng-template #sigDateTpl let-sig>{{ sig.created_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+        <ng-template #sigActionsTpl let-sig>
+          <button nz-button nzType="primary" nzGhost nzSize="small" (click)="verifySignature(sig)">
+            <span nz-icon nzType="check-circle"></span>
+            {{ 'DOCUMENT_TRUST.VERIFY_INTEGRITY' | translate }}
+          </button>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 3: Legal Preservation -->
@@ -243,46 +189,17 @@
           </button>
         </div>
 
-        <nz-table
-          #presTable
-          [nzData]="preservationRecords()"
-          [nzLoading]="loading()"
-          [nzBordered]="true"
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.MODE' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.PACKAGE_SHA256' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.TIMESTAMPED_AT' | translate }}</th>
-              <th>{{ 'DOCUMENT_TRUST.STATUS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (rec of presTable.data; track rec.id) {
-              <tr>
-                <td>{{ rec.document_type }}</td>
-                <td>{{ rec.driver }}</td>
-                <td>
-                  <nz-tag nzColor="geekblue">{{ rec.mode }}</nz-tag>
-                </td>
-                <td>
-                  <span [title]="rec.package_sha256">
-                    {{ rec.package_sha256 | slice: 0:16 }}...
-                  </span>
-                </td>
-                <td>{{ rec.timestamped_at | date: 'dd/MM/yyyy HH:mm' }}</td>
-                <td>
-                  <nz-tag [nzColor]="getStatusBadgeColor(rec.status)">
-                    {{ rec.status | uppercase }}
-                  </nz-tag>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="preservationGrid" [columns]="preservationColumns()" [bordered]="true" />
+
+        <ng-template #presHashTpl let-rec>
+          <span [title]="rec.content_sha256">{{ rec.content_sha256 | slice: 0:16 }}...</span>
+        </ng-template>
+        <ng-template #presDateTpl let-rec>{{ rec.created_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+        <ng-template #presStatusTpl let-rec>
+          <nz-tag [nzColor]="getStatusBadgeColor(rec.status)">
+            {{ rec.status | uppercase }}
+          </nz-tag>
+        </ng-template>
       </nz-tab>
 
       <!-- TAB 4: Security & Signing Settings -->
@@ -323,7 +240,7 @@
             <form nz-form [formGroup]="settingsForm" (ngSubmit)="submitSettings()" nzLayout="vertical">
               <nz-form-item>
                 <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DRIVER' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'driver')">
                   <nz-select formControlName="driver">
                     <nz-option nzValue="local" [nzLabel]="'DOCUMENT_TRUST.DRIVER_LOCAL' | translate"></nz-option>
                     <nz-option nzValue="cades" [nzLabel]="'DOCUMENT_TRUST.DRIVER_CADES' | translate"></nz-option>
@@ -332,8 +249,8 @@
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>{{ 'DOCUMENT_TRUST.PEM_CERTIFICATE' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-label [nzRequired]="isCertificateRequired()">{{ 'DOCUMENT_TRUST.PEM_CERTIFICATE' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'certificate')">
                   <textarea
                     nz-input
                     rows="3"
@@ -344,8 +261,8 @@
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>{{ 'DOCUMENT_TRUST.PRIVATE_KEY' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-label [nzRequired]="isCertificateRequired()">{{ 'DOCUMENT_TRUST.PRIVATE_KEY' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'private_key')">
                   <textarea
                     nz-input
                     rows="3"
@@ -357,7 +274,7 @@
 
               <nz-form-item>
                 <nz-form-label>{{ 'DOCUMENT_TRUST.KEY_PASSPHRASE' | translate }}</nz-form-label>
-                <nz-form-control>
+                <nz-form-control [nzErrorTip]="errorTip(settingsForm, 'passphrase')">
                   <input
                     nz-input
                     type="password"
@@ -367,10 +284,7 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <button nz-button nzType="primary" [nzLoading]="loading()">
-                <span nz-icon nzType="lock"></span>
-                {{ 'DOCUMENT_TRUST.SAVE_SETTINGS' | translate }}
-              </button>
+              <button nz-button nzType="primary" appIconAction="save" [nzLoading]="loading()" [disabled]="settingsForm.invalid"></button>
             </form>
           </nz-card>
         </div>
@@ -383,6 +297,7 @@
     [nzVisible]="isSendModalVisible()"
     [nzTitle]="'DOCUMENT_TRUST.SEND_DOCUMENT_MODAL_TITLE' | translate"
     (nzOnCancel)="closeSendModal()"
+    [nzOkDisabled]="sendForm.invalid"
     (nzOnOk)="submitSendDocument()"
     [nzOkLoading]="loading()"
   >
@@ -390,7 +305,7 @@
       <form nz-form [formGroup]="sendForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.NETWORK' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'network')">
             <nz-select formControlName="network">
               <nz-option nzValue="peppol" nzLabel="Peppol AS4 Network"></nz-option>
               <nz-option nzValue="ebill" [nzLabel]="'DOCUMENT_TRUST.LBL_SWISS_EBILL_SIX' | translate"></nz-option>
@@ -401,7 +316,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_REF' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'document_reference')">
             <input
               nz-input
               formControlName="document_reference"
@@ -412,7 +327,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.RECIPIENT_IDENTIFIER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'recipient_identifier')">
             <input
               nz-input
               formControlName="recipient_identifier"
@@ -423,7 +338,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_PAYLOAD' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(sendForm, 'payload')">
             <textarea
               nz-input
               rows="4"
@@ -441,6 +356,7 @@
     [nzVisible]="isSignModalVisible()"
     [nzTitle]="'DOCUMENT_TRUST.SIGN_DOCUMENT_MODAL_TITLE' | translate"
     (nzOnCancel)="closeSignModal()"
+    [nzOkDisabled]="signForm.invalid"
     (nzOnOk)="submitSignDocument()"
     [nzOkLoading]="loading()"
   >
@@ -448,7 +364,7 @@
       <form nz-form [formGroup]="signForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(signForm, 'document_type')">
             <nz-select formControlName="document_type">
               <nz-option nzValue="invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_INVOICE' | translate"></nz-option>
               <nz-option nzValue="passive_invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_PASSIVE' | translate"></nz-option>
@@ -458,7 +374,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(signForm, 'document_id')">
             <input
               nz-input
               formControlName="document_id"
@@ -475,6 +391,7 @@
     [nzVisible]="isPreserveModalVisible()"
     [nzTitle]="'DOCUMENT_TRUST.PRESERVE_DOCUMENT_MODAL_TITLE' | translate"
     (nzOnCancel)="closePreserveModal()"
+    [nzOkDisabled]="preserveForm.invalid"
     (nzOnOk)="submitPreserveDocument()"
     [nzOkLoading]="loading()"
   >
@@ -482,7 +399,7 @@
       <form nz-form [formGroup]="preserveForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_TYPE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(preserveForm, 'document_type')">
             <nz-select formControlName="document_type">
               <nz-option nzValue="invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_INVOICE' | translate"></nz-option>
               <nz-option nzValue="passive_invoice" [nzLabel]="'DOCUMENT_TRUST.DOC_TYPE_PASSIVE' | translate"></nz-option>
@@ -492,7 +409,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'DOCUMENT_TRUST.DOCUMENT_ID' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(preserveForm, 'document_id')">
             <input
               nz-input
               formControlName="document_id"
@@ -552,13 +469,14 @@
   </nz-modal>
 
   <!-- DRAWER: Transmission Details -->
-  <nz-drawer
-    [nzVisible]="isTransmissionDrawerVisible()"
+  <nz-modal
+  [nzVisible]="isTransmissionDrawerVisible()"
+  [nzWidth]="800"
+  [nzFooter]="null"
     [nzTitle]="'DOCUMENT_TRUST.TRANSMISSION_DETAILS' | translate"
-    (nzOnClose)="closeTransmissionDrawer()"
-    [nzWidth]="520"
+    (nzOnCancel)="closeTransmissionDrawer()"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedTransmission(); as tx) {
         <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
           <nz-descriptions-item [nzTitle]="'DOCUMENT_TRUST.ID' | translate">
@@ -595,5 +513,5 @@
         </nz-descriptions>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 </div>

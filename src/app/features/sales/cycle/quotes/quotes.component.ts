@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -23,10 +22,11 @@ import {
 } from '@core';
 import {
   BaseTableComponent,
+  IconActionDirective,
+  ModalActionsDirective,
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
   TranslatePipe,
 } from '@shared';
 import { CycleQuotesFacade } from '../cycle.facades';
@@ -43,13 +43,15 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
 
 @Component({
   selector: 'app-cycle-quotes',
+  styleUrl: './quotes.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzDescriptionsModule,
-    NzDrawerModule,
     NzIconModule,
     NzInputModule,
     NzModalModule,
@@ -67,7 +69,6 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
   ],
   providers: [CycleQuotesFacade],
   templateUrl: './quotes.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class CycleQuotesComponent {
   protected readonly facade = inject(CycleQuotesFacade);
@@ -101,24 +102,16 @@ export class CycleQuotesComponent {
     this.i18n.currentLanguage();
     return [
       { key: 'quote_number', header: this.i18n.translate('SC.COMMON.NUMBER'), width: '150px', customCellTemplate: this.numberTpl() },
-      { key: 'contact', header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
+      { key: 'contact', serverKey: 'contact.name', valueGetter: (row) => this.lookups.contactName(row.contact_id, row.contact), header: this.i18n.translate('SC.COMMON.CUSTOMER'), customCellTemplate: this.customerTpl() },
       { key: 'date', header: this.i18n.translate('SC.COMMON.DATE'), width: '120px' },
       { key: 'valid_until', header: this.i18n.translate('SC.QUOTES.VALID_UNTIL'), width: '120px' },
-      { key: 'status', header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
+      { key: 'status', valueGetter: (row) => this.i18n.translate(this.statusKey(row.status)), valueLabel: (value) => this.i18n.translate(this.statusKey(value)), header: this.i18n.translate('SC.COMMON.STATUS'), width: '140px', customCellTemplate: this.statusTpl() },
       { key: 'total_gross', header: this.i18n.translate('SC.COMMON.TOTAL'), width: '140px', align: 'right', customCellTemplate: this.totalTpl() },
     ];
   });
 
   constructor() {
     this.lookups.load();
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   protected isOpen(quote: CoreQuote): boolean {
@@ -180,6 +173,10 @@ export class CycleQuotesComponent {
     this.signedBy = '';
     this.signature = null;
     this.signOpen.set(true);
+  }
+
+  protected get canSign(): boolean {
+    return !!this.signedBy.trim() && !!this.signature;
   }
 
   protected submitSignature(quote: CoreQuote): void {

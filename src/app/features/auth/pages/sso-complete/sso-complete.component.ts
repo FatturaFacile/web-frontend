@@ -34,6 +34,7 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
  */
 @Component({
   selector: 'app-sso-complete',
+  styleUrl: './sso-complete.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -130,6 +131,7 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
                     nzBlock
                     type="submit"
                     [nzLoading]="isSubmitting()"
+                    [disabled]="!canSubmitChallenge()"
                   >
                     {{ 'TWO_FACTOR.CHALLENGE_SUBMIT' | translate }}
                   </button>
@@ -147,7 +149,6 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
       />
     </main>
   `,
-  styleUrl: '../login/login.component.scss',
 })
 export class SsoCompleteComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -201,6 +202,12 @@ export class SsoCompleteComponent implements OnInit {
       },
       error: (err: unknown) => this.failFromError(err),
     });
+  }
+
+  protected canSubmitChallenge(): boolean {
+    const { code, recoveryCode } = this.challengeForm.getRawValue();
+
+    return this.useRecoveryCode() ? !!recoveryCode.trim() : !!code.trim();
   }
 
   protected onChallengeSubmit(): void {

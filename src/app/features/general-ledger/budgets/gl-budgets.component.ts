@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -17,18 +17,29 @@ import {
   Budget,
   BudgetLine,
   BudgetVarianceReport,
+  FetchGridModel,
   GeneralLedgerApiService,
   GlFiscalYear,
   I18nService,
   PermissionsService,
+  QueryFilterParams,
   RollingForecastReport,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+
+interface BudgetGridFilter extends QueryFilterParams {
+  fiscal_year_id?: string;
+}
 
 @Component({
   selector: 'app-gl-budgets',
+  styleUrl: './gl-budgets.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
@@ -46,7 +57,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
   ],
   templateUrl: './gl-budgets.component.html',
 })
-export class GlBudgetsComponent implements OnInit {
+export class GlBudgetsComponent {
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -57,41 +68,42 @@ export class GlBudgetsComponent implements OnInit {
 
   protected readonly years = signal<GlFiscalYear[]>([]);
   protected readonly yearId = signal<string | null>(null);
-  protected readonly budgets = signal<Budget[]>([]);
+  protected readonly grid = new FetchGridModel<Budget, BudgetGridFilter>((query) => this.api.getBudgets(query));
   protected readonly selected = signal<Budget | null>(null);
   protected readonly variance = signal<BudgetVarianceReport | null>(null);
   protected readonly forecast = signal<RollingForecastReport | null>(null);
-  protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly isDraft = computed(() => this.selected()?.status === 'draft');
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    notes: this.fb.control(''),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(190)]),
+    notes: this.fb.control('', [Validators.maxLength(5000)]),
   });
   protected readonly lines = this.fb.array([this.newLine()]);
 
-  ngOnInit(): void {
+  private readonly nameTpl = viewChild<TemplateRef<{ $implicit: Budget; value: unknown }>>('nameTpl');
+  private readonly versionTpl = viewChild<TemplateRef<{ $implicit: Budget; value: unknown }>>('versionTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: Budget; value: unknown }>>('statusTpl');
+
+  protected readonly budgetColumns = computed<TableColumnDef<Budget>[]>(() => [
+    { key: 'name', header: 'GL.COL_NAME', customCellTemplate: this.nameTpl() },
+    { key: 'version', header: 'GL.BUDGET_VERSION', valueLabel: (value) => 'v' + value, customCellTemplate: this.versionTpl() },
+    { key: 'status', header: 'GL.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  constructor() {
     this.lookups.load();
     this.api.getFiscalYears().subscribe({ next: (res) => this.years.set(res.data ?? []) });
-    this.loadBudgets();
   }
 
   protected selectYear(id: string | null): void {
     this.yearId.set(id);
-    this.loadBudgets();
+    this.grid.setFilter({ fiscal_year_id: id ?? undefined });
   }
 
   protected loadBudgets(): void {
-    this.loading.set(true);
-    this.api.getBudgets(this.yearId() ?? undefined).subscribe({
-      next: (res) => {
-        this.budgets.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.reload();
   }
 
   protected openCreate(): void {
@@ -214,7 +226,7 @@ export class GlBudgetsComponent implements OnInit {
     return this.fb.group({
       account_id: this.fb.control('', Validators.required),
       cost_center_id: this.fb.control(''),
-      period_number: this.fb.control(1, [Validators.required, Validators.min(1), Validators.max(14)]),
+      period_number: this.fb.control(1, [Validators.required, Validators.min(1), Validators.max(12)]),
       amount: this.fb.control(0, Validators.required),
     });
   }

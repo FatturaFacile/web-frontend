@@ -12,7 +12,7 @@
           <textarea nz-input rows="4" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)"></textarea>
         }
         @case ('integer') {
-          <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+          <nz-input-number class="rf-number" [nzId]="'rf-' + field.key" [nzMin]="field.min ?? null" [nzMax]="field.max ?? null" [nzStep]="1" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
         @case ('file') {
           <input type="file" [id]="'rf-' + field.key" (change)="onFileChosen(field.key, $event)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
@@ -22,6 +22,9 @@
         }
         @case ('datetime') {
           <input nz-input type="datetime-local" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
+        }
+        @case ('time') {
+          <input nz-input type="time" [id]="'rf-' + field.key" [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
         }
         @case ('switch') {
           <nz-switch [formControl]="group.get(field.key)" [attr.aria-label]="labels.field(field.key, field.labelKey)" />
@@ -58,18 +61,14 @@
           <div class="rf-line">
             @for (sub of field.fields; track sub.key) {
               <div class="rf-line-field">
-                <label class="rf-line-label" [for]="'rf-' + sub.key">{{ labels.field(sub.key, sub.labelKey) }}</label>
+                <label class="rf-line-label" [for]="'rf-' + sub.key">{{ labels.field(sub.key, sub.labelKey) }}@if (sub.required) {<span class="rf-required" aria-hidden="true"> *</span>}</label>
                 <ng-container *ngTemplateOutlet="control; context: { $implicit: sub, group: line, compact: true }" />
               </div>
             }
-            <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(field, i)" [attr.aria-label]="'RES.ACTION.REMOVE_LINE' | translate">
-              <span nz-icon nzType="delete"></span>
-            </button>
+            <button nz-button nzType="text" nzDanger type="button" appIconAction="delete" (click)="removeLine(field, i)"></button>
           </div>
         }
-        <button nz-button type="button" (click)="addLine(field)">
-          <span nz-icon nzType="plus"></span>{{ 'RES.ACTION.ADD_LINE' | translate }}
-        </button>
+        <button nz-button type="button" appIconAction="add" (click)="addLine(field)"></button>
       </fieldset>
     } @else {
       <ng-container *ngTemplateOutlet="control; context: { $implicit: field, group: form, compact: false }" />
@@ -79,7 +78,11 @@
     <p class="rf-error" role="alert">{{ error }}</p>
   }
   <div class="rf-actions">
-    <button nz-button type="button" (click)="cancelled.emit()">{{ 'RES.ACTION.CANCEL' | translate }}</button>
-    <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ submitLabelKey() | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="cancelled.emit()"></button>
+    @if (submitLabelKey() === 'RES.ACTION.SAVE') {
+      <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid"></button>
+    } @else {
+      <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="form.invalid">{{ submitLabelKey() | translate }}</button>
+    }
   </div>
 </form>

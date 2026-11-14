@@ -33,6 +33,7 @@ describe('EaMaintenanceComponent', () => {
   const api = {
     getMaintenancePlans: vi.fn(),
     getDueMaintenancePlans: vi.fn(),
+    getAssetClasses: vi.fn().mockReturnValue(of({ data: [] })),
     createMaintenancePlan: vi.fn(),
     updateMaintenancePlan: vi.fn(),
     openPlanWorkOrder: vi.fn(),
@@ -89,5 +90,41 @@ describe('EaMaintenanceComponent', () => {
     expect(payload.labor_cost).toBe(80);
     expect(payload.condition_after_maintenance).toBe('good');
     expect(payload.resolution_notes).toBeNull();
+  });
+
+  it('does not call the API when the plan form is submitted empty or without meter data', () => {
+    const fixture = TestBed.createComponent(EaMaintenanceComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      savePlan(): void;
+      planForm: { patchValue(v: object): void; controls: { name: { touched: boolean } } };
+    };
+    component.savePlan();
+    expect(api.createMaintenancePlan).not.toHaveBeenCalled();
+    expect(component.planForm.controls.name.touched).toBe(true);
+
+    component.planForm.patchValue({ name: 'Plan', trigger_type: 'meter' });
+    component.savePlan();
+    expect(api.createMaintenancePlan).not.toHaveBeenCalled();
+  });
+
+  it('requires an asset unless an asset class is chosen (required_without:asset_class_id)', () => {
+    api.createMaintenancePlan.mockReturnValue(of({ data: plan }));
+    const fixture = TestBed.createComponent(EaMaintenanceComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      savePlan(): void;
+      planForm: { patchValue(v: object): void; controls: { asset_id: { hasError(e: string): boolean } } };
+    };
+    component.planForm.patchValue({ name: 'Plan' });
+    component.savePlan();
+    expect(api.createMaintenancePlan).not.toHaveBeenCalled();
+    expect(component.planForm.controls.asset_id.hasError('required')).toBe(true);
+
+    component.planForm.patchValue({ asset_class_id: 'class-1' });
+    component.savePlan();
+    const payload = api.createMaintenancePlan.mock.calls[0][0];
+    expect(payload.asset_class_id).toBe('class-1');
+    expect(payload.asset_id).toBeNull();
   });
 });

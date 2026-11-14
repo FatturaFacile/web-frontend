@@ -58,7 +58,7 @@ describe('ResourcePanelComponent', () => {
     flushList();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('W-1');
-    expect(text).toContain('RES.A.new_wave');
+    expect(fixture.nativeElement.querySelector('button.app-icon-action i.fa-plus')).not.toBeNull();
     expect(text).toContain('RES.A.run_abc');
   });
 
@@ -103,5 +103,21 @@ describe('ResourcePanelComponent', () => {
     const get = http.expectOne(`${base}/inventory/waves/w1`);
     expect(get.request.method).toBe('GET');
     get.flush({ data: { id: 'w1', status: 'open' } });
+  });
+
+  it('offers a scope-bound field only while the scope selector holds one of its values', () => {
+    const action = act('POST', 'RES.A.add_code', '/customs/master-data/{type}', {
+      fields: [req(rf.text('code')), req(rf.text('tariff_code', { scopeValues: ['statistical-keys'] }))],
+    });
+    const panel = fixture.componentInstance as unknown as {
+      scopeValue: { set: (v: string | null) => void };
+      form: { set: (v: unknown) => void };
+      formFields: () => { key: string }[];
+    };
+    panel.form.set({ action, row: null });
+    panel.scopeValue.set('countries');
+    expect(panel.formFields().map((f) => f.key)).toEqual(['code']);
+    panel.scopeValue.set('statistical-keys');
+    expect(panel.formFields().map((f) => f.key)).toEqual(['code', 'tariff_code']);
   });
 });

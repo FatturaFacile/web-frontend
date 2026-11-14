@@ -1,10 +1,11 @@
-<nz-drawer
+<nz-modal
   [nzVisible]="visible()"
-  [nzWidth]="850"
+  [nzWidth]="960"
   [nzTitle]="project().name + ' (' + project().project_number + ')'"
-  (nzOnClose)="onClose()"
+  [nzFooter]="null"
+  (nzOnCancel)="onClose()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     <nz-tabs>
       <!-- TAB 1: OVERVIEW & EVM FINANCIALS -->
       <nz-tab [nzTitle]="'projectDetailDrawer.lblOverviewAndEvm' | translate">
@@ -55,7 +56,7 @@
               </nz-card>
             </div>
 
-            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" style="margin-top: 16px">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mt-4">
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblPlannedValuePv' | translate">{{ fin.planned_value | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblCostVarianceCv' | translate">{{ fin.cost_variance | money: project().currency }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'projectDetailDrawer.lblScheduleVarianceSv' | translate">{{ fin.schedule_variance | money: project().currency }}</nz-descriptions-item>
@@ -72,46 +73,10 @@
       <nz-tab [nzTitle]="'projectDetailDrawer.lblTasksAndWbs' | translate">
         <div class="tab-content">
           <div class="tab-actions">
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateTaskModal()">
-              <nz-icon nzType="plus" />
-              {{ 'projectDetailDrawer.lblAddTask' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTaskModal()"></button>
           </div>
 
-          <nz-table
-            #tasksTable
-            [nzData]="tasks()"
-            [nzLoading]="loadingTasks()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th>{{ 'projectDetailDrawer.lblCode' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblTitle' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblPriority' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblEstHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblActHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblProgress' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (t of tasksTable.data; track t.id) {
-                <tr>
-                  <td>{{ t.task_number || t.wbs_code || '—' }}</td>
-                  <td><strong>{{ t.title }}</strong></td>
-                  <td><nz-tag>{{ t.status }}</nz-tag></td>
-                  <td><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></td>
-                  <td>{{ t.estimated_hours }}h</td>
-                  <td>{{ t.actual_hours }}h</td>
-                  <td style="width: 100px">
-                    <nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="tasksGrid" [columns]="taskColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="project-tasks" />
         </div>
       </nz-tab>
 
@@ -119,102 +84,56 @@
       <nz-tab [nzTitle]="'projectDetailDrawer.lblTimesheets' | translate">
         <div class="tab-content">
           <div class="tab-actions">
-            <button nz-button nzType="primary" nzSize="small" (click)="openCreateTimesheetModal()">
-              <nz-icon nzType="plus" />
-              {{ 'projectDetailDrawer.lblLogTime' | translate }}
-            </button>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openCreateTimesheetModal()"></button>
           </div>
 
-          <nz-table
-            #tsTable
-            [nzData]="timesheets()"
-            [nzLoading]="loadingTimesheets()"
-            [nzFrontPagination]="true"
-            nzSize="small"
-          >
-            <thead>
-              <tr>
-                <th>{{ 'projectDetailDrawer.lblDate' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblUser' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblHours' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblBillable' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblStatus' | translate }}</th>
-                <th>{{ 'projectDetailDrawer.lblSummary' | translate }}</th>
-                <th nzWidth="150px">{{ 'projectDetailDrawer.lblActions' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (ts of tsTable.data; track ts.id) {
-                <tr>
-                  <td>{{ ts.work_date }}</td>
-                  <td>{{ ts.user_id }}</td>
-                  <td><strong>{{ ts.hours_worked }}h</strong></td>
-                  <td>
-                    <nz-tag [nzColor]="ts.is_billable ? 'green' : 'default'">
-                      {{ ts.is_billable ? 'Billable' : 'Non-Billable' }}
-                    </nz-tag>
-                  </td>
-                  <td><nz-tag>{{ ts.status }}</nz-tag></td>
-                  <td>{{ ts.work_summary || '—' }}</td>
-                  <td>
-                    <nz-space>
-                      @if (ts.status === 'draft') {
-                        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="submitTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblSubmit' | translate }}
-                        </button>
-                      }
-                      @if (ts.status === 'submitted') {
-                        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="approveTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblApprove' | translate }}
-                        </button>
-                        <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="rejectTimesheet(ts)">
-                          {{ 'projectDetailDrawer.lblReject' | translate }}
-                        </button>
-                      }
-                    </nz-space>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
+          <app-base-table [grid]="timesheetsGrid" [columns]="timesheetColumns()" [actionsTemplate]="timesheetActionsTpl" [scroll]="{ x: '900px' }" size="small" exportFileName="project-timesheets" />
         </div>
       </nz-tab>
     </nz-tabs>
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- Create Task Modal -->
 <nz-modal
   [nzVisible]="createTaskModalVisible()"
   [nzTitle]="'projectDetailDrawer.lblAddProjectTask' | translate"
+  okAction="add"
   (nzOnCancel)="createTaskModalVisible.set(false)"
   (nzOnOk)="submitCreateTask()"
   [nzOkLoading]="savingTask()"
+  [nzOkDisabled]="taskForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="taskForm" nzLayout="vertical">
       <nz-form-item>
+        <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblTaskNumber' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(taskForm, 'task_number')">
+          <input nz-input formControlName="task_number" maxlength="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
         <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblTaskTitle' | translate }}</nz-form-label>
-        <nz-form-control nzErrorTip="Title is required">
+        <nz-form-control [nzErrorTip]="errorTip(taskForm, 'title')">
           <input nz-input formControlName="title" [placeholder]="'projectDetailDrawer.lblEGDatabaseSchemaDesign' | translate" />
         </nz-form-control>
       </nz-form-item>
 
       <div class="modal-row">
         <nz-form-item class="modal-col">
-          <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblEstimatedHours' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Estimated hours required">
-            <nz-input-number formControlName="estimated_hours" [nzMin]="0.5" [nzStep]="1" style="width: 100%"></nz-input-number>
+          <nz-form-label>{{ 'projectDetailDrawer.lblEstimatedHours' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'estimated_hours')">
+            <nz-input-number formControlName="estimated_hours" [nzMin]="0" [nzStep]="1"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
-          <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPriority' | translate }}</nz-form-label>
+          <nz-form-label>{{ 'projectDetailDrawer.lblPriority' | translate }}</nz-form-label>
           <nz-form-control>
             <nz-select formControlName="priority">
               <nz-option nzValue="low" [nzLabel]="'projectDetailDrawer.lblLow' | translate"></nz-option>
               <nz-option nzValue="medium" [nzLabel]="'projectDetailDrawer.lblMedium' | translate"></nz-option>
               <nz-option nzValue="high" [nzLabel]="'projectDetailDrawer.lblHigh' | translate"></nz-option>
-              <nz-option nzValue="critical" [nzLabel]="'projectDetailDrawer.lblCritical' | translate"></nz-option>
+              <nz-option nzValue="urgent" [nzLabel]="'projectDetailDrawer.lblCritical' | translate"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -223,13 +142,13 @@
       <div class="modal-row">
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPlannedStart' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Start date required">
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'planned_start_date')">
             <input nz-input formControlName="planned_start_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblPlannedEnd' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="End date required">
+          <nz-form-control [nzErrorTip]="errorTip(taskForm, 'planned_end_date')">
             <input nz-input formControlName="planned_end_date" type="date" />
           </nz-form-control>
         </nz-form-item>
@@ -242,33 +161,68 @@
 <nz-modal
   [nzVisible]="createTimesheetModalVisible()"
   [nzTitle]="'projectDetailDrawer.lblLogTimeEntry' | translate"
+  okAction="add"
   (nzOnCancel)="createTimesheetModalVisible.set(false)"
   (nzOnOk)="submitCreateTimesheet()"
   [nzOkLoading]="savingTimesheet()"
+  [nzOkDisabled]="timesheetForm.invalid"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="timesheetForm" nzLayout="vertical">
       <div class="modal-row">
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblWorkDate' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Work date is required">
+          <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'work_date')">
             <input nz-input formControlName="work_date" type="date" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item class="modal-col">
           <nz-form-label nzRequired>{{ 'projectDetailDrawer.lblHoursWorked' | translate }}</nz-form-label>
-          <nz-form-control nzErrorTip="Hours worked required">
-            <nz-input-number formControlName="hours_worked" [nzMin]="0.5" [nzMax]="24" [nzStep]="0.5" style="width: 100%"></nz-input-number>
+          <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'hours_worked')">
+            <nz-input-number formControlName="hours_worked" [nzMin]="0.01" [nzMax]="24" [nzStep]="0.5"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
 
       <nz-form-item>
         <nz-form-label>{{ 'projectDetailDrawer.lblWorkSummary' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(timesheetForm, 'work_summary')">
           <textarea nz-input formControlName="work_summary" rows="3" [placeholder]="'projectDetailDrawer.lblSummaryOfWorkCompleted' | translate"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
   </ng-container>
 </nz-modal>
+
+<ng-template #taskCodeTpl let-t>{{ t.task_number || t.wbs_code || '—' }}</ng-template>
+<ng-template #taskTitleTpl let-t><strong>{{ t.title }}</strong></ng-template>
+<ng-template #taskStatusTpl let-t><nz-tag>{{ t.status }}</nz-tag></ng-template>
+<ng-template #taskPriorityTpl let-t><nz-tag nzColor="blue">{{ t.priority }}</nz-tag></ng-template>
+<ng-template #taskEstimatedTpl let-t>{{ t.estimated_hours }}h</ng-template>
+<ng-template #taskActualTpl let-t>{{ t.actual_hours }}h</ng-template>
+<ng-template #taskProgressTpl let-t><nz-progress [nzPercent]="+t.progress_percentage || 0" nzSize="small"></nz-progress></ng-template>
+<ng-template #tsHoursTpl let-ts><strong>{{ ts.hours_worked }}h</strong></ng-template>
+<ng-template #tsBillableTpl let-ts>
+  <nz-tag [nzColor]="ts.is_billable ? 'green' : 'default'">
+    {{ ts.is_billable ? 'Billable' : 'Non-Billable' }}
+  </nz-tag>
+</ng-template>
+<ng-template #tsStatusTpl let-ts><nz-tag>{{ ts.status }}</nz-tag></ng-template>
+<ng-template #tsSummaryTpl let-ts>{{ ts.work_summary || '—' }}</ng-template>
+<ng-template #timesheetActionsTpl let-ts>
+  <nz-space>
+                        @if (ts.status === 'draft') {
+                          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="submitTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblSubmit' | translate }}
+                          </button>
+                        }
+                        @if (ts.status === 'submitted') {
+                          <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="approveTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblApprove' | translate }}
+                          </button>
+                          <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="rejectTimesheet(ts)">
+                            {{ 'projectDetailDrawer.lblReject' | translate }}
+                          </button>
+                        }
+                      </nz-space>
+</ng-template>

@@ -1,6 +1,7 @@
 import { DatePipe, JsonPipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild, TemplateRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -16,6 +17,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import {
   AccountType,
   AccountingApiService,
@@ -24,7 +26,10 @@ import {
   FiscalPeriodResource,
   GeneralLedgerFiscalApiService,
   IntrastatDeclarationResource,
+  IntrastatFlow,
+  IntrastatPeriodicity,
   JournalEntryResource,
+  NormalBalance,
   TaxSettlementResource,
   TrialBalanceReport,
   TranslateService,
@@ -37,12 +42,26 @@ import {
   TableQueryParams,
   TableStateService,
   TranslatePipe,
-} from '@shared';
+  ModalActionsDirective,
+  IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { notInFuture } from '@shared/utils/date-validators';
+import { validationTipKey } from '@shared/utils/validation-tip';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
+
+/** Assets and expenses grow on the debit side, everything else on the credit side. */
+function defaultNormalBalance(type: AccountType): NormalBalance {
+  return type === 'asset' || type === 'expense' ? 'debit' : 'credit';
+}
+
+/** First year the API accepts for an Intrastat list. */
+const INTRASTAT_FIRST_YEAR = 2022;
 
 @Component({
   selector: 'app-accounting',
+  styleUrl: './accounting.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -60,6 +79,9 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     NzGridModule,
     NzStatisticModule,
     NzModalModule,
+    ModalActionsDirective,
+    IconActionDirective,
+    NzDatePickerModule,
     NzTableModule,
     NzDividerModule,
     BaseTableComponent,
@@ -69,7 +91,6 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
   ],
   providers: [TableStateService],
   templateUrl: './accounting.component.html',
-  styleUrl: './accounting.component.scss',
 })
 export class AccountingComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -78,6 +99,7 @@ export class AccountingComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   private readonly message = inject(NzMessageService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly tableState = inject(TableStateService<JournalEntryResource>);
 
   protected selectedTab = 0;
@@ -103,30 +125,64 @@ export class AccountingComponent implements OnInit {
   protected readonly accountModalVisible = signal(false);
   protected readonly calcVatModalVisible = signal(false);
   protected readonly intrastatModalVisible = signal(false);
+  protected readonly intrastatSubmitTarget = signal<IntrastatDeclarationResource | null>(null);
+
+  /** The error text of a control of the account, VAT and Intrastat forms. */
+  tip(control: AbstractControl): string {
+    const key = validationTipKey(control);
+    return key ? this.translate.instant(key) : '';
+  }
 
   // Forms
   readonly accountForm = this.fb.group({
-    code: this.fb.control('', [Validators.required]),
-    name: this.fb.control('', [Validators.required]),
-    type: this.fb.control<AccountType>('asset', [Validators.required]),
-    currency: this.fb.control('EUR', [Validators.required]),
+    account_code: this.fb.control('', [Validators.required, Validators.maxLength(50)]),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
+    account_type: this.fb.control<AccountType>('asset', [Validators.required]),
+    normal_balance: this.fb.control<NormalBalance>('debit', [Validators.required]),
+    currency: this.fb.control('EUR'),
   });
 
   readonly calcVatForm = this.fb.group({
-    period_type: this.fb.control<'monthly' | 'quarterly'>('monthly', [Validators.required]),
-    year: this.fb.control(new Date().getFullYear(), [Validators.required, Validators.min(2000)]),
+    period_type: this.fb.control<'monthly' | 'quarterly'>('monthly'),
+    year: this.fb.control(new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]),
     period: this.fb.control(new Date().getMonth() + 1, [Validators.required, Validators.min(1), Validators.max(12)]),
   });
 
   readonly intrastatForm = this.fb.group({
-    year: this.fb.control(new Date().getFullYear(), [Validators.required]),
-    period: this.fb.control(new Date().getMonth() + 1, [Validators.required]),
-    direction: this.fb.control<'dispatch' | 'arrival' | 'both'>('dispatch', [Validators.required]),
+    flow: this.fb.control<IntrastatFlow>('sales', [Validators.required]),
+    year: this.fb.control(new Date().getFullYear(), [Validators.required, Validators.min(INTRASTAT_FIRST_YEAR), Validators.max(2099)]),
+    periodicity: this.fb.control<IntrastatPeriodicity>('M', [Validators.required]),
+    period: this.fb.control(new Date().getMonth() + 1, [Validators.required, Validators.min(1), Validators.max(12)]),
   });
+
+  /** Protocol assigned by the receiving channel, asked when a validated list is marked as submitted. */
+  readonly intrastatSubmitForm = this.fb.group({
+    protocol_number: this.fb.control('', [Validators.required, Validators.maxLength(30)]),
+    submitted_at: this.fb.control<Date | null>(null, [notInFuture]),
+  });
+
+  constructor() {
+    this.accountForm.controls.account_type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => this.accountForm.controls.normal_balance.setValue(defaultNormalBalance(type)));
+
+    // A quarterly list has periods 1 to 4, and the INTRA-2 purchases lists are monthly only.
+    this.intrastatForm.controls.flow.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((flow) => {
+      if (flow === 'purchases') {
+        this.intrastatForm.controls.periodicity.setValue('M');
+      }
+    });
+    this.intrastatForm.controls.periodicity.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((periodicity) => {
+      const period = this.intrastatForm.controls.period;
+      period.setValidators([Validators.required, Validators.min(1), Validators.max(periodicity === 'T' ? 4 : 12)]);
+      period.updateValueAndValidity();
+    });
+  }
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly currencyTpl = viewChild<TemplateRef<unknown>>('currencyTpl');
   private readonly accountTypeTpl = viewChild<TemplateRef<unknown>>('accountTypeTpl');
+  private readonly normalBalanceTpl = viewChild<TemplateRef<unknown>>('normalBalanceTpl');
   private readonly vatStatusTpl = viewChild<TemplateRef<unknown>>('vatStatusTpl');
 
 
@@ -172,7 +228,7 @@ export class AccountingComponent implements OnInit {
 
   readonly coaColumns = computed<TableColumnDef<ChartOfAccount>[]>(() => [
     {
-      key: 'code',
+      key: 'account_code',
       header: 'accounting.columns.accountCode',
       width: '140px',
       sortable: true,
@@ -184,17 +240,16 @@ export class AccountingComponent implements OnInit {
       sortable: true,
     },
     {
-      key: 'type',
+      key: 'account_type',
       header: 'accounting.columns.accountType',
       width: '140px',
       customCellTemplate: this.accountTypeTpl(),
     },
     {
-      key: 'balance',
-      header: 'accounting.columns.currentBalance',
+      key: 'normal_balance',
+      header: 'accounting.columns.normalBalance',
       width: '160px',
-      align: 'right',
-      customCellTemplate: this.currencyTpl(),
+      customCellTemplate: this.normalBalanceTpl(),
     },
   ]);
 
@@ -339,9 +394,10 @@ export class AccountingComponent implements OnInit {
 
   openAccountModal(): void {
     this.accountForm.reset({
-      code: '',
+      account_code: '',
       name: '',
-      type: 'asset',
+      account_type: 'asset',
+      normal_balance: 'debit',
       currency: 'EUR',
     });
     this.accountModalVisible.set(true);
@@ -520,9 +576,10 @@ export class AccountingComponent implements OnInit {
 
   openIntrastatModal(): void {
     this.intrastatForm.reset({
+      flow: 'sales',
       year: new Date().getFullYear(),
+      periodicity: 'M',
       period: new Date().getMonth() + 1,
-      direction: 'dispatch',
     });
     this.intrastatModalVisible.set(true);
   }
@@ -533,11 +590,10 @@ export class AccountingComponent implements OnInit {
       return;
     }
 
-    const val = this.intrastatForm.getRawValue();
-    this.api.generateIntrastatDeclaration(val.year, val.period, val.direction).subscribe({
+    this.api.generateIntrastatDeclaration(this.intrastatForm.getRawValue()).subscribe({
       next: (res) => {
         this.intrastatModalVisible.set(false);
-        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatGenerata', { declaration_number: res.data.declaration_number }));
+        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatGenerata', { declaration_number: this.intrastatLabel(res.data) }));
         this.loadIntrastat();
       },
       error: () => {
@@ -546,26 +602,49 @@ export class AccountingComponent implements OnInit {
     });
   }
 
+  /** Readable name of a list, e.g. "INTRA-1 2026/10". */
+  intrastatLabel(dec: IntrastatDeclarationResource): string {
+    return `${dec.model} ${dec.year}/${dec.period}`;
+  }
+
+  /** The API answers 200 for a valid list and 422 (shown by the error interceptor) when it has errors. */
   validateIntrastat(dec: IntrastatDeclarationResource): void {
     this.api.validateIntrastatDeclaration(dec.id).subscribe({
-      next: (res) => {
-        if (res.data.is_valid) {
-          this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatValidaFormalmentePerAgenzia'));
-        } else {
-          this.message.warning(this.translate.instant('accounting.msgErroriRiscontrati', { value: (res.data.errors || []).join(', ') }));
-        }
+      next: () => {
+        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatValidaFormalmentePerAgenzia'));
         this.loadIntrastat();
       },
+      error: () => this.loadIntrastat(),
     });
   }
 
   submitIntrastat(dec: IntrastatDeclarationResource): void {
-    this.api.submitIntrastatDeclaration(dec.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatTrasmessaTelematicamente', { declaration_number: dec.declaration_number }));
-        this.loadIntrastat();
-      },
-    });
+    this.intrastatSubmitForm.reset({ protocol_number: '', submitted_at: null });
+    this.intrastatSubmitTarget.set(dec);
+  }
+
+  confirmSubmitIntrastat(): void {
+    const dec = this.intrastatSubmitTarget();
+    if (!dec) {
+      return;
+    }
+    if (this.intrastatSubmitForm.invalid) {
+      this.intrastatSubmitForm.markAllAsTouched();
+      return;
+    }
+    const val = this.intrastatSubmitForm.getRawValue();
+    this.api
+      .submitIntrastatDeclaration(dec.id, {
+        protocol_number: val.protocol_number.trim(),
+        submitted_at: val.submitted_at ? val.submitted_at.toISOString() : null,
+      })
+      .subscribe({
+        next: () => {
+          this.intrastatSubmitTarget.set(null);
+          this.message.success(this.translate.instant('accounting.msgDichiarazioneIntrastatTrasmessaTelematicamente', { declaration_number: this.intrastatLabel(dec) }));
+          this.loadIntrastat();
+        },
+      });
   }
 
   // --- Trial Balance ---
@@ -590,11 +669,7 @@ export class AccountingComponent implements OnInit {
   }
 
   onParamsChange(params: TableQueryParams): void {
-    this.tableState.setPage(params.pageIndex);
-    this.tableState.setPageSize(params.pageSize);
-    if (params.sort) {
-      this.tableState.setSort(params.sort.key, params.sort.order);
-    }
+    this.tableState.applyGridParams(params);
     this.loadLedgerEntries();
   }
 

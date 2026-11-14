@@ -5,6 +5,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
+  ClientApiService,
   CustomsApiService,
   CustomsAssessmentDecisionResource,
   CustomsDeclarationResource,
@@ -120,6 +121,10 @@ describe('CustomsComponent', () => {
     refuseShipmentRequest: vi.fn().mockReturnValue(of({ success: true, data: { status: 'refused' } })),
   };
 
+  const mockClientApi = {
+    list: vi.fn().mockReturnValue(of({ data: [{ id: 'cust-1', company_name: 'Logistica SA', first_name: null, last_name: null }] })),
+  };
+
   const mockMessage = {
     success: vi.fn(),
     error: vi.fn(),
@@ -131,6 +136,7 @@ describe('CustomsComponent', () => {
       imports: [CustomsComponent],
       providers: [
         { provide: CustomsApiService, useValue: mockCustomsApi },
+        { provide: ClientApiService, useValue: mockClientApi },
         { provide: NzMessageService, useValue: mockMessage },
         provideNzIcons(icons),
       ],
@@ -159,10 +165,53 @@ describe('CustomsComponent', () => {
       currency: 'CHF',
     });
 
+    component.dossierForm.patchValue({ origin_country: 'it', destination_country: 'ch', incoterms: 'dap' });
     component.submitDossierForm();
-    expect(mockCustomsApi.createDossier).toHaveBeenCalled();
+    expect(mockCustomsApi.createDossier).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customer_contact_id: 'cust-1',
+        service_type: 'standard_customs',
+        direction: 'import',
+        currency: 'CHF',
+        origin_country: 'IT',
+        destination_country: 'CH',
+        incoterms: 'DAP',
+      }),
+    );
     expect(component.createDossierModalVisible()).toBe(false);
     expect(mockMessage.success).toHaveBeenCalled();
+  });
+
+  it('does not call the API when the dossier form is submitted empty or with an invalid currency', () => {
+    component.openCreateDossierModal();
+    component.dossierForm.patchValue({ customer_contact_id: '' });
+    component.submitDossierForm();
+    expect(mockCustomsApi.createDossier).not.toHaveBeenCalled();
+    expect(component.dossierForm.controls.customer_contact_id.touched).toBe(true);
+
+    component.dossierForm.patchValue({ customer_contact_id: 'cust-1', currency: 'EURO' });
+    component.submitDossierForm();
+    expect(mockCustomsApi.createDossier).not.toHaveBeenCalled();
+  });
+
+  it('sends the declaration with upper-case countries and without empty optional fields', () => {
+    component.openCreateDeclarationModal();
+    component.declarationForm.patchValue({
+      declaration_type: 'export',
+      trader_declaration_number: '',
+      trader_reference: '',
+      dispatch_country: 'ch',
+      destination_country: 'it',
+    });
+    component.submitDeclarationForm();
+    expect(mockCustomsApi.createDeclaration).toHaveBeenCalledWith({
+      declaration_type: 'export',
+      trader_declaration_number: undefined,
+      trader_reference: undefined,
+      customs_office_number: 'CH001234',
+      dispatch_country: 'CH',
+      destination_country: 'IT',
+    });
   });
 
   it('validates, submits, and cancels customs declaration', () => {

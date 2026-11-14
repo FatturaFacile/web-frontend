@@ -7,14 +7,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AccountLedgerReport, GeneralLedgerApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Account ledger (mastrino): running balance in the accounting currency, plus the transaction currency columns. */
 @Component({
   selector: 'app-gl-account-ledger',
+  styleUrl: './gl-account-ledger.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     NzButtonModule,
     NzDescriptionsModule,
@@ -26,9 +29,9 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
     TranslatePipe,
   ],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
+    <div class="filters">
       <nz-select
-        style="min-width: 320px"
+        class="account-select"
         nzShowSearch
         [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
         [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate"
@@ -39,16 +42,19 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
         }
       </nz-select>
       <label for="al-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="al-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input class="date-input" id="al-from" nz-input type="date" [(ngModel)]="from" />
       <label for="al-to">{{ 'GL.TO' | translate }}</label>
-      <input id="al-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
-      <button nz-button nzType="primary" type="button" [disabled]="!accountId" [nzLoading]="loading()" (click)="load(1)">
+      <input class="date-input" id="al-to" nz-input type="date" [(ngModel)]="to" />
+      <button nz-button nzType="primary" type="button" [disabled]="!accountId || rangeInvalid()" [nzLoading]="loading()" (click)="load(1)">
         {{ 'GL.RUN_REPORT' | translate }}
       </button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
 
     @if (report(); as r) {
-      <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }" style="margin-bottom: 16px">
+      <nz-descriptions class="ledger-summary" nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }">
         <nz-descriptions-item [nzTitle]="'GL.REPORT_CURRENCY' | translate">{{ r.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'GL.COL_OPENING' | translate">{{ r.opening_balance | money: r.currency }}</nz-descriptions-item>
         <nz-descriptions-item [nzTitle]="'GL.COL_CLOSING' | translate">{{ r.closing_balance | money: r.currency }}</nz-descriptions-item>
@@ -71,17 +77,16 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
         [nzPageIndex]="r.meta.current_page"
         [nzPageSize]="r.meta.per_page"
         [nzLoading]="loading()"
-        (nzPageIndexChange)="load($event)"
-      >
+        (nzPageIndexChange)="load($event)" #gridTbl30>
         <thead>
           <tr>
-            <th>{{ 'GL.COL_DATE' | translate }}</th>
-            <th>{{ 'GL.COL_ENTRY' | translate }}</th>
-            <th>{{ 'GL.COL_DESCRIPTION' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
-            <th nzAlign="right">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
-            <th>{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort" [nzFilters]="'posting_date' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'posting_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'entry_number' | gridSort" [nzFilters]="'entry_number' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'entry_number' | gridFilterFn">{{ 'GL.COL_ENTRY' | translate }}</th>
+            <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'GL.COL_DEBIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'GL.COL_CREDIT' | translate }} ({{ r.currency }})</th>
+            <th nzAlign="right" [nzSortFn]="'running_balance' | gridSort" [nzFilters]="'running_balance' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'running_balance' | gridFilterFn">{{ 'GL.COL_RUNNING_BALANCE' | translate }}</th>
+            <th [nzSortFn]="'transaction_debit' | gridSort" [nzFilters]="'transaction_debit' | gridFilterList: gridTbl30.nzData" [nzFilterFn]="'transaction_debit' | gridFilterFn">{{ 'GL.COL_TRANSACTION_CURRENCY' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -114,6 +119,10 @@ export class GlAccountLedgerComponent implements OnInit {
   protected readonly report = signal<AccountLedgerReport | null>(null);
   protected readonly loading = signal(false);
   protected accountId: string | null = null;
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
 

@@ -14,16 +14,20 @@ import {
   ProjectGantt,
   ProjectProfitability,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 /** Profitability, forecast, closure checks and schedule (Gantt, critical path, baseline) of a project. */
 @Component({
   selector: 'app-pc-analysis',
-  imports: [NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
+  styleUrl: './pc-analysis.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzTableModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     @if (closure(); as checks) {
       <nz-alert
-        style="margin-bottom: 16px"
+        class="mb-4"
         nzShowIcon
         [nzType]="checks.can_close ? 'success' : 'warning'"
         [nzMessage]="(checks.can_close ? 'PRJ.CAN_CLOSE' : 'PRJ.CANNOT_CLOSE') | translate"
@@ -40,7 +44,7 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     }
 
     @if (profit(); as p) {
-      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small" style="margin-bottom: 16px">
+      <nz-card [nzTitle]="'PRJ.PROFITABILITY' | translate" nzSize="small" class="mb-4">
         <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 3 }">
           <nz-descriptions-item [nzTitle]="'PRJ.CONTRACT_VALUE' | translate">{{ p.contract_value | money: p.currency }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'PRJ.BUDGET_REVENUE' | translate">{{ p.budget.revenue | money: p.currency }}</nz-descriptions-item>
@@ -66,15 +70,15 @@ import { MoneyPipe, TranslatePipe } from '@shared';
     @if (gantt(); as g) {
       <nz-card [nzTitle]="'PRJ.SCHEDULE' | translate" nzSize="small">
         @if (canWrite) {
-          <button nz-button type="button" style="margin-bottom: 12px" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
+          <button nz-button type="button" class="mb-3" (click)="freezeBaseline()">{{ 'PRJ.SCHEDULE_BASELINE' | translate }}</button>
         }
         <p>{{ 'PRJ.SCHEDULE_FINISH' | translate }}: {{ g.schedule_finish ?? '-' }} - {{ 'PRJ.PROGRESS' | translate }}: {{ g.progress_percentage }}%</p>
         <nz-table #ganttTable nzSize="small" [nzData]="g.tasks" [nzPageSize]="20">
           <thead>
             <tr>
               <th>WBS</th>
-              <th>{{ 'PRJ.TITLE' | translate }}</th>
-              <th>{{ 'PRJ.PLANNED' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: ganttTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'PRJ.TITLE' | translate }}</th>
+              <th [nzSortFn]="'planned_start_date' | gridSort" [nzFilters]="'planned_start_date' | gridFilterList: ganttTable.nzData" [nzFilterFn]="'planned_start_date' | gridFilterFn">{{ 'PRJ.PLANNED' | translate }}</th>
               <th>{{ 'PRJ.BASELINE' | translate }}</th>
               <th nzAlign="right">{{ 'PRJ.FINISH_VARIANCE' | translate }}</th>
               <th>{{ 'PRJ.CRITICAL_PATH' | translate }}</th>

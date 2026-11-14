@@ -12,12 +12,13 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Time report of an employee for a period (minutes are server-computed; balance is a decimal string). */
 @Component({
   selector: 'app-time-report',
+  styleUrl: './time-report.component.scss',
   imports: [FormsModule, NzButtonModule, NzDescriptionsModule, NzInputModule, NzSelectModule, TranslatePipe],
   template: `
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="rep-emp">{{ 'hrmCommon.employee' | translate }}</label>
-        <nz-select id="rep-emp" style="width: 260px" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
+        <nz-select id="rep-emp" class="w-field-md" nzAllowClear nzShowSearch [ngModel]="employeeId()" (ngModelChange)="employeeId.set($event)">
           @for (e of employees(); track e.id) {
             <nz-option [nzValue]="e.id" [nzLabel]="e.employee_number + ' - ' + e.full_name" />
           }

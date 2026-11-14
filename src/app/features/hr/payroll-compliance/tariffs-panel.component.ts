@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18nService, PayrollComplianceApiService, TariffSummaryRow } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, GridExportDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -12,7 +12,10 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Summary of the imported ESTV withholding tax tariffs and the import of a tariff file (or its pasted text). */
 @Component({
   selector: 'app-tariffs-panel',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
+  styleUrl: './tariffs-panel.component.scss',
+  imports: [
+    GridExportDirective,
+    FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
   template: `
     <nz-table
       #table
@@ -42,7 +45,7 @@ import { reportHttpError } from '../shared/hr-http.util';
 
     @if (canWrite()) {
       <h4>{{ 'hrmCompliance.tariffs.importTitle' | translate }}</h4>
-      <div class="flex items-end gap-2 flex-wrap mb-2">
+      <div class="filter-bar">
         <div>
           <label for="tariff-file">{{ 'hrmCompliance.tariffs.file' | translate }}</label>
           <input id="tariff-file" type="file" accept=".txt,.csv,.xml" (change)="pickFile($event)" />

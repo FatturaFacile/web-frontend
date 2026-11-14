@@ -1,6 +1,17 @@
+import { tap } from 'rxjs';
 import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormGroup,
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -14,11 +25,11 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  FetchGridModel,
   BomType,
   CreateBomPayload,
   CreateProductionOrderPayload,
@@ -32,23 +43,58 @@ import {
   MfgShortageResource,
   MfgWorkCenterResource,
   MrpRunType,
+  QueryFilterParams,
   RunMrpPayload,
   TranslateService,
 } from '@core';
-import {
-  MoneyPipe,
-  PageHeaderComponent,
-  TranslatePipe,
-} from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { toDayKey, toTimestamp } from '@shared/utils/date-validators';
+import { formErrorTip } from '../inventory/form-error-tip';
 import { apiErrorText, hasAnyRole } from '../sales/cycle/shared/sales-api-helpers';
 
 /** Roles that may activate a BOM revision (the API answers 403 to anyone else). */
 const BOM_MANAGER_ROLES: readonly string[] = ['owner', 'admin', 'production'];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** The control may not be earlier than the sibling control `startKey` (`after_or_equal` in the API). */
+function notBefore(startKey: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const start = control.parent?.get(startKey)?.value;
+    if (!start || !control.value) {
+      return null;
+    }
+    return new Date(control.value).getTime() < new Date(start).getTime() ? { dateOrder: true } : null;
+  };
+}
+
+/** Mirrors `before_or_equal:<start + 2 years>` of RunMrpRequest: the horizon cannot extend past two years from its start. */
+function withinTwoYearsOf(startKey: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const startRaw = control.parent?.get(startKey)?.value;
+    const endDay = toDayKey(control.value);
+    const startTime = toTimestamp(startRaw);
+    if (!endDay || startTime === null) {
+      return null;
+    }
+    const limit = new Date(startTime);
+    limit.setFullYear(limit.getFullYear() + 2);
+    const limitDay = toDayKey(limit);
+    return limitDay !== null && endDay > limitDay ? { exceedsMax: true } : null;
+  };
+}
+
+/** List filters of the production orders and BOMs grids (the column filters travel in the grid model itself). */
+interface MfgListFilter extends QueryFilterParams {
+  status?: string;
+}
+
 @Component({
   selector: 'app-manufacturing',
+  styleUrl: './manufacturing.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -56,7 +102,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     UpperCasePipe,
     MoneyPipe,
     NzCardModule,
-    NzTableModule,
     NzTagModule,
     NzButtonModule,
     NzIconModule,
@@ -75,7 +120,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   ],
   templateUrl: './manufacturing.component.html',
 })
-export class ManufacturingComponent implements OnInit {
+export class ManufacturingComponent {
   private readonly api = inject(ManufacturingApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly message = inject(NzMessageService);
@@ -87,42 +132,32 @@ export class ManufacturingComponent implements OnInit {
 
   readonly selectedTab = signal<number>(0);
 
-  // --- Production Orders State ---
-  readonly orders = signal<MfgProductionOrderResource[]>([]);
-  readonly loadingOrders = signal(false);
-  readonly ordersTotal = signal(0);
-  readonly ordersPage = signal(1);
+  // --- Server-driven grids (paging, sorting, column filters, grouping and export run on the API) ---
+  readonly ordersGrid = new FetchGridModel<MfgProductionOrderResource, MfgListFilter>((query) =>
+    this.api.getProductionOrders(query).pipe(
+      tap({ error: () => this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_GLI_ORDINI_DI_PRODUZIONE')) }),
+    ),
+  );
+  readonly bomsGrid = new FetchGridModel<MfgBomResource, MfgListFilter>((query) =>
+    this.api.getBoms(query).pipe(tap({ error: () => this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_LE_DISTINTE_BASE')) })),
+  );
+  readonly mrpGrid = new FetchGridModel<MfgMrpRunResource>((query) => this.api.getMrpRuns(query));
+  readonly plannedGrid = new FetchGridModel<MfgPlannedOrderResource>((query) => this.api.getPlannedOrders(query));
+  readonly shortagesGrid = new FetchGridModel<MfgShortageResource>((query) => this.api.getShortages(query));
+  readonly workCentersGrid = new FetchGridModel<MfgWorkCenterResource>((query) => this.api.getWorkCenters(query));
+  readonly routingsGrid = new FetchGridModel<MfgRoutingResource>((query) => this.api.getRoutings(query));
+
+  readonly orders = this.ordersGrid.items;
+  readonly boms = this.bomsGrid.items;
+  readonly mrpRuns = this.mrpGrid.items;
+  readonly plannedOrders = this.plannedGrid.items;
+  readonly shortages = this.shortagesGrid.items;
+  readonly workCenters = this.workCentersGrid.items;
+  readonly routings = this.routingsGrid.items;
+
   readonly ordersSearch = signal('');
   readonly ordersStatusFilter = signal<string | null>(null);
-
-  // --- BOMs State ---
-  readonly boms = signal<MfgBomResource[]>([]);
-  readonly loadingBoms = signal(false);
-  readonly bomsTotal = signal(0);
-  readonly bomsPage = signal(1);
   readonly bomsSearch = signal('');
-
-  // --- MRP State ---
-  readonly mrpRuns = signal<MfgMrpRunResource[]>([]);
-  readonly loadingMrp = signal(false);
-  readonly mrpTotal = signal(0);
-  readonly mrpPage = signal(1);
-
-  readonly plannedOrders = signal<MfgPlannedOrderResource[]>([]);
-  readonly loadingPlanned = signal(false);
-  readonly plannedTotal = signal(0);
-  readonly plannedPage = signal(1);
-
-  readonly shortages = signal<MfgShortageResource[]>([]);
-  readonly loadingShortages = signal(false);
-  readonly shortagesTotal = signal(0);
-  readonly shortagesPage = signal(1);
-
-  // --- Work Centers & Routings State ---
-  readonly workCenters = signal<MfgWorkCenterResource[]>([]);
-  readonly loadingWorkCenters = signal(false);
-  readonly routings = signal<MfgRoutingResource[]>([]);
-  readonly loadingRoutings = signal(false);
 
   // --- KPI Computed Metrics ---
   readonly kpiTotalOrders = computed(() => this.orders().length);
@@ -138,13 +173,18 @@ export class ManufacturingComponent implements OnInit {
   readonly isCreateOrderModalVisible = signal(false);
   readonly isSubmittingOrder = signal(false);
   readonly orderForm = this.fb.group({
-    mfg_item_id: ['', [Validators.required]],
+    mfg_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
     target_quantity: [1, [Validators.required, Validators.min(0.001)]],
     planned_start_date: [new Date(), [Validators.required]],
-    planned_end_date: [new Date(Date.now() + 7 * 86400000), [Validators.required]],
+    planned_end_date: [new Date(Date.now() + 7 * 86400000), [Validators.required, notBefore('planned_start_date')]],
     bom_id: [''],
-    notes: [''],
+    notes: ['', [Validators.maxLength(5000)]],
   });
+
+  /** The end date must be re-checked when the start date changes. */
+  private readonly recheckOrderEnd = this.orderForm.controls.planned_start_date.valueChanges.subscribe(() =>
+    this.orderForm.controls.planned_end_date.updateValueAndValidity(),
+  );
 
   /** Active BOM revisions of the item typed in the order form (empty list: the API will refuse the order). */
   readonly orderBoms = signal<MfgBomResource[]>([]);
@@ -158,19 +198,19 @@ export class ManufacturingComponent implements OnInit {
   readonly isCreateBomModalVisible = signal(false);
   readonly isSubmittingBom = signal(false);
   readonly bomForm = this.fb.group({
-    mfg_item_id: ['', [Validators.required]],
-    bom_number: ['', [Validators.required]],
-    name: ['', [Validators.required]],
-    revision: ['A', [Validators.required]],
+    mfg_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
+    bom_number: ['', [Validators.maxLength(50)]],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
+    revision: ['A', [Validators.maxLength(20)]],
     bom_type: ['standard' as BomType],
-    base_quantity: [1, [Validators.required, Validators.min(0.001)]],
-    uom: ['PZ', [Validators.required]],
-    notes: [''],
+    base_quantity: [1, [Validators.min(0.001)]],
+    uom: ['PZ', [Validators.maxLength(20)]],
+    notes: ['', [Validators.maxLength(5000)]],
     components: this.fb.array([
       this.fb.group({
-        component_item_id: ['', [Validators.required]],
+        component_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
         quantity_per: [1, [Validators.required, Validators.min(0.001)]],
-        notes: [''],
+        notes: ['', [Validators.maxLength(1000)]],
       }),
     ]),
   });
@@ -179,19 +219,24 @@ export class ManufacturingComponent implements OnInit {
   readonly isSubmittingMrp = signal(false);
   readonly mrpForm = this.fb.group({
     horizon_start_date: [new Date(), [Validators.required]],
-    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required]],
-    run_type: ['regenerative' as MrpRunType, [Validators.required]],
+    horizon_end_date: [new Date(Date.now() + 90 * 86400000), [Validators.required, notBefore('horizon_start_date'), withinTwoYearsOf('horizon_start_date')]],
+    run_type: ['regenerative' as MrpRunType],
   });
+
+  /** The end of the horizon must be re-checked when its start changes. */
+  private readonly recheckMrpEnd = this.mrpForm.controls.horizon_start_date.valueChanges.subscribe(() =>
+    this.mrpForm.controls.horizon_end_date.updateValueAndValidity(),
+  );
 
   readonly isCreateWorkCenterModalVisible = signal(false);
   readonly isSubmittingWorkCenter = signal(false);
   readonly workCenterForm = this.fb.group({
-    work_center_code: ['', [Validators.required]],
-    name: ['', [Validators.required]],
-    department_code: ['PROD'],
-    capacity_hours_per_day: [8, [Validators.required, Validators.min(0), Validators.max(24)]],
-    hourly_cost_rate: [50, [Validators.required, Validators.min(0)]],
-    description: [''],
+    work_center_code: ['', [Validators.required, Validators.maxLength(50)]],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
+    department_code: ['PROD', [Validators.maxLength(50)]],
+    capacity_hours_per_day: [8 as number | null, [Validators.min(0), Validators.max(24)]],
+    hourly_cost_rate: [50 as number | null, [Validators.min(0)]],
+    description: ['', [Validators.maxLength(5000)]],
   });
 
   // Explode BOM modal
@@ -203,45 +248,125 @@ export class ManufacturingComponent implements OnInit {
     return this.bomForm.get('components') as FormArray;
   }
 
-  ngOnInit(): void {
-    this.loadOrders();
-    this.loadBoms();
-    this.loadMrpRuns();
-    this.loadPlannedOrders();
-    this.loadShortages();
-    this.loadWorkCenters();
-    this.loadRoutings();
+  errorTip(form: FormGroup, path: string): string {
+    return formErrorTip(form, path, this.translate);
+  }
+
+  private readonly strongTpl = viewChild<TemplateRef<unknown>>('strongTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+  private readonly dateTimeTpl = viewChild<TemplateRef<unknown>>('dateTimeTpl');
+  private readonly moneyTpl = viewChild<TemplateRef<unknown>>('moneyTpl');
+  private readonly orderStatusTpl = viewChild<TemplateRef<unknown>>('orderStatusTpl');
+  private readonly bomStatusTpl = viewChild<TemplateRef<unknown>>('bomStatusTpl');
+  private readonly revisionTpl = viewChild<TemplateRef<unknown>>('revisionTpl');
+  private readonly plainTagTpl = viewChild<TemplateRef<unknown>>('plainTagTpl');
+  private readonly planTypeTpl = viewChild<TemplateRef<unknown>>('planTypeTpl');
+  private readonly warningTagTpl = viewChild<TemplateRef<unknown>>('warningTagTpl');
+  private readonly activeTagTpl = viewChild<TemplateRef<unknown>>('activeTagTpl');
+  private readonly successTagTpl = viewChild<TemplateRef<unknown>>('successTagTpl');
+  private readonly mrpStatusTpl = viewChild<TemplateRef<unknown>>('mrpStatusTpl');
+  private readonly dashTpl = viewChild<TemplateRef<unknown>>('dashTpl');
+  private readonly yesNoTpl = viewChild<TemplateRef<unknown>>('yesNoTpl');
+  private readonly componentsTpl = viewChild<TemplateRef<unknown>>('componentsTpl');
+  private readonly operationsTpl = viewChild<TemplateRef<unknown>>('operationsTpl');
+  private readonly hoursTpl = viewChild<TemplateRef<unknown>>('hoursTpl');
+  private readonly levelTpl = viewChild<TemplateRef<unknown>>('levelTpl');
+
+  protected readonly orderColumns = computed<TableColumnDef<MfgProductionOrderResource>[]>(() => [
+    { key: 'order_number', header: 'MFG.LBL_N_ORDINE', customCellTemplate: this.strongTpl() },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO_DESCRIZIONE', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'target_quantity', header: 'MFG.LBL_Q_TA_PREVISTA', align: 'right', valueGetter: (r) => `${r.target_quantity} ${r.uom}` },
+    { key: 'completed_quantity', header: 'MFG.LBL_Q_TA_PRODOTTA', align: 'right', valueGetter: (r) => `${r.completed_quantity} ${r.uom}` },
+    { key: 'planned_start_date', header: 'MFG.LBL_INIZIO_PREVISTO', customCellTemplate: this.dateTpl() },
+    { key: 'planned_end_date', header: 'MFG.LBL_FINE_PREVISTA', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.orderStatusTpl() },
+    { key: 'actual_cost_total', header: 'MFG.LBL_COSTI_TOTALI', align: 'right', customCellTemplate: this.moneyTpl() },
+  ]);
+
+  protected readonly bomColumns = computed<TableColumnDef<MfgBomResource>[]>(() => [
+    { key: 'bom_number', header: 'MFG.LBL_N_DISTINTA', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME_DISTINTA' },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'revision', header: 'MFG.LBL_REVISIONE', customCellTemplate: this.revisionTpl() },
+    { key: 'bom_type', header: 'MFG.LBL_TIPO' },
+    { key: 'base_quantity', header: 'MFG.LBL_Q_TA_BASE', align: 'right', valueGetter: (r) => `${r.base_quantity} ${r.uom}` },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.bomStatusTpl() },
+    { key: 'components_count', header: 'MFG.LBL_COMPONENTI', valueGetter: (r) => r.components_count ?? r.components?.length ?? 0, customCellTemplate: this.componentsTpl() },
+  ]);
+
+  protected readonly mrpColumns = computed<TableColumnDef<MfgMrpRunResource>[]>(() => [
+    { key: 'run_number', header: 'MFG.LBL_N_CALCOLO_MRP', customCellTemplate: this.strongTpl() },
+    { key: 'run_type', header: 'MFG.LBL_TIPO', customCellTemplate: this.plainTagTpl() },
+    { key: 'horizon_start_date', header: 'MFG.LBL_ORIZZONTE_INIZIO', customCellTemplate: this.dateTpl() },
+    { key: 'horizon_end_date', header: 'MFG.LBL_ORIZZONTE_FINE', customCellTemplate: this.dateTpl() },
+    { key: 'total_items_processed', header: 'MFG.LBL_ARTICOLI_ELABORATI', align: 'right' },
+    { key: 'total_planned_orders', header: 'MFG.LBL_ORDINI_PIANIFICATI', align: 'right' },
+    { key: 'total_shortages', header: 'MFG.LBL_FABBISOGNI_MANCANTI', align: 'right' },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.mrpStatusTpl() },
+    { key: 'created_at', header: 'MFG.LBL_DATA_ESECUZIONE', customCellTemplate: this.dateTimeTpl() },
+  ]);
+
+  protected readonly plannedColumns = computed<TableColumnDef<MfgPlannedOrderResource>[]>(() => [
+    { key: 'planned_order_number', header: 'MFG.LBL_CODICE_PIANIFICATO', customCellTemplate: this.strongTpl() },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'order_type', header: 'MFG.LBL_TIPO', customCellTemplate: this.planTypeTpl() },
+    { key: 'quantity', header: 'MFG.LBL_QUANTITA_NETTA', align: 'right', valueGetter: (r) => `${r.quantity} ${r.uom}` },
+    { key: 'bom_level', header: 'MFG.LBL_LIVELLO_DISTINTA', customCellTemplate: this.levelTpl() },
+    { key: 'start_date', header: 'MFG.LBL_DATA_INIZIO', customCellTemplate: this.dateTpl() },
+    { key: 'due_date', header: 'MFG.LBL_DATA_SCADENZA', customCellTemplate: this.dateTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.plainTagTpl() },
+  ]);
+
+  protected readonly shortageColumns = computed<TableColumnDef<MfgShortageResource>[]>(() => [
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id, customCellTemplate: this.strongTpl() },
+    { key: 'required_date', header: 'MFG.LBL_DATA_NECESSARIA', customCellTemplate: this.dateTpl() },
+    { key: 'gross_requirement', header: 'MFG.LBL_FABBISOGNO_LORDO', align: 'right' },
+    { key: 'available_inventory', header: 'MFG.LBL_DISPONIBILITA_ATTUALE', align: 'right' },
+    { key: 'safety_stock', header: 'MFG.LBL_SCORTA_SICUREZZA', align: 'right' },
+    { key: 'net_shortage', header: 'MFG.LBL_MANCANZA_NETTA', align: 'right' },
+    { key: 'recommended_action', header: 'MFG.LBL_AZIONE_CONSIGLIATA', customCellTemplate: this.warningTagTpl() },
+  ]);
+
+  protected readonly workCenterColumns = computed<TableColumnDef<MfgWorkCenterResource>[]>(() => [
+    { key: 'work_center_code', header: 'MFG.LBL_CODICE_CENTRO', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME' },
+    { key: 'department_code', header: 'MFG.LBL_REPARTO', customCellTemplate: this.dashTpl() },
+    { key: 'capacity_hours_per_day', header: 'MFG.LBL_CAPACITA_GIORNALIERA_ORE', align: 'right', customCellTemplate: this.hoursTpl() },
+    { key: 'hourly_cost_rate', header: 'MFG.LBL_COSTO_ORARIO_H', align: 'right', customCellTemplate: this.moneyTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.activeTagTpl() },
+  ]);
+
+  protected readonly routingColumns = computed<TableColumnDef<MfgRoutingResource>[]>(() => [
+    { key: 'routing_number', header: 'MFG.LBL_N_CICLO', customCellTemplate: this.strongTpl() },
+    { key: 'name', header: 'MFG.LBL_NOME_CICLO' },
+    { key: 'item_code', serverKey: 'mfgItem.item_code', header: 'MFG.LBL_ARTICOLO', valueGetter: (r) => r.item_code || r.mfg_item_id },
+    { key: 'revision', header: 'MFG.LBL_REVISIONE', customCellTemplate: this.revisionTpl() },
+    { key: 'is_default', header: 'MFG.LBL_PREDEFINITO', customCellTemplate: this.yesNoTpl() },
+    { key: 'operations_count', header: 'MFG.LBL_OPERAZIONI', valueGetter: (r) => r.operations_count ?? r.operations?.length ?? 0, customCellTemplate: this.operationsTpl() },
+    { key: 'status', header: 'MFG.LBL_STATO', customCellTemplate: this.successTagTpl() },
+  ]);
+
+  constructor() {
+    this.ordersGrid.setPageSize(15);
+    this.bomsGrid.setPageSize(15);
+  }
+
+  searchOrders(term: string): void {
+    this.ordersSearch.set(term);
+    this.ordersGrid.setFilter({ search: term.trim() || undefined });
+  }
+
+  filterOrdersByStatus(status: string | null): void {
+    this.ordersStatusFilter.set(status);
+    this.ordersGrid.setFilter({ status: status ?? undefined });
+  }
+
+  searchBoms(term: string): void {
+    this.bomsSearch.set(term);
+    this.bomsGrid.setFilter({ search: term.trim() || undefined });
   }
 
   // --- Orders Logic ---
-
-  loadOrders(page = 1): void {
-    this.loadingOrders.set(true);
-    this.ordersPage.set(page);
-
-    const params: Record<string, string | number> = {
-      page,
-      per_page: 15,
-    };
-    if (this.ordersSearch().trim()) {
-      params['search'] = this.ordersSearch().trim();
-    }
-    if (this.ordersStatusFilter()) {
-      params['status'] = this.ordersStatusFilter()!;
-    }
-
-    this.api.getProductionOrders(params).subscribe({
-      next: (res) => {
-        this.orders.set(res?.data || []);
-        this.ordersTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingOrders.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_GLI_ORDINI_DI_PRODUZIONE'));
-        this.loadingOrders.set(false);
-      },
-    });
-  }
 
   openCreateOrderModal(): void {
     this.orderForm.reset({
@@ -277,10 +402,7 @@ export class ManufacturingComponent implements OnInit {
 
   submitCreateOrder(): void {
     if (this.orderForm.invalid) {
-      Object.values(this.orderForm.controls).forEach((c) => {
-        c.markAsDirty();
-        c.updateValueAndValidity();
-      });
+      this.orderForm.markAllAsTouched();
       return;
     }
 
@@ -306,7 +428,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_ORDINE_DI_PRODUZIONE_CREATO_CON_SUCCESSO'));
         this.isSubmittingOrder.set(false);
         this.isCreateOrderModalVisible.set(false);
-        this.loadOrders(1);
+        this.ordersGrid.reload();
       },
       error: (err) => {
         // 422 carries the reason (no released BOM revision on the start date, item bought not made, ...)
@@ -325,7 +447,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.releaseProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_RILASCIATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_RILASCIO_DELL_ORDINE')),
         });
@@ -342,7 +464,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.startProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_AVVIATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_AVVIO_DELL_ORDINE')),
         });
@@ -359,7 +481,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.completeProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_COMPLETATO_CON_SUCCESSO'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_IL_COMPLETAMENTO_DELL_ORDINE')),
         });
@@ -377,7 +499,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.closeProductionOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_CHIUSO_E_VARIANZE_SALDATE'));
-            this.loadOrders(this.ordersPage());
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CHIUSURA_DELL_ORDINE')),
         });
@@ -402,7 +524,7 @@ export class ManufacturingComponent implements OnInit {
         this.isCancellingOrder.set(false);
         this.cancellingOrder.set(null);
         this.message.success(this.translate.instant('MFG.MSG_ORDINE_ANNULLATO'));
-        this.loadOrders(this.ordersPage());
+        this.ordersGrid.reload();
       },
       error: (err) => {
         this.isCancellingOrder.set(false);
@@ -412,31 +534,6 @@ export class ManufacturingComponent implements OnInit {
   }
 
   // --- BOMs Logic ---
-
-  loadBoms(page = 1): void {
-    this.loadingBoms.set(true);
-    this.bomsPage.set(page);
-
-    const params: Record<string, string | number> = {
-      page,
-      per_page: 15,
-    };
-    if (this.bomsSearch().trim()) {
-      params['search'] = this.bomsSearch().trim();
-    }
-
-    this.api.getBoms(params).subscribe({
-      next: (res) => {
-        this.boms.set(res?.data || []);
-        this.bomsTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingBoms.set(false);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('MFG.MSG_IMPOSSIBILE_CARICARE_LE_DISTINTE_BASE'));
-        this.loadingBoms.set(false);
-      },
-    });
-  }
 
   openCreateBomModal(): void {
     while (this.bomComponentsFormArray.length !== 0) {
@@ -460,9 +557,9 @@ export class ManufacturingComponent implements OnInit {
   addComponentRow(): void {
     this.bomComponentsFormArray.push(
       this.fb.group({
-        component_item_id: ['', [Validators.required]],
+        component_item_id: ['', [Validators.required, Validators.pattern(UUID)]],
         quantity_per: [1, [Validators.required, Validators.min(0.001)]],
-        notes: [''],
+        notes: ['', [Validators.maxLength(1000)]],
       })
     );
   }
@@ -489,12 +586,12 @@ export class ManufacturingComponent implements OnInit {
 
     const payload: CreateBomPayload = {
       mfg_item_id: val.mfg_item_id,
-      bom_number: val.bom_number,
+      bom_number: val.bom_number || null,
       name: val.name,
-      revision: val.revision,
+      revision: val.revision || null,
       bom_type: val.bom_type,
-      base_quantity: Number(val.base_quantity),
-      uom: val.uom,
+      base_quantity: val.base_quantity === null ? null : Number(val.base_quantity),
+      uom: val.uom || null,
       notes: val.notes || null,
       components: rawComps.map((c, idx) => ({
         component_item_id: c.component_item_id,
@@ -509,7 +606,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.BOM_CREATED_DRAFT'));
         this.isSubmittingBom.set(false);
         this.isCreateBomModalVisible.set(false);
-        this.loadBoms(1);
+        this.bomsGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DELLA_DISTINTA'));
@@ -527,7 +624,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.activateBom(bom.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_DISTINTA_BASE_ATTIVATA'));
-            this.loadBoms(this.bomsPage());
+            this.bomsGrid.reload();
           },
           error: (err) =>
             this.message.error(
@@ -549,7 +646,7 @@ export class ManufacturingComponent implements OnInit {
         this.api.reviseBom(bom.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_NUOVA_REVISIONE_CREATA'));
-            this.loadBoms(1);
+            this.bomsGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_REVISIONE_DELLA_DISTINTA')),
         });
@@ -570,51 +667,6 @@ export class ManufacturingComponent implements OnInit {
 
   // --- MRP Logic ---
 
-  loadMrpRuns(page = 1): void {
-    this.loadingMrp.set(true);
-    this.mrpPage.set(page);
-    this.api.getMrpRuns({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.mrpRuns.set(res?.data || []);
-        this.mrpTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingMrp.set(false);
-      },
-      error: () => {
-        this.loadingMrp.set(false);
-      },
-    });
-  }
-
-  loadPlannedOrders(page = 1): void {
-    this.loadingPlanned.set(true);
-    this.plannedPage.set(page);
-    this.api.getPlannedOrders({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.plannedOrders.set(res?.data || []);
-        this.plannedTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingPlanned.set(false);
-      },
-      error: () => {
-        this.loadingPlanned.set(false);
-      },
-    });
-  }
-
-  loadShortages(page = 1): void {
-    this.loadingShortages.set(true);
-    this.shortagesPage.set(page);
-    this.api.getShortages({ page, per_page: 10 }).subscribe({
-      next: (res) => {
-        this.shortages.set(res?.data || []);
-        this.shortagesTotal.set(res?.meta?.total ?? res?.data?.length ?? 0);
-        this.loadingShortages.set(false);
-      },
-      error: () => {
-        this.loadingShortages.set(false);
-      },
-    });
-  }
-
   openRunMrpModal(): void {
     this.mrpForm.reset({
       horizon_start_date: new Date(),
@@ -625,7 +677,10 @@ export class ManufacturingComponent implements OnInit {
   }
 
   submitRunMrp(): void {
-    if (this.mrpForm.invalid) return;
+    if (this.mrpForm.invalid) {
+      this.mrpForm.markAllAsTouched();
+      return;
+    }
 
     this.isSubmittingMrp.set(true);
     const val = this.mrpForm.getRawValue();
@@ -646,9 +701,9 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_ELABORAZIONE_MRP_COMPLETATA'));
         this.isSubmittingMrp.set(false);
         this.isRunMrpModalVisible.set(false);
-        this.loadMrpRuns(1);
-        this.loadPlannedOrders(1);
-        this.loadShortages(1);
+        this.mrpGrid.reload();
+        this.plannedGrid.reload();
+        this.shortagesGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_L_ELABORAZIONE_MRP'));
@@ -666,8 +721,8 @@ export class ManufacturingComponent implements OnInit {
         this.api.convertPlannedOrder(order.id).subscribe({
           next: () => {
             this.message.success(this.translate.instant('MFG.MSG_ORDINE_PIANIFICATO_CONVERTITO_CON_SUCCESSO'));
-            this.loadPlannedOrders(this.plannedPage());
-            this.loadOrders(1);
+            this.plannedGrid.reload();
+            this.ordersGrid.reload();
           },
           error: () => this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CONVERSIONE')),
         });
@@ -676,28 +731,6 @@ export class ManufacturingComponent implements OnInit {
   }
 
   // --- Work Centers & Routings Logic ---
-
-  loadWorkCenters(): void {
-    this.loadingWorkCenters.set(true);
-    this.api.getWorkCenters().subscribe({
-      next: (res) => {
-        this.workCenters.set(res?.data || []);
-        this.loadingWorkCenters.set(false);
-      },
-      error: () => this.loadingWorkCenters.set(false),
-    });
-  }
-
-  loadRoutings(): void {
-    this.loadingRoutings.set(true);
-    this.api.getRoutings().subscribe({
-      next: (res) => {
-        this.routings.set(res?.data || []);
-        this.loadingRoutings.set(false);
-      },
-      error: () => this.loadingRoutings.set(false),
-    });
-  }
 
   openCreateWorkCenterModal(): void {
     this.workCenterForm.reset({
@@ -723,8 +756,8 @@ export class ManufacturingComponent implements OnInit {
       work_center_code: val.work_center_code,
       name: val.name,
       department_code: val.department_code || null,
-      capacity_hours_per_day: Number(val.capacity_hours_per_day),
-      hourly_cost_rate: Number(val.hourly_cost_rate),
+      capacity_hours_per_day: val.capacity_hours_per_day === null ? undefined : Number(val.capacity_hours_per_day),
+      hourly_cost_rate: val.hourly_cost_rate === null ? undefined : Number(val.hourly_cost_rate),
       description: val.description || null,
       status: 'active',
     };
@@ -734,7 +767,7 @@ export class ManufacturingComponent implements OnInit {
         this.message.success(this.translate.instant('MFG.MSG_CENTRO_DI_LAVORO_CREATO'));
         this.isSubmittingWorkCenter.set(false);
         this.isCreateWorkCenterModalVisible.set(false);
-        this.loadWorkCenters();
+        this.workCentersGrid.reload();
       },
       error: () => {
         this.message.error(this.translate.instant('MFG.MSG_ERRORE_DURANTE_LA_CREAZIONE_DEL_CENTRO'));

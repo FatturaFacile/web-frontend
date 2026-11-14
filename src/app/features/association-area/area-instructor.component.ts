@@ -8,7 +8,7 @@ import {
   AssociationAttendanceEntry,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -18,16 +18,21 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 /** Courses of an instructor: participants and the attendance sheet of a day. */
 @Component({
   selector: 'app-area-instructor',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzEmptyModule, NzRadioModule, NzTableModule, TranslatePipe],
+  styleUrl: './area-instructor.component.scss',
+  imports: [
+    IconActionDirective,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    DatePipe, FormsModule, NzButtonModule, NzEmptyModule, NzRadioModule, NzTableModule, TranslatePipe],
   template: `
     @if (courses().length === 0) {
       <nz-empty [nzNotFoundContent]="'ASSOC_AREA.NO_COURSES' | translate" />
     } @else {
-      <nz-table nzSize="small" [nzData]="courses()" [nzShowPagination]="false">
+      <nz-table nzSize="small" [nzData]="courses()" [nzShowPagination]="false" #gridTbl2>
         <thead>
           <tr>
-            <th>{{ 'ASSOC_AREA.COURSE' | translate }}</th>
-            <th>{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: gridTbl2.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'ASSOC_AREA.COURSE' | translate }}</th>
+            <th [nzSortFn]="'starts_on' | gridSort" [nzFilters]="'starts_on' | gridFilterList: gridTbl2.nzData" [nzFilterFn]="'starts_on' | gridFilterFn">{{ 'ASSOC_AREA.STARTS_ON' | translate }}</th>
             <th>{{ 'ASSOC_AREA.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -63,29 +68,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
             </nz-radio-group>
           </div>
         }
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="day() === ''" (click)="save(course.id)">
-          {{ 'ASSOC_AREA.SAVE_ATTENDANCE' | translate }}
-        </button>
+        <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="day() === ''" (click)="save(course.id)"></button>
       </section>
-    }
-  `,
-  styles: `
-    .area-sheet {
-      margin-top: 24px;
-    }
-
-    .area-date {
-      display: block;
-      margin-bottom: 12px;
-    }
-
-    .area-row {
-      align-items: center;
-      display: flex;
-      gap: 16px;
-      justify-content: space-between;
-      max-width: 520px;
-      padding: 6px 0;
     }
   `,
 })

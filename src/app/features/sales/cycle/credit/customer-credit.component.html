@@ -50,9 +50,7 @@
       <div class="toolbar">
         <label for="credit-limit">{{ 'SC.CREDIT.NEW_LIMIT' | translate }}</label>
         <input nz-input id="credit-limit" class="search" inputmode="decimal" [(ngModel)]="newLimit" />
-        <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!limitValid()" (click)="saveLimit()">
-          <nz-icon nzType="save" /> {{ 'SC.CREDIT.SAVE_LIMIT' | translate }}
-        </button>
+        <button nz-button appIconAction="save" nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!limitValid()" (click)="saveLimit()"></button>
       </div>
       <p class="note">{{ 'SC.CREDIT.RELEASE_HINT_LIST' | translate }}</p>
     } @else {
@@ -65,13 +63,13 @@
 
 @if (heldOrders().length) {
   <nz-card class="section" [nzTitle]="'SC.CREDIT.HELD_ORDERS' | translate">
-    <nz-table [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+    <nz-table [nzScroll]="{ x: '720px' }" [nzData]="heldOrders()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl43>
       <thead>
         <tr>
-          <th>{{ 'SC.COMMON.NUMBER' | translate }}</th>
-          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
-          <th class="num">{{ 'SC.COMMON.TOTAL' | translate }}</th>
-          <th>{{ 'SC.CREDIT.HOLD_REASON' | translate }}</th>
+          <th [nzSortFn]="'order_number' | gridSort" [nzFilters]="'order_number' | gridFilterList: gridTbl43.nzData" [nzFilterFn]="'order_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+          <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl43.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th class="num" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: gridTbl43.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+          <th [nzSortFn]="'credit_hold_reason' | gridSort" [nzFilters]="'credit_hold_reason' | gridFilterList: gridTbl43.nzData" [nzFilterFn]="'credit_hold_reason' | gridFilterFn">{{ 'SC.CREDIT.HOLD_REASON' | translate }}</th>
           <th>{{ 'SC.COMMON.ACTIONS' | translate }}</th>
         </tr>
       </thead>
@@ -122,15 +120,15 @@
 
 @if (statement().length) {
   <nz-card class="section" [nzTitle]="'SC.CREDIT.STATEMENT' | translate">
-    <nz-table [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+    <nz-table [nzScroll]="{ x: '720px' }" [nzData]="statement()" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl44>
       <thead>
         <tr>
-          <th>{{ 'SC.COMMON.DATE' | translate }}</th>
-          <th>{{ 'SC.CREDIT.TYPE' | translate }}</th>
-          <th>{{ 'SC.CREDIT.REFERENCE' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.DEBIT' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.CREDIT' | translate }}</th>
-          <th class="num">{{ 'SC.CREDIT.BALANCE' | translate }}</th>
+          <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
+          <th [nzSortFn]="'type' | gridSort" [nzFilters]="'type' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'type' | gridFilterFn">{{ 'SC.CREDIT.TYPE' | translate }}</th>
+          <th [nzSortFn]="'reference' | gridSort" [nzFilters]="'reference' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'reference' | gridFilterFn">{{ 'SC.CREDIT.REFERENCE' | translate }}</th>
+          <th class="num" [nzSortFn]="'debit' | gridSort" [nzFilters]="'debit' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'debit' | gridFilterFn">{{ 'SC.CREDIT.DEBIT' | translate }}</th>
+          <th class="num" [nzSortFn]="'credit' | gridSort" [nzFilters]="'credit' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'credit' | gridFilterFn">{{ 'SC.CREDIT.CREDIT' | translate }}</th>
+          <th class="num" [nzSortFn]="'balance' | gridSort" [nzFilters]="'balance' | gridFilterList: gridTbl44.nzData" [nzFilterFn]="'balance' | gridFilterFn">{{ 'SC.CREDIT.BALANCE' | translate }}</th>
         </tr>
       </thead>
       <tbody>

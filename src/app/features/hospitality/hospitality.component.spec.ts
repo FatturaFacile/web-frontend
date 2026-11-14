@@ -11,6 +11,7 @@ import {
   HospitalityReservation,
   HospitalityRoom,
   HospitalityTable,
+  RetailApiService,
   TranslateService,
 } from '@core';
 import { HospitalityComponent } from './hospitality.component';
@@ -19,32 +20,29 @@ describe('HospitalityComponent', () => {
   let component: HospitalityComponent;
   let fixture: ComponentFixture<HospitalityComponent>;
 
-  const mockRooms: HospitalityRoom[] = [
+  const mockRooms = [
     {
       id: 'r-1',
-      tenant_id: 't-1',
       name: 'Sala Principale',
       sort_order: 1,
       created_at: '2026-11-01',
       updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityRoom[];
 
-  const mockTables: HospitalityTable[] = [
+  const mockTables = [
     {
       id: 'tbl-1',
       room_id: 'r-1',
       name: 'Tavolo 1',
       seats: 4,
-      shape: 'rect',
+      shape: 'rectangle',
       is_active: true,
       status: 'free',
-      created_at: '2026-11-01',
-      updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityTable[];
 
-  const mockOrders: HospitalityOrder[] = [
+  const mockOrders = [
     {
       id: 'ord-1',
       table_id: 'tbl-1',
@@ -55,21 +53,19 @@ describe('HospitalityComponent', () => {
         {
           id: 'item-1',
           order_id: 'ord-1',
-          name: 'Pasta Carbonara',
+          description: 'Pasta Carbonara',
           quantity: 2,
           unit_price: '12.00',
-          total_price: '24.00',
           status: 'pending',
           course: 1,
-          created_at: '2026-11-01',
         },
       ],
       created_at: '2026-11-01',
       updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityOrder[];
 
-  const mockTickets: HospitalityKitchenTicket[] = [
+  const mockTickets = [
     {
       id: 'tick-1',
       order_id: 'ord-1',
@@ -85,9 +81,9 @@ describe('HospitalityComponent', () => {
       ],
       created_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityKitchenTicket[];
 
-  const mockReservations: HospitalityReservation[] = [
+  const mockReservations = [
     {
       id: 'res-1',
       guest_name: 'Mario Rossi',
@@ -95,11 +91,10 @@ describe('HospitalityComponent', () => {
       party_size: 4,
       starts_at: '2026-11-10T20:00:00Z',
       duration_minutes: 120,
-      status: 'confirmed',
+      status: 'booked',
       created_at: '2026-11-01',
-      updated_at: '2026-11-01',
     },
-  ];
+  ] as unknown as HospitalityReservation[];
 
   const apiSpy = {
     getRooms: vi.fn().mockReturnValue(of({ data: mockRooms })),
@@ -117,10 +112,14 @@ describe('HospitalityComponent', () => {
     moveOrderTable: vi.fn().mockReturnValue(of({ data: mockOrders[0] })),
     getKitchenTickets: vi.fn().mockReturnValue(of({ data: mockTickets })),
     updateKitchenTicketStatus: vi.fn().mockReturnValue(of({ data: { ...mockTickets[0], status: 'preparing' } })),
-    getReservations: vi.fn().mockReturnValue(of({ data: mockReservations })),
+    getReservations: vi.fn().mockReturnValue(of({ data: mockReservations, meta: { current_page: 1, from: 1, to: 1, last_page: 1, per_page: 10, total: 1 } })),
     createReservation: vi.fn().mockReturnValue(of({ data: mockReservations[0] })),
     seatReservation: vi.fn().mockReturnValue(of({ data: { ...mockReservations[0], status: 'seated' } })),
     updateReservationStatus: vi.fn().mockReturnValue(of({ data: { ...mockReservations[0], status: 'cancelled' } })),
+  };
+
+  const retailSpy = {
+    getPosSessions: vi.fn().mockReturnValue(of({ data: { data: [{ id: '7b3c1f4e-3333-4222-8333-944455556666', status: 'open', opened_at: '2026-11-12T08:00:00Z' }] } })),
   };
 
   const messageSpy = {
@@ -145,12 +144,14 @@ describe('HospitalityComponent', () => {
         { provide: HospitalityApiService, useValue: apiSpy },
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
+        { provide: RetailApiService, useValue: retailSpy },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HospitalityComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should initialize and load rooms, tables, orders, kitchen tickets, and reservations', () => {
@@ -159,7 +160,7 @@ describe('HospitalityComponent', () => {
     expect(apiSpy.getRoomTables).toHaveBeenCalledWith('r-1');
     expect(apiSpy.getOpenOrders).toHaveBeenCalled();
     expect(apiSpy.getKitchenTickets).toHaveBeenCalled();
-    expect(apiSpy.getReservations).toHaveBeenCalled();
+    expect(apiSpy.getReservations).toHaveBeenCalledWith(expect.objectContaining({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), page: 1 }));
 
     expect(component.rooms()).toEqual(mockRooms);
     expect(component.tables()).toEqual(mockTables);
@@ -186,6 +187,27 @@ describe('HospitalityComponent', () => {
     });
     expect(component.roomModalVisible()).toBe(false);
     expect(messageSpy.success).toHaveBeenCalled();
+  });
+
+  it('should not call the API when the forms are submitted empty or out of range', () => {
+    apiSpy.createRoom.mockClear();
+    apiSpy.createTable.mockClear();
+    apiSpy.createReservation.mockClear();
+    component.openCreateRoomModal();
+    component.roomForm.patchValue({ name: '' });
+    component.saveRoom();
+    component.openCreateTableModal();
+    component.tableForm.patchValue({ room_id: 'r-1', name: 'T'.repeat(31) });
+    component.saveTable();
+    component.openCreateReservationModal();
+    component.reservationForm.patchValue({ guest_name: '', duration_minutes: 5 });
+    component.saveReservation();
+
+    expect(apiSpy.createRoom).not.toHaveBeenCalled();
+    expect(apiSpy.createTable).not.toHaveBeenCalled();
+    expect(apiSpy.createReservation).not.toHaveBeenCalled();
+    expect(component.errorKey(component.roomForm.controls.name)).toBe('COMMON.FIELD_REQUIRED');
+    expect(component.errorKey(component.tableForm.controls.name)).toBe('COMMON.VALIDATION.INVALID_VALUE');
   });
 
   it('should create a new table', () => {
@@ -237,9 +259,10 @@ describe('HospitalityComponent', () => {
     expect(component.addItemModalVisible()).toBe(true);
 
     component.addItemForm.patchValue({
-      name: 'Tiramisù',
+      description: 'Tiramisù',
       quantity: 2,
       unit_price: '6.50',
+      tax_rate: 10,
       course: 2,
       notes: 'Senza cacao amaro',
     });
@@ -248,9 +271,10 @@ describe('HospitalityComponent', () => {
     expect(apiSpy.addOrderItems).toHaveBeenCalledWith('ord-1', {
       items: [
         {
-          name: 'Tiramisù',
+          description: 'Tiramisù',
           quantity: 2,
           unit_price: '6.50',
+          tax_rate: 10,
           course: 2,
           notes: 'Senza cacao amaro',
         },
@@ -280,14 +304,20 @@ describe('HospitalityComponent', () => {
     component.openPayModal(mockOrders[0]);
     expect(component.payModalVisible()).toBe(true);
 
-    component.payForm.patchValue({
-      payment_method: 'card',
-      cash_amount: 45,
-    });
+    // the only open POS session is preselected
+    expect(component.payForm.controls.pos_session_id.value).toBe('7b3c1f4e-3333-4222-8333-944455556666');
 
+    component.payForm.patchValue({ payment_method: 'mixed', cash_amount: 0 });
+    component.savePayment();
+    expect(apiSpy.payOrder).not.toHaveBeenCalled();
+
+    component.payForm.patchValue({ payment_method: 'mixed', cash_amount: 45 });
     component.savePayment();
     expect(apiSpy.payOrder).toHaveBeenCalledWith('ord-1', {
-      payment_method: 'card',
+      pos_session_id: '7b3c1f4e-3333-4222-8333-944455556666',
+      mode: 'equal',
+      ways: 1,
+      payment_method: 'mixed',
       cash_amount: 45,
     });
     expect(component.payModalVisible()).toBe(false);
@@ -342,7 +372,7 @@ describe('HospitalityComponent', () => {
     expect(apiSpy.seatReservation).toHaveBeenCalledWith('res-1', {});
 
     component.cancelReservation(mockReservations[0]);
-    expect(apiSpy.updateReservationStatus).toHaveBeenCalledWith('res-1', { status: 'cancelled' });
+    expect(apiSpy.updateReservationStatus).toHaveBeenCalledWith('res-1', { status: 'cancelled', reason: 'HOSPITALITY.RESERVATION_CANCEL_REASON' });
   });
 
   it('should return correct color badges for statuses', () => {

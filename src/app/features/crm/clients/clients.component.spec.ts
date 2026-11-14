@@ -3,7 +3,6 @@ import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
 import { ClientApiService, ContactResource, I18nService, TranslateService } from '@core';
@@ -14,19 +13,14 @@ describe('ClientsComponent', () => {
   let fixture: ComponentFixture<ClientsComponent>;
   let component: ClientsComponent;
 
-  const mockContacts: ContactResource[] = [
+  const mockContacts = [
     {
       id: 'c-1',
-      tenant_id: 't-1',
       type: 'client',
       company_name: 'Alpha SA',
       country: 'CH',
-      currency: 'CHF',
-      is_active: true,
-      created_at: '2026-11-08',
-      updated_at: '2026-11-08',
     },
-  ];
+  ] as unknown as ContactResource[];
 
   const mockClientApi = {
     list: vi.fn().mockReturnValue(
@@ -54,10 +48,6 @@ describe('ClientsComponent', () => {
     info: vi.fn(),
   };
 
-  const mockModal = {
-    confirm: vi.fn(),
-  };
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ClientsComponent],
@@ -68,7 +58,6 @@ describe('ClientsComponent', () => {
         { provide: TranslateService, useValue: mockTranslate },
         { provide: I18nService, useValue: mockTranslate },
         { provide: NzMessageService, useValue: mockMessage },
-        { provide: NzModalService, useValue: mockModal },
       ],
     }).compileComponents();
 

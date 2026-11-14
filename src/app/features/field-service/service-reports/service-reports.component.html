@@ -39,90 +39,53 @@
     }
   </div>
 
-  <nz-table
-    #table
-    nzSize="middle"
-    nzShowSizeChanger
-    [nzData]="reports()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzScroll]="{ x: 'max-content' }"
-    (nzQueryParams)="onQueryParams($event)"
-  >
-    <thead>
-      <tr>
-        <th nzWidth="48px"></th>
-        <th>{{ 'SERVICE_REPORTS.NUMBER' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.DATE' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.CUSTOMER' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.TECHNICIAN' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.HOURS' | translate }}</th>
-        <th>{{ 'SERVICE_REPORTS.TOTAL' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
-        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (report of table.data; track report.id) {
-        <tr>
-          <td>
-            @if (canWrite() && report.is_signed && !report.is_invoiced) {
-              <input
-                type="checkbox"
-                [checked]="selectedIds().has(report.id)"
-                (change)="toggle(report.id, $any($event.target).checked)"
-                [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
-              />
-            }
-          </td>
-          <td>
-            <strong>{{ report.report_number }}</strong>
-          </td>
-          <td>{{ report.report_date }}</td>
-          <td>{{ report.contact?.name }}</td>
-          <td>{{ report.technician?.name }}</td>
-          <td>{{ report.total_hours }}</td>
-          <td>{{ report.total_gross | money }}</td>
-          <td>
-            @if (report.status?.label) {
-              <nz-tag>{{ report.status?.label }}</nz-tag>
-            }
-            @if (report.is_signed) {
-              <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
-            }
-            @if (report.is_invoiced) {
-              <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
-            }
-          </td>
-          <td>
-            <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
-              {{ 'SERVICE_REPORTS.PDF' | translate }}
-            </button>
-            @if (canWrite()) {
-              @if (!report.is_signed) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
-                  {{ 'SERVICE_REPORTS.SIGN' | translate }}
-                </button>
-              }
-              @if (!report.is_invoiced) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
-                  {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
-                </button>
-              }
-              @if (report.is_signed && !report.is_invoiced) {
-                <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
-                  {{ 'SERVICE_REPORTS.INVOICE' | translate }}
-                </button>
-              }
-            }
-          </td>
-        </tr>
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
+
+  <ng-template #selectTpl let-report>
+    @if (canWrite() && report.is_signed && !report.is_invoiced) {
+      <input
+        type="checkbox"
+        [checked]="selectedIds().has(report.id)"
+        (change)="toggle(report.id, $any($event.target).checked)"
+        [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
+      />
+    }
+  </ng-template>
+  <ng-template #numberTpl let-report><strong>{{ report.report_number }}</strong></ng-template>
+  <ng-template #totalTpl let-report>{{ report.total_gross | money }}</ng-template>
+  <ng-template #statusTpl let-report>
+    @if (report.status?.label) {
+      <nz-tag>{{ report.status?.label }}</nz-tag>
+    }
+    @if (report.is_signed) {
+      <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
+    }
+    @if (report.is_invoiced) {
+      <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-report>
+    <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
+      {{ 'SERVICE_REPORTS.PDF' | translate }}
+    </button>
+    @if (canWrite()) {
+      @if (!report.is_signed) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
+          {{ 'SERVICE_REPORTS.SIGN' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (!report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
+          {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
+        </button>
+      }
+      @if (report.is_signed && !report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
+          {{ 'SERVICE_REPORTS.INVOICE' | translate }}
+        </button>
+      }
+    }
+  </ng-template>
 </nz-card>
 
 <app-signature-dialog
@@ -152,7 +115,7 @@
     <input id="sr-caption" nz-input maxlength="255" [ngModel]="photoCaption()" (ngModelChange)="photoCaption.set($event)" />
   </ng-container>
   <ng-template #photoFooter>
-    <button nz-button type="button" (click)="photoTarget.set(null)">{{ 'COMMON.CANCEL' | translate }}</button>
+    <button nz-button type="button" appIconAction="cancel" (click)="photoTarget.set(null)"></button>
     <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!photoFile()" (click)="uploadPhoto()">
       {{ 'SERVICE_REPORTS.UPLOAD' | translate }}
     </button>

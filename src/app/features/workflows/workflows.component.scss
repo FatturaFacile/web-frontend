@@ -28,7 +28,7 @@
 
 .text-muted {
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-muted);
 }
 
 .monospace-id {
@@ -38,7 +38,7 @@
 
 .hash-code {
   font-family: monospace;
-  background-color: #f5f5f5;
+  background-color: var(--bg-card-secondary);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
@@ -51,8 +51,8 @@
 }
 
 .section-box {
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 16px;
 }
@@ -71,18 +71,18 @@
 .audit-verification-banner {
   padding: 10px 14px;
   border-radius: 6px;
-  background-color: #fff1f0;
-  border: 1px solid #ffa39e;
-  color: #cf1322;
+  background-color: var(--status-danger-bg);
+  border: 1px solid var(--status-danger);
+  color: var(--status-danger);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   &.valid {
-    background-color: #f6ffed;
-    border-color: #b7eb8f;
-    color: #389e0d;
+    background-color: var(--status-success-bg);
+    border-color: var(--status-success);
+    color: var(--status-success);
   }
 }
 

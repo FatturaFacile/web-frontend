@@ -9,6 +9,7 @@ import { ActionFormComponent, ActionFormConfig } from '../shared/action-form/act
 /** Cost and payroll forecast of a month from the active employees. It publishes the forecast and, if positive, an accrual event. */
 @Component({
   selector: 'app-payroll-forecast',
+  styleUrl: './payroll-forecast.component.scss',
   imports: [ActionFormComponent, MoneyPipe, NzAlertModule, NzDescriptionsModule, TranslatePipe],
   template: `
     <nz-alert

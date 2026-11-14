@@ -16,6 +16,7 @@ import {
   PracticeRetainer,
   PracticeRetainerBalance,
   ProfessionalsApiService,
+  TimeLog,
   TranslateService,
 } from '@core';
 import { ProfessionalsComponent } from './professionals.component';
@@ -24,20 +25,42 @@ describe('ProfessionalsComponent', () => {
   let component: ProfessionalsComponent;
   let fixture: ComponentFixture<ProfessionalsComponent>;
 
+  const mockClient = { id: 'cli-1', company_name: 'Acme Corp' };
+
+  const paged = <T>(data: T[]) => ({ data, meta: { current_page: 1, last_page: 1, per_page: 15, total: data.length } });
+
+  /** Lets the debounced grid models run their first request. */
+  const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 20));
+
   const mockCases: LegalCase[] = [
     {
       id: 'case-1',
-      num: 'PR-2026/001',
-      client: 'Acme Corp',
-      subject: 'Contenzioso tributario',
-      hours: '15',
-      fee: '3500.00',
-      amlCompliant: true,
-      status: 'active',
+      case_number: 'PR-2026/001',
+      client_id: 'cli-1',
+      client: mockClient,
+      title: 'Contenzioso tributario',
+      logged_minutes: 900,
+      fee_total: '3500.00',
+      aml_kyc_completed: true,
+      status: 'open',
     },
   ];
 
-  const mockActivities: PracticeActivityItem[] = [
+  const mockActivities: TimeLog[] = [
+    {
+      id: 'act-1',
+      legal_case_id: 'case-1',
+      legal_case: { id: 'case-1', case_number: 'PR-2026/001', title: 'Contenzioso tributario', client: mockClient },
+      date: '2026-11-01',
+      description: 'Redazione ricorso',
+      duration_minutes: 180,
+      hourly_rate: '150.00',
+      fee_amount: '450.00',
+      is_billed: false,
+    },
+  ];
+
+  const mockDrawerActivities: PracticeActivityItem[] = [
     {
       id: 'act-1',
       client_id: 'cli-1',
@@ -52,10 +75,21 @@ describe('ProfessionalsComponent', () => {
   ];
 
   const mockActivityControl: PracticeActivityControlResponse = {
-    activities: mockActivities,
-    total_hours: 3,
-    total_amount: '450.00',
-    unbilled_count: 1,
+    from: '2026-11-01',
+    to: '2026-11-30',
+    rows: [
+      {
+        user_id: 'usr-1',
+        user_name: 'Partner',
+        legal_case_id: 'case-1',
+        case_number: 'PR-2026/001',
+        client_id: 'cli-1',
+        billed_minutes: 0,
+        billed_amount: '0.00',
+        unbilled_minutes: 180,
+        unbilled_amount: '450.00',
+      },
+    ],
   };
 
   const mockFeeNotes: FeeNote[] = [
@@ -63,13 +97,14 @@ describe('ProfessionalsComponent', () => {
       id: 'fn-1',
       legal_case_id: 'case-1',
       client_id: 'cli-1',
-      fee_note_number: '2026/01',
+      client: mockClient,
+      note_number: '2026/01',
       date: '2026-11-02',
-      net_amount: 450,
-      social_contribution_rate: 4,
-      withholding_tax_rate: 20,
-      vat_rate: 22,
-      gross_amount: 512.4,
+      taxable_fees: '450.00',
+      cassa_previdenza_amount: '18.00',
+      ritenuta_acconto_amount: '90.00',
+      vat_amount: '102.96',
+      net_payable: '480.96',
     },
   ];
 
@@ -77,11 +112,11 @@ describe('ProfessionalsComponent', () => {
     {
       id: 'ret-1',
       client_id: 'cli-1',
-      client_name: 'Acme Corp',
+      client: mockClient,
       received_on: '2026-11-01',
       amount: '1000.00',
-      balance: '1000.00',
-      status: 'available',
+      applied_amount: '0.00',
+      status: 'open',
     },
   ];
 
@@ -124,21 +159,22 @@ describe('ProfessionalsComponent', () => {
   };
 
   const profApiSpy = {
-    getCases: vi.fn().mockReturnValue(of({ data: mockCases })),
-    getFeeNotes: vi.fn().mockReturnValue(of({ data: mockFeeNotes })),
+    getCases: vi.fn().mockReturnValue(of(paged(mockCases))),
+    getTimeLogs: vi.fn().mockReturnValue(of(paged(mockActivities))),
+    getFeeNotes: vi.fn().mockReturnValue(of(paged(mockFeeNotes))),
     logTime: vi.fn().mockReturnValue(of({ data: { id: 'tl-1' } })),
   };
 
   const practiceApiSpy = {
     getActivityControl: vi.fn().mockReturnValue(of({ data: mockActivityControl })),
     createFeeNoteFromActivities: vi.fn().mockReturnValue(of({ data: { id: 'fn-new', status: 'draft' } })),
-    getFeeNoteActivities: vi.fn().mockReturnValue(of({ data: mockActivities })),
+    getFeeNoteActivities: vi.fn().mockReturnValue(of({ data: mockDrawerActivities })),
     getFeeNoteRetainers: vi.fn().mockReturnValue(of({ data: [mockAppliedRetainer] })),
-    getRetainers: vi.fn().mockReturnValue(of({ data: mockRetainers })),
+    getRetainers: vi.fn().mockReturnValue(of(paged(mockRetainers))),
     getRetainerBalances: vi.fn().mockReturnValue(of({ data: mockRetainerBalances })),
     createRetainer: vi.fn().mockReturnValue(of({ data: mockRetainers[0] })),
     applyRetainer: vi.fn().mockReturnValue(of({ data: mockAppliedRetainer })),
-    voidRetainer: vi.fn().mockReturnValue(of({ data: { id: 'ret-1', status: 'voided' } })),
+    voidRetainer: vi.fn().mockReturnValue(of({ data: { id: 'ret-1', status: 'void' } })),
     getClosingOverview: vi.fn().mockReturnValue(of({ data: mockClosingsOverview })),
     openClosing: vi.fn().mockReturnValue(of({ data: mockClosing })),
     updateClosingChecklist: vi.fn().mockReturnValue(of({ data: mockClosing })),
@@ -177,25 +213,57 @@ describe('ProfessionalsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should initialize and load cases, activities, fee notes, retainers, and closings', () => {
+  it('should initialize and load cases, activities, fee notes, retainers, and closings', async () => {
+    await settle();
     expect(component).toBeTruthy();
     expect(profApiSpy.getCases).toHaveBeenCalled();
+    expect(profApiSpy.getTimeLogs).toHaveBeenCalled();
     expect(practiceApiSpy.getActivityControl).toHaveBeenCalled();
     expect(profApiSpy.getFeeNotes).toHaveBeenCalled();
     expect(practiceApiSpy.getRetainers).toHaveBeenCalled();
     expect(practiceApiSpy.getRetainerBalances).toHaveBeenCalled();
     expect(practiceApiSpy.getClosingOverview).toHaveBeenCalled();
 
-    expect(component.cases()).toEqual(mockCases);
-    expect(component.activities()).toEqual(mockActivities);
-    expect(component.feeNotes()).toEqual(mockFeeNotes);
-    expect(component.retainers()).toEqual(mockRetainers);
+    expect(component.casesGrid.items()).toEqual(mockCases);
+    expect(component.activitiesGrid.items()).toEqual(mockActivities);
+    expect(component.feeNotesGrid.items()).toEqual(mockFeeNotes);
+    expect(component.retainersGrid.items()).toEqual(mockRetainers);
     expect(component.retainerBalances()).toEqual(mockRetainerBalances);
     expect(component.closings()).toEqual([mockClosing]);
 
     expect(component.totalUnbilledHours()).toBe(3);
     expect(component.totalUnbilledAmount()).toBe(450);
     expect(component.totalRetainerAvailable()).toBe(1000);
+  });
+
+  it('asks the server for the period and the billing status of the activities', async () => {
+    await settle();
+    const firstQuery = profApiSpy.getTimeLogs.mock.calls[0][0];
+    expect(firstQuery).toMatchObject({ is_billed: 'false', page: 1 });
+    expect(firstQuery.from).toBe(component.fromDate());
+    expect(firstQuery.to).toBe(component.toDate());
+
+    component.filterActivityStatus.set('billed');
+    component.applyActivityFilters();
+    await settle();
+    await new Promise<void>((resolve) => setTimeout(resolve, 350));
+    expect(profApiSpy.getTimeLogs.mock.calls.at(-1)?.[0]).toMatchObject({ is_billed: 'true' });
+  });
+
+  it('names the grid columns by keys the API knows', () => {
+    const serverKeys = (columns: { key: unknown; serverKey?: string }[]) => columns.map((c) => c.serverKey ?? String(c.key));
+    expect(serverKeys(component['caseColumns']())).toEqual([
+      'case_number',
+      'client.name',
+      'title',
+      'logged_minutes',
+      'fee_total',
+      'aml_kyc_completed',
+      'status',
+    ]);
+    expect(serverKeys(component['activityColumns']())).toContain('billing_status');
+    expect(serverKeys(component['feeNoteColumns']())).toContain('gross_amount');
+    expect(serverKeys(component['retainerColumns']())).toContain('balance');
   });
 
   it('should log professional time and refresh activities', () => {
@@ -222,8 +290,9 @@ describe('ProfessionalsComponent', () => {
     expect(messageSpy.success).toHaveBeenCalled();
   });
 
-  it('should select activities and generate fee note', () => {
-    component.toggleActivitySelection('act-1', true);
+  it('should select activities and generate fee note', async () => {
+    await settle();
+    component.selectedActivities.set(mockActivities);
     expect(component.selectedActivityIds()).toContain('act-1');
 
     component.openCreateFeeNoteModal();
@@ -283,6 +352,19 @@ describe('ProfessionalsComponent', () => {
     expect(messageSpy.success).toHaveBeenCalled();
   });
 
+  it('should not call the API when the forms are submitted empty or with an invalid amount', () => {
+    component.openCreateRetainerModal();
+    component.retainerForm.patchValue({ client_id: '' });
+    component.saveRetainer();
+    expect(practiceApiSpy.createRetainer).not.toHaveBeenCalled();
+    expect(component.retainerForm.controls.client_id.touched).toBe(true);
+
+    component.retainerForm.patchValue({ client_id: 'cli-2', amount: '0' });
+    component.saveRetainer();
+    expect(practiceApiSpy.createRetainer).not.toHaveBeenCalled();
+    expect(component.retainerForm.controls.amount.hasError('positive')).toBe(true);
+  });
+
   it('should create retainer and void retainer', () => {
     component.openCreateRetainerModal();
     expect(component.retainerModalVisible()).toBe(true);
@@ -310,6 +392,21 @@ describe('ProfessionalsComponent', () => {
     component.voidRetainer('ret-1');
     expect(practiceApiSpy.voidRetainer).toHaveBeenCalledWith('ret-1');
     expect(messageSpy.success).toHaveBeenCalled();
+  });
+
+  it('does not open a closing whose period ends before it starts (period_end after_or_equal:period_start)', () => {
+    practiceApiSpy.openClosing.mockClear();
+    component.openCreateClosingModal();
+    component.closingForm.patchValue({ client_id: 'cli-1', period_start: '2026-06-01', period_end: '2026-05-01' });
+    component.saveClosing();
+    expect(practiceApiSpy.openClosing).not.toHaveBeenCalled();
+    expect(component.closingForm.controls.period_end.hasError('endsBeforeStart')).toBe(true);
+
+    component.closingForm.patchValue({ period_start: '2026-04-01' });
+    expect(component.closingForm.controls.period_end.hasError('endsBeforeStart')).toBe(false);
+    component.saveClosing();
+    const sent = practiceApiSpy.openClosing.mock.calls[0][0];
+    expect(Object.keys(sent).sort()).toEqual(['checklist', 'client_id', 'notes', 'period_end', 'period_start']);
   });
 
   it('should open closing, toggle checklist, close period and reopen period', () => {
@@ -344,7 +441,7 @@ describe('ProfessionalsComponent', () => {
     expect(component.getChecklistCompletion(mockClosing)).toBe(50);
     expect(component.getActivityStatusColor('unbilled')).toBe('warning');
     expect(component.getActivityStatusColor('billed')).toBe('success');
-    expect(component.getRetainerStatusColor('available')).toBe('success');
-    expect(component.getRetainerStatusColor('voided')).toBe('error');
+    expect(component.getRetainerStatusColor('open')).toBe('success');
+    expect(component.getRetainerStatusColor('void')).toBe('error');
   });
 });

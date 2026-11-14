@@ -25,7 +25,7 @@
       <nz-card>
         <form nz-form nzLayout="inline" [formGroup]="viewForm" (ngSubmit)="loadChildView()">
           <nz-form-item>
-            <nz-form-label nzFor="family-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-child">{{ 'FAMILY_PORTAL.CHILD' | translate }}</nz-form-label>
             <nz-form-control>
               <nz-select id="family-child" formControlName="child_id" class="family-select">
                 @for (child of children(); track child.id) {
@@ -35,13 +35,13 @@
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzFor="family-month">{{ 'FAMILY_PORTAL.MONTH' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-month">{{ 'FAMILY_PORTAL.MONTH' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="family-month" type="month" formControlName="month" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
-            <nz-form-label nzFor="family-date">{{ 'FAMILY_PORTAL.DATE' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="family-date">{{ 'FAMILY_PORTAL.DATE' | translate }}</nz-form-label>
             <nz-form-control>
               <input nz-input id="family-date" type="date" formControlName="date" />
             </nz-form-control>
@@ -54,11 +54,11 @@
         <nz-table #attTable [nzData]="attendance()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
-              <th>{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: attTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: attTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
               <th>{{ 'FAMILY_PORTAL.ABSENCE_REASON' | translate }}</th>
-              <th>{{ 'FAMILY_PORTAL.CHECK_IN' | translate }}</th>
-              <th>{{ 'FAMILY_PORTAL.CHECK_OUT' | translate }}</th>
+              <th [nzSortFn]="'check_in_at' | gridSort" [nzFilters]="'check_in_at' | gridFilterList: attTable.nzData" [nzFilterFn]="'check_in_at' | gridFilterFn">{{ 'FAMILY_PORTAL.CHECK_IN' | translate }}</th>
+              <th [nzSortFn]="'check_out_at' | gridSort" [nzFilters]="'check_out_at' | gridFilterList: attTable.nzData" [nzFilterFn]="'check_out_at' | gridFilterFn">{{ 'FAMILY_PORTAL.CHECK_OUT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -97,10 +97,10 @@
       <nz-table #invTable [nzData]="invoices()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'FAMILY_PORTAL.INVOICE_NUMBER' | translate }}</th>
-            <th>{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
-            <th>{{ 'FAMILY_PORTAL.TOTAL' | translate }}</th>
-            <th>{{ 'FAMILY_PORTAL.PAYMENT_STATUS' | translate }}</th>
+            <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: invTable.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'FAMILY_PORTAL.INVOICE_NUMBER' | translate }}</th>
+            <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: invTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'FAMILY_PORTAL.DATE' | translate }}</th>
+            <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: invTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'FAMILY_PORTAL.TOTAL' | translate }}</th>
+            <th [nzSortFn]="'payment_status' | gridSort" [nzFilters]="'payment_status' | gridFilterList: invTable.nzData" [nzFilterFn]="'payment_status' | gridFilterFn">{{ 'FAMILY_PORTAL.PAYMENT_STATUS' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -120,10 +120,10 @@
       <nz-table #docTable [nzData]="documents()" [nzFrontPagination]="false" [nzShowPagination]="false">
         <thead>
           <tr>
-            <th>{{ 'FAMILY_PORTAL.DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'FAMILY_PORTAL.DOCUMENT' | translate }}</th>
             <th>{{ 'FAMILY_PORTAL.CHILD' | translate }}</th>
-            <th>{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
-            <th>{{ 'FAMILY_PORTAL.SIGNED_AT' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'FAMILY_PORTAL.STATUS' | translate }}</th>
+            <th [nzSortFn]="'signed_at' | gridSort" [nzFilters]="'signed_at' | gridFilterList: docTable.nzData" [nzFilterFn]="'signed_at' | gridFilterFn">{{ 'FAMILY_PORTAL.SIGNED_AT' | translate }}</th>
             <th>{{ 'FAMILY_PORTAL.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -195,10 +195,9 @@
 <nz-modal
   [nzVisible]="signingDocument() !== null"
   [nzTitle]="'FAMILY_PORTAL.SIGN_TITLE' | translate"
-  [nzOkText]="'FAMILY_PORTAL.SIGN' | translate"
-  [nzCancelText]="'FAMILY_PORTAL.CANCEL' | translate"
   (nzOnOk)="submitSign()"
   (nzOnCancel)="signingDocument.set(null)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     @if (signingDocument(); as document) {

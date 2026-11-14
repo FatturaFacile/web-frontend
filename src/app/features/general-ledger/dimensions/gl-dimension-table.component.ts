@@ -1,64 +1,46 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { applyServerErrors, Dimension, GeneralLedgerApiService, PermissionsService } from '@core';
-import { TranslatePipe } from '@shared';
+import { applyServerErrors, Dimension, FetchGridModel, GeneralLedgerApiService, I18nService, PermissionsService } from '@core';
+import { BaseTableComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 /** List with create/edit modal of cost centres or profit centres. */
 @Component({
   selector: 'app-gl-dimension-table',
+  styleUrl: './gl-dimension-table.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzButtonModule,
     NzFormModule,
     NzInputModule,
     NzModalModule,
     NzSwitchModule,
-    NzTableModule,
     NzTagModule,
     TranslatePipe,
   ],
   template: `
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal(null)">
-        {{ 'GL.DIMENSION_NEW' | translate }}
-      </button>
+      <button class="mb-4" nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
     }
-    <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-      <thead>
-        <tr>
-          <th>{{ 'GL.COL_CODE' | translate }}</th>
-          <th>{{ 'GL.COL_NAME' | translate }}</th>
-          <th>{{ 'GL.STATUS' | translate }}</th>
-          <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of table.data; track item.id) {
-          <tr>
-            <td>{{ item.code }}</td>
-            <td>{{ item.name }}</td>
-            <td>
-              <nz-tag [nzColor]="item.is_active ? 'green' : 'default'">{{
-                (item.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate
-              }}</nz-tag>
-            </td>
-            <td>
-              @if (canWrite) {
-                <button nz-button nzSize="small" type="button" (click)="openModal(item)">{{ 'GL.EDIT' | translate }}</button>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-dimensions'" />
+
+    <ng-template #statusTpl let-item>
+      <nz-tag [nzColor]="item.is_active ? 'green' : 'default'">{{ (item.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate }}</nz-tag>
+    </ng-template>
+    <ng-template #actionsTpl let-item>
+      @if (canWrite) {
+        <button nz-button nzSize="small" type="button" (click)="openModal(item)" appIconAction="edit"></button>
+      }
+    </ng-template>
 
     <nz-modal
       [nzVisible]="modalOpen()"
@@ -66,6 +48,7 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
       [nzOkLoading]="saving()"
       (nzOnOk)="save()"
       (nzOnCancel)="modalOpen.set(false)"
+      okAction="save"
     >
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="form">
@@ -92,16 +75,18 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
     </nz-modal>
   `,
 })
-export class GlDimensionTableComponent implements OnInit {
+export class GlDimensionTableComponent {
   readonly kind = input.required<'cost' | 'profit'>();
 
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly lookups = inject(GlLookupStore);
+  private readonly i18n = inject(I18nService);
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
-  protected readonly items = signal<Dimension[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<Dimension>((query) =>
+    this.kind() === 'cost' ? this.api.getCostCenters(query) : this.api.getProfitCenters(query),
+  );
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   private editingId: string | null = null;
@@ -112,9 +97,22 @@ export class GlDimensionTableComponent implements OnInit {
     is_active: this.fb.control(true),
   });
 
-  ngOnInit(): void {
-    this.load();
-  }
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: Dimension; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<Dimension>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'code', header: 'GL.COL_CODE' },
+      { key: 'name', header: 'GL.COL_NAME' },
+      {
+        key: 'is_active',
+        serverKey: 'activity_state',
+        header: 'GL.STATUS',
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'GL.ACTIVE' : 'GL.INACTIVE'),
+        customCellTemplate: this.statusTpl(),
+      },
+    ];
+  });
 
   protected openModal(item: Dimension | null): void {
     this.editingId = item?.id ?? null;
@@ -143,24 +141,12 @@ export class GlDimensionTableComponent implements OnInit {
         this.saving.set(false);
         this.modalOpen.set(false);
         this.lookups.load(true);
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
         applyServerErrors(this.form, err);
       },
-    });
-  }
-
-  private load(): void {
-    this.loading.set(true);
-    const call = this.kind() === 'cost' ? this.api.getCostCenters() : this.api.getProfitCenters();
-    call.subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
     });
   }
 }

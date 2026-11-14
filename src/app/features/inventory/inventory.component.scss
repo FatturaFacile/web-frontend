@@ -1,30 +1,52 @@
+:host {
+  display: block;
+}
+
 .metrics-grid {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-4);
+}
+
+.valuation-metrics {
+  margin-bottom: var(--space-5);
 }
 
 .toolbar {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1;
 }
 
 .search-input {
   max-width: 280px;
 }
 
+.filter-select {
+  width: 240px;
+  max-width: 100%;
+}
+
+.filter-select-sm {
+  width: 200px;
+  max-width: 100%;
+}
+
 .desc-text {
-  color: #8c8c8c;
+  color: var(--text-muted);
   display: block;
 }
 
 .text-danger {
-  color: #cf1322;
+  color: var(--status-danger);
   font-weight: 600;
 }
 
 .text-success {
-  color: #389e0d;
+  color: var(--status-success);
   font-weight: 600;
 }

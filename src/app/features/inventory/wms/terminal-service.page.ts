@@ -41,7 +41,7 @@ export const TERMINAL_PAGE: ResourcePageConfig = {
         terminal('RES.A.terminal_count', '/inventory/terminal/count'),
         act('POST', 'RES.A.scan', '/inventory/barcode/scan', {
           fields: [
-            req(rf.text('raw_payload')),
+            req(rf.text('raw_payload', { maxLength: 500 })),
             req(rf.select('symbology', ['auto', 'GS1-128', 'EAN-13', 'CODE-128', 'QR', 'DataMatrix'], { defaultValue: 'auto' })),
             rf.lookup('warehouse_id', 'warehouses'),
           ],

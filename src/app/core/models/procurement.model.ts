@@ -43,12 +43,26 @@ export interface RequisitionFilterParams {
   status?: RequisitionStatus;
 }
 
+/** Body of POST /procurement/requisitions (`StorePurchaseRequisitionRequest`). */
 export interface CreateRequisitionPayload {
-  requested_by: string;
-  department?: string;
-  total_estimated: number;
-  currency: 'EUR' | 'CHF';
-  notes?: string;
+  title: string;
+  /** YYYY-MM-DD, today or later. */
+  required_by_date: string;
+  urgency: 'low' | 'medium' | 'high' | 'emergency';
+  project_id?: string | null;
+  cost_center_id?: string | null;
+  department_id?: string | null;
+  branch_id?: string | null;
+  currency?: string | null;
+  notes?: string | null;
+  lines: {
+    description: string;
+    quantity_requested: number;
+    uom: string;
+    estimated_unit_price: number;
+    supplier_catalog_id?: string | null;
+    suggested_supplier_id?: string | null;
+  }[];
 }
 
 export type GoodsReceiptInspectionStatus = 'pending' | 'passed' | 'failed' | 'conditional';
@@ -243,6 +257,8 @@ export interface InspectGoodsReceiptPayload {
 export interface ThreeWayMatchLog {
   id: string;
   purchase_order_id: string;
+  /** Number of the purchase order, when the API loaded it. */
+  po_number?: string | null;
   purchase_receipt_id: string;
   passive_invoice_id: string;
   match_status: ThreeWayMatchStatus;
@@ -275,6 +291,8 @@ export interface ApproveThreeWayVariancePayload {
 export interface SupplierInvoice {
   id: string;
   supplier_id: string | null;
+  /** Name of the supplier contact, resolved by the API. */
+  supplier_name?: string | null;
   invoice_number: string;
   document_type?: string | null;
   date: string;

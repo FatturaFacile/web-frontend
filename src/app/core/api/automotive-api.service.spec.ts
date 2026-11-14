@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env';
-import { AutomotiveVehicle, TireCheckInPayload } from '../models';
+import { AutomotiveVehicle, AutomotiveVehiclePayload, TireCheckInPayload } from '../models';
 import { AutomotiveApiService } from './automotive-api.service';
 
 describe('AutomotiveApiService', () => {
@@ -45,7 +45,7 @@ describe('AutomotiveApiService', () => {
     expect(vReq.request.method).toBe('GET');
     vReq.flush({ data: { current_page: 1, data: [mockVehicle], last_page: 1, per_page: 15, total: 1 } });
 
-    service.getSeasonalSwitchPlan().subscribe((res) => {
+    service.listSeasonalSwitchPlan().subscribe((res) => {
       expect(res.data.length).toBe(1);
       expect(res.data[0].warehouse_shelf_location).toBe('A-12-3');
     });
@@ -54,12 +54,22 @@ describe('AutomotiveApiService', () => {
     expect(tReq.request.method).toBe('GET');
     tReq.flush({
       success: true,
-      data: [{ id: 'tire-1', vehicle_id: 'v-1', season: 'winter', warehouse_shelf_location: 'A-12-3' }],
+      data: {
+        current_page: 1,
+        data: [{ id: 'tire-1', vehicle_id: 'v-1', season: 'winter', warehouse_shelf_location: 'A-12-3' }],
+        last_page: 1,
+        per_page: 25,
+        total: 1,
+      },
     });
   });
 
   it('registers, gets, updates, and deletes an automotive vehicle', () => {
-    const newVehicle: Partial<AutomotiveVehicle> = {
+    const newVehicle: AutomotiveVehiclePayload = {
+      client_id: 'c-1',
+      vin_chassis: 'ZAR9520000000001',
+      mileage_km: 1200,
+      registration_date: '2024-03-01',
       license_plate: 'MI999ZZ',
       make: 'Alfa Romeo',
       model: 'Giulia',
@@ -80,6 +90,7 @@ describe('AutomotiveApiService', () => {
 
     const postReq = httpMock.expectOne(`${base}/vehicles`);
     expect(postReq.request.method).toBe('POST');
+    expect(postReq.request.body).toEqual(newVehicle);
     postReq.flush({ success: true, data: returnedVehicle });
 
     service.getVehicle('v-2').subscribe((res) => {
@@ -96,6 +107,7 @@ describe('AutomotiveApiService', () => {
 
     const putReq = httpMock.expectOne(`${base}/vehicles/v-2`);
     expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual({ model: 'Giulia Veloce' });
     putReq.flush({ success: true, data: { ...returnedVehicle, model: 'Giulia Veloce' } });
 
     service.deleteVehicle('v-2').subscribe((res) => {

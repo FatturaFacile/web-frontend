@@ -1,15 +1,14 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { PayrollApiService, PermissionsService } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { AuthStore, PayrollApiService, PermissionsService } from '@core';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { map } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig } from '../shared/crud/crud.types';
+import { CrudConfig, crudPage } from '../shared/crud/crud.types';
 import { PayrollDocumentsComponent } from './payroll-documents.component';
 import { PayrollExportsComponent } from './payroll-exports.component';
 import { PayrollRunsComponent } from './payroll-runs.component';
@@ -28,12 +27,15 @@ interface SwissPermitAlertRow {
 }
 
 const KINDS = ['Earning', 'NonCash', 'Expense', 'Deduction', 'Employer', 'Information'];
-const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ'];
+const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ', 'TG', 'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH'];
 
 /** Payroll workbench: runs, payslips and certificates, wage types, family allowances, settings, permit alerts and exports. */
 @Component({
   selector: 'app-hr-payroll',
+  styleUrl: './payroll.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
@@ -71,18 +73,18 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
           <app-payroll-settings [country]="'italian'" [canWrite]="canWrite()" />
         </nz-tab>
         <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
-          <div style="margin-bottom: 12px;">
+          <div class="mb-3">
             <button nz-button type="button" (click)="loadPermitAlerts()">Aggiorna Scadenze Permessi</button>
           </div>
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
             <thead>
               <tr>
-                <th>Dipendente</th>
-                <th>Permesso</th>
-                <th>Scadenza</th>
+                <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: permTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">Dipendente</th>
+                <th [nzSortFn]="'permit_type' | gridSort" [nzFilters]="'permit_type' | gridFilterList: permTable.nzData" [nzFilterFn]="'permit_type' | gridFilterFn">Permesso</th>
+                <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: permTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">Scadenza</th>
                 <th>Giorni Residui</th>
-                <th>Stato</th>
-                <th>Messaggio</th>
+                <th [nzSortFn]="'severity' | gridSort" [nzFilters]="'severity' | gridFilterList: permTable.nzData" [nzFilterFn]="'severity' | gridFilterFn">Stato</th>
+                <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: permTable.nzData" [nzFilterFn]="'message' | gridFilterFn">Messaggio</th>
               </tr>
             </thead>
             <tbody>
@@ -114,12 +116,15 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
 export class PayrollComponent implements OnInit {
   private readonly api = inject(PayrollApiService);
   private readonly permissions = inject(PermissionsService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('payroll'));
   protected readonly permitAlerts = signal<SwissPermitAlertRow[]>([]);
 
   ngOnInit(): void {
-    this.loadPermitAlerts();
+    if (this.authStore.isSwissJurisdiction()) {
+      this.loadPermitAlerts();
+    }
   }
 
   protected loadPermitAlerts(): void {
@@ -132,12 +137,12 @@ export class PayrollComponent implements OnInit {
   protected readonly wageTypesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmPayroll.wageTypes',
     canWrite: this.canWrite(),
-    list: () => this.api.getWageTypes().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getWageTypes(query)),
     create: (payload) => this.api.createWageType(payload as never),
     update: (id, payload) => this.api.updateWageType(id, payload as never),
     remove: (id) => this.api.deleteWageType(id),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 10 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 6, pattern: '^[0-9A-Z]{1,6}$' },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
       {
         key: 'kind',
@@ -153,7 +158,7 @@ export class PayrollComponent implements OnInit {
       { key: 'subject_to_bvg', labelKey: 'hrmPayroll.subjectBvg', type: 'boolean', column: false },
       { key: 'subject_to_withholding_tax', labelKey: 'hrmPayroll.subjectWithholding', type: 'boolean', column: false },
       { key: 'is_irregular', labelKey: 'hrmPayroll.irregular', type: 'boolean', column: false },
-      { key: 'certificate_box', labelKey: 'hrmPayroll.certificateBox', type: 'text', nullable: true },
+      { key: 'certificate_box', labelKey: 'hrmPayroll.certificateBox', type: 'text', nullable: true, maxLength: 10 },
       { key: 'sort_order', labelKey: 'hrmTime.priority', type: 'integer', column: false },
       { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean', defaultValue: true },
     ],
@@ -162,7 +167,7 @@ export class PayrollComponent implements OnInit {
   protected readonly familyConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmPayroll.familyAllowances',
     canWrite: this.canWrite(),
-    list: () => this.api.getFamilyAllowanceRates().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getFamilyAllowanceRates(query)),
     create: (payload) => this.api.createFamilyAllowanceRate(payload as never),
     update: (id, payload) => this.api.updateFamilyAllowanceRate(id, payload as never),
     remove: (id) => this.api.deleteFamilyAllowanceRate(id),
@@ -175,8 +180,8 @@ export class PayrollComponent implements OnInit {
         options: () => CANTONS.map((value) => ({ value, label: value })),
       },
       { key: 'valid_from', labelKey: 'hrmCommon.from', type: 'date', required: true },
-      { key: 'child_allowance', labelKey: 'hrmPayroll.childAllowance', type: 'decimal', required: true },
-      { key: 'education_allowance', labelKey: 'hrmPayroll.educationAllowance', type: 'decimal', required: true },
+      { key: 'child_allowance', labelKey: 'hrmPayroll.childAllowance', type: 'decimal', required: true, min: 215 },
+      { key: 'education_allowance', labelKey: 'hrmPayroll.educationAllowance', type: 'decimal', required: true, min: 268 },
     ],
   }));
 }

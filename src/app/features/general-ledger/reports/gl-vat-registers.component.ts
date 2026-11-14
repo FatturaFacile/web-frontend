@@ -5,36 +5,43 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { AuthStore, GeneralLedgerApiService, VatRegister } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
-import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { currentYearEnd, currentYearStart, rangeEndsBeforeStart } from '../shared/gl-dates';
 
 /** Sales or purchases VAT register of a date range. */
 @Component({
   selector: 'app-gl-vat-registers',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
+  styleUrl: './gl-vat-registers.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px">
-      <nz-select style="min-width: 180px" [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
+    <div class="filters">
+      <nz-select class="select-sm" [attr.aria-label]="'GL.VAT_REGISTER_TYPE' | translate" [(ngModel)]="type">
         <nz-option nzValue="sales" [nzLabel]="'GL.VAT_SALES' | translate" />
         <nz-option nzValue="purchases" [nzLabel]="'GL.VAT_PURCHASES' | translate" />
       </nz-select>
       <label for="vr-from">{{ 'GL.FROM' | translate }}</label>
-      <input id="vr-from" nz-input type="date" style="width: 160px" [(ngModel)]="from" />
+      <input class="date-input" id="vr-from" nz-input type="date" [(ngModel)]="from" />
       <label for="vr-to">{{ 'GL.TO' | translate }}</label>
-      <input id="vr-to" nz-input type="date" style="width: 160px" [(ngModel)]="to" />
-      <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      <input class="date-input" id="vr-to" nz-input type="date" [(ngModel)]="to" />
+      <button nz-button nzType="primary" type="button" [disabled]="rangeInvalid()" [nzLoading]="loading()" (click)="load()">{{ 'GL.RUN_REPORT' | translate }}</button>
+      @if (rangeInvalid()) {
+        <span class="ant-form-item-explain-error" role="alert">{{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}</span>
+      }
     </div>
     @if (register(); as r) {
-      <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50">
+      <nz-table nzSize="small" [nzData]="r.data" [nzPageSize]="50" #gridTbl34>
         <thead>
           <tr>
-            <th>{{ 'GL.COL_PROTOCOL' | translate }}</th>
-            <th>{{ 'GL.COL_DATE' | translate }}</th>
-            <th>{{ 'GL.COL_DOCUMENT' | translate }}</th>
-            <th>{{ 'GL.COL_PARTNER' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_TAXABLE' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_VAT_RATE' | translate }}</th>
-            <th nzAlign="right">{{ 'GL.COL_VAT' | translate }}</th>
+            <th [nzSortFn]="'protocol_number' | gridSort" [nzFilters]="'protocol_number' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'protocol_number' | gridFilterFn">{{ 'GL.COL_PROTOCOL' | translate }}</th>
+            <th [nzSortFn]="'posting_date' | gridSort" [nzFilters]="'posting_date' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'posting_date' | gridFilterFn">{{ 'GL.COL_DATE' | translate }}</th>
+            <th [nzSortFn]="'document_number' | gridSort" [nzFilters]="'document_number' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'document_number' | gridFilterFn">{{ 'GL.COL_DOCUMENT' | translate }}</th>
+            <th [nzSortFn]="'partner_name' | gridSort" [nzFilters]="'partner_name' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'partner_name' | gridFilterFn">{{ 'GL.COL_PARTNER' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'taxable_amount' | gridSort" [nzFilters]="'taxable_amount' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'taxable_amount' | gridFilterFn">{{ 'GL.COL_TAXABLE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_rate' | gridSort" [nzFilters]="'vat_rate' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'vat_rate' | gridFilterFn">{{ 'GL.COL_VAT_RATE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'vat_amount' | gridSort" [nzFilters]="'vat_amount' | gridFilterList: gridTbl34.nzData" [nzFilterFn]="'vat_amount' | gridFilterFn">{{ 'GL.COL_VAT' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -51,7 +58,7 @@ import { currentYearEnd, currentYearStart } from '../shared/gl-dates';
           }
         </tbody>
       </nz-table>
-      <p>
+      <p class="totals">
         <strong>{{ 'GL.COL_TAXABLE' | translate }}: {{ r.totals.taxable | money: currency() }} -
           {{ 'GL.COL_VAT' | translate }}: {{ r.totals.tax | money: currency() }}</strong>
       </p>
@@ -64,6 +71,10 @@ export class GlVatRegistersComponent {
   protected readonly register = signal<VatRegister | null>(null);
   protected readonly loading = signal(false);
   protected type: 'sales' | 'purchases' = 'sales';
+  protected rangeInvalid(): boolean {
+    return rangeEndsBeforeStart(this.from, this.to);
+  }
+
   protected from = currentYearStart();
   protected to = currentYearEnd();
 

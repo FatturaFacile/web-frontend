@@ -1,5 +1,5 @@
 export type EmploymentStatus = 'active' | 'probation' | 'terminated' | 'on_leave' | string;
-export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'intern' | string;
+export type EmploymentType = 'full_time' | 'part_time' | 'contractor' | 'apprentice' | 'seasonal';
 
 export interface EmployeeResource {
   id: string;
@@ -41,6 +41,8 @@ export interface HireEmployeePayload {
   hire_date?: string;
   department_id?: string | null;
   employment_type?: EmploymentType;
+  /** 'permanent', 'fixed_term', 'apprenticeship', 'contractor' or 'internship'. */
+  contract_type?: string;
   weekly_hours?: number;
   probation_months?: number;
 }
@@ -51,10 +53,12 @@ export interface TerminateEmployeePayload {
 }
 
 export interface PromoteEmployeePayload {
-  position_id?: string;
-  job_grade_id?: string;
-  base_annual_salary?: number;
-  effective_date?: string;
+  new_position_id?: string | null;
+  new_job_grade_id?: string | null;
+  new_base_annual_salary: number;
+  /** Y-m-d. */
+  effective_date?: string | null;
+  reason?: string | null;
 }
 
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | string;
@@ -129,14 +133,26 @@ export interface PayrollRunResource {
   created_at?: string;
 }
 
+/** A frontier worker as assessed by GET /payroll/frontier-workers (computed from the payroll profiles). */
 export interface FrontierWorkerResource {
-  id: string;
   employee_id: string;
-  employee_name?: string;
-  canton?: string;
-  italian_municipality?: string;
-  tax_regime?: string;
-  status: string;
+  employee_name: string;
+  work_canton: string | null;
+  regime: string;
+  suggested_regime: string;
+  tariff_letter: string | null;
+  nights_away: number;
+  exchange_of_information: boolean;
+  missing_exchange_data: string[];
+  issues: string[];
+}
+
+/** The year overview returned by GET /payroll/frontier-workers. */
+export interface FrontierOverview {
+  year: number;
+  parameters_year: number;
+  warnings: string[];
+  workers: FrontierWorkerResource[];
 }
 
 // Backward-compatible aliases

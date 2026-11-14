@@ -39,12 +39,9 @@ describe('ConstructionApiService', () => {
     const mockSite: ConstructionSite = {
       id: 'site-1',
       code: 'CANTIERE-001',
-      client: 'Immobiliare Ticino SA',
-      location: 'Lugano',
-      regime: 'CH',
-      sal: 'SAL 2',
-      norm: 'SIA 118',
-      vatRegime: 'IVA 8.1%',
+      name: 'Residenza Lago',
+      client_id: 'contact-1',
+      address: 'Via Nassa 1, Lugano',
     };
 
     service.getSites().subscribe((res) => {
@@ -96,49 +93,53 @@ describe('ConstructionApiService', () => {
   it('manages construction trades bids, status, and billings', () => {
     const mockBid: TradesBid = {
       id: 'bid-1',
-      code: 'APP-2026-01',
+      bid_number: 'APP-2026-01',
+      contact_id: 'contact-1',
       title: 'Opere da Muratore e Cemento Armato',
+      language: 'it',
       currency: 'CHF',
-      total_amount: '450000.00',
+      tax_rate: '8.10',
       status: 'submitted',
     };
 
     service.getBids().subscribe((res) => {
       expect(res.data.length).toBe(1);
-      expect(res.data[0].code).toBe('APP-2026-01');
+      expect(res.data[0].bid_number).toBe('APP-2026-01');
     });
     const bidsReq = httpMock.expectOne(`${tradesBase}/bids`);
     expect(bidsReq.request.method).toBe('GET');
     bidsReq.flush({ data: [mockBid] });
 
-    service.changeBidStatus('bid-1', { status: 'awarded' }).subscribe((res) => {
-      expect(res.data.status).toBe('awarded');
+    service.changeBidStatus('bid-1', { status: 'accepted' }).subscribe((res) => {
+      expect(res.data.status).toBe('accepted');
     });
     const statusReq = httpMock.expectOne(`${tradesBase}/bids/bid-1/status`);
     expect(statusReq.request.method).toBe('POST');
-    statusReq.flush({ data: { ...mockBid, status: 'awarded' } });
+    statusReq.flush({ data: { ...mockBid, status: 'accepted' } });
 
     service
       .issueBidBilling('bid-1', {
-        sal_number: 'SAL-1',
+        kind: 'partial',
+        basis: 'percentage',
+        percentage: '30',
         date: '2026-03-15',
-        amount: '80000.00',
       })
       .subscribe((res) => {
-        expect(res.data.sal_number).toBe('SAL-1');
+        expect(res.data.sequence).toBe(1);
       });
     const billReq = httpMock.expectOne(`${tradesBase}/bids/bid-1/billings`);
     expect(billReq.request.method).toBe('POST');
+    expect(billReq.request.body).toEqual({ kind: 'partial', basis: 'percentage', percentage: '30', date: '2026-03-15' });
     billReq.flush({
       data: {
         id: 'tb-1',
         bid_id: 'bid-1',
-        sal_number: 'SAL-1',
-        date: '2026-03-15',
-        amount: '80000.00',
+        kind: 'partial',
+        sequence: 1,
+        billing_date: '2026-03-15',
+        gross_this: '80000.00',
         retention_amount: '8000.00',
-        net_payable: '72000.00',
-        status: 'certified',
+        amount_invoiced: '72000.00',
       },
     });
   });
@@ -146,10 +147,10 @@ describe('ConstructionApiService', () => {
   it('handles site diary and subcontractors', () => {
     const mockDiary: TradesSiteDiaryEntry = {
       id: 'diary-1',
-      site_id: 'site-1',
-      date: '2026-03-02',
-      weather_condition: 'Soleggiato 14°C',
-      workers_count: 8,
+      construction_site_id: 'site-1',
+      entry_date: '2026-03-02',
+      weather: 'Soleggiato 14°C',
+      workers_present: 8,
       work_performed: 'Armatura solaio piano primo',
     };
 
@@ -162,8 +163,8 @@ describe('ConstructionApiService', () => {
 
     const mockSub: TradesSubcontractor = {
       id: 'sub-1',
-      company_name: 'Impianti Elettrici Rossi Sagl',
-      vat_number: 'CHE-987.654.321',
+      name: 'Impianti Elettrici Rossi Sagl',
+      tax_id: 'CHE-987.654.321',
     };
 
     service.getSubcontractors().subscribe((res) => {
@@ -172,5 +173,14 @@ describe('ConstructionApiService', () => {
     const subReq = httpMock.expectOne(`${tradesBase}/subcontractors`);
     expect(subReq.request.method).toBe('GET');
     subReq.flush({ data: [mockSub] });
+  });
+
+  it('sends the certification with the fields the API requires', () => {
+    service
+      .certifySubcontractWork('sc-1', { certified_on: '2026-03-31', amount: '7500.00', description: 'SAL 1' })
+      .subscribe();
+    const req = httpMock.expectOne(`${tradesBase}/subcontracts/sc-1/certifications`);
+    expect(Object.keys(req.request.body as object).sort()).toEqual(['amount', 'certified_on', 'description']);
+    req.flush({ data: {} });
   });
 });

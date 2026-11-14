@@ -7,6 +7,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
 /** Generic "coming soon" page; the title is read from the route `data.titleKey`. */
 @Component({
   selector: 'app-placeholder-page',
+  styleUrl: './placeholder-page.component.scss',
   imports: [NzCardModule, NzEmptyModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header [title]="titleKey() | translate" [subtitle]="'PLACEHOLDER.SUBTITLE' | translate" />

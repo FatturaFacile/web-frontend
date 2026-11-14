@@ -19,6 +19,33 @@
     </div>
 
     <div class="toolbar-right">
+      <nz-select
+        class="group-select"
+        nzAllowClear
+        nzSize="small"
+        data-testid="grid-group-by"
+        [nzPlaceHolder]="label('common.table.groupBy', 'Raggruppa per')"
+        [ngModel]="groupBy()"
+        (ngModelChange)="setGroupBy($event)"
+      >
+        @for (col of groupColumns(); track col.key) {
+          <nz-option [nzLabel]="col.header | translate" [nzValue]="col.key" />
+        }
+      </nz-select>
+      @if (exportable()) {
+        <button
+          nz-button
+          nzType="text"
+          nzSize="small"
+          type="button"
+          data-testid="grid-export-xlsx"
+          [title]="label('common.table.exportXlsx', 'Esporta in Excel (xlsx)')"
+          [attr.aria-label]="label('common.table.exportXlsx', 'Esporta in Excel (xlsx)')"
+          (click)="exportToXlsx()"
+        >
+          <nz-icon nzType="file-excel" />
+        </button>
+      }
       <!-- Density Toggle -->
       <button
         nz-button
@@ -93,17 +120,17 @@
   </div>
 
   <!-- Table Skeleton on initial load -->
-  @if (loading() && (!data() || data().length === 0)) {
+  @if (isLoading() && rows().length === 0) {
     <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
   } @else {
     <nz-table
       #nzTable
-      [nzData]="data()"
+      [nzData]="displayData()"
       [nzFrontPagination]="false"
-      [nzLoading]="loading()"
-      [nzTotal]="total()"
-      [nzPageIndex]="pageIndex()"
-      [nzPageSize]="pageSize()"
+      [nzLoading]="isLoading()"
+      [nzTotal]="rowTotal()"
+      [nzPageIndex]="currentPage()"
+      [nzPageSize]="currentPageSize()"
       [nzPageSizeOptions]="pageSizeOptions()"
       [nzShowSizeChanger]="showSizeChanger()"
       [nzShowQuickJumper]="showQuickJumper()"
@@ -134,17 +161,17 @@
               [nzWidth]="col.width ?? null"
               [nzLeft]="col.fixed === 'left'"
               [nzRight]="col.fixed === 'right'"
-              [nzAlign]="col.align ?? 'left'"
-              [nzShowSort]="!!col.sortable"
+              nzAlign="center"
+              [nzShowSort]="col.sortable !== false"
               [nzSortOrder]="
                 currentSort()?.key === col.key ? currentSort()!.order : (col.sortOrder ?? null)
               "
               (nzSortOrderChange)="onSortChange(col.key, $event)"
-              [nzCustomFilter]="!!col.filterable"
+              [nzCustomFilter]="col.filterable !== false"
             >
               {{ col.header | translate }}
 
-              @if (col.filterable) {
+              @if (col.filterable !== false) {
                 <nz-filter-trigger
                   [nzVisible]="isFilterVisible(col.key)"
                   (nzVisibleChange)="setFilterVisible(col.key, $event)"
@@ -156,45 +183,35 @@
               }
 
               <nz-dropdown-menu #filterMenu="nzDropdownMenu">
-                @if (col.filterable) {
+                @if (col.filterable !== false) {
                   <div class="table-filter-popover">
                     @if (col.customFilterTemplate) {
                       <ng-container
                         [ngTemplateOutlet]="col.customFilterTemplate"
                         [ngTemplateOutletContext]="{ column: col }"
                       />
-                    } @else if (col.filterType === "select" && col.filterOptions) {
-                      <div class="popover-content">
-                        <nz-select
-                          class="filter-select"
-                          nzAllowClear
-                          nzPlaceHolder="Tutti"
-                          [ngModel]="getFilterValue(col.key)"
-                          (ngModelChange)="onFilterValueChange(col.key, $event)"
-                        >
-                          @for (opt of col.filterOptions; track opt.value) {
-                            <nz-option [nzLabel]="opt.label" [nzValue]="opt.value" />
-                          }
-                        </nz-select>
-                      </div>
-                    } @else if (col.filterType === "date-range") {
-                      <div class="popover-content">
-                        <nz-range-picker
-                          [ngModel]="getFilterValue(col.key)"
-                          (ngModelChange)="onFilterValueChange(col.key, $event)"
-                        />
-                      </div>
                     } @else {
-                      <!-- Default text search -->
                       <div class="popover-content">
                         <input
                           nz-input
                           type="text"
-                          [placeholder]="('common.table.search' | translate) + ' ' + (col.header | translate)"
-                          [ngModel]="getFilterValue(col.key)"
-                          (ngModelChange)="onFilterValueChange(col.key, $event)"
+                          [placeholder]="label('common.table.search', 'Cerca') + ' ' + (col.header | translate)"
+                          [ngModel]="draft(col.key).text"
+                          (ngModelChange)="draft(col.key).text = $event"
                           (keydown.enter)="applyColumnFilter(col.key)"
                         />
+                        @if ((filterOptions()[col.key.toString()] ?? []).length > 0) {
+                          <div class="filter-options">
+                            @for (opt of filterOptions()[col.key.toString()]; track opt.value) {
+                              <label
+                                nz-checkbox
+                                [ngModel]="draft(col.key).selected.includes(opt.value)"
+                                (ngModelChange)="toggleDraftValue(col.key, opt.value, $event)"
+                                >{{ opt.label }}</label
+                              >
+                            }
+                          </div>
+                        }
                       </div>
                     }
                     <div class="popover-footer">
@@ -223,15 +240,28 @@
           }
 
           @if (actionsTemplate()) {
-            <th nzWidth="90px" nzRight nzAlign="right">{{ 'common.table.actions' | translate }}</th>
+            <th nzWidth="90px" nzRight nzAlign="center">{{ 'common.table.actions' | translate }}</th>
           }
         </tr>
       </thead>
       <tbody>
-        @for (item of nzTable.data; track getItemKey(item)) {
+        @for (row of viewRows(); track row.kind === 'group' ? 'group:' + row.key + ':' + $index : getItemKey(row.item)) {
+          @if (row.kind === 'group') {
+            <tr class="group-row" data-testid="grid-group-row">
+              <td [attr.colspan]="totalColumnCount()" (click)="toggleGroup(row.key)">
+                <nz-icon [nzType]="row.collapsed ? 'right' : 'down'" />
+                <strong>{{ row.label }}</strong>
+                @if (row.count !== null) {
+                  <span class="group-count">({{ row.count }})</span>
+                }
+              </td>
+            </tr>
+          } @else {
+          @let item = row.item;
           <tr
             class="table-row"
             [class.row-selected]="isItemSelected(item)"
+            [hidden]="row.hidden"
             (click)="onRowClick(item)"
           >
             @if (expandable()) {
@@ -265,7 +295,7 @@
                     }"
                   />
                 } @else {
-                  {{ getCellValue(item, col.key) }}
+                  {{ getColumnValue(item, col) }}
                 }
               </td>
             }
@@ -287,6 +317,7 @@
                 [ngTemplateOutletContext]="{ $implicit: item }"
               />
             </tr>
+          }
           }
         }
       </tbody>

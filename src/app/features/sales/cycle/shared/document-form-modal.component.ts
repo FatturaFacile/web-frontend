@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, model, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
 import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -17,7 +17,8 @@ import {
   CoreQuotePayload,
   SalesCycleApiService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { createLineGroup, DocumentLinesEditorComponent, LineGroup, linesToPayload } from './document-lines-editor.component';
 import { SalesLookupsService } from './sales-lookups.service';
 import { inDaysIso, todayIso } from './sales-status';
@@ -27,7 +28,9 @@ export type SalesDocumentKind = 'quote' | 'order';
 /** Create / edit modal shared by quotes and orders of the core sales cycle. */
 @Component({
   selector: 'app-document-form-modal',
+  styleUrl: './document-form-modal.component.scss',
   imports: [
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzModalModule,
     NzFormModule,
@@ -45,10 +48,18 @@ export type SalesDocumentKind = 'quote' | 'order';
       [nzOkDisabled]="form.invalid"
       nzWidth="960px"
       (nzOnCancel)="visible.set(false)"
+      okAction="save"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="form" nzLayout="vertical">
+          <ng-template #dueTip let-control>
+            @if (control.hasError('endsBeforeStart')) {
+              {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+            } @else {
+              {{ serverError('due') }}
+            }
+          </ng-template>
           <div nz-row [nzGutter]="16">
             <div nz-col [nzSpan]="10">
               <nz-form-item>
@@ -75,7 +86,7 @@ export type SalesDocumentKind = 'quote' | 'order';
                 <nz-form-label nzFor="doc-due">
                   {{ (kind() === 'quote' ? 'SC.QUOTES.VALID_UNTIL' : 'SC.ORDERS.DUE_DATE') | translate }}
                 </nz-form-label>
-                <nz-form-control [nzErrorTip]="serverError('due')">
+                <nz-form-control [nzErrorTip]="dueTip">
                   <input nz-input id="doc-due" type="date" formControlName="due" />
                 </nz-form-control>
               </nz-form-item>
@@ -92,14 +103,14 @@ export type SalesDocumentKind = 'quote' | 'order';
           <app-document-lines-editor [lines]="items" />
           <nz-form-item class="notes">
             <nz-form-label nzFor="doc-notes">{{ 'SC.COMMON.NOTES' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
               <textarea nz-input id="doc-notes" rows="2" formControlName="notes"></textarea>
             </nz-form-control>
           </nz-form-item>
           @if (kind() === 'quote') {
             <nz-form-item>
               <nz-form-label nzFor="doc-text">{{ 'SC.QUOTES.CUSTOM_TEXT' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
                 <textarea nz-input id="doc-text" rows="2" formControlName="custom_text"></textarea>
               </nz-form-control>
             </nz-form-item>
@@ -108,7 +119,6 @@ export type SalesDocumentKind = 'quote' | 'order';
       </ng-container>
     </nz-modal>
   `,
-  styles: `.notes { margin-top: 16px; }`,
 })
 export class DocumentFormModalComponent {
   protected readonly lookups = inject(SalesLookupsService);
@@ -129,13 +139,15 @@ export class DocumentFormModalComponent {
   protected readonly form = this.fb.group({
     contact_id: ['', Validators.required],
     date: [todayIso(), Validators.required],
-    due: [''],
+    due: ['', endsNotBefore('date', { dateOnly: true })],
     currency: ['EUR', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
-    notes: [''],
-    custom_text: [''],
+    notes: ['', Validators.maxLength(2000)],
+    custom_text: ['', Validators.maxLength(5000)],
   });
 
   constructor() {
+    // The API requires valid_until / due_date >= date (after_or_equal:date).
+    revalidateOnStartChange(this.form, 'date', 'due', inject(DestroyRef));
     effect(() => {
       if (this.visible()) {
         this.reset(this.document());

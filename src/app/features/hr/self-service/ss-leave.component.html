@@ -2,13 +2,13 @@
 <nz-table #balanceTable [nzData]="balances()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
     <tr>
-      <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th>{{ 'hrmSelfService.entitlement' | translate }}</th>
-      <th>{{ 'hrmSelfService.carryover' | translate }}</th>
-      <th>{{ 'hrmSelfService.accrued' | translate }}</th>
-      <th>{{ 'hrmSelfService.used' | translate }}</th>
-      <th>{{ 'hrmSelfService.pending' | translate }}</th>
-      <th>{{ 'hrmSelfService.available' | translate }}</th>
+      <th [nzSortFn]="'fiscal_year' | gridSort" [nzFilters]="'fiscal_year' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'fiscal_year' | gridFilterFn">{{ 'hrmCommon.type' | translate }}</th>
+      <th [nzSortFn]="'entitlement_hours' | gridSort" [nzFilters]="'entitlement_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'entitlement_hours' | gridFilterFn">{{ 'hrmSelfService.entitlement' | translate }}</th>
+      <th [nzSortFn]="'carryover_hours' | gridSort" [nzFilters]="'carryover_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'carryover_hours' | gridFilterFn">{{ 'hrmSelfService.carryover' | translate }}</th>
+      <th [nzSortFn]="'accrued_hours' | gridSort" [nzFilters]="'accrued_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'accrued_hours' | gridFilterFn">{{ 'hrmSelfService.accrued' | translate }}</th>
+      <th [nzSortFn]="'used_hours' | gridSort" [nzFilters]="'used_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'used_hours' | gridFilterFn">{{ 'hrmSelfService.used' | translate }}</th>
+      <th [nzSortFn]="'pending_hours' | gridSort" [nzFilters]="'pending_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'pending_hours' | gridFilterFn">{{ 'hrmSelfService.pending' | translate }}</th>
+      <th [nzSortFn]="'available_hours' | gridSort" [nzFilters]="'available_hours' | gridFilterList: balanceTable.nzData" [nzFilterFn]="'available_hours' | gridFilterFn">{{ 'hrmSelfService.available' | translate }}</th>
     </tr>
   </thead>
   <tbody>
@@ -28,18 +28,22 @@
 
 <div class="flex justify-between items-center mt-4 mb-2">
   <h3>{{ 'hrmSelfService.myRequests' | translate }}</h3>
-  <button nz-button nzType="primary" type="button" (click)="openForm()">
-    {{ 'hrmSelfService.newRequest' | translate }}
-  </button>
+  <button
+    nz-button
+    nzType="primary"
+    type="button"
+    (click)="openForm()"
+    appIconAction="create"
+  ></button>
 </div>
 <nz-table #requestTable [nzData]="requests()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
   <thead>
     <tr>
-      <th>{{ 'hrmSelfService.requestNumber' | translate }}</th>
+      <th [nzSortFn]="'request_number' | gridSort" [nzFilters]="'request_number' | gridFilterList: requestTable.nzData" [nzFilterFn]="'request_number' | gridFilterFn">{{ 'hrmSelfService.requestNumber' | translate }}</th>
       <th>{{ 'hrmCommon.type' | translate }}</th>
-      <th>{{ 'hrmCommon.from' | translate }}</th>
-      <th>{{ 'hrmCommon.to' | translate }}</th>
-      <th>{{ 'hrmCommon.hours' | translate }}</th>
+      <th [nzSortFn]="'start_date' | gridSort" [nzFilters]="'start_date' | gridFilterList: requestTable.nzData" [nzFilterFn]="'start_date' | gridFilterFn">{{ 'hrmCommon.from' | translate }}</th>
+      <th [nzSortFn]="'end_date' | gridSort" [nzFilters]="'end_date' | gridFilterList: requestTable.nzData" [nzFilterFn]="'end_date' | gridFilterFn">{{ 'hrmCommon.to' | translate }}</th>
+      <th [nzSortFn]="'total_hours' | gridSort" [nzFilters]="'total_hours' | gridFilterList: requestTable.nzData" [nzFilterFn]="'total_hours' | gridFilterFn">{{ 'hrmCommon.hours' | translate }}</th>
       <th>{{ 'hrmCommon.statusCol' | translate }}</th>
       <th>{{ 'hrmCommon.actions' | translate }}</th>
     </tr>
@@ -66,11 +70,11 @@
 </nz-table>
 
 <nz-modal
+  okAction="save"
   [nzVisible]="formOpen()"
   [nzTitle]="'hrmSelfService.newRequest' | translate"
-  [nzOkText]="'hrmCommon.save' | translate"
-  [nzCancelText]="'hrmCommon.cancel' | translate"
   [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid"
   (nzOnOk)="submit()"
   (nzOnCancel)="formOpen.set(false)"
 >
@@ -78,7 +82,7 @@
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-type">{{ 'hrmCommon.type' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('leave_type_id')">
           <nz-select id="ss-leave-type" formControlName="leave_type_id" nzShowSearch>
             @for (type of leaveTypes(); track type.id) {
               <nz-option [nzValue]="type.id" [nzLabel]="type.name" />
@@ -88,35 +92,26 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-start">{{ 'hrmCommon.from' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('start_date')">
           <input nz-input id="ss-leave-start" type="date" formControlName="start_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-end">{{ 'hrmCommon.to' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="'hrmCommon.required' | translate">
+        <nz-form-control [nzErrorTip]="errorTip('end_date')">
           <input nz-input id="ss-leave-end" type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="ss-leave-hours">{{ 'hrmCommon.hours' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="errorTip">
+        <nz-form-control [nzErrorTip]="errorTip('total_hours')">
           <input nz-input id="ss-leave-hours" inputmode="decimal" formControlName="total_hours" />
-          <ng-template #errorTip let-control>
-            @if (control.errors?.['serverError']) {
-              {{ control.errors['serverError'] }}
-            } @else if (control.errors?.['decimal']) {
-              {{ 'hrmCommon.invalidDecimal' | translate }}
-            } @else {
-              {{ 'hrmCommon.required' | translate }}
-            }
-          </ng-template>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="ss-leave-reason">{{ 'hrmCommon.reason' | translate }}</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input id="ss-leave-reason" rows="2" maxlength="500" formControlName="reason"></textarea>
+        <nz-form-control [nzErrorTip]="errorTip('reason')">
+          <textarea nz-input id="ss-leave-reason" rows="2" maxlength="1000" formControlName="reason"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -126,15 +121,18 @@
 <nz-modal
   [nzVisible]="cancelTarget() !== null"
   [nzTitle]="'hrmSelfService.withdraw' | translate"
-  [nzOkText]="'hrmCommon.confirm' | translate"
-  [nzCancelText]="'hrmCommon.cancel' | translate"
   [nzOkLoading]="saving()"
   [nzOkDanger]="true"
+  [nzOkDisabled]="cancelReason.invalid"
   (nzOnOk)="confirmCancel()"
   (nzOnCancel)="cancelTarget.set(null)"
 >
   <ng-container *nzModalContent>
-    <label for="ss-cancel-reason">{{ 'hrmCommon.reason' | translate }}</label>
-    <textarea nz-input id="ss-cancel-reason" rows="3" [formControl]="cancelReason"></textarea>
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="ss-cancel-reason">{{ 'hrmCommon.reason' | translate }}</nz-form-label>
+      <nz-form-control [nzErrorTip]="cancelReasonTip()">
+        <textarea nz-input id="ss-cancel-reason" rows="3" maxlength="1000" [formControl]="cancelReason"></textarea>
+      </nz-form-control>
+    </nz-form-item>
   </ng-container>
 </nz-modal>

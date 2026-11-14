@@ -39,6 +39,7 @@
     "@ant-design/icons-angular": "^22.1.1",
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@ngrx/signals": "^22.0.1",
+    "exceljs": "^4.4.0",
     "ng-zorro-antd": "^22.2.0",
     "rxjs": "~7.8.2",
     "tslib": "^2.9.1"
@@ -61,7 +62,7 @@
     "only-allow": "^1.2.2",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.10",
-    "typescript": "~6.0.3",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8.72.2",
     "vitest": "^5.1.0"
   },

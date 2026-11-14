@@ -18,11 +18,14 @@ import {
   TenantMemberTwoFactorStatus,
   TwoFactorPolicyResponse,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-tenant-security-policy',
+  styleUrl: './tenant-security-policy.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     NzCardModule,
     NzTableModule,
@@ -37,7 +40,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './tenant-security-policy.component.html',
-  styleUrl: './tenant-security-policy.component.scss',
 })
 export class TenantSecurityPolicyComponent implements OnInit {
   private readonly settingsApi = inject(SettingsApiService);

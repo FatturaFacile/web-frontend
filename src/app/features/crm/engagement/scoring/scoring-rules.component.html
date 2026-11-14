@@ -13,18 +13,16 @@
       >
         <nz-icon nzType="sync" /> {{ 'CRMX.SCORING.RECALCULATE' | translate }}
       </button>
-      <button nz-button nzType="primary" type="button" (click)="open(null)">
-        <nz-icon nzType="plus" /> {{ 'CRMX.SCORING.NEW' | translate }}
-      </button>
+      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="open(null)"></button>
     }
   </div>
-  <nz-table [nzData]="rules()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+  <nz-table [nzData]="rules()" [nzLoading]="loading()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle" #gridTbl19>
     <thead>
       <tr>
-        <th>{{ 'CRMX.COMMON.NAME' | translate }}</th>
+        <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CRMX.COMMON.NAME' | translate }}</th>
         <th>{{ 'CRMX.SCORING.TYPE' | translate }}</th>
-        <th>{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
-        <th class="num">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
+        <th [nzSortFn]="'field' | gridSort" [nzFilters]="'field' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'field' | gridFilterFn">{{ 'CRMX.SCORING.CONDITION' | translate }}</th>
+        <th class="num" [nzSortFn]="'points' | gridSort" [nzFilters]="'points' | gridFilterList: gridTbl19.nzData" [nzFilterFn]="'points' | gridFilterFn">{{ 'CRMX.SCORING.POINTS' | translate }}</th>
         <th>{{ 'CRMX.COMMON.STATUS' | translate }}</th>
         <th>{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
@@ -46,9 +44,7 @@
           <td><nz-tag>{{ (r.is_active === false ? 'CRMX.COMMON.INACTIVE' : 'CRMX.COMMON.ACTIVE') | translate }}</nz-tag></td>
           <td>
             @if (canWrite()) {
-              <button nz-button nzType="text" nzSize="small" type="button" [attr.aria-label]="'CRMX.COMMON.EDIT' | translate" (click)="open(r)">
-                <nz-icon nzType="edit" />
-              </button>
+              <button nz-button nzType="text" nzSize="small" type="button" (click)="open(r)" appIconAction="edit"></button>
               <button
                 nz-button
                 nzType="text"
@@ -56,12 +52,10 @@
                 nzSize="small"
                 type="button"
                 nz-popconfirm
-                [attr.aria-label]="'COMMON.DELETE' | translate"
                 [nzPopconfirmTitle]="'CRMX.COMMON.CONFIRM_DELETE' | translate"
                 (nzOnConfirm)="remove(r)"
-              >
-                <nz-icon nzType="delete" />
-              </button>
+                appIconAction="delete"
+              ></button>
             }
           </td>
         </tr>
@@ -71,6 +65,7 @@
 </nz-card>
 
 <nz-modal
+  okAction="save"
   [nzVisible]="modalOpen()"
   [nzTitle]="(editing() ? 'CRMX.SCORING.EDIT' : 'CRMX.SCORING.NEW') | translate"
   nzWidth="640px"
@@ -81,7 +76,7 @@
 >
   <ng-container *nzModalContent>
     <label for="rule-name">{{ 'CRMX.COMMON.NAME' | translate }}</label>
-    <input nz-input id="rule-name" class="field" maxlength="255" [(ngModel)]="draft.name" />
+    <input nz-input id="rule-name" class="field" maxlength="150" [(ngModel)]="draft.name" />
     <label for="rule-type">{{ 'CRMX.SCORING.TYPE' | translate }}</label>
     <nz-select nzId="rule-type" class="field" [(ngModel)]="draft.rule_type">
       <nz-option nzValue="field" [nzLabel]="'CRMX.SCORING.TYPE_field' | translate"></nz-option>
@@ -107,7 +102,7 @@
         </div>
       </div>
       <label for="rule-value">{{ 'CRMX.SEGMENTS.VALUE' | translate }}</label>
-      <input nz-input id="rule-value" class="field" [(ngModel)]="draft.value" />
+      <input nz-input id="rule-value" class="field" maxlength="255" [(ngModel)]="draft.value" />
     } @else {
       <div class="two-cols">
         <div>
@@ -131,15 +126,15 @@
     <div class="two-cols">
       <div>
         <label for="rule-points">{{ 'CRMX.SCORING.POINTS' | translate }}</label>
-        <input nz-input id="rule-points" type="number" class="field" [(ngModel)]="draft.points" />
+        <input nz-input id="rule-points" type="number" min="-100" max="100" class="field" [(ngModel)]="draft.points" />
       </div>
       <div>
         <label for="rule-max">{{ 'CRMX.SCORING.MAX_POINTS' | translate }}</label>
-        <input nz-input id="rule-max" type="number" class="field" [(ngModel)]="draft.max_points" />
+        <input nz-input id="rule-max" type="number" min="0" max="100" class="field" [(ngModel)]="draft.max_points" />
       </div>
       <div>
         <label for="rule-sequence">{{ 'CRMX.SCORING.SEQUENCE' | translate }}</label>
-        <input nz-input id="rule-sequence" type="number" class="field" [(ngModel)]="draft.sequence" />
+        <input nz-input id="rule-sequence" type="number" min="0" class="field" [(ngModel)]="draft.sequence" />
       </div>
       <div>
         <label for="rule-active">{{ 'CRMX.COMMON.ACTIVE' | translate }}</label>

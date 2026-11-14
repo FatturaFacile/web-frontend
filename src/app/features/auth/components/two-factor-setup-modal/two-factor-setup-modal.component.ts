@@ -10,11 +10,14 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzQRCodeComponent } from 'ng-zorro-antd/qr-code';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
 import { AuthApiService, AuthStore, I18nService } from '@core';
-import { TranslatePipe } from '@shared';
+import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-two-factor-setup-modal',
+  styleUrl: './two-factor-setup-modal.component.scss',
   imports: [
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzModalModule,
     NzStepsModule,
@@ -27,7 +30,6 @@ import { TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './two-factor-setup-modal.component.html',
-  styleUrl: './two-factor-setup-modal.component.scss',
 })
 export class TwoFactorSetupModalComponent {
   private readonly fb = inject(NonNullableFormBuilder);

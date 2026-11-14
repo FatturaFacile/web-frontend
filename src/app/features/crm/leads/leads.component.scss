@@ -32,7 +32,7 @@
 
   .lead-sub {
     font-size: 12px;
-    color: #8c8c8c;
+    color: var(--text-muted);
   }
 }
 
@@ -62,11 +62,11 @@
   .score-badge {
     font-size: 16px;
     font-weight: bold;
-    color: #1890ff;
+    color: var(--status-info);
   }
 }
 
 .score-date {
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-muted);
 }

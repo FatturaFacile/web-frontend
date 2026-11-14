@@ -86,7 +86,7 @@ const CASES: Case[] = [
   { name: 'getCashRegisterClosings', call: (s) => s.getCashRegisterClosings('c1'), method: 'GET', url: `${t}/cash-registers/c1/closings` },
   {
     name: 'getPaymentProposals',
-    call: (s) => s.getPaymentProposals('draft'),
+    call: (s) => s.getPaymentProposals({ status: 'draft' }),
     method: 'GET',
     url: `${t}/payment-proposals`,
     params: { status: 'draft' },

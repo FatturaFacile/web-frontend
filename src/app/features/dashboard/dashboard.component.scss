@@ -1,22 +1,32 @@
+:host {
+  display: block;
+}
+
 .jurisdiction-banner {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .stats-grid {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .shortcut-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .shortcut-btn {
-  text-align: left;
-  height: 42px;
-  font-size: 13px;
   display: flex;
   align-items: center;
-  border-radius: 6px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+
+.fa-icon-spaced {
+  width: 16px;
+  margin-right: var(--space-2);
+  text-align: center;
 }

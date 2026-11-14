@@ -4,6 +4,7 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  PaginatedResponse,
   AskAssistantRequest,
   AssistantAnswer,
   AssistantCatalogueEntry,
@@ -34,9 +35,9 @@ export class AssistantApiService {
   /**
    * List logged questions and audit trail.
    */
-  getLogs(params?: AssistantLogQueryParams): Observable<ApiResponse<AssistantLogResource[]>> {
-    return this.http.get<ApiResponse<AssistantLogResource[]>>(`${this.baseUrl}/logs`, {
-      params: params ? toHttpParams(params as Record<string, unknown>) : undefined,
+  getLogs(params?: AssistantLogQueryParams): Observable<PaginatedResponse<AssistantLogResource>> {
+    return this.http.get<PaginatedResponse<AssistantLogResource>>(`${this.baseUrl}/logs`, {
+      params: params ? toHttpParams(params) : undefined,
     });
   }
 }

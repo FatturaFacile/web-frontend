@@ -14,6 +14,8 @@ export class TableStateService<TItem extends object = object, TFilter = Record<s
   readonly sort = signal<TableSortState | null>(null);
   readonly filters = signal<TFilter>({} as TFilter);
   readonly search = signal<string>('');
+  /** Column filters coming from the grid header (lists and texts). */
+  readonly gridFilters = signal<TableFilterState>({});
   readonly selectedItems = signal<TItem[]>([]);
   readonly loading = signal<boolean>(false);
 
@@ -138,8 +140,16 @@ export class TableStateService<TItem extends object = object, TFilter = Record<s
     return this.selectedItems().some((it) => it[keyProp] === key);
   }
 
-  toBackendQueryParams(): Record<string, string | number> {
-    const p: Record<string, string | number> = {
+  /** Applies the filters emitted by app-base-table (lists / texts) on top of the manual ones. */
+  applyGridParams(params: TableQueryParams): void {
+    this.pageIndex.set(params.pageIndex);
+    this.pageSize.set(params.pageSize);
+    this.sort.set(params.sort?.order ? { key: params.sort.key, order: params.sort.order } : null);
+    this.gridFilters.set(params.filters ?? {});
+  }
+
+  toBackendQueryParams(): Record<string, string | number | Record<string, string | string[]>> {
+    const p: Record<string, string | number | Record<string, string | string[]>> = {
       page: this.pageIndex(),
       per_page: this.pageSize(),
     };
@@ -156,6 +166,21 @@ export class TableStateService<TItem extends object = object, TFilter = Record<s
       if (val !== undefined && val !== null && val !== '') {
         p[key] = String(val);
       }
+    }
+    const list: Record<string, string[]> = {};
+    const like: Record<string, string> = {};
+    for (const [key, val] of Object.entries(this.gridFilters())) {
+      if (Array.isArray(val)) {
+        list[key] = val.map(String);
+      } else if (typeof val === 'string' && val !== '') {
+        like[key] = val;
+      }
+    }
+    if (Object.keys(list).length > 0) {
+      p['filter'] = list;
+    }
+    if (Object.keys(like).length > 0) {
+      p['filter_like'] = like;
     }
     return p;
   }

@@ -65,7 +65,7 @@
                     class="prompt-chip"
                     (click)="askCatalogueQuestion(entry)"
                   >
-                    <i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i>
+                    <i class="fa-solid fa-lightbulb mr-1 text-warning"></i>
                     {{ entry.description }}
                   </button>
                 }
@@ -201,8 +201,8 @@
         >
           <thead>
             <tr>
-              <th nzWidth="30%">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
-              <th nzWidth="50%">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
+              <th nzWidth="30%" [nzSortFn]="'key' | gridSort" [nzFilters]="'key' | gridFilterList: catalogueTable.nzData" [nzFilterFn]="'key' | gridFilterFn">{{ 'ASSISTANT.QUERY_KEY' | translate }}</th>
+              <th nzWidth="50%" [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: catalogueTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'ASSISTANT.DESCRIPTION' | translate }}</th>
               <th nzWidth="20%">{{ 'COMMON.ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -242,7 +242,7 @@
               id="log-outcome-select"
               formControlName="outcome"
               (ngModelChange)="loadLogs()"
-              class="w-48"
+              class="log-outcome-select"
             >
               <nz-option nzValue="all" [nzLabel]="'COMMON.ALL' | translate"></nz-option>
               <nz-option nzValue="answered" [nzLabel]="'ASSISTANT.OUTCOMES.answered' | translate"></nz-option>
@@ -263,62 +263,31 @@
           </button>
         </form>
 
-        <nz-table
-          #logsTable
-          [nzData]="logs()"
-          [nzPageSize]="10"
-          nzBordered
-          nzSize="middle"
-        >
-          <thead>
-            <tr>
-              <th nzWidth="15%">{{ 'ASSISTANT.LOG_DATE' | translate }}</th>
-              <th nzWidth="35%">{{ 'ASSISTANT.QUESTION' | translate }}</th>
-              <th nzWidth="15%">{{ 'ASSISTANT.RESOLVER' | translate }}</th>
-              <th nzWidth="15%">{{ 'ASSISTANT.OUTCOME' | translate }}</th>
-              <th nzWidth="10%">{{ 'ASSISTANT.ROW_COUNT' | translate }}</th>
-              <th nzWidth="10%">{{ 'COMMON.DETAILS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of logsTable.data; track log.id) {
-              <tr>
-                <td>{{ log.created_at }}</td>
-                <td class="font-medium">{{ log.question }}</td>
-                <td><code>{{ log.resolver }}</code></td>
-                <td>
-                  <nz-tag [nzColor]="getOutcomeColor(log.outcome)">
-                    {{ log.outcome }}
-                  </nz-tag>
-                </td>
-                <td>{{ log.row_count }}</td>
-                <td>
-                  <button
-                    nz-button
-                    nzType="link"
-                    type="button"
-                    (click)="openLogDrawer(log)"
-                  >
-                    <i class="fa-solid fa-eye mr-1"></i>
-                    {{ 'COMMON.VIEW' | translate }}
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="logGrid" [columns]="logColumns()" [actionsTemplate]="logActionsTpl" [exportFileName]="'assistant-logs'" />
+
+        <ng-template #logResolverTpl let-log><code>{{ log.resolver }}</code></ng-template>
+        <ng-template #logOutcomeTpl let-log>
+          <nz-tag [nzColor]="getOutcomeColor(log.outcome)">{{ 'ASSISTANT.OUTCOMES.' + log.outcome | translate }}</nz-tag>
+        </ng-template>
+        <ng-template #logActionsTpl let-log>
+          <button nz-button nzType="link" type="button" (click)="openLogDrawer(log)">
+            <i class="fa-solid fa-eye mr-1"></i>
+            {{ 'COMMON.VIEW' | translate }}
+          </button>
+        </ng-template>
       </nz-card>
     </nz-tab>
   </nz-tabs>
 
   <!-- Log Detail Drawer -->
-  <nz-drawer
+  <nz-modal
     [nzVisible]="isLogDrawerVisible()"
     [nzTitle]="'ASSISTANT.LOG_DETAIL_TITLE' | translate"
-    [nzWidth]="480"
-    (nzOnClose)="closeLogDrawer()"
+    [nzWidth]="720"
+    [nzFooter]="null"
+    (nzOnCancel)="closeLogDrawer()"
   >
-    <ng-container *nzDrawerContent>
+    <ng-container *nzModalContent>
       @if (selectedLog(); as log) {
         <div class="log-detail-content">
           <div class="detail-group">
@@ -366,5 +335,5 @@
         </div>
       }
     </ng-container>
-  </nz-drawer>
+  </nz-modal>
 </div>

@@ -1,17 +1,71 @@
-.stats-row {
-  margin-bottom: 16px;
+:host {
+  display: block;
 }
-.tab-toolbar {
+
+.stats-row {
+  margin-bottom: var(--space-4);
+}
+
+.tab-toolbar,
+.tab-intro {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
+
 .search-input {
   width: 280px;
+  max-width: 100%;
 }
+
 .spacer {
   flex: 1;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-3);
+
+  > nz-form-item {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.positive {
+  color: var(--status-success);
+}
+
+.negative {
+  color: var(--status-danger);
+}
+
+.format-options {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+  }
 }

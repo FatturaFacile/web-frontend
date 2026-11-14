@@ -23,6 +23,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
  */
 @Component({
   selector: 'app-reset-password',
+  styleUrl: './reset-password.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -166,7 +167,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
                 </ng-template>
               </nz-form-item>
 
-              <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()">
+              <button nz-button nzType="primary" nzSize="large" nzBlock type="submit" [nzLoading]="isSubmitting()" [disabled]="form.invalid">
                 {{ 'AUTH.RESET_SUBMIT' | translate }}
               </button>
             </form>
@@ -185,7 +186,6 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
       </div>
     </main>
   `,
-  styleUrls: ['../login/login.component.scss', '../register/register.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);

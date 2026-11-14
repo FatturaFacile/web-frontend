@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -11,6 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
+  FetchGridModel,
   GeneralLedgerApiService,
   GeneralLedgerFiscalApiService,
   GlFiscalYear,
@@ -18,13 +19,19 @@ import {
   PermissionsService,
   TranslateService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { BaseTableComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective } from '@shared';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dates';
+import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-gl-fiscal-years',
+  styleUrl: './gl-fiscal-years.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
@@ -40,17 +47,17 @@ import { currentYearEnd, currentYearStart, downloadBlob } from '../shared/gl-dat
   ],
   templateUrl: './gl-fiscal-years.component.html',
 })
-export class GlFiscalYearsComponent implements OnInit {
+export class GlFiscalYearsComponent {
   private readonly translate = inject(TranslateService);
   private readonly api = inject(GeneralLedgerApiService);
   private readonly fiscalApi = inject(GeneralLedgerFiscalApiService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
-  protected readonly items = signal<GlFiscalYear[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly grid = new FetchGridModel<GlFiscalYear>((query) => this.api.getFiscalYears(query));
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly reopenModalOpen = signal(false);
@@ -64,29 +71,31 @@ export class GlFiscalYearsComponent implements OnInit {
   protected anhangPledgedAssets = '0.00';
   protected anhangLeasingCommitments = '0.00';
   protected readonly error = signal<unknown>(null);
-  protected expandedYears: Record<string, boolean> = {};
   protected auditFrom = currentYearStart();
   protected auditTo = currentYearEnd();
 
   protected readonly form = this.fb.group({
     year_code: this.fb.control('', [Validators.required, Validators.maxLength(20)]),
     start_date: this.fb.control('', Validators.required),
-    end_date: this.fb.control('', Validators.required),
+    end_date: this.fb.control('', [Validators.required, endsNotBefore('start_date', { strict: true })]),
   });
 
-  ngOnInit(): void {
-    this.load();
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: GlFiscalYear; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<GlFiscalYear>[]>(() => [
+    { key: 'year_code', header: 'GL.YEAR_CODE' },
+    { key: 'start_date', header: 'GL.START_DATE' },
+    { key: 'end_date', header: 'GL.END_DATE' },
+    { key: 'status', header: 'GL.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
+
+  constructor() {
+    // The API requires end_date after start_date.
+    revalidateOnStartChange(this.form, 'start_date', 'end_date', this.destroyRef);
   }
 
   protected load(): void {
-    this.loading.set(true);
-    this.api.getFiscalYears().subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.grid.reload();
   }
 
   protected openCreate(): void {

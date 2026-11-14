@@ -182,37 +182,36 @@ describe('CrmApiService', () => {
     };
 
     service.getDuplicates({ entity: 'contacts', email: 'dup@example.com' }).subscribe((res) => {
-      expect(res.data.mode).toBe('matches');
+      expect(res.mode).toBe('matches');
     });
 
     const reqDup = httpMock.expectOne((r) => r.url === `${baseUrl}/duplicates` && r.params.get('email') === 'dup@example.com');
     expect(reqDup.request.method).toBe('GET');
-    reqDup.flush({ success: true, data: mockDuplicates });
+    reqDup.flush(mockDuplicates);
 
     const mergePayload = {
-      survivor_contact_id: 'c-1',
-      merged_contact_id: 'c-2',
+      survivor_id: 'c-1',
+      merged_id: 'c-2',
+      fill_missing: false,
     };
 
     service.mergeContacts(mergePayload).subscribe((res) => {
-      expect(res.data.id).toBe('merge-1');
+      expect(res.id).toBe('merge-1');
     });
 
     const reqMerge = httpMock.expectOne(`${baseUrl}/contact-merges`);
     expect(reqMerge.request.method).toBe('POST');
+    expect(reqMerge.request.body).toEqual({ survivor_id: 'c-1', merged_id: 'c-2', fill_missing: false });
     reqMerge.flush({
-      success: true,
-      data: {
-        id: 'merge-1',
-        survivor_contact_id: 'c-1',
-        merged_contact_id: 'c-2',
-        repointed: {},
-        retained: {},
-        filled_fields: [],
-        merged_snapshot: {},
-        merged_by_user_id: 'u-1',
-        created_at: '2026-11-08',
-      },
+      id: 'merge-1',
+      survivor_contact_id: 'c-1',
+      merged_contact_id: 'c-2',
+      repointed: {},
+      retained: {},
+      filled_fields: [],
+      merged_snapshot: {},
+      merged_by_user_id: 'u-1',
+      created_at: '2026-11-08',
     });
   });
 
@@ -231,35 +230,48 @@ describe('CrmApiService', () => {
     };
 
     service.getConsents({ contact_id: 'c-1' }).subscribe((res) => {
-      expect(res.data.effective.length).toBe(1);
+      expect(res.effective.length).toBe(1);
     });
 
     const reqGetConsents = httpMock.expectOne((r) => r.url === `${baseUrl}/consents` && r.params.get('contact_id') === 'c-1');
     expect(reqGetConsents.request.method).toBe('GET');
-    reqGetConsents.flush({ success: true, data: mockConsents });
+    reqGetConsents.flush(mockConsents);
 
     const consentPayload: StoreConsentPayload = {
       contact_id: 'c-1',
       channel: 'email',
       purpose: 'marketing',
       status: 'granted',
-      source: 'app_admin',
+      source: 'in_person',
     };
 
     service.storeConsent(consentPayload).subscribe((res) => {
-      expect(res.data.id).toBe('consent-1');
+      expect(res.id).toBe('consent-1');
     });
 
     const reqStoreConsent = httpMock.expectOne(`${baseUrl}/consents`);
     expect(reqStoreConsent.request.method).toBe('POST');
-    reqStoreConsent.flush({
-      success: true,
-      data: {
-        id: 'consent-1',
-        ...consentPayload,
-        captured_at: '2026-11-08',
-        created_at: '2026-11-08',
-      },
+    expect(reqStoreConsent.request.body).toEqual({
+      contact_id: 'c-1',
+      channel: 'email',
+      purpose: 'marketing',
+      status: 'granted',
+      source: 'in_person',
     });
+    reqStoreConsent.flush({
+      id: 'consent-1',
+      ...consentPayload,
+      captured_at: '2026-11-08',
+      created_at: '2026-11-08',
+    });
+  });
+
+  it('queues the contact statement email with as_of/to', () => {
+    service.emailContactStatement('c-1', { as_of: '2026-11-01', to: 'a@b.it' }).subscribe();
+
+    const req = httpMock.expectOne(`${baseUrl}/contacts/c-1/statement/email`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ as_of: '2026-11-01', to: 'a@b.it' });
+    req.flush({ success: true, data: {} });
   });
 });

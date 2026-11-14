@@ -5,6 +5,7 @@ import { TranslatePipe } from '@shared';
 /** Minimal pointer-driven signature pad; emits the drawing as a PNG data URL (or null when cleared). */
 @Component({
   selector: 'app-signature-pad',
+  styleUrl: './signature-pad.component.scss',
   imports: [NzButtonModule, TranslatePipe],
   template: `
     <canvas
@@ -20,9 +21,6 @@ import { TranslatePipe } from '@shared';
       (pointerleave)="end()"
     ></canvas>
     <button nz-button nzSize="small" type="button" (click)="clear()">{{ 'SC.COMMON.CLEAR' | translate }}</button>
-  `,
-  styles: `
-    .pad { display: block; width: 100%; max-width: 480px; border: 1px dashed #999; border-radius: 4px; touch-action: none; background: #fff; margin-bottom: 8px; }
   `,
 })
 export class SignaturePadComponent {

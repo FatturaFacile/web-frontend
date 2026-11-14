@@ -8,21 +8,25 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { AssetLedgerType, AssetRegisterRow, AuthStore, EamOpsApiService, ExpiringAsset } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { downloadBlob } from '../../general-ledger/shared/gl-dates';
 
 /** Asset register of a year and ledger (JSON or CSV) and the warranty and insurance expiry alerts. */
 @Component({
   selector: 'app-ea-register',
-  imports: [FormsModule, NzButtonModule, NzCardModule, NzInputNumberModule, NzSelectModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
+  styleUrl: './ea-register.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzCardModule, NzInputNumberModule, NzSelectModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
       <nz-tabs>
         <nz-tab [nzTitle]="'EA.ASSET_REGISTER' | translate">
-          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+          <div class="report-toolbar">
             <label for="rg-year">{{ 'EA.YEAR' | translate }}</label>
             <nz-input-number id="rg-year" [(ngModel)]="year" [nzMin]="2000" [nzMax]="2100" />
-            <nz-select style="min-width: 160px" [attr.aria-label]="'EA.LEDGER' | translate" [(ngModel)]="ledger">
+            <nz-select [attr.aria-label]="'EA.LEDGER' | translate" [(ngModel)]="ledger">
               @for (type of ledgers; track type) {
                 <nz-option [nzValue]="type" [nzLabel]="type" />
               }
@@ -43,15 +47,15 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
           >
             <thead>
               <tr>
-                <th>{{ 'EA.CODE' | translate }}</th>
-                <th>{{ 'EA.NAME' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.COST_START' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.ADDITIONS' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.DISPOSALS' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.COST_END' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.DEPRECIATION_YEAR' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.ACCUMULATED_END' | translate }}</th>
-                <th nzAlign="right">{{ 'EA.NET_BOOK_VALUE' | translate }}</th>
+                <th [nzSortFn]="'asset_number' | gridSort" [nzFilters]="'asset_number' | gridFilterList: registerTable.nzData" [nzFilterFn]="'asset_number' | gridFilterFn">{{ 'EA.CODE' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: registerTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'cost_start' | gridSort" [nzFilters]="'cost_start' | gridFilterList: registerTable.nzData" [nzFilterFn]="'cost_start' | gridFilterFn">{{ 'EA.COST_START' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'additions' | gridSort" [nzFilters]="'additions' | gridFilterList: registerTable.nzData" [nzFilterFn]="'additions' | gridFilterFn">{{ 'EA.ADDITIONS' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'disposals_cost' | gridSort" [nzFilters]="'disposals_cost' | gridFilterList: registerTable.nzData" [nzFilterFn]="'disposals_cost' | gridFilterFn">{{ 'EA.DISPOSALS' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'cost_end' | gridSort" [nzFilters]="'cost_end' | gridFilterList: registerTable.nzData" [nzFilterFn]="'cost_end' | gridFilterFn">{{ 'EA.COST_END' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'depreciation_year' | gridSort" [nzFilters]="'depreciation_year' | gridFilterList: registerTable.nzData" [nzFilterFn]="'depreciation_year' | gridFilterFn">{{ 'EA.DEPRECIATION_YEAR' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'accumulated_end' | gridSort" [nzFilters]="'accumulated_end' | gridFilterList: registerTable.nzData" [nzFilterFn]="'accumulated_end' | gridFilterFn">{{ 'EA.ACCUMULATED_END' | translate }}</th>
+                <th nzAlign="right" [nzSortFn]="'net_book_value_end' | gridSort" [nzFilters]="'net_book_value_end' | gridFilterList: registerTable.nzData" [nzFilterFn]="'net_book_value_end' | gridFilterFn">{{ 'EA.NET_BOOK_VALUE' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -76,10 +80,10 @@ import { downloadBlob } from '../../general-ledger/shared/gl-dates';
           <nz-table #expiringTable nzSize="middle" [nzData]="expiring()" [nzShowPagination]="false">
             <thead>
               <tr>
-                <th>{{ 'EA.CODE' | translate }}</th>
-                <th>{{ 'EA.NAME' | translate }}</th>
-                <th>{{ 'EA.WARRANTY_EXPIRY' | translate }}</th>
-                <th>{{ 'EA.INSURANCE_EXPIRY' | translate }}</th>
+                <th [nzSortFn]="'asset_number' | gridSort" [nzFilters]="'asset_number' | gridFilterList: expiringTable.nzData" [nzFilterFn]="'asset_number' | gridFilterFn">{{ 'EA.CODE' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: expiringTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
+                <th [nzSortFn]="'warranty_provider' | gridSort" [nzFilters]="'warranty_provider' | gridFilterList: expiringTable.nzData" [nzFilterFn]="'warranty_provider' | gridFilterFn">{{ 'EA.WARRANTY_EXPIRY' | translate }}</th>
+                <th [nzSortFn]="'insurance_provider' | gridSort" [nzFilters]="'insurance_provider' | gridFilterList: expiringTable.nzData" [nzFilterFn]="'insurance_provider' | gridFilterFn">{{ 'EA.INSURANCE_EXPIRY' | translate }}</th>
               </tr>
             </thead>
             <tbody>

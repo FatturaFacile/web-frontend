@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { applyServerErrors, HrTalentApiService, I18nService, isValidationError } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -9,17 +9,34 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { decimalStringValidator } from '../shared/hr-decimal.validator';
 import { reportHttpError } from '../shared/hr-http.util';
 
+/** Weekly hours mirror the API rule between:1,60 (empty is allowed). */
+function weeklyHoursRangeValidator(control: AbstractControl): ValidationErrors | null {
+  const raw = String(control.value ?? '').trim();
+  if (raw === '' || Number.isNaN(Number(raw))) {
+    return null;
+  }
+  const hours = Number(raw);
+  return hours >= 1 && hours <= 60 ? null : { range: true };
+}
+
 /** Hires a candidate: creates the employee (and the onboarding checklist when a template is given). */
 @Component({
   selector: 'app-application-hire',
-  imports: [ReactiveFormsModule, NzFormModule, NzInputModule, NzModalModule, TranslatePipe],
+  styleUrl: './application-hire.component.scss',
+  imports: [
+    ModalActionsDirective,
+    ReactiveFormsModule,
+    NzFormModule,
+    NzInputModule,
+    NzModalModule,
+    TranslatePipe,
+  ],
   template: `
     <nz-modal
       [nzVisible]="applicationId() !== null"
       [nzTitle]="'hrmRecruiting.hire' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="saving()"
+      [nzOkDisabled]="form.invalid"
       (nzOnOk)="submit()"
       (nzOnCancel)="closed.emit()"
     >
@@ -69,8 +86,8 @@ export class ApplicationHireComponent {
   protected readonly form = this.fb.group({
     base_annual_salary: ['', [Validators.required, decimalStringValidator]],
     hire_date: ['', Validators.required],
-    work_email: [''],
-    weekly_hours: ['', decimalStringValidator],
+    work_email: ['', [Validators.email, Validators.maxLength(180)]],
+    weekly_hours: ['', [decimalStringValidator, weeklyHoursRangeValidator]],
   });
 
   protected errorTip(key: string): string {
@@ -78,7 +95,16 @@ export class ApplicationHireComponent {
     if (errors?.['serverError']) {
       return String(errors['serverError']);
     }
-    return this.i18n.translate(errors?.['decimal'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required');
+    if (errors?.['required']) {
+      return this.i18n.translate('hrmCommon.required');
+    }
+    if (errors?.['email']) {
+      return this.i18n.translate('COMMON.VALIDATION.INVALID_EMAIL');
+    }
+    if (errors?.['decimal']) {
+      return this.i18n.translate('hrmCommon.invalidDecimal');
+    }
+    return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
   }
 
   protected submit(): void {

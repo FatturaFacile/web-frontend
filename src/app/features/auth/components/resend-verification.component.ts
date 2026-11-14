@@ -12,6 +12,7 @@ type ResendState = 'idle' | 'sending' | 'sent' | 'throttled' | 'failed';
 /** Requests a new verification link. The backend answers the same way for unknown addresses. */
 @Component({
   selector: 'app-resend-verification',
+  styleUrl: './resend-verification.component.scss',
   imports: [FormsModule, NzAlertModule, NzButtonModule, NzInputModule, TranslatePipe],
   template: `
     @if (state() === 'sent') {
@@ -26,6 +27,7 @@ type ResendState = 'idle' | 'sending' | 'sent' | 'throttled' | 'failed';
           type="email"
           autocomplete="email"
           required
+          maxlength="255"
           [ngModel]="address()"
           (ngModelChange)="address.set($event)"
         />
@@ -45,14 +47,6 @@ type ResendState = 'idle' | 'sending' | 'sent' | 'throttled' | 'failed';
       @if (state() === 'failed') {
         <nz-alert nzType="error" nzShowIcon [nzMessage]="'AUTH.RESEND_FAILED' | translate" />
       }
-    }
-  `,
-  styles: `
-    .resend {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 8px;
     }
   `,
 })

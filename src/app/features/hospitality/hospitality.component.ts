@@ -1,10 +1,10 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -20,13 +20,16 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  FetchGridModel,
   HospitalityApiService,
   HospitalityKitchenTicket,
   HospitalityOrder,
   HospitalityOrderItem,
   HospitalityOrderRequest,
   HospitalityOrderStatus,
+  HospitalityPaymentMethod,
   HospitalityPaymentRequest,
+  HospitalityTableShape,
   HospitalityReservation,
   HospitalityReservationRequest,
   HospitalityRoom,
@@ -35,13 +38,24 @@ import {
   HospitalityTableRequest,
   HospitalityTableStatus,
   KitchenTicketStatus,
+  RetailApiService,
+  RetailPosSession,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { positiveNumber } from '@shared/utils/decimal-validators';
+import { uuidFormat } from '@shared/utils/uuid-validator';
+import { validationTipKey } from '@shared/utils/validation-tip';
 
 @Component({
   selector: 'app-hospitality',
+  styleUrl: './hospitality.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     UpperCasePipe,
     FormsModule,
@@ -56,7 +70,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,
@@ -68,13 +81,14 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './hospitality.component.html',
-  styleUrl: './hospitality.component.scss',
 })
 export class HospitalityComponent implements OnInit {
   private readonly api = inject(HospitalityApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly retailApi = inject(RetailApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly selectedTabIndex = signal<number>(0);
 
@@ -100,8 +114,13 @@ export class HospitalityComponent implements OnInit {
   readonly ticketsLoading = signal<boolean>(false);
 
   // --- TAB 4: RESERVATIONS ---
-  readonly reservations = signal<HospitalityReservation[]>([]);
-  readonly reservationsLoading = signal<boolean>(false);
+  readonly reservationsGrid = new FetchGridModel<HospitalityReservation, { date: string; page?: number; per_page?: number; search?: string }>(
+    (query) => this.api.getReservations(query),
+  );
+  readonly reservations = this.reservationsGrid.items;
+  /** Day shown in the reservations tab (Y-m-d): the API lists one day at a time. */
+  readonly reservationDate = signal<string>(new Date().toLocaleDateString('en-CA'));
+  readonly openPosSessions = signal<RetailPosSession[]>([]);
 
   // Derived metrics
   readonly totalActiveCovers = computed(() =>
@@ -127,31 +146,32 @@ export class HospitalityComponent implements OnInit {
 
   // --- FORMS ---
   readonly roomForm = this.fb.group({
-    name: ['', [Validators.required]],
-    sort_order: [1],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    sort_order: [1, [Validators.min(0)]],
     width: [1000],
     height: [600],
   });
 
   readonly tableForm = this.fb.group({
     room_id: ['', [Validators.required]],
-    name: ['', [Validators.required]],
-    seats: [4, [Validators.required, Validators.min(1)]],
-    shape: ['rect' as 'rect' | 'round', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(30)]],
+    seats: [4, [Validators.required, Validators.min(1), Validators.max(100)]],
+    shape: ['rectangle' as HospitalityTableShape, [Validators.required]],
   });
 
   readonly orderForm = this.fb.group({
     table_id: ['', [Validators.required]],
-    covers: [2, [Validators.required, Validators.min(1)]],
-    notes: [''],
+    covers: [2, [Validators.required, Validators.min(1), Validators.max(100)]],
+    notes: ['', [Validators.maxLength(500)]],
   });
 
   readonly addItemForm = this.fb.group({
-    name: ['', [Validators.required]],
+    description: ['', [Validators.required, Validators.maxLength(255)]],
     quantity: [1, [Validators.required, Validators.min(1)]],
-    unit_price: ['12.00', [Validators.required]],
-    course: [1, [Validators.required, Validators.min(1)]],
-    notes: [''],
+    unit_price: ['12.00', [Validators.required, Validators.pattern(/^\d+(\.\d{1,4})?$/)]],
+    tax_rate: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
+    course: [1, [Validators.required, Validators.min(1), Validators.max(9)]],
+    notes: ['', [Validators.maxLength(255)]],
   });
 
   readonly moveOrderForm = this.fb.group({
@@ -159,25 +179,61 @@ export class HospitalityComponent implements OnInit {
   });
 
   readonly payForm = this.fb.group({
-    payment_method: ['card', [Validators.required]],
+    pos_session_id: ['', [Validators.required, uuidFormat]],
+    ways: [1, [Validators.required, Validators.min(1), Validators.max(100)]],
+    payment_method: ['card' as HospitalityPaymentMethod, [Validators.required]],
     cash_amount: [0],
   });
 
   readonly reservationForm = this.fb.group({
-    guest_name: ['', [Validators.required]],
-    guest_phone: [''],
-    party_size: [2, [Validators.required, Validators.min(1)]],
+    guest_name: ['', [Validators.required, Validators.maxLength(150)]],
+    guest_phone: ['', [Validators.maxLength(40)]],
+    party_size: [2, [Validators.required, Validators.min(1), Validators.max(100)]],
     starts_at: [new Date().toISOString().substring(0, 16), [Validators.required]],
-    duration_minutes: [120, [Validators.required]],
+    duration_minutes: [120, [Validators.required, Validators.min(15), Validators.max(720)]],
     table_id: [''],
-    notes: [''],
+    notes: ['', [Validators.maxLength(500)]],
   });
+
+  /** Translation key of the error shown under a control of the forms of this page. */
+  errorKey(control: AbstractControl | null): string {
+    return control?.hasError('required') ? 'COMMON.FIELD_REQUIRED' : validationTipKey(control) || 'COMMON.VALIDATION.INVALID_VALUE';
+  }
+
+  private readonly resGuestTpl = viewChild<TemplateRef<unknown>>('resGuestTpl');
+  private readonly resPartyTpl = viewChild<TemplateRef<unknown>>('resPartyTpl');
+  private readonly resStartsTpl = viewChild<TemplateRef<unknown>>('resStartsTpl');
+  private readonly resDurationTpl = viewChild<TemplateRef<unknown>>('resDurationTpl');
+  private readonly resStatusTpl = viewChild<TemplateRef<unknown>>('resStatusTpl');
+
+  protected readonly reservationColumns = computed<TableColumnDef<HospitalityReservation>[]>(() => [
+    { key: 'guest_name', header: 'HOSPITALITY.GUEST_NAME', customCellTemplate: this.resGuestTpl() },
+    { key: 'guest_phone', header: 'HOSPITALITY.GUEST_PHONE', valueGetter: (r) => r.guest_phone || '-' },
+    { key: 'party_size', header: 'HOSPITALITY.PARTY_SIZE', customCellTemplate: this.resPartyTpl() },
+    { key: 'starts_at', header: 'HOSPITALITY.DATE_TIME', customCellTemplate: this.resStartsTpl() },
+    { key: 'duration_minutes', header: 'HOSPITALITY.DURATION', customCellTemplate: this.resDurationTpl() },
+    { key: 'status', header: 'HOSPITALITY.STATUS', valueGetter: (r) => this.reservationStatusLabel(r.status), valueLabel: (value) => this.reservationStatusLabel(value), customCellTemplate: this.resStatusTpl() },
+    { key: 'notes', header: 'HOSPITALITY.NOTES', valueGetter: (r) => r.notes || '-' },
+  ]);
+
+  protected reservationStatusLabel(status: string): string {
+    return this.translate.instant('HOSPITALITY.RES_' + status.toUpperCase());
+  }
+
+  constructor() {
+    this.reservationsGrid.setFilter({ date: this.reservationDate() });
+    // A mixed payment needs the cash part (greater than zero), the other methods do not.
+    this.payForm.controls.payment_method.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((method) => {
+      const cash = this.payForm.controls.cash_amount;
+      cash.setValidators(method === 'mixed' ? [Validators.required, positiveNumber] : []);
+      cash.updateValueAndValidity();
+    });
+  }
 
   ngOnInit(): void {
     this.loadRooms();
     this.loadOrders();
     this.loadKitchenTickets();
-    this.loadReservations();
   }
 
   // --- ROOMS & TABLES METHODS ---
@@ -248,7 +304,7 @@ export class HospitalityComponent implements OnInit {
       room_id: this.selectedRoomId() || this.rooms()[0]?.id || '',
       name: `Tavolo ${(this.tables().length || 0) + 1}`,
       seats: 4,
-      shape: 'rect',
+      shape: 'rectangle',
     });
     this.tableModalVisible.set(true);
   }
@@ -360,9 +416,10 @@ export class HospitalityComponent implements OnInit {
 
   openAddItemModal(): void {
     this.addItemForm.reset({
-      name: '',
+      description: '',
       quantity: 1,
       unit_price: '12.00',
+      tax_rate: 10,
       course: 1,
       notes: '',
     });
@@ -380,9 +437,10 @@ export class HospitalityComponent implements OnInit {
       .addOrderItems(order.id, {
         items: [
           {
-            name: val.name,
+            description: val.description,
             quantity: Number(val.quantity),
             unit_price: val.unit_price,
+            tax_rate: Number(val.tax_rate),
             course: Number(val.course),
             notes: val.notes || undefined,
           },
@@ -451,8 +509,20 @@ export class HospitalityComponent implements OnInit {
   openPayModal(order: HospitalityOrder): void {
     this.selectedOrder.set(order);
     this.payForm.reset({
+      pos_session_id: '',
+      ways: 1,
       payment_method: 'card',
-      cash_amount: parseFloat(order.total_amount) || 0,
+      cash_amount: 0,
+    });
+    this.retailApi.getPosSessions().subscribe({
+      next: (res) => {
+        const open = (res.data?.data ?? []).filter((session) => session.status === 'open');
+        this.openPosSessions.set(open);
+        if (open.length === 1) {
+          this.payForm.controls.pos_session_id.setValue(open[0].id);
+        }
+      },
+      error: () => this.openPosSessions.set([]),
     });
     this.payModalVisible.set(true);
   }
@@ -465,8 +535,11 @@ export class HospitalityComponent implements OnInit {
     }
     const val = this.payForm.getRawValue();
     const payload: HospitalityPaymentRequest = {
+      pos_session_id: val.pos_session_id,
+      mode: 'equal',
+      ways: Number(val.ways),
       payment_method: val.payment_method,
-      cash_amount: val.cash_amount ? Number(val.cash_amount) : undefined,
+      cash_amount: val.payment_method === 'mixed' ? Number(val.cash_amount) : undefined,
     };
 
     this.api.payOrder(order.id, payload).subscribe({
@@ -537,16 +610,7 @@ export class HospitalityComponent implements OnInit {
 
   // --- RESERVATIONS METHODS ---
   loadReservations(): void {
-    this.reservationsLoading.set(true);
-    this.api.getReservations().subscribe({
-      next: (res) => {
-        this.reservations.set(res.data || []);
-        this.reservationsLoading.set(false);
-      },
-      error: () => {
-        this.reservationsLoading.set(false);
-      },
-    });
+    this.reservationsGrid.reload();
   }
 
   openCreateReservationModal(): void {
@@ -560,6 +624,13 @@ export class HospitalityComponent implements OnInit {
       notes: '',
     });
     this.reservationModalVisible.set(true);
+  }
+
+  onReservationDateChange(date: string): void {
+    if (date) {
+      this.reservationDate.set(date);
+      this.reservationsGrid.setFilter({ date });
+    }
   }
 
   saveReservation(): void {
@@ -603,7 +674,9 @@ export class HospitalityComponent implements OnInit {
   }
 
   cancelReservation(res: HospitalityReservation): void {
-    this.api.updateReservationStatus(res.id, { status: 'cancelled' }).subscribe({
+    this.api
+      .updateReservationStatus(res.id, { status: 'cancelled', reason: this.translate.instant('HOSPITALITY.RESERVATION_CANCEL_REASON') })
+      .subscribe({
       next: () => {
         this.message.success(this.translate.instant('HOSPITALITY.RESERVATION_CANCELLED'));
         this.loadReservations();

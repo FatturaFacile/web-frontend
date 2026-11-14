@@ -4,20 +4,11 @@
 >
   <div class="header-actions">
     @if (selectedTabIndex() === 0) {
-      <button nz-button nzType="primary" (click)="openCreateFolderModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_FOLDER' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFolderModal()"></button>
     } @else if (selectedTabIndex() === 1) {
-      <button nz-button nzType="primary" (click)="openCreateStockModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_STOCK_UNIT' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateStockModal()"></button>
     } @else if (selectedTabIndex() === 2) {
-      <button nz-button nzType="primary" (click)="openCreateRecurringModal()">
-        <span nz-icon nzType="plus"></span>
-        {{ 'WORKSHOP.NEW_RECURRING' | translate }}
-      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateRecurringModal()"></button>
     }
   </div>
 </app-page-header>
@@ -38,14 +29,14 @@
                 [placeholder]="'WORKSHOP.SEARCH_PLACEHOLDER' | translate"
                 [ngModel]="filterFolderSearch()"
                 (ngModelChange)="filterFolderSearch.set($event)"
-                (keyup.enter)="loadFolders()"
+                (keyup.enter)="applyFolderFilters()"
               />
             </nz-input-wrapper>
 
             <nz-select
               class="status-select"
               [ngModel]="filterFolderStatus()"
-              (ngModelChange)="filterFolderStatus.set($event); loadFolders()"
+              (ngModelChange)="filterFolderStatus.set($event); applyFolderFilters()"
               [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
               nzAllowClear
             >
@@ -66,55 +57,14 @@
         </div>
 
         <!-- Folders Table -->
-        <nz-table
-          #foldersTable
-          nzShowSizeChanger
-          [nzData]="folders()"
-          [nzTotal]="foldersTotal()"
-          [nzLoading]="foldersLoading()"
-          [nzPageIndex]="foldersPageIndex()"
-          [nzPageSize]="foldersPageSize()"
-          [nzFrontPagination]="false"
-          (nzQueryParams)="onFoldersTableQueryChange($event)"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_CUSTOMER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MILEAGE_IN' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL_NET' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL_GROSS' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (folder of foldersTable.data; track folder.id) {
-              <tr>
-                <td>
-                  <strong>{{ folder.folder_number }}</strong>
-                </td>
-                <td>
-                  <div>{{ folder.license_plate || folder.vehicle_id }}</div>
-                  <small class="text-muted">{{ folder.vehicle_model || folder.vin }}</small>
-                </td>
-                <td>{{ folder.customer_name || '-' }}</td>
-                <td>
-                  <nz-tag>{{ folder.kind | uppercase }}</nz-tag>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="getFolderStatusColor(folder.status)">
-                    {{ folder.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>{{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}</td>
-                <td>{{ folder.total_net | money: folder.currency }}</td>
-                <td>
-                  <strong>{{ folder.total_gross | money: folder.currency }}</strong>
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="foldersGrid"
+          [columns]="folderColumns()"
+          [actionsTemplate]="folderActions"
+          exportFileName="workshop-folders"
+        />
+
+        <ng-template #folderActions let-folder>
                   <nz-space>
                     <button
                       *nzSpaceItem
@@ -190,11 +140,7 @@
                       <span nz-icon nzType="dollar"></span>
                     </button>
                   </nz-space>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
 
@@ -206,12 +152,12 @@
             <nz-select
               class="status-select"
               [ngModel]="filterStockStatus()"
-              (ngModelChange)="filterStockStatus.set($event); loadStock()"
+              (ngModelChange)="filterStockStatus.set($event); applyStockFilters()"
               [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
               nzAllowClear
             >
               <nz-option nzValue="" [nzLabel]="'WORKSHOP.ALL_STATUSES' | translate"></nz-option>
-              <nz-option nzValue="available" [nzLabel]="'WORKSHOP.STOCK_AVAILABLE' | translate"></nz-option>
+              <nz-option nzValue="in_stock" [nzLabel]="'WORKSHOP.STOCK_AVAILABLE' | translate"></nz-option>
               <nz-option nzValue="reserved" [nzLabel]="'WORKSHOP.STOCK_RESERVED' | translate"></nz-option>
               <nz-option nzValue="sold" [nzLabel]="'WORKSHOP.STOCK_SOLD' | translate"></nz-option>
             </nz-select>
@@ -223,70 +169,14 @@
           </div>
         </div>
 
-        <nz-table
-          #stockTable
-          nzShowSizeChanger
-          [nzData]="stockUnits()"
-          [nzTotal]="stockTotal()"
-          [nzLoading]="stockLoading()"
-          [nzPageIndex]="stockPageIndex()"
-          [nzPageSize]="stockPageSize()"
-          [nzFrontPagination]="false"
-          (nzQueryParams)="onStockTableQueryChange($event)"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'WORKSHOP.COL_STOCK_NUM' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MAKE_MODEL' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_CONDITION' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_YEAR_KM' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PURCHASE_COST' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_LIST_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_BUYER' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (unit of stockTable.data; track unit.id) {
-              <tr>
-                <td>
-                  <strong>{{ unit.stock_number }}</strong>
-                  @if (unit.vin) {
-                    <br /><small class="text-muted">{{ unit.vin }}</small>
-                  }
-                </td>
-                <td>
-                  <strong>{{ unit.make }} {{ unit.model }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="unit.condition === 'new' ? 'cyan' : 'orange'">
-                    {{ unit.condition | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  {{ unit.year || '-' }} / {{ unit.mileage ? (unit.mileage | number) + ' km' : '-' }}
-                </td>
-                <td>
-                  {{ unit.purchase_cost ? (unit.purchase_cost | money: unit.currency) : '-' }}
-                </td>
-                <td>
-                  <strong>{{ unit.list_price | money: unit.currency }}</strong>
-                </td>
-                <td>
-                  <nz-tag [nzColor]="getStockStatusColor(unit.status)">
-                    {{ unit.status | uppercase }}
-                  </nz-tag>
-                </td>
-                <td>
-                  @if (unit.buyer_name) {
-                    {{ unit.buyer_name }}
-                    <br /><small class="text-muted">{{ unit.sold_at | date: 'mediumDate' }}</small>
-                  } @else {
-                    -
-                  }
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="stockGrid"
+          [columns]="stockColumns()"
+          [actionsTemplate]="stockActions"
+          exportFileName="vehicle-stock"
+        />
+
+        <ng-template #stockActions let-unit>
                   @if (unit.status !== 'sold') {
                     <button
                       nz-button
@@ -298,54 +188,21 @@
                       {{ 'WORKSHOP.ACTION_SELL' | translate }}
                     </button>
                   }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
 
     <!-- TAB 3: TAGLIANDI & MANUTENZIONI PERIODICHE -->
     <nz-tab [nzTitle]="'WORKSHOP.TAB_RECURRING' | translate">
       <nz-card>
-        <nz-table
-          #recurringTable
-          [nzData]="recurringServices()"
-          [nzLoading]="recurringLoading()"
-          [nzFrontPagination]="true"
-        >
-          <thead>
-            <tr>
-              <th>{{ 'WORKSHOP.COL_SERVICE_NAME' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VEHICLE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TYPE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_INTERVAL' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_START_DATE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
-              <th nzRight>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (rec of recurringTable.data; track rec.id) {
-              <tr>
-                <td>
-                  <strong>{{ rec.name }}</strong>
-                </td>
-                <td>{{ rec.license_plate || rec.vehicle_id }}</td>
-                <td>
-                  <nz-tag>{{ rec.service_type }}</nz-tag>
-                </td>
-                <td>{{ rec.interval }}</td>
-                <td>{{ rec.start_date | date: 'mediumDate' }}</td>
-                <td>{{ rec.unit_price | money: rec.currency }}</td>
-                <td>
-                  <nz-tag [nzColor]="rec.is_active ? 'success' : 'default'">
-                    {{ (rec.is_active ? 'WORKSHOP.ACTIVE' : 'WORKSHOP.STOPPED') | translate }}
-                  </nz-tag>
-                </td>
-                <td nzRight>
+        <app-base-table
+          [grid]="recurringGrid"
+          [columns]="recurringColumns()"
+          [actionsTemplate]="recurringActions"
+          exportFileName="recurring-services"
+        />
+
+        <ng-template #recurringActions let-rec>
                   @if (rec.is_active) {
                     <button
                       nz-button
@@ -360,24 +217,21 @@
                       {{ 'WORKSHOP.ACTION_STOP' | translate }}
                     </button>
                   }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        </ng-template>
       </nz-card>
     </nz-tab>
   </nz-tabs>
 </div>
 
 <!-- DRAWER: GESTIONE COMMESSA & RIGHE & TEMPI & STORICO -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="850"
+  [nzWidth]="960"
+  [nzFooter]="null"
   [nzTitle]="('WORKSHOP.DRAWER_TITLE' | translate) + ': ' + (selectedFolder()?.folder_number || '')"
-  (nzOnClose)="closeFolderDrawer()"
+  (nzOnCancel)="closeFolderDrawer()"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedFolder(); as folder) {
       <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
         <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_VEHICLE' | translate">
@@ -404,21 +258,18 @@
       <div class="drawer-section">
         <div class="drawer-section-header">
           <h4>{{ 'WORKSHOP.LINES_TITLE' | translate }}</h4>
-          <button nz-button nzType="primary" nzSize="small" (click)="openAddLineModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'WORKSHOP.ADD_LINE' | translate }}
-          </button>
+          <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openAddLineModal()"></button>
         </div>
 
         <nz-table #linesTable [nzData]="folderLines()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_QTY' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_VAT' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
+              <th [nzSortFn]="'line_type' | gridSort" [nzFilters]="'line_type' | gridFilterList: linesTable.nzData" [nzFilterFn]="'line_type' | gridFilterFn">{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: linesTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: linesTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'WORKSHOP.COL_QTY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: linesTable.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'tax_rate' | gridSort" [nzFilters]="'tax_rate' | gridFilterList: linesTable.nzData" [nzFilterFn]="'tax_rate' | gridFilterFn">{{ 'WORKSHOP.COL_VAT' | translate }}</th>
+              <th [nzSortFn]="'subtotal' | gridSort" [nzFilters]="'subtotal' | gridFilterList: linesTable.nzData" [nzFilterFn]="'subtotal' | gridFilterFn">{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
@@ -442,11 +293,10 @@
                     nzDanger
                     nzSize="small"
                     nz-popconfirm
+                    appIconAction="delete"
                     [nzPopconfirmTitle]="'WORKSHOP.CONFIRM_DELETE_LINE' | translate"
                     (nzOnConfirm)="deleteLine(line.id)"
-                  >
-                    <span nz-icon nzType="delete"></span>
-                  </button>
+                  ></button>
                 </td>
               </tr>
             }
@@ -486,10 +336,10 @@
         <nz-table #timeTable [nzData]="folderTimeEntries()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_TECH' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_START' | translate }}</th>
+              <th [nzSortFn]="'technician_name' | gridSort" [nzFilters]="'technician_name' | gridFilterList: timeTable.nzData" [nzFilterFn]="'technician_name' | gridFilterFn">{{ 'WORKSHOP.COL_TECH' | translate }}</th>
+              <th [nzSortFn]="'started_at' | gridSort" [nzFilters]="'started_at' | gridFilterList: timeTable.nzData" [nzFilterFn]="'started_at' | gridFilterFn">{{ 'WORKSHOP.COL_START' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_STOP' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
+              <th [nzSortFn]="'minutes' | gridSort" [nzFilters]="'minutes' | gridFilterList: timeTable.nzData" [nzFilterFn]="'minutes' | gridFilterFn">{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_BILLED' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
             </tr>
@@ -535,12 +385,12 @@
         <nz-table #historyTable [nzData]="vehicleHistory()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_KIND' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'folder_number' | gridSort" [nzFilters]="'folder_number' | gridFilterList: historyTable.nzData" [nzFilterFn]="'folder_number' | gridFilterFn">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort" [nzFilters]="'kind' | gridFilterList: historyTable.nzData" [nzFilterFn]="'kind' | gridFilterFn">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: historyTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_MILEAGE' | translate }}</th>
               <th>{{ 'WORKSHOP.COL_DATE' | translate }}</th>
-              <th>{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: historyTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -559,54 +409,95 @@
       </div>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <!-- MODAL: CREA COMMESSA -->
 <nz-modal
   [nzVisible]="folderModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_FOLDER' | translate"
+  okAction="create"
   (nzOnCancel)="folderModalVisible.set(false)"
+  [nzOkDisabled]="folderForm.invalid"
   (nzOnOk)="saveFolder()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="folderForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_VEH_001_TARGA' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
-        <nz-form-label>{{ 'WORKSHOP.FIELD_CONTACT_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="contact_id" [placeholder]="'WORKSHOP.LBL_ID_CLIENTE' | translate" />
+        <nz-form-label>{{ 'WORKSHOP.FIELD_CLIENT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="contact_id"
+            nzShowSearch
+            nzServerSearch
+            nzAllowClear
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_KIND' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="kind">
-            <nz-option nzValue="repair" [nzLabel]="'WORKSHOP.KIND_REPAIR' | translate"></nz-option>
-            <nz-option nzValue="maintenance" [nzLabel]="'WORKSHOP.KIND_MAINTENANCE' | translate"></nz-option>
+            <nz-option nzValue="mechanics" [nzLabel]="'WORKSHOP.KIND_MECHANICS' | translate"></nz-option>
             <nz-option nzValue="bodywork" [nzLabel]="'WORKSHOP.KIND_BODYWORK' | translate"></nz-option>
+            <nz-option nzValue="tyres" [nzLabel]="'WORKSHOP.KIND_TYRES' | translate"></nz-option>
             <nz-option nzValue="inspection" [nzLabel]="'WORKSHOP.KIND_INSPECTION' | translate"></nz-option>
+            <nz-option nzValue="other" [nzLabel]="'WORKSHOP.KIND_OTHER' | translate"></nz-option>
           </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_RECEIVED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="received_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_PROMISED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="promised_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE_IN' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-input-number formControlName="mileage_in" [nzMin]="0" style="width: 100%"></nz-input-number>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-input-number formControlName="mileage_in" [nzMin]="0"></nz-input-number>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_NOTES' | translate }}</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input formControlName="notes" rows="3"></textarea>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea nz-input formControlName="complaint" rows="3"></textarea>
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -617,14 +508,27 @@
 <nz-modal
   [nzVisible]="lineModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_ADD_LINE' | translate"
+  okAction="add"
   (nzOnCancel)="lineModalVisible.set(false)"
+  [nzOkDisabled]="lineForm.invalid"
   (nzOnOk)="saveLine()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="lineForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LINE_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <nz-select formControlName="line_type">
             <nz-option nzValue="part" [nzLabel]="'WORKSHOP.TYPE_PART' | translate"></nz-option>
             <nz-option nzValue="labour" [nzLabel]="'WORKSHOP.TYPE_LABOUR' | translate"></nz-option>
@@ -637,7 +541,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="description" [placeholder]="'WORKSHOP.LBL_DESCRIZIONE_RICAMBIO_O_INTERVENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -645,14 +549,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_QTY' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="quantity" [nzMin]="0.01" style="width: 100%"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="quantity" [nzMin]="0.01"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="unit_price" placeholder="0.00" />
           </nz-form-control>
         </nz-form-item>
@@ -660,7 +564,7 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="tax_rate" placeholder="22.00" />
         </nz-form-control>
       </nz-form-item>
@@ -672,28 +576,41 @@
 <nz-modal
   [nzVisible]="timeBillModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_BILL_TIME' | translate"
+  okAction="confirm"
   (nzOnCancel)="timeBillModalVisible.set(false)"
+  [nzOkDisabled]="timeBillForm.invalid"
   (nzOnOk)="billTimeEntries()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="timeBillForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_HOURLY_RATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="hourly_rate" placeholder="50.00" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="tax_rate" placeholder="22.00" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="description" />
         </nz-form-control>
       </nz-form-item>
@@ -705,22 +622,35 @@
 <nz-modal
   [nzVisible]="stockModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_STOCK' | translate"
+  okAction="create"
   (nzOnCancel)="stockModalVisible.set(false)"
+  [nzOkDisabled]="stockForm.invalid"
   (nzOnOk)="saveStock()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="stockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_STOCK_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="stock_number" placeholder="STK-2026-001" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_CONDITION' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <nz-select formControlName="condition">
               <nz-option nzValue="used" [nzLabel]="'WORKSHOP.CONDITION_USED' | translate"></nz-option>
               <nz-option nzValue="new" [nzLabel]="'WORKSHOP.CONDITION_NEW' | translate"></nz-option>
@@ -732,14 +662,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MAKE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="make" placeholder="Fiat, BMW, Audi..." />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MODEL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="model" placeholder="Panda, Serie 3, Golf..." />
           </nz-form-control>
         </nz-form-item>
@@ -748,15 +678,15 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_YEAR' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2050" style="width: 100%"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2050"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE' | translate }}</nz-form-label>
-          <nz-form-control>
-            <nz-input-number formControlName="mileage" [nzMin]="0" style="width: 100%"></nz-input-number>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="mileage_km" [nzMin]="0"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
@@ -764,14 +694,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label>{{ 'WORKSHOP.FIELD_PURCHASE_COST' | translate }}</nz-form-label>
-          <nz-form-control>
-            <input nz-input formControlName="purchase_cost" placeholder="0.00" />
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="purchase_price" placeholder="0.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LIST_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="list_price" placeholder="15000.00" />
           </nz-form-control>
         </nz-form-item>
@@ -784,21 +714,41 @@
 <nz-modal
   [nzVisible]="sellStockModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_SELL_STOCK' | translate"
+  okAction="confirm"
   (nzOnCancel)="sellStockModalVisible.set(false)"
+  [nzOkDisabled]="sellStockForm.invalid"
   (nzOnOk)="saveSellStock()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="sellStockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="buyer_contact_id" [placeholder]="'WORKSHOP.LBL_ID_ACQUIRENTE_CLIENTE' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="buyer_contact_id"
+            nzShowSearch
+            nzServerSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_DATE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input type="date" formControlName="sale_date" />
         </nz-form-control>
       </nz-form-item>
@@ -806,14 +756,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="sale_price" placeholder="15000.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="tax_rate" placeholder="22.00" />
           </nz-form-control>
         </nz-form-item>
@@ -826,21 +776,50 @@
 <nz-modal
   [nzVisible]="recurringModalVisible()"
   [nzTitle]="'WORKSHOP.MODAL_NEW_RECURRING' | translate"
+  okAction="create"
   (nzOnCancel)="recurringModalVisible.set(false)"
+  [nzOkDisabled]="recurringForm.invalid"
   (nzOnOk)="saveRecurringService()"
 >
   <ng-container *nzModalContent>
     <form [formGroup]="recurringForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
       <nz-form-item>
-        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE_ID' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="vehicle_id" [placeholder]="'WORKSHOP.LBL_TARGA_O_ID_VEICOLO' | translate" />
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="service_type">
+            @for (type of recurringTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'WORKSHOP.SERVICE_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_NAME' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="fieldTip">
           <input nz-input formControlName="name" [placeholder]="'WORKSHOP.LBL_ES_TAGLIANDO_30_000_KM_REVISIONE' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -848,14 +827,18 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_INTERVAL' | translate }}</nz-form-label>
-          <nz-form-control>
-            <input nz-input formControlName="interval" [placeholder]="'WORKSHOP.LBL_1_YEAR_15000_KM' | translate" />
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="interval">
+              @for (interval of recurringIntervals; track interval) {
+                <nz-option [nzValue]="interval" [nzLabel]="'WORKSHOP.INTERVAL_' + interval.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_START_DATE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input type="date" formControlName="start_date" />
           </nz-form-control>
         </nz-form-item>
@@ -864,14 +847,14 @@
       <div class="modal-two-cols">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="unit_price" placeholder="150.00" />
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input formControlName="tax_rate" placeholder="22.00" />
           </nz-form-control>
         </nz-form-item>
@@ -879,3 +862,49 @@
     </form>
   </ng-container>
 </nz-modal>
+
+<!-- Cell templates of the server-driven grids (value = cell value, $implicit = row) -->
+<ng-template #folderNumberTpl let-folder><strong>{{ folder.folder_number }}</strong></ng-template>
+<ng-template #folderVehicleTpl let-folder>
+  <div>{{ folder.license_plate || folder.vehicle_id }}</div>
+  <small class="text-muted">{{ folder.vehicle_model || folder.vin }}</small>
+</ng-template>
+<ng-template #kindTpl let-folder><nz-tag>{{ folder.kind | uppercase }}</nz-tag></ng-template>
+<ng-template #folderStatusTpl let-folder>
+  <nz-tag [nzColor]="getFolderStatusColor(folder.status)">{{ folder.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #mileageTpl let-folder>{{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}</ng-template>
+<ng-template #moneyTpl let-row let-v="value">{{ v ? (v | money: row.currency) : '-' }}</ng-template>
+<ng-template #strongMoneyTpl let-row let-v="value"><strong>{{ v | money: row.currency }}</strong></ng-template>
+<ng-template #stockNumberTpl let-unit>
+  <strong>{{ unit.stock_number }}</strong>
+  @if (unit.vin) {
+    <br /><small class="text-muted">{{ unit.vin }}</small>
+  }
+</ng-template>
+<ng-template #makeModelTpl let-unit><strong>{{ unit.make }} {{ unit.model }}</strong></ng-template>
+<ng-template #conditionTpl let-unit>
+  <nz-tag [nzColor]="unit.condition === 'new' ? 'cyan' : 'orange'">{{ unit.condition | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #yearKmTpl let-unit>
+  {{ unit.year || '-' }} / {{ unit.mileage_km ? (unit.mileage_km | number) + ' km' : '-' }}
+</ng-template>
+<ng-template #stockStatusTpl let-unit>
+  <nz-tag [nzColor]="getStockStatusColor(unit.status)">{{ unit.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #buyerTpl let-unit>
+  @if (unit.buyer_name) {
+    {{ unit.buyer_name }}
+    <br /><small class="text-muted">{{ unit.sold_at | date: 'mediumDate' }}</small>
+  } @else {
+    -
+  }
+</ng-template>
+<ng-template #strongTpl let-v="value"><strong>{{ v }}</strong></ng-template>
+<ng-template #plainTagTpl let-v="value"><nz-tag>{{ v }}</nz-tag></ng-template>
+<ng-template #dateTpl let-v="value">{{ v | date: 'mediumDate' }}</ng-template>
+<ng-template #activeTpl let-rec>
+  <nz-tag [nzColor]="rec.is_active ? 'success' : 'default'">
+    {{ (rec.is_active ? 'WORKSHOP.ACTIVE' : 'WORKSHOP.STOPPED') | translate }}
+  </nz-tag>
+</ng-template>

@@ -1,11 +1,12 @@
 import { DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { decimalPattern } from '@shared/utils/decimal-validators';
+import { notInFuture } from '@shared/utils/date-validators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -18,13 +19,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
   ChildcareAdmitRequest,
   ChildcareApiService,
+  ChildcareBillsParams,
+  ChildcareNotesParams,
+  ChildcareParams,
+  FetchGridModel,
   ChildcareAttendance,
   ChildcareBill,
   ChildcareBillingRunRequest,
@@ -46,12 +51,22 @@ import {
   ChildcareRequirementRequest,
   isValidationError,
   TranslateService,
+  ChildcareAbsenceReason,
+  ChildcareFeeBasis,
+  ChildcareNoteCategory,
+  ChildcareRelationship,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 @Component({
   selector: 'app-childcare',
+  styleUrl: './childcare.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
     DatePipe,
     DecimalPipe,
     UpperCasePipe,
@@ -68,7 +83,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzSwitchModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,
@@ -80,7 +94,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './childcare.component.html',
-  styleUrl: './childcare.component.scss',
 })
 export class ChildcareComponent implements OnInit {
   private readonly api = inject(ChildcareApiService);
@@ -91,13 +104,57 @@ export class ChildcareComponent implements OnInit {
   readonly selectedTabIndex = signal<number>(0);
 
   // --- TAB 1: CHILDREN ---
+  /** Active children for the check-in, check-out and note selects (the grid below only holds one page). */
   readonly children = signal<ChildcareChild[]>([]);
-  readonly childrenTotal = signal<number>(0);
-  readonly childrenLoading = signal<boolean>(false);
-  readonly childrenPageIndex = signal<number>(1);
-  readonly childrenPageSize = signal<number>(10);
+  readonly childGrid = new FetchGridModel<ChildcareChild, ChildcareParams>((q) => this.api.getChildren(q));
   readonly filterStatus = signal<string>('');
   readonly filterSearch = signal<string>('');
+
+  private readonly childNameTpl = viewChild<TemplateRef<unknown>>('childNameTpl');
+  private readonly childGroupTpl = viewChild<TemplateRef<unknown>>('childGroupTpl');
+  private readonly childBirthTpl = viewChild<TemplateRef<unknown>>('childBirthTpl');
+  private readonly childEnrolledTpl = viewChild<TemplateRef<unknown>>('childEnrolledTpl');
+  private readonly childStatusTpl = viewChild<TemplateRef<unknown>>('childStatusTpl');
+  private readonly childBillingTpl = viewChild<TemplateRef<unknown>>('childBillingTpl');
+
+  readonly childColumns = computed<TableColumnDef<ChildcareChild>[]>(() => [
+    {
+      key: 'first_name',
+      serverKey: 'display_name',
+      header: 'CHILDCARE.COL_NAME',
+      valueGetter: (c) => `${c.first_name} ${c.last_name}`.trim(),
+      customCellTemplate: this.childNameTpl(),
+    },
+    {
+      key: 'group_name',
+      serverKey: 'group.name',
+      header: 'CHILDCARE.COL_GROUP',
+      valueGetter: (c) => c.group_name || c.group_id || '',
+      customCellTemplate: this.childGroupTpl(),
+    },
+    {
+      key: 'birth_date',
+      header: 'CHILDCARE.COL_BIRTH_DATE',
+      sortable: false,
+      filterable: false,
+      groupable: false,
+      customCellTemplate: this.childBirthTpl(),
+    },
+    { key: 'enrolled_on', header: 'CHILDCARE.COL_ENROLLED_ON', customCellTemplate: this.childEnrolledTpl() },
+    {
+      key: 'status',
+      header: 'CHILDCARE.COL_STATUS',
+      valueGetter: (c) => this.childStatusLabel(c.status),
+      valueLabel: (value) => this.childStatusLabel(value),
+      customCellTemplate: this.childStatusTpl(),
+    },
+    {
+      key: 'billing_contact_name',
+      header: 'CHILDCARE.COL_BILLING_CONTACT',
+      valueGetter: (c) => c.billing_contact_name || c.billing_contact_id,
+      customCellTemplate: this.childBillingTpl(),
+    },
+  ]);
 
   // Groups cache
   readonly groups = signal<ChildcareGroup[]>([]);
@@ -119,14 +176,66 @@ export class ChildcareComponent implements OnInit {
   readonly attendanceMonth = signal<string>(new Date().toISOString().substring(0, 7));
 
   // --- TAB 3: DAILY LOG NOTES ---
-  readonly dailyNotes = signal<ChildcareDailyNote[]>([]);
-  readonly dailyNotesLoading = signal<boolean>(false);
+  readonly noteGrid = new FetchGridModel<ChildcareDailyNote, ChildcareNotesParams>((q) => this.api.getNotes(q));
+
+  private readonly noteDateTpl = viewChild<TemplateRef<unknown>>('noteDateTpl');
+  private readonly noteChildTpl = viewChild<TemplateRef<unknown>>('noteChildTpl');
+  private readonly noteCategoryTpl = viewChild<TemplateRef<unknown>>('noteCategoryTpl');
+  private readonly noteFamilyTpl = viewChild<TemplateRef<unknown>>('noteFamilyTpl');
+
+  readonly noteColumns = computed<TableColumnDef<ChildcareDailyNote>[]>(() => [
+    { key: 'date', header: 'CHILDCARE.COL_DATE', customCellTemplate: this.noteDateTpl() },
+    {
+      key: 'child_name',
+      header: 'CHILDCARE.COL_CHILD',
+      valueGetter: (n) => n.child_name || n.child_id,
+      customCellTemplate: this.noteChildTpl(),
+    },
+    { key: 'category', header: 'CHILDCARE.COL_CATEGORY', customCellTemplate: this.noteCategoryTpl() },
+    { key: 'body', serverKey: 'body_text', header: 'CHILDCARE.COL_BODY' },
+    {
+      key: 'visible_to_family',
+      header: 'CHILDCARE.COL_FAMILY_VISIBLE',
+      sortable: false,
+      filterable: false,
+      groupable: false,
+      customCellTemplate: this.noteFamilyTpl(),
+    },
+  ]);
 
   // --- TAB 4: BILLING & FEE PLANS ---
   readonly bills = signal<ChildcareBill[]>([]);
   readonly feePlans = signal<ChildcareFeePlan[]>([]);
-  readonly billingLoading = signal<boolean>(false);
   readonly billingPeriod = signal<string>(new Date().toISOString().substring(0, 7));
+  readonly billGrid = new FetchGridModel<ChildcareBill, ChildcareBillsParams>((q) => this.api.getBills(q), 300);
+
+  private readonly billPeriodTpl = viewChild<TemplateRef<unknown>>('billPeriodTpl');
+  private readonly billChildTpl = viewChild<TemplateRef<unknown>>('billChildTpl');
+  private readonly billContactTpl = viewChild<TemplateRef<unknown>>('billContactTpl');
+  private readonly billGrossTpl = viewChild<TemplateRef<unknown>>('billGrossTpl');
+  private readonly billSubsidyTpl = viewChild<TemplateRef<unknown>>('billSubsidyTpl');
+  private readonly billNetTpl = viewChild<TemplateRef<unknown>>('billNetTpl');
+  private readonly billStatusTpl = viewChild<TemplateRef<unknown>>('billStatusTpl');
+
+  readonly billColumns = computed<TableColumnDef<ChildcareBill>[]>(() => [
+    { key: 'period', header: 'CHILDCARE.COL_PERIOD', customCellTemplate: this.billPeriodTpl() },
+    {
+      key: 'child_name',
+      header: 'CHILDCARE.COL_CHILD',
+      valueGetter: (b) => b.child_name || b.child_id,
+      customCellTemplate: this.billChildTpl(),
+    },
+    {
+      key: 'contact_name',
+      header: 'CHILDCARE.COL_BILLING_CONTACT',
+      valueGetter: (b) => b.contact_name || b.contact_id,
+      customCellTemplate: this.billContactTpl(),
+    },
+    { key: 'gross_amount', header: 'CHILDCARE.COL_GROSS_AMOUNT', align: 'right', customCellTemplate: this.billGrossTpl() },
+    { key: 'subsidy_amount', header: 'CHILDCARE.COL_SUBSIDY_AMOUNT', align: 'right', customCellTemplate: this.billSubsidyTpl() },
+    { key: 'net_amount', header: 'CHILDCARE.COL_NET_AMOUNT', align: 'right', customCellTemplate: this.billNetTpl() },
+    { key: 'status', header: 'CHILDCARE.COL_STATUS', customCellTemplate: this.billStatusTpl() },
+  ]);
 
   // Billing statistics
   readonly totalBilledAmount = computed(() =>
@@ -154,28 +263,31 @@ export class ChildcareComponent implements OnInit {
   readonly refPersonModalVisible = signal<boolean>(false);
 
   // --- FORMS ---
+  protected readonly absenceReasons: readonly ChildcareAbsenceReason[] = ['sick', 'holiday', 'other'];
+  protected readonly relationships: readonly ChildcareRelationship[] = ['mother', 'father', 'guardian', 'grandparent', 'relative', 'other'];
+
   readonly childForm = this.fb.group({
-    first_name: ['', [Validators.required]],
-    last_name: ['', [Validators.required]],
-    birth_date: ['', [Validators.required]],
+    first_name: ['', [Validators.required, Validators.maxLength(100)]],
+    last_name: ['', [Validators.required, Validators.maxLength(100)]],
+    birth_date: ['', [notInFuture]],
     group_id: [''],
     billing_contact_id: ['', [Validators.required]],
     enrolled_on: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    allergies: [''],
-    dietary_notes: [''],
-    health_notes: [''],
-    subsidy_canton: [''],
+    allergies: ['', [Validators.maxLength(2000)]],
+    dietary_notes: ['', [Validators.maxLength(2000)]],
+    health_notes: ['', [Validators.maxLength(5000)]],
+    subsidy_canton: ['', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
 
   readonly groupForm = this.fb.group({
-    name: ['', [Validators.required]],
-    capacity: [15, [Validators.required, Validators.min(1)]],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    capacity: [15, [Validators.min(0), Validators.max(1000)]],
   });
 
   readonly checkInForm = this.fb.group({
     child_id: ['', [Validators.required]],
     at: [new Date().toISOString().substring(0, 16)],
-    temperature: ['36.5'],
+    temperature: ['36.5', [decimalPattern(1, 2), Validators.min(34), Validators.max(43)]],
   });
 
   readonly checkOutForm = this.fb.group({
@@ -187,24 +299,24 @@ export class ChildcareComponent implements OnInit {
   readonly absenceForm = this.fb.group({
     child_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    reason: ['Malattia / Febbre'],
+    reason: ['sick' as ChildcareAbsenceReason, [Validators.required]],
   });
 
   readonly noteForm = this.fb.group({
     child_id: ['', [Validators.required]],
     date: [new Date().toISOString().substring(0, 10), [Validators.required]],
-    category: ['nap', [Validators.required]],
-    body: ['', [Validators.required]],
+    category: ['general' as ChildcareNoteCategory, [Validators.required]],
+    body: ['', [Validators.required, Validators.maxLength(5000)]],
     visible_to_family: [true],
   });
 
   readonly feePlanForm = this.fb.group({
-    name: ['', [Validators.required]],
-    basis: ['monthly', [Validators.required]],
-    amount: ['850.00', [Validators.required]],
-    meal_amount: ['120.00'],
-    tax_rate: ['0.00', [Validators.required]],
-    currency: ['EUR', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(150)]],
+    basis: ['monthly_flat' as ChildcareFeeBasis, [Validators.required]],
+    amount: ['850.00', [Validators.required, decimalPattern(2)]],
+    meal_amount: ['120.00', [decimalPattern(2)]],
+    tax_rate: ['0.00', [Validators.required, decimalPattern(2), Validators.max(100)]],
+    currency: ['EUR', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
   });
 
   readonly billingRunForm = this.fb.group({
@@ -213,64 +325,71 @@ export class ChildcareComponent implements OnInit {
   });
 
   readonly requirementForm = this.fb.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(150)]],
     requires_signature: [true],
     is_mandatory: [true],
   });
 
   readonly refPersonForm = this.fb.group({
-    full_name: ['', [Validators.required]],
-    relationship: ['Genitore', [Validators.required]],
-    phone: [''],
-    email: [''],
+    full_name: ['', [Validators.required, Validators.maxLength(150)]],
+    relationship: ['mother' as ChildcareRelationship, [Validators.required]],
+    phone: ['', [Validators.maxLength(40)]],
+    email: ['', [Validators.email, Validators.maxLength(180)]],
     is_guardian: [true],
     can_pick_up: [true],
   });
+
+  constructor() {
+    // The period is required by the API: set it before the grid sends its first request.
+    this.billGrid.setFilter({ period: this.billingPeriod() });
+  }
 
   ngOnInit(): void {
     this.checkOutForm.controls.child_id.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((childId) => this.loadPickUpPersons(childId));
     this.loadGroups();
-    this.loadChildren();
+    this.loadChildOptions();
     this.loadAttendances();
-    this.loadDailyNotes();
     this.loadFeePlans();
-    this.loadBills();
+    this.loadBillTotals();
     this.loadRequirements();
   }
 
   // --- CHILDREN METHODS ---
   loadChildren(): void {
-    this.childrenLoading.set(true);
-    const status = this.filterStatus();
-    const search = this.filterSearch().trim();
-
-    this.api
-      .getChildren({
-        page: this.childrenPageIndex(),
-        per_page: this.childrenPageSize(),
-        status: status ? status : undefined,
-        search: search ? search : undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.children.set(res.data);
-          this.childrenTotal.set(res.meta?.total ?? res.data.length);
-          this.childrenLoading.set(false);
-        },
-        error: () => {
-          this.childrenLoading.set(false);
-          this.message.error(this.translate.instant('CHILDCARE.LOAD_ERROR'));
-        },
-      });
+    this.childGrid.reload();
+    this.loadChildOptions();
   }
 
-  onChildrenTableQueryChange(params: NzTableQueryParams): void {
-    const { pageIndex, pageSize } = params;
-    this.childrenPageIndex.set(pageIndex);
-    this.childrenPageSize.set(pageSize);
-    this.loadChildren();
+  private loadChildOptions(): void {
+    this.api.getChildren({ status: 'active', per_page: 200 }).subscribe({
+      next: (res) => this.children.set(res.data ?? []),
+      error: () => this.message.error(this.translate.instant('CHILDCARE.LOAD_ERROR')),
+    });
+  }
+
+  onStatusFilterChange(status: string | null): void {
+    this.filterStatus.set(status ?? '');
+    this.childGrid.setFilter({ status: status ? status : undefined });
+  }
+
+  onSearchChange(search: string): void {
+    this.filterSearch.set(search);
+  }
+
+  applySearch(): void {
+    const search = this.filterSearch().trim();
+    this.childGrid.setFilter({ search: search ? search : undefined });
+  }
+
+  childStatusLabel(status: ChildcareChildStatus | string): string {
+    const keys: Record<string, string> = {
+      active: 'CHILDCARE.STATUS.ENROLLED',
+      waiting: 'CHILDCARE.STATUS.WAITLIST',
+      left: 'CHILDCARE.STATUS.WITHDRAWN',
+    };
+    return keys[status] ? this.translate.instant(keys[status]) : status;
   }
 
   loadGroups(): void {
@@ -306,7 +425,7 @@ export class ChildcareComponent implements OnInit {
     const payload: ChildcareChildRequest = {
       first_name: val.first_name,
       last_name: val.last_name,
-      birth_date: val.birth_date,
+      birth_date: val.birth_date || undefined,
       group_id: val.group_id || undefined,
       billing_contact_id: val.billing_contact_id,
       enrolled_on: val.enrolled_on,
@@ -314,7 +433,7 @@ export class ChildcareComponent implements OnInit {
       dietary_notes: val.dietary_notes || undefined,
       health_notes: val.health_notes || undefined,
       subsidy_canton: val.subsidy_canton || undefined,
-      status: 'enrolled',
+      status: 'active',
     };
 
     this.api.enrolChild(payload).subscribe({
@@ -393,7 +512,7 @@ export class ChildcareComponent implements OnInit {
       },
     });
 
-    this.api.getNotes({ child_id: child.id }).subscribe({
+    this.api.getNotes({ child_id: child.id, per_page: 200 }).subscribe({
       next: (res) => {
         this.childDailyNotes.set(res.data || []);
         this.drawerLoading.set(false);
@@ -415,7 +534,7 @@ export class ChildcareComponent implements OnInit {
   openAddRefPersonModal(): void {
     this.refPersonForm.reset({
       full_name: '',
-      relationship: 'Genitore',
+      relationship: 'mother',
       phone: '',
       email: '',
       is_guardian: true,
@@ -470,7 +589,20 @@ export class ChildcareComponent implements OnInit {
     this.attendancesLoading.set(true);
     this.api.getMonthlyRegister({ month: this.attendanceMonth() }).subscribe({
       next: (res) => {
-        this.attendances.set(res.data || []);
+        this.attendances.set(
+          (res.data?.children ?? []).flatMap((row) =>
+            Object.entries(row.days).map(([date, day]) => ({
+              id: `${row.child_id}-${date}`,
+              child_id: row.child_id,
+              child_name: row.name,
+              date,
+              status: day.status,
+              check_in_at: day.check_in_at,
+              check_out_at: day.check_out_at,
+              absence_reason: day.absence_reason,
+            })),
+          ),
+        );
         this.attendancesLoading.set(false);
       },
       error: () => {
@@ -569,7 +701,7 @@ export class ChildcareComponent implements OnInit {
     this.absenceForm.reset({
       child_id: childId || '',
       date: new Date().toISOString().substring(0, 10),
-      reason: 'Malattia / Febbre',
+      reason: 'sick',
     });
     this.absenceModalVisible.set(true);
   }
@@ -600,23 +732,14 @@ export class ChildcareComponent implements OnInit {
 
   // --- DAILY LOG METHODS ---
   loadDailyNotes(): void {
-    this.dailyNotesLoading.set(true);
-    this.api.getNotes().subscribe({
-      next: (res) => {
-        this.dailyNotes.set(res.data || []);
-        this.dailyNotesLoading.set(false);
-      },
-      error: () => {
-        this.dailyNotesLoading.set(false);
-      },
-    });
+    this.noteGrid.reload();
   }
 
   openCreateNoteModal(): void {
     this.noteForm.reset({
       child_id: '',
       date: new Date().toISOString().substring(0, 10),
-      category: 'nap',
+      category: 'general',
       body: '',
       visible_to_family: true,
     });
@@ -659,22 +782,22 @@ export class ChildcareComponent implements OnInit {
   }
 
   loadBills(): void {
-    this.billingLoading.set(true);
-    this.api.getBills({ period: this.billingPeriod() }).subscribe({
-      next: (res) => {
-        this.bills.set(res.data || []);
-        this.billingLoading.set(false);
-      },
-      error: () => {
-        this.billingLoading.set(false);
-      },
+    this.billGrid.setFilter({ period: this.billingPeriod() });
+    this.billGrid.reload();
+    this.loadBillTotals();
+  }
+
+  /** Totals of the whole period (the grid only holds one page of bills). */
+  private loadBillTotals(): void {
+    this.api.getBills({ period: this.billingPeriod(), per_page: 200 }).subscribe({
+      next: (res) => this.bills.set(res.data || []),
     });
   }
 
   openCreateFeePlanModal(): void {
     this.feePlanForm.reset({
       name: '',
-      basis: 'monthly',
+      basis: 'monthly_flat',
       amount: '850.00',
       meal_amount: '120.00',
       tax_rate: '0.00',
@@ -758,7 +881,18 @@ export class ChildcareComponent implements OnInit {
 
     this.api.getOutstandingDocuments().subscribe({
       next: (res) => {
-        this.outstandingDocuments.set(res.data || []);
+        this.outstandingDocuments.set(
+          (res.data?.children ?? []).flatMap((row) =>
+            row.missing.map((requirement) => ({
+              id: `${row.child_id}-${requirement.requirement_id}`,
+              child_id: row.child_id,
+              child_name: row.name,
+              title: requirement.name,
+              requirement_id: requirement.requirement_id,
+              status: 'missing' as const,
+            })),
+          ),
+        );
       },
     });
   }
@@ -799,13 +933,11 @@ export class ChildcareComponent implements OnInit {
   // Status colors
   getChildStatusColor(status: ChildcareChildStatus | string): string {
     switch (status) {
-      case 'enrolled':
+      case 'active':
         return 'success';
-      case 'waitlist':
+      case 'waiting':
         return 'warning';
-      case 'graduated':
-        return 'blue';
-      case 'withdrawn':
+      case 'left':
         return 'default';
       default:
         return 'default';
@@ -829,18 +961,18 @@ export class ChildcareComponent implements OnInit {
 
   getCategoryColor(cat: string): string {
     switch (cat) {
-      case 'nap':
+      case 'sleep':
         return 'cyan';
+      case 'general':
+        return 'default';
       case 'meal':
         return 'orange';
-      case 'diaper':
+      case 'health':
         return 'blue';
       case 'activity':
         return 'green';
-      case 'mood':
+      case 'behaviour':
         return 'purple';
-      case 'incident':
-        return 'red';
       default:
         return 'default';
     }

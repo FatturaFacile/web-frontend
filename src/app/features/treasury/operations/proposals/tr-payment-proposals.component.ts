@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -15,24 +15,31 @@ import {
   applyServerErrors,
   AuthStore,
   CreatePaymentProposalPayload,
+  FetchGridModel,
   I18nService,
   PaymentProposal,
   PaymentProposalExcluded,
   PaymentProposalFormat,
   PaymentProposalStatus,
   PermissionsService,
+  QueryFilterParams,
   TreasuryApiService,
   TreasuryOpsApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, TableColumnDef, TranslatePipe } from '@shared';
 import { downloadBlob } from '../../../general-ledger/shared/gl-dates';
 import { TrLookupStore } from '../tr-lookup.store';
+import { notInPast } from '@shared/utils/date-validators';
 
 const STATUS_COLORS: Record<PaymentProposalStatus, string> = { draft: 'gold', converted: 'green', rejected: 'red' };
 
 @Component({
   selector: 'app-tr-payment-proposals',
+  styleUrl: './tr-payment-proposals.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     NzAlertModule,
@@ -62,9 +69,7 @@ export class TrPaymentProposalsComponent implements OnInit {
 
   protected readonly statuses: PaymentProposalStatus[] = ['draft', 'converted', 'rejected'];
   protected readonly formats: PaymentProposalFormat[] = ['sepa_pain_001_it', 'iso_pain_001_ch'];
-  protected readonly items = signal<PaymentProposal[]>([]);
   protected readonly excluded = signal<PaymentProposalExcluded[]>([]);
-  protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly createOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
@@ -72,9 +77,48 @@ export class TrPaymentProposalsComponent implements OnInit {
   protected statusFilter: PaymentProposalStatus | null = 'draft';
   protected rejectReason = '';
 
+  /** Server-driven grid of the proposals: paging, sorting, column filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<PaymentProposal, QueryFilterParams & { status?: PaymentProposalStatus }>(
+    (query) => this.api.getPaymentProposals(query),
+  );
+
+  private readonly amountTpl = viewChild<TemplateRef<{ $implicit: PaymentProposal; value: unknown }>>('amountTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: PaymentProposal; value: unknown }>>('statusTpl');
+
+  protected readonly columns = computed<TableColumnDef<PaymentProposal>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'proposal_number', header: this.i18n.translate('TR.PROPOSAL_NUMBER'), width: '150px' },
+      {
+        key: 'bank_account_id',
+        serverKey: 'bankAccount.bank_name',
+        valueGetter: (row) => this.banks.label(row.bank_account_id),
+        header: this.i18n.translate('TR.BANK_ACCOUNT'),
+      },
+      { key: 'execution_date', header: this.i18n.translate('TR.EXECUTION_DATE'), width: '130px' },
+      {
+        key: 'format',
+        valueLabel: (value) => this.i18n.translate('TR.FORMAT_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.FORMAT_' + row.format.toUpperCase()),
+        header: this.i18n.translate('TR.FORMAT'),
+        width: '170px',
+      },
+      { key: 'item_count', align: 'right', header: this.i18n.translate('TR.ITEMS'), width: '100px' },
+      { key: 'total_amount', align: 'right', header: this.i18n.translate('TR.TOTAL'), width: '150px', customCellTemplate: this.amountTpl() },
+      {
+        key: 'status',
+        valueLabel: (value) => this.i18n.translate('TR.PROPOSAL_STATUS_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.PROPOSAL_STATUS_' + row.status.toUpperCase()),
+        header: this.i18n.translate('TR.STATUS'),
+        width: '170px',
+        customCellTemplate: this.statusTpl(),
+      },
+    ];
+  });
+
   protected readonly form = this.fb.group({
     bank_account_id: this.fb.control('', Validators.required),
-    execution_date: this.fb.control('', Validators.required),
+    execution_date: this.fb.control('', [Validators.required, notInPast]),
     due_until: this.fb.control('', Validators.required),
     include_discounts: this.fb.control(false),
     format: this.fb.control<PaymentProposalFormat>('sepa_pain_001_it', Validators.required),
@@ -82,22 +126,16 @@ export class TrPaymentProposalsComponent implements OnInit {
 
   ngOnInit(): void {
     this.banks.load();
-    this.load();
+    this.grid.setFilter({ status: this.statusFilter ?? undefined });
   }
 
   protected statusColor(status: PaymentProposalStatus): string {
     return STATUS_COLORS[status];
   }
 
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getPaymentProposals(this.statusFilter ?? undefined).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+  protected onStatusChange(status: PaymentProposalStatus | null): void {
+    this.statusFilter = status;
+    this.grid.setFilter({ status: status ?? undefined });
   }
 
   protected openCreate(): void {
@@ -119,7 +157,7 @@ export class TrPaymentProposalsComponent implements OnInit {
         this.createOpen.set(false);
         this.excluded.set(res.meta?.excluded ?? []);
         this.message.success(this.i18n.translate('TR.PROPOSAL_CREATED'));
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -133,7 +171,7 @@ export class TrPaymentProposalsComponent implements OnInit {
     this.api.approvePaymentProposal(proposal.id).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('TR.PROPOSAL_APPROVED'));
-        this.load();
+        this.grid.reload();
       },
     });
   }
@@ -151,7 +189,7 @@ export class TrPaymentProposalsComponent implements OnInit {
     this.api.rejectPaymentProposal(target.id, this.rejectReason.trim()).subscribe({
       next: () => {
         this.rejectTarget.set(null);
-        this.load();
+        this.grid.reload();
       },
     });
   }

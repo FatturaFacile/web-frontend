@@ -25,21 +25,14 @@
       >
         <nz-icon nzType="clock-circle" /> {{ 'SC.QUOTES.EXPIRE_OVERDUE' | translate }}
       </button>
-      <button nz-button nzType="primary" type="button" (click)="create()">
-        <nz-icon nzType="plus" /> {{ 'SC.QUOTES.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="create()"></button>
     }
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <ng-template #numberTpl let-q><code>{{ q.quote_number }}</code></ng-template>
@@ -55,13 +48,14 @@
   </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="860"
   [nzTitle]="selected()?.quote_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as q) {
       <nz-tag [nzColor]="statusColor(q.status)">{{ statusKey(q.status) | translate }}</nz-tag>
       @if (q.status === 'expired') {
@@ -93,7 +87,7 @@
       @if (canWrite() && isOpen(q)) {
         <div class="actions">
           @if (q.status === 'draft') {
-            <button nz-button type="button" (click)="edit(q)"><nz-icon nzType="edit" /> {{ 'SC.COMMON.EDIT' | translate }}</button>
+            <button nz-button appIconAction="edit" type="button" (click)="edit(q)"></button>
           }
           <button nz-button type="button" [nzLoading]="working()" (click)="revise(q)">
             <nz-icon nzType="copy" /> {{ 'SC.QUOTES.REVISE' | translate }}
@@ -121,15 +115,13 @@
           </button>
           @if (q.status === 'draft') {
             <button
-              nz-button
+              nz-button appIconAction="delete"
               nzDanger
               type="button"
               nz-popconfirm
               [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
               (nzOnConfirm)="remove(q)"
-            >
-              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
-            </button>
+            ></button>
           }
         </div>
       }
@@ -139,8 +131,8 @@
       <nz-modal
         [nzVisible]="signOpen()"
         [nzTitle]="'SC.QUOTES.SIGN' | translate"
-        [nzOkText]="'SC.QUOTES.SIGN_ACCEPT' | translate"
         [nzOkLoading]="working()"
+        [nzOkDisabled]="!canSign"
         (nzOnCancel)="signOpen.set(false)"
         (nzOnOk)="submitSignature(q)"
       >
@@ -152,7 +144,7 @@
       </nz-modal>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <app-document-form-modal
   [kind]="'quote'"

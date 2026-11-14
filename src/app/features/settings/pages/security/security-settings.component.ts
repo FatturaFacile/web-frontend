@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -20,12 +21,24 @@ import {
   TwoFactorStatus,
   UserSession,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
+
+/** Mirrors `required_without:<other>`: the control is required while the sibling is blank. */
+function requiredWithout(other: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const siblingValue = String(control.parent?.get(other)?.value ?? '').trim();
+    return String(control.value ?? '').trim() === '' && siblingValue === '' ? { required: true } : null;
+  };
+}
 
 @Component({
   selector: 'app-security-settings',
+  styleUrl: './security-settings.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
     ReactiveFormsModule,
     DatePipe,
     NzCardModule,
@@ -43,7 +56,6 @@ import { TwoFactorSetupModalComponent } from '../../../auth/components/two-facto
     TwoFactorSetupModalComponent,
   ],
   templateUrl: './security-settings.component.html',
-  styleUrl: './security-settings.component.scss',
 })
 export class SecuritySettingsComponent implements OnInit {
   private readonly authApi = inject(AuthApiService);
@@ -67,8 +79,8 @@ export class SecuritySettingsComponent implements OnInit {
 
   protected readonly disableForm = this.fb.group({
     currentPassword: this.fb.control('', [Validators.required]),
-    code: this.fb.control(''),
-    recoveryCode: this.fb.control(''),
+    code: this.fb.control('', [requiredWithout('recoveryCode'), Validators.maxLength(16)]),
+    recoveryCode: this.fb.control('', [requiredWithout('code'), Validators.maxLength(32)]),
   });
 
   protected readonly passwordConfirmForm = this.fb.group({
@@ -77,6 +89,23 @@ export class SecuritySettingsComponent implements OnInit {
 
   protected readonly newRecoveryCodes = signal<string[]>([]);
   protected readonly showCodesDialog = signal(false);
+
+  constructor() {
+    const { code, recoveryCode } = this.disableForm.controls;
+    code.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => recoveryCode.updateValueAndValidity({ emitEvent: false }));
+    recoveryCode.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => code.updateValueAndValidity({ emitEvent: false }));
+  }
+
+  /** The code fields are required only while the other one is blank (API: required_without). */
+  protected isSecondFactorRequired(other: 'code' | 'recoveryCode'): boolean {
+    return this.disableForm.controls[other].value.trim() === '';
+  }
+
+  protected secondFactorError(control: AbstractControl | null): string {
+    return control?.hasError('maxlength')
+      ? this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE')
+      : this.i18n.translate('TWO_FACTOR.CODE_REQUIRED');
+  }
 
   ngOnInit(): void {
     this.loadTwoFactorStatus();

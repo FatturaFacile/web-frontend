@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,19 +14,27 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   applyServerErrors,
+  FetchGridModel,
+  I18nService,
   PermissionsService,
   ReconciliationRule,
   ReconciliationRuleCategory,
   ReconciliationRulePayload,
   TreasuryOpsApiService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, TableColumnDef, TranslatePipe } from '@shared';
+import { revalidateOnStartChange } from '@shared/utils/date-validators';
+import { atLeastField } from '@shared/utils/decimal-validators';
 
 const nullableNumber = (value: string | null): number | null => (value === null ? null : Number(value));
 
 @Component({
   selector: 'app-tr-reconciliation-rules',
+  styleUrl: './tr-reconciliation-rules.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     ReactiveFormsModule,
     NzAlertModule,
     NzButtonModule,
@@ -44,8 +52,9 @@ const nullableNumber = (value: string | null): number | null => (value === null 
   ],
   templateUrl: './tr-reconciliation-rules.component.html',
 })
-export class TrReconciliationRulesComponent implements OnInit {
+export class TrReconciliationRulesComponent {
   private readonly api = inject(TreasuryOpsApiService);
+  private readonly i18n = inject(I18nService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly canWrite = inject(PermissionsService).canWrite('treasury');
 
@@ -56,43 +65,61 @@ export class TrReconciliationRulesComponent implements OnInit {
     'internal_transfer',
     'generic_expense',
   ];
-  protected readonly items = signal<ReconciliationRule[]>([]);
-  protected readonly loading = signal(false);
+
+  /** Server-driven grid of the rules: paging, sorting, column filters and grouping run on the API. */
+  protected readonly grid = new FetchGridModel<ReconciliationRule>((query) => this.api.getReconciliationRules(query));
+
+  private readonly stateTpl = viewChild<TemplateRef<{ $implicit: ReconciliationRule; value: unknown }>>('stateTpl');
+
+  protected readonly columns = computed<TableColumnDef<ReconciliationRule>[]>(() => {
+    this.i18n.currentLanguage();
+    return [
+      { key: 'priority', align: 'right', header: this.i18n.translate('TR.PRIORITY'), width: '110px' },
+      { key: 'name', header: this.i18n.translate('TR.NAME') },
+      {
+        key: 'category',
+        valueLabel: (value) => this.i18n.translate('TR.CATEGORY_' + value.toUpperCase()),
+        valueGetter: (row) => this.i18n.translate('TR.CATEGORY_' + row.category.toUpperCase()),
+        header: this.i18n.translate('TR.CATEGORY'),
+        width: '200px',
+      },
+      { key: 'ledger_account_code', header: this.i18n.translate('TR.LEDGER_ACCOUNT_CODE'), width: '160px' },
+      {
+        key: 'is_active',
+        serverKey: 'activity_state',
+        valueLabel: (value) => this.i18n.translate(value === 'active' ? 'TR.ACTIVE' : 'TR.INACTIVE'),
+        valueGetter: (row) => this.i18n.translate(row.is_active ? 'TR.ACTIVE' : 'TR.INACTIVE'),
+        header: this.i18n.translate('TR.STATUS'),
+        width: '130px',
+        customCellTemplate: this.stateTpl(),
+      },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
   protected readonly formErrors = signal<string[]>([]);
   private editingId: string | null = null;
 
   protected readonly form = this.fb.group({
-    name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-    priority: this.fb.control(100),
+    name: this.fb.control('', [Validators.required, Validators.maxLength(120)]),
+    priority: this.fb.control(100, [Validators.min(1), Validators.max(100000)]),
     is_active: this.fb.control(true),
     direction: this.fb.control<'credit' | 'debit' | null>(null),
-    expected_amount: this.fb.control<number | null>(null),
-    amount_tolerance: this.fb.control(0),
-    min_amount: this.fb.control<number | null>(null),
-    max_amount: this.fb.control<number | null>(null),
-    reference_contains: this.fb.control(''),
-    description_contains: this.fb.control(''),
-    counterparty_iban: this.fb.control(''),
-    counterparty_name_contains: this.fb.control(''),
+    expected_amount: this.fb.control<number | null>(null, Validators.min(0.01)),
+    amount_tolerance: this.fb.control(0, [Validators.min(0), Validators.max(1000000)]),
+    min_amount: this.fb.control<number | null>(null, Validators.min(0)),
+    max_amount: this.fb.control<number | null>(null, [Validators.min(0), atLeastField('min_amount')]),
+    reference_contains: this.fb.control('', Validators.maxLength(140)),
+    description_contains: this.fb.control('', Validators.maxLength(140)),
+    counterparty_iban: this.fb.control('', Validators.pattern(/^([A-Za-z]{2}\d{2}[A-Za-z0-9 ]{11,40})?$/)),
+    counterparty_name_contains: this.fb.control('', Validators.maxLength(140)),
     category: this.fb.control<ReconciliationRuleCategory>('generic_expense', Validators.required),
-    ledger_account_code: this.fb.control(''),
+    ledger_account_code: this.fb.control('', Validators.pattern(/^([A-Za-z0-9.-]{1,20})?$/)),
   });
 
-  ngOnInit(): void {
-    this.load();
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api.getReconciliationRules().subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+  constructor() {
+    // The API requires max_amount >= min_amount.
+    revalidateOnStartChange(this.form, 'min_amount', 'max_amount', inject(DestroyRef));
   }
 
   protected openModal(rule: ReconciliationRule | null): void {
@@ -137,7 +164,7 @@ export class TrReconciliationRulesComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.modalOpen.set(false);
-        this.load();
+        this.grid.reload();
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -147,6 +174,6 @@ export class TrReconciliationRulesComponent implements OnInit {
   }
 
   protected remove(rule: ReconciliationRule): void {
-    this.api.deleteReconciliationRule(rule.id).subscribe({ next: () => this.load() });
+    this.api.deleteReconciliationRule(rule.id).subscribe({ next: () => this.grid.reload() });
   }
 }

@@ -1,38 +1,19 @@
 <nz-card>
   @if (canWrite) {
-    <button nz-button nzType="primary" type="button" style="margin-bottom: 16px" (click)="openModal('register')">{{ 'TR.REGISTER_NEW' | translate }}</button>
+    <button class="mb-3" nz-button nzType="primary" type="button" (click)="openModal('register')" appIconAction="create"></button>
   }
-  <nz-table #table nzSize="middle" [nzData]="registers()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th>{{ 'TR.CODE' | translate }}</th>
-        <th>{{ 'TR.NAME' | translate }}</th>
-        <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
-        <th>{{ 'TR.LAST_CLOSED' | translate }}</th>
-        <th>{{ 'TR.ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (register of table.data; track register.id) {
-        <tr>
-          <td>{{ register.code }}</td>
-          <td>{{ register.name }}</td>
-          <td nzAlign="right">{{ register.current_balance | money: register.currency }}</td>
-          <td>{{ register.last_closed_date ?? '' }}</td>
-          <td>
-            <button nz-button nzSize="small" type="button" (click)="open(register)">{{ 'TR.OPEN' | translate }}</button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="registerGrid" [columns]="registerColumns()" [actionsTemplate]="registerActionsTpl" [scroll]="{ x: '640px' }" [exportFileName]="'cash-registers'" />
+  <ng-template #registerBalanceTpl let-register>{{ register.current_balance | money: register.currency }}</ng-template>
+  <ng-template #registerActionsTpl let-register>
+    <button nz-button nzSize="small" type="button" (click)="open(register)">{{ 'TR.OPEN' | translate }}</button>
+  </ng-template>
 </nz-card>
 
 @if (selected(); as register) {
-  <nz-card [nzTitle]="register.code + ' ' + register.name" style="margin-top: 16px">
+  <nz-card class="register-card" [nzTitle]="register.code + ' ' + register.name">
     @if (lastClosing(); as closing) {
       <nz-alert
-        style="margin-bottom: 16px"
+        class="closing-alert"
         nzShowIcon
         nzCloseable
         [nzType]="closing.difference === '0.00' ? 'success' : 'warning'"
@@ -43,63 +24,20 @@
     <nz-tabs>
       <nz-tab [nzTitle]="'TR.CASH_BOOK' | translate">
         @if (canWrite) {
-          <button nz-button type="button" style="margin-bottom: 12px" (click)="openModal('movement')">{{ 'TR.MOVEMENT_NEW' | translate }}</button>
+          <button class="mb-3" nz-button type="button" (click)="openModal('movement')" appIconAction="create"></button>
         }
-        <nz-table #movementTable nzSize="small" [nzData]="movements()" [nzPageSize]="20">
-          <thead>
-            <tr>
-              <th>{{ 'TR.DATE' | translate }}</th>
-              <th>{{ 'TR.DIRECTION' | translate }}</th>
-              <th>{{ 'TR.PAYMENT_METHOD' | translate }}</th>
-              <th>{{ 'TR.DESCRIPTION' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.AMOUNT' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (movement of movementTable.data; track movement.id) {
-              <tr>
-                <td>{{ movement.movement_date }}</td>
-                <td>
-                  <nz-tag [nzColor]="movement.direction === 'in' ? 'green' : 'red'">{{ 'TR.DIRECTION_' + movement.direction.toUpperCase() | translate }}</nz-tag>
-                </td>
-                <td>{{ movement.payment_method }}</td>
-                <td>{{ movement.description }}</td>
-                <td nzAlign="right">{{ movement.amount | money: register.currency }}</td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="movementGrid" [columns]="movementColumns()" [scroll]="{ x: '640px' }" [exportFileName]="'cash-book'" />
+        <ng-template #movementDirectionTpl let-movement>
+          <nz-tag [nzColor]="movement.direction === 'in' ? 'green' : 'red'">{{ 'TR.DIRECTION_' + movement.direction.toUpperCase() | translate }}</nz-tag>
+        </ng-template>
+        <ng-template #movementAmountTpl let-movement>{{ movement.amount | money: register.currency }}</ng-template>
       </nz-tab>
       <nz-tab [nzTitle]="'TR.CLOSINGS' | translate">
         @if (canWrite) {
-          <button nz-button type="button" style="margin-bottom: 12px" (click)="openModal('close')">{{ 'TR.DAILY_CLOSE' | translate }}</button>
+          <button class="mb-3" nz-button type="button" (click)="openModal('close')">{{ 'TR.DAILY_CLOSE' | translate }}</button>
         }
-        <nz-table #closingTable nzSize="small" [nzData]="closings()" [nzPageSize]="20">
-          <thead>
-            <tr>
-              <th>{{ 'TR.DATE' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.OPENING' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.TOTAL_IN' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.TOTAL_OUT' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.EXPECTED' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.COUNTED' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.CLOSING_DIFFERENCE' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (closing of closingTable.data; track closing.id) {
-              <tr>
-                <td>{{ closing.closing_date }}</td>
-                <td nzAlign="right">{{ closing.opening_balance | money: register.currency }}</td>
-                <td nzAlign="right">{{ closing.total_in | money: register.currency }}</td>
-                <td nzAlign="right">{{ closing.total_out | money: register.currency }}</td>
-                <td nzAlign="right">{{ closing.expected_balance | money: register.currency }}</td>
-                <td nzAlign="right">{{ closing.counted_balance | money: register.currency }}</td>
-                <td nzAlign="right">{{ closing.difference | money: register.currency }}</td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
+        <app-base-table [grid]="closingGrid" [columns]="closingColumns()" [scroll]="{ x: '800px' }" [exportFileName]="'cash-closings'" />
+        <ng-template #closingAmountTpl let-closing let-value="value">{{ value | money: register.currency }}</ng-template>
       </nz-tab>
     </nz-tabs>
   </nz-card>
@@ -110,29 +48,31 @@
   [nzTitle]="'TR.REGISTER_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveRegister()"
+  okAction="create"
+  [nzOkDisabled]="registerForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="registerForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-code">{{ 'TR.CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.code.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-code" nz-input formControlName="code" maxlength="50" />
+          <input id="cr-code" nz-input formControlName="code" maxlength="30" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-name">{{ 'TR.NAME' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-name" nz-input formControlName="name" maxlength="255" />
+          <input id="cr-name" nz-input formControlName="name" maxlength="150" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cr-currency">{{ 'TR.CURRENCY' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="registerForm.controls.currency.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <input id="cr-currency" nz-input formControlName="currency" maxlength="3" style="width: 90px" />
+          <input class="currency-input" id="cr-currency" nz-input formControlName="currency" maxlength="3" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -148,7 +88,7 @@
       <nz-form-item>
         <nz-form-label nzFor="cr-opening">{{ 'TR.OPENING' | translate }}</nz-form-label>
         <nz-form-control>
-          <nz-input-number id="cr-opening" formControlName="opening_balance" [nzPrecision]="2" style="width: 200px" />
+          <nz-input-number class="w-full" id="cr-opening" formControlName="opening_balance" [nzMin]="0" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
     </form>
@@ -160,16 +100,18 @@
   [nzTitle]="'TR.MOVEMENT_NEW' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveMovement()"
+  okAction="create"
+  [nzOkDisabled]="movementForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <form nz-form nzLayout="vertical" [formGroup]="movementForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cm-date">{{ 'TR.DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="movementForm.controls.movement_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="movementForm.controls.movement_date.errors?.['serverError'] ?? (movementForm.controls.movement_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate))">
           <input id="cm-date" nz-input type="date" formControlName="movement_date" />
         </nz-form-control>
       </nz-form-item>
@@ -194,7 +136,7 @@
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cm-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="movementForm.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="cm-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" style="width: 200px" />
+          <nz-input-number class="w-full" id="cm-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -228,24 +170,25 @@
   [nzTitle]="'TR.DAILY_CLOSE' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="saveClose()"
+  [nzOkDisabled]="closeForm.invalid"
   (nzOnCancel)="modal.set(null)"
 >
   <ng-container *nzModalContent>
     @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" style="margin-bottom: 12px" />
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
     }
     <p>{{ 'TR.DAILY_CLOSE_HINT' | translate }}</p>
     <form nz-form nzLayout="vertical" [formGroup]="closeForm">
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cc-date">{{ 'TR.CLOSING_DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="closeForm.controls.closing_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="closeForm.controls.closing_date.errors?.['serverError'] ?? (closeForm.controls.closing_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate))">
           <input id="cc-date" nz-input type="date" formControlName="closing_date" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="cc-counted">{{ 'TR.COUNTED' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="closeForm.controls.counted_balance.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
-          <nz-input-number id="cc-counted" formControlName="counted_balance" [nzPrecision]="2" style="width: 200px" />
+          <nz-input-number class="w-full" id="cc-counted" formControlName="counted_balance" [nzMin]="0" [nzPrecision]="2" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>

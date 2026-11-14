@@ -8,6 +8,8 @@ import {
   ChildcareActivityRequest,
   ChildcareAdmitRequest,
   ChildcareAttendance,
+  ChildcareOutstandingDocuments,
+  ChildcareRegister,
   ChildcareAttendanceCorrection,
   ChildcareBill,
   ChildcareBillingRunRequest,
@@ -24,6 +26,8 @@ import {
   ChildcareGroupRequest,
   ChildcareNoteRequest,
   ChildcareParams,
+  ChildcareNotesParams,
+  ChildcareBillsParams,
   ChildcareReferencePerson,
   ChildcareReferencePersonRequest,
   ChildcareRequirement,
@@ -133,15 +137,15 @@ export class ChildcareApiService {
     );
   }
 
-  getMonthlyRegister(params: { month: string; group_id?: string }): Observable<ApiResponse<ChildcareAttendance[]>> {
-    return this.http.get<ApiResponse<ChildcareAttendance[]>>(`${this.base}/attendances/register`, {
+  getMonthlyRegister(params: { month: string; group_id?: string }): Observable<ApiResponse<ChildcareRegister>> {
+    return this.http.get<ApiResponse<ChildcareRegister>>(`${this.base}/attendances/register`, {
       params: toHttpParams(params),
     });
   }
 
   // --- DAILY NOTES & MEALS ---
-  getNotes(params?: { child_id?: string; date?: string }): Observable<ApiResponse<ChildcareDailyNote[]>> {
-    return this.http.get<ApiResponse<ChildcareDailyNote[]>>(`${this.base}/notes`, {
+  getNotes(params?: ChildcareNotesParams): Observable<PaginatedResponse<ChildcareDailyNote>> {
+    return this.http.get<PaginatedResponse<ChildcareDailyNote>>(`${this.base}/notes`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
@@ -193,8 +197,8 @@ export class ChildcareApiService {
     );
   }
 
-  getBills(params?: { period?: string }): Observable<ApiResponse<ChildcareBill[]>> {
-    return this.http.get<ApiResponse<ChildcareBill[]>>(`${this.base}/billing/bills`, {
+  getBills(params?: ChildcareBillsParams): Observable<PaginatedResponse<ChildcareBill>> {
+    return this.http.get<PaginatedResponse<ChildcareBill>>(`${this.base}/billing/bills`, {
       params: params ? toHttpParams(params) : undefined,
     });
   }
@@ -217,7 +221,7 @@ export class ChildcareApiService {
     return this.http.get<ApiResponse<ChildcareDocument[]>>(`${this.base}/children/${childId}/documents`);
   }
 
-  getOutstandingDocuments(): Observable<ApiResponse<ChildcareDocument[]>> {
-    return this.http.get<ApiResponse<ChildcareDocument[]>>(`${this.base}/documents/outstanding`);
+  getOutstandingDocuments(): Observable<ApiResponse<ChildcareOutstandingDocuments>> {
+    return this.http.get<ApiResponse<ChildcareOutstandingDocuments>>(`${this.base}/documents/outstanding`);
   }
 }

@@ -3,10 +3,7 @@
   [subtitle]="'VISITORS.SUBTITLE' | translate"
 >
   <div class="header-actions">
-    <button nz-button nzType="primary" (click)="openAnnounceModal()">
-      <span nz-icon nzType="plus"></span>
-      {{ 'VISITORS.ANNOUNCE_VISIT' | translate }}
-    </button>
+    <button nz-button nzType="primary" (click)="openAnnounceModal()" appIconAction="create"></button>
   </div>
 </app-page-header>
 
@@ -76,12 +73,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'VISITORS.BADGE' | translate }}</th>
-            <th>{{ 'VISITORS.VISITOR' | translate }}</th>
-            <th>{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th>{{ 'VISITORS.HOST' | translate }}</th>
+            <th [nzSortFn]="'badge_number' | gridSort" [nzFilters]="'badge_number' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'badge_number' | gridFilterFn">{{ 'VISITORS.BADGE' | translate }}</th>
+            <th [nzSortFn]="'visitor.full_name' | gridSort" [nzFilters]="'visitor.full_name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'visitor.full_name' | gridFilterFn">{{ 'VISITORS.VISITOR' | translate }}</th>
+            <th [nzSortFn]="'visitor.company_name' | gridSort" [nzFilters]="'visitor.company_name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'visitor.company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'host.name' | gridSort" [nzFilters]="'host.name' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'host.name' | gridFilterFn">{{ 'VISITORS.HOST' | translate }}</th>
             <th>{{ 'VISITORS.CHECKED_IN_AT' | translate }}</th>
-            <th>{{ 'VISITORS.PURPOSE' | translate }}</th>
+            <th [nzSortFn]="'purpose' | gridSort" [nzFilters]="'purpose' | gridFilterList: onSiteTable.nzData" [nzFilterFn]="'purpose' | gridFilterFn">{{ 'VISITORS.PURPOSE' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -121,7 +118,7 @@
           <nz-select
             [ngModel]="filterVisitStatus()"
             (ngModelChange)="filterVisitStatus.set($event); loadVisits()"
-            style="width: 160px"
+           class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'VISITORS.ALL_STATUSES' | translate"></nz-option>
             <nz-option nzValue="expected" [nzLabel]="'VISITORS.STATUS_EXPECTED' | translate"></nz-option>
@@ -135,10 +132,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'VISITORS.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openAnnounceModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'VISITORS.ANNOUNCE_VISIT' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openAnnounceModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -151,12 +145,12 @@
       >
         <thead>
           <tr>
-            <th>{{ 'VISITORS.EXPECTED_AT' | translate }}</th>
-            <th>{{ 'VISITORS.VISITOR' | translate }}</th>
-            <th>{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th>{{ 'VISITORS.HOST' | translate }}</th>
-            <th>{{ 'VISITORS.STATUS' | translate }}</th>
-            <th>{{ 'VISITORS.BADGE' | translate }}</th>
+            <th [nzSortFn]="'expected_at' | gridSort" [nzFilters]="'expected_at' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'expected_at' | gridFilterFn">{{ 'VISITORS.EXPECTED_AT' | translate }}</th>
+            <th [nzSortFn]="'visitor.full_name' | gridSort" [nzFilters]="'visitor.full_name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'visitor.full_name' | gridFilterFn">{{ 'VISITORS.VISITOR' | translate }}</th>
+            <th [nzSortFn]="'visitor.company_name' | gridSort" [nzFilters]="'visitor.company_name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'visitor.company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'host.name' | gridSort" [nzFilters]="'host.name' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'host.name' | gridFilterFn">{{ 'VISITORS.HOST' | translate }}</th>
+            <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'VISITORS.STATUS' | translate }}</th>
+            <th [nzSortFn]="'badge_number' | gridSort" [nzFilters]="'badge_number' | gridFilterList: visitsTable.nzData" [nzFilterFn]="'badge_number' | gridFilterFn">{{ 'VISITORS.BADGE' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -240,7 +234,7 @@
             [ngModel]="searchVisitorQuery()"
             (ngModelChange)="searchVisitorQuery.set($event); loadVisitors()"
             [placeholder]="'VISITORS.SEARCH_PLACEHOLDER' | translate"
-            style="width: 240px"
+           class="w-field-md"
           />
         </div>
         <div class="actions">
@@ -248,10 +242,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'VISITORS.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openCreateVisitorModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'VISITORS.NEW_VISITOR' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openCreateVisitorModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -264,10 +255,10 @@
       >
         <thead>
           <tr>
-            <th>{{ 'VISITORS.NAME' | translate }}</th>
-            <th>{{ 'VISITORS.COMPANY' | translate }}</th>
-            <th>{{ 'VISITORS.EMAIL' | translate }}</th>
-            <th>{{ 'VISITORS.PHONE' | translate }}</th>
+            <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: registryTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'VISITORS.NAME' | translate }}</th>
+            <th [nzSortFn]="'company_name' | gridSort" [nzFilters]="'company_name' | gridFilterList: registryTable.nzData" [nzFilterFn]="'company_name' | gridFilterFn">{{ 'VISITORS.COMPANY' | translate }}</th>
+            <th [nzSortFn]="'email' | gridSort" [nzFilters]="'email' | gridFilterList: registryTable.nzData" [nzFilterFn]="'email' | gridFilterFn">{{ 'VISITORS.EMAIL' | translate }}</th>
+            <th [nzSortFn]="'phone' | gridSort" [nzFilters]="'phone' | gridFilterList: registryTable.nzData" [nzFilterFn]="'phone' | gridFilterFn">{{ 'VISITORS.PHONE' | translate }}</th>
             <th>{{ 'VISITORS.DOCUMENT' | translate }}</th>
             <th>{{ 'VISITORS.LAST_VISIT' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
@@ -296,10 +287,8 @@
                     nzType="link"
                     nzSize="small"
                     (click)="openEditVisitorModal(item)"
-                  >
-                    <span nz-icon nzType="edit"></span>
-                    {{ 'VISITORS.EDIT' | translate }}
-                  </button>
+                    appIconAction="edit"
+                  ></button>
                   <button
                     *nzSpaceItem
                     nz-button
@@ -332,10 +321,7 @@
             <span nz-icon nzType="reload"></span>
             {{ 'VISITORS.REFRESH' | translate }}
           </button>
-          <button nz-button nzType="primary" (click)="openRegisterKioskModal()">
-            <span nz-icon nzType="plus"></span>
-            {{ 'VISITORS.REGISTER_KIOSK' | translate }}
-          </button>
+          <button nz-button nzType="primary" (click)="openRegisterKioskModal()" appIconAction="create"></button>
         </div>
       </div>
 
@@ -348,11 +334,11 @@
       >
         <thead>
           <tr>
-            <th>{{ 'VISITORS.KIOSK_NAME' | translate }}</th>
-            <th>{{ 'VISITORS.DEVICE_KEY' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'VISITORS.KIOSK_NAME' | translate }}</th>
+            <th [nzSortFn]="'device_key' | gridSort" [nzFilters]="'device_key' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'device_key' | gridFilterFn">{{ 'VISITORS.DEVICE_KEY' | translate }}</th>
             <th>{{ 'VISITORS.STATUS' | translate }}</th>
             <th>{{ 'VISITORS.LAST_SEEN' | translate }}</th>
-            <th>{{ 'VISITORS.CREATED_AT' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: kiosksTable.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'VISITORS.CREATED_AT' | translate }}</th>
             <th nzAlign="center">{{ 'VISITORS.ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -411,7 +397,7 @@
           <form nz-form [formGroup]="selfServiceCheckInForm" (ngSubmit)="executeSelfServiceCheckIn()">
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.SELECT_EXPECTED_VISIT' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckInForm, 'visit_id')">
                 <nz-select formControlName="visit_id" [nzLoading]="kioskExpectedLoading()">
                   @for (v of kioskExpected(); track v.id) {
                     <nz-option
@@ -425,14 +411,14 @@
 
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.ASSIGNED_BADGE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckInForm, 'badge_number')">
                 <input nz-input formControlName="badge_number" placeholder="Es. B-042" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-control>
-                <button nz-button nzType="primary" nzBlock>
+                <button nz-button nzType="primary" nzBlock [disabled]="selfServiceCheckInForm.invalid">
                   <span nz-icon nzType="check"></span>
                   {{ 'VISITORS.COMPLETE_KIOSK_CHECKIN' | translate }}
                 </button>
@@ -446,14 +432,14 @@
           <form nz-form [formGroup]="selfServiceCheckOutForm" (ngSubmit)="executeSelfServiceCheckOut()">
             <nz-form-item>
               <nz-form-label nzRequired>{{ 'VISITORS.ENTER_BADGE' | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="errorTip(selfServiceCheckOutForm, 'badge_number')">
                 <input nz-input formControlName="badge_number" placeholder="Es. B-042" />
               </nz-form-control>
             </nz-form-item>
 
             <nz-form-item>
               <nz-form-control>
-                <button nz-button nzType="primary" nzDanger nzBlock>
+                <button nz-button nzType="primary" nzDanger nzBlock [disabled]="selfServiceCheckOutForm.invalid">
                   <span nz-icon nzType="stop"></span>
                   {{ 'VISITORS.COMPLETE_KIOSK_CHECKOUT' | translate }}
                 </button>
@@ -472,13 +458,15 @@
   [nzTitle]="'VISITORS.ANNOUNCE_VISIT' | translate"
   (nzOnCancel)="announceModalVisible.set(false)"
   (nzOnOk)="saveAnnouncedVisit()"
+  okAction="create"
+  [nzOkDisabled]="announceVisitForm.invalid"
   nzWidth="650px"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="announceVisitForm" nzLayout="vertical">
       <nz-form-item>
         <nz-form-label>{{ 'VISITORS.VISITOR_TYPE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'mode')">
           <nz-radio-group formControlName="mode">
             <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label nz-radio nzValue="new">{{ 'VISITORS.NEW_PERSON' | translate }}</label>
@@ -491,7 +479,7 @@
       @if (announceVisitForm.get('mode')?.value === 'existing') {
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.SELECT_VISITOR' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'visitor_id')">
             <nz-select formControlName="visitor_id">
               @for (v of visitors(); track v.id) {
                 <nz-option [nzValue]="v.id" [nzLabel]="v.full_name + ' (' + (v.company_name || '-') + ')'"></nz-option>
@@ -503,13 +491,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'VISITORS.FIRST_NAME' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'first_name')">
               <input nz-input formControlName="first_name" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'VISITORS.LAST_NAME' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'last_name')">
               <input nz-input formControlName="last_name" />
             </nz-form-control>
           </nz-form-item>
@@ -518,13 +506,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.COMPANY' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'company_name')">
               <input nz-input formControlName="company_name" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.EMAIL' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'email')">
               <input nz-input formControlName="email" type="email" />
             </nz-form-control>
           </nz-form-item>
@@ -533,13 +521,13 @@
         <div class="form-row-2">
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.PHONE' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'phone')">
               <input nz-input formControlName="phone" />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label>{{ 'VISITORS.DOCUMENT_NUM' | translate }}</nz-form-label>
-            <nz-form-control>
+            <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'document_number')">
               <input nz-input formControlName="document_number" />
             </nz-form-control>
           </nz-form-item>
@@ -549,13 +537,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.HOST_USER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'host_user_id')">
             <input nz-input formControlName="host_user_id" [placeholder]="'VISITORS.LBL_ID_REFERENTE' | translate" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.EXPECTED_AT' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'expected_at')">
             <input nz-input formControlName="expected_at" placeholder="2026-11-20T10:00:00Z" />
           </nz-form-control>
         </nz-form-item>
@@ -563,7 +551,7 @@
 
       <nz-form-item>
         <nz-form-label>{{ 'VISITORS.PURPOSE' | translate }}</nz-form-label>
-        <nz-form-control>
+        <nz-form-control [nzErrorTip]="errorTip(announceVisitForm, 'purpose')">
           <input nz-input formControlName="purpose" [placeholder]="'VISITORS.LBL_ES_RIUNIONE_DI_COORDINAMENTO' | translate" />
         </nz-form-control>
       </nz-form-item>
@@ -577,6 +565,7 @@
   [nzTitle]="'VISITORS.CHECKIN_TITLE' | translate"
   (nzOnCancel)="checkInModalVisible.set(false)"
   (nzOnOk)="confirmCheckIn()"
+  [nzOkDisabled]="checkInForm.invalid"
 >
   <ng-container *nzModalContent>
     @if (selectedVisit(); as v) {
@@ -587,7 +576,7 @@
       <form nz-form [formGroup]="checkInForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.BADGE_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(checkInForm, 'badge_number')">
             <input nz-input formControlName="badge_number" placeholder="Es. B-101" />
           </nz-form-control>
         </nz-form-item>
@@ -602,6 +591,8 @@
   [nzTitle]="(selectedVisitor() ? 'VISITORS.EDIT_VISITOR' : 'VISITORS.NEW_VISITOR') | translate"
   (nzOnCancel)="visitorModalVisible.set(false)"
   (nzOnOk)="saveVisitor()"
+  okAction="save"
+  [nzOkDisabled]="visitorForm.invalid"
   nzWidth="600px"
 >
   <ng-container *nzModalContent>
@@ -609,13 +600,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.FIRST_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'first_name')">
             <input nz-input formControlName="first_name" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.LAST_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'last_name')">
             <input nz-input formControlName="last_name" />
           </nz-form-control>
         </nz-form-item>
@@ -624,13 +615,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.COMPANY' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'company_name')">
             <input nz-input formControlName="company_name" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.EMAIL' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'email')">
             <input nz-input formControlName="email" type="email" />
           </nz-form-control>
         </nz-form-item>
@@ -639,13 +630,13 @@
       <div class="form-row-2">
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.PHONE' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'phone')">
             <input nz-input formControlName="phone" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label>{{ 'VISITORS.DOCUMENT_NUM' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(visitorForm, 'document_number')">
             <input nz-input formControlName="document_number" />
           </nz-form-control>
         </nz-form-item>
@@ -660,6 +651,8 @@
   [nzTitle]="'VISITORS.REGISTER_KIOSK_TITLE' | translate"
   (nzOnCancel)="kioskModalVisible.set(false)"
   (nzOnOk)="newKioskSecret() ? kioskModalVisible.set(false) : registerKiosk()"
+  okAction="create"
+  [nzOkDisabled]="!newKioskSecret() && kioskForm.invalid"
 >
   <ng-container *nzModalContent>
     @if (newKioskSecret(); as secret) {
@@ -677,7 +670,7 @@
       <form nz-form [formGroup]="kioskForm" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzRequired>{{ 'VISITORS.KIOSK_NAME' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="errorTip(kioskForm, 'name')">
             <input nz-input formControlName="name" [placeholder]="'VISITORS.LBL_ES_RECEPTION_INGRESSO_PRINCIPALE' | translate" />
           </nz-form-control>
         </nz-form-item>
@@ -687,13 +680,14 @@
 </nz-modal>
 
 <!-- VISIT DETAILS DRAWER -->
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerVisible()"
-  [nzWidth]="550"
+  [nzWidth]="720"
   [nzTitle]="'VISITORS.VISIT_DETAILS' | translate"
-  (nzOnClose)="closeVisitDrawer()"
+  (nzOnCancel)="closeVisitDrawer()"
+  [nzFooter]="null"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selectedVisit(); as v) {
       <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
         <nz-descriptions-item [nzTitle]="'VISITORS.VISIT_ID' | translate">
@@ -735,4 +729,4 @@
       </nz-descriptions>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>

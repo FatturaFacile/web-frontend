@@ -13,6 +13,7 @@ type VatMode = 'net-to-gross' | 'gross-to-net';
 
 @Component({
   selector: 'app-vat-calculator',
+  styleUrl: './vat-calculator.component.scss',
   imports: [
     ReactiveFormsModule,
     NzCardModule,

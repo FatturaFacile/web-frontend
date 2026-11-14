@@ -33,11 +33,11 @@ describe('AccountingApiService', () => {
     req.flush({ success: true, message: 'OK', data: [{ id: 'acc-1', code: '1000' }, { id: 'acc-2', code: '2000' }] });
 
     service.getAccountsTree().subscribe((res) => {
-      expect(res.data[0].children).toBeDefined();
+      expect(res.data[0].account_code).toBe('1000');
     });
     const reqTree = httpTesting.expectOne(`${glBase}/accounts-tree`);
     expect(reqTree.request.method).toBe('GET');
-    reqTree.flush({ success: true, message: 'OK', data: [{ id: 'acc-1', code: '1000', children: [] }] });
+    reqTree.flush({ success: true, message: 'OK', data: [{ id: 'acc-1', account_code: '1000' }] });
   });
 
   it('manages journal entries lifecycle (create, post, reverse, validate-balance)', () => {
@@ -72,7 +72,7 @@ describe('AccountingApiService', () => {
     expect(reqReverse.request.method).toBe('POST');
     reqReverse.flush({ success: true, message: 'Reversed', data: { id: 'j-1', status: 'reversed' } });
 
-    service.validateJournalBalance(payload.lines).subscribe((res) => {
+    service.validateJournalBalance(payload.lines as { account_id: string; debit_amount: number; credit_amount: number }[]).subscribe((res) => {
       expect(res.data.balanced).toBe(true);
     });
     const reqVal = httpTesting.expectOne(`${glBase}/journals/validate-balance`);
@@ -122,25 +122,27 @@ describe('AccountingApiService', () => {
   });
 
   it('manages Intrastat declarations (generate, validate, submit)', () => {
-    service.generateIntrastatDeclaration(2026, 10, 'dispatch').subscribe((res) => {
+    service.generateIntrastatDeclaration({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 }).subscribe((res) => {
       expect(res.data.id).toBe('intra-1');
     });
     const reqGen = httpTesting.expectOne(`${intrastatBase}/declarations/generate`);
     expect(reqGen.request.method).toBe('POST');
+    expect(reqGen.request.body).toEqual({ flow: 'sales', year: 2026, periodicity: 'M', period: 10 });
     reqGen.flush({ success: true, message: 'Generated', data: { id: 'intra-1', status: 'draft' } });
 
     service.validateIntrastatDeclaration('intra-1').subscribe((res) => {
-      expect(res.data.is_valid).toBe(true);
+      expect(res.data.status).toBe('validated');
     });
     const reqVal = httpTesting.expectOne(`${intrastatBase}/declarations/intra-1/validate`);
     expect(reqVal.request.method).toBe('POST');
-    reqVal.flush({ success: true, message: 'Valid', data: { is_valid: true } });
+    reqVal.flush({ success: true, message: 'Valid', data: { id: 'intra-1', status: 'validated' } });
 
-    service.submitIntrastatDeclaration('intra-1').subscribe((res) => {
+    service.submitIntrastatDeclaration('intra-1', { protocol_number: 'PROT-1' }).subscribe((res) => {
       expect(res.data.status).toBe('submitted');
     });
     const reqSub = httpTesting.expectOne(`${intrastatBase}/declarations/intra-1/submit`);
     expect(reqSub.request.method).toBe('POST');
+    expect(reqSub.request.body).toEqual({ protocol_number: 'PROT-1' });
     reqSub.flush({ success: true, message: 'Submitted', data: { id: 'intra-1', status: 'submitted' } });
   });
 

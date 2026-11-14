@@ -1,3 +1,4 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -8,7 +9,7 @@ import {
   AssociationAreaProfile,
   I18nService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -20,7 +21,8 @@ import { saveBlob } from './save-blob';
 /** Profile of the selected person: contact data to edit and the membership card. */
 @Component({
   selector: 'app-area-profile',
-  imports: [NzButtonModule, NzDescriptionsModule, NzFormModule, NzInputModule, NzTagModule, ReactiveFormsModule, TranslatePipe],
+  styleUrl: './area-profile.component.scss',
+  imports: [IconActionDirective, NzButtonModule, NzDescriptionsModule, NzFormModule, NzInputModule, NzTagModule, ReactiveFormsModule, TranslatePipe],
   template: `
     @if (person(); as profile) {
       <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" [nzTitle]="'ASSOC_AREA.PROFILE' | translate">
@@ -34,49 +36,60 @@ import { saveBlob } from './save-blob';
 
       <h3 class="area-section">{{ 'ASSOC_AREA.CONTACT' | translate }}</h3>
       <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('email')) {
+            {{ 'COMMON.VALIDATION.INVALID_EMAIL' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
         <nz-form-item>
           <nz-form-label nzFor="area-email">{{ 'ASSOC_AREA.EMAIL' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="form.controls.email.errors?.['serverError'] ?? ('ASSOC_AREA.INVALID_EMAIL' | translate)">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-email" type="email" formControlName="email" autocomplete="email" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="area-phone">{{ 'ASSOC_AREA.PHONE' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="form.controls.phone.errors?.['serverError']">
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-phone" type="tel" formControlName="phone" autocomplete="tel" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
-          <nz-form-label nzFor="area-street">{{ 'ASSOC_AREA.STREET' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="form.controls.street.errors?.['serverError']">
+          <nz-form-label nzFor="area-street" [nzRequired]="addressStarted()">{{ 'ASSOC_AREA.STREET' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-street" formControlName="street" autocomplete="address-line1" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="area-house-number">{{ 'ASSOC_AREA.HOUSE_NUMBER' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-house-number" formControlName="house_number" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
-          <nz-form-label nzFor="area-postal-code">{{ 'ASSOC_AREA.POSTAL_CODE' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="form.controls.postal_code.errors?.['serverError']">
+          <nz-form-label nzFor="area-postal-code" [nzRequired]="addressStarted()">{{ 'ASSOC_AREA.POSTAL_CODE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-postal-code" formControlName="postal_code" autocomplete="postal-code" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
-          <nz-form-label nzFor="area-city">{{ 'ASSOC_AREA.CITY' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="form.controls.city.errors?.['serverError']">
+          <nz-form-label nzFor="area-city" [nzRequired]="addressStarted()">{{ 'ASSOC_AREA.CITY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-city" formControlName="city" autocomplete="address-level2" />
           </nz-form-control>
         </nz-form-item>
         <nz-form-item>
           <nz-form-label nzFor="area-canton">{{ 'ASSOC_AREA.STATE_CANTON' | translate }}</nz-form-label>
-          <nz-form-control>
+          <nz-form-control [nzErrorTip]="fieldTip">
             <input nz-input id="area-canton" formControlName="state_canton" />
           </nz-form-control>
         </nz-form-item>
-        <button nz-button nzType="primary" type="submit" [nzLoading]="saving()">{{ 'ASSOC_AREA.SAVE' | translate }}</button>
+        <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid"></button>
       </form>
 
       <h3 class="area-section">{{ 'ASSOC_AREA.CARD' | translate }}</h3>
@@ -92,15 +105,6 @@ import { saveBlob } from './save-blob';
           <p>{{ 'ASSOC_AREA.NO_CARD' | translate }}</p>
         }
       }
-    }
-  `,
-  styles: `
-    .area-section {
-      margin: 24px 0 12px;
-    }
-
-    .area-gap {
-      margin-top: 12px;
     }
   `,
 })
@@ -119,14 +123,41 @@ export class AreaProfileComponent {
   protected readonly card = signal<AssociationAreaCard | null>(null);
   protected readonly saving = signal(false);
   protected readonly form = this.fb.group({
-    email: ['', [Validators.email]],
-    phone: [''],
-    street: [''],
-    house_number: [''],
-    postal_code: [''],
-    city: [''],
-    state_canton: [''],
+    email: ['', [Validators.email, Validators.maxLength(255)]],
+    phone: ['', [Validators.maxLength(50)]],
+    street: ['', [Validators.maxLength(255)]],
+    house_number: ['', [Validators.maxLength(20)]],
+    postal_code: ['', [Validators.maxLength(20)]],
+    city: ['', [Validators.maxLength(255)]],
+    state_canton: ['', [Validators.maxLength(50)]],
   });
+
+  private readonly addressValidatorSync = this.form.valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.syncAddressValidators());
+
+  /** The address is sent as a whole: once one of its fields is filled, street, postal code and city are required. */
+  protected addressStarted(): boolean {
+    const value = this.form.getRawValue();
+    return [value.street, value.house_number, value.postal_code, value.city, value.state_canton].some(
+      (part) => part.trim() !== '',
+    );
+  }
+
+  private syncAddressValidators(): void {
+    const started = this.addressStarted();
+    for (const control of [this.form.controls.street, this.form.controls.postal_code, this.form.controls.city]) {
+      if (started === control.hasValidator(Validators.required)) {
+        continue;
+      }
+      if (started) {
+        control.addValidators(Validators.required);
+      } else {
+        control.removeValidators(Validators.required);
+      }
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+  }
 
   constructor() {
     effect(() => {
@@ -141,6 +172,7 @@ export class AreaProfileComponent {
 
   protected save(): void {
     const person = this.person();
+    this.form.markAllAsTouched();
     if (!person || this.form.invalid) {
       return;
     }

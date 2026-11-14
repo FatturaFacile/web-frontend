@@ -19,6 +19,7 @@ import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-
 
 @Component({
   selector: 'app-register',
+  styleUrl: './register.component.scss',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -34,7 +35,6 @@ import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-
     TranslatePipe,
   ],
   templateUrl: './register.component.html',
-  styleUrls: ['../login/login.component.scss', './register.component.scss'],
 })
 export class RegisterComponent {
   private readonly fb = inject(NonNullableFormBuilder);
@@ -53,7 +53,7 @@ export class RegisterComponent {
     {
       first_name: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
       last_name: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
-      email: this.fb.control('', [Validators.required, Validators.email]),
+      email: this.fb.control('', [Validators.required, Validators.email, Validators.maxLength(255)]),
       company_name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
       country: this.fb.control<'IT' | 'CH'>('IT', [Validators.required]),
       tax_id: this.fb.control('', [Validators.required, Validators.maxLength(30)]),

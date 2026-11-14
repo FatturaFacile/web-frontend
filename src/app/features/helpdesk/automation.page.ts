@@ -12,7 +12,7 @@ const NOTIFICATION_EVENTS = [
 ] as const;
 
 const ROUTING_FIELDS = [
-  req(rf.text('name')),
+  req(rf.text('name', { maxLength: 150 })),
   rf.integer('position', { min: 0 }),
   rf.bool('is_active', { defaultValue: true }),
   rf.bool('stop_processing'),
@@ -21,8 +21,8 @@ const ROUTING_FIELDS = [
 ];
 
 const BUSINESS_HOURS_FIELDS = [
-  req(rf.text('code')),
-  req(rf.text('name')),
+  req(rf.text('code', { maxLength: 60 })),
+  req(rf.text('name', { maxLength: 150 })),
   req(rf.text('timezone')),
   req(rf.json('weekly_schedule')),
   rf.tags('holidays'),
@@ -33,17 +33,17 @@ const BUSINESS_HOURS_FIELDS = [
 const SETTINGS_FIELDS = [
   rf.integer('reopen_window_days', { min: 0 }),
   rf.lookup('business_hours_calendar_id', 'businessHours'),
-  rf.integer('sla_warning_percent', { min: 0 }),
+  rf.integer('sla_warning_percent', { min: 1 }),
   rf.bool('csat_enabled'),
 ];
 
 const MAILBOX_FIELDS = [
-  req(rf.text('name')),
-  req(rf.text('email_address')),
-  req(rf.text('imap_host')),
+  req(rf.text('name', { maxLength: 150 })),
+  req(rf.text('email_address', { maxLength: 180 })),
+  req(rf.text('imap_host', { maxLength: 180 })),
   rf.select('imap_port', ['993', '143']),
-  req(rf.text('imap_username')),
-  req(rf.text('imap_password', { secret: true })),
+  req(rf.text('imap_username', { maxLength: 255 })),
+  req(rf.text('imap_password', { secret: true, maxLength: 255 })),
   rf.uuid('default_team_id'),
   rf.uuid('default_category_id'),
   rf.select('default_priority', PRIORITIES),

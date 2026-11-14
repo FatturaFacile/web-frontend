@@ -1,12 +1,12 @@
 <app-gl-error-alert [error]="error()" />
 
 <nz-card>
-  <p>{{ 'GL.FX_HINT' | translate }}</p>
-  <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+  <p class="text-secondary">{{ 'GL.FX_HINT' | translate }}</p>
+  <div class="toolbar">
     <label for="gl-fx-date">{{ 'GL.FX_DATE' | translate }}</label>
-    <input id="gl-fx-date" nz-input type="date" style="width: 160px" [(ngModel)]="revaluationDate" (ngModelChange)="load()" />
+    <input class="date-input" id="gl-fx-date" nz-input type="date" [(ngModel)]="revaluationDate" (ngModelChange)="load()" />
     <label for="gl-fx-currency">{{ 'GL.FX_CURRENCY' | translate }}</label>
-    <input id="gl-fx-currency" nz-input style="width: 100px" maxlength="3" placeholder="USD" [(ngModel)]="currency" />
+    <input class="currency-input" id="gl-fx-currency" nz-input maxlength="3" placeholder="USD" [(ngModel)]="currency" />
     @if (canWrite) {
       <button nz-button nzType="primary" type="button" [nzLoading]="running()" [disabled]="!revaluationDate" (click)="run()">
         {{ 'GL.FX_RUN' | translate }}
@@ -14,38 +14,12 @@
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th>{{ 'GL.COL_DATE' | translate }}</th>
-        <th>{{ 'GL.FX_SIDE' | translate }}</th>
-        <th>{{ 'GL.COL_ACCOUNT' | translate }}</th>
-        <th>{{ 'GL.FX_CURRENCY' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_CLOSING_RATE' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_OPEN_AMOUNT' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_BOOK_VALUE' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_REVALUED_VALUE' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_DIFFERENCE' | translate }}</th>
-        <th nzAlign="right">{{ 'GL.FX_ITEMS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of table.data; track item.id) {
-        <tr>
-          <td>{{ item.revaluation_date }}</td>
-          <td>
-            <nz-tag>{{ 'GL.FX_SIDE_' + item.side.toUpperCase() | translate }}</nz-tag>
-          </td>
-          <td>{{ lookups.accountLabel(item.account_id) }}</td>
-          <td>{{ item.currency }}</td>
-          <td nzAlign="right">{{ item.closing_rate }}</td>
-          <td nzAlign="right">{{ item.open_amount | money: item.currency }}</td>
-          <td nzAlign="right">{{ item.book_value | money: accountingCurrency() }}</td>
-          <td nzAlign="right">{{ item.revalued_value | money: accountingCurrency() }}</td>
-          <td nzAlign="right">{{ item.difference | money: accountingCurrency() }}</td>
-          <td nzAlign="right">{{ item.open_items }}</td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: '1100px' }" [exportFileName]="'gl-fx-revaluations'" />
+
+  <ng-template #sideTpl let-item><nz-tag>{{ 'GL.FX_SIDE_' + item.side.toUpperCase() | translate }}</nz-tag></ng-template>
+  <ng-template #accountTpl let-item>{{ lookups.accountLabel(item.account_id) }}</ng-template>
+  <ng-template #openAmountTpl let-item>{{ item.open_amount | money: item.currency }}</ng-template>
+  <ng-template #bookValueTpl let-item>{{ item.book_value | money: accountingCurrency() }}</ng-template>
+  <ng-template #revaluedTpl let-item>{{ item.revalued_value | money: accountingCurrency() }}</ng-template>
+  <ng-template #differenceTpl let-item>{{ item.difference | money: accountingCurrency() }}</ng-template>
 </nz-card>

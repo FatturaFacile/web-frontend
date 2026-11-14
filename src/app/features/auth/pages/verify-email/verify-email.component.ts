@@ -17,6 +17,7 @@ type VerificationState = 'loading' | 'verified' | 'expired' | 'invalid' | 'faile
  */
 @Component({
   selector: 'app-verify-email',
+  styleUrl: './verify-email.component.scss',
   imports: [
     RouterLink,
     NzAlertModule,
@@ -90,7 +91,6 @@ type VerificationState = 'loading' | 'verified' | 'expired' | 'invalid' | 'faile
       </div>
     </main>
   `,
-  styleUrl: '../login/login.component.scss',
 })
 export class VerifyEmailComponent implements OnInit {
   private readonly authApi = inject(AuthApiService);

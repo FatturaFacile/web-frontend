@@ -5,8 +5,8 @@
 
 <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
   <!-- Filter bar -->
-  <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center;">
-    <div style="min-width: 240px; flex: 1;">
+  <div class="filters">
+    <div class="filter-search">
       <nz-input-wrapper>
         <nz-icon nzInputPrefix nzType="search" />
         <input
@@ -20,11 +20,11 @@
       </nz-input-wrapper>
     </div>
 
-    <div style="width: 170px;">
+    <div class="filter-status">
       <nz-select
         [ngModel]="filterStatus()"
         (ngModelChange)="filterStatus.set($event); onSearch()"
-        style="width: 100%;"
+       class="w-full"
         nzPlaceHolder="Stato (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
@@ -37,11 +37,11 @@
       </nz-select>
     </div>
 
-    <div style="width: 150px;">
+    <div class="filter-priority">
       <nz-select
         [ngModel]="filterPriority()"
         (ngModelChange)="filterPriority.set($event); onSearch()"
-        style="width: 100%;"
+       class="w-full"
         nzPlaceHolder="Priorità (Tutte)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
@@ -52,11 +52,11 @@
       </nz-select>
     </div>
 
-    <div style="width: 150px;">
+    <div class="filter-sla">
       <nz-select
         [ngModel]="filterSlaState()"
         (ngModelChange)="filterSlaState.set($event); onSearch()"
-        style="width: 100%;"
+       class="w-full"
         nzPlaceHolder="SLA (Tutti)"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
@@ -73,116 +73,73 @@
   </div>
 
   <!-- Table -->
-  <nz-table
-    #tkTable
-    [nzData]="tickets()"
-    [nzLoading]="loading()"
-    [nzFrontPagination]="false"
-    [nzTotal]="total()"
-    [nzPageIndex]="pageIndex()"
-    [nzPageSize]="pageSize()"
-    [nzShowSizeChanger]="true"
-    [nzPageSizeOptions]="[10, 20, 50]"
-    (nzQueryParams)="onQueryParamsChange($event)"
-    nzSize="middle"
-  >
-    <thead>
-      <tr>
-        <th nzWidth="48px">
-          <input
-            type="checkbox"
-            [checked]="allSelected()"
-            (change)="toggleAll($any($event.target).checked)"
-            [attr.aria-label]="'TICKET_BULK.SELECT_ALL' | translate"
-          />
-        </th>
-        <th nzWidth="120px">{{ "FIELD_SERVICE.COL_TICKET_ID" | translate }}</th>
-        <th>{{ "FIELD_SERVICE.COL_SUBJECT" | translate }}</th>
-        <th nzWidth="100px">{{ 'FIELD_SERVICE.LBL_CANALE' | translate }}</th>
-        <th nzWidth="110px">{{ 'FIELD_SERVICE.LBL_PRIORITA' | translate }}</th>
-        <th nzWidth="130px">{{ "COMMON.STATUS" | translate }}</th>
-        <th nzWidth="140px">{{ "FIELD_SERVICE.COL_SLA" | translate }}</th>
-        <th nzWidth="150px">{{ 'FIELD_SERVICE.LBL_DATA_CREAZIONE' | translate }}</th>
-        <th nzWidth="100px" nzAlign="center">{{ 'FIELD_SERVICE.LBL_AZIONI' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (tk of tkTable.data; track tk.id) {
-        <tr>
-          <td>
-            <input
-              type="checkbox"
-              [checked]="selectedIds().has(tk.id)"
-              (change)="toggleOne(tk.id, $any($event.target).checked)"
-              [attr.aria-label]="'TICKET_BULK.SELECT_ONE' | translate"
-            />
-          </td>
-          <td>
-            <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
-          </td>
-          <td>
-            <div style="font-weight: 500;">{{ tk.title || tk.subject }}</div>
-            @if (tk.contact_email) {
-              <div style="font-size: 12px; color: #888;">{{ tk.contact_email }}</div>
-            }
-          </td>
-          <td>{{ tk.channel || '-' }}</td>
-          <td>
-            <nz-tag [nzColor]="getPriorityColor(tk.priority)">{{ tk.priority }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(tk.status)">{{ tk.status }}</nz-tag>
-          </td>
-          <td>
-            <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
-            @if (tk.resolution_due_at) {
-              <div style="font-size: 11px; color: #888;">
-                Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}
-              </div>
-            }
-          </td>
-          <td>{{ tk.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td nzAlign="center">
-            <button
-              nz-button
-              nzType="link"
-              nzSize="small"
-              (click)="openDetail(tk.id)"
-              [title]="'FIELD_SERVICE.LBL_VISUALIZZA_E_MODIFICA' | translate"
-            >
-              <i nz-icon nzType="eye"></i> {{ 'FIELD_SERVICE.LBL_DETTAGLI' | translate }}
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [selectable]="true"
+    [selectedItems]="selectedTickets()"
+    [pageSizeOptions]="[10, 20, 50]"
+    [actionsTemplate]="actionsTpl"
+    (selectionChange)="selectedTickets.set($event)"
+  />
+
+  <ng-template #ticketTpl let-tk>
+    <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
+  </ng-template>
+  <ng-template #subjectTpl let-tk>
+    <div class="ticket-title">{{ tk.title || tk.subject }}</div>
+    @if (tk.contact_email) {
+      <div class="ticket-sub">{{ tk.contact_email }}</div>
+    }
+  </ng-template>
+  <ng-template #priorityTpl let-tk>
+    <nz-tag [nzColor]="getPriorityColor(tk.priority)">{{ tk.priority }}</nz-tag>
+  </ng-template>
+  <ng-template #statusTpl let-tk>
+    <nz-tag [nzColor]="getStatusColor(tk.status)">{{ tk.status }}</nz-tag>
+  </ng-template>
+  <ng-template #slaTpl let-tk>
+    <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
+    @if (tk.resolution_due_at) {
+      <div class="ticket-sub">Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}</div>
+    }
+  </ng-template>
+  <ng-template #createdTpl let-tk>{{ tk.created_at | date:'dd/MM/yyyy HH:mm' }}</ng-template>
+  <ng-template #actionsTpl let-tk>
+    <button
+      nz-button
+      nzType="link"
+      nzSize="small"
+      (click)="openDetail(tk.id)"
+      [title]="'FIELD_SERVICE.LBL_VISUALIZZA_E_MODIFICA' | translate"
+    >
+      <i nz-icon nzType="eye"></i> {{ 'FIELD_SERVICE.LBL_DETTAGLI' | translate }}
+    </button>
+  </ng-template>
 </nz-card>
 
 <ng-template #extraTemplate>
   <nz-space>
-    <button *nzSpaceItem nz-button [disabled]="selectedIds().size === 0" (click)="bulkOpen.set(true)">
-      {{ 'TICKET_BULK.OPEN' | translate: { count: selectedIds().size } }}
+    <button *nzSpaceItem nz-button [disabled]="selectedTickets().length === 0" (click)="bulkOpen.set(true)">
+      {{ 'TICKET_BULK.OPEN' | translate: { count: selectedTickets().length } }}
     </button>
-    <button *nzSpaceItem nz-button (click)="loadTickets()" [nzLoading]="loading()">
+    <button *nzSpaceItem nz-button (click)="grid.reload()" [nzLoading]="grid.loading()">
       <i nz-icon nzType="reload"></i> {{ 'FIELD_SERVICE.LBL_AGGIORNA' | translate }}
     </button>
-    <button *nzSpaceItem nz-button nzType="primary" (click)="openCreate()">
-      <i nz-icon nzType="plus"></i> {{ 'FIELD_SERVICE.LBL_NUOVO_TICKET' | translate }}
-    </button>
+    <button *nzSpaceItem nz-button nzType="primary" appIconAction="create" (click)="openCreate()"></button>
   </nz-space>
 </ng-template>
 
 <!-- Drawers -->
 <app-ticket-create-drawer
   [(open)]="createDrawerOpen"
-  (saved)="loadTickets()"
+  (saved)="grid.reload()"
 />
 
 <app-ticket-detail-drawer
   [ticketId]="selectedTicketId()"
   [(open)]="detailDrawerOpen"
-  (updated)="loadTickets()"
+  (updated)="grid.reload()"
 />
 
 <app-ticket-bulk-modal

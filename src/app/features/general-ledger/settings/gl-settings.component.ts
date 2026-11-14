@@ -18,12 +18,14 @@ import {
   PostingAccountRole,
   UpdateLedgerSettingsPayload,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 
 @Component({
   selector: 'app-gl-settings',
+  styleUrl: './gl-settings.component.scss',
   imports: [
+    IconActionDirective,
     ReactiveFormsModule,
     NzAlertModule,
     NzButtonModule,

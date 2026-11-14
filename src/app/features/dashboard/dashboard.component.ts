@@ -19,7 +19,7 @@ import {
   InvoiceResource,
   KpiSummary,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 // Shown instead of 0 so that a missing metric is never mistaken for real data.
 const KPI_PLACEHOLDER = '—';
@@ -30,7 +30,10 @@ function isFiniteNumber(val: unknown): val is number {
 
 @Component({
   selector: 'app-dashboard',
+  styleUrl: './dashboard.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     RouterLink,
     CurrencyPipe,
     NzCardModule,
@@ -47,7 +50,6 @@ function isFiniteNumber(val: unknown): val is number {
     TranslatePipe,
   ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
   readonly authStore = inject(AuthStore);

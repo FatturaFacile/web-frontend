@@ -14,13 +14,16 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { QrBill } from '@domain/models/qr-bill.model';
 import { QrBillStore } from '../../state/qr-bill.store';
 
 @Component({
   selector: 'app-swiss-qr-bill',
+  styleUrl: './swiss-qr-bill.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ReactiveFormsModule,
     DecimalPipe,
     NzCardModule,
@@ -40,7 +43,6 @@ import { QrBillStore } from '../../state/qr-bill.store';
     TranslatePipe,
   ],
   templateUrl: './swiss-qr-bill.component.html',
-  styleUrl: './swiss-qr-bill.component.scss',
 })
 export class SwissQrBillComponent implements OnInit {
   readonly store = inject(QrBillStore);
@@ -83,6 +85,7 @@ export class SwissQrBillComponent implements OnInit {
   }
 
   onCreateBill(): void {
+    this.billForm.markAllAsTouched();
     if (this.billForm.valid) {
       const formVal = this.billForm.getRawValue();
       const rounded = Math.round(formVal.rawAmount * 20) / 20;

@@ -59,8 +59,31 @@ export interface StoreFixedAssetPayload {
   description?: string | null;
 }
 
-export interface UpdateFixedAssetPayload extends Partial<StoreFixedAssetPayload> {
-  status?: string | null;
+/** Body of `PUT /eam/assets/{id}` (UpdateFixedAssetRequest): only the descriptive fields can change. */
+export type UpdateFixedAssetPayload = Partial<
+  Pick<StoreFixedAssetPayload, 'name' | 'description' | 'serial_number' | 'barcode_tag' | 'condition'>
+> & { asset_class_id?: string | null; replacement_cost?: number; warranty_expiry_date?: string | null };
+
+/** Body of `POST /eam/assets/{id}/dispose` (DisposeAssetRequest): disposal_type is required. */
+export interface DisposeAssetPayload {
+  disposal_type: 'sale' | 'scrap' | 'retirement' | 'donation' | 'theft_loss';
+  disposed_percentage?: number | null;
+  proceeds_amount?: number | null;
+  disposal_costs?: number | null;
+  disposal_date?: string | null;
+  buyer_contact_id?: string | null;
+  reason?: string | null;
+  auto_post_to_gl?: boolean;
+}
+
+/** Body of `POST /eam/depreciation/runs` and `/simulate` (RunDepreciationRequest). */
+export interface RunDepreciationPayload {
+  period_code: string;
+  period_type?: 'monthly' | 'quarterly' | 'yearly';
+  ledger_type?: 'statutory' | 'tax' | 'ifrs' | 'management' | 'civil' | 'fiscal';
+  single_asset_id?: string | null;
+  category_id?: string | null;
+  auto_post_to_gl?: boolean;
 }
 
 export interface AssetBookResource {

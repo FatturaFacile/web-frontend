@@ -30,22 +30,22 @@ describe('ProfessionalsApiService', () => {
   it('fetches legal cases, time logs, and fee notes', () => {
     const mockCase: LegalCase = {
       id: 'case-1',
-      num: 'PRATICA-2026-001',
-      client: 'Acme SpA',
-      subject: 'Consulenza Societaria Straordinaria',
-      hours: '24',
-      fee: '6000',
-      status: 'active',
-      amlCompliant: true,
+      case_number: 'PRATICA-2026-001',
+      client_id: 'cli-1',
+      title: 'Consulenza Societaria Straordinaria',
+      status: 'open',
+      aml_kyc_completed: true,
     };
 
-    service.getCases().subscribe((res) => {
+    service.getCases({ page: 2, sort_by: 'title' } as never).subscribe((res) => {
       expect(res.data.length).toBe(1);
-      expect(res.data[0].num).toBe('PRATICA-2026-001');
+      expect(res.data[0].case_number).toBe('PRATICA-2026-001');
     });
 
-    const cReq = httpMock.expectOne(`${base}/cases`);
+    const cReq = httpMock.expectOne((r) => r.url === `${base}/cases`);
     expect(cReq.request.method).toBe('GET');
+    expect(cReq.request.params.get('page')).toBe('2');
+    expect(cReq.request.params.get('sort_by')).toBe('title');
     cReq.flush({ data: [mockCase] });
 
     service.getTimeLogs().subscribe((res) => {

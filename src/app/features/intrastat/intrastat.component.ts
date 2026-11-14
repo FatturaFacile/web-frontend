@@ -1,11 +1,12 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
+import { AbstractControl, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -23,11 +24,14 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  FetchGridModel,
   IntrastatApiService,
   IntrastatCodeList,
   IntrastatDeclaration,
   IntrastatDeclarationLine,
   IntrastatDeclarationRequest,
+  IntrastatDeclarationSummary,
+  IntrastatExportChannel,
   IntrastatFlow,
   IntrastatGenerateRequest,
   IntrastatLineRequest,
@@ -36,9 +40,15 @@ import {
   IntrastatProductProfile,
   IntrastatProductProfileRequest,
   IntrastatSubmitRequest,
+  IntrastatSupplyKind,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+
+/** Mirrors `required_if:channel,customs`. */
+function requiredForCustoms(control: AbstractControl) {
+  return control.parent?.get('channel')?.value === 'customs' && (control.value === null || control.value === '') ? { required: true } : null;
+}
 
 /** Used until the code lists of the server arrive (or when they cannot be loaded). */
 const FALLBACK_DELIVERY_TERM_GROUPS: Record<string, string[]> = {
@@ -56,7 +66,13 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
 
 @Component({
   selector: 'app-intrastat',
+  styleUrl: './intrastat.component.scss',
   imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     UpperCasePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -70,7 +86,6 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzSpaceModule,
     NzStatisticModule,
@@ -85,9 +100,8 @@ const FALLBACK_TRANSPORT_MODES: Record<string, string> = {
     TranslatePipe,
   ],
   templateUrl: './intrastat.component.html',
-  styleUrl: './intrastat.component.scss',
 })
-export class IntrastatComponent implements OnInit {
+export class IntrastatComponent {
   private readonly api = inject(IntrastatApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
@@ -98,8 +112,20 @@ export class IntrastatComponent implements OnInit {
   readonly filterFlow = signal<string>('');
 
   // --- TAB 0: DECLARATIONS ---
-  readonly declarations = signal<IntrastatDeclaration[]>([]);
-  readonly declarationsLoading = signal<boolean>(false);
+  /** Totals over the whole filtered list, sent by the API next to each page of declarations. */
+  readonly summary = signal<IntrastatDeclarationSummary>({ sales_total_eur: 0, purchases_total_eur: 0, draft_count: 0, submitted_count: 0 });
+  readonly declarationsGrid = new FetchGridModel<IntrastatDeclaration, { flow?: string; year?: number; page?: number; per_page?: number; search?: string }>(
+    (query) =>
+      this.api.getDeclarations(query).pipe(
+        tap((res) => {
+          const summary = (res as { summary?: IntrastatDeclarationSummary }).summary;
+          if (summary) {
+            this.summary.set(summary);
+          }
+        }),
+      ),
+  );
+  readonly declarations = this.declarationsGrid.items;
   readonly selectedDeclaration = signal<IntrastatDeclaration | null>(null);
   readonly drawerVisible = signal<boolean>(false);
   readonly createModalVisible = signal<boolean>(false);
@@ -115,8 +141,8 @@ export class IntrastatComponent implements OnInit {
   readonly periodicityLoading = signal<boolean>(false);
 
   // --- TAB 3: PRODUCT PROFILES ---
-  readonly productProfiles = signal<IntrastatProductProfile[]>([]);
-  readonly productProfilesLoading = signal<boolean>(false);
+  readonly productProfilesGrid = new FetchGridModel<IntrastatProductProfile>((query) => this.api.getProductProfiles(query));
+  readonly productProfiles = this.productProfilesGrid.items;
   readonly profileModalVisible = signal<boolean>(false);
   readonly selectedProductProfile = signal<IntrastatProductProfile | null>(null);
 
@@ -140,96 +166,123 @@ export class IntrastatComponent implements OnInit {
   readonly exportResult = signal<{ file_name: string; content?: string } | null>(null);
 
   // Derived metrics
-  readonly totalSalesEur = computed(() =>
-    this.declarations()
-      .filter((d) => d.flow === 'sales')
-      .reduce((sum, d) => sum + (d.sections?.reduce((s, sec) => s + (sec.total_eur || 0), 0) || 0), 0),
-  );
-  readonly totalPurchasesEur = computed(() =>
-    this.declarations()
-      .filter((d) => d.flow === 'purchases')
-      .reduce((sum, d) => sum + (d.sections?.reduce((s, sec) => s + (sec.total_eur || 0), 0) || 0), 0),
-  );
-  readonly totalDraftCount = computed(
-    () => this.declarations().filter((d) => d.status === 'draft').length,
-  );
-  readonly totalSubmittedCount = computed(
-    () => this.declarations().filter((d) => d.status === 'submitted').length,
-  );
+  readonly totalSalesEur = computed(() => this.summary().sales_total_eur);
+  readonly totalPurchasesEur = computed(() => this.summary().purchases_total_eur);
+  readonly totalDraftCount = computed(() => this.summary().draft_count);
+  readonly totalSubmittedCount = computed(() => this.summary().submitted_count);
 
   // Forms
   readonly createForm = this.fb.group({
     flow: ['sales' as IntrastatFlow, [Validators.required]],
-    year: [2026, [Validators.required]],
+    year: [2026, [Validators.required, Validators.min(2022), Validators.max(2099)]],
     periodicity: ['M' as IntrastatPeriodicity, [Validators.required]],
-    period: [3, [Validators.required]],
-    reference_number: [1],
+    period: [3, [Validators.required, Validators.min(1), Validators.max(12)]],
+    reference_number: [1, [Validators.min(1), Validators.max(999999)]],
     content_code: [0],
     special_case_code: [0],
     includes_statistical_data: [false],
     has_annual_flows_above_20_million: [false],
-    notes: [''],
+    notes: ['', [Validators.maxLength(2000)]],
   });
 
   readonly generateForm = this.fb.group({
     flow: ['sales' as IntrastatFlow, [Validators.required]],
-    year: [2026, [Validators.required]],
+    year: [2026, [Validators.required, Validators.min(2022), Validators.max(2099)]],
     periodicity: ['M' as IntrastatPeriodicity, [Validators.required]],
-    period: [3, [Validators.required]],
+    period: [3, [Validators.required, Validators.min(1), Validators.max(12)]],
     unclassified_as: ['goods' as 'goods' | 'services'],
     transaction_nature_a: ['1'],
     delivery_terms: ['C'],
     transport_mode: ['3'],
-    province_code: ['MI'],
+    province_code: ['MI', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
 
   readonly submitForm = this.fb.group({
-    protocol_number: ['', [Validators.required]],
+    protocol_number: ['', [Validators.required, Validators.maxLength(30)]],
   });
 
   readonly lineForm = this.fb.group({
-    section: [1, [Validators.required]],
-    partner_country_code: ['DE', [Validators.required]],
-    partner_vat_number: ['123456789'],
-    amount_eur: [1000, [Validators.required]],
-    cn8_code: ['84212100'],
-    net_mass_kg: [50],
+    section: [1, [Validators.required, Validators.min(1), Validators.max(4)]],
+    partner_country_code: ['DE', [Validators.pattern(/^[A-Z]{2}$/)]],
+    partner_vat_number: ['123456789', [Validators.pattern(/^[A-Z0-9]{1,12}$/)]],
+    amount_eur: [1000, [Validators.min(0), Validators.max(9999999999999), Validators.pattern(/^\d+$/)]],
+    cn8_code: ['84212100', [Validators.pattern(/^\d{8}$/)]],
+    net_mass_kg: [50, [Validators.min(0), Validators.max(9999999999), Validators.pattern(/^\d+$/)]],
     delivery_terms: ['C'],
     transport_mode: ['3'],
   });
 
   readonly profileForm = this.fb.group({
     product_id: ['', [Validators.required]],
-    cn8_code: ['', [Validators.required]],
-    cpa_code: [''],
-    origin_country_code: ['IT'],
-    unit_of_measure: ['kg'],
+    cn8_code: ['', [Validators.pattern(/^\d{8}$/)]],
+    supply_kind: ['goods' as IntrastatSupplyKind, [Validators.required]],
+    service_code: ['', [Validators.pattern(/^\d{6}$/)]],
+    origin_country_code: ['IT', [Validators.pattern(/^[A-Z]{2}$/)]],
   });
 
-  ngOnInit(): void {
-    this.loadDeclarations();
+  readonly exportForm = this.fb.group({
+    channel: ['entratel' as IntrastatExportChannel, [Validators.required]],
+    customs_section_code: ['', [Validators.required, Validators.pattern(/^\d{1,6}$/)]],
+    user_code: ['', [requiredForCustoms, Validators.pattern(/^[A-Za-z0-9]{4}$/)]],
+    site_progressive: [null as number | null, [requiredForCustoms, Validators.min(1), Validators.max(999)]],
+    sender_code: ['', [Validators.maxLength(16), Validators.pattern(/^[A-Za-z0-9]*$/)]],
+    transmission_date: [''],
+    sequence: ['', [Validators.pattern(/^([A-Za-z0-9]{2})?$/)]],
+  });
+
+  private readonly channelSync = this.exportForm.controls.channel.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.exportForm.controls.user_code.updateValueAndValidity();
+    this.exportForm.controls.site_progressive.updateValueAndValidity();
+  });
+
+  readonly exportFormVisible = signal<boolean>(false);
+  private readonly exportTarget = signal<IntrastatDeclaration | null>(null);
+
+  private readonly modelTpl = viewChild<TemplateRef<unknown>>('modelTpl');
+  private readonly flowTpl = viewChild<TemplateRef<unknown>>('flowTpl');
+  private readonly periodTpl = viewChild<TemplateRef<unknown>>('periodTpl');
+  private readonly referenceTpl = viewChild<TemplateRef<unknown>>('referenceTpl');
+  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
+  private readonly protocolTpl = viewChild<TemplateRef<unknown>>('protocolTpl');
+  private readonly profileIdTpl = viewChild<TemplateRef<unknown>>('profileIdTpl');
+  private readonly profileNameTpl = viewChild<TemplateRef<unknown>>('profileNameTpl');
+  private readonly profileCnTpl = viewChild<TemplateRef<unknown>>('profileCnTpl');
+
+  protected readonly declarationColumns = computed<TableColumnDef<IntrastatDeclaration>[]>(() => [
+    { key: 'model', header: 'INTRASTAT.MODEL', customCellTemplate: this.modelTpl() },
+    { key: 'flow', header: 'INTRASTAT.FLOW', valueGetter: (d) => this.flowLabel(d.flow), valueLabel: (value) => this.flowLabel(value), customCellTemplate: this.flowTpl() },
+    { key: 'period', serverKey: 'period_label', header: 'INTRASTAT.PERIOD', valueGetter: (d) => `${d.year} / ${d.periodicity}${d.period}`, customCellTemplate: this.periodTpl() },
+    { key: 'reference_number', header: 'INTRASTAT.REF_NUMBER', valueGetter: (d) => `#${d.reference_number}`, customCellTemplate: this.referenceTpl() },
+    { key: 'status', header: 'INTRASTAT.STATUS', valueGetter: (d) => d.status.toUpperCase(), valueLabel: (value) => value.toUpperCase(), customCellTemplate: this.statusTpl() },
+    { key: 'protocol_number', header: 'INTRASTAT.PROTOCOL', valueGetter: (d) => d.protocol_number || '-', customCellTemplate: this.protocolTpl() },
+  ]);
+
+  protected readonly profileColumns = computed<TableColumnDef<IntrastatProductProfile>[]>(() => [
+    { key: 'product_id', header: 'INTRASTAT.PRODUCT_ID', customCellTemplate: this.profileIdTpl() },
+    { key: 'product_name', serverKey: 'product.name', header: 'INTRASTAT.PRODUCT_NAME', valueGetter: (p) => p.product_name || '-', customCellTemplate: this.profileNameTpl() },
+    { key: 'cn8_code', header: 'INTRASTAT.CN8_CODE', customCellTemplate: this.profileCnTpl() },
+    { key: 'supply_kind', header: 'INTRASTAT.SUPPLY_KIND', valueGetter: (p) => (p.supply_kind ? this.supplyKindLabel(p.supply_kind) : '-'), valueLabel: (value) => this.supplyKindLabel(value) },
+    { key: 'origin_country_code', header: 'INTRASTAT.ORIGIN_COUNTRY', valueGetter: (p) => p.origin_country_code || '-' },
+  ]);
+
+  constructor() {
+    this.declarationsGrid.setFilter({ year: this.selectedYear() });
     this.loadPeriodicity();
-    this.loadProductProfiles();
     this.api.getCodes().subscribe({ next: (res) => this.codes.set(res.data), error: () => this.codes.set(null) });
   }
 
   // --- TAB 0: DECLARATIONS ---
   loadDeclarations(): void {
-    this.declarationsLoading.set(true);
-    this.api
-      .getDeclarations({
-        flow: this.filterFlow() || undefined,
-        year: this.selectedYear(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.declarations.set(res?.data || []);
-          this.declarationsLoading.set(false);
-        },
-        error: () => {
-          this.declarationsLoading.set(false);
-        },
-      });
+    this.declarationsGrid.setFilter({ flow: this.filterFlow() || undefined, year: this.selectedYear() });
+    this.declarationsGrid.reload();
+  }
+
+  protected flowLabel(flow: string): string {
+    return this.translate.instant(flow === 'sales' ? 'INTRASTAT.SALES' : 'INTRASTAT.PURCHASES');
+  }
+
+  protected supplyKindLabel(kind: string): string {
+    return this.translate.instant('INTRASTAT.SUPPLY_' + kind.toUpperCase());
   }
 
   openCreateModal(): void {
@@ -323,9 +376,33 @@ export class IntrastatComponent implements OnInit {
   }
 
   exportScdata(d: IntrastatDeclaration): void {
-    this.api.exportDeclaration({ declaration_id: d.id, format: 'scdata' }).subscribe({
+    this.exportTarget.set(d);
+    this.exportFormVisible.set(true);
+  }
+
+  confirmExport(): void {
+    const d = this.exportTarget();
+    if (!d || this.exportForm.invalid) {
+      this.exportForm.markAllAsTouched();
+      return;
+    }
+    const val = this.exportForm.getRawValue();
+    const isCustoms = val.channel === 'customs';
+    this.api
+      .exportDeclaration({
+        declaration_ids: [d.id],
+        channel: val.channel,
+        customs_section_code: val.customs_section_code,
+        user_code: isCustoms ? val.user_code : undefined,
+        site_progressive: isCustoms ? val.site_progressive : undefined,
+        sender_code: val.sender_code || undefined,
+        transmission_date: val.transmission_date || undefined,
+        sequence: val.sequence || undefined,
+      })
+      .subscribe({
       next: (res) => {
-        this.exportResult.set(res?.data || null);
+        this.exportFormVisible.set(false);
+        this.exportResult.set(res);
         this.exportModalVisible.set(true);
       },
       error: () => {
@@ -480,26 +557,17 @@ export class IntrastatComponent implements OnInit {
 
   // --- TAB 3: PRODUCT PROFILES ---
   loadProductProfiles(): void {
-    this.productProfilesLoading.set(true);
-    this.api.getProductProfiles().subscribe({
-      next: (res) => {
-        this.productProfiles.set(res?.data || []);
-        this.productProfilesLoading.set(false);
-      },
-      error: () => {
-        this.productProfilesLoading.set(false);
-      },
-    });
+    this.productProfilesGrid.reload();
   }
 
   openCreateProfileModal(): void {
     this.selectedProductProfile.set(null);
     this.profileForm.reset({
       product_id: '',
+      supply_kind: 'goods',
       cn8_code: '',
-      cpa_code: '',
+      service_code: '',
       origin_country_code: 'IT',
-      unit_of_measure: 'kg',
     });
     this.profileModalVisible.set(true);
   }
@@ -511,10 +579,10 @@ export class IntrastatComponent implements OnInit {
     }
     const val = this.profileForm.getRawValue();
     const payload: IntrastatProductProfileRequest = {
-      cn8_code: val.cn8_code,
-      cpa_code: val.cpa_code || undefined,
+      supply_kind: val.supply_kind,
+      cn8_code: val.cn8_code || undefined,
+      service_code: val.service_code || undefined,
       origin_country_code: val.origin_country_code || undefined,
-      unit_of_measure: val.unit_of_measure || undefined,
     };
 
     this.api.setProductProfile(val.product_id, payload).subscribe({

@@ -55,7 +55,15 @@ describe('WorkspaceComponent', () => {
       callback: vi.fn().mockReturnValue(of({ success: true })),
       sync: vi.fn().mockReturnValue(of({ data: { items: 5 } })),
       revoke: vi.fn().mockReturnValue(of({ success: true })),
-      getItems: vi.fn().mockReturnValue(of({ data: mockItems })),
+      getItems: vi.fn().mockImplementation((query: { kind?: string }) => {
+        const data = query.kind ? mockItems.filter((item) => item.kind === query.kind) : mockItems;
+        return of({
+          success: true,
+          message: 'ok',
+          data,
+          meta: { current_page: 1, last_page: 1, per_page: 10, total: data.length, from: 1, to: data.length },
+        });
+      }),
     };
 
     mockMessage = {
@@ -94,6 +102,7 @@ describe('WorkspaceComponent', () => {
       return {} as NzModalRef;
     });
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   it('should initialize and load connections and synced items', () => {
@@ -103,15 +112,18 @@ describe('WorkspaceComponent', () => {
     expect(component.connections().length).toBe(1);
     expect(component.googleConnection()).toEqual(mockGoogleConn);
     expect(component.microsoftConnection()).toBeUndefined();
-    expect(component.items().length).toBe(2);
+    expect(component.items.items().length).toBe(2);
   });
 
-  it('should filter synced items by kind', () => {
-    expect(component.filteredItems().length).toBe(2);
+  it('should filter synced items by kind on the server', async () => {
+    expect(component.items.items().length).toBe(2);
 
     component.itemFilterKind.set('calendar_event');
-    expect(component.filteredItems().length).toBe(1);
-    expect(component.filteredItems()[0].kind).toBe('calendar_event');
+    component.loadItems();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(mockWorkspaceApi.getItems).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'calendar_event' }));
+    expect(component.items.items().length).toBe(1);
+    expect(component.items.items()[0].kind).toBe('calendar_event');
   });
 
   it('should start OAuth authorization flow', () => {
@@ -156,6 +168,18 @@ describe('WorkspaceComponent', () => {
       })
     );
     expect(component.isCallbackModalVisible()).toBe(false);
+  });
+
+  it('should not call the API when the authorization or callback forms are submitted empty', () => {
+    component.openAuthorizeModal('google');
+    component.submitAuthorize();
+    expect(mockWorkspaceApi.authorize).not.toHaveBeenCalled();
+    expect(component.authForm.controls.consent.touched).toBe(true);
+
+    component.openCallbackModal('google');
+    component.submitCallback();
+    expect(mockWorkspaceApi.callback).not.toHaveBeenCalled();
+    expect(component.callbackForm.controls.code.touched).toBe(true);
   });
 
   it('should trigger sync on connection', () => {

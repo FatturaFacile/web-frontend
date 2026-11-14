@@ -1,11 +1,10 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -18,17 +17,20 @@ import {
   WorkspaceApiService,
   WorkspaceCallbackRequest,
   WorkspaceConnectionResource,
-  WorkspaceItemKind,
+  FetchGridModel,
+  WorkspaceItemQueryParams,
   WorkspaceItemResource,
   WorkspaceProvider,
   WorkspaceScope,
   TranslateService,
 } from '@core';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, ModalActionsDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-workspace',
+  styleUrl: './workspace.component.scss',
   imports: [
+    ModalActionsDirective,
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
@@ -37,7 +39,7 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     NzCardModule,
     NzButtonModule,
     NzTagModule,
-    NzTableModule,
+    BaseTableComponent,
     NzModalModule,
     NzFormModule,
     NzInputModule,
@@ -48,7 +50,6 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
     TranslatePipe,
   ],
   templateUrl: './workspace.component.html',
-  styleUrl: './workspace.component.scss',
 })
 export class WorkspaceComponent implements OnInit {
   private readonly translate = inject(TranslateService);
@@ -72,14 +73,23 @@ export class WorkspaceComponent implements OnInit {
   );
 
   // Synced items
-  readonly items = signal<WorkspaceItemResource[]>([]);
+  /** Server-driven grid of the synced items: paging, sorting, column filters and grouping run on the API. */
+  readonly items = new FetchGridModel<WorkspaceItemResource, WorkspaceItemQueryParams>((query) =>
+    this.workspaceApi.getItems(query),
+  );
   readonly itemFilterKind = signal<string>('all');
-  readonly filteredItems = computed(() => {
-    const kind = this.itemFilterKind();
-    const list = this.items();
-    if (kind === 'all') return list;
-    return list.filter((i) => i.kind === kind);
-  });
+
+  private readonly kindTpl = viewChild<TemplateRef<unknown>>('kindTpl');
+  private readonly subjectTpl = viewChild<TemplateRef<unknown>>('subjectTpl');
+  private readonly counterpartTpl = viewChild<TemplateRef<unknown>>('counterpartTpl');
+  private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
+
+  protected readonly itemColumns = computed<TableColumnDef<WorkspaceItemResource>[]>(() => [
+    { key: 'kind', header: 'WORKSPACE.ITEM_TYPE', valueGetter: (row) => this.kindLabel(row.kind), valueLabel: (value) => this.kindLabel(value), customCellTemplate: this.kindTpl() },
+    { key: 'subject', header: 'WORKSPACE.ITEM_SUBJECT', customCellTemplate: this.subjectTpl() },
+    { key: 'counterpart', header: 'WORKSPACE.ITEM_COUNTERPART', customCellTemplate: this.counterpartTpl() },
+    { key: 'starts_at', header: 'WORKSPACE.ITEM_DATE', customCellTemplate: this.dateTpl() },
+  ]);
 
   // Modal states
   readonly isAuthorizeModalVisible = signal<boolean>(false);
@@ -96,13 +106,12 @@ export class WorkspaceComponent implements OnInit {
 
   // Callback Form
   readonly callbackForm = this.fb.group({
-    code: ['', [Validators.required]],
-    state: ['', [Validators.required]],
+    code: ['', [Validators.required, Validators.maxLength(4096)]],
+    state: ['', [Validators.required, Validators.maxLength(128)]],
   });
 
   ngOnInit(): void {
     this.loadConnections();
-    this.loadItems();
   }
 
   loadConnections(): void {
@@ -122,16 +131,12 @@ export class WorkspaceComponent implements OnInit {
 
   loadItems(): void {
     const kindVal = this.itemFilterKind();
-    const kind = kindVal !== 'all' ? (kindVal as WorkspaceItemKind) : undefined;
+    this.items.setFilter({ kind: kindVal !== 'all' ? kindVal : undefined });
+    this.items.reload();
+  }
 
-    this.workspaceApi.getItems({ kind, per_page: 50 }).subscribe({
-      next: (res) => {
-        this.items.set(res.data ?? []);
-      },
-      error: () => {
-        this.message.error(this.translate.instant('workspace.msgImpossibileCaricareGliElementiSincronizzati'));
-      },
-    });
+  protected kindLabel(kind: string): string {
+    return this.translate.instant(kind === 'calendar_event' ? 'WORKSPACE.KIND_CALENDAR' : 'WORKSPACE.KIND_EMAIL');
   }
 
   openAuthorizeModal(provider: WorkspaceProvider): void {

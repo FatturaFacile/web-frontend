@@ -30,7 +30,7 @@
       <nz-statistic
         [nzValue]="store.pendingBillsCount()"
         [nzTitle]="'SWISS_QR.PENDING_COLLECTION' | translate"
-        [nzValueStyle]="{ color: '#f59e0b' }"
+        [nzValueStyle]="{ color: 'var(--status-warning)' }"
       />
     </nz-card>
   </div>
@@ -54,7 +54,7 @@
           <div nz-col [nzSpan]="12">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.DEBTOR_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorName"
@@ -67,7 +67,7 @@
           <div nz-col [nzSpan]="12">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.ADDRESS_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorAddress"
@@ -83,7 +83,7 @@
           <div nz-col [nzSpan]="8">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.POSTAL_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorPostalCode"
@@ -96,7 +96,7 @@
           <div nz-col [nzSpan]="8">
             <nz-form-item>
               <nz-form-label nzRequired>{{ "SWISS_QR.CITY_LABEL" | translate }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
                   formControlName="debtorCity"
@@ -111,12 +111,12 @@
               <nz-form-label nzRequired>{{
                 "SWISS_QR.RAW_AMOUNT_LABEL" | translate
               }}</nz-form-label>
-              <nz-form-control>
+              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <nz-input-number
                   formControlName="rawAmount"
                   [nzMin]="0.05"
                   [nzStep]="0.01"
-                  style="width: 100%"
+                  class="amount-input"
                   [attr.aria-label]="'SWISS_QR.RAW_AMOUNT_LABEL' | translate"
                 />
               </nz-form-control>
@@ -166,10 +166,10 @@
         >
           <thead>
             <tr>
-              <th>{{ "SWISS_QR.COL_BILL_NUM" | translate }}</th>
-              <th>{{ "SWISS_QR.COL_DEBTOR" | translate }}</th>
-              <th>{{ "COMMON.AMOUNT" | translate }}</th>
-              <th>{{ "SWISS_QR.COL_DUE_DATE" | translate }}</th>
+              <th [nzSortFn]="'billNumber' | gridSort" [nzFilters]="'billNumber' | gridFilterList: billTable.nzData" [nzFilterFn]="'billNumber' | gridFilterFn">{{ "SWISS_QR.COL_BILL_NUM" | translate }}</th>
+              <th [nzSortFn]="'debtor.name' | gridSort" [nzFilters]="'debtor.name' | gridFilterList: billTable.nzData" [nzFilterFn]="'debtor.name' | gridFilterFn">{{ "SWISS_QR.COL_DEBTOR" | translate }}</th>
+              <th [nzSortFn]="'amount' | gridSort" [nzFilters]="'amount' | gridFilterList: billTable.nzData" [nzFilterFn]="'amount' | gridFilterFn">{{ "COMMON.AMOUNT" | translate }}</th>
+              <th [nzSortFn]="'dueDate' | gridSort" [nzFilters]="'dueDate' | gridFilterList: billTable.nzData" [nzFilterFn]="'dueDate' | gridFilterFn">{{ "SWISS_QR.COL_DUE_DATE" | translate }}</th>
               <th>{{ "COMMON.STATUS" | translate }}</th>
               <th>{{ "COMMON.ACTION" | translate }}</th>
             </tr>

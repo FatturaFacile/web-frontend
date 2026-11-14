@@ -1,17 +1,17 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HrLeaveApiService, I18nService, LeaveBalanceResource } from '@core';
-import { TranslatePipe } from '@shared';
+import { FetchGridModel, HrLeaveApiService, I18nService, LeaveBalanceResource } from '@core';
+import { BaseTableComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { reportHttpError } from '../shared/hr-http.util';
 
 /** Leave balances (decimal-string hours) and the monthly accrual run. */
 @Component({
   selector: 'app-leave-balances',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzTableModule, TranslatePipe],
+  styleUrl: './leave-balances.component.scss',
+  imports: [BaseTableComponent, FormsModule, NzButtonModule, NzInputModule, TranslatePipe],
   template: `
     <div class="flex justify-between items-center mb-3 gap-2">
       <h3 class="m-0">{{ 'hrmLeave.balances' | translate }}</h3>
@@ -24,7 +24,7 @@ import { reportHttpError } from '../shared/hr-http.util';
             type="number"
             min="1"
             max="12"
-            style="width: 90px"
+            class="w-field-xs"
             [ngModel]="month()"
             (ngModelChange)="month.set($event)"
           />
@@ -34,66 +34,40 @@ import { reportHttpError } from '../shared/hr-http.util';
         </div>
       }
     </div>
-    <nz-table #table [nzData]="balances()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
-      <thead>
-        <tr>
-          <th>{{ 'hrmCommon.employee' | translate }}</th>
-          <th>{{ 'hrmCommon.year' | translate }}</th>
-          <th>{{ 'hrmSelfService.entitlement' | translate }}</th>
-          <th>{{ 'hrmSelfService.carryover' | translate }}</th>
-          <th>{{ 'hrmSelfService.accrued' | translate }}</th>
-          <th>{{ 'hrmSelfService.used' | translate }}</th>
-          <th>{{ 'hrmSelfService.pending' | translate }}</th>
-          <th>{{ 'hrmSelfService.available' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of table.data; track row.id) {
-          <tr>
-            <td>{{ row.employee_id.slice(0, 8) }}</td>
-            <td>{{ row.fiscal_year }}</td>
-            <td>{{ row.entitlement_hours }}</td>
-            <td>{{ row.carryover_hours }}</td>
-            <td>{{ row.accrued_hours }}</td>
-            <td>{{ row.used_hours }}</td>
-            <td>{{ row.pending_hours }}</td>
-            <td>
-              <strong>{{ row.available_hours }}</strong>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
+    <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{}" exportFileName="leave-balances" />
+
+    <ng-template #employeeTpl let-row>{{ row.employee_name || row.employee_id.slice(0, 8) }}</ng-template>
+    <ng-template #availableTpl let-row><strong>{{ row.available_hours }}</strong></ng-template>
   `,
 })
-export class LeaveBalancesComponent implements OnInit {
+export class LeaveBalancesComponent {
   readonly canWrite = input(false);
 
   private readonly api = inject(HrLeaveApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
-  protected readonly balances = signal<LeaveBalanceResource[]>([]);
-  protected readonly loading = signal(true);
+  /** Server-driven grid of the balances. */
+  protected readonly grid = new FetchGridModel<LeaveBalanceResource>((query) => this.api.getLeaveBalances(undefined, query));
+  private readonly employeeTpl = viewChild<TemplateRef<unknown>>('employeeTpl');
+  private readonly availableTpl = viewChild<TemplateRef<unknown>>('availableTpl');
+  protected readonly columns = computed<TableColumnDef<LeaveBalanceResource>[]>(() => {
+    return [
+      { key: 'employee_name', serverKey: 'employee.full_name', header: 'hrmCommon.employee', customCellTemplate: this.employeeTpl() },
+      { key: 'fiscal_year', header: 'hrmCommon.year' },
+      { key: 'entitlement_hours', header: 'hrmSelfService.entitlement', align: 'right' },
+      { key: 'carryover_hours', header: 'hrmSelfService.carryover', align: 'right' },
+      { key: 'accrued_hours', header: 'hrmSelfService.accrued', align: 'right' },
+      { key: 'used_hours', header: 'hrmSelfService.used', align: 'right' },
+      { key: 'pending_hours', header: 'hrmSelfService.pending', align: 'right' },
+      { key: 'available_hours', header: 'hrmSelfService.available', align: 'right', customCellTemplate: this.availableTpl() },
+    ];
+  });
   protected readonly accruing = signal(false);
   protected readonly month = signal<number | null>(null);
 
-  ngOnInit(): void {
-    this.reload();
-  }
-
   protected reload(): void {
-    this.loading.set(true);
-    this.api.getLeaveBalances().subscribe({
-      next: (res) => {
-        this.balances.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        reportHttpError(err, this.message, this.i18n);
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   protected accrue(): void {

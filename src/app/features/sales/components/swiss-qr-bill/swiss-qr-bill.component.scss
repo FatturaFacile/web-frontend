@@ -1,3 +1,7 @@
+:host {
+  display: block;
+}
+
 .stats-row {
   margin-bottom: 20px;
 }
@@ -12,8 +16,9 @@
 }
 
 .rounding-callout {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success);
+  color: var(--text-primary);
   border-radius: 6px;
   padding: 10px 14px;
   margin-bottom: 16px;
@@ -24,13 +29,13 @@
 }
 
 .rounded-value {
-  color: #10b981;
+  color: var(--status-success);
   font-size: 15px;
   margin-left: 6px;
 }
 
 .rounding-diff {
-  color: #10b981;
+  color: var(--status-success);
   font-size: 11px;
 }
 
@@ -39,16 +44,16 @@
 }
 
 .clickable-row:hover {
-  background-color: rgba(13, 148, 136, 0.05);
+  background-color: var(--bg-hover);
 }
 
 .selected-row {
-  background-color: rgba(13, 148, 136, 0.12) !important;
+  background-color: var(--bg-selected) !important;
 }
 
 .select-action-btn {
   background: none;
-  border: 1px solid var(--border-color, #d9d9d9);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 12px;
@@ -58,19 +63,19 @@
 }
 
 .select-action-btn:hover {
-  color: var(--primary-color, #0d9488);
-  border-color: var(--primary-color, #0d9488);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
-/* Swiss QR Voucher styling */
+// Swiss QR voucher
 .voucher-card {
-  border: 1px solid var(--border-color, #d9d9d9);
-  background: var(--bg-card, #fafafa);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card-secondary);
 }
 
 .qr-voucher-container {
-  background: var(--bg-card, #ffffff);
-  border: 1px dashed var(--border-color, #bfbfbf);
+  background: var(--bg-card);
+  border: 1px dashed var(--border-input);
   padding: 20px;
   border-radius: 4px;
 }
@@ -83,8 +88,8 @@
 }
 
 .voucher-sub {
-  font-size: 11px;
-  color: var(--text-secondary, #8c8c8c);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .voucher-grid {
@@ -101,7 +106,7 @@
 .qr-graphic {
   width: 140px;
   height: 140px;
-  background: #000000;
+  background: var(--qr-ink);
   position: relative;
   border-radius: 4px;
   display: flex;
@@ -112,7 +117,7 @@
 .qr-pattern {
   width: 128px;
   height: 128px;
-  background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 50% / 16px 16px;
+  background: repeating-conic-gradient(var(--qr-paper) 0% 25%, var(--qr-ink) 0% 50%) 50% / 16px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,33 +127,33 @@
 .swiss-cross-badge {
   width: 28px;
   height: 28px;
-  background: #ff0000;
+  background: var(--swiss-red);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--card-shadow);
 }
 
 .cross-v {
   position: absolute;
   width: 6px;
   height: 18px;
-  background: #ffffff;
+  background: var(--qr-paper);
 }
 
 .cross-h {
   position: absolute;
   width: 18px;
   height: 6px;
-  background: #ffffff;
+  background: var(--qr-paper);
 }
 
 .qr-amount-box {
   margin-top: 12px;
   display: flex;
   gap: 16px;
-  border-top: 1px solid var(--border-color, #f0f0f0);
+  border-top: 1px solid var(--border-light);
   padding-top: 8px;
 }
 
@@ -159,7 +164,7 @@
 
 .amount-col .lbl {
   font-size: 10px;
-  color: var(--text-secondary, #8c8c8c);
+  color: var(--text-secondary);
   text-transform: uppercase;
 }
 
@@ -171,7 +176,7 @@
 
 .amount-main {
   font-size: 16px !important;
-  color: var(--primary-color, #0d9488) !important;
+  color: var(--primary-color) !important;
 }
 
 .qr-info-col {
@@ -191,7 +196,7 @@
 .info-label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-secondary, #8c8c8c);
+  color: var(--text-secondary);
   text-transform: uppercase;
 }
 
@@ -206,13 +211,13 @@
 .scor-code {
   font-family: 'Courier New', monospace;
   font-weight: 700;
-  color: var(--primary-color, #0d9488);
+  color: var(--primary-color);
   letter-spacing: 0.5px;
 }
 
 .receipt-part {
   font-size: 11px;
-  color: var(--text-secondary, #595959);
+  color: var(--text-secondary);
 }
 
 .receipt-part h4 {
@@ -231,4 +236,8 @@
 .receipt-amount {
   font-size: 14px;
   color: var(--text-primary);
+}
+
+.amount-input {
+  width: 100%;
 }

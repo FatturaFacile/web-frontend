@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -6,9 +6,10 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { tap } from 'rxjs';
 import {
+  FetchGridModel,
   FieldServiceApiService,
   I18nService,
   PermissionsService,
@@ -16,21 +17,24 @@ import {
   ServiceReportPhotoStage,
   ServiceReportSummary,
 } from '@core';
-import { downloadBlob, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { BaseTableComponent, downloadBlob, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
 
 const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'general', 'receipt'];
 
 @Component({
   selector: 'app-service-reports',
+  styleUrl: './service-reports.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     FormsModule,
     NzButtonModule,
     NzCardModule,
     NzInputModule,
     NzModalModule,
     NzSelectModule,
-    NzTableModule,
+    BaseTableComponent,
     NzTagModule,
     MoneyPipe,
     PageHeaderComponent,
@@ -38,30 +42,8 @@ const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'ge
     SignatureDialogComponent,
   ],
   templateUrl: './service-reports.component.html',
-  styles: `
-    .sr-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .sr-filter {
-      width: 180px;
-    }
-    .sr-spacer {
-      flex: 1;
-    }
-    .sr-label {
-      display: block;
-      margin: 12px 0 4px;
-      font-weight: 500;
-    }
-    .sr-select {
-      width: 100%;
-    }
-  `,
 })
-export class ServiceReportsComponent implements OnInit {
+export class ServiceReportsComponent {
   private readonly api = inject(FieldServiceApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -69,12 +51,13 @@ export class ServiceReportsComponent implements OnInit {
   private readonly permissions = inject(PermissionsService);
   protected readonly canWrite = computed(() => this.permissions.canWrite('service'));
 
-  protected readonly reports = signal<ServiceReportSummary[]>([]);
-  protected readonly loading = signal(false);
+  /** Server-side grid: paging, sorting, column filters, grouping and export run over all the service reports. */
+  protected readonly grid = new FetchGridModel<ServiceReportSummary, ServiceReportListParams>((query) =>
+    this.api.getServiceReports(query).pipe(
+      tap({ error: () => this.message.error(this.i18n.translate('SERVICE_REPORTS.LOAD_FAILED')) }),
+    ),
+  );
   protected readonly saving = signal(false);
-  protected readonly total = signal(0);
-  protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
   protected readonly status = signal('');
   protected readonly fromDate = signal('');
   protected readonly toDate = signal('');
@@ -90,42 +73,36 @@ export class ServiceReportsComponent implements OnInit {
 
   protected readonly canConsolidate = computed(() => this.selectedIds().size >= 2);
 
-  ngOnInit(): void {
-    this.load();
-  }
+  private readonly selectTpl = viewChild<TemplateRef<{ $implicit: ServiceReportSummary; value: unknown }>>('selectTpl');
+  private readonly numberTpl = viewChild<TemplateRef<{ $implicit: ServiceReportSummary; value: unknown }>>('numberTpl');
+  private readonly totalTpl = viewChild<TemplateRef<{ $implicit: ServiceReportSummary; value: unknown }>>('totalTpl');
+  private readonly statusTpl = viewChild<TemplateRef<{ $implicit: ServiceReportSummary; value: unknown }>>('statusTpl');
 
-  protected load(): void {
-    this.loading.set(true);
-    const params: ServiceReportListParams = {
-      page: this.pageIndex(),
-      per_page: this.pageSize(),
-      status: this.status() || undefined,
-      from_date: this.fromDate() || undefined,
-      to_date: this.toDate() || undefined,
-    };
-    this.api.getServiceReports(params).subscribe({
-      next: (res) => {
-        this.reports.set(res.data ?? []);
-        this.total.set(res.meta?.total ?? 0);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.reports.set([]);
-        this.loading.set(false);
-        this.message.error(this.i18n.translate('SERVICE_REPORTS.LOAD_FAILED'));
-      },
-    });
-  }
+  /**
+   * `serverKey` names what the API sorts and filters by: the relation columns `contact.name`, `technician.name` and
+   * `status.code` (the status label is a translation of the code, so the code is the grouping and filter value).
+   */
+  protected readonly columns = computed<TableColumnDef<ServiceReportSummary>[]>(() => [
+    { key: '__select', header: '', width: '48px', sortable: false, filterable: false, groupable: false, exportable: false, customCellTemplate: this.selectTpl() },
+    { key: 'report_number', header: 'SERVICE_REPORTS.NUMBER', customCellTemplate: this.numberTpl() },
+    { key: 'report_date', header: 'SERVICE_REPORTS.DATE' },
+    { key: 'contact', serverKey: 'contact.name', valueGetter: (report) => report.contact?.name ?? '', header: 'SERVICE_REPORTS.CUSTOMER' },
+    { key: 'technician', serverKey: 'technician.name', valueGetter: (report) => report.technician?.name ?? '', header: 'SERVICE_REPORTS.TECHNICIAN' },
+    { key: 'total_hours', header: 'SERVICE_REPORTS.HOURS' },
+    { key: 'total_gross', header: 'SERVICE_REPORTS.TOTAL', customCellTemplate: this.totalTpl() },
+    { key: 'status', serverKey: 'status.code', valueGetter: (report) => report.status?.code ?? '', header: 'COMMON.STATUS', customCellTemplate: this.statusTpl() },
+  ]);
 
-  protected onQueryParams(params: NzTableQueryParams): void {
-    this.pageIndex.set(params.pageIndex);
-    this.pageSize.set(params.pageSize);
-    this.load();
+  constructor() {
+    this.grid.setPageSize(20);
   }
 
   protected applyFilters(): void {
-    this.pageIndex.set(1);
-    this.load();
+    this.grid.setFilter({
+      status: this.status() || undefined,
+      from_date: this.fromDate() || undefined,
+      to_date: this.toDate() || undefined,
+    });
   }
 
   protected toggle(id: string, checked: boolean): void {
@@ -163,7 +140,7 @@ export class ServiceReportsComponent implements OnInit {
           this.saving.set(false);
           this.signOpen.set(false);
           this.message.success(this.i18n.translate('SERVICE_REPORTS.SIGNED'));
-          this.load();
+          this.grid.reload();
         },
         error: (err: unknown) => this.fail(err),
       });
@@ -178,7 +155,7 @@ export class ServiceReportsComponent implements OnInit {
         this.api.generateServiceReportInvoice(report.id).subscribe({
           next: (res) => {
             this.message.success(this.i18n.translate('SERVICE_REPORTS.INVOICED', { number: res.data.invoice_number }));
-            this.load();
+            this.grid.reload();
           },
           error: (err: unknown) => this.fail(err),
         }),
@@ -196,7 +173,7 @@ export class ServiceReportsComponent implements OnInit {
           next: (res) => {
             this.selectedIds.set(new Set());
             this.message.success(this.i18n.translate('SERVICE_REPORTS.INVOICED', { number: res.data.invoice_number }));
-            this.load();
+            this.grid.reload();
           },
           error: (err: unknown) => this.fail(err),
         }),

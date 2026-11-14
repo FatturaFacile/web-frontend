@@ -1,5 +1,5 @@
 import { DatePipe, SlicePipe, UpperCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -7,7 +7,6 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -47,11 +46,17 @@ import {
   ReplyPortalTicketRequest,
   TranslateService,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { notInPast } from '@shared/utils/date-validators';
 
 @Component({
   selector: 'app-portal',
+  styleUrl: './portal.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    IconActionDirective,
+    ModalActionsDirective,
     SlicePipe,
     UpperCasePipe,
     DatePipe,
@@ -67,7 +72,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     NzSelectModule,
     NzFormModule,
     NzModalModule,
-    NzDrawerModule,
     NzDescriptionsModule,
     NzAlertModule,
     NzStatisticModule,
@@ -79,7 +83,6 @@ import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
     MoneyPipe,
   ],
   templateUrl: './portal.component.html',
-  styleUrls: ['./portal.component.scss'],
 })
 export class PortalComponent implements OnInit {
   private readonly portalApi = inject(PortalApiService);
@@ -150,11 +153,30 @@ export class PortalComponent implements OnInit {
   });
 
   readonly movementForm: FormGroup = this.fb.group({
+    line: ['', [Validators.required]],
     request_type: ['withdrawal', [Validators.required]],
-    quantity: [1, [Validators.required, Validators.min(1)]],
-    requested_date: [''],
-    notes: [''],
+    quantity: [1, [Validators.required, Validators.min(0.0001)]],
+    requested_date: ['', [notInPast]],
+    notes: ['', [Validators.maxLength(1000)]],
   });
+
+  /** Warehouse and item pairs of the customer stock, to pick what the movement request is about. */
+  protected readonly movementLines = computed(() => {
+    const seen = new Set<string>();
+    const lines: { key: string; label: string }[] = [];
+    for (const line of this.stockLines()) {
+      const key = this.stockLineKey(line);
+      if (line.warehouse_id && !seen.has(key)) {
+        seen.add(key);
+        lines.push({ key, label: `${line.sku ?? ''} ${line.name ?? ''}`.trim() });
+      }
+    }
+    return lines;
+  });
+
+  protected stockLineKey(line: PortalStockLine): string {
+    return `${line.warehouse_id}|${line.stock_item_id}`;
+  }
 
   readonly shipmentForm: FormGroup = this.fb.group({
     service_type: ['Standard Air Cargo', [Validators.required, Validators.maxLength(40)]],
@@ -162,10 +184,10 @@ export class PortalComponent implements OnInit {
     origin_country: ['IT', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
     destination_country: ['CH', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
     gross_weight_kg: [10, [Validators.required, Validators.min(0.1)]],
-    volume_m3: [0.5],
+    volume_m3: [0.5, [Validators.min(0)]],
     packages: [1, [Validators.required, Validators.min(1)]],
     pickup_on: [''],
-    notes: [''],
+    notes: ['', [Validators.maxLength(2000)]],
   });
 
   ngOnInit(): void {
@@ -322,7 +344,7 @@ export class PortalComponent implements OnInit {
   }
 
   private loadStockMovements(page: number): void {
-    this.portalApi.getStockMovements(this.token(), page).subscribe({
+    this.portalApi.getStockMovements(this.token(), { page }).subscribe({
       next: (res) => {
         this.stockMovementsPage = res.meta.current_page;
         this.stockMovements.update((rows) => (page === 1 ? res.data : [...rows, ...res.data]));
@@ -582,7 +604,7 @@ export class PortalComponent implements OnInit {
 
   // Movement requests
   openMovementModal(): void {
-    this.movementForm.reset({ request_type: 'withdrawal', quantity: 1 });
+    this.movementForm.reset({ line: '', request_type: 'withdrawal', quantity: 1, requested_date: '', notes: '' });
     this.movementModalVisible.set(true);
   }
 
@@ -591,9 +613,24 @@ export class PortalComponent implements OnInit {
       this.movementForm.markAllAsTouched();
       return;
     }
-    const val = this.movementForm.value as CreatePortalMovementRequest;
+    const val = this.movementForm.value as {
+      line: string;
+      request_type: CreatePortalMovementRequest['request_type'];
+      quantity: number;
+      requested_date: string;
+      notes: string;
+    };
+    const [warehouseId, stockItemId] = val.line.split('|');
+    const payload: CreatePortalMovementRequest = {
+      warehouse_id: warehouseId,
+      stock_item_id: stockItemId,
+      request_type: val.request_type,
+      quantity: val.quantity,
+      requested_date: val.requested_date || null,
+      notes: val.notes || null,
+    };
     this.loading.set(true);
-    this.portalApi.createMovementRequest(this.token(), val).subscribe({
+    this.portalApi.createMovementRequest(this.token(), payload).subscribe({
       next: () => {
         this.loading.set(false);
         this.msg.success(this.t('PORTAL.MOVEMENT_REQUEST_CREATED'));

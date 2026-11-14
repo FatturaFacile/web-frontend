@@ -3,7 +3,6 @@ import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
 import { AuthStore, CrmApiService, I18nService, LeadResource, TranslateService } from '@core';
@@ -112,10 +111,6 @@ describe('LeadsComponent', () => {
     info: vi.fn(),
   };
 
-  const mockModal = {
-    confirm: vi.fn(),
-  };
-
   const mockAuthStore = {
     activeJurisdiction: vi.fn().mockReturnValue('CH'),
     activeCurrency: vi.fn().mockReturnValue('CHF'),
@@ -133,7 +128,6 @@ describe('LeadsComponent', () => {
         { provide: TranslateService, useValue: mockTranslate },
         { provide: I18nService, useValue: mockTranslate },
         { provide: NzMessageService, useValue: mockMessage },
-        { provide: NzModalService, useValue: mockModal },
       ],
     }).compileComponents();
 
@@ -141,22 +135,27 @@ describe('LeadsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads leads on initialization', () => {
+  it('loads leads on initialization', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
     expect(mockCrmApi.getLeads).toHaveBeenCalled();
-    expect(component.leads()).toEqual(mockLeads);
-    expect(component.total()).toBe(1);
+    expect(component.grid.items()).toEqual(mockLeads);
+    expect(component.grid.totalCount()).toBe(1);
   });
 
-  it('filters leads by search term', () => {
+  it('filters leads by search term and sorts the name on the server column', async () => {
     fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     const event = { target: { value: 'Alpha' } } as unknown as Event;
     component.onSearch(event);
+    component.grid.onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'display_name', order: 'descend' }, filters: {} });
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     expect(component.searchTerm()).toBe('Alpha');
+    expect(component.columns().find((c) => c.key === 'full_name')?.serverKey).toBe('display_name');
     expect(mockCrmApi.getLeads).toHaveBeenCalledWith(
-      expect.objectContaining({ search: 'Alpha', page: 1 }),
+      expect.objectContaining({ search: 'Alpha', page: 1, sort_by: 'display_name', sort_dir: 'desc' }),
     );
   });
 
@@ -180,6 +179,17 @@ describe('LeadsComponent', () => {
     );
     expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadCreatedSuccessfully');
     expect(component.createDrawerVisible()).toBe(false);
+  });
+
+  it('does not create a lead from an empty form: the name is required', () => {
+    fixture.detectChanges();
+    component.openCreateDrawer();
+
+    component.submitCreateLead();
+
+    expect(mockCrmApi.createLead).not.toHaveBeenCalled();
+    expect(component.identityInvalid('company_name')).toBe(true);
+    expect(component.errorTip('company_name')).not.toBe('');
   });
 
   it('recalculates lead score', () => {

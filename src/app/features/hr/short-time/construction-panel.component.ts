@@ -10,7 +10,7 @@ import {
   JointCommissionReport,
   ShortTimeApiService,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -27,7 +27,10 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
 /** Construction wage under a collective agreement: parameter versions, planned hours calendar, hours account and joint commission report. */
 @Component({
   selector: 'app-construction-panel',
+  styleUrl: './construction-panel.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     ActionFormComponent,
     FormsModule,
     MoneyPipe,
@@ -47,7 +50,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
     }
 
     <h4 class="mt-4">{{ 'hrmShortTime.construction.reportsTitle' | translate }}</h4>
-    <div class="flex items-end gap-2 mb-3 flex-wrap">
+    <div class="filter-bar">
       <div>
         <label for="cn-code">{{ 'hrmShortTime.construction.agreementCode' | translate }}</label>
         <input
@@ -71,7 +74,7 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
         <label for="cn-employee">{{ 'hrmCommon.employee' | translate }}</label>
         <nz-select
           id="cn-employee"
-          style="width: 240px; display: block"
+          class="w-field-md"
           nzAllowClear
           nzShowSearch
           [ngModel]="employeeId()"
@@ -111,10 +114,10 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       >
         <thead>
           <tr>
-            <th>{{ 'hrmLeave.month' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.planned' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.balance' | translate }}</th>
+            <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmLeave.month' | translate }}</th>
+            <th [nzSortFn]="'planned_hours' | gridSort" [nzFilters]="'planned_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'planned_hours' | gridFilterFn">{{ 'hrmShortTime.construction.planned' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort" [nzFilters]="'worked_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'worked_hours' | gridFilterFn">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'balance_hours' | gridSort" [nzFilters]="'balance_hours' | gridFilterList: monthsTable.nzData" [nzFilterFn]="'balance_hours' | gridFilterFn">{{ 'hrmShortTime.construction.balance' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -138,14 +141,14 @@ const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
       <nz-table #reportTable [nzData]="r.rows" [nzFrontPagination]="false" nzSize="small">
         <thead>
           <tr>
-            <th>{{ 'hrmShortTime.construction.qualification' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.zone' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.headcount' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.worked' | translate }}</th>
-            <th>{{ 'hrmPayroll.gross' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
-            <th>{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
+            <th [nzSortFn]="'qualification' | gridSort" [nzFilters]="'qualification' | gridFilterList: reportTable.nzData" [nzFilterFn]="'qualification' | gridFilterFn">{{ 'hrmShortTime.construction.qualification' | translate }}</th>
+            <th [nzSortFn]="'zone' | gridSort" [nzFilters]="'zone' | gridFilterList: reportTable.nzData" [nzFilterFn]="'zone' | gridFilterFn">{{ 'hrmShortTime.construction.zone' | translate }}</th>
+            <th [nzSortFn]="'headcount' | gridSort" [nzFilters]="'headcount' | gridFilterList: reportTable.nzData" [nzFilterFn]="'headcount' | gridFilterFn">{{ 'hrmShortTime.construction.headcount' | translate }}</th>
+            <th [nzSortFn]="'worked_hours' | gridSort" [nzFilters]="'worked_hours' | gridFilterList: reportTable.nzData" [nzFilterFn]="'worked_hours' | gridFilterFn">{{ 'hrmShortTime.construction.worked' | translate }}</th>
+            <th [nzSortFn]="'gross_salary' | gridSort" [nzFilters]="'gross_salary' | gridFilterList: reportTable.nzData" [nzFilterFn]="'gross_salary' | gridFilterFn">{{ 'hrmPayroll.gross' | translate }}</th>
+            <th [nzSortFn]="'average_hourly' | gridSort" [nzFilters]="'average_hourly' | gridFilterList: reportTable.nzData" [nzFilterFn]="'average_hourly' | gridFilterFn">{{ 'hrmShortTime.construction.averageHourly' | translate }}</th>
+            <th [nzSortFn]="'minimum_hourly' | gridSort" [nzFilters]="'minimum_hourly' | gridFilterList: reportTable.nzData" [nzFilterFn]="'minimum_hourly' | gridFilterFn">{{ 'hrmShortTime.construction.minimumHourly' | translate }}</th>
+            <th [nzSortFn]="'below_minimum.length' | gridSort" [nzFilters]="'below_minimum.length' | gridFilterList: reportTable.nzData" [nzFilterFn]="'below_minimum.length' | gridFilterFn">{{ 'hrmShortTime.construction.belowMinimum' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -204,12 +207,16 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmShortTime.construction.annualHours',
         type: 'decimal',
         required: true,
+        min: 1,
+        max: 3000,
       },
       {
         key: 'accounting_year_start_month',
         labelKey: 'hrmShortTime.construction.yearStartMonth',
         type: 'integer',
         required: true,
+        min: 1,
+        max: 12,
         defaultValue: '1',
       },
       {
@@ -217,6 +224,7 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmShortTime.construction.source',
         type: 'text',
         required: true,
+        minLength: 5,
         maxLength: 2000,
       },
       {
@@ -259,14 +267,20 @@ export class ConstructionPanelComponent {
         labelKey: 'hrmCommon.year',
         type: 'integer',
         required: true,
+        min: 2000,
+        max: 2100,
         defaultValue: String(new Date().getFullYear()),
       },
       ...MONTHS.map((month): CrudField => ({
         key: `m${month}`,
         labelKey: `hrmShortTime.construction.months.m${month}`,
         type: 'decimal',
+        min: 0,
+        max: 400,
       })),
     ],
+    // API: `months` needs at least one entry
+    validate: (payload) => (MONTHS.some((month) => payload[`m${month}`] !== undefined) ? null : 'hrmShortTime.construction.atLeastOneMonth'),
     submit: (payload) =>
       this.api.saveConstructionCalendar({
         agreement_code: String(payload['agreement_code']),

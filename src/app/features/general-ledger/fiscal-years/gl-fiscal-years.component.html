@@ -1,81 +1,69 @@
 <app-gl-error-alert [error]="error()" />
 
 <nz-card>
-  <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center">
+  <div class="toolbar">
     @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'GL.YEAR_NEW' | translate }}</button>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()" appIconAction="create"></button>
     }
   </div>
 
-  <nz-table #table nzSize="middle" [nzData]="items()" [nzLoading]="loading()" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th nzWidth="40px"></th>
-        <th>{{ 'GL.YEAR_CODE' | translate }}</th>
-        <th>{{ 'GL.START_DATE' | translate }}</th>
-        <th>{{ 'GL.END_DATE' | translate }}</th>
-        <th>{{ 'GL.STATUS' | translate }}</th>
-        <th>{{ 'GL.COL_ACTIONS' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (year of table.data; track year.id) {
-        <tr>
-          <td [(nzExpand)]="expandedYears[year.id]"></td>
-          <td>{{ year.year_code }}</td>
-          <td>{{ year.start_date }}</td>
-          <td>{{ year.end_date }}</td>
-          <td>
-            <nz-tag [nzColor]="year.status === 'closed' ? 'default' : 'green'">{{ year.status }}</nz-tag>
-          </td>
-          <td>
-            <button nz-button nzSize="small" type="button" (click)="exportJournalBook(year)">{{ 'GL.EXPORT_JOURNAL_BOOK' | translate }}</button>
-            @if (canWrite && year.status !== 'closed') {
-              <button
-                nz-button
-                nzSize="small"
-                nzDanger
-                type="button"
-                nz-popconfirm
-                [nzPopconfirmTitle]="'GL.CONFIRM_CLOSE_YEAR' | translate"
-                (nzOnConfirm)="closeYear(year)"
-              >
-                {{ 'GL.ACTION_CLOSE_YEAR' | translate }}
-              </button>
-            }
-            @if (canWrite && year.status === 'closed') {
-              <button nz-button nzSize="small" type="button" (click)="carryForward(year)">{{ 'GL.ACTION_CARRY_FORWARD' | translate }}</button>
-              <button nz-button nzSize="small" type="button" (click)="openReopenModal(year)">{{ 'GL.LBL_RIAPRI_ESERCIZIO_PRE_AGM' | translate }}</button>
-              <button nz-button nzSize="small" nzType="primary" type="button" (click)="openAgmModal(year)">{{ 'GL.LBL_APPROVA_BILANCIO_AGM_CO_958C' | translate }}</button>
-            }
-            <button nz-button nzSize="small" type="button" (click)="openAnhangModal(year)">{{ 'GL.LBL_NOTA_INTEGRATIVA_SVIZZERA_ANHANG_CO_959C' | translate }}</button>
-          </td>
-        </tr>
-        <tr [nzExpand]="expandedYears[year.id]">
-          <nz-table nzSize="small" [nzData]="year.periods ?? []" [nzShowPagination]="false">
-            <tbody>
-              @for (period of year.periods ?? []; track period.id) {
-                <tr>
-                  <td>{{ period.period_number }}</td>
-                  <td>{{ period.period_name }}</td>
-                  <td>{{ period.start_date }} / {{ period.end_date }}</td>
-                  <td>{{ period.status }}</td>
-                </tr>
-              }
-            </tbody>
-          </nz-table>
-        </tr>
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [expandable]="true"
+    [detailTemplate]="periodsTpl"
+    [actionsTemplate]="actionsTpl"
+    [scroll]="{ x: '720px' }"
+    [exportFileName]="'gl-fiscal-years'"
+  />
+
+  <ng-template #statusTpl let-year>
+    <nz-tag [nzColor]="year.status === 'closed' ? 'default' : 'green'">{{ year.status }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-year>
+      <button nz-button nzSize="small" type="button" (click)="exportJournalBook(year)">{{ 'GL.EXPORT_JOURNAL_BOOK' | translate }}</button>
+      @if (canWrite && year.status !== 'closed') {
+        <button
+          nz-button
+          nzSize="small"
+          nzDanger
+          type="button"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'GL.CONFIRM_CLOSE_YEAR' | translate"
+          (nzOnConfirm)="closeYear(year)"
+        >
+          {{ 'GL.ACTION_CLOSE_YEAR' | translate }}
+        </button>
       }
-    </tbody>
-  </nz-table>
+      @if (canWrite && year.status === 'closed') {
+        <button nz-button nzSize="small" type="button" (click)="carryForward(year)">{{ 'GL.ACTION_CARRY_FORWARD' | translate }}</button>
+        <button nz-button nzSize="small" type="button" (click)="openReopenModal(year)">{{ 'GL.LBL_RIAPRI_ESERCIZIO_PRE_AGM' | translate }}</button>
+        <button nz-button nzSize="small" nzType="primary" type="button" (click)="openAgmModal(year)">{{ 'GL.LBL_APPROVA_BILANCIO_AGM_CO_958C' | translate }}</button>
+      }
+      <button nz-button nzSize="small" type="button" (click)="openAnhangModal(year)">{{ 'GL.LBL_NOTA_INTEGRATIVA_SVIZZERA_ANHANG_CO_959C' | translate }}</button>
+  </ng-template>
+  <ng-template #periodsTpl let-year>
+    <nz-table nzSize="small" [nzData]="year.periods ?? []" [nzShowPagination]="false">
+      <tbody>
+        @for (period of year.periods ?? []; track period.id) {
+          <tr>
+            <td>{{ period.period_number }}</td>
+            <td>{{ period.period_name }}</td>
+            <td>{{ period.start_date }} / {{ period.end_date }}</td>
+            <td>{{ period.status }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-template>
 </nz-card>
 
-<nz-card [nzTitle]="'GL.AUDIT_TRAIL' | translate" style="margin-top: 16px">
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+<nz-card class="audit-card" [nzTitle]="'GL.AUDIT_TRAIL' | translate">
+  <div class="toolbar toolbar-flush">
     <label for="at-from">{{ 'GL.FROM' | translate }}</label>
-    <input id="at-from" nz-input type="date" style="width: 160px" [(ngModel)]="auditFrom" />
+    <input class="date-input" id="at-from" nz-input type="date" [(ngModel)]="auditFrom" />
     <label for="at-to">{{ 'GL.TO' | translate }}</label>
-    <input id="at-to" nz-input type="date" style="width: 160px" [(ngModel)]="auditTo" />
+    <input class="date-input" id="at-to" nz-input type="date" [(ngModel)]="auditTo" />
     <button nz-button type="button" (click)="exportAuditTrail()">{{ 'GL.EXPORT_AUDIT_TRAIL' | translate }}</button>
   </div>
 </nz-card>
@@ -86,6 +74,7 @@
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
   (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
     <form nz-form nzLayout="vertical" [formGroup]="form">
@@ -103,7 +92,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzRequired nzFor="fy-end">{{ 'GL.END_DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="form.controls.end_date.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+        <nz-form-control [nzErrorTip]="form.controls.end_date.errors?.['serverError'] ?? (form.controls.end_date.hasError('endsBeforeStart') ? ('COMMON.VALIDATION.END_AFTER_START' | translate) : ('GL.REQUIRED' | translate))">
           <input id="fy-end" nz-input type="date" formControlName="end_date" />
         </nz-form-control>
       </nz-form-item>
@@ -117,6 +106,7 @@
   [nzTitle]="'GL.LBL_RIAPERTURA_ESERCIZIO_FISCALE_PRE_ASSEMBLEA_GENERALE' | translate"
   (nzOnOk)="confirmReopenYear()"
   (nzOnCancel)="reopenModalOpen.set(false)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'GL.LBL_MOTIVAZIONE_OBBLIGATORIA_PER_LA_RIAPERTURA_E' | translate }}</p>
@@ -130,6 +120,7 @@
   [nzTitle]="'GL.LBL_APPROVAZIONE_ASSEMBLEA_GENERALE_AGM_CO_ART' | translate"
   (nzOnOk)="confirmAgmApproval()"
   (nzOnCancel)="agmModalOpen.set(false)"
+  okAction="confirm"
 >
   <ng-container *nzModalContent>
     <p>{{ 'GL.LBL_RIFERIMENTO_VERBALE_DELIBERA_ASSEMBLEA_GENERALE_BLOCCA' | translate }}</p>
@@ -143,23 +134,24 @@
   [nzTitle]="'GL.LBL_NOTA_INTEGRATIVA_SVIZZERA_ANHANG_CO_ART' | translate"
   (nzOnOk)="saveSwissAnhang()"
   (nzOnCancel)="anhangModalOpen.set(false)"
+  okAction="save"
 >
   <ng-container *nzModalContent>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      <div>
+    <div class="anhang-form">
+      <div class="field">
         <label for="anhang-fte-band">{{ 'GL.LBL_FASCIA_POSTI_A_TEMPO_PIENO_FTE' | translate }}</label>
-        <select id="anhang-fte-band" class="ant-input" [(ngModel)]="anhangFteBand">
+        <select id="anhang-fte-band" class="ant-input w-full" [(ngModel)]="anhangFteBand">
           <option value="up_to_10">{{ 'GL.LBL_FINO_A_10_FTE' | translate }}</option>
           <option value="up_to_50">{{ 'GL.LBL_DA_10_A_50_FTE' | translate }}</option>
           <option value="up_to_250">{{ 'GL.LBL_DA_50_A_250_FTE' | translate }}</option>
           <option value="over_250">{{ 'GL.LBL_OLTRE_250_FTE' | translate }}</option>
         </select>
       </div>
-      <div>
+      <div class="field">
         <label for="anhang-pledged">{{ 'GL.LBL_ATTIVI_COSTITUITI_IN_PEGNO_GARANZIE_CHF' | translate }}</label>
         <input id="anhang-pledged" nz-input [(ngModel)]="anhangPledgedAssets" />
       </div>
-      <div>
+      <div class="field">
         <label for="anhang-leasing">{{ 'GL.LBL_IMPEGNI_DA_LEASING_NON_ISCRITTI_A' | translate }}</label>
         <input id="anhang-leasing" nz-input [(ngModel)]="anhangLeasingCommitments" />
       </div>

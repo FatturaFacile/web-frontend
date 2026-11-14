@@ -13,7 +13,6 @@ import {
   MoneyPipe,
   PageHeaderComponent,
   TableColumnDef,
-  TableQueryParams,
   TranslatePipe,
 } from '@shared';
 import { CycleBackordersFacade } from '../cycle.facades';
@@ -24,6 +23,7 @@ import { todayIso } from '../shared/sales-status';
 /** Sales KPIs of a period and the backorder (open order lines still to be delivered). */
 @Component({
   selector: 'app-sales-overview',
+  styleUrl: './sales-overview.component.scss',
   imports: [
     FormsModule,
     NzButtonModule,
@@ -39,7 +39,6 @@ import { todayIso } from '../shared/sales-status';
   ],
   providers: [CycleBackordersFacade],
   templateUrl: './sales-overview.component.html',
-  styleUrl: '../shared/cycle-page.scss',
 })
 export class SalesOverviewComponent {
   protected readonly facade = inject(CycleBackordersFacade);
@@ -92,14 +91,6 @@ export class SalesOverviewComponent {
         }
       },
     });
-  }
-
-  protected onParamsChange(params: TableQueryParams): void {
-    if (params.pageSize !== this.facade.pageSize()) {
-      this.facade.setPageSize(params.pageSize);
-    } else if (params.pageIndex !== this.facade.pageIndex()) {
-      this.facade.setPage(params.pageIndex);
-    }
   }
 
   /** Rates arrive as decimal strings; display them as received with a percent sign. */

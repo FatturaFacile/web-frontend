@@ -9,7 +9,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { BillingApiService, ReceivablesAgingReport, SalesRegisterReport } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { apiErrorText } from '../../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../../cycle/shared/sales-lookups.service';
 import { todayIso } from '../../cycle/shared/sales-status';
@@ -19,7 +19,10 @@ const DOCUMENT_TYPES = ['TD01', 'TD02', 'TD03', 'TD04', 'TD05', 'TD06', 'TD16', 
 /** Sales register of a period and receivables aging at a date. */
 @Component({
   selector: 'app-billing-reports',
+  styleUrl: './billing-reports.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     FormsModule,
     NzButtonModule,
     NzCardModule,
@@ -33,7 +36,6 @@ const DOCUMENT_TYPES = ['TD01', 'TD02', 'TD03', 'TD04', 'TD05', 'TD06', 'TD16', 
     TranslatePipe,
   ],
   templateUrl: './billing-reports.component.html',
-  styleUrl: '../../cycle/shared/cycle-page.scss',
 })
 export class BillingReportsComponent implements OnInit {
   private readonly api = inject(BillingApiService);

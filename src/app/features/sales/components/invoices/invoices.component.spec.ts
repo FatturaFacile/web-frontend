@@ -14,6 +14,7 @@ import {
   ClientApiService,
   InvoiceApiService,
   InvoiceResource,
+  ContactResource,
   SwissQrBillData,
   SdiLogsData,
   InvoiceInstallment,
@@ -26,14 +27,14 @@ describe('InvoicesComponent', () => {
   let fixture: ComponentFixture<InvoicesComponent>;
   let component: InvoicesComponent;
   let apiMock: Partial<InvoiceApiService>;
-  let facadeMock: Partial<InvoiceFacade>;
+  let facadeMock: Record<string, unknown>;
   let messageMock: Partial<NzMessageService>;
   let clientApiMock: Partial<ClientApiService>;
 
   const mockInvoiceIT: InvoiceResource = {
     id: 'inv-it-1',
     invoice_number: 'FT-2026-0001',
-    invoice_type: 'invoice',
+    invoice_type: 'standard',
     issue_date: '2026-11-09',
     due_date: '2026-12-09',
     currency: 'EUR',
@@ -44,13 +45,13 @@ describe('InvoicesComponent', () => {
     payment_status: 'unpaid',
     jurisdiction: 'IT',
     has_swiss_qr: false,
-    client: { id: 'cl-1', name: 'Mario Rossi SRL' },
+    client: { id: 'cl-1', name: 'Mario Rossi SRL' } as unknown as ContactResource,
   };
 
   const mockInvoiceCH: InvoiceResource = {
     id: 'inv-ch-1',
     invoice_number: 'FT-2026-CH01',
-    invoice_type: 'invoice',
+    invoice_type: 'standard',
     issue_date: '2026-11-09',
     due_date: '2026-12-09',
     currency: 'CHF',
@@ -61,7 +62,7 @@ describe('InvoicesComponent', () => {
     payment_status: 'unpaid',
     jurisdiction: 'CH',
     has_swiss_qr: true,
-    client: { id: 'cl-2', name: 'Swiss AG' },
+    client: { id: 'cl-2', name: 'Swiss AG' } as unknown as ContactResource,
   };
 
   const mockQrBill: SwissQrBillData = {
@@ -240,7 +241,7 @@ describe('InvoicesComponent', () => {
     expect(apiMock.createCreditNote).toHaveBeenCalled();
     expect(component.creditNoteModalVisible()).toBe(false);
     expect(messageMock.success).toHaveBeenCalled();
-    expect(facadeMock.reload).toHaveBeenCalled();
+    expect(facadeMock['reload']).toHaveBeenCalled();
   });
 
   it('executes bulk SDI transmission for Italian invoices', () => {
@@ -255,6 +256,6 @@ describe('InvoicesComponent', () => {
 
     expect(apiMock.generateSdiXml).toHaveBeenCalledWith('inv-it-1');
     expect(messageMock.success).toHaveBeenCalled();
-    expect(facadeMock.reload).toHaveBeenCalled();
+    expect(facadeMock['reload']).toHaveBeenCalled();
   });
 });

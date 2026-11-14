@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
@@ -9,13 +9,23 @@ import {
   EDocumentNetworkStatus,
   EDocumentNetworkType,
   EDocumentTransmission,
+  PaginatedResponse,
   PreservationRecord,
+  QueryFilterParams,
   PreserveDocumentRequest,
   SendEDocumentRequest,
   SignDocumentRequest,
   UpdateDocumentSigningSettingsRequest,
   VerifySignatureResult,
 } from '../models';
+import { toHttpParams } from '../http/laravel-http.utils';
+
+/** Query of the transmission grid: the toolbar filters plus the standard paging and grid parameters. */
+export interface TransmissionListParams extends QueryFilterParams {
+  network?: string;
+  status?: string;
+  document_reference?: string;
+}
 
 @Service()
 export class DocumentTrustApiService {
@@ -27,26 +37,10 @@ export class DocumentTrustApiService {
     return this.http.get<ApiResponse<EDocumentNetworkStatus[]>>(this.edocBase);
   }
 
-  getTransmissions(filters?: {
-    network?: string;
-    status?: string;
-    document_reference?: string;
-    per_page?: number;
-  }): Observable<ApiResponse<EDocumentTransmission[]>> {
-    let params = new HttpParams();
-    if (filters?.network) {
-      params = params.set('network', filters.network);
-    }
-    if (filters?.status) {
-      params = params.set('status', filters.status);
-    }
-    if (filters?.document_reference) {
-      params = params.set('document_reference', filters.document_reference);
-    }
-    if (filters?.per_page) {
-      params = params.set('per_page', filters.per_page.toString());
-    }
-    return this.http.get<ApiResponse<EDocumentTransmission[]>>(`${this.edocBase}/transmissions`, { params });
+  getTransmissions(params?: TransmissionListParams): Observable<PaginatedResponse<EDocumentTransmission>> {
+    return this.http.get<PaginatedResponse<EDocumentTransmission>>(`${this.edocBase}/transmissions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getTransmission(id: string): Observable<ApiResponse<EDocumentTransmission>> {
@@ -57,9 +51,10 @@ export class DocumentTrustApiService {
     return this.http.post<ApiResponse<EDocumentTransmission>>(`${this.edocBase}/${network}/transmissions`, payload);
   }
 
-  getSignatures(documentId: string): Observable<ApiResponse<DocumentSignature[]>> {
-    const params = new HttpParams().set('document_id', documentId);
-    return this.http.get<ApiResponse<DocumentSignature[]>>(`${this.trustBase}/signatures`, { params });
+  getSignatures(documentId: string, query?: QueryFilterParams): Observable<PaginatedResponse<DocumentSignature>> {
+    return this.http.get<PaginatedResponse<DocumentSignature>>(`${this.trustBase}/signatures`, {
+      params: toHttpParams({ ...query, document_id: documentId }),
+    });
   }
 
   signDocument(payload: SignDocumentRequest): Observable<ApiResponse<DocumentSignature>> {
@@ -70,9 +65,10 @@ export class DocumentTrustApiService {
     return this.http.post<ApiResponse<VerifySignatureResult>>(`${this.trustBase}/signatures/${signatureId}/verify`, {});
   }
 
-  getPreservationRecords(documentId: string): Observable<ApiResponse<PreservationRecord[]>> {
-    const params = new HttpParams().set('document_id', documentId);
-    return this.http.get<ApiResponse<PreservationRecord[]>>(`${this.trustBase}/preservation`, { params });
+  getPreservationRecords(documentId: string, query?: QueryFilterParams): Observable<PaginatedResponse<PreservationRecord>> {
+    return this.http.get<PaginatedResponse<PreservationRecord>>(`${this.trustBase}/preservation`, {
+      params: toHttpParams({ ...query, document_id: documentId }),
+    });
   }
 
   preserveDocument(payload: PreserveDocumentRequest): Observable<ApiResponse<PreservationRecord>> {

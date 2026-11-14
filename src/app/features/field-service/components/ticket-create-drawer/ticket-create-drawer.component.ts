@@ -5,7 +5,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -20,14 +20,17 @@ import {
   TicketPriority,
   TranslateService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
 
 @Component({
   selector: 'app-ticket-create-drawer',
+  styleUrl: './ticket-create-drawer.component.scss',
   imports: [
+    ModalActionsDirective,
+    IconActionDirective,
     TranslatePipe,
     ReactiveFormsModule,
-    NzDrawerModule,
+    NzModalModule,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -69,6 +72,7 @@ export class TicketCreateDrawerComponent {
 
   protected submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       Object.values(this.form.controls).forEach((ctrl) => {
         ctrl.markAsDirty();
         ctrl.updateValueAndValidity();

@@ -1,26 +1,33 @@
+:host {
+  display: block;
+}
+
 .rf-number,
 .rf-select {
   width: 100%;
 }
 
 .rf-lines {
-  border: 1px solid var(--ant-color-border, #d9d9d9);
-  border-radius: 6px;
-  margin: 0 0 16px;
-  padding: 8px 12px;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
 
   legend {
-    font-weight: 500;
-    padding: 0 6px;
     width: auto;
+    padding: 0 6px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
   }
 }
 
 .rf-line {
-  align-items: flex-start;
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
 }
 
 .rf-line-field {
@@ -30,16 +37,22 @@
 
 .rf-line-label {
   display: block;
-  font-size: 12px;
   margin-bottom: 2px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.rf-required {
+  color: var(--status-danger);
 }
 
 .rf-error {
-  color: var(--ant-color-error, #cf1322);
+  color: var(--status-danger);
 }
 
 .rf-actions {
   display: flex;
-  gap: 8px;
   justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }

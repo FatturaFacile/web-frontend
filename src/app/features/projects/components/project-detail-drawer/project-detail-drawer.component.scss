@@ -21,7 +21,7 @@
   margin-bottom: 16px;
 
   .stat-card {
-    background: #fafafa;
+    background: var(--bg-card-secondary);
     border-radius: 6px;
   }
 }
@@ -39,4 +39,8 @@
   .modal-col {
     flex: 1;
   }
+}
+
+.progress-cell {
+  width: 100px;
 }

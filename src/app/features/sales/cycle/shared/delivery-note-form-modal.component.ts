@@ -15,7 +15,7 @@ import {
   SalesCycleApiService,
   TransportBy,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { DECIMAL_PATTERN } from './document-lines-editor.component';
 import { SalesLookupsService } from './sales-lookups.service';
 
@@ -30,7 +30,9 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
 /** Creates a (possibly partial) delivery note from an order or a quote, with the transport data. */
 @Component({
   selector: 'app-delivery-note-form-modal',
+  styleUrl: './delivery-note-form-modal.component.scss',
   imports: [
+    ModalActionsDirective,
     ReactiveFormsModule,
     FormsModule,
     NzModalModule,
@@ -49,6 +51,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
       [nzOkDisabled]="form.invalid"
       nzWidth="860px"
       (nzOnCancel)="visible.set(false)"
+      okAction="create"
       (nzOnOk)="submit()"
     >
       <ng-container *nzModalContent>
@@ -70,7 +73,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-reason">{{ 'SC.DDT.TRANSPORT_REASON' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-reason" formControlName="transport_reason" />
+                  <input nz-input id="ddt-reason" maxlength="100" formControlName="transport_reason" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -78,7 +81,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-appearance">{{ 'SC.DDT.GOODS_APPEARANCE' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-appearance" formControlName="goods_appearance" />
+                  <input nz-input id="ddt-appearance" maxlength="100" formControlName="goods_appearance" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -122,7 +125,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-carrier">{{ 'SC.DDT.CARRIER' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-carrier" formControlName="carrier_name" />
+                  <input nz-input id="ddt-carrier" maxlength="255" formControlName="carrier_name" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -130,7 +133,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-plate">{{ 'SC.DDT.PLATE' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-plate" formControlName="carrier_license_plate" />
+                  <input nz-input id="ddt-plate" maxlength="30" formControlName="carrier_license_plate" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -146,7 +149,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-courier">{{ 'SC.DDT.COURIER' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-courier" formControlName="courier" />
+                  <input nz-input id="ddt-courier" maxlength="255" formControlName="courier" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -154,7 +157,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-tracking">{{ 'SC.DDT.TRACKING' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-tracking" formControlName="tracking_number" />
+                  <input nz-input id="ddt-tracking" maxlength="100" formControlName="tracking_number" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -162,7 +165,7 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
               <nz-form-item>
                 <nz-form-label nzFor="ddt-address">{{ 'SC.DDT.SHIPPING_ADDRESS' | translate }}</nz-form-label>
                 <nz-form-control>
-                  <input nz-input id="ddt-address" formControlName="shipping_address" />
+                  <input nz-input id="ddt-address" maxlength="1000" formControlName="shipping_address" />
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -197,12 +200,6 @@ const TRANSPORT_BY: TransportBy[] = ['sender', 'recipient', 'carrier'];
       </ng-container>
     </nz-modal>
   `,
-  styles: `
-    .partial { display: block; margin-top: 16px; }
-    .hint { color: var(--ant-color-text-secondary, #666); margin: 8px 0; }
-    .partial-line { display: grid; grid-template-columns: 1fr auto 140px; gap: 12px; align-items: center; margin-bottom: 6px; }
-    .qty { font-variant-numeric: tabular-nums; }
-  `,
 })
 export class DeliveryNoteFormModalComponent {
   protected readonly lookups = inject(SalesLookupsService);
@@ -221,18 +218,18 @@ export class DeliveryNoteFormModalComponent {
 
   protected readonly form = this.fb.group({
     warehouse_id: [''],
-    transport_reason: [''],
-    goods_appearance: [''],
-    packages_count: ['', [Validators.pattern(/^\d*$/)]],
+    transport_reason: ['', [Validators.maxLength(100)]],
+    goods_appearance: ['', [Validators.maxLength(100)]],
+    packages_count: ['', [Validators.pattern(/^([1-9]\d*)?$/)]],
     gross_weight_kg: ['', [Validators.pattern(DECIMAL_PATTERN)]],
     net_weight_kg: ['', [Validators.pattern(DECIMAL_PATTERN)]],
-    carrier_name: [''],
-    carrier_license_plate: [''],
-    shipping_terms: [''],
+    carrier_name: ['', [Validators.maxLength(255)]],
+    carrier_license_plate: ['', [Validators.maxLength(30)]],
+    shipping_terms: ['', [Validators.maxLength(100)]],
     transport_by: [''],
-    courier: [''],
-    tracking_number: [''],
-    shipping_address: [''],
+    courier: ['', [Validators.maxLength(255)]],
+    tracking_number: ['', [Validators.maxLength(100)]],
+    shipping_address: ['', [Validators.maxLength(1000)]],
     show_prices: [false],
   });
 

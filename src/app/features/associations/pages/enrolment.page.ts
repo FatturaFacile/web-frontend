@@ -16,17 +16,17 @@ const FORM_FIELD_DEFINITIONS = rf.lines(
 
 const FORM_FIELDS = [
   req(rf.text('title', { maxLength: 255 })),
-  rf.textarea('description'),
+  rf.textarea('description', { maxLength: 5000 }),
   req(rf.uuid('year_id')),
   req(rf.uuid('membership_type_id')),
   rf.select('approval_mode', ['automatic', 'board']),
   rf.bool('is_active', { defaultValue: true }),
   rf.datetime('opens_at'),
-  rf.datetime('closes_at'),
+  rf.datetime('closes_at', { notBefore: 'opens_at' }),
   FORM_FIELD_DEFINITIONS,
 ];
 
-const DECISION_FIELDS = [rf.text('reference'), rf.textarea('notes', { maxLength: 1000 })];
+const DECISION_FIELDS = [rf.text('reference', { maxLength: 255 }), rf.textarea('notes', { maxLength: 1000 })];
 
 /** Public enrolment forms: fields, documents to fill in and the open window. */
 const FORMS_PANEL: ResourcePanelConfig = {

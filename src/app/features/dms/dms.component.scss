@@ -28,12 +28,12 @@
 
 .text-muted {
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-muted);
 }
 
 .hash-code {
   font-family: monospace;
-  background-color: #f5f5f5;
+  background-color: var(--bg-card-secondary);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
@@ -43,7 +43,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: #1890ff;
+  color: var(--status-info);
   cursor: pointer;
   text-align: left;
 
@@ -54,7 +54,7 @@
 
 .control-label {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--text-primary);
 }
 
 .ai-tab-container {
@@ -64,8 +64,8 @@
 }
 
 .section-box {
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 16px;
 }

@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../../icons-provider';
+import { TableColumnDef } from '@shared';
 import { CrudTableComponent } from './crud-table.component';
 import { CrudConfig } from './crud.types';
 
@@ -116,5 +117,106 @@ describe('CrudTableComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('button[nz-popconfirm]').length).toBe(0);
     expect(fixture.nativeElement.textContent).not.toContain('Add');
+  });
+
+  it('does not call the API when the form is saved empty and marks the controls touched', () => {
+    configure();
+    const c = component as unknown as { openForm(r: null): void; form: { get(k: string): { touched: boolean } | null }; save(): void };
+    c.openForm(null);
+    c.save();
+    expect(create).not.toHaveBeenCalled();
+    expect(c.form.get('code')?.touched).toBe(true);
+  });
+
+  it('requires a field only while its requiredIf / requiredWithout condition holds', () => {
+    configure({
+      fields: [
+        { key: 'flag', labelKey: 'hrmCommon.active', type: 'boolean' },
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', requiredIf: 'flag' },
+        { key: 'gross', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'net' },
+        { key: 'net', labelKey: 'hrmEmp.amount', type: 'decimal', requiredWithout: 'gross' },
+      ],
+    });
+    const c = component as unknown as {
+      openForm(r: null): void;
+      form: { patchValue(v: object): void; get(k: string): { valid: boolean } | null };
+      isRequired(f: unknown): boolean;
+      save(): void;
+    };
+    c.openForm(null);
+    expect(c.form.get('code')?.valid).toBe(true);
+    expect(c.form.get('gross')?.valid).toBe(false);
+    c.form.patchValue({ net: '10' });
+    expect(c.form.get('gross')?.valid).toBe(true);
+    c.form.patchValue({ flag: true });
+    expect(c.form.get('code')?.valid).toBe(false);
+    expect(c.isRequired({ key: 'code', requiredIf: 'flag' })).toBe(true);
+    c.form.patchValue({ flag: false });
+    expect(c.isRequired({ key: 'code', requiredIf: 'flag' })).toBe(false);
+    expect(c.form.get('code')?.valid).toBe(true);
+  });
+
+  it('rejects whitespace-only required text and values over maxLength, below min or off pattern', () => {
+    configure({
+      fields: [
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 3, pattern: '^[A-Z]+$' },
+        { key: 'qty', labelKey: 'hrmEmp.amount', type: 'integer', min: 1, max: 12 },
+      ],
+    });
+    const c = component as unknown as {
+      openForm(r: null): void;
+      form: { patchValue(v: object): void; get(k: string): { errors: Record<string, unknown> | null } | null };
+      save(): void;
+    };
+    c.openForm(null);
+    c.form.patchValue({ code: '   ' });
+    expect(c.form.get('code')?.errors?.['required']).toBeTruthy();
+    c.form.patchValue({ code: 'ABCD' });
+    expect(c.form.get('code')?.errors?.['maxlength']).toBeTruthy();
+    c.form.patchValue({ code: 'ab' });
+    expect(c.form.get('code')?.errors?.['format']).toBeTruthy();
+    c.form.patchValue({ code: 'AB', qty: '13' });
+    expect(c.form.get('qty')?.errors?.['outOfRange']).toBeTruthy();
+    c.save();
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  describe('server-driven grid (gridList)', () => {
+    const page = (data: Row[]) => of({ success: true, message: '', data, meta: { total: data.length } });
+    const fields: CrudConfig<Row>['fields'] = [
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text' },
+      { key: 'employee_id', serverKey: 'user_id', labelKey: 'hrmCommon.employee', type: 'select', options: () => [{ value: 'e1', label: 'Mario Rossi' }] },
+      { key: 'is_active', labelKey: 'hrmCommon.active', type: 'boolean' },
+      { key: 'secret', labelKey: 'hrmCommon.notes', type: 'text', noGrid: true },
+    ];
+
+    it('loads the page from gridList, shows translated cells and maps the columns to the server', async () => {
+      const gridList = vi.fn().mockReturnValue(page([{ id: '1', code: 'IT', employee_id: 'e1', is_active: true, secret: 'x' }]));
+      configure({ list: undefined, gridList, fields });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      fixture.detectChanges();
+
+      expect(gridList).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
+      expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
+
+      const columns = (component as unknown as { tableColumns(): TableColumnDef<Row>[] }).tableColumns();
+      expect(columns.map((c) => c.serverKey)).toEqual([undefined, 'user_id', undefined, undefined]);
+      // raw server values of the filter lists and group headers are translated like the cells
+      expect(columns[1].valueLabel?.('e1')).toBe('Mario Rossi');
+      expect(columns[2].valueLabel?.('1')).toBe(columns[2].valueLabel?.('true'));
+      expect(columns[2].valueLabel?.('1')).not.toBe(columns[2].valueLabel?.('0'));
+      // an encrypted column cannot be sorted, filtered or grouped by the server
+      expect(columns[3]).toEqual(expect.objectContaining({ sortable: false, filterable: false, groupable: false }));
+    });
+
+    it('reloads the grid after a row action instead of calling a client-side list', async () => {
+      const gridList = vi.fn().mockReturnValue(page([{ id: '1', code: 'IT' }]));
+      configure({ list: undefined, gridList, fields: fields.slice(0, 1) });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      const calls = gridList.mock.calls.length;
+      (component as unknown as { runAction(a: unknown, r: Row): void }).runAction({ labelKey: 'x', run: () => of({}) }, { id: '1' });
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      expect(gridList.mock.calls.length).toBeGreaterThan(calls);
+    });
   });
 });

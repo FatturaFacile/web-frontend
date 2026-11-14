@@ -10,9 +10,8 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { PayrollForecastComponent } from './payroll-forecast.component';
 import { PositionSuccessorDialogComponent } from './position-successor-dialog.component';
 
@@ -23,6 +22,7 @@ const READINESS = ['ready_now', 'ready_1_2_years', 'developing'];
 /** Org chart: departments (tree, no cycles: server 422) and positions. */
 @Component({
   selector: 'app-hr-organization',
+  styleUrl: './organization.component.scss',
   imports: [
     NzCardModule,
     NzTabsModule,
@@ -79,19 +79,25 @@ export class OrganizationComponent implements OnInit {
     this.departments().map((d) => ({ value: d.id, label: `${d.code} - ${d.name}` })),
   );
 
+  /** The department options of the positions need every department, not the filtered page of the grid. */
+  private loadDepartments(): void {
+    this.api.getDepartments().subscribe({ next: (res) => this.departments.set(res.data) });
+  }
+
   protected readonly departmentsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmOrg.departments',
     canWrite: this.permissions.canWrite('hr'),
-    list: () =>
-      this.api.getDepartments().pipe(
-        tap((res) => this.departments.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.loadDepartments();
+      }
+      return crudPage(this.api.getDepartments(query));
+    },
     create: (payload) => this.api.createDepartment(payload as never),
     update: (id, payload) => this.api.updateDepartment(id, payload as never),
     fields: [
-      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 255 },
+      { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 60 },
+      { key: 'name', labelKey: 'hrmCommon.name', type: 'text', required: true, maxLength: 150 },
       {
         key: 'parent_id',
         labelKey: 'hrmOrg.parent',
@@ -108,11 +114,12 @@ export class OrganizationComponent implements OnInit {
     return {
       titleKey: 'hrmOrg.positions',
       canWrite: this.permissions.canWrite('hr'),
-      list: () =>
-        this.api.getPositions().pipe(
-          tap((res) => this.positions.set(res.data)),
-          map((res) => res.data as PositionResource[] as unknown as Row[]),
-        ),
+      gridList: (query) => {
+        if (isRowsQuery(query)) {
+          this.api.getPositions().subscribe({ next: (res) => this.positions.set(res.data) });
+        }
+        return crudPage(this.api.getPositions(query));
+      },
       rowActions: [
         {
           labelKey: 'hrmOrgX.assignSuccessor',
@@ -126,8 +133,8 @@ export class OrganizationComponent implements OnInit {
       create: (payload) => this.api.createPosition(payload as never),
       update: (id, payload) => this.api.updatePosition(id, payload as never),
       fields: [
-        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
-        { key: 'title', labelKey: 'hrmCommon.title', type: 'text', required: true, maxLength: 255 },
+        { key: 'code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 60 },
+        { key: 'title', labelKey: 'hrmCommon.title', type: 'text', required: true, maxLength: 150 },
         {
           key: 'department_id',
           labelKey: 'hrmOrg.department',

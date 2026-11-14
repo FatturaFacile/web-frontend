@@ -1,30 +1,32 @@
+:host {
+  display: block;
+}
+
 .rent-container {
-  padding: 16px;
+  display: block;
 
   .header-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
     flex-wrap: wrap;
   }
 
   .main-card {
-    margin-top: 16px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    margin-top: var(--space-4);
   }
 
   .tab-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--space-3);
 
     .filter-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
 
       .status-select {
         min-width: 180px;
@@ -33,30 +35,30 @@
 
     .description {
       margin: 0;
-      color: #595959;
+      color: var(--text-secondary);
     }
   }
 
   .sub-text {
-    font-size: 11px;
-    color: #8c8c8c;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
   }
 
   .action-buttons {
     display: flex;
-    gap: 4px;
+    gap: var(--space-1);
     align-items: center;
     flex-wrap: wrap;
   }
 
   .inspection-alert {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
   }
 
   .damage-input-group {
     display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   .damage-tags {
@@ -72,7 +74,7 @@
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--space-4);
 
     @media (max-width: 600px) {
       grid-template-columns: 1fr;

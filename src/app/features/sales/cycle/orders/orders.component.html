@@ -16,21 +16,14 @@
     </nz-select>
     <span class="spacer"></span>
     @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" (click)="create()">
-        <nz-icon nzType="plus" /> {{ 'SC.ORDERS.NEW' | translate }}
-      </button>
+      <button nz-button appIconAction="create" nzType="primary" type="button" (click)="create()"></button>
     }
   </div>
 
   <app-base-table
-    [data]="facade.items()"
+    [grid]="facade"
     [columns]="columns()"
-    [loading]="facade.loading()"
-    [total]="facade.totalCount()"
-    [pageIndex]="facade.pageIndex()"
-    [pageSize]="facade.pageSize()"
     [actionsTemplate]="actionsTpl"
-    (paramsChange)="onParamsChange($event)"
   />
 
   <ng-template #numberTpl let-o><code>{{ o.order_number }}</code></ng-template>
@@ -51,13 +44,14 @@
   </ng-template>
 </nz-card>
 
-<nz-drawer
+<nz-modal
   [nzVisible]="drawerOpen()"
   [nzWidth]="900"
   [nzTitle]="selected()?.order_number ?? ''"
-  (nzOnClose)="drawerOpen.set(false)"
+  [nzFooter]="null"
+  (nzOnCancel)="drawerOpen.set(false)"
 >
-  <ng-container *nzDrawerContent>
+  <ng-container *nzModalContent>
     @if (selected(); as o) {
       <nz-tag [nzColor]="statusColor(o.status)">{{ statusKey(o.status) | translate }}</nz-tag>
       @if (o.inventory_status) {
@@ -111,20 +105,16 @@
       @if (canWrite()) {
         <div class="actions">
           @if (o.status === 'draft') {
-            <button nz-button type="button" (click)="edit(o)"><nz-icon nzType="edit" /> {{ 'SC.COMMON.EDIT' | translate }}</button>
-            <button nz-button nzType="primary" type="button" [nzLoading]="working()" (click)="confirm(o)">
-              <nz-icon nzType="check-circle" /> {{ 'SC.ORDERS.CONFIRM' | translate }}
-            </button>
+            <button nz-button appIconAction="edit" type="button" (click)="edit(o)"></button>
+            <button nz-button appIconAction="confirm" nzType="primary" type="button" [nzLoading]="working()" (click)="confirm(o)"></button>
             <button
-              nz-button
+              nz-button appIconAction="delete"
               nzDanger
               type="button"
               nz-popconfirm
               [nzPopconfirmTitle]="'SC.COMMON.CONFIRM_DELETE' | translate"
               (nzOnConfirm)="remove(o)"
-            >
-              <nz-icon nzType="delete" /> {{ 'COMMON.DELETE' | translate }}
-            </button>
+            ></button>
           }
           @if (canFulfil(o)) {
             <button nz-button type="button" [nzLoading]="working()" (click)="reserve(o)">
@@ -171,13 +161,13 @@
 
       @if (availability(); as av) {
         <h4 class="section">{{ 'SC.ORDERS.AVAILABILITY' | translate }}</h4>
-        <nz-table [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table [nzScroll]="{ x: '720px' }" [nzData]="av.lines" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl45>
           <thead>
             <tr>
-              <th>{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
-              <th>{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
-              <th>{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
-              <th>{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'SC.LINES.DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity_open' | gridSort" [nzFilters]="'quantity_open' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'quantity_open' | gridFilterFn">{{ 'SC.ORDERS.OPEN_QTY' | translate }}</th>
+              <th [nzSortFn]="'quantity_promisable' | gridSort" [nzFilters]="'quantity_promisable' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'quantity_promisable' | gridFilterFn">{{ 'SC.ORDERS.AVAILABLE' | translate }}</th>
+              <th [nzSortFn]="'shortage' | gridSort" [nzFilters]="'shortage' | gridFilterList: gridTbl45.nzData" [nzFilterFn]="'shortage' | gridFilterFn">{{ 'SC.ORDERS.SHORTFALL' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -207,11 +197,11 @@
       >
         <ng-container *nzModalContent>
           <label for="cancel-reason">{{ 'SC.ORDERS.CANCEL_REASON' | translate }}</label>
-          <textarea nz-input id="cancel-reason" rows="3" [(ngModel)]="cancelReason"></textarea>
+          <textarea nz-input id="cancel-reason" rows="3" maxlength="500" [(ngModel)]="cancelReason"></textarea>
         </ng-container>
       </nz-modal>
     }
   </ng-container>
-</nz-drawer>
+</nz-modal>
 
 <app-document-form-modal [kind]="'order'" [document]="editing()" [(visible)]="formOpen" (saved)="onSaved($event)" />

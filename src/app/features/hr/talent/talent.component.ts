@@ -12,9 +12,8 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { map, tap } from 'rxjs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
-import { CrudConfig, CrudOption } from '../shared/crud/crud.types';
+import { CrudConfig, CrudOption, crudPage, isRowsQuery } from '../shared/crud/crud.types';
 import { reportHttpError } from '../shared/hr-http.util';
 
 type Row = { id: string } & Record<string, unknown>;
@@ -22,6 +21,7 @@ type Row = { id: string } & Record<string, unknown>;
 /** Talent and training: performance reviews, courses, assignments, certifications. */
 @Component({
   selector: 'app-hr-talent',
+  styleUrl: './talent.component.scss',
   imports: [NzButtonModule, NzCardModule, NzTabsModule, PageHeaderComponent, TranslatePipe, CrudTableComponent],
   template: `
     <app-page-header [title]="'hrmTalent.title' | translate" [subtitle]="'hrmTalent.subtitle' | translate" />
@@ -69,7 +69,7 @@ export class TalentComponent implements OnInit {
   protected readonly reviewsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.reviews',
     canWrite: this.canWrite(),
-    list: () => this.api.getPerformanceReviews().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getPerformanceReviews(query)),
     create: (payload) => this.api.submitPerformanceReview(payload as never),
     rowActions: [
       {
@@ -82,7 +82,7 @@ export class TalentComponent implements OnInit {
     fields: [
       { key: 'review_number', labelKey: 'hrmTalent.reviewNumber', type: 'text', noForm: true },
       { key: 'employee_id', labelKey: 'hrmCommon.employee', type: 'select', required: true, options: () => this.employeeOptions() },
-      { key: 'review_period', labelKey: 'hrmTalent.reviewPeriod', type: 'text', required: true, maxLength: 50 },
+      { key: 'review_period', labelKey: 'hrmTalent.reviewPeriod', type: 'text', required: true, maxLength: 30 },
       {
         key: 'review_type',
         labelKey: 'hrmCommon.type',
@@ -94,8 +94,8 @@ export class TalentComponent implements OnInit {
             labelKey: `hrmTalent.reviewType.${value}`,
           })),
       },
-      { key: 'goals_score', labelKey: 'hrmTalent.goalsScore', type: 'decimal', required: true },
-      { key: 'competencies_score', labelKey: 'hrmTalent.competenciesScore', type: 'decimal', required: true },
+      { key: 'goals_score', labelKey: 'hrmTalent.goalsScore', type: 'decimal', required: true, min: 1, max: 5 },
+      { key: 'competencies_score', labelKey: 'hrmTalent.competenciesScore', type: 'decimal', required: true, min: 1, max: 5 },
       { key: 'overall_rating', labelKey: 'hrmTalent.overallRating', type: 'text', noForm: true },
       { key: 'promotion_recommended', labelKey: 'hrmTalent.promotionRecommended', type: 'boolean' },
       {
@@ -118,11 +118,12 @@ export class TalentComponent implements OnInit {
   protected readonly coursesConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.courses',
     canWrite: this.canWrite(),
-    list: () =>
-      this.api.getTrainingCourses().pipe(
-        tap((res) => this.courses.set(res.data)),
-        map((res) => res.data as unknown as Row[]),
-      ),
+    gridList: (query) => {
+      if (isRowsQuery(query)) {
+        this.api.getTrainingCourses().subscribe({ next: (res) => this.courses.set(res.data) });
+      }
+      return crudPage(this.api.getTrainingCourses(query));
+    },
     create: (payload) => this.api.createTrainingCourse(payload as never),
     fields: [
       { key: 'course_code', labelKey: 'hrmCommon.code', type: 'text', required: true, maxLength: 50 },
@@ -139,7 +140,7 @@ export class TalentComponent implements OnInit {
   protected readonly recordsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.records',
     canWrite: this.canWrite(),
-    list: () => this.api.getTrainingRecords().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getTrainingRecords(query)),
     create: (payload) => this.api.assignTraining(payload as never),
     rowActions: [
       {
@@ -156,7 +157,7 @@ export class TalentComponent implements OnInit {
       { key: 'course_id', labelKey: 'hrmTalent.course', type: 'select', required: true, options: () => this.courseOptions() },
       { key: 'scheduled_date', labelKey: 'hrmSelfService.scheduledDate', type: 'date', nullable: true, column: false },
       { key: 'override_cost', labelKey: 'hrmTalent.overrideCost', type: 'decimal', nullable: true, column: false },
-      { key: 'notes', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, column: false },
+      { key: 'notes', labelKey: 'hrmCommon.notes', type: 'text', nullable: true, column: false, maxLength: 1000 },
       { key: 'status', labelKey: 'hrmCommon.statusCol', type: 'text', noForm: true },
       { key: 'assigned_date', labelKey: 'hrmTalent.assignedDate', type: 'text', noForm: true },
       { key: 'score', labelKey: 'hrmTalent.score', type: 'text', noForm: true },
@@ -166,7 +167,7 @@ export class TalentComponent implements OnInit {
   protected readonly certificationsConfig = computed<CrudConfig<Row>>(() => ({
     titleKey: 'hrmTalent.certifications',
     canWrite: false,
-    list: () => this.api.getCertifications().pipe(map((res) => res.data as unknown as Row[])),
+    gridList: (query) => crudPage(this.api.getCertifications(query)),
     fields: [
       { key: 'code', labelKey: 'hrmCommon.code', type: 'text' },
       { key: 'name', labelKey: 'hrmCommon.name', type: 'text' },

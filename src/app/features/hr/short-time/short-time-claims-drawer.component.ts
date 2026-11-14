@@ -16,11 +16,11 @@ import {
   ShortTimeClaim,
   ShortTimeClaimSummary,
 } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzDrawerModule } from 'ng-zorro-antd/drawer';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -31,31 +31,36 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 /** The claims of a case and the steps of one claim: send to the fund, carry into payroll, record the reimbursement, export. */
 @Component({
   selector: 'app-short-time-claims-drawer',
+  styleUrl: './short-time-claims-drawer.component.scss',
   imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
     ActionFormComponent,
     MoneyPipe,
     NzAlertModule,
     NzButtonModule,
     NzDescriptionsModule,
-    NzDrawerModule,
+    NzModalModule,
     NzTableModule,
     NzTagModule,
     TranslatePipe,
   ],
   template: `
-    <nz-drawer
+    <nz-modal
       [nzVisible]="open()"
-      nzWidth="720"
+      [nzWidth]="720"
+      [nzFooter]="null"
       [nzTitle]="'hrmShortTime.claims.title' | translate"
-      (nzOnClose)="open.set(false)"
+      (nzOnCancel)="open.set(false)"
     >
-      <ng-container *nzDrawerContent>
+      <ng-container *nzModalContent>
         <nz-table #table [nzData]="claims()" [nzFrontPagination]="false" nzSize="small">
           <thead>
             <tr>
-              <th>{{ 'hrmShortTime.claims.period' | translate }}</th>
+              <th [nzSortFn]="'month' | gridSort" [nzFilters]="'month' | gridFilterList: table.nzData" [nzFilterFn]="'month' | gridFilterFn">{{ 'hrmShortTime.claims.period' | translate }}</th>
               <th>{{ 'hrmCommon.statusCol' | translate }}</th>
-              <th>{{ 'hrmShortTime.claims.total' | translate }}</th>
+              <th [nzSortFn]="'total_compensation' | gridSort" [nzFilters]="'total_compensation' | gridFilterList: table.nzData" [nzFilterFn]="'total_compensation' | gridFilterFn">{{ 'hrmShortTime.claims.total' | translate }}</th>
               <th>{{ 'hrmCommon.actions' | translate }}</th>
             </tr>
           </thead>
@@ -129,7 +134,7 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
           }
         }
       </ng-container>
-    </nz-drawer>
+    </nz-modal>
   `,
 })
 export class ShortTimeClaimsDrawerComponent {
@@ -186,7 +191,7 @@ export class ShortTimeClaimsDrawerComponent {
     return {
       submitLabelKey: 'hrmShortTime.claims.recordReimbursement',
       fields: [
-        { key: 'amount', labelKey: 'hrmShortTime.claims.amount', type: 'decimal', required: true },
+        { key: 'amount', labelKey: 'hrmShortTime.claims.amount', type: 'decimal', required: true, min: 0 },
         { key: 'paid_on', labelKey: 'hrmShortTime.claims.paidOn', type: 'date', nullable: true },
       ],
       submit: (payload) =>

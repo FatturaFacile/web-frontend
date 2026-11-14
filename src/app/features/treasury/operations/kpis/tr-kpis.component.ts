@@ -7,7 +7,7 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { TreasuryCashPosition, TreasuryKpis, TreasuryOpsApiService } from '@core';
-import { MoneyPipe, TranslatePipe } from '@shared';
+import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 
 interface KpiTile {
   labelKey: string;
@@ -18,21 +18,25 @@ interface KpiTile {
 /** DSO / DPO / cash conversion cycle, liquidity and the cash position of the tenant. */
 @Component({
   selector: 'app-tr-kpis',
-  imports: [FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzStatisticModule, NzTableModule, MoneyPipe, TranslatePipe],
+  styleUrl: './tr-kpis.component.scss',
+  imports: [
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    FormsModule, NzButtonModule, NzCardModule, NzInputModule, NzInputNumberModule, NzStatisticModule, NzTableModule, MoneyPipe, TranslatePipe],
   template: `
     <nz-card>
-      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap">
+      <div class="toolbar">
         <label for="kp-date">{{ 'TR.AS_OF' | translate }}</label>
-        <input id="kp-date" nz-input type="date" style="width: 160px" [(ngModel)]="asOf" />
+        <input class="date-input" id="kp-date" nz-input type="date" [(ngModel)]="asOf" />
         <label for="kp-days">{{ 'TR.PERIOD_DAYS' | translate }}</label>
         <nz-input-number id="kp-days" [(ngModel)]="periodDays" [nzMin]="1" [nzMax]="730" />
         <label for="kp-currency">{{ 'TR.CURRENCY' | translate }}</label>
-        <input id="kp-currency" nz-input style="width: 90px" maxlength="3" [(ngModel)]="currency" />
+        <input class="currency-input" id="kp-currency" nz-input maxlength="3" [(ngModel)]="currency" />
         <button nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">{{ 'TR.RUN_REPORT' | translate }}</button>
       </div>
 
       @if (kpis(); as k) {
-        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+        <div class="kpi-grid">
           @for (tile of tiles(); track tile.labelKey) {
             <nz-card nzSize="small">
               <nz-statistic [nzTitle]="tile.labelKey | translate" [nzValue]="tile.money ? (tile.value | money: k.currency) : tile.value" />
@@ -40,26 +44,26 @@ interface KpiTile {
           }
         </div>
         @if (!k.includes_inventory) {
-          <p style="margin-top: 12px">{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
+          <p class="text-muted hint">{{ 'TR.KPI_NO_INVENTORY' | translate }}</p>
         }
       }
     </nz-card>
 
     @if (position(); as p) {
-      <nz-card [nzTitle]="'TR.CASH_POSITION' | translate" style="margin-top: 16px">
+      <nz-card class="position-card" [nzTitle]="'TR.CASH_POSITION' | translate">
         <nz-table #bankTable nzSize="small" [nzData]="p.bank_accounts" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'TR.BANK_ACCOUNT' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.AVAILABLE_BALANCE' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.OVERDRAFT_LIMIT' | translate }}</th>
+              <th [nzSortFn]="'bank_name' | gridSort" [nzFilters]="'bank_name' | gridFilterList: bankTable.nzData" [nzFilterFn]="'bank_name' | gridFilterFn">{{ 'TR.BANK_ACCOUNT' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'current_balance' | gridSort" [nzFilters]="'current_balance' | gridFilterList: bankTable.nzData" [nzFilterFn]="'current_balance' | gridFilterFn">{{ 'TR.CURRENT_BALANCE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'available_balance' | gridSort" [nzFilters]="'available_balance' | gridFilterList: bankTable.nzData" [nzFilterFn]="'available_balance' | gridFilterFn">{{ 'TR.AVAILABLE_BALANCE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'overdraft_limit' | gridSort" [nzFilters]="'overdraft_limit' | gridFilterList: bankTable.nzData" [nzFilterFn]="'overdraft_limit' | gridFilterFn">{{ 'TR.OVERDRAFT_LIMIT' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             @for (account of bankTable.data; track account.id) {
               <tr>
-                <td>{{ account.bank_name }} <small>{{ account.iban }}</small></td>
+                <td>{{ account.bank_name }} <small class="text-muted">{{ account.iban }}</small></td>
                 <td nzAlign="right">{{ account.current_balance | money: account.currency }}</td>
                 <td nzAlign="right">{{ account.available_balance | money: account.currency }}</td>
                 <td nzAlign="right">{{ account.overdraft_limit | money: account.currency }}</td>
@@ -67,13 +71,13 @@ interface KpiTile {
             }
           </tbody>
         </nz-table>
-        <nz-table #totalTable nzSize="small" style="margin-top: 16px" [nzData]="p.totals" [nzShowPagination]="false">
+        <nz-table #totalTable class="totals-table" nzSize="small" [nzData]="p.totals" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>{{ 'TR.CURRENCY' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.BANK' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.CASH' | translate }}</th>
-              <th nzAlign="right">{{ 'TR.TOTAL' | translate }}</th>
+              <th [nzSortFn]="'currency' | gridSort" [nzFilters]="'currency' | gridFilterList: totalTable.nzData" [nzFilterFn]="'currency' | gridFilterFn">{{ 'TR.CURRENCY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'bank' | gridSort" [nzFilters]="'bank' | gridFilterList: totalTable.nzData" [nzFilterFn]="'bank' | gridFilterFn">{{ 'TR.BANK' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'cash' | gridSort" [nzFilters]="'cash' | gridFilterList: totalTable.nzData" [nzFilterFn]="'cash' | gridFilterFn">{{ 'TR.CASH' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'total' | gridSort" [nzFilters]="'total' | gridFilterList: totalTable.nzData" [nzFilterFn]="'total' | gridFilterFn">{{ 'TR.TOTAL' | translate }}</th>
             </tr>
           </thead>
           <tbody>

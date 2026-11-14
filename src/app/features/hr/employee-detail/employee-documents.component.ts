@@ -1,17 +1,18 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   applyServerErrors,
   EMPLOYEE_DOCUMENT_TYPES,
   EmployeeDocumentResource,
   EmployeeDocumentType,
+  FetchGridModel,
   HrEmployeeApiService,
   I18nService,
   isValidationError,
   PermissionsService,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { BaseTableComponent, IconActionDirective, ModalActionsDirective, TableColumnDef, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -21,14 +22,17 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { reportHttpError, saveBlob } from '../shared/hr-http.util';
 
 /** Personnel file: documents with health flag, visibility to the employee and retention date. */
 @Component({
   selector: 'app-employee-documents',
+  styleUrl: './employee-documents.component.scss',
   imports: [
+    BaseTableComponent,
+    IconActionDirective,
+    ModalActionsDirective,
     DatePipe,
     ReactiveFormsModule,
     NzButtonModule,
@@ -39,13 +43,12 @@ import { reportHttpError, saveBlob } from '../shared/hr-http.util';
     NzModalModule,
     NzPopconfirmModule,
     NzSelectModule,
-    NzTableModule,
     NzTagModule,
     TranslatePipe,
   ],
   templateUrl: './employee-documents.component.html',
 })
-export class EmployeeDocumentsComponent implements OnInit {
+export class EmployeeDocumentsComponent {
   readonly employeeId = input.required<string>();
 
   private readonly api = inject(HrEmployeeApiService);
@@ -55,16 +58,46 @@ export class EmployeeDocumentsComponent implements OnInit {
   private readonly permissions = inject(PermissionsService);
 
   protected readonly canWrite = computed(() => this.permissions.canWrite('hr'));
-  protected readonly documents = signal<EmployeeDocumentResource[]>([]);
-  protected readonly loading = signal(true);
+  /** Server-driven grid of the personnel file. */
+  protected readonly grid = new FetchGridModel<EmployeeDocumentResource>((query) =>
+    this.api.getEmployeeDocuments(this.employeeId(), query),
+  );
+  private readonly typeTpl = viewChild<TemplateRef<unknown>>('typeTpl');
+  private readonly expiryTpl = viewChild<TemplateRef<unknown>>('expiryTpl');
+  private readonly retentionTpl = viewChild<TemplateRef<unknown>>('retentionTpl');
+  private readonly flagsTpl = viewChild<TemplateRef<unknown>>('flagsTpl');
+  protected readonly columns = computed<TableColumnDef<EmployeeDocumentResource>[]>(() => {
+    return [
+      { key: 'title', header: 'hrmCommon.title' },
+      {
+        key: 'document_type',
+        header: 'hrmCommon.type',
+        valueGetter: (doc) => this.i18n.translate('hrmEmp.docType.' + doc.document_type),
+        valueLabel: (value) => this.i18n.translate('hrmEmp.docType.' + value),
+        customCellTemplate: this.typeTpl(),
+      },
+      { key: 'expiry_date', header: 'hrmEmp.expiryDate', customCellTemplate: this.expiryTpl() },
+      { key: 'retention_until', header: 'hrmEmp.retentionUntil', customCellTemplate: this.retentionTpl() },
+      {
+        key: 'flags',
+        header: 'hrmEmp.flags',
+        sortable: false,
+        filterable: false,
+        groupable: false,
+        exportable: false,
+        customCellTemplate: this.flagsTpl(),
+      },
+    ];
+  });
   protected readonly saving = signal(false);
   protected readonly formOpen = signal(false);
   protected readonly file = signal<File | null>(null);
+  protected readonly fileMissing = signal(false);
   protected readonly typeOptions = EMPLOYEE_DOCUMENT_TYPES;
 
   protected readonly form = this.fb.group({
     document_type: ['other' as EmployeeDocumentType, Validators.required],
-    title: ['', [Validators.required, Validators.maxLength(255)]],
+    title: ['', [Validators.required, Validators.maxLength(200)]],
     issue_date: [''],
     expiry_date: [''],
     retention_until: [''],
@@ -73,37 +106,27 @@ export class EmployeeDocumentsComponent implements OnInit {
     visible_to_employee: [false],
   });
 
-  ngOnInit(): void {
-    this.reload();
-  }
-
   protected reload(): void {
-    this.loading.set(true);
-    this.api.getEmployeeDocuments(this.employeeId()).subscribe({
-      next: (res) => {
-        this.documents.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        reportHttpError(err, this.message, this.i18n);
-        this.loading.set(false);
-      },
-    });
+    this.grid.reload();
   }
 
   protected openForm(): void {
     this.form.reset();
     this.file.set(null);
+    this.fileMissing.set(false);
     this.formOpen.set(true);
   }
 
   protected onFileSelected(event: Event): void {
-    this.file.set((event.target as HTMLInputElement).files?.item(0) ?? null);
+    const selected = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    this.file.set(selected);
+    this.fileMissing.set(selected === null);
   }
 
   protected upload(): void {
     const file = this.file();
     if (this.form.invalid || !file) {
+      this.fileMissing.set(!file);
       this.form.markAllAsTouched();
       return;
     }

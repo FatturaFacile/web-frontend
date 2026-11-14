@@ -25,7 +25,7 @@ describe('ChildcareApiService', () => {
     last_name: 'Bianchi',
     birth_date: '2023-05-12',
     enrolled_on: '2024-09-01',
-    status: 'enrolled',
+    status: 'active',
   };
 
   const mockAttendance: ChildcareAttendance = {
@@ -41,7 +41,7 @@ describe('ChildcareApiService', () => {
     id: 'note-1-uuid',
     child_id: 'ch-1-uuid',
     date: '2026-03-02',
-    category: 'nap',
+    category: 'sleep',
     body: 'Ha dormito 1h e 30m senza risvegli',
     visible_to_family: true,
   };
@@ -73,18 +73,20 @@ describe('ChildcareApiService', () => {
 
   it('should fetch children list with pagination', () => {
     const mockResponse: PaginatedResponse<ChildcareChild> = {
+      success: true,
+      message: '',
       data: [mockChild],
-      meta: { current_page: 1, last_page: 1, per_page: 10, total: 1 },
+      meta: { current_page: 1, from: 1, last_page: 1, per_page: 10, to: 1, total: 1 },
     };
 
-    service.getChildren({ page: 1, per_page: 10, status: 'enrolled' }).subscribe((res) => {
+    service.getChildren({ page: 1, per_page: 10, status: 'active' }).subscribe((res) => {
       expect(res.data.length).toBe(1);
       expect(res.data[0].first_name).toBe('Sofia');
     });
 
     const req = httpTesting.expectOne((r) => r.url.includes(`${baseUrl}/children`));
     expect(req.request.method).toBe('GET');
-    expect(req.request.params.get('status')).toBe('enrolled');
+    expect(req.request.params.get('status')).toBe('active');
     req.flush(mockResponse);
   });
 
@@ -133,12 +135,12 @@ describe('ChildcareApiService', () => {
       .createNote({
         child_id: 'ch-1-uuid',
         date: '2026-03-02',
-        category: 'nap',
+        category: 'sleep',
         body: 'Ha dormito 1h e 30m',
         visible_to_family: true,
       })
       .subscribe((res) => {
-        expect(res.data.category).toBe('nap');
+        expect(res.data.category).toBe('sleep');
       });
 
     const reqNote = httpTesting.expectOne(`${baseUrl}/notes`);
@@ -155,7 +157,7 @@ describe('ChildcareApiService', () => {
   });
 
   it('should run monthly billing and fetch bills', () => {
-    service.runBilling({ period: '2026-03' }).subscribe((res) => {
+    service.runBilling({ period: '2026-03', date: '2026-03-31' }).subscribe((res) => {
       expect(res.data.run_id).toBe('run-1');
       expect(res.data.total_billed).toBe('12500.00');
     });

@@ -1,3 +1,7 @@
+:host {
+  display: block;
+}
+
 .header-actions {
   display: flex;
   gap: 8px;
@@ -10,12 +14,12 @@
   margin-bottom: 16px;
 
   .stat-card {
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
   }
 }
 
 .main-card {
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
 .tab-toolbar {
@@ -56,28 +60,27 @@
   gap: 16px;
 
   .table-card {
-    border-radius: 8px;
-    border: 2px solid #e8e8e8;
-    transition: all 0.3s;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--border-color);
 
     &.status-free {
-      border-color: #52c41a;
-      background: #f6ffed;
+      border-color: var(--status-success);
+      background: var(--status-success-bg);
     }
 
     &.status-occupied {
-      border-color: #ff4d4f;
-      background: #fff1f0;
+      border-color: var(--status-danger);
+      background: var(--status-danger-bg);
     }
 
     &.status-billing {
-      border-color: #faad14;
-      background: #fffbe6;
+      border-color: var(--status-warning);
+      background: var(--status-warning-bg);
     }
 
     &.status-reserved {
-      border-color: #1890ff;
-      background: #e6f7ff;
+      border-color: var(--status-info);
+      background: var(--status-info-bg);
     }
 
     .table-card-header {
@@ -97,7 +100,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      color: #666;
+      color: var(--text-secondary);
 
       .seats-info {
         display: flex;
@@ -107,9 +110,10 @@
 
       .badge-shape {
         font-size: 11px;
-        background: #f0f0f0;
+        background: var(--status-neutral-bg);
+        color: var(--status-neutral);
         padding: 2px 6px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         text-transform: uppercase;
       }
     }
@@ -127,39 +131,39 @@
   gap: 16px;
 
   .kds-card {
-    border-radius: 8px;
-    border-left: 4px solid #1890ff;
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--status-info);
 
     &.ticket-queued {
-      border-left-color: #d9d9d9;
+      border-left-color: var(--border-input);
     }
 
     &.ticket-preparing {
-      border-left-color: #faad14;
-      background: #fffbe6;
+      border-left-color: var(--status-warning);
+      background: var(--status-warning-bg);
     }
 
     &.ticket-ready {
-      border-left-color: #52c41a;
-      background: #f6ffed;
+      border-left-color: var(--status-success);
+      background: var(--status-success-bg);
     }
 
     &.ticket-served {
-      border-left-color: #1890ff;
+      border-left-color: var(--status-info);
     }
 
     .ticket-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--border-light);
       padding-bottom: 8px;
       margin-bottom: 8px;
 
       .ticket-course {
         display: block;
         font-size: 12px;
-        color: #8c8c8c;
+        color: var(--text-muted);
       }
     }
 
@@ -182,7 +186,7 @@
 
         .notes {
           font-style: italic;
-          color: #ff4d4f;
+          color: var(--status-danger);
           font-size: 12px;
         }
       }
@@ -201,7 +205,7 @@
   .order-total-big {
     font-size: 18px;
     font-weight: 700;
-    color: #1890ff;
+    color: var(--status-info);
   }
 }
 
@@ -213,8 +217,8 @@
   gap: 8px;
   margin-bottom: 16px;
   padding: 12px;
-  background: #fafafa;
-  border-radius: 6px;
+  background: var(--bg-card-secondary);
+  border-radius: var(--radius-md);
 }
 
 .order-items-section {
@@ -229,7 +233,7 @@
 
   .item-notes {
     font-size: 11px;
-    color: #8c8c8c;
+    color: var(--text-muted);
   }
 }
 
@@ -237,4 +241,18 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.room-select {
+  width: 200px;
+}
+
+.status-filter {
+  width: 180px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }

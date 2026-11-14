@@ -27,7 +27,7 @@ describe('TreasuryApiService', () => {
     service.getBankAccounts().subscribe((res) => {
       expect(res.data).toHaveLength(1);
     });
-    const reqGet = httpTesting.expectOne(`${baseUrl}/bank-accounts`);
+    const reqGet = httpTesting.expectOne((req) => req.url === `${baseUrl}/bank-accounts` && req.method === 'GET');
     expect(reqGet.request.method).toBe('GET');
     reqGet.flush({ success: true, message: 'OK', data: [{ id: 'ba-1', bank_name: 'UBS' }] });
 
@@ -125,7 +125,7 @@ describe('TreasuryApiService', () => {
   it('generates cash flow forecasts', () => {
     service.generateCashForecast(60).subscribe((res) => {
       expect(res.data.horizon_days).toBe(60);
-      expect(res.data.projected_cash).toBe(150000);
+      expect(res.data.closing_cash_balance).toBe(150000);
     });
 
     const reqForecast = httpTesting.expectOne(`${baseUrl}/cash-forecasts/generate`);
@@ -141,7 +141,7 @@ describe('TreasuryApiService', () => {
         opening_cash: 100000,
         expected_inflows: 80000,
         expected_outflows: 30000,
-        projected_cash: 150000,
+        closing_cash_balance: 150000,
         deficit_identified: false,
         currency: 'EUR',
       },

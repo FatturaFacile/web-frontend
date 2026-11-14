@@ -1,4 +1,6 @@
-export type ChildcareChildStatus = 'waitlist' | 'enrolled' | 'graduated' | 'withdrawn';
+import { QueryFilterParams } from './api.models';
+
+export type ChildcareChildStatus = 'waiting' | 'active' | 'left';
 
 export interface ChildcareGroup {
   id: string;
@@ -72,7 +74,7 @@ export interface ChildcareReferencePersonRequest {
   full_name: string;
   phone?: string;
   email?: string;
-  relationship: string;
+  relationship: ChildcareRelationship;
   is_guardian: boolean;
   can_pick_up: boolean;
   portal_contact_id?: string;
@@ -106,6 +108,29 @@ export interface ChildcareAttendance {
   correction_reason?: string | null;
 }
 
+/** One child's row of the monthly attendance register: `days` is keyed by `Y-m-d`. */
+export interface ChildcareRegisterRow {
+  child_id: string;
+  reference_code: string;
+  name: string;
+  present_days: number;
+  days: Record<
+    string,
+    {
+      status: ChildcareAttendance['status'];
+      absence_reason: string | null;
+      check_in_at: string | null;
+      check_out_at: string | null;
+    }
+  >;
+}
+
+/** Payload of `GET /childcare/attendances/register`. */
+export interface ChildcareRegister {
+  month: string;
+  children: ChildcareRegisterRow[];
+}
+
 export interface ChildcareCheckInRequest {
   child_id: string;
   at?: string;
@@ -118,10 +143,14 @@ export interface ChildcareCheckOutRequest {
   picked_up_by: string;
 }
 
+export type ChildcareAbsenceReason = 'sick' | 'holiday' | 'other';
+
+export type ChildcareRelationship = 'mother' | 'father' | 'guardian' | 'grandparent' | 'relative' | 'other';
+
 export interface ChildcareAbsenceRequest {
   child_id: string;
   date: string;
-  reason?: string;
+  reason: ChildcareAbsenceReason;
 }
 
 export interface ChildcareCorrectionRequest {
@@ -150,16 +179,18 @@ export interface ChildcareDailyNote {
   child_id: string;
   child_name?: string | null;
   date: string;
-  category: 'meal' | 'nap' | 'diaper' | 'activity' | 'mood' | 'incident';
+  category: ChildcareNoteCategory;
   body: string;
   visible_to_family: boolean;
   created_at?: string;
 }
 
+export type ChildcareNoteCategory = 'general' | 'meal' | 'sleep' | 'activity' | 'health' | 'behaviour';
+
 export interface ChildcareNoteRequest {
   child_id: string;
   date: string;
-  category: string;
+  category: ChildcareNoteCategory;
   body: string;
   visible_to_family?: boolean;
 }
@@ -215,10 +246,12 @@ export interface ChildcareStaffShiftRequest {
   break_minutes?: number;
 }
 
+export type ChildcareFeeBasis = 'monthly_flat' | 'per_day';
+
 export interface ChildcareFeePlan {
   id: string;
   name: string;
-  basis: 'monthly' | 'daily' | 'hourly';
+  basis: ChildcareFeeBasis;
   amount: string;
   meal_amount?: string | null;
   tax_rate: string;
@@ -227,7 +260,7 @@ export interface ChildcareFeePlan {
 
 export interface ChildcareFeePlanRequest {
   name: string;
-  basis: string;
+  basis: ChildcareFeeBasis;
   amount: string;
   meal_amount?: string;
   tax_rate: string;
@@ -236,7 +269,7 @@ export interface ChildcareFeePlanRequest {
 
 export interface ChildcareBillingRunRequest {
   period: string;
-  date?: string;
+  date: string;
 }
 
 export interface ChildcareBill {
@@ -276,14 +309,34 @@ export interface ChildcareDocument {
   requirement_name?: string | null;
   signed_at?: string | null;
   signed_by?: string | null;
-  status: 'pending' | 'signed' | 'expired';
+  status: 'pending' | 'signed' | 'expired' | 'missing';
   created_at?: string;
 }
 
-export interface ChildcareParams {
+/** Payload of `GET /childcare/documents/outstanding`: the mandatory documents still missing, per child. */
+export interface ChildcareOutstandingDocuments {
+  children: {
+    child_id: string;
+    reference_code: string;
+    name: string;
+    missing: { requirement_id: string; name: string }[];
+  }[];
+  total_missing: number;
+}
+
+export interface ChildcareParams extends QueryFilterParams {
   status?: string;
   group_id?: string;
   search?: string;
   page?: number;
   per_page?: number;
+}
+
+export interface ChildcareNotesParams extends QueryFilterParams {
+  child_id?: string;
+  date?: string;
+}
+
+export interface ChildcareBillsParams extends QueryFilterParams {
+  period?: string;
 }

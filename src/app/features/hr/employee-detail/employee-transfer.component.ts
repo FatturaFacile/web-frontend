@@ -1,5 +1,5 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   applyServerErrors,
   DepartmentResource,
@@ -8,7 +8,7 @@ import {
   isValidationError,
   PositionResource,
 } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -20,15 +20,15 @@ import { reportHttpError } from '../shared/hr-http.util';
 /** Transfer of an employee to another department / position (lifecycle event). */
 @Component({
   selector: 'app-employee-transfer',
-  imports: [ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  styleUrl: './employee-transfer.component.scss',
+  imports: [ModalActionsDirective, ReactiveFormsModule, NzButtonModule, NzFormModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
   template: `
     <button nz-button type="button" (click)="open()">{{ 'hrmEmp.transfer' | translate }}</button>
     <nz-modal
       [nzVisible]="visible()"
       [nzTitle]="'hrmEmp.transfer' | translate"
-      [nzOkText]="'hrmCommon.confirm' | translate"
-      [nzCancelText]="'hrmCommon.cancel' | translate"
       [nzOkLoading]="saving()"
+      [nzOkDisabled]="form.invalid"
       (nzOnOk)="submit()"
       (nzOnCancel)="visible.set(false)"
     >
@@ -89,7 +89,7 @@ export class EmployeeTransferComponent {
     to_department_id: [''],
     to_position_id: [''],
     effective_date: [''],
-    reason: [''],
+    reason: ['', Validators.maxLength(500)],
   });
 
   protected open(): void {
@@ -100,10 +100,18 @@ export class EmployeeTransferComponent {
   }
 
   protected error(key: string): string {
-    return String(this.form.get(key)?.errors?.['serverError'] ?? '');
+    const errors = this.form.get(key)?.errors;
+    if (errors?.['serverError']) {
+      return String(errors['serverError']);
+    }
+    return errors ? this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE') : '';
   }
 
   protected submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     const value = this.form.getRawValue();
     this.saving.set(true);
     this.api
