@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideAppInitializer, inject, isDevMode } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideAppInitializer, inject } from '@angular/core';
 import { provideRouter, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
@@ -16,6 +16,7 @@ import { paginatedResponseInterceptor } from '@core/interceptors/paginated-respo
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { I18nService, PageTitleStrategy } from '@core/i18n';
 import { ThemeService } from '@core/theme';
+import { PwaUpdateService } from '@core/pwa';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -53,8 +54,11 @@ export const appConfig: ApplicationConfig = {
       // Bootstrap bloccato (splash + spinner) finché le traduzioni non sono caricate
       return i18n.waitForInitialTranslations();
     }),
+    provideAppInitializer(() => {
+      inject(PwaUpdateService).start();
+    }),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: true,
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],

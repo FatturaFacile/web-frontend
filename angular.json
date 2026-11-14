@@ -94,11 +94,13 @@
             },
             "demo": {},
             "development": {
+              "serviceWorker": "ngsw-config.json",
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
             },
             "local": {
+              "serviceWorker": "ngsw-config.json",
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
