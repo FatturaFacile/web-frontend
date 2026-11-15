@@ -1,0 +1,231 @@
+<app-page-header
+  [title]="'INVENTORY.BOOK.TITLE' | translate"
+  [subtitle]="'INVENTORY.BOOK.SUBTITLE' | translate"
+/>
+
+<nz-card class="iv-card">
+  <form class="iv-toolbar" role="search" (ngSubmit)="generate()">
+    <span class="iv-actions">
+      <label for="iv-book-year">{{ 'INVENTORY.BOOK.YEAR' | translate }}</label>
+      <nz-input-number
+        nzId="iv-book-year"
+        name="year"
+        [nzMin]="2000"
+        [nzMax]="2100"
+        [nzStep]="1"
+        [ngModel]="year()"
+        (ngModelChange)="year.set($event)"
+      />
+    </span>
+    <nz-date-picker
+      name="asOf"
+      [nzPlaceHolder]="'INVENTORY.BOOK.AS_OF' | translate"
+      [attr.aria-label]="'INVENTORY.BOOK.AS_OF' | translate"
+      [ngModel]="asOf()"
+      (ngModelChange)="asOf.set($event)"
+    />
+    <nz-select
+      name="warehouse"
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [ngModel]="warehouseId()"
+      (ngModelChange)="warehouseId.set($event)"
+    >
+      @for (w of warehouses(); track w.id) {
+        <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+      }
+    </nz-select>
+    <!-- nz-checkbox renders its own input inside the label -->
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-checkbox name="requireClosed" [ngModel]="requireClosed()" (ngModelChange)="requireClosed.set($event)">
+      {{ 'INVENTORY.BOOK.REQUIRE_CLOSED' | translate }}
+    </label>
+    <button nz-button nzType="primary" type="submit" [nzLoading]="loading()" [disabled]="loading()">
+      {{ 'INVENTORY.BOOK.GENERATE' | translate }}
+    </button>
+    <button
+      nz-button
+      type="button"
+      (click)="downloadCsv()"
+      [nzLoading]="downloadingCsv()"
+      [disabled]="downloadingCsv()"
+    >
+      <nz-icon nzType="download" /> {{ 'INVENTORY.BOOK.DOWNLOAD_CSV' | translate }}
+    </button>
+  </form>
+
+  @if (error(); as e) {
+    <nz-alert
+      class="iv-alert"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="e.key | translate"
+      [nzDescription]="e.detail ?? ''"
+      data-testid="book-error"
+    />
+  }
+
+  @if (book(); as b) {
+    <div class="iv-stats iv-card">
+      <nz-statistic [nzTitle]="'INVENTORY.BOOK.TOTAL_QUANTITY' | translate" [nzValue]="(b.totals.quantity | number: '1.0-4') ?? ''" />
+      <nz-statistic [nzTitle]="'INVENTORY.BOOK.TOTAL_VALUE' | translate" [nzValue]="(b.totals.total_value | number: '1.2-2') ?? ''" />
+      <nz-statistic
+        [nzTitle]="'INVENTORY.BOOK.GL_BALANCE' | translate"
+        [nzValue]="(b.reconciliation.gl_inventory_balance | number: '1.2-2') ?? ''"
+      />
+    </div>
+
+    <div aria-live="polite">
+      @if (hasDifference()) {
+        <nz-alert
+          class="iv-alert"
+          nzType="warning"
+          nzShowIcon
+          [nzMessage]="'INVENTORY.BOOK.DIFFERENCE_FOUND' | translate"
+          [nzDescription]="diffTpl"
+          data-testid="book-difference"
+        />
+        <ng-template #diffTpl>
+          {{ 'INVENTORY.BOOK.DIFFERENCE' | translate }}:
+          <strong class="iv-diff iv-diff-alert">{{ b.reconciliation.difference | number: '1.2-2' }}</strong>
+        </ng-template>
+      } @else {
+        <nz-alert
+          class="iv-alert"
+          nzType="success"
+          nzShowIcon
+          [nzMessage]="'INVENTORY.BOOK.RECONCILED' | translate"
+          data-testid="book-reconciled"
+        />
+      }
+    </div>
+
+    <p class="iv-muted">
+      {{ 'INVENTORY.BOOK.AS_OF' | translate }}: {{ b.meta.as_of | date: 'mediumDate' }}
+      @if (b.meta.generated_at) {
+        · {{ 'INVENTORY.BOOK.GENERATED_AT' | translate }}: {{ b.meta.generated_at | date: 'medium' }}
+      }
+      @if (b.meta.method_breakdown) {
+        @for (m of b.meta.method_breakdown | keyvalue; track m.key) {
+          · {{ (methodLabels[m.key] ?? m.key) | translate }}: {{ m.value }}
+        }
+      }
+    </p>
+
+    <nz-table #rowsTable [nzData]="b.rows" nzSize="small" [nzPageSize]="50">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.COL_DESC' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.BOOK.UOM' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_LOT' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.COL_QTY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_UNIT_COST' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.BOOK.TOTAL_VALUE' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.VALUATION.EFFECTIVE_METHOD' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rowsTable.data; track $index) {
+          <tr>
+            <td><strong>{{ r.sku }}</strong></td>
+            <td>{{ r.name }}</td>
+            <td>{{ r.uom }}</td>
+            <td>{{ r.warehouse_id || '-' }}</td>
+            <td>{{ r.lot_number || '-' }}</td>
+            <td class="iv-num">{{ r.quantity | number: '1.0-4' }}</td>
+            <td class="iv-num">{{ r.unit_cost | number: '1.4-4' }}</td>
+            <td class="iv-num">{{ r.total_value | number: '1.2-2' }}</td>
+            <td>{{ (methodLabels[r.valuation_method] ?? r.valuation_method) | translate }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  } @else if (!loading() && !error()) {
+    <p class="iv-muted">{{ 'INVENTORY.BOOK.EMPTY' | translate }}</p>
+  }
+</nz-card>
+
+<nz-card class="iv-card" [nzTitle]="'INVENTORY.BOOK.EXPORTS_TITLE' | translate" [nzExtra]="exportExtra">
+  <ng-template #exportExtra>
+    @if (!exports.forbidden()) {
+      <button
+        nz-button
+        nz-popconfirm
+        [nzPopconfirmTitle]="'INVENTORY.BOOK.CONFIRM_EXPORT' | translate: { year: year() }"
+        [nzOkText]="'INVENTORY.BOOK.CREATE_EXPORT' | translate"
+        [nzCancelText]="'COMMON.CANCEL' | translate"
+        (nzOnConfirm)="createExport()"
+        [nzLoading]="creatingExport()"
+        [disabled]="creatingExport()"
+        data-testid="create-export"
+      >
+        <nz-icon nzType="file-text" /> {{ 'INVENTORY.BOOK.CREATE_EXPORT' | translate }}
+      </button>
+    }
+  </ng-template>
+
+  @if (exports.forbidden()) {
+    <nz-alert class="iv-alert" nzType="info" nzShowIcon [nzMessage]="'INVENTORY.BOOK.EXPORT_FORBIDDEN' | translate" />
+  }
+
+  <nz-table
+    #exportsTable
+    [nzData]="exports.items()"
+    [nzFrontPagination]="false"
+    [nzLoading]="exports.loading()"
+    [nzTotal]="exports.totalCount()"
+    [nzPageIndex]="exports.pageIndex()"
+    [nzPageSize]="exports.pageSize()"
+    (nzQueryParams)="exports.onQueryParamsChange($event)"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'INVENTORY.BOOK.YEAR' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.BOOK.AS_OF' | translate }}</th>
+        <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.BOOK.TOTAL_VALUE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.BOOK.CHECKSUM' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.BOOK.GENERATED_AT' | translate }}</th>
+        <th scope="col" nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (x of exportsTable.data; track x.id) {
+        <tr>
+          <td>{{ x.year }}</td>
+          <td>{{ x.as_of ? (x.as_of | date: 'mediumDate') : '-' }}</td>
+          <td><nz-tag>{{ x.status }}</nz-tag></td>
+          <td class="iv-num">{{ x.totals?.total_value ? (x.totals?.total_value | number: '1.2-2') : '-' }}</td>
+          <td><code>{{ x.checksum ? x.checksum.slice(0, 12) : '-' }}</code></td>
+          <td>{{ x.created_at ? (x.created_at | date: 'medium') : '-' }}</td>
+          <td nzAlign="right">
+            @if (!exports.forbidden()) {
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                [nzLoading]="downloadingExportId() === x.id"
+                [disabled]="!!downloadingExportId()"
+                [attr.aria-label]="('INVENTORY.BOOK.DOWNLOAD_EXPORT' | translate) + ' ' + x.year"
+                (click)="downloadExport(x)"
+              >
+                <nz-icon nzType="download" />
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        @if (exports.loaded() && !exports.loading()) {
+          <tr>
+            <td colspan="7" class="iv-muted">{{ 'INVENTORY.BOOK.EXPORTS_EMPTY' | translate }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

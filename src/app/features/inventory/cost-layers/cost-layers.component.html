@@ -1,0 +1,109 @@
+<app-page-header
+  [title]="'INVENTORY.COST_LAYERS.TITLE' | translate"
+  [subtitle]="'INVENTORY.COST_LAYERS.SUBTITLE' | translate"
+/>
+
+<nz-card class="iv-card">
+  <div class="iv-toolbar" role="search">
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      nzShowSearch
+      nzServerSearch
+      [nzLoading]="itemsLoading()"
+      [nzPlaceHolder]="'INVENTORY.FILTERS.ITEM' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.ITEM' | translate"
+      [ngModel]="facade.filterParams().item_id ?? null"
+      (ngModelChange)="setItem($event)"
+      (nzOnSearch)="searchItems($event)"
+    >
+      @for (it of items(); track it.id) {
+        <nz-option [nzValue]="it.id" [nzLabel]="it.sku + (it.name ? ' - ' + it.name : '')" />
+      }
+    </nz-select>
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [ngModel]="facade.filterParams().warehouse_id ?? null"
+      (ngModelChange)="setWarehouse($event)"
+    >
+      @for (w of warehouses(); track w.id) {
+        <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+      }
+    </nz-select>
+    <input
+      nz-input
+      class="iv-filter"
+      [placeholder]="'INVENTORY.FILTERS.LOT' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.LOT' | translate"
+      [value]="facade.filterParams().lot_id ?? ''"
+      (change)="setLot($event)"
+    />
+    <span class="iv-actions">
+      <nz-switch
+        nzId="iv-open-only"
+        [ngModel]="!!facade.filterParams().open_only"
+        (ngModelChange)="setOpenOnly($event)"
+      />
+      <label for="iv-open-only">{{ 'INVENTORY.FILTERS.OPEN_ONLY' | translate }}</label>
+    </span>
+    <button nz-button (click)="facade.reload()" [attr.aria-label]="'INVENTORY.ACTIONS.RELOAD' | translate">
+      <nz-icon nzType="reload" />
+    </button>
+  </div>
+
+  <nz-table
+    #layersTable
+    [nzData]="facade.items()"
+    [nzFrontPagination]="false"
+    [nzLoading]="facade.loading()"
+    [nzTotal]="facade.totalCount()"
+    [nzPageIndex]="facade.pageIndex()"
+    [nzPageSize]="facade.pageSize()"
+    (nzQueryParams)="facade.onQueryParamsChange($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_RECEIVED_AT' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_ITEM' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_LOT' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_ORIGINAL_QTY' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_REMAINING_QTY' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_UNIT_COST' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_LANDED_UNIT' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY.COST_LAYERS.COL_EFFECTIVE_UNIT' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_RECEIPT' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (layer of layersTable.data; track layer.id) {
+        <tr>
+          <td>{{ layer.received_at | date: 'mediumDate' }}</td>
+          <td>{{ layer.sku || layer.item_id }}</td>
+          <td>{{ layer.lot_number || layer.lot_id || '-' }}</td>
+          <td class="iv-num">{{ layer.original_quantity | number: '1.0-4' }}</td>
+          <td class="iv-num">
+            @if (isZero(layer.remaining_quantity)) {
+              <span class="iv-muted">{{ 'INVENTORY.COST_LAYERS.DEPLETED' | translate }}</span>
+            } @else {
+              {{ layer.remaining_quantity | number: '1.0-4' }}
+            }
+          </td>
+          <td class="iv-num">{{ layer.unit_cost | number: '1.4-4' }}</td>
+          <td class="iv-num">{{ layer.landed_cost_unit | number: '1.4-4' }}</td>
+          <td class="iv-num"><strong>{{ layer.effective_unit_cost | number: '1.4-4' }}</strong></td>
+          <td><code>{{ layer.receipt_id || '-' }}</code></td>
+        </tr>
+      } @empty {
+        @if (facade.loaded() && !facade.loading()) {
+          <tr>
+            <td colspan="9" class="iv-muted">{{ 'INVENTORY.COST_LAYERS.EMPTY' | translate }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

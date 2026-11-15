@@ -1,0 +1,199 @@
+<app-page-header
+  [title]="('INVENTORY.LANDED_COSTS.DETAIL_TITLE' | translate) + (doc()?.number ? ' ' + doc()?.number : '')"
+  [subtitle]="'INVENTORY.LANDED_COSTS.SUBTITLE' | translate"
+/>
+
+<div class="iv-toolbar">
+  <a nz-button routerLink="/inventory/landed-costs">{{ 'INVENTORY.ACTIONS.BACK_TO_LIST' | translate }}</a>
+</div>
+
+@if (errorKey(); as errKey) {
+  <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="errKey | translate" [nzAction]="retryTpl" />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" (click)="load()">{{ 'INVENTORY.ACTIONS.RETRY' | translate }}</button>
+  </ng-template>
+}
+
+@if (doc(); as d) {
+  <nz-card class="iv-card" [nzTitle]="d.number" [nzExtra]="actionsTpl" [nzLoading]="loading()">
+    <ng-template #actionsTpl>
+      <div class="iv-actions">
+        @if (canApply()) {
+          <button
+            nz-button
+            nzType="primary"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'INVENTORY.LANDED_COSTS.CONFIRM_APPLY' | translate"
+            [nzOkText]="'INVENTORY.LANDED_COSTS.APPLY' | translate"
+            [nzCancelText]="'COMMON.CANCEL' | translate"
+            (nzOnConfirm)="apply()"
+            [nzLoading]="applying()"
+            [disabled]="busy()"
+            data-testid="apply-btn"
+          >
+            <nz-icon nzType="check" /> {{ 'INVENTORY.LANDED_COSTS.APPLY' | translate }}
+          </button>
+        }
+        @if (canReverse()) {
+          <button
+            nz-button
+            nzDanger
+            (click)="openReverseModal()"
+            [nzLoading]="reversing()"
+            [disabled]="busy()"
+            data-testid="reverse-btn"
+          >
+            <nz-icon nzType="swap" /> {{ 'INVENTORY.LANDED_COSTS.REVERSE' | translate }}
+          </button>
+        }
+      </div>
+    </ng-template>
+
+    <nz-descriptions nzBordered [nzColumn]="{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 1, xs: 1 }">
+      <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+        <nz-tag [nzColor]="statusLabels[d.status].color" data-testid="status-tag">{{
+          statusLabels[d.status].key | translate
+        }}</nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'COMMON.DATE' | translate">{{ d.document_date | date: 'mediumDate' }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'COMMON.AMOUNT' | translate">{{
+        d.total_amount | currency: d.currency : 'symbol' : '1.2-2'
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.COST_TYPE' | translate">{{
+        typeLabels[d.cost_type] | translate
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.ALLOCATION_KEY' | translate">{{
+        keyLabels[d.allocation_key] | translate
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.SUPPLIER_INVOICE' | translate">{{
+        d.supplier_invoice_id || '-'
+      }}</nz-descriptions-item>
+      @if (d.applied_at) {
+        <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.APPLIED_AT' | translate">{{
+          d.applied_at | date: 'medium'
+        }}</nz-descriptions-item>
+      }
+      @if (d.journal_entry_id) {
+        <nz-descriptions-item [nzTitle]="'INVENTORY.REVALUATION.JOURNAL' | translate">
+          <code>{{ d.journal_entry_id }}</code>
+        </nz-descriptions-item>
+      }
+      @if (d.reversal_of_id) {
+        <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.REVERSAL_OF' | translate">
+          <a [routerLink]="['/inventory/landed-costs', d.reversal_of_id]">{{ 'INVENTORY.LANDED_COSTS.OPEN_ORIGINAL' | translate }}</a>
+        </nz-descriptions-item>
+      }
+      @if (d.notes) {
+        <nz-descriptions-item [nzTitle]="'INVENTORY.LANDED_COSTS.NOTES' | translate">{{ d.notes }}</nz-descriptions-item>
+      }
+    </nz-descriptions>
+
+    @if (shownRevaluation(); as rev) {
+      <nz-alert
+        class="iv-alert iv-section-title"
+        nzType="success"
+        nzShowIcon
+        [nzMessage]="'INVENTORY.REVALUATION.TITLE' | translate"
+        [nzDescription]="revTpl"
+        data-testid="revaluation"
+      />
+      <ng-template #revTpl>
+        {{ 'INVENTORY.REVALUATION.INVENTORY_DELTA' | translate }}: {{ rev.total_inventory_delta | number: '1.2-2' }} ·
+        {{ 'INVENTORY.REVALUATION.COGS_DELTA' | translate }}: {{ rev.total_cogs_delta | number: '1.2-2' }}
+        @if (rev.journal_entry_id) {
+          · {{ 'INVENTORY.REVALUATION.JOURNAL' | translate }}: <code>{{ rev.journal_entry_id }}</code>
+        }
+      </ng-template>
+    }
+
+    @if (reversalId()) {
+      <nz-alert
+        class="iv-alert iv-section-title"
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'INVENTORY.LANDED_COSTS.REVERSED_NOTICE' | translate"
+        [nzAction]="reversalLinkTpl"
+        data-testid="reversal-link"
+      />
+      <ng-template #reversalLinkTpl>
+        <button nz-button nzSize="small" (click)="openReversal()">
+          {{ 'INVENTORY.LANDED_COSTS.OPEN_REVERSAL' | translate }}
+        </button>
+      </ng-template>
+    }
+
+    <h3 class="iv-section-title">{{ 'INVENTORY.LANDED_COSTS.RECEIPTS' | translate }}</h3>
+    @if (d.receipts?.length) {
+      <ul>
+        @for (r of d.receipts; track r.receipt_id) {
+          <li>{{ r.receipt_number || r.receipt_id }}</li>
+        }
+      </ul>
+    } @else {
+      <p class="iv-muted">-</p>
+    }
+
+    <h3 class="iv-section-title">{{ 'INVENTORY.LANDED_COSTS.ALLOCATIONS' | translate }}</h3>
+    <nz-table #allocTable [nzData]="d.allocations ?? []" nzSize="small" [nzShowPagination]="false" [nzPageSize]="1000">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'INVENTORY.LANDED_COSTS.RECEIPT' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_ITEM' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_LOT' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.BASIS' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.ALLOCATED' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.TO_INVENTORY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.TO_COGS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of allocTable.data; track $index) {
+          <tr>
+            <td>{{ a.receipt_id }}</td>
+            <td>{{ a.sku || a.item_id }}</td>
+            <td>{{ a.lot_id || '-' }}</td>
+            <td class="iv-num">{{ a.basis_value | number: '1.0-4' }}</td>
+            <td class="iv-num">{{ a.allocated_amount | number: '1.2-2' }}</td>
+            <td class="iv-num">{{ a.to_inventory_amount ? (a.to_inventory_amount | number: '1.2-2') : '-' }}</td>
+            <td class="iv-num">{{ a.to_cogs_amount ? (a.to_cogs_amount | number: '1.2-2') : '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+} @else if (loading()) {
+  <nz-card class="iv-card" [nzLoading]="true" />
+}
+
+<nz-modal
+  [nzVisible]="reverseModalOpen()"
+  [nzTitle]="'INVENTORY.LANDED_COSTS.REVERSE' | translate"
+  [nzOkText]="'INVENTORY.LANDED_COSTS.REVERSE' | translate"
+  nzOkDanger
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="reversing()"
+  (nzOnCancel)="closeReverseModal()"
+  (nzOnOk)="reverse()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'INVENTORY.LANDED_COSTS.CONFIRM_REVERSE' | translate }}</p>
+    <form nz-form nzLayout="vertical" [formGroup]="reverseForm" (ngSubmit)="reverse()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-reason">{{ 'INVENTORY.LANDED_COSTS.REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'INVENTORY.VALIDATION.REASON_REQUIRED' | translate">
+          <textarea nz-input id="lc-reason" rows="3" formControlName="reason"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+    @if (reverseErrors().length) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="revErrTpl" />
+      <ng-template #revErrTpl>
+        <ul class="iv-error-list">
+          @for (e of reverseErrors(); track $index) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      </ng-template>
+    }
+  </ng-container>
+</nz-modal>

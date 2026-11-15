@@ -140,6 +140,10 @@ export class SidebarComponent {
             { key: 'NAV.STOCK', route: '/inventory/stock', icon: 'fa-solid fa-warehouse' },
             { key: 'NAV.DDT', route: '/inventory/ddt', icon: 'fa-solid fa-truck-ramp-box' },
             { key: 'NAV.CUSTOMS', route: '/inventory/customs', icon: 'fa-solid fa-passport' },
+            { key: 'NAV.VALUATION', route: '/inventory/valuation', icon: 'fa-solid fa-scale-balanced' },
+            { key: 'NAV.COST_LAYERS', route: '/inventory/cost-layers', icon: 'fa-solid fa-layer-group' },
+            { key: 'NAV.LANDED_COSTS', route: '/inventory/landed-costs', icon: 'fa-solid fa-truck-fast' },
+            { key: 'NAV.INVENTORY_BOOK', route: '/inventory/book', icon: 'fa-solid fa-book' },
           ],
         },
         {
