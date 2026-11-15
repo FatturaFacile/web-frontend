@@ -69,7 +69,7 @@
           <nz-select
             [ngModel]="ordersStatusFilter()"
             (ngModelChange)="filterOrdersByStatus($event)"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             nzAllowClear
             class="status-filter"
           >
@@ -430,7 +430,7 @@
               <input nz-input formControlName="component_item_id" [nzStatus]="row.get('component_item_id')?.touched && row.get('component_item_id')?.invalid ? 'error' : ''" [placeholder]="'MFG.LBL_UUID_COMPONENTE_MATERIA_PRIMA' | translate" />
             </div>
             <div>
-              <nz-input-number class="w-full" formControlName="quantity_per" [nzStatus]="row.get('quantity_per')?.touched && row.get('quantity_per')?.invalid ? 'error' : ''" [nzMin]="0.001" [nzStep]="1" nzPlaceHolder="Q.tà per unita"></nz-input-number>
+              <nz-input-number class="w-full" formControlName="quantity_per" [nzStatus]="row.get('quantity_per')?.touched && row.get('quantity_per')?.invalid ? 'error' : ''" [nzMin]="0.001" [nzStep]="1" [nzPlaceHolder]="'common.quantityPerUnit' | translate"></nz-input-number>
             </div>
             <div class="line-notes">
               <input nz-input formControlName="notes" [placeholder]="'MFG.LBL_NOTE_POSIZIONE' | translate" />
@@ -572,8 +572,8 @@
 <ng-template #operationsTpl let-v="value">{{ v }} fasi</ng-template>
 <ng-template #yesNoTpl let-v="value">
   @if (v) {
-    <nz-tag nzColor="green">Sì</nz-tag>
+    <nz-tag nzColor="green">{{ 'common.yes' | translate }}</nz-tag>
   } @else {
-    <span class="text-muted">No</span>
+    <span class="text-muted">{{ 'common.no' | translate }}</span>
   }
 </ng-template>

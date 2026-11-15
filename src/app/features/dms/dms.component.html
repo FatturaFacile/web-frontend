@@ -21,7 +21,7 @@
           <nz-select
             [ngModel]="selectedFolderId()"
             (ngModelChange)="selectedFolderId.set($event); loadDocuments()"
-            nzPlaceHolder="Tutte le cartelle"
+            [nzPlaceHolder]="'common.allFolders' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTE_LE_CARTELLE' | translate"></nz-option>
@@ -33,7 +33,7 @@
           <nz-select
             [ngModel]="selectedDocType()"
             (ngModelChange)="selectedDocType.set($event); loadDocuments()"
-            nzPlaceHolder="Tutti i tipi"
+            [nzPlaceHolder]="'common.allTypes' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTI_I_TIPI' | translate"></nz-option>

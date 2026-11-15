@@ -70,7 +70,7 @@
           <nz-select
             [ngModel]="employeesStatusFilter()"
             (ngModelChange)="setEmployeesStatus($event)"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             nzAllowClear
             class="w-field-sm"
           >

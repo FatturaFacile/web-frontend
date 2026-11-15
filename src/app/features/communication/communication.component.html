@@ -55,7 +55,7 @@
           <nz-select
             [ngModel]="filterChannel()"
             (ngModelChange)="filterChannel.set($event); loadDeliveries()"
-            nzPlaceHolder="Canale"
+            [nzPlaceHolder]="'common.channel' | translate"
            class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
@@ -68,7 +68,7 @@
           <nz-select
             [ngModel]="filterStatus()"
             (ngModelChange)="filterStatus.set($event); loadDeliveries()"
-            nzPlaceHolder="Stato"
+            [nzPlaceHolder]="'common.status' | translate"
            class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_STATUSES' | translate"></nz-option>
@@ -182,7 +182,7 @@
           <nz-select
             [ngModel]="filterTemplateChannel()"
             (ngModelChange)="filterTemplateChannel.set($event); loadTemplates()"
-            nzPlaceHolder="Canale"
+            [nzPlaceHolder]="'common.channel' | translate"
            class="w-field-sm"
           >
             <nz-option nzValue="" [nzLabel]="'COMMUNICATION.ALL_CHANNELS' | translate"></nz-option>
