@@ -1,0 +1,32 @@
+.intro {
+  color: var(--text-secondary, #595959);
+}
+.regime {
+  max-width: 480px;
+}
+.note {
+  margin-bottom: 16px;
+}
+fieldset {
+  margin-bottom: 16px;
+}
+legend {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 16px;
+  align-items: end;
+  margin-top: 8px;
+}
+.inline {
+  margin-bottom: 24px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
