@@ -1,0 +1,95 @@
+<app-page-header
+  [title]="'ACCOUNTING.TAX.ENASARCO.TITLE' | translate"
+  [subtitle]="'ACCOUNTING.TAX.ENASARCO.SUBTITLE' | translate"
+/>
+<app-tax-nav />
+
+<nz-card>
+  <div class="filters">
+    <nz-form-item class="contact">
+      <nz-form-label nzFor="enasarco_contact">{{
+        'ACCOUNTING.TAX.ENASARCO.PRINCIPAL' | translate
+      }}</nz-form-label>
+      <nz-select
+        nzId="enasarco_contact"
+        nzShowSearch
+        nzServerSearch
+        nzAllowClear
+        [nzPlaceHolder]="'SALES.INVOICES.FORM.CONTACT_PLACEHOLDER' | translate"
+        [nzOptions]="contactOptions()"
+        [ngModel]="contactId()"
+        (ngModelChange)="setContact($event)"
+        (nzOnSearch)="contactSearch.set($event)"
+      />
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzFor="enasarco_year">{{ 'ACCOUNTING.TAX.YEAR' | translate }}</nz-form-label>
+      <nz-select nzId="enasarco_year" [ngModel]="year()" (ngModelChange)="setYear($event)">
+        @for (y of years; track y) {
+          <nz-option [nzValue]="y" [nzLabel]="'' + y" />
+        }
+      </nz-select>
+    </nz-form-item>
+  </div>
+
+  @if (rateMissing()) {
+    <nz-alert
+      class="note"
+      nzType="warning"
+      nzShowIcon
+      data-testid="rate-missing"
+      [nzMessage]="rateMissingTpl"
+    />
+    <ng-template #rateMissingTpl>
+      {{ 'SALES.INVOICES.FISCAL.ERRORS.ENASARCO_RATE_NOT_CONFIGURED' | translate }}
+      <a routerLink="/settings">{{ 'ACCOUNTING.TAX.ENASARCO.OPEN_SETTINGS' | translate }}</a>
+    </ng-template>
+  }
+  @if (failed()) {
+    <nz-alert
+      class="note"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'ACCOUNTING.TAX.LOAD_FAILED' | translate"
+    />
+  }
+
+  <nz-spin [nzSpinning]="loading()">
+    @if (status(); as s) {
+      <dl class="summary" data-testid="status">
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.RATE' | translate }}</dt>
+          <dd>{{ s.rate | number: '1.0-2' }}%</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.YTD_COMMISSIONS' | translate }}</dt>
+          <dd data-testid="ytd">{{ s.ytd_commissions | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.ANNUAL_MAXIMUM' | translate }}</dt>
+          <dd data-testid="max">{{ s.annual_maximum | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.REMAINING_CAP' | translate }}</dt>
+          <dd data-testid="remaining">
+            {{ s.remaining_cap | currency: 'EUR' : 'symbol' : '1.2-2' }}
+          </dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.YTD_CONTRIBUTIONS' | translate }}</dt>
+          <dd>{{ s.ytd_contributions | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.ANNUAL_MINIMUM' | translate }}</dt>
+          <dd data-testid="min">{{ s.annual_minimum | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.ENASARCO.SHORTFALL' | translate }}</dt>
+          <dd data-testid="shortfall">{{ s.shortfall | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+      </dl>
+    } @else if (!contactId()) {
+      <nz-empty [nzNotFoundContent]="'ACCOUNTING.TAX.ENASARCO.PICK_PRINCIPAL' | translate" />
+    }
+  </nz-spin>
+</nz-card>
