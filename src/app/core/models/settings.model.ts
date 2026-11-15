@@ -1,3 +1,5 @@
+import { FiscalPreferences } from './tax.model';
+
 export interface TenantSettings {
   id: string;
   name: string;
@@ -63,4 +65,6 @@ export interface TenantPreferences {
   date_format: string;
   invoice_prefix: string;
   default_vat_rate: number;
+  /** Italian fiscal defaults (issue #286); the API returns `[]` while the group is empty. */
+  fiscal?: FiscalPreferences | unknown[];
 }
