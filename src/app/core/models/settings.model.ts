@@ -24,13 +24,23 @@ export interface BranchResource {
   is_primary: boolean;
 }
 
+/** How far a member may use a module: `default` follows the role, `blocked` closes it, `read` and `write` override the role. */
+export type ModuleAccessLevel = 'default' | 'blocked' | 'read' | 'write';
+
+/** Module access of a member, only for the modules that are not at the default level. */
+export type MemberModuleLevels = Record<string, ModuleAccessLevel>;
+
 export interface UserResource {
   id: string;
   name: string;
   email: string;
   role: string;
-  roles: string[];
+  roles?: string[];
   is_active: boolean;
+  suspended?: boolean;
+  /** Raw permissions of the membership (`deny:crm`, `crm.read`, `gl.*`). */
+  permissions?: string[];
+  modules?: MemberModuleLevels;
   last_login_at?: string | null;
   created_at?: string;
 }
@@ -85,4 +95,17 @@ export interface UpdateTwoFactorPolicyPayload {
 export interface ResetUserTwoFactorResponse {
   user_id: string;
   two_factor_enabled: boolean;
+}
+
+export interface AccessOptions {
+  roles: string[];
+  modules: string[];
+  levels: ModuleAccessLevel[];
+}
+
+/** Payload of `POST /settings/users` (`email`) and `PUT /settings/users/{id}`. */
+export interface SaveTenantMemberPayload {
+  email?: string;
+  role?: string;
+  modules?: MemberModuleLevels;
 }

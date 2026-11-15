@@ -158,6 +158,14 @@ export function canAccessModule(
     return false;
   }
   const memberRoles = roles.map(normalize);
+  const granted = new Set(permissions.map(normalize));
+  // A deny permission closes the module (or its write access) to the member whatever the role says; the owner is never locked out.
+  if (
+    !memberRoles.includes('owner') &&
+    (granted.has(`deny:${module}`) || granted.has(`deny:${module}.${mode}`))
+  ) {
+    return false;
+  }
   if (mode === 'write' && memberRoles.some((role) => READ_ONLY_ROLES.includes(role))) {
     return false;
   }
@@ -167,7 +175,6 @@ export function canAccessModule(
     return true;
   }
 
-  const granted = new Set(permissions.map(normalize));
   if (granted.has('*') || granted.has(`${module}.${mode}`)) {
     return true;
   }

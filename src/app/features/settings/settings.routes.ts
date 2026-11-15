@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { moduleGuard } from '@core';
+import { moduleGuard, platformAdminGuard } from '@core';
 import { ResourcePageComponent } from '@shared';
 import { SDI_CHANNEL_PAGE } from './pages/sdi-channel/sdi-channel.page';
 
@@ -52,6 +52,19 @@ export const SETTINGS_ROUTES: Routes = [
       import('./pages/document-templates/document-templates.component').then(
         (m) => m.DocumentTemplatesComponent
       ),
+  },
+  {
+    path: 'users',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'memberAccess.title', title: 'memberAccess.title' },
+    loadComponent: () => import('./pages/users/users.component').then((m) => m.TenantUsersComponent),
+  },
+  {
+    path: 'admin/user-tenants',
+    canActivate: [platformAdminGuard],
+    data: { breadcrumb: 'userTenants.title', title: 'userTenants.title' },
+    loadComponent: () =>
+      import('./pages/users/user-tenants.component').then((m) => m.UserTenantsComponent),
   },
   {
     path: 'admin/access-requests',

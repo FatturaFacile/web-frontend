@@ -59,4 +59,32 @@ describe('AdminApiService', () => {
     service.setDocumentQuota('t1', null).subscribe();
     expect(httpMock.expectOne(`${base}/tenants/t1/document-quota`).request.body).toEqual({ document_quota_points: null });
   });
+
+  it('lists users and tenants of the platform with a search', () => {
+    service.listUsers({ search: 'ros' }).subscribe();
+    const users = httpMock.expectOne((r) => r.url === `${base}/users`);
+    expect(users.request.params.get('search')).toBe('ros');
+    users.flush({ success: true, message: '', data: [], meta: {} });
+
+    service.listTenants({ search: 'alf' }).subscribe();
+    const tenants = httpMock.expectOne((r) => r.url === `${base}/tenants`);
+    expect(tenants.request.params.get('search')).toBe('alf');
+    tenants.flush({ success: true, message: '', data: [], meta: {} });
+  });
+
+  it('reads, saves and removes the tenant access of a user', () => {
+    service.getUserTenants('u1').subscribe();
+    httpMock.expectOne(`${base}/users/u1/tenants`).flush(ok);
+
+    service.saveUserTenant('u1', 't1', { role: 'admin', modules: { crm: 'blocked' } }).subscribe();
+    const save = httpMock.expectOne(`${base}/users/u1/tenants/t1`);
+    expect(save.request.method).toBe('PUT');
+    expect(save.request.body).toEqual({ role: 'admin', modules: { crm: 'blocked' } });
+    save.flush(ok);
+
+    service.removeUserTenant('u1', 't1').subscribe();
+    const remove = httpMock.expectOne(`${base}/users/u1/tenants/t1`);
+    expect(remove.request.method).toBe('DELETE');
+    remove.flush(ok);
+  });
 });

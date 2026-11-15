@@ -12,6 +12,8 @@ export interface Tenant {
   readonly qrIban?: string;
   readonly address: string;
   readonly role?: string | null;
+  /** Permissions of the membership in this tenant (`deny:crm`, `crm.read`, `gl.*`). */
+  readonly permissions?: readonly string[];
 }
 
 export interface UserProfile {
@@ -22,6 +24,7 @@ export interface UserProfile {
   readonly role?: string | null;
   readonly roles?: string[];
   readonly permissions?: string[];
+  readonly is_platform_admin?: boolean;
   readonly two_factor_enabled?: boolean;
   readonly locale?: string;
   readonly active_tenant?: {
@@ -35,6 +38,7 @@ export interface UserProfile {
     readonly name: string;
     readonly country?: string;
     readonly role: string | null;
+    readonly permissions?: readonly string[];
   }[];
 }
 
@@ -249,7 +253,10 @@ export const AuthStore = signalStore(
       const tenantRole = tenants().find((t) => t.id === activeTenantId())?.role;
       return tenantRole ? [tenantRole] : ['member'];
     }),
-    userPermissions: computed(() => user()?.permissions ?? []),
+    userPermissions: computed(() => {
+      const tenantPermissions = tenants().find((t) => t.id === activeTenantId())?.permissions;
+      return tenantPermissions ?? user()?.permissions ?? [];
+    }),
     isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
     isDarkMode: computed(() => theme() === 'dark'),
@@ -274,6 +281,7 @@ export const AuthStore = signalStore(
             qrIban: existing?.qrIban,
             address: existing?.address ?? '',
             role: t.role,
+            permissions: t.permissions,
           };
         });
       }
@@ -330,6 +338,7 @@ export const AuthStore = signalStore(
             qrIban: existing?.qrIban,
             address: existing?.address ?? '',
             role: t.role,
+            permissions: t.permissions,
           };
         });
       }

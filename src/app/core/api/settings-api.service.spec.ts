@@ -82,6 +82,28 @@ describe('SettingsApiService', () => {
     });
   });
 
+  it('should manage the members of the tenant', () => {
+    service.getAccessOptions().subscribe();
+    httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/settings/access-options`).flush({ success: true, message: '', data: {} });
+
+    service.addTenantUser({ email: 'a@b.it', role: 'member', modules: { crm: 'read' } }).subscribe();
+    const add = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/settings/users`);
+    expect(add.request.method).toBe('POST');
+    expect(add.request.body).toEqual({ email: 'a@b.it', role: 'member', modules: { crm: 'read' } });
+    add.flush({ success: true, message: '', data: {} });
+
+    service.updateTenantUser('u1', { role: 'admin' }).subscribe();
+    const update = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/settings/users/u1`);
+    expect(update.request.method).toBe('PUT');
+    expect(update.request.body).toEqual({ role: 'admin' });
+    update.flush({ success: true, message: '', data: {} });
+
+    service.removeTenantUser('u1').subscribe();
+    const remove = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/settings/users/u1`);
+    expect(remove.request.method).toBe('DELETE');
+    remove.flush({ success: true, message: '', data: null });
+  });
+
   it('should get tenant settings via getTenantSettings()', () => {
     service.getTenantSettings().subscribe();
 

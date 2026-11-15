@@ -149,6 +149,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/settings/lookups',
   '/settings/sdi-channel',
   '/settings/tenant',
+  '/settings/admin/user-tenants',
+  '/settings/users',
   '/subscriptions/billing',
   '/system',
   '/tessera-sanitaria',
