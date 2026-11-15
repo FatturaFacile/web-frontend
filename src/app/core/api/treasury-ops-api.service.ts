@@ -403,7 +403,7 @@ export class TreasuryOpsApiService {
     return this.http.post<ReceivableCollection>(`${this.base}/collections/${id}/record`, payload);
   }
 
-  // --- pagoPA notices ---
+  // --- pagoPA notices of receivables ---
 
   getPagoPaNotices(params?: QueryFilterParams & { status?: PagoPaNoticeStatus }): Observable<PaginatedResponse<PagoPaNotice>> {
     return this.http.get<PaginatedResponse<PagoPaNotice>>(`${this.base}/pagopa-notices`, { params: params ? toHttpParams(params) : undefined });

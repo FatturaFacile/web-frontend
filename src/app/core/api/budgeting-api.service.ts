@@ -8,7 +8,7 @@ import {
   BudgetDriverRequest,
   BudgetingDashboard,
   BudgetingResponse,
-  BudgetLine,
+  BudgetPlanLine,
   BudgetLineRequest,
   BudgetReforecastRequest,
   BudgetSpreadRequest,
@@ -76,24 +76,24 @@ export class BudgetingApiService {
   }
 
   // Lines
-  getLines(versionId: string, filters?: { account_id?: string; cost_center_id?: string; project_id?: string; period?: number; per_page?: number }): Observable<BudgetingResponse<BudgetLine[]>> {
-    return this.http.get<BudgetingResponse<BudgetLine[]>>(`${this.base}/versions/${versionId}/lines`, { params: this.params(filters) });
+  getLines(versionId: string, filters?: { account_id?: string; cost_center_id?: string; project_id?: string; period?: number; per_page?: number }): Observable<BudgetingResponse<BudgetPlanLine[]>> {
+    return this.http.get<BudgetingResponse<BudgetPlanLine[]>>(`${this.base}/versions/${versionId}/lines`, { params: this.params(filters) });
   }
 
-  saveLine(versionId: string, payload: BudgetLineRequest): Observable<BudgetingResponse<BudgetLine>> {
-    return this.http.post<BudgetingResponse<BudgetLine>>(`${this.base}/versions/${versionId}/lines`, payload);
+  saveLine(versionId: string, payload: BudgetLineRequest): Observable<BudgetingResponse<BudgetPlanLine>> {
+    return this.http.post<BudgetingResponse<BudgetPlanLine>>(`${this.base}/versions/${versionId}/lines`, payload);
   }
 
-  updateLine(id: string, payload: Partial<BudgetLineRequest>): Observable<BudgetingResponse<BudgetLine>> {
-    return this.http.put<BudgetingResponse<BudgetLine>>(`${this.base}/lines/${id}`, payload);
+  updateLine(id: string, payload: Partial<BudgetLineRequest>): Observable<BudgetingResponse<BudgetPlanLine>> {
+    return this.http.put<BudgetingResponse<BudgetPlanLine>>(`${this.base}/lines/${id}`, payload);
   }
 
   deleteLine(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/lines/${id}`);
   }
 
-  spread(versionId: string, payload: BudgetSpreadRequest): Observable<BudgetingResponse<BudgetLine[]>> {
-    return this.http.post<BudgetingResponse<BudgetLine[]>>(`${this.base}/versions/${versionId}/spread`, payload);
+  spread(versionId: string, payload: BudgetSpreadRequest): Observable<BudgetingResponse<BudgetPlanLine[]>> {
+    return this.http.post<BudgetingResponse<BudgetPlanLine[]>>(`${this.base}/versions/${versionId}/spread`, payload);
   }
 
   // Drivers
@@ -113,8 +113,8 @@ export class BudgetingApiService {
     return this.http.delete<void>(`${this.base}/drivers/${id}`);
   }
 
-  generateDriver(id: string): Observable<BudgetingResponse<BudgetLine[]>> {
-    return this.http.post<BudgetingResponse<BudgetLine[]>>(`${this.base}/drivers/${id}/generate`, {});
+  generateDriver(id: string): Observable<BudgetingResponse<BudgetPlanLine[]>> {
+    return this.http.post<BudgetingResponse<BudgetPlanLine[]>>(`${this.base}/drivers/${id}/generate`, {});
   }
 
   generateDrivers(versionId: string): Observable<BudgetingResponse<{ drivers: number; lines: number }>> {

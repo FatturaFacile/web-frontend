@@ -4,7 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TEST_API_BASE_URL } from '../../../../../testing/api';
-import { PagoPaNotice, TreasuryOpsApiService } from '@core';
+import { PagoPaNotice } from '@core';
+import { TreasuryOpsApiService } from '../../../../core/api/treasury-ops-api.service';
 import { environment } from '@env';
 import { TrPagoPaNoticesComponent } from './tr-pagopa-notices.component';
 
@@ -58,7 +59,8 @@ describe('TrPagoPaNoticesComponent', () => {
   });
 
   it('calls the pagoPA notice endpoints of the treasury module', () => {
-    const api = TestBed.inject(TreasuryOpsApiService);
+    const api = TestBed.runInInjectionContext(() => new TreasuryOpsApiService());
+    console.log('DBG', TreasuryOpsApiService.toString().slice(-420));
 
     api.createPagoPaNotice({ debtor_name: 'Mario Rossi', amount: '122.00', due_date: '2026-12-31', causale: 'Fee', creditor_fiscal_code: '12345678901' }).subscribe();
     const create = http.expectOne(`${TEST_API_BASE_URL}/treasury/pagopa-notices`);

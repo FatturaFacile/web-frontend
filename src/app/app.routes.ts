@@ -292,6 +292,20 @@ export const routes: Routes = [
       import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
   },
   {
+    path: 'planning',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.PLANNING', title: 'PAGE_TITLE.PLANNING' },
+    loadChildren: () =>
+      import('./features/planning/planning.routes').then((m) => m.PLANNING_ROUTES),
+  },
+  {
+    path: 'budgeting',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.BUDGETING', title: 'PAGE_TITLE.BUDGETING' },
+    loadChildren: () =>
+      import('./features/budgeting/budgeting.routes').then((m) => m.BUDGETING_ROUTES),
+  },
+  {
     path: 'talent-learning',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.TALENT_LEARNING', title: 'PAGE_TITLE.TALENT_LEARNING' },

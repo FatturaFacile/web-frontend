@@ -51,6 +51,8 @@ export * from './lease-accounting.model';
 export * from './travel.model';
 export * from './sustainability.model';
 export * from './fleet.model';
+export * from './business-intelligence.model';
+export * from './marketplace.model';
 export * from './planning.model';
 export * from './budgeting.model';
 export * from './credit-management.model';
