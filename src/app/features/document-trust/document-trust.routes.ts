@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { PRESERVATION_PAGE } from './preservation.page';
 
 export const DOCUMENT_TRUST_ROUTES: Routes = [
@@ -11,6 +10,6 @@ export const DOCUMENT_TRUST_ROUTES: Routes = [
   {
     path: 'preservation',
     data: { breadcrumb: 'RES.PAGE.DOCUMENT_PRESERVATION', title: 'RES.PAGE.DOCUMENT_PRESERVATION', page: PRESERVATION_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

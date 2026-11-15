@@ -85,6 +85,20 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly emptyText = input<string | undefined>(undefined);
   readonly exportable = input<boolean>(true);
   readonly exportFileName = input<string>('export');
+  /** Renders only visible rows (CDK virtual scroll); pagination is hidden and row expansion unsupported. */
+  readonly virtualScroll = input<boolean>(false);
+  readonly virtualItemSize = input<number>(44);
+  readonly virtualMaxBufferPx = input<number>(800);
+
+  /**
+   * Virtual scrolling needs a bounded viewport height (`y`) and an explicit width (`x`): together they
+   * make nz-table split header and body into fixed-layout tables sharing one `<colgroup>`, so columns
+   * cannot drift while rows are recycled.
+   */
+  readonly tableScroll = computed(() => {
+    const scroll = this.scroll();
+    return this.virtualScroll() ? { x: scroll.x ?? '100%', y: scroll.y ?? '480px' } : scroll;
+  });
 
   // Templates
   readonly actionsTemplate = input<TemplateRef<{ $implicit: TItem }>>();
@@ -279,6 +293,13 @@ export class BaseTableComponent<TItem extends object = object> {
     return buildGridRows(items, valueOf, summary, this.collapsedGroups(), column.valueLabel);
   });
 
+  /** Rows fed to the virtual viewport: collapsed rows are dropped so the fixed item size stays exact. */
+  readonly virtualRows = computed(() => this.viewRows().filter((row) => !row.hidden));
+
+  rowTrack(row: GridRow<TItem>, index: number): string | number {
+    return row.kind === 'group' ? `group:${row.key}:${index}` : this.getItemKey(row.item);
+  }
+
   readonly groupColumns = computed(() => this.visibleColumns().filter((c) => c.groupable !== false));
 
   readonly totalColumnCount = computed(
@@ -429,6 +450,16 @@ export class BaseTableComponent<TItem extends object = object> {
 
   onRowClick(item: TItem): void {
     this.rowClick.emit(item);
+  }
+
+  /** Keyboard equivalent of a row click (and expand toggle); ignores keys from nested controls. */
+  onRowKeyActivate(event: Event, item: TItem): void {
+    if (event.target !== event.currentTarget) return;
+    event.preventDefault();
+    if (this.expandable()) {
+      this.toggleRowExpanded(item, !this.isRowExpanded(item));
+    }
+    this.onRowClick(item);
   }
 
   isRowExpanded(item: TItem): boolean {

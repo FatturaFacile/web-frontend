@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { moduleGuard } from '@core';
-import { ResourcePageComponent } from '@shared';
 import { HELPDESK_AGENT_TOOLS_PAGE } from './agent-tools.page';
 import { HELPDESK_AUTOMATION_PAGE } from './automation.page';
 import { HELPDESK_REPORTS_PAGE } from './helpdesk-reports.page';
@@ -12,7 +11,7 @@ const helpdeskRoute = (path: string, breadcrumb: string, page: object) => ({
   path,
   canActivate: [moduleGuard('service', 'read')],
   data: { breadcrumb, title: breadcrumb, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const HELPDESK_ROUTES: Routes = [

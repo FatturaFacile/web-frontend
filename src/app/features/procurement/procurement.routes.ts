@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { PROCUREMENT_ADMIN_PAGE } from './admin.page';
 import { PROCUREMENT_ORDERS_PAGE } from './orders.page';
 import { SOURCING_PAGE } from './sourcing.page';
@@ -8,7 +7,7 @@ import { SUPPLIERS_PAGE } from './suppliers.page';
 const procurementRoute = (path: string, breadcrumb: string, page: object) => ({
   path,
   data: { breadcrumb, title: breadcrumb, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const PROCUREMENT_ROUTES: Routes = [

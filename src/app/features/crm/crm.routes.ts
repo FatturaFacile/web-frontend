@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { TERRITORY_ACCOUNTS_PAGE } from './territory-accounts.page';
 
 export const CRM_ROUTES: Routes = [
@@ -39,7 +38,7 @@ export const CRM_ROUTES: Routes = [
   {
     path: 'territory-accounts',
     data: { breadcrumb: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS', title: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS', page: TERRITORY_ACCOUNTS_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'partners',

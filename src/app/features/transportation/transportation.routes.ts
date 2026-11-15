@@ -1,11 +1,10 @@
 import { Route, Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { TMS_AUDIT_PAGE, TMS_CARRIERS_PAGE, TMS_ORDERS_PAGE, TMS_QUOTES_PAGE, TMS_TRIPS_PAGE } from './transportation.pages';
 
 const pageRoute = (path: string, breadcrumb: string, title: string, page: object) => ({
   path,
   data: { breadcrumb, title, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 const detailRoute = (path: string, breadcrumb: string, title: string, loadComponent: Route['loadComponent']): Route => ({
