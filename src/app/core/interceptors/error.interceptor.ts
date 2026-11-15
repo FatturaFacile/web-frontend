@@ -21,6 +21,7 @@ interface ProblemDetails {
  * HTTP 401: ends the session and returns to login (except unauthenticated check endpoints).
  * HTTP 403 (two-factor-setup-required): triggers the mandatory 2FA setup wizard in AuthStore.
  * HTTP 409 (conflict): surfaces conflict details via nz-message.
+ * HTTP 412 (precondition failed, ETag / If-Match): surfaces the edit conflict so the user reloads the record.
  * HTTP 429 (rate limiting): surfaces too-many-requests warning with retry advice.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
@@ -86,6 +87,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           message.warning(
             detailOrMessage || i18n.translate('ERRORS.CONFLICT')
           );
+        } else if (err.status === 412) {
+          // Optimistic locking: the record changed since the user read it.
+          message.warning(detailOrMessage || i18n.translate('ERRORS.EDIT_CONFLICT'));
         } else if (err.status === 429) {
           message.warning(detailOrMessage || i18n.translate('ERRORS.TOO_MANY_REQUESTS_DESC'));
         } else if (err.status === 0) {

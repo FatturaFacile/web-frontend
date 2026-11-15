@@ -306,6 +306,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'exports',
       },
       {
+        key: 'NAV.SDI_TRANSMISSIONS',
+        icon: 'fa-solid fa-paper-plane',
+        route: '/sdi-transmissions',
+        module: 'invoicing',
+      },
+      {
         key: 'NAV.ACCOUNTING',
         icon: 'fa-solid fa-landmark',
         route: '/accounting',
@@ -713,6 +719,34 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.MARKETPLACE_CATALOG', route: '/marketplace', icon: 'fa-solid fa-store', module: 'marketplace' },
           { key: 'NAV.MARKETPLACE_INSTALLATIONS', route: '/marketplace/installations', icon: 'fa-solid fa-plug-circle-check', module: 'marketplace' },
           { key: 'NAV.MARKETPLACE_RUNS', route: '/marketplace/runs', icon: 'fa-solid fa-clock-rotate-left', module: 'marketplace' },
+        ],
+      },
+      {
+        key: 'NAV.EVENTS_MANAGEMENT',
+        icon: 'fa-solid fa-calendar-days',
+        module: 'events',
+        children: [
+          { key: 'NAV.EVENTS_LIST', route: '/events', icon: 'fa-solid fa-ticket', module: 'events' },
+          { key: 'NAV.EVENTS_CHECKIN', route: '/events/check-in', icon: 'fa-solid fa-qrcode', module: 'events' },
+        ],
+      },
+      {
+        key: 'NAV.PLM_MANAGEMENT',
+        icon: 'fa-solid fa-code-branch',
+        module: 'plm',
+        children: [
+          { key: 'NAV.PLM_CHANGE_ORDERS', route: '/plm', icon: 'fa-solid fa-file-pen', module: 'plm' },
+          { key: 'NAV.PLM_REVISIONS', route: '/plm/revisions', icon: 'fa-solid fa-layer-group', module: 'plm' },
+        ],
+      },
+      {
+        key: 'NAV.REBATES_MANAGEMENT',
+        icon: 'fa-solid fa-percent',
+        module: 'rebates',
+        children: [
+          { key: 'NAV.REBATES_DASHBOARD', route: '/rebates', icon: 'fa-solid fa-chart-pie', module: 'rebates' },
+          { key: 'NAV.REBATES_AGREEMENTS', route: '/rebates/agreements', icon: 'fa-solid fa-file-contract', module: 'rebates' },
+          { key: 'NAV.REBATES_PROMOTIONS', route: '/rebates/promotions', icon: 'fa-solid fa-tags', module: 'rebates' },
         ],
       },
       {

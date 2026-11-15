@@ -184,3 +184,27 @@
     }
   }
 }
+
+.answer-feedback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--text-secondary);
+}
+
+.thread-messages {
+  list-style: none;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) 0;
+  }
+}
+
+.active-thread {
+  font-weight: 600;
+}

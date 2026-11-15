@@ -18,6 +18,9 @@ export interface EDocumentTransmission {
   driver: string;
   created_at?: string;
   error_message?: string | null;
+  attempts?: number;
+  last_attempt_at?: string | null;
+  can_retry?: boolean;
 }
 
 export interface SendEDocumentRequest {

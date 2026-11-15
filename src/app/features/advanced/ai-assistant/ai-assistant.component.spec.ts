@@ -64,6 +64,10 @@ describe('AiAssistantComponent', () => {
     mockAssistantApi = {
       ask: vi.fn().mockReturnValue(of({ success: true, data: mockAnswer })),
       getCatalogue: vi.fn().mockReturnValue(of({ success: true, data: mockCatalogue })),
+      getThreads: vi.fn().mockReturnValue(of({ success: true, data: [{ id: 'th-1', title: 'Top customers', last_message_at: null, created_at: '2026-11-09T10:00:00Z' }] })),
+      getThread: vi.fn().mockReturnValue(of({ success: true, data: { id: 'th-1', title: 'Top customers', last_message_at: null, created_at: '2026-11-09T10:00:00Z', messages: mockLogs } })),
+      deleteThread: vi.fn().mockReturnValue(of({ success: true, data: null })),
+      sendFeedback: vi.fn().mockReturnValue(of({ success: true, data: mockLogs[0] })),
       getLogs: vi.fn().mockReturnValue(of({ success: true, data: mockLogs, meta: { total: mockLogs.length, current_page: 1, last_page: 1, per_page: 10 } })),
     };
 
@@ -116,7 +120,7 @@ describe('AiAssistantComponent', () => {
     component.askForm.patchValue({ question: 'Who are the top customers?' });
     component.onAskSubmit();
 
-    expect(mockAssistantApi.ask).toHaveBeenCalledWith({ question: 'Who are the top customers?' });
+    expect(mockAssistantApi.ask).toHaveBeenCalledWith({ question: 'Who are the top customers?', thread_id: null });
     expect(component.currentAnswer()).toEqual(mockAnswer);
     expect(component.lastQuestion()).toBe('Who are the top customers?');
     expect(component.answerColumns()).toEqual(['name', 'total']);
@@ -178,5 +182,40 @@ describe('AiAssistantComponent', () => {
     component.exportAnswerCsv();
 
     expect(createElementSpy).toHaveBeenCalledWith('a');
+  });
+
+  it('should continue a thread and send its id with the next question', () => {
+    expect(component.threads().length).toBe(1);
+    component.continueThread(component.threads()[0]);
+    expect(component.threadId()).toBe('th-1');
+
+    component.askForm.patchValue({ question: 'And last year?' });
+    component.onAskSubmit();
+    expect(mockAssistantApi.ask).toHaveBeenLastCalledWith({ question: 'And last year?', thread_id: 'th-1' });
+  });
+
+  it('should adopt the thread of a new answer and reset it for a new conversation', () => {
+    mockAssistantApi.ask?.mockReturnValue(of({ success: true, data: { ...mockAnswer, thread_id: 'th-9', log_id: 'log-9' } }));
+    component.askForm.patchValue({ question: 'Top customers' });
+    component.onAskSubmit();
+    expect(component.threadId()).toBe('th-9');
+
+    component.rateAnswer('helpful');
+    expect(mockAssistantApi.sendFeedback).toHaveBeenCalledWith('log-9', 'helpful');
+    expect(component.rated()).toBe('helpful');
+
+    component.startNewThread();
+    expect(component.threadId()).toBeNull();
+    expect(component.currentAnswer()).toBeNull();
+  });
+
+  it('should open the messages of a thread and delete it', () => {
+    component.openThread(component.threads()[0]);
+    expect(component.openedThread()?.messages?.length).toBe(2);
+
+    component.continueThread(component.threads()[0]);
+    component.deleteThread(component.threads()[0]);
+    expect(mockAssistantApi.deleteThread).toHaveBeenCalledWith('th-1');
+    expect(component.threadId()).toBeNull();
   });
 });

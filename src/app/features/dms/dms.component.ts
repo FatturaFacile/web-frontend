@@ -274,6 +274,13 @@ export class DmsComponent implements OnInit {
     color: ['#1890ff'],
   });
 
+  /** The message of the API error, or the fallback text when the response carries none. */
+  private failureText(err: unknown, fallback: string): string {
+    const body = (err as { error?: { message?: unknown } } | null)?.error;
+
+    return typeof body?.message === 'string' && body.message !== '' ? body.message : fallback;
+  }
+
   protected errorTip(form: FormGroup, path: string): string {
     const control = form.get(path);
     if (control?.hasError('serverError')) {
@@ -572,7 +579,7 @@ export class DmsComponent implements OnInit {
       },
       error: (err) => {
         this.ocrBusy.set(false);
-        this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_OCR_ERROR')));
+        this.message.error(this.failureText(err, this.translate.instant('DMS.MSG_OCR_ERROR')));
       },
     });
   }
@@ -587,7 +594,7 @@ export class DmsComponent implements OnInit {
         this.message.success(this.translate.instant('DMS.MSG_OCR_QUEUED'));
         this.loadOcrJobs(doc.id);
       },
-      error: (err) => this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_OCR_ERROR'))),
+      error: (err) => this.message.error(this.failureText(err, this.translate.instant('DMS.MSG_OCR_ERROR'))),
     });
   }
 
@@ -621,7 +628,7 @@ export class DmsComponent implements OnInit {
       },
       error: (err) => {
         this.approvalSubmitting.set(false);
-        this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_APPROVAL_ERROR')));
+        this.message.error(this.failureText(err, this.translate.instant('DMS.MSG_APPROVAL_ERROR')));
       },
     });
   }

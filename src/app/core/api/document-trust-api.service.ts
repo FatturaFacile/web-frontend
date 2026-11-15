@@ -43,6 +43,10 @@ export class DocumentTrustApiService {
     });
   }
 
+  retryTransmission(id: string): Observable<ApiResponse<EDocumentTransmission>> {
+    return this.http.post<ApiResponse<EDocumentTransmission>>(`${this.edocBase}/transmissions/${id}/retry`, {});
+  }
+
   getTransmission(id: string): Observable<ApiResponse<EDocumentTransmission>> {
     return this.http.get<ApiResponse<EDocumentTransmission>>(`${this.edocBase}/transmissions/${id}`);
   }

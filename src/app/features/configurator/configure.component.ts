@@ -262,6 +262,7 @@ const NO_OPTIONS: string[] = [];
             }
             @if (configuration()?.quote_number; as quoteNumber) {
               <nz-alert nzType="success" nzShowIcon [nzMessage]="'CONFIGURATOR.CONVERTED_TO_QUOTE' | translate: { number: quoteNumber }" class="block"></nz-alert>
+              <a routerLink="/sales/quotes" class="block">{{ 'CONFIGURATOR.OPEN_QUOTES' | translate }}</a>
             }
 
             <div class="actions">

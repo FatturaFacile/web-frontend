@@ -276,6 +276,20 @@ export class DocumentTrustComponent implements OnInit {
     });
   }
 
+  /** Hands the stored payload of a failed transmission to the network again. */
+  retryTransmission(tx: EDocumentTransmission): void {
+    this.api.retryTransmission(tx.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('DOCUMENT_TRUST.RETRY_SUCCESS'));
+        this.transmissionGrid.reload();
+      },
+      error: () => {
+        this.message.error(this.translate.instant('DOCUMENT_TRUST.RETRY_ERROR'));
+        this.transmissionGrid.reload();
+      },
+    });
+  }
+
   closeTransmissionDrawer(): void {
     this.isTransmissionDrawerVisible.set(false);
     this.selectedTransmission.set(null);

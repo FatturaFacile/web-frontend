@@ -17,6 +17,7 @@ import {
   GeneralLedgerApiService,
   TranslateService,
 } from '@core';
+import { BudgetingCompareComponent } from './budgeting-compare.component';
 import { BudgetingDashboardComponent } from './budgeting-dashboard.component';
 import { BudgetingDriversComponent } from './budgeting-drivers.component';
 import { BudgetingLinesComponent } from './budgeting-lines.component';
@@ -520,5 +521,38 @@ describe('BudgetingVersionDetailComponent', () => {
     fixture.componentInstance.openStep('approve');
     fixture.componentInstance.runStep();
     expect(messageSpy.error).toHaveBeenCalledWith('The budget is already approved');
+  });
+});
+
+describe('BudgetingCompareComponent', () => {
+  const comparison = {
+    base_version_id: 'bv-1',
+    scenario_version_id: 'bv-2',
+    through_period: 12,
+    group_by: 'account',
+    rows: [{ key: 'ac-1', label: 'Rent', code: '6100', base: '1000.00', scenario: '1200.00', delta: '200.00', delta_percent: '20.0' }],
+    totals: { base: '1000.00', scenario: '1200.00', delta: '200.00', delta_percent: '20.0' },
+  };
+  const api = { getVersions: vi.fn(), compareScenarios: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getVersions.mockReturnValue(of({ data: [version, { ...version, id: 'bv-2', name: 'Forecast' }] }));
+    api.compareScenarios.mockReturnValue(of({ data: comparison }));
+    configure(api);
+  });
+
+  it('offers the other versions and compares with the chosen one', () => {
+    const fixture = TestBed.createComponent(BudgetingCompareComponent);
+    fixture.componentRef.setInput('versionId', 'bv-1');
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.candidates().map((candidate) => candidate.id)).toEqual(['bv-2']);
+    expect(api.compareScenarios).not.toHaveBeenCalled();
+
+    fixture.componentInstance.scenarioId.set('bv-2');
+    fixture.componentInstance.load();
+    expect(api.compareScenarios).toHaveBeenCalledWith('bv-1', 'bv-2', 12, 'account');
+    expect(fixture.componentInstance.comparison()?.totals.delta).toBe('200.00');
   });
 });

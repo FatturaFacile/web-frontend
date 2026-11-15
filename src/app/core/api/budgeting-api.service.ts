@@ -12,6 +12,7 @@ import {
   BudgetLineRequest,
   BudgetReforecastRequest,
   BudgetSpreadRequest,
+  BudgetScenarioComparison,
   BudgetVariance,
   BudgetVarianceGroup,
   BudgetVersion,
@@ -122,6 +123,11 @@ export class BudgetingApiService {
   }
 
   // Budget versus actual
+  /** Budget of the version against the budget of another version (scenario compare). */
+  compareScenarios(versionId: string, withVersionId: string, throughPeriod?: number, groupBy?: BudgetVarianceGroup): Observable<BudgetingResponse<BudgetScenarioComparison>> {
+    return this.http.get<BudgetingResponse<BudgetScenarioComparison>>(`${this.base}/versions/${versionId}/compare`, { params: this.params({ with: withVersionId, through_period: throughPeriod, group_by: groupBy }) });
+  }
+
   getVariance(versionId: string, throughPeriod?: number, groupBy?: BudgetVarianceGroup): Observable<BudgetingResponse<BudgetVariance>> {
     return this.http.get<BudgetingResponse<BudgetVariance>>(`${this.base}/versions/${versionId}/variance`, { params: this.params({ through_period: throughPeriod, group_by: groupBy }) });
   }

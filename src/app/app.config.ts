@@ -12,6 +12,8 @@ import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { credentialsInterceptor } from '@core/interceptors/credentials.interceptor';
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
+import { idempotencyInterceptor } from '@core/interceptors/idempotency.interceptor';
+import { optimisticLockInterceptor } from '@core/interceptors/optimistic-lock.interceptor';
 import { paginatedResponseInterceptor } from '@core/interceptors/paginated-response.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { I18nService, PageTitleStrategy } from '@core/i18n';
@@ -41,6 +43,8 @@ export const appConfig: ApplicationConfig = {
         credentialsInterceptor,
         csrfRefreshInterceptor,
         tenantAuthInterceptor,
+        idempotencyInterceptor,
+        optimisticLockInterceptor,
         paginatedResponseInterceptor,
         errorInterceptor,
       ]),

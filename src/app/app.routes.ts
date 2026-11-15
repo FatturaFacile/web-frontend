@@ -311,6 +311,27 @@ export const routes: Routes = [
       import('./features/marketplace/marketplace.routes').then((m) => m.MARKETPLACE_ROUTES),
   },
   {
+    path: 'events',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.EVENTS_MANAGEMENT', title: 'PAGE_TITLE.EVENTS' },
+    loadChildren: () =>
+      import('./features/events/events.routes').then((m) => m.EVENTS_ROUTES),
+  },
+  {
+    path: 'plm',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.PLM_MANAGEMENT', title: 'PAGE_TITLE.PLM' },
+    loadChildren: () =>
+      import('./features/plm/plm.routes').then((m) => m.PLM_ROUTES),
+  },
+  {
+    path: 'rebates',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.REBATES_MANAGEMENT', title: 'PAGE_TITLE.REBATES' },
+    loadChildren: () =>
+      import('./features/rebates/rebates.routes').then((m) => m.REBATES_ROUTES),
+  },
+  {
     path: 'fleet',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.FLEET_MANAGEMENT', title: 'PAGE_TITLE.FLEET' },
@@ -481,6 +502,12 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('exports', 'read')],
     data: { breadcrumb: 'NAV.EXPORTS', title: 'NAV.EXPORTS' },
     loadComponent: () => import('./features/exports/exports.component').then((m) => m.ExportsComponent),
+  },
+  {
+    path: 'sdi-transmissions',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
+    data: { breadcrumb: 'NAV.SDI_TRANSMISSIONS', title: 'NAV.SDI_TRANSMISSIONS' },
+    loadComponent: () => import('./features/sdi-transmissions/sdi-transmissions.component').then((m) => m.SdiTransmissionsComponent),
   },
   {
     path: 'accounting',

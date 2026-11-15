@@ -123,6 +123,12 @@
             <span nz-icon nzType="eye"></span>
             {{ 'DOCUMENT_TRUST.DETAILS' | translate }}
           </button>
+          @if (tx.can_retry) {
+            <button nz-button nzType="link" nzSize="small" (click)="retryTransmission(tx)">
+              <span nz-icon nzType="reload"></span>
+              {{ 'DOCUMENT_TRUST.RETRY' | translate }}
+            </button>
+          }
         </ng-template>
       </nz-tab>
 

@@ -99,4 +99,21 @@ describe('AssistantApiService', () => {
     expect(req.request.params.get('per_page')).toBe('15');
     req.flush(mockLogs);
   });
+
+  it('should manage threads and send feedback', () => {
+    service.getThreads().subscribe();
+    httpTesting.expectOne(`${baseUrl}/threads`).flush({ success: true, data: [] });
+
+    service.getThread('t1').subscribe();
+    httpTesting.expectOne(`${baseUrl}/threads/t1`).flush({ success: true, data: {} });
+
+    service.deleteThread('t1').subscribe();
+    expect(httpTesting.expectOne(`${baseUrl}/threads/t1`).request.method).toBe('DELETE');
+
+    service.sendFeedback('l1', 'not_helpful', 'wrong').subscribe();
+    const req = httpTesting.expectOne(`${baseUrl}/logs/l1/feedback`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ rating: 'not_helpful', comment: 'wrong' });
+    req.flush({ success: true, data: {} });
+  });
 });

@@ -153,6 +153,20 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: ['owner', 'admin', 'accountant', 'sales_manager', 'procurement_manager', 'service_manager', 'project_manager', 'member'],
   },
   marketplace: { read: ['owner', 'admin'], write: ['owner', 'admin'] },
+  // Recycle bin (restore or destroy deleted records); the notification centre is personal and has no module rule.
+  platform: { read: ['owner', 'admin'], write: ['owner', 'admin'] },
+  events: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager', 'service_manager', 'member'],
+  },
+  plm: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'production', 'technician', 'procurement_manager', 'member'],
+  },
+  rebates: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager', 'procurement_manager'],
+    write: [...FINANCE, 'sales_manager', 'procurement_manager'],
+  },
   wms: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'production', 'warehouse', 'technician', 'procurement_manager', 'purchasing', 'member'],

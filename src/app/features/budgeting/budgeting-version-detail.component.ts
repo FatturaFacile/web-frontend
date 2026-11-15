@@ -16,6 +16,7 @@ import { BudgetingApiService, BudgetVersion, TranslateService } from '@core';
 import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { BudgetingDriversComponent } from './budgeting-drivers.component';
 import { BudgetingLinesComponent } from './budgeting-lines.component';
+import { BudgetingCompareComponent } from './budgeting-compare.component';
 import { BudgetingVarianceComponent } from './budgeting-variance.component';
 import { apiErrorText, blankToNull, VERSION_STATUS_COLORS } from './budgeting.util';
 
@@ -31,7 +32,7 @@ export type BudgetApprovalStep = 'submit' | 'approve' | 'reject' | 'lock';
     RouterLink,
     BudgetingDriversComponent,
     BudgetingLinesComponent,
-    BudgetingVarianceComponent,
+    BudgetingCompareComponent, BudgetingVarianceComponent,
     ModalActionsDirective,
     PageHeaderComponent,
     TranslatePipe,
@@ -79,6 +80,9 @@ export type BudgetApprovalStep = 'submit' | 'approve' | 'reject' | 'lock';
         </nz-tab>
         <nz-tab [nzTitle]="'BUDGETING.TAB_VARIANCE' | translate">
           <ng-template nzTabContent><app-budgeting-variance [versionId]="current.id" [refresh]="revision()"></app-budgeting-variance></ng-template>
+        </nz-tab>
+        <nz-tab [nzTitle]="'BUDGETING.TAB_COMPARE' | translate">
+          <ng-template nzTabContent><app-budgeting-compare [versionId]="current.id" [refresh]="revision()"></app-budgeting-compare></ng-template>
         </nz-tab>
         <nz-tab [nzTitle]="'BUDGETING.TAB_APPROVALS' | translate">
           <ng-template nzTabContent>

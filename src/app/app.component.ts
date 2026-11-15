@@ -5,6 +5,7 @@ import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
 import { AppStore } from '@core/state/app.store';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
+import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 // Only used inside a @defer block of the template: the compiler moves it into a lazy chunk.
 import { TwoFactorSetupModalComponent } from './features/auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
@@ -17,6 +18,7 @@ import { TwoFactorSetupModalComponent } from './features/auth/components/two-fac
     HeaderComponent,
     SidebarComponent,
     BreadcrumbComponent,
+    GlobalSearchComponent,
     TwoFactorSetupModalComponent,
   ],
   templateUrl: './app.component.html',
