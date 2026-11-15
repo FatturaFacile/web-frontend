@@ -80,6 +80,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-chart-pie',
             module: 'crm',
           },
+          {
+            key: 'NAV.CRMEXT_TERRITORIES',
+            route: '/crm/territories',
+            icon: 'fa-solid fa-map-location-dot',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.CRMEXT_PARTNERS',
+            route: '/crm/partners',
+            icon: 'fa-solid fa-handshake',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.CRMEXT_CPQ',
+            route: '/crm/cpq',
+            icon: 'fa-solid fa-calculator',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.CRMEXT_AUTOMATION',
+            route: '/crm/automation',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'crm',
+          },
         ],
       },
       {
@@ -597,6 +621,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.SUSTAINABILITY_TARGETS', route: '/sustainability/targets', icon: 'fa-solid fa-bullseye', module: 'sustainability' },
           { key: 'NAV.SUSTAINABILITY_KPIS', route: '/sustainability/kpis', icon: 'fa-solid fa-gauge-high', module: 'sustainability' },
           { key: 'NAV.SUSTAINABILITY_MATERIALITY', route: '/sustainability/materiality', icon: 'fa-solid fa-scale-balanced', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_ESRS', route: '/sustainability/esrs', icon: 'fa-solid fa-file-circle-check', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_SCOPE3', route: '/sustainability/scope3', icon: 'fa-solid fa-truck-field', module: 'sustainability' },
         ],
       },
       {
@@ -610,6 +636,22 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.RETURNS_CLAIMS', route: '/returns/claims', icon: 'fa-solid fa-file-circle-exclamation', module: 'returns' },
           { key: 'NAV.RETURNS_SUPPLIER', route: '/returns/supplier-returns', icon: 'fa-solid fa-truck-ramp-box', module: 'returns' },
           { key: 'NAV.RETURNS_SETTINGS', route: '/returns/settings', icon: 'fa-solid fa-sliders', module: 'returns' },
+        ],
+      },
+      {
+        key: 'NAV.CREDIT_MANAGEMENT',
+        icon: 'fa-solid fa-hand-holding-dollar',
+        module: 'credit-management',
+        children: [
+          { key: 'NAV.CREDIT_DASHBOARD', route: '/credit-management', icon: 'fa-solid fa-chart-pie', module: 'credit-management' },
+          { key: 'NAV.CREDIT_WORKLIST', route: '/credit-management/worklist', icon: 'fa-solid fa-list-check', module: 'credit-management' },
+          { key: 'NAV.CREDIT_CASES', route: '/credit-management/cases', icon: 'fa-solid fa-folder-open', module: 'credit-management' },
+          { key: 'NAV.CREDIT_SCORES', route: '/credit-management/scores', icon: 'fa-solid fa-gauge-high', module: 'credit-management' },
+          { key: 'NAV.CREDIT_SCORECARD', route: '/credit-management/scorecard', icon: 'fa-solid fa-sliders', module: 'credit-management' },
+          { key: 'NAV.CREDIT_EXPOSURES', route: '/credit-management/exposures', icon: 'fa-solid fa-chart-line', module: 'credit-management' },
+          { key: 'NAV.CREDIT_LIMITS', route: '/credit-management/limit-requests', icon: 'fa-solid fa-scale-balanced', module: 'credit-management' },
+          { key: 'NAV.CREDIT_INSURANCE', route: '/credit-management/insurance', icon: 'fa-solid fa-shield-halved', module: 'credit-management' },
+          { key: 'NAV.CREDIT_STRATEGIES', route: '/credit-management/strategies', icon: 'fa-solid fa-bell', module: 'credit-management' },
         ],
       },
       {
@@ -627,10 +669,28 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.TALENT_LEARNING',
+        icon: 'fa-solid fa-graduation-cap',
+        module: 'talent_learning',
+        children: [
+          { key: 'NAV.TALENT_LEARNING_DASHBOARD', route: '/talent-learning', icon: 'fa-solid fa-chart-pie', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_SUCCESSION', route: '/talent-learning/succession', icon: 'fa-solid fa-sitemap', module: 'talent_planning' },
+          { key: 'NAV.TALENT_LEARNING_COMPENSATION', route: '/talent-learning/compensation', icon: 'fa-solid fa-sack-dollar', module: 'talent_planning' },
+          { key: 'NAV.TALENT_LEARNING_COURSES', route: '/talent-learning/courses', icon: 'fa-solid fa-book-open', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_ENROLMENTS', route: '/talent-learning/enrolments', icon: 'fa-solid fa-user-graduate', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_COMPLIANCE', route: '/talent-learning/compliance', icon: 'fa-solid fa-clipboard-check', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_SURVEYS', route: '/talent-learning/surveys', icon: 'fa-solid fa-comments', module: 'talent_learning' },
+        ],
+      },
+      {
         key: 'NAV.COMMUNICATION',
         icon: 'fa-solid fa-tower-broadcast',
-        route: '/communication',
         module: 'communication',
+        children: [
+          { key: 'NAV.COMMUNICATION_GATEWAYS', route: '/communication', icon: 'fa-solid fa-tower-broadcast', module: 'communication' },
+          { key: 'NAV.COMMUNICATION_INBOX', route: '/communication/inbox', icon: 'fa-solid fa-inbox', module: 'communication' },
+          { key: 'NAV.COMMUNICATION_CAMPAIGNS', route: '/communication/campaigns', icon: 'fa-solid fa-bullhorn', module: 'communication' },
+        ],
       },
       {
         key: 'NAV.APPOINTMENTS',
@@ -961,8 +1021,14 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
       {
         key: 'NAV.PROFESSIONALS',
         icon: 'fa-solid fa-scale-balanced',
-        route: '/professionals',
         module: 'professionals',
+        children: [
+          { key: 'NAV.PRACTICE_MATTERS', route: '/professionals', icon: 'fa-solid fa-briefcase', module: 'professionals' },
+          { key: 'NAV.PRACTICE_PROPOSALS', route: '/professionals/proposals', icon: 'fa-solid fa-file-signature', module: 'professionals' },
+          { key: 'NAV.PRACTICE_CONFLICTS', route: '/professionals/conflicts', icon: 'fa-solid fa-user-shield', module: 'professionals' },
+          { key: 'NAV.PRACTICE_EXPENSES', route: '/professionals/expenses', icon: 'fa-solid fa-receipt', module: 'professionals' },
+          { key: 'NAV.PRACTICE_TRUST', route: '/professionals/trust', icon: 'fa-solid fa-vault', module: 'professionals' },
+        ],
       },
       {
         key: 'NAV.MANUFACTURING',

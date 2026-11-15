@@ -38,5 +38,6 @@ export class TreasuryOperationsShellComponent {
     { path: 'kpis', labelKey: 'TR.NAV_KPIS' },
     { path: 'riba', labelKey: 'TR.NAV_RIBA' },
     { path: 'collections', labelKey: 'TR.NAV_COLLECTIONS' },
+    { path: 'pagopa-notices', labelKey: 'TR.NAV_PAGOPA' },
   ];
 }

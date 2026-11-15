@@ -38,6 +38,10 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
         path: 'collections',
         loadComponent: () => import('./collections/tr-collections.component').then((m) => m.TrCollectionsComponent),
       },
+      {
+        path: 'pagopa-notices',
+        loadComponent: () => import('./pagopa/tr-pagopa-notices.component').then((m) => m.TrPagoPaNoticesComponent),
+      },
     ],
   },
 ];

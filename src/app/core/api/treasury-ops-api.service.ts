@@ -29,6 +29,9 @@ import {
   LiquidityForecast,
   LiquidityForecastParams,
   ManualReconciliationMatchPayload,
+  PagoPaNotice,
+  PagoPaNoticePayload,
+  PagoPaNoticeStatus,
   PaginatedResponse,
   QueryFilterParams,
   PaymentProposal,
@@ -398,5 +401,27 @@ export class TreasuryOpsApiService {
 
   recordCollection(id: string, payload: { amount: number; collection_date?: string | null }): Observable<ReceivableCollection> {
     return this.http.post<ReceivableCollection>(`${this.base}/collections/${id}/record`, payload);
+  }
+
+  // --- pagoPA notices ---
+
+  getPagoPaNotices(params?: QueryFilterParams & { status?: PagoPaNoticeStatus }): Observable<PaginatedResponse<PagoPaNotice>> {
+    return this.http.get<PaginatedResponse<PagoPaNotice>>(`${this.base}/pagopa-notices`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  createPagoPaNotice(payload: PagoPaNoticePayload): Observable<ApiResponse<PagoPaNotice>> {
+    return this.http.post<ApiResponse<PagoPaNotice>>(`${this.base}/pagopa-notices`, payload);
+  }
+
+  cancelPagoPaNotice(id: string): Observable<ApiResponse<PagoPaNotice>> {
+    return this.http.post<ApiResponse<PagoPaNotice>>(`${this.base}/pagopa-notices/${id}/cancel`, {});
+  }
+
+  markPagoPaNoticePaid(id: string): Observable<ApiResponse<PagoPaNotice>> {
+    return this.http.post<ApiResponse<PagoPaNotice>>(`${this.base}/pagopa-notices/${id}/mark-paid`, {});
+  }
+
+  getPagoPaNoticeQrPayload(id: string): Observable<ApiResponse<{ payload: string }>> {
+    return this.http.get<ApiResponse<{ payload: string }>>(`${this.base}/pagopa-notices/${id}/qr-payload`);
   }
 }

@@ -278,11 +278,25 @@ export const routes: Routes = [
       import('./features/returns/returns.routes').then((m) => m.RETURNS_ROUTES),
   },
   {
+    path: 'credit-management',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.CREDIT_MANAGEMENT', title: 'PAGE_TITLE.CREDIT_MANAGEMENT' },
+    loadChildren: () =>
+      import('./features/credit-management/credit-management.routes').then((m) => m.CREDIT_MANAGEMENT_ROUTES),
+  },
+  {
     path: 'fleet',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.FLEET_MANAGEMENT', title: 'PAGE_TITLE.FLEET' },
     loadChildren: () =>
       import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
+  },
+  {
+    path: 'talent-learning',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.TALENT_LEARNING', title: 'PAGE_TITLE.TALENT_LEARNING' },
+    loadChildren: () =>
+      import('./features/talent-learning/talent-learning.routes').then((m) => m.TALENT_LEARNING_ROUTES),
   },
   {
     path: 'communication',

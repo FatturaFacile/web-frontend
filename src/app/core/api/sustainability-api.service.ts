@@ -8,6 +8,11 @@ import {
   EsgActivityRecordRequest,
   EsgEmissionFactor,
   EsgEmissionFactorRequest,
+  EsgEsrsCompleteness,
+  EsgEsrsDatapoint,
+  EsgEsrsPackage,
+  EsgEsrsValue,
+  EsgEsrsValueLine,
   EsgFactorVersionRequest,
   EsgInventory,
   EsgKpiDefinition,
@@ -21,6 +26,10 @@ import {
   EsgReportingPeriod,
   EsgReportingPeriodRequest,
   EsgResponse,
+  EsgScope3Report,
+  EsgSupplierReceivePayload,
+  EsgSupplierRequest,
+  EsgSupplierRequestPayload,
 } from '../models';
 
 @Service()
@@ -217,6 +226,71 @@ export class SustainabilityApiService {
       `${this.base}/materiality-assessments/${id}/approve`,
       {},
     );
+  }
+
+  // ESRS reporting package
+  getEsrsDatapoints(filters?: { standard?: string; active?: boolean }): Observable<EsgResponse<EsgEsrsDatapoint[]>> {
+    return this.http.get<EsgResponse<EsgEsrsDatapoint[]>>(`${this.base}/esrs/datapoints`, { params: this.params(filters) });
+  }
+
+  installEsrsCatalog(): Observable<{ created: number }> {
+    return this.http.post<{ created: number }>(`${this.base}/esrs/install-catalog`, {});
+  }
+
+  getEsrsPackage(periodId: string, standard?: string): Observable<EsgResponse<EsgEsrsPackage>> {
+    return this.http.get<EsgResponse<EsgEsrsPackage>>(`${this.base}/periods/${periodId}/esrs`, {
+      params: this.params({ standard }),
+    });
+  }
+
+  recordEsrsValues(periodId: string, values: EsgEsrsValueLine[]): Observable<EsgResponse<EsgEsrsValue[]>> {
+    return this.http.put<EsgResponse<EsgEsrsValue[]>>(`${this.base}/periods/${periodId}/esrs/values`, { values });
+  }
+
+  syncEsrsFromInventory(periodId: string): Observable<{ updated: number; skipped_approved: number }> {
+    return this.http.post<{ updated: number; skipped_approved: number }>(
+      `${this.base}/periods/${periodId}/esrs/sync-inventory`,
+      {},
+    );
+  }
+
+  getEsrsCompleteness(periodId: string): Observable<EsgResponse<EsgEsrsCompleteness>> {
+    return this.http.get<EsgResponse<EsgEsrsCompleteness>>(`${this.base}/periods/${periodId}/esrs/completeness`);
+  }
+
+  // Scope 3 and supplier-specific data
+  getScope3(periodId: string): Observable<EsgResponse<EsgScope3Report>> {
+    return this.http.get<EsgResponse<EsgScope3Report>>(`${this.base}/periods/${periodId}/scope3`);
+  }
+
+  getSupplierRequests(filters?: {
+    reporting_period_id?: string;
+    status?: string;
+    per_page?: number;
+  }): Observable<EsgResponse<EsgSupplierRequest[]>> {
+    return this.http.get<EsgResponse<EsgSupplierRequest[]>>(`${this.base}/supplier-requests`, {
+      params: this.params(filters),
+    });
+  }
+
+  createSupplierRequest(payload: EsgSupplierRequestPayload): Observable<EsgResponse<EsgSupplierRequest>> {
+    return this.http.post<EsgResponse<EsgSupplierRequest>>(`${this.base}/supplier-requests`, payload);
+  }
+
+  receiveSupplierRequest(id: string, payload: EsgSupplierReceivePayload): Observable<EsgResponse<EsgSupplierRequest>> {
+    return this.http.post<EsgResponse<EsgSupplierRequest>>(`${this.base}/supplier-requests/${id}/receive`, payload);
+  }
+
+  applySupplierRequest(id: string): Observable<EsgResponse<EsgSupplierRequest>> {
+    return this.http.post<EsgResponse<EsgSupplierRequest>>(`${this.base}/supplier-requests/${id}/apply`, {});
+  }
+
+  declineSupplierRequest(id: string): Observable<EsgResponse<EsgSupplierRequest>> {
+    return this.http.post<EsgResponse<EsgSupplierRequest>>(`${this.base}/supplier-requests/${id}/decline`, {});
+  }
+
+  cancelSupplierRequest(id: string): Observable<EsgResponse<EsgSupplierRequest>> {
+    return this.http.post<EsgResponse<EsgSupplierRequest>>(`${this.base}/supplier-requests/${id}/cancel`, {});
   }
 
   private params(values?: object): HttpParams {

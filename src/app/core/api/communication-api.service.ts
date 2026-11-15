@@ -8,8 +8,19 @@ import {
   CommunicationDeliveryFilterParams,
   CommunicationTemplateFilterParams,
   PaginatedResponse,
+  CommunicationCampaign,
+  CommunicationCampaignPreview,
+  CommunicationCampaignRecipient,
+  CommunicationCampaignRequest,
   CommunicationChannelResource,
   CommunicationChannelType,
+  CommunicationContactPreference,
+  CommunicationContactPreferenceRequest,
+  CommunicationConversation,
+  CommunicationConversationFilterParams,
+  CommunicationConversationMessage,
+  CommunicationConversationStatus,
+  CommunicationInboundMessageRequest,
   CommunicationDeliveryLog,
   CommunicationPreviewResponse,
   CommunicationPreviewTemplateRequest,
@@ -91,6 +102,84 @@ export class CommunicationApiService {
 
   deleteTemplate(id: string): Observable<ApiResponse<{ id: string }>> {
     return this.http.delete<ApiResponse<{ id: string }>>(`${this.base}/templates/${id}`);
+  }
+
+  getConversations(params?: CommunicationConversationFilterParams): Observable<PaginatedResponse<CommunicationConversation>> {
+    return this.http.get<PaginatedResponse<CommunicationConversation>>(`${this.base}/conversations`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getConversation(id: string): Observable<{ data: CommunicationConversation }> {
+    return this.http.get<{ data: CommunicationConversation }>(`${this.base}/conversations/${id}`);
+  }
+
+  receiveInboundMessage(payload: CommunicationInboundMessageRequest): Observable<{ data: CommunicationConversationMessage }> {
+    return this.http.post<{ data: CommunicationConversationMessage }>(`${this.base}/conversations/inbound`, payload);
+  }
+
+  replyToConversation(id: string, body: string): Observable<{ data: CommunicationConversationMessage }> {
+    return this.http.post<{ data: CommunicationConversationMessage }>(`${this.base}/conversations/${id}/reply`, { body });
+  }
+
+  assignConversation(id: string, userId: string | null): Observable<{ data: CommunicationConversation }> {
+    return this.http.post<{ data: CommunicationConversation }>(`${this.base}/conversations/${id}/assign`, { user_id: userId });
+  }
+
+  changeConversationStatus(id: string, status: CommunicationConversationStatus): Observable<{ data: CommunicationConversation }> {
+    return this.http.post<{ data: CommunicationConversation }>(`${this.base}/conversations/${id}/status`, { status });
+  }
+
+  markConversationRead(id: string): Observable<{ data: CommunicationConversation }> {
+    return this.http.post<{ data: CommunicationConversation }>(`${this.base}/conversations/${id}/read`, {});
+  }
+
+  getCampaigns(params?: { status?: string; channel?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<CommunicationCampaign>> {
+    return this.http.get<PaginatedResponse<CommunicationCampaign>>(`${this.base}/campaigns`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createCampaign(payload: CommunicationCampaignRequest): Observable<{ data: CommunicationCampaign }> {
+    return this.http.post<{ data: CommunicationCampaign }>(`${this.base}/campaigns`, payload);
+  }
+
+  updateCampaign(id: string, payload: Partial<CommunicationCampaignRequest>): Observable<{ data: CommunicationCampaign }> {
+    return this.http.put<{ data: CommunicationCampaign }>(`${this.base}/campaigns/${id}`, payload);
+  }
+
+  deleteCampaign(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/campaigns/${id}`);
+  }
+
+  previewCampaign(id: string): Observable<{ data: CommunicationCampaignPreview }> {
+    return this.http.get<{ data: CommunicationCampaignPreview }>(`${this.base}/campaigns/${id}/preview`);
+  }
+
+  getCampaignRecipients(id: string, status?: string): Observable<PaginatedResponse<CommunicationCampaignRecipient>> {
+    return this.http.get<PaginatedResponse<CommunicationCampaignRecipient>>(`${this.base}/campaigns/${id}/recipients`, {
+      params: status ? toHttpParams({ status }) : undefined,
+    });
+  }
+
+  scheduleCampaign(id: string, scheduledAt: string): Observable<{ data: CommunicationCampaign }> {
+    return this.http.post<{ data: CommunicationCampaign }>(`${this.base}/campaigns/${id}/schedule`, { scheduled_at: scheduledAt });
+  }
+
+  sendCampaign(id: string): Observable<{ data: CommunicationCampaign }> {
+    return this.http.post<{ data: CommunicationCampaign }>(`${this.base}/campaigns/${id}/send`, {});
+  }
+
+  cancelCampaign(id: string): Observable<{ data: CommunicationCampaign }> {
+    return this.http.post<{ data: CommunicationCampaign }>(`${this.base}/campaigns/${id}/cancel`, {});
+  }
+
+  getContactPreferences(contactId: string): Observable<{ data: CommunicationContactPreference[] }> {
+    return this.http.get<{ data: CommunicationContactPreference[] }>(`${this.base}/contacts/${contactId}/preferences`);
+  }
+
+  setContactPreference(contactId: string, payload: CommunicationContactPreferenceRequest): Observable<{ data: CommunicationContactPreference[] }> {
+    return this.http.put<{ data: CommunicationContactPreference[] }>(`${this.base}/contacts/${contactId}/preferences`, payload);
   }
 
   previewTemplate(
