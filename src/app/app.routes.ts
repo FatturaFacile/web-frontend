@@ -271,6 +271,20 @@ export const routes: Routes = [
       import('./features/sustainability/sustainability.routes').then((m) => m.SUSTAINABILITY_ROUTES),
   },
   {
+    path: 'returns',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.RETURNS', title: 'PAGE_TITLE.RETURNS_DASHBOARD' },
+    loadChildren: () =>
+      import('./features/returns/returns.routes').then((m) => m.RETURNS_ROUTES),
+  },
+  {
+    path: 'fleet',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.FLEET_MANAGEMENT', title: 'PAGE_TITLE.FLEET' },
+    loadChildren: () =>
+      import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
+  },
+  {
     path: 'communication',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.COMMUNICATION', title: 'PAGE_TITLE.COMUNICAZIONI_MULTI_CANALE' },
