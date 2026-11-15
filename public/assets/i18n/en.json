@@ -686,6 +686,7 @@
   "SALES.INVOICES.FISCAL.BREAKDOWN_TITLE": "Tax breakdown",
   "SALES.INVOICES.FISCAL.ENASARCO": "ENASARCO contribution",
   "SALES.INVOICES.FISCAL.ENASARCO_HINT": "ENASARCO: year-to-date commissions {ytd} out of a ceiling of {max}.",
+  "SALES.INVOICES.FISCAL.ERRORS.AMOUNT_OUT_OF_RANGE": "An amount is too large: reduce quantities or prices.",
   "SALES.INVOICES.FISCAL.ERRORS.ENASARCO_RATE_NOT_CONFIGURED": "ENASARCO rate not configured for the invoice year: check the fiscal settings.",
   "SALES.INVOICES.FISCAL.ERRORS.FORFETTARIO_INCOMPATIBLE": "Withholding, split payment and reverse charge are not allowed in the flat-rate regime.",
   "SALES.INVOICES.FISCAL.ERRORS.INVALID_NATURA": "Invalid VAT nature code.",

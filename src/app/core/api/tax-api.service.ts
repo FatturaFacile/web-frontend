@@ -19,6 +19,7 @@ const FISCAL_ERROR_CODES: readonly FiscalErrorCode[] = [
   'split_payment_incompatible',
   'split_payment_requires_vat',
   'invalid_natura',
+  'amount_out_of_range',
 ];
 
 /** Fiscal-rule code of a 422 response (`{ code, errors }`), or `null` for any other error. */

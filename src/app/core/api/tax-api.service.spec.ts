@@ -82,6 +82,12 @@ describe('TaxApiService', () => {
       ).toBe('forfettario_incompatible');
     });
 
+    it('recognises amount_out_of_range', () => {
+      expect(fiscalErrorCode(error(422, { code: 'amount_out_of_range', errors: {} }))).toBe(
+        'amount_out_of_range',
+      );
+    });
+
     it('ignores plain validation errors, unknown codes and other statuses', () => {
       expect(fiscalErrorCode(error(422, { errors: { date: ['x'] } }))).toBeNull();
       expect(fiscalErrorCode(error(422, { code: 'other', errors: {} }))).toBeNull();

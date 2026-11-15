@@ -686,6 +686,7 @@
   "SALES.INVOICES.FISCAL.BREAKDOWN_TITLE": "Récapitulatif fiscal",
   "SALES.INVOICES.FISCAL.ENASARCO": "Cotisation ENASARCO",
   "SALES.INVOICES.FISCAL.ENASARCO_HINT": "ENASARCO : commissions depuis le début de l'année {ytd} sur un plafond de {max}.",
+  "SALES.INVOICES.FISCAL.ERRORS.AMOUNT_OUT_OF_RANGE": "Un montant est trop élevé : réduisez les quantités ou les prix.",
   "SALES.INVOICES.FISCAL.ERRORS.ENASARCO_RATE_NOT_CONFIGURED": "Taux ENASARCO non configuré pour l'année de la facture : vérifiez les paramètres fiscaux.",
   "SALES.INVOICES.FISCAL.ERRORS.FORFETTARIO_INCOMPATIBLE": "Retenue, split payment et autoliquidation ne sont pas admis en régime forfaitaire.",
   "SALES.INVOICES.FISCAL.ERRORS.INVALID_NATURA": "Code nature TVA non valide.",
