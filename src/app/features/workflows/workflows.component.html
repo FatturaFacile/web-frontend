@@ -34,7 +34,7 @@
           <nz-select
             [ngModel]="instanceStatusFilter()"
             (ngModelChange)="onInstanceStatusChange($event)"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'WORKFLOWS.LBL_TUTTI' | translate"></nz-option>

@@ -282,10 +282,10 @@
               <input nz-input formControlName="description" [nzStatus]="row.get('description')?.touched && row.get('description')?.invalid ? 'error' : ''" [placeholder]="'retail.lblDescrizioneProdottoServizio' | translate" />
             </div>
             <div>
-              <nz-input-number class="w-full" formControlName="quantity" [nzStatus]="row.get('quantity')?.touched && row.get('quantity')?.invalid ? 'error' : ''" [nzMin]="1" nzPlaceHolder="Q.tà"></nz-input-number>
+              <nz-input-number class="w-full" formControlName="quantity" [nzStatus]="row.get('quantity')?.touched && row.get('quantity')?.invalid ? 'error' : ''" [nzMin]="1" [nzPlaceHolder]="'common.quantityShort' | translate"></nz-input-number>
             </div>
             <div>
-              <nz-input-number class="w-full" formControlName="unit_price" [nzStatus]="row.get('unit_price')?.touched && row.get('unit_price')?.invalid ? 'error' : ''" [nzMin]="0.01" nzPlaceHolder="Prezzo"></nz-input-number>
+              <nz-input-number class="w-full" formControlName="unit_price" [nzStatus]="row.get('unit_price')?.touched && row.get('unit_price')?.invalid ? 'error' : ''" [nzMin]="0.01" [nzPlaceHolder]="'common.price' | translate"></nz-input-number>
             </div>
             <div>
               <nz-select class="w-full" formControlName="tax_rate">

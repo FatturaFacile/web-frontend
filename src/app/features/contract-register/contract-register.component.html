@@ -21,7 +21,7 @@
           <nz-select
             [ngModel]="filterKind()"
             (ngModelChange)="filterKind.set($event); loadContracts()"
-            nzPlaceHolder="Tutti i tipi"
+            [nzPlaceHolder]="'common.allTypes' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI' | translate"></nz-option>
@@ -32,7 +32,7 @@
           <nz-select
             [ngModel]="filterStatus()"
             (ngModelChange)="filterStatus.set($event); loadContracts()"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
@@ -166,7 +166,7 @@
           <nz-select
             [ngModel]="obligationStatusFilter()"
             (ngModelChange)="setObligationStatus($event)"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'CONTRACTS.LBL_TUTTI' | translate"></nz-option>

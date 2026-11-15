@@ -21,7 +21,7 @@
           <nz-select
             [ngModel]="memberStatusFilter()"
             (ngModelChange)="memberStatusFilter.set($event); applyMemberFilters()"
-            nzPlaceHolder="Tutti gli stati"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
             class="filter-select"
           >
             <nz-option nzValue="" [nzLabel]="'ASSOCIATIONS.LBL_TUTTI' | translate"></nz-option>

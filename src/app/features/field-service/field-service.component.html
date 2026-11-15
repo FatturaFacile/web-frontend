@@ -25,7 +25,7 @@
         [ngModel]="filterStatus()"
         (ngModelChange)="filterStatus.set($event); onSearch()"
        class="w-full"
-        nzPlaceHolder="Stato (Tutti)"
+        [nzPlaceHolder]="'common.statusAll' | translate"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
         <nz-option nzValue="new" [nzLabel]="'FIELD_SERVICE.LBL_NUOVO_NEW' | translate"></nz-option>
@@ -42,7 +42,7 @@
         [ngModel]="filterPriority()"
         (ngModelChange)="filterPriority.set($event); onSearch()"
        class="w-full"
-        nzPlaceHolder="Priorità (Tutte)"
+        [nzPlaceHolder]="'common.priorityAll' | translate"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
         <nz-option nzValue="low" [nzLabel]="'FIELD_SERVICE.LBL_BASSA' | translate"></nz-option>
@@ -57,7 +57,7 @@
         [ngModel]="filterSlaState()"
         (ngModelChange)="filterSlaState.set($event); onSearch()"
        class="w-full"
-        nzPlaceHolder="SLA (Tutti)"
+        [nzPlaceHolder]="'common.slaAll' | translate"
       >
         <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
         <nz-option nzValue="ok" [nzLabel]="'FIELD_SERVICE.LBL_OK_NEI_TEMPI' | translate"></nz-option>
