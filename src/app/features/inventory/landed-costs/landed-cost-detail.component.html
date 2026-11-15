@@ -149,7 +149,7 @@
       <tbody>
         @for (a of allocTable.data; track $index) {
           <tr>
-            <td>{{ a.receipt_id }}</td>
+            <td>{{ receiptLabel(a.receipt_id) }}</td>
             <td>{{ a.sku || a.item_id }}</td>
             <td>{{ a.lot_id || '-' }}</td>
             <td class="iv-num">{{ a.basis_value | number: '1.0-4' }}</td>
