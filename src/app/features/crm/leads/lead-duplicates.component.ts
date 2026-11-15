@@ -230,6 +230,13 @@ export class LeadDuplicatesComponent {
         this.total.update((t) => Math.max(0, t - 1));
         this.merging.set(null);
         this.message.success(translateOr(this.i18n, key, fallback));
+        if (this.items().length === 0) {
+          // Last row of the page resolved: step back (or refetch) instead of showing an empty page.
+          if (this.page() > 1) {
+            this.page.update((p) => p - 1);
+          }
+          this.load();
+        }
       },
       error: (err: unknown) => {
         this.pendingId.set(null);

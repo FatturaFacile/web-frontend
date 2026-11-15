@@ -113,7 +113,20 @@ export class LeadScoringComponent {
       return;
     }
     this.busyId.set(r.id);
-    this.api.updateScoringRule(r.id, { is_active: !r.is_active }).subscribe({
+    this.api
+      .updateScoringRule(r.id, {
+        code: r.code,
+        name: r.name,
+        category: r.category,
+        field: r.field ?? null,
+        event_type: r.event_type ?? null,
+        operator: r.operator,
+        value: r.value,
+        points: r.points,
+        max_applications: r.max_applications ?? null,
+        decay_days: r.decay_days ?? null,
+        is_active: !r.is_active,
+      }).subscribe({
       next: () => {
         this.busyId.set(null);
         this.rules.update((list) => list.map((x) => (x.id === r.id ? { ...x, is_active: !r.is_active } : x)));
