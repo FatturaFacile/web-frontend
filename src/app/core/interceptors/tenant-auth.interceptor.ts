@@ -26,6 +26,9 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const injector = inject(Injector);
+  // Public careers portal endpoints are anonymous and slug-scoped: never leak the
+  // session token or a stale tenant id of a logged-in visitor to them.
+  const isPublicPortal = req.url.includes('/public/careers/');
 
   const headersToSet: Record<string, string> = {
     'Accept': 'application/json',
@@ -42,7 +45,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
       window.localStorage.getItem('token') ||
       window.localStorage.getItem('auth_token');
   }
-  if (token && !req.headers.has('Authorization')) {
+  if (token && !isPublicPortal && !req.headers.has('Authorization')) {
     headersToSet['Authorization'] = `Bearer ${token}`;
   }
 
@@ -54,7 +57,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
       window.localStorage.getItem('tenant_id') ||
       window.localStorage.getItem('ff_tenant_id');
   }
-  if (tenantId && !req.headers.has('X-Tenant-Id')) {
+  if (tenantId && !isPublicPortal && !req.headers.has('X-Tenant-Id')) {
     headersToSet['X-Tenant-Id'] = tenantId;
   }
 

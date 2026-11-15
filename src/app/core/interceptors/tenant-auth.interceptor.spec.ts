@@ -51,6 +51,18 @@ describe('tenantAuthInterceptor', () => {
     req.flush([]);
   });
 
+  it('should not send auth or tenant headers to public careers endpoints', () => {
+    localStorage.setItem('auth_token', 'jwt-test-token-123');
+    localStorage.setItem('tenant_id', 'tenant-1');
+
+    http.get('https://api.fatturafacile.eu/api/v1/public/careers/acme').subscribe();
+
+    const req = httpTesting.expectOne('https://api.fatturafacile.eu/api/v1/public/careers/acme');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    expect(req.request.headers.has('X-Tenant-Id')).toBe(false);
+    req.flush({});
+  });
+
   it('should attach X-Tenant-Id header dynamically from storage', () => {
     localStorage.setItem('ff_active_tenant_id', 'tenant-uuid-456');
 
