@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -51,7 +52,7 @@ type ReasonTarget = { kind: 'deal'; id: string } | { kind: 'claim'; id: string }
     </app-page-header>
 
     <nz-card>
-      <nz-tabset>
+      <nz-tabs>
         <nz-tab [nzTitle]="'CRMEXT.PARTNERS.PARTNERS' | translate">
           <nz-table [nzData]="partners()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
             <thead>
@@ -173,7 +174,7 @@ type ReasonTarget = { kind: 'deal'; id: string } | { kind: 'claim'; id: string }
             </tbody>
           </nz-table>
         </nz-tab>
-      </nz-tabset>
+      </nz-tabs>
     </nz-card>
 
     <nz-modal okAction="save" [nzVisible]="partnerModalOpen()" [nzTitle]="'CRMEXT.PARTNERS.NEW' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="partnerName.trim().length === 0" (nzOnCancel)="partnerModalOpen.set(false)" (nzOnOk)="savePartner()">
@@ -296,7 +297,7 @@ export class PartnersComponent {
     }
 
     this.saving.set(true);
-    const request = target.kind === 'deal' ? this.api.rejectDealRegistration(target.id, this.reason.trim()) : this.api.rejectMdfClaim(target.id, this.reason.trim());
+    const request: Observable<unknown> = target.kind === 'deal' ? this.api.rejectDealRegistration(target.id, this.reason.trim()) : this.api.rejectMdfClaim(target.id, this.reason.trim());
     request.subscribe({
       next: () => {
         this.saving.set(false);

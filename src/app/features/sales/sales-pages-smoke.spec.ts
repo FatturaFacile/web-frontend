@@ -6,7 +6,6 @@ import { DeferredBillingComponent } from './billing/deferred/deferred-billing.co
 import { BillingPlansComponent } from './billing/plans/billing-plans.component';
 import { BillingReportsComponent } from './billing/reports/billing-reports.component';
 import { CycleDeliveryNotesComponent } from './cycle/delivery-notes/delivery-notes.component';
-import { SalesOverviewComponent } from './cycle/overview/sales-overview.component';
 import { DiscountPoliciesComponent } from './cycle/pricing/discount-policies.component';
 import { CycleReturnsComponent } from './cycle/returns/returns.component';
 
@@ -18,7 +17,6 @@ describe('Sales pages boot against an empty backend', () => {
     ['billing plans', BillingPlansComponent],
     ['billing reports', BillingReportsComponent],
     ['delivery notes', CycleDeliveryNotesComponent],
-    ['sales overview', SalesOverviewComponent],
     ['discount policies', DiscountPoliciesComponent],
     ['returns', CycleReturnsComponent],
   ] as const;

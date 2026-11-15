@@ -82,7 +82,7 @@ export interface BudgetApprovalRequest {
   comment?: string | null;
 }
 
-export interface BudgetLine {
+export interface BudgetPlanLine {
   id: string;
   version_id: string;
   account_id: string;

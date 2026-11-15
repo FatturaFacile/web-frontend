@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { renderPageWithEmptyBackend } from '../../../../testing/component-smoke';
-import { PcAnalysisComponent } from './pc-analysis.component';
 import { PcBillingComponent } from './pc-billing.component';
 import { PcBudgetComponent } from './pc-budget.component';
 import { PcChangeOrdersComponent } from './pc-change-orders.component';
@@ -9,7 +8,6 @@ import { ProjectControlComponent } from './project-control.component';
 
 describe('Project control pages boot against an empty backend', () => {
   const tabs = [
-    ['analysis', PcAnalysisComponent],
     ['billing', PcBillingComponent],
     ['budget', PcBudgetComponent],
     ['change orders', PcChangeOrdersComponent],

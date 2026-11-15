@@ -669,6 +669,26 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.PLANNING',
+        icon: 'fa-solid fa-diagram-project',
+        module: 'planning',
+        children: [
+          { key: 'NAV.PLANNING_DASHBOARD', route: '/planning', icon: 'fa-solid fa-chart-pie', module: 'planning' },
+          { key: 'NAV.PLANNING_SCENARIOS', route: '/planning/scenarios', icon: 'fa-solid fa-layer-group', module: 'planning' },
+          { key: 'NAV.PLANNING_COMPARE', route: '/planning/compare', icon: 'fa-solid fa-code-compare', module: 'planning' },
+          { key: 'NAV.PLANNING_RESOURCES', route: '/planning/resources', icon: 'fa-solid fa-industry', module: 'planning' },
+        ],
+      },
+      {
+        key: 'NAV.BUDGETING',
+        icon: 'fa-solid fa-scale-balanced',
+        module: 'budgeting',
+        children: [
+          { key: 'NAV.BUDGETING_DASHBOARD', route: '/budgeting', icon: 'fa-solid fa-chart-line', module: 'budgeting' },
+          { key: 'NAV.BUDGETING_VERSIONS', route: '/budgeting/versions', icon: 'fa-solid fa-file-invoice-dollar', module: 'budgeting' },
+        ],
+      },
+      {
         key: 'NAV.TALENT_LEARNING',
         icon: 'fa-solid fa-graduation-cap',
         module: 'talent_learning',

@@ -50,7 +50,7 @@ import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, Transl
     </app-page-header>
 
     <nz-card>
-      <nz-tabset>
+      <nz-tabs>
         <nz-tab [nzTitle]="'CRMEXT.CPQ.QUOTES' | translate">
           <nz-table [nzData]="quotes()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle">
             <thead>
@@ -159,7 +159,7 @@ import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, Transl
             </tbody>
           </nz-table>
         </nz-tab>
-      </nz-tabset>
+      </nz-tabs>
     </nz-card>
 
     <nz-modal okAction="save" [nzVisible]="quoteModalOpen()" [nzTitle]="'CRMEXT.CPQ.NEW_QUOTE' | translate" [nzOkLoading]="saving()" [nzOkDisabled]="quoteName.trim().length === 0" (nzOnCancel)="quoteModalOpen.set(false)" (nzOnOk)="saveQuote()">
