@@ -47,6 +47,7 @@
     #docsTable
     [nzData]="facade.items()"
     [nzFrontPagination]="false"
+    [nzShowPagination]="facade.totalCount() > facade.items().length"
     [nzLoading]="facade.loading()"
     [nzTotal]="facade.totalCount()"
     [nzPageIndex]="facade.pageIndex()"

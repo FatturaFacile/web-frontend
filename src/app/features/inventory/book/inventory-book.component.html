@@ -176,6 +176,7 @@
     #exportsTable
     [nzData]="exports.items()"
     [nzFrontPagination]="false"
+    [nzShowPagination]="exports.totalCount() > exports.items().length"
     [nzLoading]="exports.loading()"
     [nzTotal]="exports.totalCount()"
     [nzPageIndex]="exports.pageIndex()"

@@ -87,6 +87,10 @@ export class LandedCostDetailComponent {
   /** Id of the reversal document generated from this one, when known. */
   readonly reversalId = computed(() => this.reversal()?.id ?? this.doc()?.reversed_by_id ?? null);
 
+  private readonly receiptNumbers = computed(
+    () => new Map((this.doc()?.receipts ?? []).map((r) => [r.receipt_id, r.receipt_number] as const)),
+  );
+
   readonly reverseForm = this.fb.group({
     reason: this.fb.control('', [Validators.required, Validators.maxLength(500)]),
   });
@@ -188,6 +192,10 @@ export class LandedCostDetailComponent {
         }
       },
     });
+  }
+
+  receiptLabel(id: string): string {
+    return this.receiptNumbers().get(id) || id;
   }
 
   openReversal(): void {
