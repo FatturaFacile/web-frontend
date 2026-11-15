@@ -5,6 +5,16 @@
       nzShowIcon
       [nzMessage]="'CRM.LEADS.FORBIDDEN' | translateOr: 'You do not have permission to manage this section.'"
     />
+  } @else if (loadError()) {
+    <nz-alert
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'CRM.LEAD_SCORING.SETTINGS.LOAD_ERROR' | translateOr: 'Settings could not be loaded.'"
+      [nzAction]="retryTpl"
+    />
+    <ng-template #retryTpl>
+      <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+    </ng-template>
   } @else {
     @if (formError()) {
       <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="formError()!" />

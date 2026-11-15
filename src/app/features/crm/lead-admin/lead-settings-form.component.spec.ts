@@ -73,6 +73,21 @@ describe('LeadSettingsFormComponent', () => {
     expect(api.updateSettings).toHaveBeenCalledWith({ ...SETTINGS, warm_threshold: 30, default_country: 'CH' });
   });
 
+  it('does not offer to save defaults over settings that failed to load', () => {
+    api.getSettings.mockReturnValue(throwError(() => httpError(500)));
+    const fixture = TestBed.createComponent(LeadSettingsFormComponent);
+    fixture.detectChanges();
+    const cmp = fixture.componentInstance;
+    expect(cmp.loadError()).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).querySelector('form')).toBeNull();
+    cmp.save();
+    expect(api.updateSettings).not.toHaveBeenCalled();
+
+    api.getSettings.mockReturnValue(of(SETTINGS));
+    cmp.load();
+    expect(cmp.loadError()).toBe(false);
+  });
+
   it('shows server 422 errors inline', () => {
     api.updateSettings.mockReturnValue(
       throwError(() =>

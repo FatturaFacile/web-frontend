@@ -92,7 +92,16 @@ export class LeadSettingsFormComponent {
     { value: 'auto_merge', key: 'CRM.LEAD_SCORING.SETTINGS.DEDUP_AUTO_MERGE', fallback: 'Auto-merge exact matches' },
   ];
 
+  /** True when the current settings could not be read: saving would overwrite them with defaults. */
+  readonly loadError = signal(false);
+
   constructor() {
+    this.load();
+  }
+
+  load(): void {
+    this.loading.set(true);
+    this.loadError.set(false);
     this.api.getSettings().subscribe({
       next: (s) => {
         this.form.reset({ ...DEFAULTS, ...s });
@@ -101,6 +110,7 @@ export class LeadSettingsFormComponent {
       error: (err: unknown) => {
         this.loading.set(false);
         this.forbidden.set(httpStatus(err) === 403);
+        this.loadError.set(httpStatus(err) !== 403);
       },
     });
   }
@@ -114,6 +124,9 @@ export class LeadSettingsFormComponent {
   }
 
   save(): void {
+    if (this.loadError() || this.loading()) {
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsDirty();
       return;
