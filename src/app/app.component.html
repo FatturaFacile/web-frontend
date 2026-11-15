@@ -1,4 +1,4 @@
-@if (!authStore.isAuthenticated()) {
+@if (!authStore.isAuthenticated() || isPublicPage()) {
   <router-outlet></router-outlet>
 } @else {
   <nz-layout class="app-layout">

@@ -167,6 +167,12 @@ export const routes: Routes = [
       import('./features/welcome').then((m) => m.WELCOME_ROUTES),
   },
   {
+    // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
+    path: 'careers',
+    loadChildren: () =>
+      import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

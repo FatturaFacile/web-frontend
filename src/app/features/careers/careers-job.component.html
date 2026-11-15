@@ -1,0 +1,90 @@
+<main class="portal" [attr.lang]="portal.locale()">
+  <div class="portal__header">
+    <a
+      class="portal__back"
+      [routerLink]="['/careers', portal.slug()]"
+      [queryParams]="portal.linkParams()"
+    >
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      {{ 'careers.backToJobs' | translate }}
+    </a>
+    <app-careers-locale-switcher
+      [locale]="portal.locale()"
+      [locales]="
+        job()?.available_locales?.length ? job()!.available_locales : portal.availableLocales()
+      "
+      (changed)="portal.setLocale($event)"
+    />
+  </div>
+
+  @if (notFound() || portal.pageNotFound()) {
+    <nz-result
+      nzStatus="404"
+      [nzTitle]="'careers.jobNotFoundTitle' | translate"
+      [nzSubTitle]="'careers.jobNotFoundBody' | translate"
+    />
+  } @else if (error()) {
+    <div class="portal__error" role="alert">
+      <p>{{ 'careers.loadError' | translate }}</p>
+      <button nz-button type="button" (click)="loadJob()">{{ 'careers.retry' | translate }}</button>
+    </div>
+  } @else {
+    <nz-spin [nzSpinning]="loading()">
+      @if (job(); as j) {
+        <article class="job" [attr.lang]="j.locale">
+          @if (!portal.embed() && portal.page()?.company_name) {
+            <p class="jobs__meta">{{ portal.page()!.company_name }}</p>
+          }
+          <h1 class="job__title">{{ j.title }}</h1>
+          <p class="jobs__meta">
+            <span>{{ j.reference }}</span>
+            @if (j.department_name) {
+              <span>{{ j.department_name }}</span>
+            }
+            <span>{{ j.location_site }}</span>
+            <span>{{ 'careers.employmentTypes.' + j.employment_type | translate }}</span>
+            @if (j.closes_at) {
+              <span
+                >{{ 'careers.closesAt' | translate }} {{ j.closes_at | date: 'dd.MM.yyyy' }}</span
+              >
+            }
+          </p>
+          @if (j.salary_range_public; as salary) {
+            <p>
+              <strong>{{ 'careers.salary' | translate }}:</strong>
+              {{ salary.min | number: '1.0-0' }} - {{ salary.max | number: '1.0-0' }}
+              {{ salary.currency }}
+              {{ 'careers.perYear' | translate }}
+            </p>
+          }
+          <h2 class="job__section-title">{{ 'careers.description' | translate }}</h2>
+          <p class="job__text">{{ j.description }}</p>
+          @if (j.requirements) {
+            <h2 class="job__section-title">{{ 'careers.requirements' | translate }}</h2>
+            <p class="job__text">{{ j.requirements }}</p>
+          }
+          @if (j.benefits) {
+            <h2 class="job__section-title">{{ 'careers.benefits' | translate }}</h2>
+            <p class="job__text">{{ j.benefits }}</p>
+          }
+        </article>
+
+        @if (portal.page(); as page) {
+          <app-apply-form
+            [slug]="portal.slug()"
+            [job]="j"
+            [page]="page"
+            [locale]="portal.locale()"
+          />
+        } @else if (portal.pageError()) {
+          <div class="portal__error" role="alert">
+            <p>{{ 'careers.loadError' | translate }}</p>
+            <button nz-button type="button" (click)="portal.loadPage()">
+              {{ 'careers.retry' | translate }}
+            </button>
+          </div>
+        }
+      }
+    </nz-spin>
+  }
+</main>
