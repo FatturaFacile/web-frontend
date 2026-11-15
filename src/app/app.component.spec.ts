@@ -1,10 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Component } from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { describe, beforeEach, it, expect } from 'vitest';
 import { icons } from './icons-provider';
 import { AppComponent } from './app.component';
 import { AppStore, AuthStore, I18nService } from '@core';
+
+@Component({ selector: 'app-public-stub', template: '<p class="public-stub">public</p>' })
+class PublicStubComponent {}
+
+@Component({ selector: 'app-private-stub', template: '<p class="private-stub">private</p>' })
+class PrivateStubComponent {}
 
 /** Sessions start unauthenticated, so sign in first for shell testing. */
 function createApp() {
@@ -17,7 +24,10 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
-        provideRouter([]),
+        provideRouter([
+          { path: 'rma-estimate/:token', data: { publicPage: true }, component: PublicStubComponent },
+          { path: 'private', component: PrivateStubComponent },
+        ]),
         provideNzIcons(icons),
         I18nService,
         AppStore,
@@ -59,5 +69,23 @@ describe('AppComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const firstMenuItem = compiled.querySelector('li[nz-menu-item]');
     expect(firstMenuItem?.getAttribute('title')).toBeTruthy();
+  });
+
+  it('renders public pages without the application shell even when signed in', async () => {
+    const fixture = createApp();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/rma-estimate/tok');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(fixture.componentInstance.publicPage()).toBe(true);
+    expect(compiled.querySelector('app-sidebar')).toBeNull();
+    expect(compiled.querySelector('.public-stub')).not.toBeNull();
+
+    await router.navigateByUrl('/private');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.publicPage()).toBe(false);
+    expect(compiled.querySelector('app-sidebar')).not.toBeNull();
   });
 });

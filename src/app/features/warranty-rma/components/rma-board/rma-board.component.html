@@ -1,0 +1,123 @@
+<app-page-header
+  [title]="'RMA.BOARD.TITLE' | translate"
+  [subtitle]="'RMA.BOARD.SUBTITLE' | translate"
+/>
+
+<div class="rma-toolbar">
+  <label for="board-warranty">{{ 'RMA.FIELDS.WARRANTY_STATUS' | translate }}</label>
+  <nz-select
+    nzId="board-warranty"
+    class="board-filter"
+    nzAllowClear
+    [nzPlaceHolder]="'COMMON.ALL' | translate"
+    [ngModel]="store.filters().warranty_status"
+    (ngModelChange)="store.setFilters({ warranty_status: $event ?? null })"
+  >
+    @for (w of warrantyOptions; track w) {
+      <nz-option [nzValue]="w" [nzLabel]="warrantyStatusTag(w).labelKey | translate" />
+    }
+  </nz-select>
+  <span class="board-switch">
+    <nz-switch
+      nzId="board-include-closed"
+      [ngModel]="store.filters().include_closed"
+      (ngModelChange)="store.setFilters({ include_closed: $event })"
+    />
+    <label for="board-include-closed">{{ 'RMA.BOARD.INCLUDE_CLOSED' | translate }}</label>
+  </span>
+  <button nz-button type="button" (click)="store.load()" [nzLoading]="store.isLoading()">
+    <i class="fa-solid fa-rotate" aria-hidden="true"></i>&nbsp;{{ 'RMA.BOARD.REFRESH' | translate }}
+  </button>
+  @if (store.generatedAt(); as at) {
+    <span class="board-generated">{{
+      'RMA.BOARD.UPDATED_AT' | translate: { at: (at | date: 'medium') ?? at }
+    }}</span>
+  }
+</div>
+
+@if (store.error()) {
+  <p class="rma-form-error" role="alert">{{ 'RMA.ERRORS.LOAD_FAILED' | translate }}</p>
+}
+
+<nz-spin [nzSpinning]="store.isLoading()">
+  <div class="board">
+    @for (column of store.visibleColumns(); track column.status) {
+      <section class="board-column" [attr.aria-labelledby]="'col-' + column.status">
+        <header class="board-column-header">
+          <h2 class="board-column-title" [id]="'col-' + column.status">
+            <i [class]="rmaStatusTag(column.status).icon" aria-hidden="true"></i>
+            {{ rmaStatusLabelKey(column.status) | translate }}
+          </h2>
+          <span
+            class="board-count"
+            [attr.aria-label]="'RMA.BOARD.COUNT' | translate: { count: column.count }"
+            >{{ column.count }}</span
+          >
+        </header>
+        <ul class="board-cards">
+          @for (item of column.items; track item.id) {
+            <li class="board-card" [class.board-card-overdue]="item.loaner_overdue">
+              <button type="button" class="board-card-open" (click)="openRma(item.id)">
+                <span class="board-card-number">{{ item.rma_number }}</span>
+                <span class="board-card-line">{{ item.serial_number }}</span>
+                <span class="board-card-line">{{ item.customer_name ?? '-' }}</span>
+              </button>
+              <div class="board-card-tags">
+                <app-rma-status-tag [tag]="warrantyStatusTag(item.warranty_status)" />
+                @if (estimateApprovalTag(item.estimate_approval_status); as tag) {
+                  @if (item.estimate_approval_status !== 'not_required') {
+                    <app-rma-status-tag [tag]="tag" />
+                  }
+                }
+              </div>
+              <div class="board-card-meta">
+                <span>
+                  <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                  {{ 'RMA.BOARD.AGE_DAYS' | translate: { days: item.age_days } }}
+                </span>
+                @if (item.has_loaner) {
+                  <span>
+                    <i class="fa-solid fa-laptop" aria-hidden="true"></i>
+                    {{ 'RMA.BOARD.HAS_LOANER' | translate }}
+                  </span>
+                }
+                @if (item.loaner_overdue) {
+                  <span class="board-overdue">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    {{ 'RMA.LOANER.OVERDUE' | translate }}
+                  </span>
+                }
+              </div>
+              @if (allowedRmaActions(column.status).length) {
+                <div class="board-card-actions">
+                  @for (action of allowedRmaActions(column.status); track action) {
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="openRma(item.id, action)"
+                      [attr.aria-label]="
+                        ('RMA.ACTIONS.' + action.toUpperCase() | translate) + ' ' + item.rma_number
+                      "
+                    >
+                      {{ 'RMA.ACTIONS.' + action.toUpperCase() | translate }}
+                    </button>
+                  }
+                </div>
+              }
+            </li>
+          } @empty {
+            <li class="board-empty">{{ 'RMA.BOARD.EMPTY_COLUMN' | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</nz-spin>
+
+<app-rma-detail-drawer
+  [open]="drawerOpen()"
+  (openChange)="onDrawerOpenChange($event)"
+  [rmaId]="selectedId()"
+  [initialAction]="selectedAction()"
+/>

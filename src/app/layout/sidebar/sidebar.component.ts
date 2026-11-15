@@ -158,6 +158,29 @@ export class SidebarComponent {
             },
           ],
         },
+        {
+          key: 'NAV.WARRANTY_RMA',
+          icon: 'fa-solid fa-shield-halved',
+          children: [
+            {
+              key: 'NAV.WARRANTY_LOOKUP',
+              route: '/warranty-rma/lookup',
+              icon: 'fa-solid fa-magnifying-glass',
+            },
+            { key: 'NAV.RMA_BENCH', route: '/warranty-rma/bench', icon: 'fa-solid fa-table-columns' },
+            {
+              key: 'NAV.EQUIPMENT_PASSPORTS',
+              route: '/warranty-rma/passports',
+              icon: 'fa-solid fa-id-card',
+            },
+            { key: 'NAV.LOANERS', route: '/warranty-rma/loaners', icon: 'fa-solid fa-laptop' },
+            {
+              key: 'NAV.VENDOR_CLAIMS',
+              route: '/warranty-rma/vendor-claims',
+              icon: 'fa-solid fa-file-invoice-dollar',
+            },
+          ],
+        },
       ],
     },
     {

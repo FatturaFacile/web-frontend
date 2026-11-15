@@ -1,0 +1,164 @@
+<app-page-header
+  [title]="'RMA.LOOKUP.TITLE' | translate"
+  [subtitle]="'RMA.LOOKUP.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <form class="rma-toolbar" role="search" (ngSubmit)="search()">
+    <label for="lookup-serial">{{ 'RMA.FIELDS.SERIAL' | translate }}</label>
+    <input
+      nz-input
+      id="lookup-serial"
+      name="serial"
+      class="lookup-input"
+      autocomplete="off"
+      [ngModel]="serial()"
+      (ngModelChange)="serial.set($event)"
+      [placeholder]="'RMA.LOOKUP.PLACEHOLDER' | translate"
+    />
+    <button
+      nz-button
+      nzType="primary"
+      type="submit"
+      [nzLoading]="store.isLoading()"
+      [disabled]="!serial().trim()"
+    >
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>&nbsp;{{
+        'RMA.LOOKUP.SEARCH' | translate
+      }}
+    </button>
+  </form>
+</nz-card>
+
+<div aria-live="polite">
+  @switch (store.outcome()) {
+    @case ('serial_not_found') {
+      <nz-alert
+        class="lookup-alert"
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'RMA.ERRORS.SERIAL_NOT_FOUND' | translate"
+        [nzDescription]="notFoundAction"
+      />
+    }
+    @case ('passport_missing') {
+      <nz-alert
+        class="lookup-alert"
+        nzType="info"
+        nzShowIcon
+        [nzMessage]="'RMA.ERRORS.PASSPORT_MISSING' | translate"
+        [nzDescription]="notFoundAction"
+      />
+    }
+    @case ('error') {
+      <nz-alert
+        class="lookup-alert"
+        nzType="error"
+        nzShowIcon
+        [nzMessage]="'RMA.ERRORS.LOAD_FAILED' | translate"
+      />
+    }
+    @case ('found') {
+      @if (store.result(); as r) {
+        <nz-card class="lookup-card" [nzTitle]="r.passport.serial_number" [nzExtra]="issueButton">
+          <nz-descriptions nzBordered [nzColumn]="{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 1, xs: 1 }">
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.WARRANTY' | translate">
+              @if (warrantyTag(); as tag) {
+                <app-rma-status-tag [tag]="tag" />
+              }
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.EXPIRY' | translate">
+              {{ r.warranty.expiry_date | date: 'mediumDate' }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.DAYS_REMAINING' | translate">
+              {{ r.warranty.days_remaining }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.POLICY' | translate">
+              {{ 'RMA.POLICY.' + r.warranty.policy_type.toUpperCase() | translate }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.START' | translate">
+              {{ r.warranty.start_date | date: 'mediumDate' }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.BASIS' | translate">
+              {{ r.warranty.basis.jurisdiction }} &middot;
+              {{
+                'RMA.CUSTOMER_TYPE.' + r.warranty.basis.customer_type.toUpperCase() | translate
+              }}
+              &middot;
+              {{ 'RMA.LOOKUP.MONTHS' | translate: { months: r.warranty.basis.months } }} &middot;
+              {{ 'RMA.SOURCE.' + r.warranty.basis.source.toUpperCase() | translate }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.CUSTOMER' | translate">
+              {{ r.passport.customer?.name ?? '-' }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.TITLE' | translate">
+              <a [routerLink]="['/warranty-rma/passports', r.passport.id]">{{
+                'RMA.LOOKUP.OPEN_PASSPORT' | translate
+              }}</a>
+            </nz-descriptions-item>
+          </nz-descriptions>
+
+          <h3 class="lookup-history-title">{{ 'RMA.LOOKUP.RMA_HISTORY' | translate }}</h3>
+          <nz-table
+            #historyTable
+            [nzData]="r.rma_history"
+            [nzFrontPagination]="false"
+            nzSize="small"
+            [nzNoResult]="'RMA.LOOKUP.NO_RMA' | translate"
+          >
+            <thead>
+              <tr>
+                <th scope="col">{{ 'RMA.FIELDS.RMA_NUMBER' | translate }}</th>
+                <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+                <th scope="col">{{ 'COMMON.DATE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of historyTable.data; track h.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/warranty-rma/bench']" [queryParams]="{ rma: h.id }">{{
+                      h.rma_number
+                    }}</a>
+                  </td>
+                  <td><app-rma-status-tag [tag]="rmaStatusTag(h.status)" /></td>
+                  <td>{{ h.created_at | date: 'mediumDate' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+
+        <ng-template #issueButton>
+          <button nz-button nzType="primary" type="button" (click)="issueOpen.set(true)">
+            <i class="fa-solid fa-truck-arrow-right" aria-hidden="true"></i>&nbsp;{{
+              'RMA.ISSUE.BUTTON' | translate
+            }}
+          </button>
+        </ng-template>
+
+        <app-issue-rma-dialog
+          [(open)]="issueOpen"
+          [passportId]="r.passport.id"
+          [outOfWarranty]="r.warranty.status !== 'in_warranty'"
+        />
+      }
+    }
+  }
+</div>
+
+<ng-template #notFoundAction>
+  <button nz-button nzType="primary" type="button" (click)="passportFormOpen.set(true)">
+    <i class="fa-solid fa-id-card" aria-hidden="true"></i>&nbsp;{{
+      'RMA.PASSPORT.CREATE' | translate
+    }}
+  </button>
+</ng-template>
+
+<app-passport-form-dialog
+  [(open)]="passportFormOpen"
+  [prefill]="passportPrefill()"
+  (created)="onPassportCreated($event)"
+/>
+
+<app-rma-label-dialog [label]="store.issuedLabel()" (closed)="store.dismissLabel()" />

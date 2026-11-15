@@ -277,3 +277,64 @@ html.dark,
 .facile-color {
   color: #0D9488 !important;
 }
+
+// RMA shipping label printing (warranty-rma feature): only the label modal body is printed.
+@media print {
+  body.rma-label-printing {
+    app-root,
+    .ant-modal-mask,
+    .ant-modal-header,
+    .ant-modal-footer,
+    .ant-modal-close,
+    .no-print {
+      display: none !important;
+    }
+
+    .ant-modal-wrap {
+      position: static !important;
+      overflow: visible !important;
+    }
+
+    .ant-modal {
+      top: 0 !important;
+      width: 100% !important;
+      max-width: none !important;
+      padding: 0 !important;
+    }
+
+    .ant-modal-content {
+      box-shadow: none !important;
+    }
+  }
+}
+
+// Warranty / RMA feature form layouts (shared by its dialogs).
+.rma-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 16px;
+}
+
+.rma-row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) auto;
+  column-gap: 8px;
+  align-items: end;
+}
+
+.rma-row-remove {
+  margin-bottom: 24px;
+}
+
+.rma-form-error {
+  color: #a8071a;
+  margin: 8px 0 0;
+}
+
+.rma-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
