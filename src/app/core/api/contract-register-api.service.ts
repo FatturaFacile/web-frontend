@@ -4,7 +4,12 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  ContractAddCommentRequest,
   ContractAlertResource,
+  ContractDocumentVersionResource,
+  ContractPublicSigningView,
+  ContractVersionComment,
+  ContractVersionComparison,
   ContractKind,
   ContractObligationParams,
   ContractObligationResource,
@@ -194,6 +199,69 @@ export class ContractRegisterApiService {
   acknowledgeAlert(id: string): Observable<ApiResponse<{ success: boolean }>> {
     return this.http.post<ApiResponse<{ success: boolean }>>(
       `${this.base}/contract-register/alerts/${id}/acknowledge`,
+      {},
+    );
+  }
+
+  // --- PUBLIC SIGNING (no authentication: the token of the link is the credential) ---
+  getPublicSigning(token: string): Observable<{ data: ContractPublicSigningView }> {
+    return this.http.get<{ data: ContractPublicSigningView }>(
+      `${this.base}/public/contract-signing/${encodeURIComponent(token)}`,
+    );
+  }
+
+  signPublicSigning(token: string): Observable<{ data: ContractPublicSigningView }> {
+    return this.http.post<{ data: ContractPublicSigningView }>(
+      `${this.base}/public/contract-signing/${encodeURIComponent(token)}/sign`,
+      {},
+    );
+  }
+
+  declinePublicSigning(token: string, reason: string): Observable<{ data: ContractPublicSigningView }> {
+    return this.http.post<{ data: ContractPublicSigningView }>(
+      `${this.base}/public/contract-signing/${encodeURIComponent(token)}/decline`,
+      { reason },
+    );
+  }
+
+  // --- REDLINING ---
+  getDocumentVersions(kind: ContractKind, id: string): Observable<{ data: ContractDocumentVersionResource[] }> {
+    return this.http.get<{ data: ContractDocumentVersionResource[] }>(
+      `${this.base}/contract-authoring/contracts/${kind}/${id}/versions`,
+    );
+  }
+
+  compareDocumentVersions(
+    kind: ContractKind,
+    id: string,
+    from: number,
+    to: number,
+  ): Observable<{ data: ContractVersionComparison }> {
+    return this.http.get<{ data: ContractVersionComparison }>(
+      `${this.base}/contract-authoring/contracts/${kind}/${id}/versions/compare`,
+      { params: { from, to } },
+    );
+  }
+
+  getVersionComments(versionId: string): Observable<{ data: ContractVersionComment[] }> {
+    return this.http.get<{ data: ContractVersionComment[] }>(
+      `${this.base}/contract-authoring/document-versions/${versionId}/comments`,
+    );
+  }
+
+  addVersionComment(
+    versionId: string,
+    payload: ContractAddCommentRequest,
+  ): Observable<{ data: ContractVersionComment }> {
+    return this.http.post<{ data: ContractVersionComment }>(
+      `${this.base}/contract-authoring/document-versions/${versionId}/comments`,
+      payload,
+    );
+  }
+
+  resolveVersionComment(commentId: string): Observable<{ data: ContractVersionComment }> {
+    return this.http.post<{ data: ContractVersionComment }>(
+      `${this.base}/contract-authoring/contract-comments/${commentId}/resolve`,
       {},
     );
   }

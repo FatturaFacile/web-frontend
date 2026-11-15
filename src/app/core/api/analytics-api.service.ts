@@ -7,8 +7,17 @@ import {
   ApiResponse,
   AnalyticsKpiReport,
   AnalyticsKpiResult,
+  AnalyticsDesignedReport,
+  AnalyticsDesignerRequest,
+  AnalyticsExportSchedule,
+  AnalyticsKpiSnapshot,
+  AnalyticsKpiSnapshotParams,
   AnalyticsReportDefinition,
+  AnalyticsReportResult,
+  AnalyticsSaveDesignedReportRequest,
+  AnalyticsSaveExportScheduleRequest,
   AnalyticsSaveReportDefinitionRequest,
+  AnalyticsSemanticDataset,
   BreakdownEntry,
   DueCalendarEntry,
   DueCalendarQueryParams,
@@ -221,6 +230,112 @@ export class AnalyticsApiService {
   }
 
   /**
+   * The governed catalogue of the semantic layer: datasets with their allow-listed dimensions and measures.
+   */
+  getSemanticDatasets(): Observable<ApiResponse<AnalyticsSemanticDataset[]>> {
+    return this.http.get<ApiResponse<AnalyticsSemanticDataset[]>>(`${this.baseUrl}/semantic/datasets`);
+  }
+
+  getSemanticDataset(dataset: string): Observable<ApiResponse<AnalyticsSemanticDataset>> {
+    return this.http.get<ApiResponse<AnalyticsSemanticDataset>>(
+      `${this.baseUrl}/semantic/datasets/${encodeURIComponent(dataset)}`
+    );
+  }
+
+  /**
+   * Run a report of the designer: one page of a dataset and a specification.
+   */
+  runDesigner(payload: AnalyticsDesignerRequest): Observable<ApiResponse<AnalyticsReportResult>> {
+    return this.http.post<ApiResponse<AnalyticsReportResult>>(`${this.baseUrl}/designer/run`, payload);
+  }
+
+  /**
+   * Export a report of the designer (field `format`: csv, excel_csv or xlsx).
+   */
+  exportDesigner(payload: AnalyticsDesignerRequest): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/designer/export`, payload, { responseType: 'blob' });
+  }
+
+  getDesignedReports(): Observable<ApiResponse<AnalyticsDesignedReport[]>> {
+    return this.http.get<ApiResponse<AnalyticsDesignedReport[]>>(`${this.baseUrl}/designed-reports`);
+  }
+
+  getDesignedReport(id: string): Observable<ApiResponse<AnalyticsDesignedReport>> {
+    return this.http.get<ApiResponse<AnalyticsDesignedReport>>(
+      `${this.baseUrl}/designed-reports/${encodeURIComponent(id)}`
+    );
+  }
+
+  createDesignedReport(payload: AnalyticsSaveDesignedReportRequest): Observable<ApiResponse<AnalyticsDesignedReport>> {
+    return this.http.post<ApiResponse<AnalyticsDesignedReport>>(`${this.baseUrl}/designed-reports`, payload);
+  }
+
+  updateDesignedReport(
+    id: string,
+    payload: AnalyticsSaveDesignedReportRequest
+  ): Observable<ApiResponse<AnalyticsDesignedReport>> {
+    return this.http.put<ApiResponse<AnalyticsDesignedReport>>(
+      `${this.baseUrl}/designed-reports/${encodeURIComponent(id)}`,
+      payload
+    );
+  }
+
+  deleteDesignedReport(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/designed-reports/${encodeURIComponent(id)}`);
+  }
+
+  runDesignedReport(id: string, page = 1, perPage = 50): Observable<ApiResponse<AnalyticsReportResult>> {
+    return this.http.get<ApiResponse<AnalyticsReportResult>>(
+      `${this.baseUrl}/designed-reports/${encodeURIComponent(id)}/run`,
+      { params: new HttpParams().set('page', String(page)).set('per_page', String(perPage)) }
+    );
+  }
+
+  exportDesignedReport(id: string, format = 'csv'): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/designed-reports/${encodeURIComponent(id)}/export`, {
+      params: new HttpParams().set('format', format),
+      responseType: 'blob',
+    });
+  }
+
+  getExportSchedules(): Observable<ApiResponse<AnalyticsExportSchedule[]>> {
+    return this.http.get<ApiResponse<AnalyticsExportSchedule[]>>(`${this.baseUrl}/export-schedules`);
+  }
+
+  getExportSchedule(id: string): Observable<ApiResponse<AnalyticsExportSchedule>> {
+    return this.http.get<ApiResponse<AnalyticsExportSchedule>>(
+      `${this.baseUrl}/export-schedules/${encodeURIComponent(id)}`
+    );
+  }
+
+  createExportSchedule(payload: AnalyticsSaveExportScheduleRequest): Observable<ApiResponse<AnalyticsExportSchedule>> {
+    return this.http.post<ApiResponse<AnalyticsExportSchedule>>(`${this.baseUrl}/export-schedules`, payload);
+  }
+
+  updateExportSchedule(
+    id: string,
+    payload: AnalyticsSaveExportScheduleRequest
+  ): Observable<ApiResponse<AnalyticsExportSchedule>> {
+    return this.http.put<ApiResponse<AnalyticsExportSchedule>>(
+      `${this.baseUrl}/export-schedules/${encodeURIComponent(id)}`,
+      payload
+    );
+  }
+
+  deleteExportSchedule(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/export-schedules/${encodeURIComponent(id)}`);
+  }
+
+  /**
+   * Daily KPI values materialised by the nightly refresh, oldest first.
+   */
+  getKpiSnapshots(params?: AnalyticsKpiSnapshotParams): Observable<ApiResponse<AnalyticsKpiSnapshot[]>> {
+    return this.http.get<ApiResponse<AnalyticsKpiSnapshot[]>>(`${this.baseUrl}/kpi-snapshots`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  /**
    * Feed for external BI/reporting tools (PowerBI, Tableau, Google Looker Studio).
    */
   getReportingFeed(
@@ -239,3 +354,4 @@ export class AnalyticsApiService {
     );
   }
 }
+

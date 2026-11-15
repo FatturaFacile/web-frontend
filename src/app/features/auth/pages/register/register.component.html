@@ -59,6 +59,10 @@
               <nz-select nzId="country" formControlName="country">
                 <nz-option nzValue="IT" [nzLabel]="'AUTH.COUNTRY_IT' | translate" />
                 <nz-option nzValue="CH" [nzLabel]="'AUTH.COUNTRY_CH' | translate" />
+                <nz-option nzValue="FR" [nzLabel]="'AUTH.COUNTRY_FR' | translate" />
+                <nz-option nzValue="ES" [nzLabel]="'AUTH.COUNTRY_ES' | translate" />
+                <nz-option nzValue="DE" [nzLabel]="'AUTH.COUNTRY_DE' | translate" />
+                <nz-option nzValue="US" [nzLabel]="'AUTH.COUNTRY_US' | translate" />
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -70,7 +74,7 @@
                 nz-input
                 id="tax_id"
                 formControlName="tax_id"
-                [placeholder]="form.controls.country.value === 'CH' ? 'CHE-123.456.789' : '12345678901'"
+                [placeholder]="taxIdPlaceholder()"
               />
             </nz-form-control>
           </nz-form-item>

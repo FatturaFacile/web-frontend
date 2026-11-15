@@ -17,10 +17,12 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   COLLECTION_ACTION_TYPES,
   COLLECTION_CASE_OUTCOMES,
+  COLLECTION_CASE_PRIORITIES,
   COLLECTION_PROMISE_OUTCOMES,
   CollectionActionRequest,
   CollectionCase,
   CollectionCaseOutcome,
+  CollectionCasePriority,
   CollectionPromise,
   CollectionPromiseOutcome,
   CREDIT_DISPUTE_REASONS,
@@ -28,12 +30,13 @@ import {
   CreditDisputeOutcome,
   CreditDisputeReason,
   CreditManagementApiService,
+  SettingsApiService,
   TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
-import { apiErrorText, blankToNull, decimalOrNull, statusColor, todayIso } from './credit.util';
+import { apiErrorText, blankToNull, CreditCollectorOption, decimalOrNull, loadCollectors, statusColor, todayIso } from './credit.util';
 
-type CaseDialog = 'action' | 'promise' | 'promiseResolve' | 'dispute' | 'disputeResolve' | 'close' | null;
+type CaseDialog = 'action' | 'assign' | 'edit' | 'promise' | 'promiseResolve' | 'dispute' | 'disputeResolve' | 'close' | null;
 
 /** One collection case: invoices, dunning actions, promises to pay and disputes. */
 @Component({
@@ -63,6 +66,8 @@ type CaseDialog = 'action' | 'promise' | 'promiseResolve' | 'dispute' | 'dispute
         @if (!isClosed()) {
           <button nz-button nz-popconfirm [nzPopconfirmTitle]="'CREDIT.ADVANCE_CONFIRM' | translate" (nzOnConfirm)="advance()">{{ 'CREDIT.ADVANCE' | translate }}</button>
           <button nz-button (click)="refresh()">{{ 'CREDIT.REFRESH' | translate }}</button>
+          <button nz-button (click)="openAssign()">{{ 'CREDIT.ASSIGN_COLLECTOR' | translate }}</button>
+          <button nz-button (click)="openEdit()">{{ 'CREDIT.EDIT_CASE' | translate }}</button>
           <button nz-button (click)="openDialog('action')">{{ 'CREDIT.RECORD_ACTION' | translate }}</button>
           <button nz-button (click)="openDialog('promise')">{{ 'CREDIT.ADD_PROMISE' | translate }}</button>
           <button nz-button (click)="openDialog('dispute')">{{ 'CREDIT.OPEN_DISPUTE' | translate }}</button>
@@ -77,6 +82,7 @@ type CaseDialog = 'action' | 'promise' | 'promiseResolve' | 'dispute' | 'dispute
           <div><span class="muted">{{ 'CREDIT.NEXT_ACTION_ON' | translate }}</span><br />{{ data.next_action_on ?? '-' }}</div>
           <div><span class="muted">{{ 'CREDIT.DUNNING_STRATEGY' | translate }}</span><br />{{ data.strategy?.name ?? '-' }}</div>
           <div><span class="muted">{{ 'CREDIT.CURRENT_STEP' | translate }}</span><br />{{ data.current_step_order }}</div>
+          <div><span class="muted">{{ 'CREDIT.COLLECTOR' | translate }}</span><br />{{ collectorName(data.collector_id) }}</div>
           <div><span class="muted">{{ 'CREDIT.PRIORITY' | translate }}</span><br /><nz-tag [nzColor]="color(data.priority)">{{ ('CREDIT.PRIORITY_' + data.priority.toUpperCase()) | translate }}</nz-tag></div>
           <div><span class="muted">{{ 'CREDIT.STATUS' | translate }}</span><br /><nz-tag [nzColor]="color(data.status)">{{ ('CREDIT.CASE_STATUS_' + data.status.toUpperCase()) | translate }}</nz-tag></div>
         </div>
@@ -193,6 +199,50 @@ type CaseDialog = 'action' | 'promise' | 'promiseResolve' | 'dispute' | 'dispute
     } @else if (!loading()) {
       <nz-empty [nzNotFoundContent]="'CREDIT.NO_DATA' | translate"></nz-empty>
     }
+
+    <nz-modal [nzVisible]="dialog() === 'assign'" [nzTitle]="'CREDIT.ASSIGN_COLLECTOR' | translate" (nzOnCancel)="dialog.set(null)" (nzOnOk)="saveAssign()" okAction="save">
+      <ng-container *nzModalContent>
+        <form nz-form [formGroup]="assignForm" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label>{{ 'CREDIT.COLLECTOR' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="collector_id" nzAllowClear nzShowSearch [nzPlaceHolder]="'CREDIT.UNASSIGNED' | translate">
+                @for (collector of collectors(); track collector.id) {
+                  <nz-option [nzValue]="collector.id" [nzLabel]="collector.name"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+    </nz-modal>
+
+    <nz-modal [nzVisible]="dialog() === 'edit'" [nzTitle]="'CREDIT.EDIT_CASE' | translate" (nzOnCancel)="dialog.set(null)" (nzOnOk)="saveEdit()" okAction="save" [nzOkDisabled]="editForm.invalid">
+      <ng-container *nzModalContent>
+        <form nz-form [formGroup]="editForm" nzLayout="vertical">
+          <div class="form-row">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'CREDIT.PRIORITY' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="priority">
+                  @for (value of priorities; track value) {
+                    <nz-option [nzValue]="value" [nzLabel]="('CREDIT.PRIORITY_' + value.toUpperCase()) | translate"></nz-option>
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="case-next-action">{{ 'CREDIT.NEXT_ACTION_ON' | translate }}</nz-form-label>
+              <nz-form-control><input nz-input id="case-next-action" type="date" formControlName="next_action_on" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <nz-form-item>
+            <nz-form-label nzFor="case-edit-notes">{{ 'CREDIT.NOTES' | translate }}</nz-form-label>
+            <nz-form-control><textarea nz-input id="case-edit-notes" rows="3" maxlength="2000" formControlName="notes"></textarea></nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+    </nz-modal>
 
     <nz-modal [nzVisible]="dialog() === 'action'" [nzTitle]="'CREDIT.RECORD_ACTION' | translate" (nzOnCancel)="dialog.set(null)" (nzOnOk)="saveAction()" okAction="save" [nzOkDisabled]="actionForm.invalid">
       <ng-container *nzModalContent>
@@ -351,12 +401,15 @@ export class CreditCaseDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly settings = inject(SettingsApiService);
   private readonly fb = inject(NonNullableFormBuilder);
 
   readonly actionTypes = COLLECTION_ACTION_TYPES;
   readonly promiseOutcomes = COLLECTION_PROMISE_OUTCOMES;
   readonly disputeReasons = CREDIT_DISPUTE_REASONS;
   readonly closeOutcomes = COLLECTION_CASE_OUTCOMES;
+  readonly priorities = COLLECTION_CASE_PRIORITIES;
+  readonly collectors = signal<CreditCollectorOption[]>([]);
   readonly caseData = signal<CollectionCase | null>(null);
   readonly loading = signal(false);
   readonly dialog = signal<CaseDialog>(null);
@@ -394,6 +447,16 @@ export class CreditCaseDetailComponent implements OnInit {
     resolution_note: [''],
   });
 
+  readonly assignForm = this.fb.group({
+    collector_id: this.fb.control<string | null>(null),
+  });
+
+  readonly editForm = this.fb.group({
+    priority: ['normal' as CollectionCasePriority, [Validators.required]],
+    next_action_on: [''],
+    notes: ['', [Validators.maxLength(2000)]],
+  });
+
   readonly closeForm = this.fb.group({
     outcome: ['resolved' as CollectionCaseOutcome, [Validators.required]],
     note: [''],
@@ -405,6 +468,11 @@ export class CreditCaseDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    loadCollectors(this.settings).subscribe((collectors) => this.collectors.set(collectors));
+  }
+
+  collectorName(collectorId: string | null): string {
+    return collectorId === null ? this.translate.instant('CREDIT.UNASSIGNED') : (this.collectors().find((collector) => collector.id === collectorId)?.name ?? collectorId);
   }
 
   color(status: string): string {
@@ -440,6 +508,26 @@ export class CreditCaseDetailComponent implements OnInit {
 
   refresh(): void {
     this.run(this.api.refreshCase(this.id), 'CREDIT.CASE_REFRESHED');
+  }
+
+  openAssign(): void {
+    this.assignForm.reset({ collector_id: this.caseData()?.collector_id ?? null });
+    this.dialog.set('assign');
+  }
+
+  saveAssign(): void {
+    this.run(this.api.assignCase(this.id, this.assignForm.getRawValue().collector_id), 'CREDIT.CASE_SAVED');
+  }
+
+  openEdit(): void {
+    const data = this.caseData();
+    this.editForm.reset({ priority: data?.priority ?? 'normal', next_action_on: data?.next_action_on ?? '', notes: data?.notes ?? '' });
+    this.dialog.set('edit');
+  }
+
+  saveEdit(): void {
+    const value = this.editForm.getRawValue();
+    this.run(this.api.updateCase(this.id, { priority: value.priority, next_action_on: blankToNull(value.next_action_on), notes: blankToNull(value.notes) }), 'CREDIT.CASE_SAVED');
   }
 
   saveAction(): void {

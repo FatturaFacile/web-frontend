@@ -28,6 +28,16 @@ export const TALENT_LEARNING_ROUTES: Routes = [
     loadComponent: () => import('./talent-enrolments.component').then((m) => m.TalentEnrolmentsComponent),
   },
   {
+    path: 'certificates',
+    data: { breadcrumb: 'NAV.TALENT_LEARNING_CERTIFICATES', title: 'PAGE_TITLE.TALENT_LEARNING_CERTIFICATES' },
+    loadComponent: () => import('./talent-certificates.component').then((m) => m.TalentCertificatesComponent),
+  },
+  {
+    path: 'my-learning',
+    data: { breadcrumb: 'NAV.TALENT_LEARNING_MY_LEARNING', title: 'PAGE_TITLE.TALENT_LEARNING_MY_LEARNING' },
+    loadComponent: () => import('./talent-my-learning.component').then((m) => m.TalentMyLearningComponent),
+  },
+  {
     path: 'compliance',
     data: { breadcrumb: 'NAV.TALENT_LEARNING_COMPLIANCE', title: 'PAGE_TITLE.TALENT_LEARNING_COMPLIANCE' },
     loadComponent: () => import('./talent-compliance.component').then((m) => m.TalentComplianceComponent),

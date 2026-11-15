@@ -1,4 +1,4 @@
-import { ContactResource, CrmApiService } from '@core';
+import { ContactResource, CrmApiService, SettingsApiService } from '@core';
 import { catchError, map, Observable, of } from 'rxjs';
 
 export { apiErrorText, blankToNull, decimalOrNull, todayIso } from '../fleet/fleet.util';
@@ -17,6 +17,19 @@ export function contactName(contact: ContactResource): string {
 export function loadCustomers(crm: CrmApiService): Observable<CreditCustomerOption[]> {
   return crm.getClients({ per_page: 100 }).pipe(
     map((response) => response.data.map((contact) => ({ id: contact.id, name: contactName(contact) }))),
+    catchError(() => of([])),
+  );
+}
+
+export interface CreditCollectorOption {
+  id: string;
+  name: string;
+}
+
+/** Members of the company a case can be assigned to; members who cannot list the users get an empty list. */
+export function loadCollectors(settings: SettingsApiService): Observable<CreditCollectorOption[]> {
+  return settings.getTenantUsers().pipe(
+    map((response) => response.data.map((user) => ({ id: user.id, name: user.name }))),
     catchError(() => of([])),
   );
 }

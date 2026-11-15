@@ -40,6 +40,12 @@ export class GeneralLedgerShellComponent {
     { path: 'fx-revaluation', labelKey: 'GL.NAV_FX' },
     { path: 'close', labelKey: 'GL.NAV_CLOSE' },
     { path: 'fiscal-years', labelKey: 'GL.NAV_FISCAL_YEARS' },
+    { path: 'consolidation', labelKey: 'GL.NAV_CONSOLIDATION' },
+    { path: 'localization', labelKey: 'GL.NAV_LOCALIZATION' },
+    { path: 'country-returns', labelKey: 'GL.NAV_COUNTRY_RETURNS' },
+    { path: 'lettering', labelKey: 'GL.NAV_LETTERING' },
+    { path: 'us-sales-tax', labelKey: 'GL.NAV_US_SALES_TAX' },
+    { path: 'us-1099', labelKey: 'GL.NAV_US_1099' },
     { path: 'settings', labelKey: 'GL.NAV_SETTINGS' },
   ];
 }

@@ -37,6 +37,8 @@ describe('CommunicationInboxComponent', () => {
     replyToConversation: vi.fn(),
     changeConversationStatus: vi.fn(),
     receiveInboundMessage: vi.fn(),
+    getAssignees: vi.fn(),
+    assignConversation: vi.fn(),
   };
   const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
   const translateSpy = { instant: vi.fn().mockImplementation((key: string) => key), translate: vi.fn().mockImplementation((key: string) => key) };
@@ -49,6 +51,8 @@ describe('CommunicationInboxComponent', () => {
     apiSpy.replyToConversation.mockReturnValue(of({ data: conversation.messages?.[0] }));
     apiSpy.changeConversationStatus.mockReturnValue(of({ data: { ...conversation, status: 'resolved' } }));
     apiSpy.receiveInboundMessage.mockReturnValue(of({ data: conversation.messages?.[0] }));
+    apiSpy.getAssignees.mockReturnValue(of({ data: [{ id: 'user-1', name: 'Agent One' }] }));
+    apiSpy.assignConversation.mockReturnValue(of({ data: { ...conversation, assigned_to: 'user-1' } }));
 
     await TestBed.configureTestingModule({
       imports: [CommunicationInboxComponent],
@@ -130,5 +134,24 @@ describe('CommunicationInboxComponent', () => {
     component.replyText.set('x');
     component.reply();
     expect(messageSpy.error).toHaveBeenCalledWith('COMMUNICATION.ACTION_ERROR');
+  });
+
+  it('loads the assignees, shows the assigned name and assigns or unassigns the open conversation', () => {
+    expect(component.assigneeName('user-1')).toBe('Agent One');
+    expect(component.assigneeName(null)).toBe('');
+
+    component.open(conversation);
+    component.assign('user-1');
+    expect(apiSpy.assignConversation).toHaveBeenCalledWith('conv-1', 'user-1');
+    expect(component.detail()?.assigned_to).toBe('user-1');
+    expect(component.detail()?.messages).toHaveLength(1);
+
+    component.assign(null);
+    expect(apiSpy.assignConversation).toHaveBeenLastCalledWith('conv-1', null);
+  });
+
+  it('filters by assignee', () => {
+    component.setAssigneeFilter('none');
+    expect(apiSpy.getConversations).toHaveBeenLastCalledWith({ per_page: 100, assigned_to: 'none' });
   });
 });

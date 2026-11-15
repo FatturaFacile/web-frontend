@@ -24,6 +24,21 @@ export const CREDIT_MANAGEMENT_ROUTES: Routes = [
     loadComponent: () => import('./credit-case-detail.component').then((m) => m.CreditCaseDetailComponent),
   },
   {
+    path: 'aging',
+    data: { breadcrumb: 'NAV.CREDIT_AGING', title: 'PAGE_TITLE.CREDIT_AGING' },
+    loadComponent: () => import('./credit-aging.component').then((m) => m.CreditAgingComponent),
+  },
+  {
+    path: 'promises',
+    data: { breadcrumb: 'NAV.CREDIT_PROMISES', title: 'PAGE_TITLE.CREDIT_PROMISES' },
+    loadComponent: () => import('./credit-promises.component').then((m) => m.CreditPromisesComponent),
+  },
+  {
+    path: 'disputes',
+    data: { breadcrumb: 'NAV.CREDIT_DISPUTES', title: 'PAGE_TITLE.CREDIT_DISPUTES' },
+    loadComponent: () => import('./credit-disputes.component').then((m) => m.CreditDisputesComponent),
+  },
+  {
     path: 'scores',
     data: { breadcrumb: 'NAV.CREDIT_SCORES', title: 'PAGE_TITLE.CREDIT_SCORES' },
     loadComponent: () => import('./credit-scores.component').then((m) => m.CreditScoresComponent),

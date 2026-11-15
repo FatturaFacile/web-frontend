@@ -12,6 +12,7 @@ import {
   CommunicationCampaignPreview,
   CommunicationCampaignRecipient,
   CommunicationCampaignRequest,
+  CommunicationAssignee,
   CommunicationChannelResource,
   CommunicationChannelType,
   CommunicationContactPreference,
@@ -132,6 +133,10 @@ export class CommunicationApiService {
 
   markConversationRead(id: string): Observable<{ data: CommunicationConversation }> {
     return this.http.post<{ data: CommunicationConversation }>(`${this.base}/conversations/${id}/read`, {});
+  }
+
+  getAssignees(): Observable<{ data: CommunicationAssignee[] }> {
+    return this.http.get<{ data: CommunicationAssignee[] }>(`${this.base}/assignees`);
   }
 
   getCampaigns(params?: { status?: string; channel?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<CommunicationCampaign>> {

@@ -23,7 +23,7 @@ import {
   ProfessionalsApiService,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { downloadBlob, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { apiErrorText, loadCases, todayIso } from './practice-firm.util';
 
 /** Expenses incurred on matters (court fees, travel, experts) with the billable and billed flags. */
@@ -94,12 +94,16 @@ import { apiErrorText, loadCases, todayIso } from './practice-firm.util';
                 }
               </td>
               <td>
-                @if (!row.is_billed) {
-                  <div class="row-actions">
+                <div class="row-actions">
+                  @if (row.has_receipt) {
+                    <button nz-button nzType="link" (click)="downloadReceipt(row)">{{ 'PRACTICEFIRM.RECEIPT' | translate }}</button>
+                  }
+                  <button nz-button nzType="default" (click)="pickReceipt(row, receiptInput)">{{ 'PRACTICEFIRM.ATTACH_RECEIPT' | translate }}</button>
+                  @if (!row.is_billed) {
                     <button nz-button nzType="text" appIconAction="edit" (click)="openModal(row)"></button>
                     <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'PRACTICEFIRM.DELETE_CONFIRM' | translate" (nzOnConfirm)="remove(row)"></button>
-                  </div>
-                }
+                  }
+                </div>
               </td>
             </tr>
           }
@@ -109,6 +113,8 @@ import { apiErrorText, loadCases, todayIso } from './practice-firm.util';
         <nz-empty [nzNotFoundContent]="'PRACTICEFIRM.NO_EXPENSES' | translate"></nz-empty>
       }
     </nz-card>
+
+    <input #receiptInput type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.webp" (change)="uploadReceipt($event)" />
 
     <nz-modal [(nzVisible)]="modalVisible" [nzTitle]="(editing() ? 'PRACTICEFIRM.EDIT_EXPENSE' : 'PRACTICEFIRM.NEW_EXPENSE') | translate" (nzOnCancel)="modalVisible.set(false)" (nzOnOk)="save()" okAction="save" [nzOkDisabled]="form.invalid">
       <ng-container *nzModalContent>
@@ -161,6 +167,8 @@ export class PracticeExpensesComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  private receiptTarget: PracticeExpense | null = null;
 
   readonly categories = PRACTICE_EXPENSE_CATEGORIES;
   readonly rows = signal<PracticeExpense[]>([]);
@@ -229,6 +237,34 @@ export class PracticeExpensesComponent implements OnInit {
         this.modalVisible.set(false);
         this.load();
       },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  pickReceipt(expense: PracticeExpense, input: HTMLInputElement): void {
+    this.receiptTarget = expense;
+    input.value = '';
+    input.click();
+  }
+
+  uploadReceipt(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.item(0);
+    const expense = this.receiptTarget;
+    if (!file || !expense) {
+      return;
+    }
+    this.api.uploadExpenseReceipt(expense.id, file).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PRACTICEFIRM.RECEIPT_SAVED'));
+        this.load();
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  downloadReceipt(expense: PracticeExpense): void {
+    this.api.downloadExpenseReceipt(expense.id).subscribe({
+      next: (blob) => downloadBlob(blob, expense.receipt_name ?? `${expense.id}`),
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
     });
   }

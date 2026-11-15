@@ -8,6 +8,11 @@ import { GlDimensionsComponent } from './dimensions/gl-dimensions.component';
 import { GlFiscalYearsComponent } from './fiscal-years/gl-fiscal-years.component';
 import { GlFxRevaluationComponent } from './fx/gl-fx-revaluation.component';
 import { GeneralLedgerShellComponent } from './general-ledger-shell.component';
+import { GlCountryReturnsComponent } from './localization/gl-country-returns.component';
+import { GlLetteringComponent } from './localization/gl-lettering.component';
+import { GlLocalizationPacksComponent } from './localization/gl-localization-packs.component';
+import { GlUs1099Component } from './localization/gl-us-1099.component';
+import { GlUsSalesTaxComponent } from './localization/gl-us-sales-tax.component';
 import { GlRecurringComponent } from './recurring/gl-recurring.component';
 import { GlAccountLedgerComponent } from './reports/gl-account-ledger.component';
 import { GlDimensionReportComponent } from './reports/gl-dimension-report.component';
@@ -33,6 +38,11 @@ describe('General ledger pages boot against an empty backend', () => {
     ['statements (balance sheet)', GlStatementsComponent, { mode: 'balance-sheet' }],
     ['trial balance', GlTrialBalanceComponent, {}],
     ['VAT registers', GlVatRegistersComponent, {}],
+    ['localization packs', GlLocalizationPacksComponent, {}],
+    ['country returns', GlCountryReturnsComponent, {}],
+    ['lettering', GlLetteringComponent, {}],
+    ['US sales tax', GlUsSalesTaxComponent, {}],
+    ['US 1099', GlUs1099Component, {}],
   ] as const;
 
   it.each(pages)('%s', async (_name, component, inputs) => {

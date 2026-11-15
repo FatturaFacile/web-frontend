@@ -63,4 +63,4 @@ export function loadCases(professionals: ProfessionalsApiService): Observable<Le
 
 export const CONFLICT_RESULT_COLORS: Readonly<Record<string, string>> = { clear: 'green', review: 'orange', conflict: 'red' };
 
-export const PROPOSAL_STATUS_COLORS: Readonly<Record<string, string>> = { draft: 'default', sent: 'blue', accepted: 'green', declined: 'red' };
+export const PROPOSAL_STATUS_COLORS: Readonly<Record<string, string>> = { draft: 'default', sent: 'blue', accepted: 'green', declined: 'red', expired: 'orange' };

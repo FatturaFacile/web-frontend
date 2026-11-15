@@ -60,7 +60,6 @@ describe('TrPagoPaNoticesComponent', () => {
 
   it('calls the pagoPA notice endpoints of the treasury module', () => {
     const api = TestBed.runInInjectionContext(() => new TreasuryOpsApiService());
-    console.log('DBG', TreasuryOpsApiService.toString().slice(-420));
 
     api.createPagoPaNotice({ debtor_name: 'Mario Rossi', amount: '122.00', due_date: '2026-12-31', causale: 'Fee', creditor_fiscal_code: '12345678901' }).subscribe();
     const create = http.expectOne(`${TEST_API_BASE_URL}/treasury/pagopa-notices`);

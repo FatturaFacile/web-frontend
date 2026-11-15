@@ -21,6 +21,7 @@ import {
   AuthStore,
   DmsAiSettingsResource,
   DmsApiService,
+  DmsApprovalTemplateResource,
   DmsAuditEntry,
   DmsDocumentParams,
   DmsDocumentResource,
@@ -29,6 +30,7 @@ import {
   DmsExtractionResource,
   DmsFolderResource,
   DmsLinkDocumentRequest,
+  DmsOcrJobResource,
   DmsPlaceLegalHoldRequest,
   DmsResolvedLink,
   DmsRetentionPolicyResource,
@@ -209,6 +211,19 @@ export class DmsComponent implements OnInit {
   protected docExtractions = signal<DmsExtractionResource[]>([]);
   protected docAuditTrail = signal<DmsAuditEntry[]>([]);
   protected drawerLoading = signal<boolean>(false);
+
+  // OCR status and recognised text inside the drawer
+  protected docOcrJobs = signal<DmsOcrJobResource[]>([]);
+  protected ocrBusy = signal<boolean>(false);
+  protected ocrTextJob = signal<DmsOcrJobResource | null>(null);
+
+  // Start approval from a document row
+  protected approvalModalVisible = signal<boolean>(false);
+  protected approvalDoc = signal<DmsDocumentResource | null>(null);
+  protected approvalTemplates = signal<DmsApprovalTemplateResource[]>([]);
+  protected approvalTemplateId = signal<string>('');
+  protected approvalNote = signal<string>('');
+  protected approvalSubmitting = signal<boolean>(false);
 
   // Add Link Modal inside Drawer
   protected linkModalVisible = signal<boolean>(false);
@@ -521,6 +536,8 @@ export class DmsComponent implements OnInit {
       error: () => this.docExtractions.set([]),
     });
 
+    this.loadOcrJobs(doc.id);
+
     this.dmsApi.getDocumentAuditTrail(doc.id).subscribe({
       next: (res) => {
         this.docAuditTrail.set(res.data);
@@ -529,6 +546,82 @@ export class DmsComponent implements OnInit {
       error: () => {
         this.docAuditTrail.set([]);
         this.drawerLoading.set(false);
+      },
+    });
+  }
+
+  protected loadOcrJobs(documentId: string): void {
+    this.ocrTextJob.set(null);
+    this.dmsApi.getOcrJobs(documentId, true).subscribe({
+      next: (res) => this.docOcrJobs.set(res.data),
+      error: () => this.docOcrJobs.set([]),
+    });
+  }
+
+  /** Queue a new OCR run of the current version of the open document. */
+  protected runOcr(): void {
+    const doc = this.selectedDocument();
+    if (!doc || this.ocrBusy()) return;
+
+    this.ocrBusy.set(true);
+    this.dmsApi.queueOcr(doc.id).subscribe({
+      next: () => {
+        this.ocrBusy.set(false);
+        this.message.success(this.translate.instant('DMS.MSG_OCR_QUEUED'));
+        this.loadOcrJobs(doc.id);
+      },
+      error: (err) => {
+        this.ocrBusy.set(false);
+        this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_OCR_ERROR')));
+      },
+    });
+  }
+
+  /** Queue a failed OCR run again. */
+  protected retryOcr(job: DmsOcrJobResource): void {
+    const doc = this.selectedDocument();
+    if (!doc) return;
+
+    this.dmsApi.retryOcrJob(job.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('DMS.MSG_OCR_QUEUED'));
+        this.loadOcrJobs(doc.id);
+      },
+      error: (err) => this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_OCR_ERROR'))),
+    });
+  }
+
+  protected showOcrText(job: DmsOcrJobResource): void {
+    this.ocrTextJob.set(this.ocrTextJob()?.id === job.id ? null : job);
+  }
+
+  protected openApprovalModal(doc: DmsDocumentResource): void {
+    this.approvalDoc.set(doc);
+    this.approvalTemplateId.set('');
+    this.approvalNote.set('');
+    this.approvalModalVisible.set(true);
+    this.dmsApi.getApprovalTemplates(true).subscribe({
+      next: (res) => this.approvalTemplates.set(res.data),
+      error: () => this.approvalTemplates.set([]),
+    });
+  }
+
+  protected submitApproval(): void {
+    const doc = this.approvalDoc();
+    const templateId = this.approvalTemplateId();
+    if (!doc || templateId === '' || this.approvalSubmitting()) return;
+
+    this.approvalSubmitting.set(true);
+    const note = this.approvalNote().trim();
+    this.dmsApi.requestApproval(doc.id, { template_id: templateId, note: note === '' ? null : note }).subscribe({
+      next: () => {
+        this.approvalSubmitting.set(false);
+        this.approvalModalVisible.set(false);
+        this.message.success(this.translate.instant('DMS.MSG_APPROVAL_STARTED'));
+      },
+      error: (err) => {
+        this.approvalSubmitting.set(false);
+        this.message.error(serverErrorMessage(err, this.translate.instant('DMS.MSG_APPROVAL_ERROR')));
       },
     });
   }

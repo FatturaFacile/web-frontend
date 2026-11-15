@@ -54,6 +54,19 @@ export interface LoginResult {
   expires_in?: number;
 }
 
+/** Countries a company can register in: the values of `SupportedCountry` in the API. */
+export type RegistrationCountry = 'IT' | 'CH' | 'FR' | 'ES' | 'DE' | 'US';
+
+/** Example tax identifier shown as the placeholder of the registration form, by country. */
+export const TAX_ID_PLACEHOLDERS: Readonly<Record<RegistrationCountry, string>> = {
+  IT: '12345678901',
+  CH: 'CHE-123.456.789',
+  FR: 'FR12345678901',
+  ES: 'ESB12345678',
+  DE: 'DE123456789',
+  US: '12-3456789',
+};
+
 export interface RegisterPayload {
   first_name: string;
   last_name: string;
@@ -61,7 +74,7 @@ export interface RegisterPayload {
   password: string;
   password_confirmation: string;
   company_name: string;
-  country: 'IT' | 'CH';
+  country: RegistrationCountry;
   tax_id: string;
   terms_accepted: boolean;
   privacy_accepted: boolean;

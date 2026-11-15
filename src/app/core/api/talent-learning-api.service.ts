@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import {
   TalentBudgetPool,
   TalentBudgetPoolRequest,
+  TalentCertificate,
   TalentCompCycle,
   TalentCompCycleRequest,
   TalentCompliance,
@@ -186,6 +187,10 @@ export class TalentLearningApiService {
     return this.http.post<TalentResponse<TalentLearningPath>>(`${this.base}/learning-paths`, payload);
   }
 
+  updateLearningPath(id: string, payload: Partial<TalentLearningPathRequest>): Wrapped<TalentLearningPath> {
+    return this.http.put<TalentResponse<TalentLearningPath>>(`${this.base}/learning-paths/${id}`, payload);
+  }
+
   transitionLearningPath(id: string, action: 'publish' | 'archive'): Wrapped<TalentLearningPath> {
     return this.http.post<TalentResponse<TalentLearningPath>>(`${this.base}/learning-paths/${id}/${action}`, {});
   }
@@ -218,6 +223,24 @@ export class TalentLearningApiService {
     return this.http.post<TalentResponse<TalentEnrolment>>(`${this.base}/enrolments/${id}/cancel`, {});
   }
 
+  /** The enrolments of the employee linked to the logged-in user (not paginated). */
+  getMyEnrolments(): Wrapped<TalentEnrolment[]> {
+    return this.get('my/enrolments');
+  }
+
+  getMyCertificates(): Wrapped<TalentCertificate[]> {
+    return this.get('my/certificates');
+  }
+
+  /** A learner records the progress of her own enrolment; completion stays with the learning managers. */
+  updateMyEnrolmentProgress(id: string, progressPercent: number): Wrapped<TalentEnrolment> {
+    return this.http.post<TalentResponse<TalentEnrolment>>(`${this.base}/my/enrolments/${id}/progress`, { progress_percent: progressPercent });
+  }
+
+  getCertificates(filters?: TalentListFilters): Wrapped<TalentCertificate[]> {
+    return this.get('certificates', filters);
+  }
+
   getCompliance(courseId?: string): Wrapped<TalentCompliance> {
     return this.get('compliance', { course_id: courseId });
   }
@@ -233,6 +256,10 @@ export class TalentLearningApiService {
 
   createSurvey(payload: TalentSurveyRequest): Wrapped<TalentSurvey> {
     return this.http.post<TalentResponse<TalentSurvey>>(`${this.base}/surveys`, payload);
+  }
+
+  updateSurvey(id: string, payload: Partial<TalentSurveyRequest>): Wrapped<TalentSurvey> {
+    return this.http.put<TalentResponse<TalentSurvey>>(`${this.base}/surveys/${id}`, payload);
   }
 
   openSurvey(id: string): Wrapped<TalentSurvey> {

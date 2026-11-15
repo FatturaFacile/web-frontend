@@ -36,4 +36,9 @@ export const GOVERNANCE_ROUTES: Routes = [
     data: { breadcrumb: 'NAV.GOVERNANCE_OBLIGATIONS', title: 'PAGE_TITLE.GOVERNANCE_OBLIGATIONS' },
     loadComponent: () => import('./obligations.component').then((m) => m.GovernanceObligationsComponent),
   },
+  {
+    path: 'segregation-of-duties',
+    data: { breadcrumb: 'NAV.GOVERNANCE_SOD', title: 'PAGE_TITLE.GOVERNANCE_SOD' },
+    loadComponent: () => import('./segregation-of-duties.component').then((m) => m.GovernanceSegregationOfDutiesComponent),
+  },
 ];

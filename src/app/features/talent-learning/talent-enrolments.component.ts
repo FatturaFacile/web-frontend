@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -12,7 +13,7 @@ import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { TalentCourse, TalentEmployee, TalentEnrolment, TalentLearningApiService, TranslateService } from '@core';
+import { TalentCourse, TalentEmployee, TalentEnrolment, TalentEnrolmentStatus, TalentLearningApiService, TranslateService } from '@core';
 import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learning.util';
 
@@ -21,6 +22,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
   selector: 'app-talent-enrolments',
   styleUrl: './talent-learning.scss',
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     IconActionDirective,
     ModalActionsDirective,
@@ -28,6 +30,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
     TranslatePipe,
     NzButtonModule,
     NzCardModule,
+    NzCheckboxModule,
     NzEmptyModule,
     NzFormModule,
     NzInputModule,
@@ -43,8 +46,37 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
       <button nz-button nzType="primary" (click)="openModal()" appIconAction="create"></button>
     </app-page-header>
 
+    <div class="toolbar">
+      <nz-select style="width: 220px" nzAllowClear nzShowSearch [ngModel]="courseFilter()" (ngModelChange)="courseFilter.set($event); changeFilter()" [nzPlaceHolder]="'TALENT_LEARNING.COURSE' | translate">
+        @for (course of allCourses(); track course.id) {
+          <nz-option [nzValue]="course.id" [nzLabel]="course.code + ' - ' + course.title"></nz-option>
+        }
+      </nz-select>
+      <nz-select style="width: 220px" nzAllowClear nzShowSearch [ngModel]="employeeFilter()" (ngModelChange)="employeeFilter.set($event); changeFilter()" [nzPlaceHolder]="'TALENT_LEARNING.EMPLOYEE' | translate">
+        @for (employee of employees(); track employee.id) {
+          <nz-option [nzValue]="employee.id" [nzLabel]="employee.full_name"></nz-option>
+        }
+      </nz-select>
+      <nz-select style="width: 180px" nzAllowClear [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); changeFilter()" [nzPlaceHolder]="'TALENT_LEARNING.STATUS' | translate">
+        @for (value of statuses; track value) {
+          <nz-option [nzValue]="value" [nzLabel]="'TALENT_LEARNING.ENROLMENT_' + key(value) | translate"></nz-option>
+        }
+      </nz-select>
+      <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); changeFilter()">{{ 'TALENT_LEARNING.OVERDUE_ONLY' | translate }}</label>
+    </div>
+
     <nz-card class="main-card">
-      <nz-table #table [nzData]="enrolments()" [nzLoading]="loading()" nzSize="small" [nzPageSize]="25">
+      <nz-table
+        #table
+        [nzData]="enrolments()"
+        [nzLoading]="loading()"
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzTotal]="total()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="pageSize"
+        (nzPageIndexChange)="changePage($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'TALENT_LEARNING.EMPLOYEE' | translate }}</th>
@@ -145,7 +177,16 @@ export class TalentEnrolmentsComponent implements OnInit {
 
   readonly color = tagColor;
   readonly key = keyOf;
+  readonly statuses: readonly TalentEnrolmentStatus[] = ['enrolled', 'in_progress', 'completed', 'cancelled'];
+  readonly pageSize = 25;
   readonly enrolments = signal<TalentEnrolment[]>([]);
+  readonly allCourses = signal<TalentCourse[]>([]);
+  readonly courseFilter = signal<string | null>(null);
+  readonly employeeFilter = signal<string | null>(null);
+  readonly statusFilter = signal<TalentEnrolmentStatus | null>(null);
+  readonly overdueOnly = signal(false);
+  readonly page = signal(1);
+  readonly total = signal(0);
   readonly courses = signal<TalentCourse[]>([]);
   readonly employees = signal<TalentEmployee[]>([]);
   readonly loading = signal(false);
@@ -171,21 +212,42 @@ export class TalentEnrolmentsComponent implements OnInit {
   ngOnInit(): void {
     this.api.getEmployeeLookup().subscribe((response) => this.employees.set(response.data));
     this.api.getCourses({ status: 'published', per_page: 100 }).subscribe((response) => this.courses.set(response.data));
+    this.api.getCourses({ per_page: 100 }).subscribe((response) => this.allCourses.set(response.data));
+    this.load();
+  }
+
+  changeFilter(): void {
+    this.page.set(1);
+    this.load();
+  }
+
+  changePage(page: number): void {
+    this.page.set(page);
     this.load();
   }
 
   load(): void {
     this.loading.set(true);
-    this.api.getEnrolments({ per_page: 100 }).subscribe({
-      next: (response) => {
-        this.enrolments.set(response.data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.message.error(this.translate.instant('TALENT_LEARNING.ACTION_ERROR'));
-      },
-    });
+    this.api
+      .getEnrolments({
+        course_id: this.courseFilter() ?? undefined,
+        employee_id: this.employeeFilter() ?? undefined,
+        status: this.statusFilter() ?? undefined,
+        overdue: this.overdueOnly() || undefined,
+        page: this.page(),
+        per_page: this.pageSize,
+      })
+      .subscribe({
+        next: (response) => {
+          this.enrolments.set(response.data);
+          this.total.set(response.meta?.total ?? response.data.length);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.message.error(this.translate.instant('TALENT_LEARNING.ACTION_ERROR'));
+        },
+      });
   }
 
   passScoreHint(): string {

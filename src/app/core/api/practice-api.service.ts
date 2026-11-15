@@ -30,6 +30,8 @@ import {
   PracticeFeeProposalAcceptRequest,
   PracticeFeeProposalRequest,
   PracticeTrustBalance,
+  PracticeTrustPostRequest,
+  PracticeTrustPosting,
   PracticeTrustTransaction,
   PracticeTrustTransactionRequest,
 } from '../models';
@@ -170,6 +172,21 @@ export class PracticeApiService {
     return this.http.delete<void>(`${this.base}/expenses/${id}`);
   }
 
+  /** Attaches the receipt (PDF or image, up to 10 MB) of an expense; a new one replaces the previous. */
+  uploadExpenseReceipt(id: string, file: File): Observable<ApiResponse<PracticeExpense>> {
+    const body = new FormData();
+    body.append('receipt', file);
+    return this.http.post<ApiResponse<PracticeExpense>>(`${this.base}/expenses/${id}/receipt`, body);
+  }
+
+  downloadExpenseReceipt(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/expenses/${id}/receipt`, { responseType: 'blob' });
+  }
+
+  deleteExpenseReceipt(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/expenses/${id}/receipt`);
+  }
+
   // --- Client funds (trust) ledger ---
   getTrustLedger(params?: QueryFilterParams & { client_id?: string; legal_case_id?: string }): Observable<PaginatedResponse<PracticeTrustTransaction>> {
     return this.http.get<PaginatedResponse<PracticeTrustTransaction>>(`${this.base}/trust-ledger`, { params: params ? toHttpParams(params) : undefined });
@@ -185,6 +202,15 @@ export class PracticeApiService {
 
   reverseTrustTransaction(id: string, description?: string | null): Observable<ApiResponse<PracticeTrustTransaction>> {
     return this.http.post<ApiResponse<PracticeTrustTransaction>>(`${this.base}/trust-ledger/${id}/reverse`, { description: description ?? null });
+  }
+
+  /** Posts a client funds row to the general ledger on the chosen accounts. */
+  postTrustTransactionToLedger(id: string, payload: PracticeTrustPostRequest): Observable<ApiResponse<PracticeTrustPosting>> {
+    return this.http.post<ApiResponse<PracticeTrustPosting>>(`${this.base}/trust-ledger/${id}/post`, payload);
+  }
+
+  reconcileTrustTransaction(id: string, bankStatementLineId: string): Observable<ApiResponse<PracticeTrustPosting>> {
+    return this.http.post<ApiResponse<PracticeTrustPosting>>(`${this.base}/trust-ledger/${id}/reconcile`, { bank_statement_line_id: bankStatementLineId });
   }
 
   // --- Conflicts of interest ---
@@ -227,6 +253,15 @@ export class PracticeApiService {
 
   acceptFeeProposal(id: string, payload: PracticeFeeProposalAcceptRequest): Observable<ApiResponse<PracticeFeeProposal>> {
     return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}/accept`, payload);
+  }
+
+  downloadFeeProposalPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/fee-proposals/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  /** Marks as expired every sent proposal past its validity date; returns how many. */
+  expireFeeProposals(): Observable<ApiResponse<{ expired: number }>> {
+    return this.http.post<ApiResponse<{ expired: number }>>(`${this.base}/fee-proposals/expire`, {});
   }
 
   declineFeeProposal(id: string, notes?: string | null): Observable<ApiResponse<PracticeFeeProposal>> {

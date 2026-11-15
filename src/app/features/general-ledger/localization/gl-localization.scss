@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.section {
+  margin-bottom: var(--space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 160px;
+}
+
+.select-sm {
+  min-width: 180px;
+}
+
+.date-input {
+  width: 160px;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.result {
+  margin-top: var(--space-3);
+}

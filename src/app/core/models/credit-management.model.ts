@@ -344,6 +344,7 @@ export interface CollectionCaseRequest {
 export interface CollectionCaseUpdateRequest {
   priority?: CollectionCasePriority;
   notes?: string | null;
+  collector_id?: string | null;
   next_action_on?: string | null;
 }
 
@@ -401,8 +402,45 @@ export interface CreditDashboard {
 export interface CreditCaseFilters {
   status?: CollectionCaseStatus;
   customer_id?: string;
+  collector_id?: string;
   priority?: CollectionCasePriority;
+  page?: number;
   per_page?: number;
+}
+
+export interface CreditPromiseFilters {
+  case_id?: string;
+  status?: CollectionPromiseStatus;
+  page?: number;
+  per_page?: number;
+}
+
+export interface CreditDisputeFilters {
+  status?: CreditDisputeStatus;
+  customer_id?: string;
+  case_id?: string;
+  page?: number;
+  per_page?: number;
+}
+
+/** Result of marking the overdue pending promises as broken. */
+export interface CreditMarkedPromises {
+  marked: number;
+}
+
+export interface CreditAgingCustomer {
+  customer_id: string;
+  customer_name: string;
+  buckets: Record<CreditAgingBucket, string>;
+  total: string;
+}
+
+/** Open receivables by days overdue, in total and per customer. */
+export interface CreditAging {
+  as_of: string;
+  buckets: CreditAgingBucketTotal[];
+  total: string;
+  customers: CreditAgingCustomer[];
 }
 
 export interface CreditResponse<T> {

@@ -16,6 +16,9 @@ export interface PracticeExpense {
   amount: string;
   is_billable: boolean;
   is_billed: boolean;
+  fee_note_id?: string | null;
+  has_receipt?: boolean;
+  receipt_name?: string | null;
 }
 
 export interface PracticeExpenseRequest {
@@ -44,6 +47,23 @@ export interface PracticeTrustTransaction {
   reference: string | null;
   description: string | null;
   reverses_id: string | null;
+  posting?: PracticeTrustPosting | null;
+}
+
+/** The general ledger entry and the bank line of a client funds row. */
+export interface PracticeTrustPosting {
+  id: string;
+  trust_transaction_id: string;
+  journal_entry_id: string | null;
+  bank_statement_line_id: string | null;
+  posted_at: string | null;
+  reconciled_at: string | null;
+}
+
+export interface PracticeTrustPostRequest {
+  client_funds_account_id: string;
+  bank_account_id?: string | null;
+  fee_revenue_account_id?: string | null;
 }
 
 export interface PracticeTrustTransactionRequest {
@@ -111,7 +131,7 @@ export interface PracticeCasePartyRequest {
   notes?: string | null;
 }
 
-export type PracticeFeeProposalStatus = 'draft' | 'sent' | 'accepted' | 'declined';
+export type PracticeFeeProposalStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
 export type PracticeFeeType = 'hourly' | 'fixed';
 
 export interface PracticeFeeProposal {

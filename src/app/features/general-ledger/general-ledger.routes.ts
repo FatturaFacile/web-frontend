@@ -47,6 +47,38 @@ export const GENERAL_LEDGER_ROUTES: Routes = [
         loadComponent: () => import('./budgets/gl-budgets.component').then((m) => m.GlBudgetsComponent),
       },
       {
+        path: 'consolidation',
+        loadComponent: () => import('./consolidation/gl-consolidation-groups.component').then((m) => m.GlConsolidationGroupsComponent),
+      },
+      {
+        path: 'consolidation/runs/:runId',
+        loadComponent: () => import('./consolidation/gl-consolidation-run-detail.component').then((m) => m.GlConsolidationRunDetailComponent),
+      },
+      {
+        path: 'consolidation/:id',
+        loadComponent: () => import('./consolidation/gl-consolidation-group-detail.component').then((m) => m.GlConsolidationGroupDetailComponent),
+      },
+      {
+        path: 'localization',
+        loadComponent: () => import('./localization/gl-localization-packs.component').then((m) => m.GlLocalizationPacksComponent),
+      },
+      {
+        path: 'country-returns',
+        loadComponent: () => import('./localization/gl-country-returns.component').then((m) => m.GlCountryReturnsComponent),
+      },
+      {
+        path: 'lettering',
+        loadComponent: () => import('./localization/gl-lettering.component').then((m) => m.GlLetteringComponent),
+      },
+      {
+        path: 'us-sales-tax',
+        loadComponent: () => import('./localization/gl-us-sales-tax.component').then((m) => m.GlUsSalesTaxComponent),
+      },
+      {
+        path: 'us-1099',
+        loadComponent: () => import('./localization/gl-us-1099.component').then((m) => m.GlUs1099Component),
+      },
+      {
         path: 'fiscal-years',
         loadComponent: () => import('./fiscal-years/gl-fiscal-years.component').then((m) => m.GlFiscalYearsComponent),
       },

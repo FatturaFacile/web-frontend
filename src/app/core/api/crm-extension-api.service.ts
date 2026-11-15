@@ -61,7 +61,7 @@ export class CrmExtensionApiService {
   }
 
   getSalesQuotas(userId?: string): Observable<CrmExtensionResponse<CrmSalesQuota[]>> {
-    return this.http.get<CrmExtensionResponse<CrmSalesQuota[]>>(`${this.base}/sales-quotas`, { params: this.params({ user_id: userId }) });
+    return this.http.get<CrmExtensionResponse<CrmSalesQuota[]>>(`${this.base}/sales-quotas`, { params: this.params({ assignee_id: userId }) });
   }
 
   createSalesQuota(payload: CrmSalesQuotaRequest): Observable<CrmExtensionResponse<CrmSalesQuota>> {

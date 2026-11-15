@@ -116,6 +116,8 @@ describe('DmsComponent', () => {
     auto_tagging: true,
   };
 
+  const mockOcrJobs = [{ id: 'ocr-1', document_id: 'doc-001-uuid', document_version_id: 'ver-1', status: 'failed', engine: null, page_count: null, confidence: null, failure_reason: 'No engine', attempts: 1, started_at: null, finished_at: null, text_content: null }];
+
   const mockDmsApi = {
     getDocuments: vi.fn().mockReturnValue(of({ success: true, data: mockDocuments, meta: { total: 1 } })),
     createDocument: vi.fn().mockReturnValue(of({ success: true, data: mockDocuments[0] })),
@@ -142,6 +144,11 @@ describe('DmsComponent', () => {
     getTags: vi.fn().mockReturnValue(of({ success: true, data: mockTags })),
     createTag: vi.fn().mockReturnValue(of({ success: true, data: mockTags[0] })),
     deleteTag: vi.fn().mockReturnValue(of(null)),
+    getOcrJobs: vi.fn().mockReturnValue(of({ success: true, data: mockOcrJobs })),
+    queueOcr: vi.fn().mockReturnValue(of({ success: true, data: mockOcrJobs[0] })),
+    retryOcrJob: vi.fn().mockReturnValue(of({ success: true, data: mockOcrJobs[0] })),
+    getApprovalTemplates: vi.fn().mockReturnValue(of({ success: true, data: [{ id: 'tpl-1', name: 'Contract route' }] })),
+    requestApproval: vi.fn().mockReturnValue(of({ success: true, data: { id: 'req-1' } })),
     getAiSettings: vi.fn().mockReturnValue(of({ success: true, data: mockAiSettings })),
     updateAiSettings: vi.fn().mockReturnValue(of({ success: true, data: mockAiSettings })),
   };
@@ -252,6 +259,37 @@ describe('DmsComponent', () => {
     const extr = mockExtractions[0];
     component.confirmExtraction(extr);
     expect(mockDmsApi.confirmExtraction).toHaveBeenCalledWith(extr.id, { confirmed_value: extr.extracted_value });
+  });
+
+  it('lists OCR runs in the drawer, re-runs OCR and retries a failed run', () => {
+    const doc = component['grid'].items()[0];
+    component.openDrawer(doc);
+    expect(mockDmsApi.getOcrJobs).toHaveBeenCalledWith(doc.id, true);
+    expect(component['docOcrJobs']().length).toBe(1);
+
+    component['runOcr']();
+    expect(mockDmsApi.queueOcr).toHaveBeenCalledWith(doc.id);
+
+    component['retryOcr'](mockOcrJobs[0] as never);
+    expect(mockDmsApi.retryOcrJob).toHaveBeenCalledWith('ocr-1');
+
+    component['showOcrText']({ ...mockOcrJobs[0], status: 'completed', text_content: 'Invoice 42' } as never);
+    expect(component['ocrTextJob']()?.text_content).toBe('Invoice 42');
+  });
+
+  it('starts an approval from a document row', () => {
+    const doc = component['grid'].items()[0];
+    component['openApprovalModal'](doc);
+    expect(mockDmsApi.getApprovalTemplates).toHaveBeenCalledWith(true);
+
+    component['submitApproval']();
+    expect(mockDmsApi.requestApproval).not.toHaveBeenCalled();
+
+    component['approvalTemplateId'].set('tpl-1');
+    component['approvalNote'].set(' Please review ');
+    component['submitApproval']();
+    expect(mockDmsApi.requestApproval).toHaveBeenCalledWith(doc.id, { template_id: 'tpl-1', note: 'Please review' });
+    expect(component['approvalModalVisible']()).toBe(false);
   });
 
   it('switches to folders, retention, and AI tabs', () => {

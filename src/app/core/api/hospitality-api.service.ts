@@ -7,6 +7,7 @@ import {
   ApiResponse,
   HospitalityBill,
   HospitalityFireRequest,
+  HospitalityGridRow,
   HospitalityItemsRequest,
   HospitalityKitchenTicket,
   HospitalityMoveRequest,
@@ -225,5 +226,11 @@ export class HospitalityApiService {
       `${this.base}/reservations/${reservationId}/status`,
       payload,
     );
+  }
+
+  // --- LODGING ---
+  /** Availability night by night of every active room type (at most 62 days; `to` is exclusive). */
+  getAvailabilityGrid(from: string, to: string): Observable<ApiResponse<HospitalityGridRow[]>> {
+    return this.http.get<ApiResponse<HospitalityGridRow[]>>(`${this.base}/availability-grid`, { params: { from, to } });
   }
 }

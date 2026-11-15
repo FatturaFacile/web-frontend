@@ -182,6 +182,12 @@ export const routes: Routes = [
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
   {
+    path: 'contract-signing/:token',
+    data: { title: 'CONTRACT_SIGN.TITLE' },
+    loadComponent: () =>
+      import('./features/contract-signing/contract-signing.component').then((m) => m.ContractSigningComponent),
+  },
+  {
     path: 'portal',
     data: { breadcrumb: 'NAV.PORTAL', title: 'PAGE_TITLE.AREA_CLIENTI_PORTALE_B2B' },
     loadChildren: () =>
@@ -285,11 +291,51 @@ export const routes: Routes = [
       import('./features/credit-management/credit-management.routes').then((m) => m.CREDIT_MANAGEMENT_ROUTES),
   },
   {
+    path: 'analytics',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.ANALYTICS', title: 'NAV.ANALYTICS' },
+    loadChildren: () => import('./features/analytics/analytics.routes').then((m) => m.ANALYTICS_ROUTES),
+  },
+  {
+    path: 'business-intelligence',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.BI', title: 'PAGE_TITLE.BI' },
+    loadChildren: () =>
+      import('./features/business-intelligence/business-intelligence.routes').then((m) => m.BUSINESS_INTELLIGENCE_ROUTES),
+  },
+  {
+    path: 'marketplace',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.MARKETPLACE', title: 'PAGE_TITLE.MARKETPLACE' },
+    loadChildren: () =>
+      import('./features/marketplace/marketplace.routes').then((m) => m.MARKETPLACE_ROUTES),
+  },
+  {
     path: 'fleet',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.FLEET_MANAGEMENT', title: 'PAGE_TITLE.FLEET' },
     loadChildren: () =>
       import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
+  },
+  {
+    path: 'wms',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.WMS', title: 'PAGE_TITLE.WMS' },
+    loadChildren: () =>
+      import('./features/wms/wms.routes').then((m) => m.WMS_ROUTES),
+  },
+  {
+    path: 'transportation',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.TMS', title: 'PAGE_TITLE.TMS' },
+    loadChildren: () =>
+      import('./features/transportation/transportation.routes').then((m) => m.TRANSPORTATION_ROUTES),
+  },
+  {
+    path: 'quality',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.QUALITY_MANAGEMENT', title: 'PAGE_TITLE.QUALITY_SPC' },
+    loadChildren: () => import('./features/quality/quality.routes').then((m) => m.QUALITY_ROUTES),
   },
   {
     path: 'planning',

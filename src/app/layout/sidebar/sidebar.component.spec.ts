@@ -30,6 +30,15 @@ describe('menu availability', () => {
     expect(isMenuRouteTested('/crm/suppliers', ['/crm/clients'])).toBe(false);
   });
 
+  it('enables the module menus whose pages are built and specified, and keeps the token and kiosk pages disabled', () => {
+    for (const route of ['/fleet', '/returns', '/planning', '/budgeting', '/credit-management', '/talent-learning', '/business-intelligence', '/marketplace', '/wms', '/transportation', '/communication/inbox', '/communication/campaigns', '/professionals/trust', '/governance/segregation-of-duties']) {
+      expect(isMenuRouteTested(route)).toBe(true);
+    }
+    for (const route of ['/portal', '/portal/family', '/visitors', '/hr/self-service', '/settings/admin/access-requests']) {
+      expect(isMenuRouteTested(route)).toBe(false);
+    }
+  });
+
   it('searches without caring about case and accents', () => {
     expect(normalizeMenuSearch('  Contabilità ')).toBe('contabilita');
     expect(normalizeMenuSearch('Übersicht')).toBe('ubersicht');

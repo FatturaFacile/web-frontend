@@ -16,7 +16,9 @@ import {
   CommunicationApiService,
   CommunicationCampaign,
   CommunicationCampaignPreview,
+  CommunicationCampaignRecipient,
   CommunicationChannelType,
+  CommunicationRecipientStatus,
   CrmApiService,
   CrmSegment,
   TranslateService,
@@ -80,6 +82,7 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
               <td>{{ row.failed_count }}</td>
               <td>{{ row.suppressed_count }}</td>
               <td class="actions">
+                <button nz-button nzSize="small" (click)="openSendLog(row)">{{ 'COMMUNICATION.SEND_LOG' | translate }}</button>
                 @if (isOpen(row)) {
                   <button nz-button nzSize="small" (click)="showPreview(row)">{{ 'COMMUNICATION.PREVIEW_AUDIENCE' | translate }}</button>
                   <button nz-button nzSize="small" (click)="openSchedule(row)">{{ 'COMMUNICATION.SCHEDULE' | translate }}</button>
@@ -162,6 +165,40 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
       <button nz-button nzType="primary" appModalAction="save" [disabled]="!scheduleAt()" (click)="schedule()"></button>
     </ng-template>
 
+    <nz-modal [nzVisible]="sendLogTarget() !== null" [nzTitle]="'COMMUNICATION.SEND_LOG_TITLE' | translate" [nzFooter]="null" nzWidth="860px" (nzOnCancel)="sendLogTarget.set(null)">
+      <ng-container *nzModalContent>
+        <nz-select class="send-log-filter" [ngModel]="sendLogStatus()" (ngModelChange)="setSendLogStatus($event)" nzAllowClear [nzPlaceHolder]="'COMMUNICATION.ALL_STATUSES' | translate">
+          @for (status of recipientStatuses; track status) {
+            <nz-option [nzValue]="status" [nzLabel]="('COMMUNICATION.RECIPIENT_STATUS_' + status.toUpperCase()) | translate"></nz-option>
+          }
+        </nz-select>
+        <nz-table #logTable [nzData]="sendLog()" [nzLoading]="sendLogLoading()" nzSize="small" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th>{{ 'COMMUNICATION.ADDRESS' | translate }}</th>
+              <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
+              <th>{{ 'COMMUNICATION.REASON' | translate }}</th>
+              <th>{{ 'COMMUNICATION.SENT_AT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of logTable.data; track entry.id) {
+              <tr>
+                <td>{{ entry.address }}</td>
+                <td>{{ ('COMMUNICATION.RECIPIENT_STATUS_' + entry.status.toUpperCase()) | translate }}</td>
+                <td>{{ entry.suppression_reason ? (('COMMUNICATION.SUPPRESSION_' + entry.suppression_reason.toUpperCase()) | translate) : entry.error }}</td>
+                <td>{{ entry.sent_at | date: 'short' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4"><nz-empty></nz-empty></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </ng-container>
+    </nz-modal>
+
     <nz-modal [nzVisible]="preview() !== null" [nzTitle]="'COMMUNICATION.PREVIEW_AUDIENCE' | translate" [nzFooter]="null" (nzOnCancel)="preview.set(null)">
       <ng-container *nzModalContent>
         @if (preview(); as audience) {
@@ -192,6 +229,11 @@ export class CommunicationCampaignsComponent implements OnInit {
   readonly scheduleTarget = signal<CommunicationCampaign | null>(null);
   readonly scheduleAt = signal('');
   readonly preview = signal<CommunicationCampaignPreview | null>(null);
+  readonly recipientStatuses: readonly CommunicationRecipientStatus[] = ['pending', 'sent', 'failed', 'suppressed'];
+  readonly sendLogTarget = signal<CommunicationCampaign | null>(null);
+  readonly sendLogStatus = signal<CommunicationRecipientStatus | null>(null);
+  readonly sendLog = signal<CommunicationCampaignRecipient[]>([]);
+  readonly sendLogLoading = signal(false);
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(160)]],
@@ -236,6 +278,35 @@ export class CommunicationCampaignsComponent implements OnInit {
 
   showPreview(campaign: CommunicationCampaign): void {
     this.api.previewCampaign(campaign.id).subscribe({ next: (response) => this.preview.set(response.data), error: (error: unknown) => this.fail(error) });
+  }
+
+  openSendLog(campaign: CommunicationCampaign): void {
+    this.sendLogStatus.set(null);
+    this.sendLogTarget.set(campaign);
+    this.loadSendLog();
+  }
+
+  setSendLogStatus(status: CommunicationRecipientStatus | null): void {
+    this.sendLogStatus.set(status);
+    this.loadSendLog();
+  }
+
+  private loadSendLog(): void {
+    const campaign = this.sendLogTarget();
+    if (!campaign) {
+      return;
+    }
+    this.sendLogLoading.set(true);
+    this.api.getCampaignRecipients(campaign.id, this.sendLogStatus() ?? undefined).subscribe({
+      next: (response) => {
+        this.sendLog.set(response.data);
+        this.sendLogLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.sendLogLoading.set(false);
+        this.fail(error);
+      },
+    });
   }
 
   openSchedule(campaign: CommunicationCampaign): void {

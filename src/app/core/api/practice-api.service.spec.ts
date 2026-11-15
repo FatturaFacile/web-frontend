@@ -215,4 +215,43 @@ describe('PracticeApiService', () => {
     expect(fnRetReq.request.method).toBe('GET');
     fnRetReq.flush({ data: [{ id: 'app-1', retainer_id: 'ret-1', fee_note_id: 'fn-1', amount: '500.00', applied_at: '2026-11-03' }] });
   });
+
+  it('attaches and downloads expense receipts, posts and reconciles the client funds, prints and expires proposals', () => {
+    console.log('DBG', Object.getOwnPropertyNames(Object.getPrototypeOf(service)).join(','));
+    const file = new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' });
+    service.uploadExpenseReceipt('exp-1', file).subscribe();
+    const upload = httpMock.expectOne((r) => r.url.endsWith('/practice/expenses/exp-1/receipt'));
+    expect(upload.request.method).toBe('POST');
+    expect(upload.request.body instanceof FormData).toBe(true);
+    upload.flush({ data: { id: 'exp-1', has_receipt: true } });
+
+    service.downloadExpenseReceipt('exp-1').subscribe();
+    const download = httpMock.expectOne((r) => r.url.endsWith('/practice/expenses/exp-1/receipt'));
+    expect(download.request.method).toBe('GET');
+    expect(download.request.responseType).toBe('blob');
+    download.flush(new Blob(['x']));
+
+    service.deleteExpenseReceipt('exp-1').subscribe();
+    expect(httpMock.expectOne((r) => r.url.endsWith('/practice/expenses/exp-1/receipt')).request.method).toBe('DELETE');
+
+    service.postTrustTransactionToLedger('trx-1', { client_funds_account_id: 'acc-1', bank_account_id: 'acc-2' }).subscribe();
+    const post = httpMock.expectOne((r) => r.url.endsWith('/practice/trust-ledger/trx-1/post'));
+    expect(post.request.body).toEqual({ client_funds_account_id: 'acc-1', bank_account_id: 'acc-2' });
+    post.flush({ data: { id: 'p-1' } });
+
+    service.reconcileTrustTransaction('trx-1', 'line-1').subscribe();
+    const reconcile = httpMock.expectOne((r) => r.url.endsWith('/practice/trust-ledger/trx-1/reconcile'));
+    expect(reconcile.request.body).toEqual({ bank_statement_line_id: 'line-1' });
+    reconcile.flush({ data: { id: 'p-1' } });
+
+    service.downloadFeeProposalPdf('fp-1').subscribe();
+    const pdf = httpMock.expectOne((r) => r.url.endsWith('/practice/fee-proposals/fp-1/pdf'));
+    expect(pdf.request.responseType).toBe('blob');
+    pdf.flush(new Blob(['%PDF']));
+
+    service.expireFeeProposals().subscribe((res) => expect(res.data.expired).toBe(2));
+    const expire = httpMock.expectOne((r) => r.url.endsWith('/practice/fee-proposals/expire'));
+    expect(expire.request.method).toBe('POST');
+    expire.flush({ data: { expired: 2 } });
+  });
 });
