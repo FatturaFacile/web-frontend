@@ -20,6 +20,7 @@ export * from './api/accounting-api.service';
 export * from './api/alerts-api.service';
 export * from './api/banking-api.service';
 export * from './api/crm-api.service';
+export * from './api/lead-api.service';
 export * from './api/expenses-api.service';
 export * from './api/settings-api.service';
 export * from './api/system-api.service';
