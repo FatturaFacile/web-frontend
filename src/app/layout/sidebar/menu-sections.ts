@@ -768,6 +768,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-clipboard-check',
         module: 'quality',
         children: [
+          { key: 'NAV.QUALITY_KPIS', route: '/quality/kpis', icon: 'fa-solid fa-gauge-high', module: 'quality' },
           { key: 'NAV.QUALITY_SPC', route: '/quality/spc', icon: 'fa-solid fa-chart-line', module: 'quality' },
           { key: 'NAV.QUALITY_INSTRUMENTS', route: '/quality/instruments', icon: 'fa-solid fa-ruler', module: 'quality' },
           { key: 'NAV.QUALITY_COMPLAINTS', route: '/quality/complaints', icon: 'fa-solid fa-comment-dots', module: 'quality' },

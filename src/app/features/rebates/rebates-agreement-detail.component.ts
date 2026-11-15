@@ -143,7 +143,7 @@ import { AGREEMENT_STATUS_COLORS, apiErrorText, todayIso } from './rebates.util'
 
       <nz-modal [(nzVisible)]="settleVisible" [nzTitle]="'REBATES.SETTLE' | translate" (nzOnCancel)="settleVisible.set(false)" (nzOnOk)="settle()" [nzOkText]="'REBATES.SETTLE' | translate">
         <ng-container *nzModalContent>
-          <p>{{ 'REBATES.SETTLE_HINT' | translate: { amount: (openAmount() | number: '1.2-2') } }}</p>
+          <p>{{ 'REBATES.SETTLE_HINT' | translate: { amount: ((openAmount() | number: '1.2-2') ?? '') } }}</p>
           @if (current.direction === 'sales') {
             <label for="settle-tax">{{ 'REBATES.TAX_RATE' | translate }}</label>
             <input nz-input id="settle-tax" type="number" min="0" max="100" step="any" [ngModel]="taxRate()" (ngModelChange)="taxRate.set($event)" />

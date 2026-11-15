@@ -116,10 +116,10 @@ type LimitDialog = 'request' | 'approve' | 'reject' | null;
             </nz-form-control>
           </nz-form-item>
           @if (proposal(); as p) {
-            <p class="muted">{{ 'CREDIT.PROPOSAL_HINT' | translate: { limit: (+p.proposed_limit | number: '1.2-2'), rating: p.rating } }}</p>
+            <p class="muted">{{ 'CREDIT.PROPOSAL_HINT' | translate: { limit: ((+p.proposed_limit | number: '1.2-2') ?? ''), rating: p.rating } }}</p>
           }
           @if (exposure(); as e) {
-            <p class="muted">{{ 'CREDIT.EXPOSURE_HINT' | translate: { exposure: (+e.exposure | number: '1.2-2'), limit: (+e.credit_limit | number: '1.2-2') } }}</p>
+            <p class="muted">{{ 'CREDIT.EXPOSURE_HINT' | translate: { exposure: ((+e.exposure | number: '1.2-2') ?? ''), limit: ((+e.credit_limit | number: '1.2-2') ?? '') } }}</p>
           }
           <div class="form-row">
             <nz-form-item>

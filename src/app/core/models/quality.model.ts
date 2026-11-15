@@ -212,3 +212,26 @@ export interface QualityInstrumentFilters {
   status?: InstrumentStatus | '';
   calibration?: 'overdue' | 'due_soon' | '';
 }
+
+export interface QualityKpis {
+  as_of: string;
+  open_nonconformities: {
+    total: number;
+    by_age: Record<string, number>;
+    by_source: Record<string, number>;
+    by_severity: Record<string, number>;
+    oldest_days: number | null;
+  };
+  capa: {
+    total: number;
+    open: number;
+    overdue: number;
+    completed: number;
+    completed_on_time: number;
+    completed_late: number;
+    on_time_rate: number | null;
+    ineffective: number;
+  };
+  audits: Record<'planned' | 'in_progress' | 'overdue_planned', number>;
+  procedures: Record<'approved' | 'pending_approval' | 'review_overdue', number>;
+}
