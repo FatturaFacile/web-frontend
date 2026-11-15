@@ -17,4 +17,9 @@ export const COMMUNICATION_ROUTES: Routes = [
     loadComponent: () =>
       import('./communication-campaigns.component').then((m) => m.CommunicationCampaignsComponent),
   },
+  {
+    path: 'preferences',
+    loadComponent: () =>
+      import('./communication-preferences.component').then((m) => m.CommunicationPreferencesComponent),
+  },
 ];

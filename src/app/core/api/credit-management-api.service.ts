@@ -12,9 +12,11 @@ import {
   CollectionPromise,
   CollectionPromiseRequest,
   CollectionPromiseResolveRequest,
+  CreditAging,
   CreditCaseFilters,
   CreditDashboard,
   CreditDispute,
+  CreditDisputeFilters,
   CreditDisputeRequest,
   CreditDisputeResolveRequest,
   CreditExposure,
@@ -27,6 +29,8 @@ import {
   CreditLimitRejectionRequest,
   CreditLimitRequest,
   CreditLimitRequestPayload,
+  CreditMarkedPromises,
+  CreditPromiseFilters,
   CreditRatingBand,
   CreditRatingBandRequest,
   CreditResponse,
@@ -51,6 +55,10 @@ export class CreditManagementApiService {
 
   getWorklist(filters?: CreditWorklistFilters): Observable<CreditResponse<CreditWorklistRow[]>> {
     return this.http.get<CreditResponse<CreditWorklistRow[]>>(`${this.base}/worklist`, { params: this.params(filters) });
+  }
+
+  getAging(customerId?: string): Observable<CreditResponse<CreditAging>> {
+    return this.http.get<CreditResponse<CreditAging>>(`${this.base}/aging`, { params: this.params({ customer_id: customerId }) });
   }
 
   // Scorecard
@@ -204,6 +212,11 @@ export class CreditManagementApiService {
     return this.http.put<CreditResponse<CollectionCase>>(`${this.base}/cases/${id}`, payload);
   }
 
+  /** Sets the collector of an open case; `null` clears it. */
+  assignCase(id: string, collectorId: string | null): Observable<CreditResponse<CollectionCase>> {
+    return this.http.post<CreditResponse<CollectionCase>>(`${this.base}/cases/${id}/assign`, { collector_id: collectorId });
+  }
+
   advanceCase(id: string, outcome: string | null): Observable<CreditResponse<CollectionCase>> {
     return this.http.post<CreditResponse<CollectionCase>>(`${this.base}/cases/${id}/advance`, { outcome });
   }
@@ -221,6 +234,14 @@ export class CreditManagementApiService {
   }
 
   // Promises to pay
+  getPromises(filters?: CreditPromiseFilters): Observable<CreditResponse<CollectionPromise[]>> {
+    return this.http.get<CreditResponse<CollectionPromise[]>>(`${this.base}/promises`, { params: this.params(filters) });
+  }
+
+  markPromisesBroken(): Observable<CreditResponse<CreditMarkedPromises>> {
+    return this.http.post<CreditResponse<CreditMarkedPromises>>(`${this.base}/promises/mark-broken`, {});
+  }
+
   createPromise(payload: CollectionPromiseRequest): Observable<CreditResponse<CollectionPromise>> {
     return this.http.post<CreditResponse<CollectionPromise>>(`${this.base}/promises`, payload);
   }
@@ -230,8 +251,8 @@ export class CreditManagementApiService {
   }
 
   // Disputes
-  getDisputes(status?: string): Observable<CreditResponse<CreditDispute[]>> {
-    return this.http.get<CreditResponse<CreditDispute[]>>(`${this.base}/disputes`, { params: this.params({ status, per_page: 100 }) });
+  getDisputes(filters?: CreditDisputeFilters): Observable<CreditResponse<CreditDispute[]>> {
+    return this.http.get<CreditResponse<CreditDispute[]>>(`${this.base}/disputes`, { params: this.params(filters) });
   }
 
   createDispute(payload: CreditDisputeRequest): Observable<CreditResponse<CreditDispute>> {

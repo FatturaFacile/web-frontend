@@ -38,6 +38,7 @@ export interface PayslipRecord {
   month: number;
   employee_name: string;
   paid_days: string;
+  currency?: string | null;
   gross_salary: string;
   employee_deductions: string;
   net_salary: string;

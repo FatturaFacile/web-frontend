@@ -153,3 +153,61 @@ export interface ContractObligationParams {
   page?: number;
   per_page?: number;
 }
+
+export type ContractSignerStatus = 'pending' | 'notified' | 'signed' | 'declined';
+
+/** What the holder of a signing link sees (API: /public/contract-signing/{token}). */
+export interface ContractPublicSigningView {
+  status: string;
+  signer_status: ContractSignerStatus;
+  signer_name: string;
+  can_sign: boolean;
+  waiting_for_previous: boolean;
+  expires_on?: string | null;
+  document_hash: string;
+  body: string;
+  company_name?: string | null;
+  signers: { name: string; position: number; status: string }[];
+}
+
+export interface ContractDocumentVersionResource {
+  id: string;
+  contract_kind: ContractKind;
+  contract_id: string;
+  version_no: number;
+  source: string;
+  body: string;
+  body_hash: string;
+  notes?: string | null;
+  open_comments?: number;
+  created_at?: string | null;
+}
+
+export interface ContractDiffLine {
+  type: 'equal' | 'added' | 'removed';
+  text: string;
+}
+
+export interface ContractVersionComparison {
+  from: number;
+  to: number;
+  added: number;
+  removed: number;
+  lines: ContractDiffLine[];
+}
+
+export interface ContractVersionComment {
+  id: string;
+  document_version_id: string;
+  author_id?: string | null;
+  line_number?: number | null;
+  body: string;
+  status: 'open' | 'resolved';
+  resolved_at?: string | null;
+  created_at?: string | null;
+}
+
+export interface ContractAddCommentRequest {
+  body: string;
+  line_number?: number | null;
+}

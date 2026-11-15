@@ -1,6 +1,7 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { AbstractControl, FormGroup, FormsModule, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -102,6 +103,7 @@ export class ContractRegisterComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly contractApi = inject(ContractRegisterApiService);
   private readonly message = inject(NzMessageService);
+  private readonly router = inject(Router);
   protected readonly authStore = inject(AuthStore);
 
   // Active tab index (0: Register, 1: Obligations, 2: Alerts)
@@ -446,6 +448,10 @@ export class ContractRegisterComponent implements OnInit {
   }
 
   // --- DRAWER & DETAILS ---
+  openRedline(contract: ContractResource): void {
+    void this.router.navigate(['/contract-register/redline', contract.kind, contract.id]);
+  }
+
   openDrawer(contract: ContractResource): void {
     this.selectedContract.set(contract);
     this.drawerVisible.set(true);

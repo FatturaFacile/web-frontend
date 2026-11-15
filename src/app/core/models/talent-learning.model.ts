@@ -384,6 +384,28 @@ export interface TalentListFilters {
   employee_id?: string;
   course_id?: string;
   coverage?: string;
+  delivery?: TalentDelivery;
+  is_mandatory?: boolean;
+  overdue?: boolean;
+  validity?: TalentCertificateValidity;
   search?: string;
+  page?: number;
   per_page?: number;
+}
+
+export type TalentCertificateValidity = 'valid' | 'expired' | 'expiring';
+export const TALENT_CERTIFICATE_VALIDITIES: readonly TalentCertificateValidity[] = ['valid', 'expired', 'expiring'];
+
+/** Completion certificate of an employee; `employee` is only present on the manager list. */
+export interface TalentCertificate {
+  id: string;
+  enrolment_id: string;
+  course_id: string;
+  course?: { id: string; code: string; title: string };
+  employee_id: string;
+  employee?: TalentEmployee | null;
+  certificate_number: string;
+  issued_on: string;
+  expires_on: string | null;
+  is_valid: boolean;
 }

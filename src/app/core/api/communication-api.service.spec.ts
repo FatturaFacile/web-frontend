@@ -181,4 +181,13 @@ describe('CommunicationApiService', () => {
     expect(delReq.request.method).toBe('DELETE');
     delReq.flush({ data: { id: 'tpl-1' } });
   });
+
+  it('loads the conversation assignees', () => {
+    service.getAssignees().subscribe((res) => {
+      expect(res.data[0].name).toBe('Agent One');
+    });
+    const req = httpMock.expectOne((r) => r.url.endsWith('/communication/assignees'));
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: [{ id: 'user-1', name: 'Agent One' }] });
+  });
 });

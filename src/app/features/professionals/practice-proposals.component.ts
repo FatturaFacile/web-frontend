@@ -22,10 +22,10 @@ import {
   PracticeFeeType,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { downloadBlob, IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { apiErrorText, blankToNull, clientName, CONFLICT_RESULT_COLORS, decimalOrNull, loadClients, PROPOSAL_STATUS_COLORS } from './practice-firm.util';
 
-const STATUSES: readonly PracticeFeeProposalStatus[] = ['draft', 'sent', 'accepted', 'declined'];
+const STATUSES: readonly PracticeFeeProposalStatus[] = ['draft', 'sent', 'accepted', 'declined', 'expired'];
 
 /** Fee proposals: draft, send, then accept (after a conflicts check, which opens the matter) or decline. */
 @Component({
@@ -51,6 +51,7 @@ const STATUSES: readonly PracticeFeeProposalStatus[] = ['draft', 'sent', 'accept
   ],
   template: `
     <app-page-header [title]="'PRACTICEFIRM.PROPOSALS_TITLE' | translate" [subtitle]="'PRACTICEFIRM.PROPOSALS_SUBTITLE' | translate">
+      <button nz-button nzType="default" (click)="expireOverdue()">{{ 'PRACTICEFIRM.EXPIRE_OVERDUE' | translate }}</button>
       <button nz-button nzType="primary" (click)="openModal()" appIconAction="create"></button>
     </app-page-header>
 
@@ -91,6 +92,7 @@ const STATUSES: readonly PracticeFeeProposalStatus[] = ['draft', 'sent', 'accept
               </td>
               <td>
                 <div class="row-actions">
+                  <button nz-button nzType="default" (click)="downloadPdf(row)">{{ 'PRACTICEFIRM.PROPOSAL_PDF' | translate }}</button>
                   @if (row.status === 'draft') {
                     <button nz-button nzType="text" appIconAction="edit" (click)="openModal(row)"></button>
                     <button nz-button nzType="default" (click)="send(row)">{{ 'PRACTICEFIRM.SEND' | translate }}</button>
@@ -284,6 +286,23 @@ export class PracticeProposalsComponent implements OnInit {
       next: () => {
         this.message.success(this.translate.instant('PRACTICEFIRM.PROPOSAL_SAVED'));
         this.modalVisible.set(false);
+        this.load();
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  downloadPdf(proposal: PracticeFeeProposal): void {
+    this.api.downloadFeeProposalPdf(proposal.id).subscribe({
+      next: (blob) => downloadBlob(blob, `${proposal.number}.pdf`),
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  expireOverdue(): void {
+    this.api.expireFeeProposals().subscribe({
+      next: (response) => {
+        this.message.success(this.translate.instant('PRACTICEFIRM.EXPIRED_COUNT', { count: response.data.expired }));
         this.load();
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),

@@ -143,6 +143,18 @@
           </button>
         }
 
+        <button
+          *nzSpaceItem
+          nz-button
+          nzType="default"
+          nzSize="small"
+          data-testid="start-approval"
+          (click)="openApprovalModal(doc)"
+        >
+          <span nz-icon nzType="audit"></span>
+          {{ 'DMS.LBL_START_APPROVAL' | translate }}
+        </button>
+
         @if (!doc.legal_hold) {
           <button
             *nzSpaceItem
@@ -688,6 +700,62 @@
         <p class="text-muted">{{ 'DMS.LBL_NESSUNA_ESTRAZIONE_OCR_DISPONIBILE' | translate }}</p>
       }
 
+      <!-- OCR: stato, nuova esecuzione e testo estratto -->
+      <div class="tab-toolbar mt-4">
+        <h4>{{ 'DMS.OCR_RUNS' | translate }}</h4>
+        <button nz-button nzType="default" nzSize="small" [nzLoading]="ocrBusy()" data-testid="run-ocr" (click)="runOcr()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'DMS.LBL_RUN_OCR' | translate }}
+        </button>
+      </div>
+      @if (docOcrJobs().length > 0) {
+        <nz-table [nzData]="docOcrJobs()" [nzFrontPagination]="false" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'DMS.LBL_OCR_STATUS' | translate }}</th>
+              <th>{{ 'DMS.LBL_OCR_ENGINE' | translate }}</th>
+              <th>{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
+              <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of docOcrJobs(); track job.id) {
+              <tr>
+                <td>
+                  <nz-tag [nzColor]="job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing'">
+                    {{ 'DMS.OCR_STATUS_' + job.status.toUpperCase() | translate }}
+                  </nz-tag>
+                  @if (job.failure_reason) {
+                    <div class="text-muted">{{ job.failure_reason }}</div>
+                  }
+                </td>
+                <td>{{ job.engine || '-' }}</td>
+                <td>{{ job.confidence ?? '-' }}</td>
+                <td nzAlign="right">
+                  <nz-space>
+                    @if (job.status === 'completed') {
+                      <button *nzSpaceItem nz-button nzSize="small" data-testid="show-ocr-text" (click)="showOcrText(job)">
+                        {{ 'DMS.LBL_OCR_TEXT' | translate }}
+                      </button>
+                    }
+                    @if (job.status === 'failed') {
+                      <button *nzSpaceItem nz-button nzSize="small" nzType="primary" data-testid="retry-ocr" (click)="retryOcr(job)">
+                        {{ 'DMS.LBL_OCR_RETRY' | translate }}
+                      </button>
+                    }
+                  </nz-space>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        @if (ocrTextJob(); as textJob) {
+          <pre class="ocr-text" data-testid="ocr-text">{{ textJob.text_content }}</pre>
+        }
+      } @else {
+        <p class="text-muted">{{ 'DMS.LBL_NO_OCR_RUNS' | translate }}</p>
+      }
+
       <!-- LINK ENTITÀ ERP -->
       <div class="tab-toolbar mt-4">
         <h4>{{ 'DMS.LINKED_ENTITIES' | translate }}</h4>
@@ -776,5 +844,34 @@
       </nz-form-item>
 
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AVVIA APPROVAZIONE -->
+<nz-modal
+  okAction="add"
+  [nzVisible]="approvalModalVisible()"
+  [nzTitle]="'DMS.START_APPROVAL_TITLE' | translate"
+  (nzOnCancel)="approvalModalVisible.set(false)"
+  [nzOkDisabled]="approvalTemplateId() === '' || approvalSubmitting()"
+  (nzOnOk)="submitApproval()"
+>
+  <ng-container *nzModalContent>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'DMS.APPROVAL_TEMPLATE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <nz-select [ngModel]="approvalTemplateId()" (ngModelChange)="approvalTemplateId.set($event)" [nzPlaceHolder]="'DMS.APPROVAL_TEMPLATE_PLACEHOLDER' | translate">
+          @for (template of approvalTemplates(); track template.id) {
+            <nz-option [nzValue]="template.id" [nzLabel]="template.name"></nz-option>
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.APPROVAL_NOTE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input rows="3" maxlength="1000" [ngModel]="approvalNote()" (ngModelChange)="approvalNote.set($event)"></textarea>
+      </nz-form-control>
+    </nz-form-item>
   </ng-container>
 </nz-modal>

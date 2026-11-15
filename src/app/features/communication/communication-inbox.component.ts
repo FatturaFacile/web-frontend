@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   CommunicationApiService,
+  CommunicationAssignee,
   CommunicationChannelType,
   CommunicationConversation,
   CommunicationConversationStatus,
@@ -56,6 +57,12 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
             <nz-option [nzValue]="status" [nzLabel]="('COMMUNICATION.CONVERSATION_STATUS_' + status.toUpperCase()) | translate"></nz-option>
           }
         </nz-select>
+        <nz-select [ngModel]="assigneeFilter()" (ngModelChange)="setAssigneeFilter($event)" nzAllowClear [nzPlaceHolder]="'COMMUNICATION.ASSIGNEE' | translate">
+          <nz-option nzValue="none" [nzLabel]="'COMMUNICATION.UNASSIGNED' | translate"></nz-option>
+          @for (assignee of assignees(); track assignee.id) {
+            <nz-option [nzValue]="assignee.id" [nzLabel]="assignee.name"></nz-option>
+          }
+        </nz-select>
       </div>
 
       <nz-table #table [nzData]="conversations()" [nzLoading]="loading()" nzSize="small" [nzPageSize]="25">
@@ -65,6 +72,7 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
             <th>{{ 'COMMUNICATION.COUNTERPARTY' | translate }}</th>
             <th>{{ 'COMMUNICATION.SUBJECT' | translate }}</th>
             <th>{{ 'COMMUNICATION.STATUS' | translate }}</th>
+            <th>{{ 'COMMUNICATION.ASSIGNEE' | translate }}</th>
             <th>{{ 'COMMUNICATION.UNREAD' | translate }}</th>
             <th>{{ 'COMMUNICATION.LAST_MESSAGE' | translate }}</th>
           </tr>
@@ -78,12 +86,13 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
               <td>
                 <nz-tag [nzColor]="statusColors[row.status]">{{ ('COMMUNICATION.CONVERSATION_STATUS_' + row.status.toUpperCase()) | translate }}</nz-tag>
               </td>
+              <td>{{ assigneeName(row.assigned_to) }}</td>
               <td>{{ row.unread_count }}</td>
               <td>{{ row.last_message_at | date: 'short' }}</td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="6"><nz-empty></nz-empty></td>
+              <td colspan="7"><nz-empty></nz-empty></td>
             </tr>
           }
         </tbody>
@@ -97,6 +106,11 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
             <nz-select [ngModel]="conversation.status" (ngModelChange)="changeStatus($event)">
               @for (status of statuses; track status) {
                 <nz-option [nzValue]="status" [nzLabel]="('COMMUNICATION.CONVERSATION_STATUS_' + status.toUpperCase()) | translate"></nz-option>
+              }
+            </nz-select>
+            <nz-select class="assignee-select" [ngModel]="conversation.assigned_to" (ngModelChange)="assign($event)" nzAllowClear [nzPlaceHolder]="'COMMUNICATION.UNASSIGNED' | translate">
+              @for (assignee of assignees(); track assignee.id) {
+                <nz-option [nzValue]="assignee.id" [nzLabel]="assignee.name"></nz-option>
               }
             </nz-select>
           </div>
@@ -171,6 +185,8 @@ export class CommunicationInboxComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly replyText = signal('');
   readonly inboundVisible = signal(false);
+  readonly assignees = signal<CommunicationAssignee[]>([]);
+  readonly assigneeFilter = signal<string | null>(null);
 
   readonly inboundForm = this.fb.group({
     channel: ['email' as CommunicationChannelType, [Validators.required]],
@@ -182,6 +198,36 @@ export class CommunicationInboxComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.api.getAssignees().subscribe({ next: (response) => this.assignees.set(response.data), error: () => this.assignees.set([]) });
+  }
+
+  assigneeName(userId: string | null): string {
+    if (userId === null) {
+      return '';
+    }
+
+    return this.assignees().find((assignee) => assignee.id === userId)?.name ?? '';
+  }
+
+  setAssigneeFilter(value: string | null): void {
+    this.assigneeFilter.set(value);
+    this.load();
+  }
+
+  /** Assigns the open conversation to a member, or unassigns it when the select is cleared. */
+  assign(userId: string | null): void {
+    const conversation = this.detail();
+    if (!conversation) {
+      return;
+    }
+    this.api.assignConversation(conversation.id, userId ?? null).subscribe({
+      next: (response) => {
+        this.detail.set({ ...conversation, ...response.data, messages: conversation.messages });
+        this.message.success(this.translate.instant('COMMUNICATION.ASSIGNMENT_SAVED'));
+        this.load();
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('COMMUNICATION.ACTION_ERROR')),
+    });
   }
 
   setStatusFilter(status: CommunicationConversationStatus | null): void {
@@ -263,7 +309,8 @@ export class CommunicationInboxComponent implements OnInit {
   private load(): void {
     this.loading.set(true);
     const status = this.statusFilter();
-    this.api.getConversations({ per_page: 100, ...(status ? { status } : {}) }).subscribe({
+    const assignedTo = this.assigneeFilter();
+    this.api.getConversations({ per_page: 100, ...(status ? { status } : {}), ...(assignedTo ? { assigned_to: assignedTo } : {}) }).subscribe({
       next: (response) => {
         this.conversations.set(response.data);
         this.loading.set(false);

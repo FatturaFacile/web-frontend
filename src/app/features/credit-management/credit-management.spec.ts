@@ -1,20 +1,23 @@
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
-import { CollectionCase, CreditDashboard, CreditLimitRequest, CreditManagementApiService, CrmApiService, TranslateService } from '@core';
+import { CollectionCase, CollectionPromise, CreditAging, CreditDashboard, CreditDispute, CreditLimitRequest, CreditManagementApiService, CrmApiService, SettingsApiService, TranslateService } from '@core';
+import { CreditAgingComponent } from './credit-aging.component';
 import { CreditCaseDetailComponent } from './credit-case-detail.component';
 import { CreditCasesComponent } from './credit-cases.component';
 import { CreditDashboardComponent } from './credit-dashboard.component';
+import { CreditDisputesComponent } from './credit-disputes.component';
 import { CreditLimitsComponent } from './credit-limits.component';
+import { CreditPromisesComponent } from './credit-promises.component';
 import { CreditScoresComponent } from './credit-scores.component';
 import { CreditStrategiesComponent } from './credit-strategies.component';
-import { contactName, statusColor } from './credit.util';
+import { contactName, loadCollectors, statusColor } from './credit.util';
 
 const dashboard: CreditDashboard = {
   as_of: '2027-06-30',
@@ -72,9 +75,50 @@ const limitRequest: CreditLimitRequest = {
   valid_until: null,
 };
 
+const brokenPromise: CollectionPromise = {
+  id: 'p-1',
+  case_id: 'case-1',
+  promised_amount: '100.00',
+  promised_on: '2027-06-10',
+  status: 'broken',
+  paid_amount: null,
+  resolved_on: null,
+  notes: null,
+};
+
+const dispute: CreditDispute = {
+  id: 'd-1',
+  customer_id: 'c-1',
+  customer_name: 'Acme',
+  case_id: 'case-1',
+  invoice_id: null,
+  disputed_amount: '50.00',
+  reason_code: 'quality',
+  status: 'open',
+  opened_on: '2027-06-12',
+  resolved_on: null,
+  credited_amount: null,
+  description: null,
+  resolution_note: null,
+};
+
+const aging: CreditAging = {
+  as_of: '2027-06-30',
+  buckets: [
+    { key: 'current', amount: '100.00', invoices_count: 1 },
+    { key: 'd1_30', amount: '400.00', invoices_count: 2 },
+    { key: 'd31_60', amount: '0.00', invoices_count: 0 },
+    { key: 'd61_90', amount: '0.00', invoices_count: 0 },
+    { key: 'd90_plus', amount: '0.00', invoices_count: 0 },
+  ],
+  total: '500.00',
+  customers: [{ customer_id: 'c-1', customer_name: 'Acme', buckets: { current: '100.00', d1_30: '400.00', d31_60: '0.00', d61_90: '0.00', d90_plus: '0.00' }, total: '500.00' }],
+};
+
 const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
 const translateSpy = { instant: vi.fn().mockImplementation((key: string) => key), translate: vi.fn().mockImplementation((key: string) => key) };
 const crmSpy = { getClients: vi.fn() };
+const settingsSpy = { getTenantUsers: vi.fn() };
 
 function configure(api: Record<string, unknown>, extra: unknown[] = []): void {
   TestBed.configureTestingModule({
@@ -82,6 +126,7 @@ function configure(api: Record<string, unknown>, extra: unknown[] = []): void {
       provideRouter([]),
       { provide: CreditManagementApiService, useValue: api },
       { provide: CrmApiService, useValue: crmSpy },
+      { provide: SettingsApiService, useValue: settingsSpy },
       { provide: NzMessageService, useValue: messageSpy },
       { provide: TranslateService, useValue: translateSpy },
       provideNzIcons(icons),
@@ -92,6 +137,7 @@ function configure(api: Record<string, unknown>, extra: unknown[] = []): void {
 
 beforeEach(() => {
   crmSpy.getClients.mockReturnValue(of({ data: [{ id: 'c-1', company_name: 'Acme', first_name: null, last_name: null }] }));
+  settingsSpy.getTenantUsers.mockReturnValue(of({ data: [{ id: 'u-1', name: 'Mario Rossi' }] }));
 });
 
 describe('credit util', () => {
@@ -100,6 +146,16 @@ describe('credit util', () => {
     expect(contactName({ id: 'c-2', company_name: null, first_name: 'Anna', last_name: 'Rossi' } as never)).toBe('Anna Rossi');
     expect(statusColor('disputed')).toBe('red');
     expect(statusColor('unknown')).toBe('default');
+  });
+
+  it('lists the company members as collectors and falls back to an empty list when they cannot be read', () => {
+    let collectors: unknown;
+    loadCollectors(settingsSpy as never).subscribe((value) => (collectors = value));
+    expect(collectors).toEqual([{ id: 'u-1', name: 'Mario Rossi' }]);
+
+    settingsSpy.getTenantUsers.mockReturnValue(throwError(() => new Error('forbidden')));
+    loadCollectors(settingsSpy as never).subscribe((value) => (collectors = value));
+    expect(collectors).toEqual([]);
   });
 });
 
@@ -134,6 +190,31 @@ describe('CreditManagementApiService', () => {
     const promise = httpMock.expectOne((r) => r.url.endsWith('/credit-management/promises/p-1/resolve'));
     expect(promise.request.body).toEqual({ outcome: 'kept', paid_amount: '100', resolved_on: null });
     promise.flush({ data: {} });
+
+    service.getAging('c-1').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/credit-management/aging') && r.params.get('customer_id') === 'c-1').flush({ data: {} });
+
+    service.assignCase('case-1', 'u-1').subscribe();
+    const assign = httpMock.expectOne((r) => r.url.endsWith('/credit-management/cases/case-1/assign'));
+    expect(assign.request.method).toBe('POST');
+    expect(assign.request.body).toEqual({ collector_id: 'u-1' });
+    assign.flush({ data: {} });
+
+    service.updateCase('case-1', { priority: 'high', next_action_on: '2027-07-01', notes: null }).subscribe();
+    const update = httpMock.expectOne((r) => r.url.endsWith('/credit-management/cases/case-1') && r.method === 'PUT');
+    expect(update.request.body).toEqual({ priority: 'high', next_action_on: '2027-07-01', notes: null });
+    update.flush({ data: {} });
+
+    service.getPromises({ status: 'broken', page: 2, per_page: 25 }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/credit-management/promises') && r.params.get('status') === 'broken' && r.params.get('page') === '2').flush({ data: [] });
+
+    service.markPromisesBroken().subscribe();
+    const marked = httpMock.expectOne((r) => r.url.endsWith('/credit-management/promises/mark-broken'));
+    expect(marked.request.method).toBe('POST');
+    marked.flush({ data: { marked: 2 } });
+
+    service.getDisputes({ status: 'open', customer_id: 'c-1', page: 1, per_page: 25 }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/credit-management/disputes') && r.params.get('status') === 'open' && r.params.get('customer_id') === 'c-1').flush({ data: [] });
 
     service.getWorklist({ due_only: true }).subscribe();
     const worklist = httpMock.expectOne((r) => r.url.endsWith('/credit-management/worklist') && r.params.get('due_only') === '1');
@@ -196,6 +277,8 @@ describe('CreditCasesComponent', () => {
 describe('CreditCaseDetailComponent', () => {
   const api = {
     getCase: vi.fn(),
+    assignCase: vi.fn(),
+    updateCase: vi.fn(),
     advanceCase: vi.fn(),
     createPromise: vi.fn(),
     createDispute: vi.fn(),
@@ -206,6 +289,8 @@ describe('CreditCaseDetailComponent', () => {
     vi.clearAllMocks();
     api.getCase.mockReturnValue(of({ data: collectionCase }));
     api.advanceCase.mockReturnValue(of({ data: collectionCase }));
+    api.assignCase.mockReturnValue(of({ data: collectionCase }));
+    api.updateCase.mockReturnValue(of({ data: collectionCase }));
     api.createPromise.mockReturnValue(of({ data: {} }));
     api.createDispute.mockReturnValue(of({ data: {} }));
     api.closeCase.mockReturnValue(of({ data: collectionCase }));
@@ -232,6 +317,159 @@ describe('CreditCaseDetailComponent', () => {
     component.closeForm.patchValue({ outcome: 'written_off', note: '' });
     component.saveClose();
     expect(api.closeCase).toHaveBeenCalledWith('case-1', { outcome: 'written_off', note: null });
+  });
+});
+
+describe('CreditCaseDetailComponent collector and priority', () => {
+  const api = { getCase: vi.fn(), assignCase: vi.fn(), updateCase: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    settingsSpy.getTenantUsers.mockReturnValue(of({ data: [{ id: 'u-1', name: 'Mario Rossi' }] }));
+    api.getCase.mockReturnValue(of({ data: { ...collectionCase, collector_id: 'u-1', priority: 'low', next_action_on: '2027-07-01', notes: 'Call back' } }));
+    api.assignCase.mockReturnValue(of({ data: collectionCase }));
+    api.updateCase.mockReturnValue(of({ data: collectionCase }));
+    configure(api, [{ provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'case-1' } } } }]);
+  });
+
+  it('shows the collector, assigns another one and clears the assignment', () => {
+    const fixture = TestBed.createComponent(CreditCaseDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component.collectors()).toEqual([{ id: 'u-1', name: 'Mario Rossi' }]);
+    expect(component.collectorName('u-1')).toBe('Mario Rossi');
+    expect(component.collectorName(null)).toBe('CREDIT.UNASSIGNED');
+    expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
+
+    component.openAssign();
+    expect(component.assignForm.getRawValue().collector_id).toBe('u-1');
+    component.assignForm.patchValue({ collector_id: null });
+    component.saveAssign();
+
+    expect(api.assignCase).toHaveBeenCalledWith('case-1', null);
+    expect(messageSpy.success).toHaveBeenCalledWith('CREDIT.CASE_SAVED');
+    expect(component.dialog()).toBeNull();
+  });
+
+  it('edits the priority, the next action date and the notes of the case', () => {
+    const fixture = TestBed.createComponent(CreditCaseDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit();
+    expect(component.editForm.getRawValue()).toEqual({ priority: 'low', next_action_on: '2027-07-01', notes: 'Call back' });
+    component.editForm.patchValue({ priority: 'high', next_action_on: '', notes: ' ' });
+    component.saveEdit();
+
+    expect(api.updateCase).toHaveBeenCalledWith('case-1', { priority: 'high', next_action_on: null, notes: null });
+  });
+
+  it('shows the API reason when the assignment is refused', () => {
+    api.assignCase.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 422, error: { message: 'Refused', errors: { collector_id: ['Not a member'] } } })));
+    const fixture = TestBed.createComponent(CreditCaseDetailComponent);
+    fixture.detectChanges();
+    messageSpy.error.mockClear();
+    fixture.componentInstance.saveAssign();
+
+    expect(messageSpy.error).toHaveBeenCalledWith('Not a member');
+  });
+});
+
+describe('CreditAgingComponent', () => {
+  const api = { getAging: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getAging.mockReturnValue(of({ data: aging }));
+    configure(api);
+  });
+
+  it('loads the aging and filters it by customer', () => {
+    const fixture = TestBed.createComponent(CreditAgingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getAging).toHaveBeenCalledWith(undefined);
+    expect(component.aging()?.total).toBe('500.00');
+    expect(fixture.nativeElement.textContent).toContain('Acme');
+
+    component.customerId.set('c-1');
+    component.load();
+    expect(api.getAging).toHaveBeenLastCalledWith('c-1');
+  });
+
+  it('shows the API reason when the aging cannot be loaded', () => {
+    api.getAging.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403, error: { message: 'Forbidden' } })));
+    messageSpy.error.mockClear();
+    TestBed.createComponent(CreditAgingComponent).detectChanges();
+
+    expect(messageSpy.error).toHaveBeenCalledWith('Forbidden');
+  });
+});
+
+describe('CreditPromisesComponent', () => {
+  const api = { getPromises: vi.fn(), markPromisesBroken: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getPromises.mockReturnValue(of({ data: [brokenPromise], meta: { current_page: 1, last_page: 3, per_page: 25, total: 60 } }));
+    api.markPromisesBroken.mockReturnValue(of({ data: { marked: 2 } }));
+    configure(api);
+  });
+
+  it('lists the broken promises first, changes the filter and the page', () => {
+    const fixture = TestBed.createComponent(CreditPromisesComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getPromises).toHaveBeenCalledWith({ status: 'broken', page: 1, per_page: 25 });
+    expect(component.total()).toBe(60);
+
+    component.changePage(3);
+    expect(api.getPromises).toHaveBeenLastCalledWith({ status: 'broken', page: 3, per_page: 25 });
+
+    component.status.set(null);
+    component.changeFilter();
+    expect(component.page()).toBe(1);
+    expect(api.getPromises).toHaveBeenLastCalledWith({ status: undefined, page: 1, per_page: 25 });
+  });
+
+  it('marks the lapsed promises as broken and reloads the list', () => {
+    const fixture = TestBed.createComponent(CreditPromisesComponent);
+    fixture.detectChanges();
+    api.getPromises.mockClear();
+    fixture.componentInstance.markBroken();
+
+    expect(api.markPromisesBroken).toHaveBeenCalled();
+    expect(translateSpy.instant).toHaveBeenCalledWith('CREDIT.PROMISES_MARKED', { count: 2 });
+    expect(messageSpy.success).toHaveBeenCalled();
+    expect(api.getPromises).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('CreditDisputesComponent', () => {
+  const api = { getDisputes: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getDisputes.mockReturnValue(of({ data: [dispute] }));
+    configure(api);
+  });
+
+  it('lists the disputes with a link to their case and filters by status and customer', () => {
+    const fixture = TestBed.createComponent(CreditDisputesComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getDisputes).toHaveBeenCalledWith({ status: undefined, customer_id: undefined, page: 1, per_page: 25 });
+    expect(component.total()).toBe(1);
+    expect(fixture.nativeElement.querySelector('a[href="/credit-management/cases/case-1"]')).not.toBeNull();
+
+    component.status.set('open');
+    component.customerId.set('c-1');
+    component.changeFilter();
+    expect(api.getDisputes).toHaveBeenLastCalledWith({ status: 'open', customer_id: 'c-1', page: 1, per_page: 25 });
   });
 });
 

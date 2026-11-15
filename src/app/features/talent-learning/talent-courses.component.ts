@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
@@ -13,7 +13,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { TALENT_DELIVERIES, TalentCourse, TalentCourseRequest, TalentDelivery, TalentEmployee, TalentLearningApiService, TalentLearningPath, TranslateService } from '@core';
+import { TALENT_DELIVERIES, TalentCourse, TalentCourseRequest, TalentCourseStatus, TalentDelivery, TalentEmployee, TalentLearningApiService, TalentLearningPath, TranslateService } from '@core';
 import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learning.util';
 
@@ -23,6 +23,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
   styleUrl: './talent-learning.scss',
   imports: [
     DecimalPipe,
+    FormsModule,
     ReactiveFormsModule,
     IconActionDirective,
     ModalActionsDirective,
@@ -45,8 +46,36 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
       <button nz-button nzType="primary" (click)="openCourseModal()" appIconAction="create"></button>
     </app-page-header>
 
+    <div class="toolbar">
+      <input nz-input style="width: 220px" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="changeCourseFilter()" [placeholder]="'TALENT_LEARNING.SEARCH' | translate" />
+      <nz-select style="width: 180px" nzAllowClear [ngModel]="status()" (ngModelChange)="status.set($event); changeCourseFilter()" [nzPlaceHolder]="'TALENT_LEARNING.STATUS' | translate">
+        @for (value of statuses; track value) {
+          <nz-option [nzValue]="value" [nzLabel]="'TALENT_LEARNING.STATUS_' + key(value) | translate"></nz-option>
+        }
+      </nz-select>
+      <nz-select style="width: 180px" nzAllowClear [ngModel]="delivery()" (ngModelChange)="delivery.set($event); changeCourseFilter()" [nzPlaceHolder]="'TALENT_LEARNING.DELIVERY' | translate">
+        @for (mode of deliveries; track mode) {
+          <nz-option [nzValue]="mode" [nzLabel]="'TALENT_LEARNING.DELIVERY_' + key(mode) | translate"></nz-option>
+        }
+      </nz-select>
+      <nz-select style="width: 180px" nzAllowClear [ngModel]="mandatory()" (ngModelChange)="mandatory.set($event); changeCourseFilter()" [nzPlaceHolder]="'TALENT_LEARNING.MANDATORY' | translate">
+        <nz-option [nzValue]="true" [nzLabel]="'TALENT_LEARNING.YES' | translate"></nz-option>
+        <nz-option [nzValue]="false" [nzLabel]="'TALENT_LEARNING.NO' | translate"></nz-option>
+      </nz-select>
+    </div>
+
     <nz-card class="main-card" [nzTitle]="'TALENT_LEARNING.CATALOG' | translate">
-      <nz-table #courseTable [nzData]="courses()" [nzLoading]="loading()" nzSize="small" [nzPageSize]="25">
+      <nz-table
+        #courseTable
+        [nzData]="courses()"
+        [nzLoading]="loading()"
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzTotal]="courseTotal()"
+        [nzPageIndex]="coursePage()"
+        [nzPageSize]="pageSize"
+        (nzPageIndexChange)="changeCoursePage($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'TALENT_LEARNING.CODE' | translate }}</th>
@@ -89,7 +118,16 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
     </nz-card>
 
     <nz-card class="main-card" [nzTitle]="'TALENT_LEARNING.LEARNING_PATHS' | translate" [nzExtra]="pathAction">
-      <nz-table #pathTable [nzData]="paths()" nzSize="small" [nzShowPagination]="false">
+      <nz-table
+        #pathTable
+        [nzData]="paths()"
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzTotal]="pathTotal()"
+        [nzPageIndex]="pathPage()"
+        [nzPageSize]="pageSize"
+        (nzPageIndexChange)="changePathPage($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'TALENT_LEARNING.NAME' | translate }}</th>
@@ -111,6 +149,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
                     <button nz-button nzType="text" (click)="openEnrol(path)">{{ 'TALENT_LEARNING.ENROL' | translate }}</button>
                     <button nz-button nzType="text" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.ARCHIVE_CONFIRM' | translate" (nzOnConfirm)="transitionPath(path, 'archive')">{{ 'TALENT_LEARNING.ARCHIVE' | translate }}</button>
                   }
+                  <button nz-button nzType="text" appIconAction="edit" (click)="openPathModal(path)"></button>
                   <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="removePath(path)"></button>
                 </div>
               </td>
@@ -172,7 +211,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
       </ng-container>
     </nz-modal>
 
-    <nz-modal [(nzVisible)]="pathModalVisible" [nzTitle]="'TALENT_LEARNING.NEW_PATH' | translate" (nzOnCancel)="pathModalVisible.set(false)" (nzOnOk)="savePath()" okAction="save" [nzOkDisabled]="pathForm.invalid">
+    <nz-modal [(nzVisible)]="pathModalVisible" [nzTitle]="(editingPath() ? 'TALENT_LEARNING.EDIT_PATH' : 'TALENT_LEARNING.NEW_PATH') | translate" (nzOnCancel)="pathModalVisible.set(false)" (nzOnOk)="savePath()" okAction="save" [nzOkDisabled]="pathForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="pathForm" nzLayout="vertical">
           <nz-form-item>
@@ -183,7 +222,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
             <nz-form-label nzRequired>{{ 'TALENT_LEARNING.COURSES' | translate }}</nz-form-label>
             <nz-form-control [nzExtra]="'TALENT_LEARNING.PATH_ORDER_HINT' | translate">
               <nz-select formControlName="course_ids" nzMode="multiple" nzShowSearch>
-                @for (course of courses(); track course.id) {
+                @for (course of courseOptions(); track course.id) {
                   <nz-option [nzValue]="course.id" [nzLabel]="course.code + ' - ' + course.title"></nz-option>
                 }
               </nz-select>
@@ -226,9 +265,21 @@ export class TalentCoursesComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
 
   readonly deliveries = TALENT_DELIVERIES;
+  readonly statuses: readonly TalentCourseStatus[] = ['draft', 'published', 'archived'];
+  readonly pageSize = 25;
   readonly color = tagColor;
   readonly key = keyOf;
   readonly courses = signal<TalentCourse[]>([]);
+  readonly courseOptions = signal<TalentCourse[]>([]);
+  readonly search = signal('');
+  readonly status = signal<TalentCourseStatus | null>(null);
+  readonly delivery = signal<TalentDelivery | null>(null);
+  readonly mandatory = signal<boolean | null>(null);
+  readonly coursePage = signal(1);
+  readonly courseTotal = signal(0);
+  readonly pathPage = signal(1);
+  readonly pathTotal = signal(0);
+  readonly editingPath = signal<TalentLearningPath | null>(null);
   readonly paths = signal<TalentLearningPath[]>([]);
   readonly employees = signal<TalentEmployee[]>([]);
   readonly loading = signal(false);
@@ -267,17 +318,46 @@ export class TalentCoursesComponent implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.api.getCourses({ per_page: 100 }).subscribe({
-      next: (response) => {
-        this.courses.set(response.data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.message.error(this.translate.instant('TALENT_LEARNING.ACTION_ERROR'));
-      },
+    this.api
+      .getCourses({
+        search: this.search().trim() || undefined,
+        status: this.status() ?? undefined,
+        delivery: this.delivery() ?? undefined,
+        is_mandatory: this.mandatory() ?? undefined,
+        page: this.coursePage(),
+        per_page: this.pageSize,
+      })
+      .subscribe({
+        next: (response) => {
+          this.courses.set(response.data);
+          this.courseTotal.set(response.meta?.total ?? response.data.length);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.message.error(this.translate.instant('TALENT_LEARNING.ACTION_ERROR'));
+        },
+      });
+    this.api.getCourses({ per_page: 100 }).subscribe((response) => this.courseOptions.set(response.data));
+    this.api.getLearningPaths({ page: this.pathPage(), per_page: this.pageSize }).subscribe((response) => {
+      this.paths.set(response.data);
+      this.pathTotal.set(response.meta?.total ?? response.data.length);
     });
-    this.api.getLearningPaths({ per_page: 100 }).subscribe((response) => this.paths.set(response.data));
+  }
+
+  changeCourseFilter(): void {
+    this.coursePage.set(1);
+    this.load();
+  }
+
+  changeCoursePage(page: number): void {
+    this.coursePage.set(page);
+    this.load();
+  }
+
+  changePathPage(page: number): void {
+    this.pathPage.set(page);
+    this.load();
   }
 
   openCourseModal(course: TalentCourse | null = null): void {
@@ -319,14 +399,18 @@ export class TalentCoursesComponent implements OnInit {
     this.api.deleteCourse(course.id).subscribe(this.observer());
   }
 
-  openPathModal(): void {
-    this.pathForm.reset({ name: '', description: '', course_ids: [] });
+  openPathModal(path: TalentLearningPath | null = null): void {
+    this.editingPath.set(path);
+    const courseIds = [...(path?.courses ?? [])].sort((left, right) => left.position - right.position).flatMap((step) => (step.course ? [step.course.id] : []));
+    this.pathForm.reset({ name: path?.name ?? '', description: path?.description ?? '', course_ids: courseIds });
     this.pathModalVisible.set(true);
   }
 
   savePath(): void {
     const value = this.pathForm.getRawValue();
-    this.api.createLearningPath({ name: value.name.trim(), description: blankToNull(value.description), course_ids: value.course_ids }).subscribe(this.observer(() => this.pathModalVisible.set(false)));
+    const payload = { name: value.name.trim(), description: blankToNull(value.description), course_ids: value.course_ids };
+    const current = this.editingPath();
+    (current ? this.api.updateLearningPath(current.id, payload) : this.api.createLearningPath(payload)).subscribe(this.observer(() => this.pathModalVisible.set(false)));
   }
 
   transitionPath(path: TalentLearningPath, action: 'publish' | 'archive'): void {

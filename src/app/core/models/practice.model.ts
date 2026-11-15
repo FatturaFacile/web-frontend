@@ -41,7 +41,9 @@ export interface PracticeActivityControlResponse {
 
 export interface PracticeFeeNoteRequest {
   client_id: string;
-  activity_ids: string[];
+  activity_ids?: string[];
+  /** Billable expenses of the client pulled into the fee note, outside the taxable base. */
+  expense_ids?: string[];
   note_number?: string | null;
   date: string;
   cpa_rate: string;

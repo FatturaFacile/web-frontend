@@ -11,7 +11,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { applyServerErrors, AuthApiService, I18nService, isValidationError } from '@core';
+import { applyServerErrors, AuthApiService, I18nService, isValidationError, RegistrationCountry, TAX_ID_PLACEHOLDERS } from '@core';
 import { environment } from '@env';
 import { TranslatePipe } from '@shared';
 import { LanguageSelectorComponent } from '../../components/language-selector.component';
@@ -55,7 +55,7 @@ export class RegisterComponent {
       last_name: this.fb.control('', [Validators.required, Validators.maxLength(100)]),
       email: this.fb.control('', [Validators.required, Validators.email, Validators.maxLength(255)]),
       company_name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
-      country: this.fb.control<'IT' | 'CH'>('IT', [Validators.required]),
+      country: this.fb.control<RegistrationCountry>('IT', [Validators.required]),
       tax_id: this.fb.control('', [Validators.required, Validators.maxLength(30)]),
       password: this.fb.control('', [Validators.required]),
       password_confirmation: this.fb.control('', [Validators.required]),
@@ -69,6 +69,11 @@ export class RegisterComponent {
     initialValue: '',
   });
 
+  private readonly country = toSignal(this.form.controls.country.valueChanges, {
+    initialValue: this.form.controls.country.value,
+  });
+
+  protected readonly taxIdPlaceholder = computed(() => TAX_ID_PLACEHOLDERS[this.country()]);
   protected readonly strength = computed(() => passwordStrength(this.password()));
   protected readonly strengthKey = computed(() => STRENGTH_KEYS[this.strength()]);
   protected readonly strengthLevels = [1, 2, 3, 4];

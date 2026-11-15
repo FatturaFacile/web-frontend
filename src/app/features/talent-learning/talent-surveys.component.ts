@@ -13,7 +13,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { TALENT_QUESTION_TYPES, TalentLearningApiService, TalentQuestionType, TalentSurvey, TranslateService } from '@core';
+import { TALENT_QUESTION_TYPES, TalentLearningApiService, TalentQuestionType, TalentSurvey, TalentSurveyRequest, TalentSurveyStatus, TranslateService } from '@core';
 import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learning.util';
 
@@ -46,8 +46,26 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
       <button nz-button nzType="primary" (click)="openModal()" appIconAction="create"></button>
     </app-page-header>
 
+    <div class="toolbar">
+      <nz-select style="width: 200px" nzAllowClear [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); changeFilter()" [nzPlaceHolder]="'TALENT_LEARNING.STATUS' | translate">
+        @for (value of statuses; track value) {
+          <nz-option [nzValue]="value" [nzLabel]="'TALENT_LEARNING.STATUS_' + key(value) | translate"></nz-option>
+        }
+      </nz-select>
+    </div>
+
     <nz-card class="main-card">
-      <nz-table #table [nzData]="surveys()" [nzLoading]="loading()" nzSize="small" [nzPageSize]="25">
+      <nz-table
+        #table
+        [nzData]="surveys()"
+        [nzLoading]="loading()"
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzTotal]="total()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="pageSize"
+        (nzPageIndexChange)="changePage($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'TALENT_LEARNING.TITLE' | translate }}</th>
@@ -70,6 +88,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
                 <div class="row-actions">
                   @if (row.status === 'draft') {
                     <button nz-button nzType="text" (click)="transition(row, 'open')">{{ 'TALENT_LEARNING.OPEN_ACTION' | translate }}</button>
+                    <button nz-button nzType="text" appIconAction="edit" (click)="openEdit(row)"></button>
                     <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="remove(row)"></button>
                   }
                   @if (row.status === 'open') {
@@ -90,7 +109,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
       }
     </nz-card>
 
-    <nz-modal [(nzVisible)]="modalVisible" [nzTitle]="'TALENT_LEARNING.NEW_SURVEY' | translate" (nzOnCancel)="modalVisible.set(false)" (nzOnOk)="save()" okAction="save" [nzOkDisabled]="form.invalid" nzWidth="720px">
+    <nz-modal [(nzVisible)]="modalVisible" [nzTitle]="(editing() ? 'TALENT_LEARNING.EDIT_SURVEY' : 'TALENT_LEARNING.NEW_SURVEY') | translate" (nzOnCancel)="modalVisible.set(false)" (nzOnOk)="save()" okAction="save" [nzOkDisabled]="form.invalid" nzWidth="720px">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="form" nzLayout="vertical">
           <nz-form-item>
@@ -166,7 +185,13 @@ export class TalentSurveysComponent implements OnInit {
   readonly questionTypes = TALENT_QUESTION_TYPES;
   readonly color = tagColor;
   readonly key = keyOf;
+  readonly statuses: readonly TalentSurveyStatus[] = ['draft', 'open', 'closed'];
+  readonly pageSize = 25;
   readonly surveys = signal<TalentSurvey[]>([]);
+  readonly statusFilter = signal<TalentSurveyStatus | null>(null);
+  readonly page = signal(1);
+  readonly total = signal(0);
+  readonly editing = signal<TalentSurvey | null>(null);
   readonly loading = signal(false);
   readonly modalVisible = signal(false);
   readonly answerVisible = signal(false);
@@ -192,11 +217,22 @@ export class TalentSurveysComponent implements OnInit {
     this.load();
   }
 
+  changeFilter(): void {
+    this.page.set(1);
+    this.load();
+  }
+
+  changePage(page: number): void {
+    this.page.set(page);
+    this.load();
+  }
+
   load(): void {
     this.loading.set(true);
-    this.api.getSurveys({ per_page: 100 }).subscribe({
+    this.api.getSurveys({ status: this.statusFilter() ?? undefined, page: this.page(), per_page: this.pageSize }).subscribe({
       next: (response) => {
         this.surveys.set(response.data);
+        this.total.set(response.meta?.total ?? response.data.length);
         this.loading.set(false);
       },
       error: () => {
@@ -215,25 +251,52 @@ export class TalentSurveysComponent implements OnInit {
   }
 
   openModal(): void {
+    this.editing.set(null);
     this.form.reset({ title: '', description: '', is_anonymous: true, opens_on: '', closes_on: '', min_group_size: 5 });
     this.questions.clear();
     this.questions.push(this.newQuestion());
     this.modalVisible.set(true);
   }
 
+  /** Loads the questions of a draft survey (the list does not carry them) and opens it for editing. */
+  openEdit(survey: TalentSurvey): void {
+    this.api.getSurvey(survey.id).subscribe((response) => {
+      const data = response.data;
+      this.editing.set(data);
+      this.form.reset({
+        title: data.title,
+        description: data.description ?? '',
+        is_anonymous: data.is_anonymous,
+        opens_on: data.opens_on ?? '',
+        closes_on: data.closes_on ?? '',
+        min_group_size: data.min_group_size,
+      });
+      this.questions.clear();
+      for (const question of [...(data.questions ?? [])].sort((left, right) => left.position - right.position)) {
+        const group = this.newQuestion();
+        group.patchValue({ prompt: question.prompt, question_type: question.question_type, is_required: question.is_required });
+        this.questions.push(group);
+      }
+      if (this.questions.length === 0) {
+        this.questions.push(this.newQuestion());
+      }
+      this.modalVisible.set(true);
+    });
+  }
+
   save(): void {
     const value = this.form.getRawValue();
-    this.api
-      .createSurvey({
-        title: value.title.trim(),
-        description: blankToNull(value.description),
-        is_anonymous: value.is_anonymous,
-        opens_on: blankToNull(value.opens_on),
-        closes_on: blankToNull(value.closes_on),
-        min_group_size: value.min_group_size,
-        questions: (value.questions as { prompt: string; question_type: TalentQuestionType; is_required: boolean }[]).map((question) => ({ prompt: question.prompt.trim(), question_type: question.question_type, is_required: question.is_required })),
-      })
-      .subscribe(this.observer(() => this.modalVisible.set(false)));
+    const payload: TalentSurveyRequest = {
+      title: value.title.trim(),
+      description: blankToNull(value.description),
+      is_anonymous: value.is_anonymous,
+      opens_on: blankToNull(value.opens_on),
+      closes_on: blankToNull(value.closes_on),
+      min_group_size: value.min_group_size,
+      questions: (value.questions as { prompt: string; question_type: TalentQuestionType; is_required: boolean }[]).map((question) => ({ prompt: question.prompt.trim(), question_type: question.question_type, is_required: question.is_required })),
+    };
+    const current = this.editing();
+    (current ? this.api.updateSurvey(current.id, payload) : this.api.createSurvey(payload)).subscribe(this.observer(() => this.modalVisible.set(false)));
   }
 
   transition(survey: TalentSurvey, action: 'open' | 'close'): void {

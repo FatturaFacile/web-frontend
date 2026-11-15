@@ -395,3 +395,74 @@ export interface GovDashboard {
     late_to_start: number;
   };
 }
+
+export type GovSodSeverity = 'warn' | 'block';
+export type GovSodViolationStatus = 'open' | 'excepted' | 'resolved';
+export type GovSodExceptionStatus = 'active' | 'expired' | 'revoked';
+
+export interface GovSodRule {
+  id: string;
+  code: string;
+  title: string;
+  description?: string | null;
+  duties_a: string[];
+  duties_b: string[];
+  severity: GovSodSeverity;
+  is_active: boolean;
+}
+
+/** Mirrors SodRuleRequest: the code is set on creation only. */
+export interface GovSodRuleRequest {
+  code?: string;
+  title: string;
+  description?: string | null;
+  duties_a: string[];
+  duties_b: string[];
+  severity: GovSodSeverity;
+  is_active: boolean;
+}
+
+export interface GovSodViolation {
+  id: string;
+  rule_id: string;
+  rule_code?: string;
+  rule_title?: string;
+  severity?: GovSodSeverity;
+  user_id: string;
+  user: GovMemberReference | null;
+  duty_a: string;
+  duty_b: string;
+  status: GovSodViolationStatus;
+  exception_id: string | null;
+  detected_at: string;
+  resolved_at: string | null;
+}
+
+export interface GovSodException {
+  id: string;
+  rule_id: string;
+  rule_code?: string;
+  user_id: string;
+  user: GovMemberReference | null;
+  justification: string;
+  approved_by: string;
+  approver: GovMemberReference | null;
+  expires_at: string;
+  status: GovSodExceptionStatus;
+  revoked_at: string | null;
+}
+
+/** Mirrors SodExceptionRequest: expires_at is Y-m-d, after today and within one year. */
+export interface GovSodExceptionRequest {
+  rule_id: string;
+  user_id: string;
+  justification: string;
+  expires_at: string;
+}
+
+export interface GovSodScanResult {
+  members: number;
+  open: number;
+  excepted: number;
+  resolved: number;
+}

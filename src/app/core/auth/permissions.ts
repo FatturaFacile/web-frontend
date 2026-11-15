@@ -153,6 +153,14 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: ['owner', 'admin', 'accountant', 'sales_manager', 'procurement_manager', 'service_manager', 'project_manager', 'member'],
   },
   marketplace: { read: ['owner', 'admin'], write: ['owner', 'admin'] },
+  wms: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'production', 'warehouse', 'technician', 'procurement_manager', 'purchasing', 'member'],
+  },
+  transportation: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'warehouse', 'sales', 'sales_manager', 'purchasing', 'procurement_manager', 'production', 'member'],
+  },
   leases: { read: FINANCE_READERS, write: FINANCE },
   intrastat: {
     read: [...FINANCE_READERS, 'customs'],

@@ -39,6 +39,7 @@ describe('CommunicationCampaignsComponent', () => {
     scheduleCampaign: vi.fn(),
     sendCampaign: vi.fn(),
     cancelCampaign: vi.fn(),
+    getCampaignRecipients: vi.fn(),
   };
   const crmSpy = { getSegments: vi.fn() };
   const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
@@ -52,6 +53,7 @@ describe('CommunicationCampaignsComponent', () => {
     apiSpy.scheduleCampaign.mockReturnValue(of({ data: { ...campaign, status: 'scheduled' } }));
     apiSpy.sendCampaign.mockReturnValue(of({ data: { ...campaign, status: 'completed' } }));
     apiSpy.cancelCampaign.mockReturnValue(of({ data: { ...campaign, status: 'cancelled' } }));
+    apiSpy.getCampaignRecipients.mockReturnValue(of({ data: [{ id: 'r-1', contact_id: 'c-1', lead_id: null, address: 'a@example.com', status: 'sent', suppression_reason: null, delivery_log_id: 'd-1', error: null, sent_at: '2026-11-09T10:00:00Z' }] }));
     crmSpy.getSegments.mockReturnValue(of({ data: [{ id: 'seg-1', name: 'Everyone', entity: 'contacts', filters: [] }] }));
 
     await TestBed.configureTestingModule({
@@ -117,5 +119,14 @@ describe('CommunicationCampaignsComponent', () => {
     expect(isCampaignOpen('scheduled')).toBe(true);
     expect(isCampaignOpen('completed')).toBe(false);
     expect(isCampaignOpen('sending')).toBe(false);
+  });
+
+  it('opens the send log of a campaign and filters it by status', () => {
+    component.openSendLog(campaign);
+    expect(apiSpy.getCampaignRecipients).toHaveBeenCalledWith('camp-1', undefined);
+    expect(component.sendLog()).toHaveLength(1);
+
+    component.setSendLogStatus('failed');
+    expect(apiSpy.getCampaignRecipients).toHaveBeenLastCalledWith('camp-1', 'failed');
   });
 });

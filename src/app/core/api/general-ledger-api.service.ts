@@ -4,6 +4,24 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import {
+  CountryVatReturn,
+  DatevExportParams,
+  JournalLettering,
+  JournalLetteringResult,
+  SpanishAnnualVatSummary,
+  Us1099Payment,
+  Us1099PaymentUpdatePayload,
+  Us1099RecipientUpdatePayload,
+  Us1099SupplierPayment,
+  UsTaxExemptionCertificate,
+  UsTaxExemptionCertificatePayload,
+  UsTaxExemptionCertificateUpdatePayload,
+  UsTaxJurisdictionUpdatePayload,
+  UsTaxLookup,
+  UsTaxLookupParams,
+  UsTaxNexusUpdatePayload,
+  UsTaxPreloadResult,
+  UsTaxRateUpdatePayload,
   Accrual,
   AccountLedgerReport,
   ApiResponse,
@@ -21,6 +39,7 @@ import {
   CloseTaskStatus,
   CreateAccrualPayload,
   CreateRecurringJournalPayload,
+  DataEnvelope,
   Dimension,
   DimensionPayload,
   DimensionReport,
@@ -37,7 +56,23 @@ import {
   ReportDimensionFilter,
   RollingForecastReport,
   ScheduledRunResult,
+  SiiBookType,
   UpdateLedgerSettingsPayload,
+  Us1099PaymentPayload,
+  Us1099Recipient,
+  Us1099RecipientPayload,
+  Us1099Summary,
+  UsTaxCalculation,
+  UsTaxCalculationPayload,
+  UsTaxJurisdiction,
+  UsTaxJurisdictionPayload,
+  UsTaxNexus,
+  UsTaxNexusPayload,
+  UsTaxRate,
+  UsTaxRatePayload,
+  VatCodePack,
+  VatCodePackCountry,
+  VatCodePackImportResult,
   VatRegister,
 } from '../models';
 
@@ -332,6 +367,194 @@ export class GeneralLedgerApiService {
     return this.http.get<VatRegister>(`${this.base}/vat-registers/${type}`, {
       params: toHttpParams({ ...params, format: 'json' }),
     });
+  }
+
+  // --- Localization packs: VAT codes, FEC, SII ---
+
+  getVatCodePacks(): Observable<DataEnvelope<VatCodePack[]>> {
+    return this.http.get<DataEnvelope<VatCodePack[]>>(`${this.base}/vat-code-packs`);
+  }
+
+  importVatCodePack(country: VatCodePackCountry): Observable<DataEnvelope<VatCodePackImportResult>> {
+    return this.http.post<DataEnvelope<VatCodePackImportResult>>(`${this.base}/vat-code-packs/${country}/import`, {});
+  }
+
+  exportFec(params: { fiscal_year_id: string }): Observable<Blob> {
+    return this.http.get(`${this.base}/fec/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  exportSiiVatBook(type: SiiBookType, params: { from: string; to: string }): Observable<Blob> {
+    return this.http.get(`${this.base}/sii/${type}/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  // --- US sales tax ---
+
+  getUsTaxJurisdictions(params?: { state?: string }): Observable<DataEnvelope<UsTaxJurisdiction[]>> {
+    return this.http.get<DataEnvelope<UsTaxJurisdiction[]>>(`${this.base}/us-tax/jurisdictions`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createUsTaxJurisdiction(payload: UsTaxJurisdictionPayload): Observable<DataEnvelope<UsTaxJurisdiction>> {
+    return this.http.post<DataEnvelope<UsTaxJurisdiction>>(`${this.base}/us-tax/jurisdictions`, payload);
+  }
+
+  createUsTaxRate(jurisdictionId: string, payload: UsTaxRatePayload): Observable<DataEnvelope<UsTaxRate>> {
+    return this.http.post<DataEnvelope<UsTaxRate>>(`${this.base}/us-tax/jurisdictions/${jurisdictionId}/rates`, payload);
+  }
+
+  getUsTaxNexus(): Observable<DataEnvelope<UsTaxNexus[]>> {
+    return this.http.get<DataEnvelope<UsTaxNexus[]>>(`${this.base}/us-tax/nexus`);
+  }
+
+  createUsTaxNexus(payload: UsTaxNexusPayload): Observable<DataEnvelope<UsTaxNexus>> {
+    return this.http.post<DataEnvelope<UsTaxNexus>>(`${this.base}/us-tax/nexus`, payload);
+  }
+
+  calculateUsSalesTax(payload: UsTaxCalculationPayload): Observable<DataEnvelope<UsTaxCalculation>> {
+    return this.http.post<DataEnvelope<UsTaxCalculation>>(`${this.base}/us-tax/calculate`, payload);
+  }
+
+  updateUsTaxJurisdiction(id: string, payload: UsTaxJurisdictionUpdatePayload): Observable<DataEnvelope<UsTaxJurisdiction>> {
+    return this.http.put<DataEnvelope<UsTaxJurisdiction>>(`${this.base}/us-tax/jurisdictions/${id}`, payload);
+  }
+
+  deleteUsTaxJurisdiction(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-tax/jurisdictions/${id}`);
+  }
+
+  updateUsTaxRate(id: string, payload: UsTaxRateUpdatePayload): Observable<DataEnvelope<UsTaxRate>> {
+    return this.http.put<DataEnvelope<UsTaxRate>>(`${this.base}/us-tax/rates/${id}`, payload);
+  }
+
+  deleteUsTaxRate(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-tax/rates/${id}`);
+  }
+
+  updateUsTaxNexus(id: string, payload: UsTaxNexusUpdatePayload): Observable<DataEnvelope<UsTaxNexus>> {
+    return this.http.put<DataEnvelope<UsTaxNexus>>(`${this.base}/us-tax/nexus/${id}`, payload);
+  }
+
+  deleteUsTaxNexus(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-tax/nexus/${id}`);
+  }
+
+  preloadUsTaxRates(states?: string[]): Observable<DataEnvelope<UsTaxPreloadResult>> {
+    return this.http.post<DataEnvelope<UsTaxPreloadResult>>(`${this.base}/us-tax/preload`, states?.length ? { states } : {});
+  }
+
+  lookupUsTaxRate(params: UsTaxLookupParams): Observable<DataEnvelope<UsTaxLookup>> {
+    return this.http.get<DataEnvelope<UsTaxLookup>>(`${this.base}/us-tax/lookup`, { params: toHttpParams(params) });
+  }
+
+  getUsTaxExemptionCertificates(params?: { contact_id?: string; state?: string }): Observable<DataEnvelope<UsTaxExemptionCertificate[]>> {
+    return this.http.get<DataEnvelope<UsTaxExemptionCertificate[]>>(`${this.base}/us-tax/exemption-certificates`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createUsTaxExemptionCertificate(payload: UsTaxExemptionCertificatePayload): Observable<DataEnvelope<UsTaxExemptionCertificate>> {
+    return this.http.post<DataEnvelope<UsTaxExemptionCertificate>>(`${this.base}/us-tax/exemption-certificates`, payload);
+  }
+
+  updateUsTaxExemptionCertificate(id: string, payload: UsTaxExemptionCertificateUpdatePayload): Observable<DataEnvelope<UsTaxExemptionCertificate>> {
+    return this.http.put<DataEnvelope<UsTaxExemptionCertificate>>(`${this.base}/us-tax/exemption-certificates/${id}`, payload);
+  }
+
+  deleteUsTaxExemptionCertificate(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-tax/exemption-certificates/${id}`);
+  }
+
+  // --- US 1099 ---
+
+  getUs1099Recipients(): Observable<DataEnvelope<Us1099Recipient[]>> {
+    return this.http.get<DataEnvelope<Us1099Recipient[]>>(`${this.base}/us-1099/recipients`);
+  }
+
+  createUs1099Recipient(payload: Us1099RecipientPayload): Observable<DataEnvelope<Us1099Recipient>> {
+    return this.http.post<DataEnvelope<Us1099Recipient>>(`${this.base}/us-1099/recipients`, payload);
+  }
+
+  updateUs1099Recipient(id: string, payload: Us1099RecipientUpdatePayload): Observable<DataEnvelope<Us1099Recipient>> {
+    return this.http.put<DataEnvelope<Us1099Recipient>>(`${this.base}/us-1099/recipients/${id}`, payload);
+  }
+
+  deleteUs1099Recipient(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-1099/recipients/${id}`);
+  }
+
+  getUs1099Payments(params?: { year?: number; recipient_id?: string }): Observable<DataEnvelope<Us1099Payment[]>> {
+    return this.http.get<DataEnvelope<Us1099Payment[]>>(`${this.base}/us-1099/payments`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  createUs1099Payment(payload: Us1099PaymentPayload): Observable<DataEnvelope<Us1099Payment>> {
+    return this.http.post<DataEnvelope<Us1099Payment>>(`${this.base}/us-1099/payments`, payload);
+  }
+
+  updateUs1099Payment(id: string, payload: Us1099PaymentUpdatePayload): Observable<DataEnvelope<Us1099Payment>> {
+    return this.http.put<DataEnvelope<Us1099Payment>>(`${this.base}/us-1099/payments/${id}`, payload);
+  }
+
+  deleteUs1099Payment(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/us-1099/payments/${id}`);
+  }
+
+  getUs1099SupplierPayments(params?: { year?: number }): Observable<DataEnvelope<Us1099SupplierPayment[]>> {
+    return this.http.get<DataEnvelope<Us1099SupplierPayment[]>>(`${this.base}/us-1099/supplier-payments`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  // --- Country VAT returns, DATEV and lettering ---
+
+  getFrenchCa3(params: { from: string; to: string; previous_credit?: number | null }): Observable<DataEnvelope<CountryVatReturn>> {
+    return this.http.get<DataEnvelope<CountryVatReturn>>(`${this.base}/fr/ca3`, { params: toHttpParams(params) });
+  }
+
+  exportFrenchCa3(params: { from: string; to: string; previous_credit?: number | null }): Observable<Blob> {
+    return this.http.get(`${this.base}/fr/ca3/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  getSpanishModelo303(params: { from: string; to: string; previous_credit?: number | null }): Observable<DataEnvelope<CountryVatReturn>> {
+    return this.http.get<DataEnvelope<CountryVatReturn>>(`${this.base}/es/modelo-303`, { params: toHttpParams(params) });
+  }
+
+  exportSpanishModelo303(params: { from: string; to: string; previous_credit?: number | null }): Observable<Blob> {
+    return this.http.get(`${this.base}/es/modelo-303/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  getSpanishModelo390(year: number): Observable<DataEnvelope<SpanishAnnualVatSummary>> {
+    return this.http.get<DataEnvelope<SpanishAnnualVatSummary>>(`${this.base}/es/modelo-390`, { params: toHttpParams({ year }) });
+  }
+
+  getGermanUstva(params: { from: string; to: string }): Observable<DataEnvelope<CountryVatReturn>> {
+    return this.http.get<DataEnvelope<CountryVatReturn>>(`${this.base}/de/ustva`, { params: toHttpParams(params) });
+  }
+
+  exportGermanUstva(params: { from: string; to: string }): Observable<Blob> {
+    return this.http.get(`${this.base}/de/ustva/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  exportDatev(params: DatevExportParams): Observable<Blob> {
+    return this.http.get(`${this.base}/de/datev/export`, { params: toHttpParams({ ...params }), responseType: 'blob' });
+  }
+
+  getLetterings(accountId?: string): Observable<DataEnvelope<JournalLettering[]>> {
+    return this.http.get<DataEnvelope<JournalLettering[]>>(`${this.base}/letterings`, {
+      params: accountId ? toHttpParams({ account_id: accountId }) : undefined,
+    });
+  }
+
+  createLettering(payload: { journal_line_ids: string[]; lettered_on?: string | null }): Observable<DataEnvelope<JournalLetteringResult>> {
+    return this.http.post<DataEnvelope<JournalLetteringResult>>(`${this.base}/letterings`, payload);
+  }
+
+  deleteLettering(code: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/letterings/${code}`);
+  }
+
+  getUs1099Summary(year: number): Observable<DataEnvelope<Us1099Summary>> {
+    return this.http.get<DataEnvelope<Us1099Summary>>(`${this.base}/us-1099/summary`, { params: toHttpParams({ year }) });
   }
 
   // --- Budgets ---

@@ -26,6 +26,12 @@ import {
   GovRiskControlsRequest,
   GovRiskRequest,
   GovSeedObligationTemplatesRequest,
+  GovSodException,
+  GovSodExceptionRequest,
+  GovSodRule,
+  GovSodRuleRequest,
+  GovSodScanResult,
+  GovSodViolation,
   GovTransitionRequest,
   LaravelPaginationMeta,
 } from '../models';
@@ -210,5 +216,46 @@ export class GovernanceApiService {
     payload: GovSeedObligationTemplatesRequest,
   ): Observable<GovItem<{ created: number; skipped: number }>> {
     return this.http.post<GovItem<{ created: number; skipped: number }>>(`${this.base}/obligations/seed-templates`, payload);
+  }
+
+  // Segregation of duties
+  getSodRules(): Observable<GovList<GovSodRule>> {
+    return this.http.get<GovList<GovSodRule>>(`${this.base}/sod/rules`);
+  }
+
+  createSodRule(payload: GovSodRuleRequest): Observable<GovItem<GovSodRule>> {
+    return this.http.post<GovItem<GovSodRule>>(`${this.base}/sod/rules`, payload);
+  }
+
+  updateSodRule(id: string, payload: Partial<Omit<GovSodRuleRequest, 'code'>>): Observable<GovItem<GovSodRule>> {
+    return this.http.put<GovItem<GovSodRule>>(`${this.base}/sod/rules/${id}`, payload);
+  }
+
+  deleteSodRule(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/sod/rules/${id}`);
+  }
+
+  seedSodRules(): Observable<GovItem<{ created: number; skipped: number }>> {
+    return this.http.post<GovItem<{ created: number; skipped: number }>>(`${this.base}/sod/rules/seed-defaults`, {});
+  }
+
+  getSodViolations(params: GovListParams = {}): Observable<GovList<GovSodViolation>> {
+    return this.http.get<GovList<GovSodViolation>>(`${this.base}/sod/violations`, { params: toHttpParams(params) });
+  }
+
+  scanSod(): Observable<GovItem<GovSodScanResult>> {
+    return this.http.post<GovItem<GovSodScanResult>>(`${this.base}/sod/scan`, {});
+  }
+
+  getSodExceptions(params: GovListParams = {}): Observable<GovList<GovSodException>> {
+    return this.http.get<GovList<GovSodException>>(`${this.base}/sod/exceptions`, { params: toHttpParams(params) });
+  }
+
+  createSodException(payload: GovSodExceptionRequest): Observable<GovItem<GovSodException>> {
+    return this.http.post<GovItem<GovSodException>>(`${this.base}/sod/exceptions`, payload);
+  }
+
+  revokeSodException(id: string): Observable<GovItem<GovSodException>> {
+    return this.http.post<GovItem<GovSodException>>(`${this.base}/sod/exceptions/${id}/revoke`, {});
   }
 }

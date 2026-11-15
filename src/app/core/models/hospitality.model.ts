@@ -207,3 +207,19 @@ export interface HospitalityReservationRequest {
   duration_minutes: number;
   notes?: string;
 }
+
+/** One night of a room type in the availability grid: rooms booked, held for open group blocks and still available. */
+export interface HospitalityGridNight {
+  date: string;
+  booked: number;
+  held: number;
+  available: number;
+}
+
+export interface HospitalityGridRow {
+  room_type_id: string;
+  code: string;
+  name: string;
+  total: number;
+  nights: HospitalityGridNight[];
+}

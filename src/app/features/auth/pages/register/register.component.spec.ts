@@ -107,6 +107,26 @@ describe('RegisterComponent', () => {
     expect(component['form'].valid).toBe(true);
   });
 
+  it('offers every supported country and sends the chosen one with its tax identifier', () => {
+    register.mockReturnValue(of({ success: true }));
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(RegisterComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as {
+      form: { setValue(value: object): void; controls: { country: { setValue(value: string): void } } };
+      taxIdPlaceholder(): string;
+      onSubmit(): void;
+    };
+
+    expect(component.taxIdPlaceholder()).toBe('12345678901');
+    component.form.controls.country.setValue('DE');
+    expect(component.taxIdPlaceholder()).toBe('DE123456789');
+
+    component.form.setValue({ ...VALID, country: 'DE', tax_id: 'DE123456789' });
+    component.onSubmit();
+    expect(register).toHaveBeenCalledWith({ ...VALID, country: 'DE', tax_id: 'DE123456789' });
+  });
+
   it('sends the form and passes the address through the navigation state, not the URL', () => {
     register.mockReturnValue(of({ success: true }));
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);

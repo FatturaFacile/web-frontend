@@ -1,4 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -7,6 +8,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import {
+  TalentCertificate,
   TalentCompCycle,
   TalentCourse,
   TalentEnrolment,
@@ -18,11 +20,13 @@ import {
   TalentSurvey,
   TranslateService,
 } from '@core';
+import { TalentCertificatesComponent } from './talent-certificates.component';
 import { TalentComplianceComponent } from './talent-compliance.component';
 import { TalentCompensationComponent } from './talent-compensation.component';
 import { TalentCoursesComponent } from './talent-courses.component';
 import { TalentDashboardComponent } from './talent-dashboard.component';
 import { TalentEnrolmentsComponent } from './talent-enrolments.component';
+import { TalentMyLearningComponent } from './talent-my-learning.component';
 import { TalentSuccessionComponent } from './talent-succession.component';
 import { TalentSurveyResultsComponent } from './talent-survey-results.component';
 import { TalentSurveysComponent } from './talent-surveys.component';
@@ -82,6 +86,19 @@ const enrolment: TalentEnrolment = {
   completed_at: null,
   score: null,
   certificate: null,
+};
+
+const certificate: TalentCertificate = {
+  id: 'ce-1',
+  enrolment_id: 'en-1',
+  course_id: 'co-1',
+  course: { id: 'co-1', code: 'SAFE-01', title: 'Workplace safety' },
+  employee_id: 'emp-1',
+  employee: { id: 'emp-1', full_name: 'Anna Rossi', employee_number: null, position_id: null, position_title: null, department_id: null, department_name: null, is_active: true },
+  certificate_number: 'CERT-0001',
+  issued_on: '2027-06-01',
+  expires_on: '2030-06-01',
+  is_valid: true,
 };
 
 const survey: TalentSurvey = {
@@ -385,6 +402,7 @@ describe('TalentCoursesComponent', () => {
     deleteCourse: vi.fn(),
     createLearningPath: vi.fn(),
     transitionLearningPath: vi.fn(),
+    updateLearningPath: vi.fn(),
     enrolInLearningPath: vi.fn(),
     deleteLearningPath: vi.fn(),
   };
@@ -392,6 +410,7 @@ describe('TalentCoursesComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     lookup.getEmployeeLookup.mockReturnValue(of({ data: [] }));
+    api.updateLearningPath.mockReturnValue(of({ data: {} }));
     api.getCourses.mockReturnValue(of({ data: [course] }));
     api.getLearningPaths.mockReturnValue(of({ data: [] }));
     api.createCourse.mockReturnValue(of({ data: course }));
@@ -441,6 +460,77 @@ describe('TalentCoursesComponent', () => {
   });
 });
 
+describe('TalentCoursesComponent filters, pagination and path editing', () => {
+  const api = {
+    ...lookup,
+    getCourses: vi.fn(),
+    getLearningPaths: vi.fn(),
+    updateLearningPath: vi.fn(),
+  };
+  const path = {
+    id: 'pa-1',
+    name: 'Onboarding',
+    description: 'First weeks',
+    status: 'draft' as const,
+    courses: [
+      { position: 2, course: { id: 'co-2', code: 'B', title: 'Second', duration_hours: '1.00', status: 'published' } },
+      { position: 1, course: { id: 'co-1', code: 'A', title: 'First', duration_hours: '1.00', status: 'published' } },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lookup.getEmployeeLookup.mockReturnValue(of({ data: [] }));
+    api.getCourses.mockReturnValue(of({ data: [course], meta: { current_page: 1, last_page: 4, per_page: 25, total: 90 } }));
+    api.getLearningPaths.mockReturnValue(of({ data: [path], meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 } }));
+    api.updateLearningPath.mockReturnValue(of({ data: path }));
+    configure(api);
+  });
+
+  it('filters the catalog by search, status, delivery and mandatory flag and goes back to the first page', () => {
+    const fixture = TestBed.createComponent(TalentCoursesComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getCourses).toHaveBeenCalledWith({ search: undefined, status: undefined, delivery: undefined, is_mandatory: undefined, page: 1, per_page: 25 });
+    expect(component.courseTotal()).toBe(90);
+
+    component.changeCoursePage(3);
+    expect(api.getCourses).toHaveBeenCalledWith(expect.objectContaining({ page: 3 }));
+
+    component.search.set(' safety ');
+    component.status.set('published');
+    component.delivery.set('classroom');
+    component.mandatory.set(false);
+    component.changeCourseFilter();
+
+    expect(component.coursePage()).toBe(1);
+    expect(api.getCourses).toHaveBeenCalledWith({ search: 'safety', status: 'published', delivery: 'classroom', is_mandatory: false, page: 1, per_page: 25 });
+  });
+
+  it('pages the learning paths on the server', () => {
+    const fixture = TestBed.createComponent(TalentCoursesComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.changePathPage(2);
+
+    expect(api.getLearningPaths).toHaveBeenLastCalledWith({ page: 2, per_page: 25 });
+    expect(fixture.componentInstance.pathTotal()).toBe(1);
+  });
+
+  it('edits a learning path with its courses in the saved order', () => {
+    const fixture = TestBed.createComponent(TalentCoursesComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openPathModal(path);
+    expect(component.pathForm.getRawValue()).toEqual({ name: 'Onboarding', description: 'First weeks', course_ids: ['co-1', 'co-2'] });
+    component.pathForm.patchValue({ name: ' Onboarding 2 ', course_ids: ['co-2'] });
+    component.savePath();
+
+    expect(api.updateLearningPath).toHaveBeenCalledWith('pa-1', { name: 'Onboarding 2', description: 'First weeks', course_ids: ['co-2'] });
+  });
+});
+
 describe('TalentEnrolmentsComponent', () => {
   const api = {
     ...lookup,
@@ -486,6 +576,26 @@ describe('TalentEnrolmentsComponent', () => {
     expect(api.cancelEnrolment).toHaveBeenCalledWith('en-1');
   });
 
+  it('filters the enrolments and pages them on the server', () => {
+    api.getEnrolments.mockReturnValue(of({ data: [enrolment], meta: { current_page: 1, last_page: 2, per_page: 25, total: 30 } }));
+    const fixture = TestBed.createComponent(TalentEnrolmentsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getEnrolments).toHaveBeenCalledWith({ course_id: undefined, employee_id: undefined, status: undefined, overdue: undefined, page: 1, per_page: 25 });
+    expect(component.total()).toBe(30);
+
+    component.changePage(2);
+    component.courseFilter.set('co-1');
+    component.employeeFilter.set('emp-1');
+    component.statusFilter.set('in_progress');
+    component.overdueOnly.set(true);
+    component.changeFilter();
+
+    expect(component.page()).toBe(1);
+    expect(api.getEnrolments).toHaveBeenLastCalledWith({ course_id: 'co-1', employee_id: 'emp-1', status: 'in_progress', overdue: true, page: 1, per_page: 25 });
+  });
+
   it('rejects a progress above 100', () => {
     const fixture = TestBed.createComponent(TalentEnrolmentsComponent);
     fixture.detectChanges();
@@ -517,6 +627,7 @@ describe('TalentSurveysComponent', () => {
     getSurveys: vi.fn(),
     getSurvey: vi.fn(),
     createSurvey: vi.fn(),
+    updateSurvey: vi.fn(),
     openSurvey: vi.fn(),
     closeSurvey: vi.fn(),
     deleteSurvey: vi.fn(),
@@ -528,6 +639,7 @@ describe('TalentSurveysComponent', () => {
     api.getSurveys.mockReturnValue(of({ data: [survey] }));
     api.getSurvey.mockReturnValue(of({ data: survey }));
     api.createSurvey.mockReturnValue(of({ data: survey }));
+    api.updateSurvey.mockReturnValue(of({ data: survey }));
     api.submitSurveyResponse.mockReturnValue(of({}));
     configure(api);
   });
@@ -551,6 +663,75 @@ describe('TalentSurveysComponent', () => {
       closes_on: null,
       questions: [{ prompt: 'Recommend us?', question_type: 'enps', is_required: true }],
     });
+  });
+
+  it('loads a draft survey with its questions in order and saves the changes', () => {
+    api.getSurvey.mockReturnValue(
+      of({
+        data: {
+          ...survey,
+          status: 'draft',
+          opens_on: '2027-07-01',
+          questions: [
+            { id: 'q-2', position: 2, prompt: 'Comments', question_type: 'text', is_required: false },
+            { id: 'q-1', position: 1, prompt: 'Recommend us?', question_type: 'enps', is_required: true },
+          ],
+        },
+      }),
+    );
+    const fixture = TestBed.createComponent(TalentSurveysComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit({ ...survey, status: 'draft' });
+    expect(api.getSurvey).toHaveBeenCalledWith('sv-1');
+    expect(component.modalVisible()).toBe(true);
+    expect(component.questions.length).toBe(2);
+    expect(component.questions.at(0).getRawValue()).toEqual({ prompt: 'Recommend us?', question_type: 'enps', is_required: true });
+
+    component.form.patchValue({ title: 'Pulse 2027 v2', min_group_size: 8 });
+    component.save();
+
+    expect(api.createSurvey).not.toHaveBeenCalled();
+    expect(api.updateSurvey).toHaveBeenCalledWith('sv-1', {
+      title: 'Pulse 2027 v2',
+      description: null,
+      is_anonymous: true,
+      min_group_size: 8,
+      opens_on: '2027-07-01',
+      closes_on: null,
+      questions: [
+        { prompt: 'Recommend us?', question_type: 'enps', is_required: true },
+        { prompt: 'Comments', question_type: 'text', is_required: false },
+      ],
+    });
+  });
+
+  it('filters the surveys by status and pages them', () => {
+    api.getSurveys.mockReturnValue(of({ data: [survey], meta: { current_page: 1, last_page: 2, per_page: 25, total: 40 } }));
+    const fixture = TestBed.createComponent(TalentSurveysComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getSurveys).toHaveBeenCalledWith({ status: undefined, page: 1, per_page: 25 });
+    expect(component.total()).toBe(40);
+
+    component.changePage(2);
+    component.statusFilter.set('draft');
+    component.changeFilter();
+    expect(api.getSurveys).toHaveBeenLastCalledWith({ status: 'draft', page: 1, per_page: 25 });
+  });
+
+  it('opens an empty form after editing one', () => {
+    const fixture = TestBed.createComponent(TalentSurveysComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit({ ...survey, status: 'draft' });
+    component.openModal();
+
+    expect(component.editing()).toBeNull();
+    expect(component.questions.length).toBe(1);
   });
 
   it('refuses a minimum group size below the anonymity floor', () => {
@@ -602,5 +783,140 @@ describe('TalentSurveyResultsComponent', () => {
 
     expect(api.getSurveyResults).toHaveBeenCalledWith('sv-1');
     expect(fixture.componentInstance.results()?.results_visible).toBe(false);
+  });
+});
+
+describe('TalentCertificatesComponent', () => {
+  const api = { ...lookup, getCertificates: vi.fn(), getCourses: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lookup.getEmployeeLookup.mockReturnValue(of({ data: [] }));
+    api.getCourses.mockReturnValue(of({ data: [course] }));
+    api.getCertificates.mockReturnValue(of({ data: [certificate], meta: { current_page: 1, last_page: 2, per_page: 25, total: 40 } }));
+    configure(api);
+  });
+
+  it('lists the certificates and filters them by course, employee and validity', () => {
+    const fixture = TestBed.createComponent(TalentCertificatesComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(api.getCertificates).toHaveBeenCalledWith({ course_id: undefined, employee_id: undefined, validity: undefined, page: 1, per_page: 25 });
+    expect(component.total()).toBe(40);
+    expect(fixture.nativeElement.textContent).toContain('CERT-0001');
+
+    component.changePage(2);
+    component.courseFilter.set('co-1');
+    component.employeeFilter.set('emp-1');
+    component.validityFilter.set('expiring');
+    component.changeFilter();
+
+    expect(component.page()).toBe(1);
+    expect(api.getCertificates).toHaveBeenLastCalledWith({ course_id: 'co-1', employee_id: 'emp-1', validity: 'expiring', page: 1, per_page: 25 });
+  });
+
+  it('shows the API reason when the user may not read the certificates', () => {
+    api.getCertificates.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403, error: { message: 'Forbidden' } })));
+    messageSpy.error.mockClear();
+    TestBed.createComponent(TalentCertificatesComponent).detectChanges();
+
+    expect(messageSpy.error).toHaveBeenCalledWith('Forbidden');
+  });
+});
+
+describe('TalentMyLearningComponent', () => {
+  const api = { getMyEnrolments: vi.fn(), getMyCertificates: vi.fn(), updateMyEnrolmentProgress: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getMyEnrolments.mockReturnValue(of({ data: [enrolment] }));
+    api.getMyCertificates.mockReturnValue(of({ data: [certificate] }));
+    api.updateMyEnrolmentProgress.mockReturnValue(of({ data: enrolment }));
+    configure(api);
+  });
+
+  it('loads the own enrolments and certificates', () => {
+    const fixture = TestBed.createComponent(TalentMyLearningComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.enrolments()).toEqual([enrolment]);
+    expect(fixture.componentInstance.certificates()).toEqual([certificate]);
+    expect(fixture.nativeElement.textContent).toContain('CERT-0001');
+  });
+
+  it('records the progress of an own enrolment and reloads', () => {
+    const fixture = TestBed.createComponent(TalentMyLearningComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openProgress(enrolment);
+    expect(component.progressForm.getRawValue().progress_percent).toBe(20);
+    component.progressForm.patchValue({ progress_percent: 55 });
+    component.saveProgress();
+
+    expect(api.updateMyEnrolmentProgress).toHaveBeenCalledWith('en-1', 55);
+    expect(component.progressVisible()).toBe(false);
+    expect(api.getMyEnrolments).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the learner below completion, which only a manager records', () => {
+    const fixture = TestBed.createComponent(TalentMyLearningComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.openProgress(enrolment);
+    fixture.componentInstance.progressForm.patchValue({ progress_percent: 100 });
+
+    expect(fixture.componentInstance.progressForm.valid).toBe(false);
+  });
+
+  it('shows the API reason when the progress is refused', () => {
+    api.updateMyEnrolmentProgress.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 422, error: { message: 'Progress can only grow' } })));
+    const fixture = TestBed.createComponent(TalentMyLearningComponent);
+    fixture.detectChanges();
+    messageSpy.error.mockClear();
+    fixture.componentInstance.openProgress(enrolment);
+    fixture.componentInstance.saveProgress();
+
+    expect(messageSpy.error).toHaveBeenCalledWith('Progress can only grow');
+  });
+});
+
+describe('TalentLearningApiService self-service, certificates and edits', () => {
+  it('calls the endpoints with the API field names', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const service = TestBed.inject(TalentLearningApiService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.getMyEnrolments().subscribe();
+    http.expectOne((r) => r.url.endsWith('/talent-learning/my/enrolments')).flush({ data: [] });
+
+    service.getMyCertificates().subscribe();
+    http.expectOne((r) => r.url.endsWith('/talent-learning/my/certificates')).flush({ data: [] });
+
+    service.updateMyEnrolmentProgress('en-1', 40).subscribe();
+    const progress = http.expectOne((r) => r.url.endsWith('/talent-learning/my/enrolments/en-1/progress'));
+    expect(progress.request.method).toBe('POST');
+    expect(progress.request.body).toEqual({ progress_percent: 40 });
+    progress.flush({ data: {} });
+
+    service.getCertificates({ validity: 'expired', employee_id: 'emp-1', page: 2 }).subscribe();
+    http.expectOne((r) => r.url.endsWith('/talent-learning/certificates') && r.params.get('validity') === 'expired' && r.params.get('employee_id') === 'emp-1' && r.params.get('page') === '2').flush({ data: [] });
+
+    service.updateLearningPath('pa-1', { name: 'Onboarding', course_ids: ['co-1'] }).subscribe();
+    const path = http.expectOne((r) => r.url.endsWith('/talent-learning/learning-paths/pa-1'));
+    expect(path.request.method).toBe('PUT');
+    expect(path.request.body).toEqual({ name: 'Onboarding', course_ids: ['co-1'] });
+    path.flush({ data: {} });
+
+    service.updateSurvey('sv-1', { title: 'Pulse' }).subscribe();
+    const survey = http.expectOne((r) => r.url.endsWith('/talent-learning/surveys/sv-1'));
+    expect(survey.request.method).toBe('PUT');
+    survey.flush({ data: {} });
+
+    service.getCourses({ delivery: 'blended', is_mandatory: true }).subscribe();
+    http.expectOne((r) => r.url.endsWith('/talent-learning/courses') && r.params.get('delivery') === 'blended' && r.params.get('is_mandatory') === '1').flush({ data: [] });
+
+    http.verify();
   });
 });

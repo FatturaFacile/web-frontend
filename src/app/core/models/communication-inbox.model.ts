@@ -117,3 +117,9 @@ export interface CommunicationContactPreferenceRequest {
   is_opted_out: boolean;
   reason?: string | null;
 }
+
+/** Member of the company a conversation can be assigned to. */
+export interface CommunicationAssignee {
+  id: string;
+  name: string;
+}

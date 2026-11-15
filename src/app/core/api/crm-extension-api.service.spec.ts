@@ -28,7 +28,7 @@ describe('CrmExtensionApiService', () => {
   it('filters sales quotas by user and skips empty filters', () => {
     service.getSalesQuotas('user-1').subscribe();
     const request = httpMock.expectOne((req) => req.url.endsWith('/crm/sales-quotas'));
-    expect(request.request.params.get('user_id')).toBe('user-1');
+    expect(request.request.params.get('assignee_id')).toBe('user-1');
     request.flush({ data: [] });
 
     service.getPartners().subscribe();

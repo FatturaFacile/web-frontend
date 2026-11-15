@@ -39,6 +39,15 @@ export const SETTINGS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'security/enterprise',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'ENT_AUTH.TITLE', titleKey: 'ENT_AUTH.TITLE' },
+    loadComponent: () =>
+      import('./pages/enterprise-security/enterprise-security.component').then(
+        (m) => m.EnterpriseSecurityComponent
+      ),
+  },
+  {
     path: 'sdi-channel',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'BREADCRUMB.CANALE_SDI', title: 'PAGE_TITLE.CANALE_DI_FATTURAZIONE_ELETTRONICA', page: SDI_CHANNEL_PAGE },

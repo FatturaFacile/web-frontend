@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.select-md {
+  min-width: 240px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.form-row > nz-form-item {
+  flex: 1 1 200px;
+}
+
+.num {
+  text-align: right;
+}
+
+.muted {
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.section-title {
+  margin: var(--space-4) 0 var(--space-2);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+nz-alert {
+  margin-bottom: var(--space-3);
+}
+
+.w-full {
+  width: 100%;
+}

@@ -9,6 +9,13 @@ import {
   PaginatedResponse,
   QueryFilterParams,
   RetailPosSessionPage,
+  RetailReturn,
+  RetailReturnPayload,
+  RetailSaleRefundPayload,
+  RetailTicket,
+  RetailTicketLinePayload,
+  RetailTicketPayload,
+  RetailTicketPreview,
   StoreCommercialDocumentPayload,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -44,5 +51,24 @@ export class RetailApiService {
     return this.http.get<ApiResponse<RetailPosSessionPage>>(`${environment.apiBaseUrl}/retail/pos/sessions`, {
       params: params ? toHttpParams(params) : undefined,
     });
+  }
+  previewTicket(items: RetailTicketLinePayload[]): Observable<{ data: RetailTicketPreview }> {
+    return this.http.post<{ data: RetailTicketPreview }>(`${this.base}/pos/promotions/preview`, { items });
+  }
+
+  createTicket(payload: RetailTicketPayload): Observable<{ data: RetailTicket }> {
+    return this.http.post<{ data: RetailTicket }>(`${this.base}/pos/tickets`, payload);
+  }
+
+  getTicket(id: string): Observable<{ data: RetailTicket }> {
+    return this.http.get<{ data: RetailTicket }>(`${this.base}/pos/tickets/${id}`);
+  }
+
+  createReturn(saleId: string, payload: RetailReturnPayload): Observable<{ data: RetailReturn }> {
+    return this.http.post<{ data: RetailReturn }>(`${this.base}/pos/sales/${saleId}/returns`, payload);
+  }
+
+  refundSale(saleId: string, payload: RetailSaleRefundPayload): Observable<{ data: RetailReturn }> {
+    return this.http.post<{ data: RetailReturn }>(`${this.base}/pos/sales/${saleId}/refund`, payload);
   }
 }
