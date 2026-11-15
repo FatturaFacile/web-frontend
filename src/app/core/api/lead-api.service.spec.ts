@@ -73,6 +73,23 @@ describe('LeadApiService', () => {
     post.flush({ data: { id: 'e1' } }, { status: 201, statusText: 'Created' });
   });
 
+  it('unwraps data from event and route envelopes that carry sibling keys', () => {
+    let ev: unknown;
+    service.addEvent('l1', { type: 'site_visit' }).subscribe((r) => (ev = r));
+    http
+      .expectOne(`${CRM}/leads/l1/events`)
+      .flush({ data: { id: 'e1' }, lead: { id: 'l1', score: 50 } }, { status: 201, statusText: 'Created' });
+    expect(ev).toEqual({ id: 'e1' });
+
+    let lead: Lead | undefined;
+    service.route('l1').subscribe((r) => (lead = r));
+    http
+      .expectOne(`${CRM}/leads/l1/route`)
+      .flush({ data: { id: 'l1', assigned_user_id: 'u1' }, routing: { assigned_user_id: 'u1', rule_id: 'r1' } });
+    expect(lead?.id).toBe('l1');
+    expect(lead?.assigned_user_id).toBe('u1');
+  });
+
   it('posts rescore, route and convert', () => {
     service.rescore('l1').subscribe();
     expect(http.expectOne(`${CRM}/leads/l1/rescore`).request.method).toBe('POST');

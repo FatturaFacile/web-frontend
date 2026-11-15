@@ -23,7 +23,7 @@ import {
   leadDisplayName,
 } from '@core';
 import { PageHeaderComponent } from '@shared';
-import { apiErrorMessage, humanize, translateOr, TranslateOrPipe } from './lead-i18n';
+import { apiErrorMessage, httpStatus, humanize, translateOr, TranslateOrPipe } from './lead-i18n';
 import { LeadRatingTagComponent } from './lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from './lead-score-badge.component';
 
@@ -241,6 +241,10 @@ export class LeadDuplicatesComponent {
       error: (err: unknown) => {
         this.pendingId.set(null);
         this.merging.set(null);
+        if (httpStatus(err) === 409) {
+          // Already resolved elsewhere: drop it from the queue.
+          this.load();
+        }
         this.rowErrors.update((e) => ({
           ...e,
           [d.id]:

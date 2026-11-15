@@ -34,6 +34,8 @@ export interface Lead {
   email: string | null;
   phone: string | null;
   phone_e164?: string | null;
+  scored_at?: string | null;
+  annual_revenue_estimate?: number | null;
   website?: string | null;
   country?: string | null;
   status: string | null;
@@ -223,6 +225,8 @@ export interface LeadSource {
   type: LeadSourceType;
   is_active?: boolean;
   webhook_url?: string | null;
+  events_webhook_url?: string | null;
+  has_webhook_secret?: boolean;
   api_key_prefix?: string | null;
   last_received_at?: string | null;
   allowed_origins?: string[] | null;

@@ -46,6 +46,11 @@ export function unwrapApiData<T>(res: unknown): T {
   return res as T;
 }
 
+/** Takes `data` from an envelope that carries sibling keys (`lead`, `routing`, ...). */
+function unwrapDataKey<T>(res: unknown): T {
+  return (isRecord(res) && 'data' in res ? res['data'] : res) as T;
+}
+
 /** Normalizes any list response to the app's `PaginatedResponse`, defaulting missing meta. */
 export function toPaginated<T>(res: unknown, params?: QueryFilterParams): PaginatedResponse<T> {
   const data = unwrapApiData<unknown>(res);
@@ -96,7 +101,7 @@ export class LeadApiService {
   addEvent(leadId: string, payload: LeadActivityEventPayload): Observable<LeadActivityEvent> {
     return this.http
       .post<unknown>(`${this.base}/leads/${leadId}/events`, payload)
-      .pipe(map((r) => unwrapApiData<LeadActivityEvent>(r)));
+      .pipe(map((r) => unwrapDataKey<LeadActivityEvent>(r)));
   }
 
   rescore(leadId: string): Observable<Lead> {
@@ -108,7 +113,7 @@ export class LeadApiService {
   route(leadId: string): Observable<Lead> {
     return this.http
       .post<unknown>(`${this.base}/leads/${leadId}/route`, {})
-      .pipe(map((r) => unwrapApiData<Lead>(r)));
+      .pipe(map((r) => unwrapDataKey<Lead>(r)));
   }
 
   convert(leadId: string, payload: LeadConvertPayload): Observable<LeadConvertResult> {
@@ -243,9 +248,15 @@ export class LeadApiService {
     return this.http.delete<unknown>(`${this.base}/lead-sources/${id}`);
   }
 
-  rotateSourceSecret(id: string): Observable<LeadSource> {
+  getSource(id: string): Observable<LeadSource> {
     return this.http
-      .post<unknown>(`${this.base}/lead-sources/${id}/rotate-secret`, {})
+      .get<unknown>(`${this.base}/lead-sources/${id}`)
+      .pipe(map((r) => unwrapApiData<LeadSource>(r)));
+  }
+
+  rotateSourceSecret(id: string, rotate?: 'both' | 'webhook_secret' | 'api_key'): Observable<LeadSource> {
+    return this.http
+      .post<unknown>(`${this.base}/lead-sources/${id}/rotate-secret`, rotate ? { rotate } : {})
       .pipe(map((r) => unwrapApiData<LeadSource>(r)));
   }
 }
