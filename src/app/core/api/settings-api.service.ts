@@ -4,6 +4,7 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import {
+  AccessOptions,
   ApiResponse,
   AuditLogResource,
   BranchResource,
@@ -14,6 +15,7 @@ import {
   ResetUserTwoFactorResponse,
   SaveDocumentTemplatePayload,
   RoleResource,
+  SaveTenantMemberPayload,
   TenantPreferences,
   TenantSettings,
   TwoFactorPolicyResponse,
@@ -47,6 +49,23 @@ export class SettingsApiService {
 
   getTenantUsers(): Observable<ApiResponse<UserResource[]>> {
     return this.http.get<ApiResponse<UserResource[]>>(`${this.base}/users`);
+  }
+
+  getAccessOptions(): Observable<ApiResponse<AccessOptions>> {
+    return this.http.get<ApiResponse<AccessOptions>>(`${this.base}/access-options`);
+  }
+
+  /** Gives an already registered user (`email`) access to the active tenant. */
+  addTenantUser(payload: SaveTenantMemberPayload): Observable<ApiResponse<UserResource>> {
+    return this.http.post<ApiResponse<UserResource>>(`${this.base}/users`, payload);
+  }
+
+  updateTenantUser(userId: string, payload: SaveTenantMemberPayload): Observable<ApiResponse<UserResource>> {
+    return this.http.put<ApiResponse<UserResource>>(`${this.base}/users/${userId}`, payload);
+  }
+
+  removeTenantUser(userId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.base}/users/${userId}`);
   }
 
   getSystemRoles(): Observable<ApiResponse<RoleResource[]>> {

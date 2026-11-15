@@ -29,3 +29,26 @@ export interface DocumentQuotaState {
   remaining: string | null;
   year: number | null;
 }
+
+/** A user of the platform, listed by `GET /admin/users`. */
+export interface PlatformUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  is_active: boolean;
+}
+
+export interface PlatformTenantRecord {
+  id: string;
+  name: string;
+}
+
+/** Access of a user to one tenant (`GET /admin/users/{id}/tenants`). */
+export interface UserTenantAccess {
+  tenant_id: string;
+  tenant_name: string;
+  role: string;
+  suspended: boolean;
+  permissions: string[];
+  modules: Record<string, 'default' | 'blocked' | 'read' | 'write'>;
+}

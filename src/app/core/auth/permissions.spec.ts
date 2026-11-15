@@ -36,6 +36,22 @@ describe('canAccessModule', () => {
     expect(canAccessModule('system', 'read', ['member'], ['*'])).toBe(true);
   });
 
+  it('closes a module to a member with a deny permission, whatever the role says', () => {
+    expect(canAccessModule('crm', 'read', ['member'], ['deny:crm'])).toBe(false);
+    expect(canAccessModule('crm', 'write', ['sales'], ['deny:crm'])).toBe(false);
+    expect(canAccessModule('crm', 'read', ['member'], ['*', 'deny:crm'])).toBe(false);
+    expect(canAccessModule('invoicing', 'read', ['member'], ['deny:crm'])).toBe(true);
+  });
+
+  it('closes only the write access with deny:<module>.write', () => {
+    expect(canAccessModule('crm', 'read', ['sales'], ['deny:crm.write'])).toBe(true);
+    expect(canAccessModule('crm', 'write', ['sales'], ['deny:crm.write'])).toBe(false);
+  });
+
+  it('never locks an owner out with a deny permission', () => {
+    expect(canAccessModule('system', 'read', ['owner'], ['deny:system'])).toBe(true);
+  });
+
   it('denies unknown modules', () => {
     expect(canAccessModule('nope', 'read', ['owner'])).toBe(false);
   });

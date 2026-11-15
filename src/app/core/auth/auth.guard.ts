@@ -1,10 +1,11 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore } from './auth.store';
 import { AuthApiService } from '../api/auth-api.service';
 import { PermissionsService } from './permissions.service';
 import { AccessMode } from './permissions';
+import { loadFullProfileIfNeeded } from './profile-loader';
 
 /**
  * Requires an authenticated session; otherwise redirects to `/login?returnUrl=<current url>`.
@@ -20,7 +21,8 @@ export const authGuard: CanActivateFn = (_route, state) => {
   const authApi = inject(AuthApiService);
 
   if (authStore.isAuthenticated()) {
-    return true;
+    const profile = loadFullProfileIfNeeded();
+    return profile ? profile.pipe(map(() => true)) : true;
   }
 
   return authApi.me().pipe(
@@ -76,4 +78,15 @@ export const moduleGuard = (module: string, mode: AccessMode = 'read'): CanActiv
 
     return permissions.hasAccess(module, mode) ? true : router.createUrlTree(['/dashboard']);
   };
+};
+
+/**
+ * Restricts a route to platform administrators (the API refuses everybody else); the others go to the home page.
+ */
+export const platformAdminGuard: CanActivateFn = () => {
+  const authStore = inject(AuthStore);
+  const router = inject(Router);
+  const profile = loadFullProfileIfNeeded();
+  const decide = (): true | UrlTree => (authStore.user()?.is_platform_admin ? true : router.createUrlTree(['/dashboard']));
+  return profile ? profile.pipe(map(decide)) : decide();
 };
