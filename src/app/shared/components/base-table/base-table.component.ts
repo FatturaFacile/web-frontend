@@ -75,10 +75,14 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly virtualItemSize = input<number>(44);
   readonly virtualMaxBufferPx = input<number>(800);
 
-  /** Virtual scrolling needs a bounded viewport height so header and body stay aligned. */
+  /**
+   * Virtual scrolling needs a bounded viewport height (`y`) and an explicit width (`x`): together they
+   * make nz-table split header and body into fixed-layout tables sharing one `<colgroup>`, so columns
+   * cannot drift while rows are recycled.
+   */
   readonly tableScroll = computed(() => {
     const scroll = this.scroll();
-    return this.virtualScroll() ? { ...scroll, y: scroll.y ?? '480px' } : scroll;
+    return this.virtualScroll() ? { x: scroll.x ?? '100%', y: scroll.y ?? '480px' } : scroll;
   });
 
   // Templates
