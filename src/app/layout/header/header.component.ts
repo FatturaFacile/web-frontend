@@ -16,6 +16,8 @@ import type { SupportedLanguage } from '@core/i18n/i18n.types';
 import { TranslateService } from '@core/i18n/i18n.service';
 import { AppStore } from '@core/state/app.store';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
+import { GlobalSearchService } from '@shared/components/global-search/global-search.service';
+import { NotificationBellComponent } from './notification-bell.component';
 
 @Component({
   selector: 'app-header',
@@ -29,6 +31,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
     NzSelectModule,
     NzTagModule,
     NzAvatarModule,
+    NotificationBellComponent,
     TranslatePipe,
   ],
   templateUrl: './header.component.html',
@@ -36,6 +39,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 export class HeaderComponent {
   private readonly translate = inject(TranslateService);
   readonly appStore = inject(AppStore);
+  readonly globalSearch = inject(GlobalSearchService);
   readonly authStore = inject(AuthStore);
   readonly permissions = inject(PermissionsService);
   private readonly authApi = inject(AuthApiService);

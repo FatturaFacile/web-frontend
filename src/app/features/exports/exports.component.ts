@@ -8,6 +8,8 @@ import {
   ActionFormConfig,
 } from '../hr/shared/action-form/action-form.component';
 import { saveBlob } from '../hr/shared/hr-http.util';
+import { ExportHistoryComponent } from './export-history.component';
+import { ImportMapperComponent } from './import-mapper.component';
 
 const DATASETS: ExportDataset[] = ['invoices', 'purchases', 'payments', 'contacts'];
 
@@ -15,7 +17,7 @@ const DATASETS: ExportDataset[] = ['invoices', 'purchases', 'payments', 'contact
 @Component({
   selector: 'app-exports',
   styleUrl: './exports.component.scss',
-  imports: [ActionFormComponent, NzCardModule, PageHeaderComponent, TranslatePipe],
+  imports: [ActionFormComponent, ExportHistoryComponent, ImportMapperComponent, NzCardModule, PageHeaderComponent, TranslatePipe],
   template: `
     <app-page-header
       [title]="'exportsPage.title' | translate"
@@ -25,10 +27,12 @@ const DATASETS: ExportDataset[] = ['invoices', 'purchases', 'payments', 'contact
       <p>{{ 'exportsPage.archiveHint' | translate }}</p>
       <app-action-form [config]="archiveConfig" [canWrite]="canExport()" />
     </nz-card>
-    <nz-card [nzTitle]="'exportsPage.csvTitle' | translate">
+    <nz-card [nzTitle]="'exportsPage.csvTitle' | translate" class="mb-3">
       <p>{{ 'exportsPage.csvHint' | translate }}</p>
       <app-action-form [config]="csvConfig" [canWrite]="canExport()" />
     </nz-card>
+    <app-export-history [canWrite]="canExport()" />
+    <app-import-mapper [canWrite]="canExport()" />
   `,
 })
 export class ExportsComponent {

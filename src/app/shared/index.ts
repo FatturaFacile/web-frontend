@@ -15,3 +15,6 @@ export * from './ui/resource-panel/resource-panel.types';
 export * from './ui/resource-panel/resource-page.component';
 export * from './ui/resource-panel/resource-config.helpers';
 export * from './ui/action-icon';
+export * from './components/global-search/global-search.component';
+export * from './components/global-search/global-search.service';
+export * from './components/record-collaboration/record-collaboration.component';

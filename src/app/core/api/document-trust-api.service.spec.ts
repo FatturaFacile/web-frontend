@@ -102,6 +102,13 @@ describe('DocumentTrustApiService', () => {
     txReq.flush({ success: true, data: [mockTransmission] });
   });
 
+  it('should retry a failed transmission', () => {
+    service.retryTransmission('tx-1').subscribe();
+    const req = httpMock.expectOne('/api/v1/edocument-networks/transmissions/tx-1/retry');
+    expect(req.request.method).toBe('POST');
+    req.flush({ success: true, data: mockTransmission });
+  });
+
   it('should get single transmission and send document', () => {
     service.getTransmission('tx-1').subscribe((res) => {
       expect(res.data).toEqual(mockTransmission);

@@ -38,6 +38,16 @@
   </div>
 
   <div class="header-right">
+    <button
+      type="button"
+      class="sidebar-toggle global-search-trigger"
+      (click)="globalSearch.open()"
+      [title]="'COLLAB.SEARCH_OPEN' | translate"
+      [attr.aria-label]="'COLLAB.SEARCH_OPEN' | translate"
+    >
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
     <!-- Jurisdiction Switcher -->
     <!--    <div class="jurisdiction-toggle">-->
     <!--      <button-->
@@ -97,8 +107,11 @@
       [title]="'NAV.ALERTS' | translate"
       [attr.aria-label]="'NAV.ALERTS' | translate"
     >
-      <i class="fa-solid fa-bell" aria-hidden="true"></i>
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
     </a>
+
+    <!-- In-app notification centre -->
+    <app-notification-bell />
 
     <!-- Dark/Light theme toggle -->
     <button
@@ -167,6 +180,18 @@
             <i class="fa-solid fa-sliders fa-icon-spaced"></i>
             {{ "HEADER.PREFERENCES" | translate }}
           </li>
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/notifications'])"
+              (keydown.enter)="router.navigate(['/settings/notifications'])">
+            <i class="fa-solid fa-bell fa-icon-spaced"></i>
+            {{ "PLATFORM.NOTIFICATION_PREFERENCES" | translate }}
+          </li>
+          @if (permissions.canRead('platform')) {
+            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/recycle-bin'])"
+                (keydown.enter)="router.navigate(['/settings/recycle-bin'])">
+              <i class="fa-solid fa-trash-can-arrow-up fa-icon-spaced"></i>
+              {{ "PLATFORM.RECYCLE_BIN" | translate }}
+            </li>
+          }
           <li nz-menu-divider></li>
           <li nz-menu-item tabindex="0" (click)="logout()" (keydown.enter)="logout()" class="logout-item">
             <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>

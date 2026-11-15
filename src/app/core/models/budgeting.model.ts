@@ -184,3 +184,23 @@ export interface BudgetVersionFilters {
   version_type?: BudgetVersionType;
   per_page?: number;
 }
+
+export interface BudgetScenarioRow {
+  key: string;
+  label: string;
+  code: string | null;
+  base: string;
+  scenario: string;
+  delta: string;
+  delta_percent: string | null;
+}
+
+/** Budget of a version (base) against another version (scenario): `delta` is scenario minus base. */
+export interface BudgetScenarioComparison {
+  base_version_id: string;
+  scenario_version_id: string;
+  through_period: number;
+  group_by: BudgetVarianceGroup;
+  rows: BudgetScenarioRow[];
+  totals: { base: string; scenario: string; delta: string; delta_percent: string | null };
+}

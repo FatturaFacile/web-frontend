@@ -8,6 +8,8 @@ import {
   AskAssistantRequest,
   AssistantAnswer,
   AssistantCatalogueEntry,
+  AssistantFeedbackRating,
+  AssistantThread,
   AssistantLogQueryParams,
   AssistantLogResource,
 } from '../models';
@@ -39,5 +41,24 @@ export class AssistantApiService {
     return this.http.get<PaginatedResponse<AssistantLogResource>>(`${this.baseUrl}/logs`, {
       params: params ? toHttpParams(params) : undefined,
     });
+  }
+
+  /** The conversations of the caller, most recently active first. */
+  getThreads(): Observable<ApiResponse<AssistantThread[]>> {
+    return this.http.get<ApiResponse<AssistantThread[]>>(`${this.baseUrl}/threads`);
+  }
+
+  /** One conversation with its questions, oldest first. */
+  getThread(id: string): Observable<ApiResponse<AssistantThread>> {
+    return this.http.get<ApiResponse<AssistantThread>>(`${this.baseUrl}/threads/${id}`);
+  }
+
+  deleteThread(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/threads/${id}`);
+  }
+
+  /** Rates an own answer (`log_id` of the answer); a new rating replaces the previous one. */
+  sendFeedback(logId: string, rating: AssistantFeedbackRating, comment?: string | null): Observable<ApiResponse<AssistantLogResource>> {
+    return this.http.post<ApiResponse<AssistantLogResource>>(`${this.baseUrl}/logs/${logId}/feedback`, { rating, comment: comment ?? null });
   }
 }

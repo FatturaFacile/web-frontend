@@ -42,4 +42,52 @@ describe('ExportsApiService', () => {
     expect(plain.request.responseType).toBe('blob');
     plain.flush(new Blob(['a']));
   });
+
+  it('queues an export, reads the history and asks for a signed link', () => {
+    service.createJob({ dataset: 'contacts' }).subscribe();
+    const create = httpMock.expectOne(`${base}/jobs`);
+    expect(create.request.method).toBe('POST');
+    expect(create.request.body).toEqual({ dataset: 'contacts' });
+    create.flush({ success: true, message: '', data: {} });
+
+    service.listJobs({ status: 'failed' }).subscribe();
+    const list = httpMock.expectOne((r) => r.url === `${base}/jobs`);
+    expect(list.request.params.get('status')).toBe('failed');
+    list.flush({ success: true, message: '', data: [] });
+
+    service.getJobLink('j1').subscribe();
+    httpMock.expectOne(`${base}/jobs/j1/link`).flush({ success: true, message: '', data: { url: 'u', expires_in_minutes: 60 } });
+
+    service.retryJob('j1').subscribe();
+    expect(httpMock.expectOne(`${base}/jobs/j1/retry`).request.method).toBe('POST');
+  });
+
+  it('manages the export schedules', () => {
+    service.listSchedules().subscribe();
+    httpMock.expectOne(`${base}/schedules`).flush({ success: true, message: '', data: [] });
+
+    service.createSchedule({ dataset: 'invoices', frequency: 'monthly', period: 'previous_month' }).subscribe();
+    expect(httpMock.expectOne(`${base}/schedules`).request.method).toBe('POST');
+
+    service.updateSchedule('s1', { dataset: 'invoices', frequency: 'daily', period: 'all', is_active: false }).subscribe();
+    expect(httpMock.expectOne(`${base}/schedules/s1`).request.method).toBe('PUT');
+
+    service.deleteSchedule('s1').subscribe();
+    expect(httpMock.expectOne(`${base}/schedules/s1`).request.method).toBe('DELETE');
+  });
+
+  it('previews and imports a file as multipart with the mapping fields', () => {
+    const file = new File(['a;b'], 'contacts.csv');
+    service.previewImport('contacts', file).subscribe();
+    const preview = httpMock.expectOne(`${base}/imports/preview`);
+    expect((preview.request.body as FormData).get('dataset')).toBe('contacts');
+    preview.flush({ success: true, message: '', data: {} });
+
+    service.importFile('contacts', file, { email: 'Mail' }, true).subscribe();
+    const run = httpMock.expectOne(`${base}/imports`);
+    const body = run.request.body as FormData;
+    expect(body.get('mapping[email]')).toBe('Mail');
+    expect(body.get('dry_run')).toBe('1');
+    run.flush({ success: true, message: '', data: {} });
+  });
 });

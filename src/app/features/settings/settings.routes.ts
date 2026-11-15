@@ -48,6 +48,21 @@ export const SETTINGS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'notifications',
+    data: { breadcrumb: 'PLATFORM.NOTIFICATION_PREFERENCES', titleKey: 'PLATFORM.NOTIFICATION_PREFERENCES' },
+    loadComponent: () =>
+      import('./pages/notification-preferences/notification-preferences.component').then(
+        (m) => m.NotificationPreferencesComponent
+      ),
+  },
+  {
+    path: 'recycle-bin',
+    canActivate: [moduleGuard('platform', 'read')],
+    data: { breadcrumb: 'PLATFORM.RECYCLE_BIN', titleKey: 'PLATFORM.RECYCLE_BIN' },
+    loadComponent: () =>
+      import('./pages/recycle-bin/recycle-bin.component').then((m) => m.RecycleBinComponent),
+  },
+  {
     path: 'sdi-channel',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'BREADCRUMB.CANALE_SDI', title: 'PAGE_TITLE.CANALE_DI_FATTURAZIONE_ELETTRONICA', page: SDI_CHANNEL_PAGE },

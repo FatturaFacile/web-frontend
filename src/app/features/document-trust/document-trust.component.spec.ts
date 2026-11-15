@@ -73,6 +73,7 @@ describe('DocumentTrustComponent', () => {
       getNetworks: vi.fn().mockReturnValue(of({ success: true, data: mockNetworks })),
       getTransmissions: vi.fn().mockReturnValue(of({ success: true, data: [mockTransmission], meta: { total: 1, last_page: 1 } })),
       getTransmission: vi.fn().mockReturnValue(of({ success: true, data: mockTransmission })),
+      retryTransmission: vi.fn().mockReturnValue(of({ success: true, data: mockTransmission })),
       sendDocument: vi.fn().mockReturnValue(of({ success: true, data: mockTransmission })),
       getSignatures: vi.fn().mockReturnValue(of({ success: true, data: [mockSignature], meta: { total: 1, last_page: 1 } })),
       signDocument: vi.fn().mockReturnValue(of({ success: true, data: mockSignature })),
@@ -177,6 +178,12 @@ describe('DocumentTrustComponent', () => {
     component.closeTransmissionDrawer();
     expect(component.isTransmissionDrawerVisible()).toBe(false);
     expect(component.selectedTransmission()).toBeNull();
+  });
+
+it('should retry a failed transmission and reload the grid', () => {
+    component.retryTransmission({ ...mockTransmission, status: 'failed', can_retry: true });
+    expect(apiMock['retryTransmission']).toHaveBeenCalledWith('tx-1');
+    expect(messageMock['success']).toHaveBeenCalled();
   });
 
   it('should submit send document form with base64 payload', () => {

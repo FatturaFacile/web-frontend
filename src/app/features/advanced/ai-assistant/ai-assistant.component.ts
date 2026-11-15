@@ -11,11 +11,14 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { AssistantApiService } from '../../../core/api/assistant-api.service';
 import {
   AskAssistantRequest,
   AssistantAnswer,
   AssistantCatalogueEntry,
+  AssistantFeedbackRating,
+  AssistantThread,
   AssistantLogQueryParams,
   AssistantLogResource,
   AssistantOutcome,
@@ -52,6 +55,7 @@ export class AiAssistantComponent {
   private readonly assistantApi = inject(AssistantApiService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
+  private readonly message = inject(NzMessageService);
 
   // --- State Signals ---
   readonly activeTabIndex = signal<number>(0);
@@ -69,6 +73,12 @@ export class AiAssistantComponent {
   // Latest Answer & Question
   readonly lastQuestion = signal<string>('');
   readonly currentAnswer = signal<AssistantAnswer | null>(null);
+
+  // Conversations
+  readonly threads = signal<AssistantThread[]>([]);
+  readonly threadId = signal<string | null>(null);
+  readonly openedThread = signal<AssistantThread | null>(null);
+  readonly rated = signal<AssistantFeedbackRating | null>(null);
 
   // Form Controls
   readonly askForm = this.fb.group({
@@ -117,6 +127,7 @@ export class AiAssistantComponent {
 
   constructor() {
     this.loadCatalogue();
+    this.loadThreads();
   }
 
   loadCatalogue(): void {
@@ -153,10 +164,13 @@ export class AiAssistantComponent {
     this.errorMessage.set(null);
     this.lastQuestion.set(question);
 
-    const payload: AskAssistantRequest = { question };
+    const payload: AskAssistantRequest = { question, thread_id: this.threadId() };
     this.assistantApi.ask(payload).subscribe({
       next: (res) => {
         this.currentAnswer.set(res.data);
+        this.threadId.set(res.data.thread_id ?? this.threadId());
+        this.rated.set(null);
+        this.loadThreads();
         this.isAsking.set(false);
         // Refresh logs so the latest question appears in audit
         this.loadLogs();
@@ -172,6 +186,65 @@ export class AiAssistantComponent {
     this.askForm.patchValue({ question: entry.description });
     this.activeTabIndex.set(0);
     this.onAskSubmit();
+  }
+
+  loadThreads(): void {
+    this.assistantApi.getThreads().subscribe({
+      next: (res) => this.threads.set(res.data ?? []),
+      error: () => this.threads.set([]),
+    });
+  }
+
+  /** Starts a fresh conversation: the next question opens a new thread. */
+  startNewThread(): void {
+    this.threadId.set(null);
+    this.currentAnswer.set(null);
+    this.openedThread.set(null);
+    this.askForm.reset({ question: '' });
+    this.activeTabIndex.set(0);
+  }
+
+  openThread(thread: AssistantThread): void {
+    this.assistantApi.getThread(thread.id).subscribe({
+      next: (res) => this.openedThread.set(res.data),
+      error: () => this.message.error(this.translate.instant('ASSISTANT.THREAD_LOAD_ERROR')),
+    });
+  }
+
+  /** Continues an opened conversation: the next question goes to the same thread. */
+  continueThread(thread: AssistantThread): void {
+    this.threadId.set(thread.id);
+    this.currentAnswer.set(null);
+    this.activeTabIndex.set(0);
+  }
+
+  deleteThread(thread: AssistantThread): void {
+    this.assistantApi.deleteThread(thread.id).subscribe({
+      next: () => {
+        if (this.threadId() === thread.id) {
+          this.threadId.set(null);
+        }
+        if (this.openedThread()?.id === thread.id) {
+          this.openedThread.set(null);
+        }
+        this.message.success(this.translate.instant('ASSISTANT.THREAD_DELETED'));
+        this.loadThreads();
+      },
+      error: () => this.message.error(this.translate.instant('ASSISTANT.THREAD_DELETE_ERROR')),
+    });
+  }
+
+  rateAnswer(rating: AssistantFeedbackRating): void {
+    const logId = this.currentAnswer()?.log_id;
+    if (!logId) return;
+
+    this.assistantApi.sendFeedback(logId, rating).subscribe({
+      next: () => {
+        this.rated.set(rating);
+        this.message.success(this.translate.instant('ASSISTANT.FEEDBACK_SAVED'));
+      },
+      error: () => this.message.error(this.translate.instant('ASSISTANT.FEEDBACK_ERROR')),
+    });
   }
 
   onTextareaKeydown(event: Event): void {
