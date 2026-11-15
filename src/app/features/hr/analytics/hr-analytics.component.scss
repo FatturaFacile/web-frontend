@@ -1,0 +1,74 @@
+.analytics__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  label,
+  .analytics__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.analytics__select {
+  min-width: 140px;
+}
+
+.analytics__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.analytics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+nz-card {
+  margin-bottom: 16px;
+}
+
+.analytics__grid nz-card {
+  margin-bottom: 0;
+}
+
+.analytics__subtitle,
+.analytics__note {
+  margin-top: 12px;
+}
+
+.analytics__bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.analytics__bar-label {
+  width: 72px;
+}
+
+.analytics__bar-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.analytics__bar {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--ant-primary-color, #1677ff);
+}
+
+.analytics__bar-value {
+  width: 40px;
+  text-align: right;
+}

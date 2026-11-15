@@ -67,6 +67,21 @@ export const HR_ROUTES: Routes = [
     loadComponent: () => import('./talent/talent.component').then((m) => m.TalentComponent),
   },
   {
+    path: 'goals',
+    data: { breadcrumb: 'NAV.HR_GOALS', title: 'NAV.HR_GOALS' },
+    loadComponent: () => import('./goals/goals.component').then((m) => m.GoalsComponent),
+  },
+  {
+    path: 'offboarding',
+    data: { breadcrumb: 'NAV.HR_OFFBOARDING', title: 'NAV.HR_OFFBOARDING' },
+    loadComponent: () => import('./offboarding/offboarding.component').then((m) => m.OffboardingComponent),
+  },
+  {
+    path: 'analytics',
+    data: { breadcrumb: 'NAV.HR_ANALYTICS', title: 'NAV.HR_ANALYTICS' },
+    loadComponent: () => import('./analytics/hr-analytics.component').then((m) => m.HrAnalyticsComponent),
+  },
+  {
     path: 'recruiting',
     data: { breadcrumb: 'NAV.HR_RECRUITING', title: 'NAV.HR_RECRUITING' },
     loadComponent: () => import('./recruiting/recruiting.component').then((m) => m.RecruitingComponent),

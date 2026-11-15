@@ -123,6 +123,14 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'production', 'technician', 'procurement_manager', 'member'],
   },
+  returns: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager', 'warehouse', 'purchasing', 'service_manager', 'technician', 'member'],
+  },
+  fleet: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'production', 'technician', 'procurement_manager', 'member'],
+  },
   leases: { read: FINANCE_READERS, write: FINANCE },
   intrastat: {
     read: [...FINANCE_READERS, 'customs'],

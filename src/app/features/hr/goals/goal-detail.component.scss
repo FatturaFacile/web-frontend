@@ -1,0 +1,20 @@
+.goal-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.goal-detail__progress {
+  flex: 1;
+}
+
+.goal-detail__section {
+  margin-top: 16px;
+}
+
+.goal-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

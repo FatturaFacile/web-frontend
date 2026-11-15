@@ -421,6 +421,24 @@ export class SidebarComponent {
               module: 'hr',
             },
             {
+              key: 'NAV.HR_GOALS',
+              route: '/hr/goals',
+              icon: 'fa-solid fa-bullseye',
+              module: 'hr',
+            },
+            {
+              key: 'NAV.HR_OFFBOARDING',
+              route: '/hr/offboarding',
+              icon: 'fa-solid fa-door-open',
+              module: 'hr',
+            },
+            {
+              key: 'NAV.HR_ANALYTICS',
+              route: '/hr/analytics',
+              icon: 'fa-solid fa-chart-column',
+              module: 'hr',
+            },
+            {
               key: 'NAV.HR_RECRUITING',
               route: '/hr/recruiting',
               icon: 'fa-solid fa-user-plus',
@@ -660,6 +678,33 @@ export class SidebarComponent {
             { key: 'NAV.SUSTAINABILITY_TARGETS', route: '/sustainability/targets', icon: 'fa-solid fa-bullseye', module: 'sustainability' },
             { key: 'NAV.SUSTAINABILITY_KPIS', route: '/sustainability/kpis', icon: 'fa-solid fa-gauge-high', module: 'sustainability' },
             { key: 'NAV.SUSTAINABILITY_MATERIALITY', route: '/sustainability/materiality', icon: 'fa-solid fa-scale-balanced', module: 'sustainability' },
+          ],
+        },
+        {
+          key: 'NAV.RETURNS',
+          icon: 'fa-solid fa-rotate-left',
+          module: 'returns',
+          children: [
+            { key: 'NAV.RETURNS_DASHBOARD', route: '/returns', icon: 'fa-solid fa-chart-pie', module: 'returns' },
+            { key: 'NAV.RETURNS_RMAS', route: '/returns/rmas', icon: 'fa-solid fa-box-open', module: 'returns' },
+            { key: 'NAV.RETURNS_WARRANTIES', route: '/returns/warranties', icon: 'fa-solid fa-shield-halved', module: 'returns' },
+            { key: 'NAV.RETURNS_CLAIMS', route: '/returns/claims', icon: 'fa-solid fa-file-circle-exclamation', module: 'returns' },
+            { key: 'NAV.RETURNS_SUPPLIER', route: '/returns/supplier-returns', icon: 'fa-solid fa-truck-ramp-box', module: 'returns' },
+            { key: 'NAV.RETURNS_SETTINGS', route: '/returns/settings', icon: 'fa-solid fa-sliders', module: 'returns' },
+          ],
+        },
+        {
+          key: 'NAV.FLEET_MANAGEMENT',
+          icon: 'fa-solid fa-car-side',
+          module: 'fleet',
+          children: [
+            { key: 'NAV.FLEET_DASHBOARD', route: '/fleet', icon: 'fa-solid fa-chart-pie', module: 'fleet' },
+            { key: 'NAV.FLEET_VEHICLES', route: '/fleet/vehicles', icon: 'fa-solid fa-car', module: 'fleet' },
+            { key: 'NAV.FLEET_ASSIGNMENTS', route: '/fleet/assignments', icon: 'fa-solid fa-key', module: 'fleet' },
+            { key: 'NAV.FLEET_FUEL', route: '/fleet/fuel', icon: 'fa-solid fa-gas-pump', module: 'fleet' },
+            { key: 'NAV.FLEET_SERVICES', route: '/fleet/services', icon: 'fa-solid fa-screwdriver-wrench', module: 'fleet' },
+            { key: 'NAV.FLEET_DEADLINES', route: '/fleet/deadlines', icon: 'fa-solid fa-calendar-check', module: 'fleet' },
+            { key: 'NAV.FLEET_FINES', route: '/fleet/fines', icon: 'fa-solid fa-triangle-exclamation', module: 'fleet' },
           ],
         },
         {
