@@ -35,6 +35,7 @@ export * from './api/automotive-api.service';
 export * from './api/field-service-api.service';
 export * from './api/hr-api.service';
 export * from './api/retail-api.service';
+export * from './api/tax-api.service';
 export * from './lookups/lookup.service';
 export * from './lookups/lookup.types';
 export * from './lookups/lookup-label.pipe';

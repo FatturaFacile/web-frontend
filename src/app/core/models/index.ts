@@ -20,3 +20,5 @@ export * from './automotive.model';
 export * from './field-service.model';
 export * from './hr.model';
 export * from './retail.model';
+export * from './tax.model';
+export * from './tax.constants';
