@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { ASSOC_COURSES_PAGE } from './pages/courses.page';
 import { ASSOC_ENROLMENT_PAGE } from './pages/enrolment.page';
 import { ASSOC_FEES_PAGE, ASSOC_FUNDRAISING_PAGE, ASSOC_SETTINGS_PAGE, ASSOC_SPORT_PAGE } from './pages/finance.page';
@@ -9,7 +8,7 @@ import { ASSOC_ACCESS_PAGE, ASSOC_COMPLIANCE_PAGE, ASSOC_VOLUNTEERS_PAGE } from 
 const associationRoute = (path: string, title: string, page: object) => ({
   path,
   data: { breadcrumb: title, title, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const ASSOCIATIONS_ROUTES: Routes = [

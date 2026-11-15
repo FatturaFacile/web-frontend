@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { PURCHASE_INVOICES_PAGE, PURCHASE_ORDERS_PAGE } from './purchases-ledger.page';
 
 export const PURCHASES_ROUTES: Routes = [
@@ -23,12 +22,12 @@ export const PURCHASES_ROUTES: Routes = [
   {
     path: 'orders',
     data: { breadcrumb: 'BREADCRUMB.ORDINI_DI_ACQUISTO', title: 'PAGE_TITLE.ORDINI_DI_ACQUISTO', page: PURCHASE_ORDERS_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'invoices',
     data: { breadcrumb: 'BREADCRUMB.FATTURE_FORNITORI', title: 'PAGE_TITLE.FATTURE_FORNITORI', page: PURCHASE_INVOICES_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'expenses',

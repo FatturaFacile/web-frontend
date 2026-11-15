@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { ASSOCIATIONS_CATALOGS_PAGE, ASSOCIATIONS_FUNDRAISING_CATALOGS_PAGE, ASSOCIATIONS_WORK_CATALOGS_PAGE } from './catalogs.page';
 import { ASSOCIATIONS_COMPLIANCE_PAGE, ASSOCIATIONS_NETWORK_PAGE } from './compliance.page';
 import { ASSOCIATIONS_MEETINGS_PAGE } from './meetings.page';
@@ -9,7 +8,7 @@ import { ASSOCIATIONS_STATEMENTS_PAGE } from './statements.page';
 const governanceRoute = (path: string, breadcrumb: string, page: object) => ({
   path,
   data: { breadcrumb, title: breadcrumb, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 /** Governance and compliance of associations: meetings, privacy, statements, legal books, network and catalogs. */

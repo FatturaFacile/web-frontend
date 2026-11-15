@@ -56,15 +56,22 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
   return () => {
     const authStore = inject(AuthStore);
     const router = inject(Router);
-    const user = authStore.user();
+    const profile = loadFullProfileIfNeeded();
 
-    if (!user) {
-      return router.createUrlTree(['/login']);
-    }
+    const decide = (): true | UrlTree => {
+      const user = authStore.user();
 
-    const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : authStore.activeRoles());
-    const hasRole = userRoles.some((r) => allowedRoles.includes(r));
-    return hasRole ? true : router.createUrlTree(['/dashboard']);
+      if (!user) {
+        return router.createUrlTree(['/login']);
+      }
+
+      const userRoles = user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : authStore.activeRoles());
+      const hasRole = userRoles.some((r) => allowedRoles.includes(r));
+      return hasRole ? true : router.createUrlTree(['/dashboard']);
+    };
+
+    // The roles of the member are known only once the full profile is loaded (cold refresh).
+    return profile ? profile.pipe(map(decide)) : decide();
   };
 };
 
@@ -75,8 +82,11 @@ export const moduleGuard = (module: string, mode: AccessMode = 'read'): CanActiv
   return () => {
     const permissions = inject(PermissionsService);
     const router = inject(Router);
+    const profile = loadFullProfileIfNeeded();
+    const decide = (): true | UrlTree => (permissions.hasAccess(module, mode) ? true : router.createUrlTree(['/dashboard']));
 
-    return permissions.hasAccess(module, mode) ? true : router.createUrlTree(['/dashboard']);
+    // The permissions of the member are known only once the full profile is loaded (cold refresh).
+    return profile ? profile.pipe(map(decide)) : decide();
   };
 };
 

@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { RETAIL_POS_ADMIN_PAGE } from './back-office/pos-admin.page';
 
 export const RETAIL_ROUTES: Routes = [
@@ -18,6 +17,6 @@ export const RETAIL_ROUTES: Routes = [
   {
     path: 'pos-admin',
     data: { breadcrumb: 'RES.PAGE.RETAIL_POS_ADMIN', title: 'RES.PAGE.RETAIL_POS_ADMIN', page: RETAIL_POS_ADMIN_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

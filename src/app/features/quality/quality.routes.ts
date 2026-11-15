@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { QUALITY_AUDITS_PAGE, QUALITY_CAPA_PAGE, QUALITY_NONCONFORMITIES_PAGE } from './qms.pages';
 
 export const QUALITY_ROUTES: Routes = [
@@ -27,16 +26,16 @@ export const QUALITY_ROUTES: Routes = [
   {
     path: 'nonconformities',
     data: { breadcrumb: 'RES.PAGE.QUALITY_NONCONFORMITIES', title: 'RES.PAGE.QUALITY_NONCONFORMITIES', page: QUALITY_NONCONFORMITIES_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'capa',
     data: { breadcrumb: 'RES.PAGE.QUALITY_CAPA', title: 'RES.PAGE.QUALITY_CAPA', page: QUALITY_CAPA_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'audits',
     data: { breadcrumb: 'RES.PAGE.QUALITY_AUDITS', title: 'RES.PAGE.QUALITY_AUDITS', page: QUALITY_AUDITS_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

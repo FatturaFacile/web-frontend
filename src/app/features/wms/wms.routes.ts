@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { WMS_CROSS_DOCK_PAGE, WMS_DOCKS_PAGE, WMS_SLOTTING_PAGE, WMS_TASKS_PAGE } from './wms.pages';
 
 const pageRoute = (path: string, breadcrumb: string, title: string, page: object) => ({
   path,
   data: { breadcrumb, title, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const WMS_ROUTES: Routes = [

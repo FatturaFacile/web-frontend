@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { MFG_ENGINEERING_PAGE } from './engineering.page';
 import { MFG_PLANNING_PAGE, MFG_QUALITY_PAGE } from './planning-quality.page';
 import { MFG_PRODUCTION_PAGE } from './production.page';
@@ -7,7 +6,7 @@ import { MFG_PRODUCTION_PAGE } from './production.page';
 const manufacturingRoute = (path: string, breadcrumb: string, page: object) => ({
   path,
   data: { breadcrumb, title: breadcrumb, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const MANUFACTURING_ROUTES: Routes = [

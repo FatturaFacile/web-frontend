@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { SUPPLIER_SELF_SERVICE_PAGE } from './self-service.page';
 
 export const SUPPLIER_PORTAL_ROUTES: Routes = [
@@ -37,6 +36,6 @@ export const SUPPLIER_PORTAL_ROUTES: Routes = [
   {
     path: 'self-service',
     data: { breadcrumb: 'RES.PAGE.SUPPLIER_SELF_SERVICE', title: 'RES.PAGE.SUPPLIER_SELF_SERVICE', page: SUPPLIER_SELF_SERVICE_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

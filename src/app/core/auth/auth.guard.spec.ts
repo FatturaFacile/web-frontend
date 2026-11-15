@@ -110,6 +110,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
         avatar: '',
         role: 'ADMIN',
         roles: ['ADMIN'],
+        tenants: [],
       });
 
       const guard = roleGuard(['ADMIN', 'SUPER_ADMIN']);
@@ -125,6 +126,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
         avatar: '',
         role: 'ACCOUNTANT',
         roles: ['ACCOUNTANT'],
+        tenants: [],
       });
 
       const guard = roleGuard(['ADMIN']);
@@ -142,6 +144,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
         email: 'm@example.com',
         role: 'owner',
         roles: ['owner'],
+        tenants: [],
         permissions: ['*'],
       });
 
@@ -157,6 +160,7 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
         email: 'l@example.com',
         role: 'member',
         roles: ['member'],
+        tenants: [],
         permissions: [],
       });
 

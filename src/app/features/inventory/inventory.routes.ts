@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { LOTS_PAGE, STOCK_REPORTS_PAGE } from './wms/lots-reports.page';
 import { INVENTORY_SERVICES_PAGE, STOCK_ITEMS_PAGE } from './wms/items-service.page';
 import { OUTBOUND_PAGE } from './wms/outbound.page';
@@ -10,7 +9,7 @@ import { WAREHOUSE_PAGE } from './wms/warehouse.page';
 const wmsRoute = (path: string, breadcrumb: string, page: object) => ({
   path,
   data: { breadcrumb, title: breadcrumb, page },
-  component: ResourcePageComponent,
+  loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
 });
 
 export const INVENTORY_ROUTES: Routes = [

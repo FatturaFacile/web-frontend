@@ -1,4 +1,3 @@
-<!-- eslint-disable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus, @angular-eslint/template/label-has-associated-control -->
 <div class="base-table-container">
   <!-- Toolbar: density, column visibility, bulk selection bar, custom toolbar slot -->
   <div class="table-toolbar">
@@ -64,21 +63,30 @@
           <li
             nz-menu-item
             [nzSelected]="currentDensity() === 'default'"
+            tabindex="0"
             (click)="setDensity('default')"
+            (keydown.enter)="setDensity('default')"
+            (keydown.space)="setDensity('default')"
           >
             {{ 'common.table.densityDefault' | translate }}
           </li>
           <li
             nz-menu-item
             [nzSelected]="currentDensity() === 'middle'"
+            tabindex="0"
             (click)="setDensity('middle')"
+            (keydown.enter)="setDensity('middle')"
+            (keydown.space)="setDensity('middle')"
           >
             {{ 'common.table.densityMiddle' | translate }}
           </li>
           <li
             nz-menu-item
             [nzSelected]="currentDensity() === 'small'"
+            tabindex="0"
             (click)="setDensity('small')"
+            (keydown.enter)="setDensity('small')"
+            (keydown.space)="setDensity('small')"
           >
             {{ 'common.table.densitySmall' | translate }}
           </li>
@@ -103,7 +111,13 @@
           <div class="dropdown-header">{{ 'common.table.visibleColumns' | translate }}</div>
           <ul nz-menu>
             @for (col of allColumns(); track col.key) {
-              <li nz-menu-item (click)="$event.stopPropagation()">
+              <li
+                nz-menu-item
+                tabindex="-1"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              >
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -- nz-checkbox renders its own input -->
                 <label
                   nz-checkbox
                   [ngModel]="isColumnVisible(col.key)"
@@ -124,8 +138,7 @@
     <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
   } @else {
     <nz-table
-      #nzTable
-      [nzData]="displayData()"
+      [nzData]="virtualScroll() ? virtualRows() : displayData()"
       [nzFrontPagination]="false"
       [nzLoading]="isLoading()"
       [nzTotal]="rowTotal()"
@@ -136,7 +149,11 @@
       [nzShowQuickJumper]="showQuickJumper()"
       [nzBordered]="bordered()"
       [nzSize]="currentDensity()"
-      [nzScroll]="scroll()"
+      [nzScroll]="tableScroll()"
+      [nzVirtualItemSize]="virtualItemSize()"
+      [nzVirtualMaxBufferPx]="virtualMaxBufferPx()"
+      [nzVirtualMinBufferPx]="virtualItemSize() * 4"
+      [nzShowPagination]="!virtualScroll()"
       [nzNoResult]="customEmptyTemplate() || emptyFallback"
       (nzPageIndexChange)="onPageIndexChange($event)"
       (nzPageSizeChange)="onPageSizeChange($event)"
@@ -245,7 +262,31 @@
         </tr>
       </thead>
       <tbody>
-        @for (row of viewRows(); track row.kind === 'group' ? 'group:' + row.key + ':' + $index : getItemKey(row.item)) {
+        @if (virtualScroll()) {
+          <ng-template nz-virtual-scroll let-row let-index="index">
+            <ng-container
+              [ngTemplateOutlet]="rowTemplate"
+              [ngTemplateOutletContext]="{ $implicit: row }"
+            />
+          </ng-template>
+        } @else {
+          @for (row of viewRows(); track rowTrack(row, $index)) {
+            <ng-container
+              [ngTemplateOutlet]="rowTemplate"
+              [ngTemplateOutletContext]="{ $implicit: row }"
+            />
+            @if (row.kind === 'row' && expandable() && isRowExpanded(row.item) && detailTemplate()) {
+              <tr [nzExpand]="isRowExpanded(row.item)">
+                <ng-container
+                  [ngTemplateOutlet]="detailTemplate()!"
+                  [ngTemplateOutletContext]="{ $implicit: row.item }"
+                />
+              </tr>
+            }
+          }
+        }
+        <!-- Declared inside nz-table so row/cell directives resolve the table's injector. -->
+        <ng-template #rowTemplate let-row>
           @if (row.kind === 'group') {
             <tr class="group-row" data-testid="grid-group-row">
               <td [attr.colspan]="totalColumnCount()" (click)="toggleGroup(row.key)">
@@ -260,9 +301,15 @@
           @let item = row.item;
           <tr
             class="table-row"
+            role="row"
+            tabindex="0"
             [class.row-selected]="isItemSelected(item)"
             [hidden]="row.hidden"
+            [attr.aria-selected]="selectable() ? isItemSelected(item) : null"
+            [attr.aria-expanded]="expandable() ? isRowExpanded(item) : null"
             (click)="onRowClick(item)"
+            (keydown.enter)="onRowKeyActivate($event, item)"
+            (keydown.space)="onRowKeyActivate($event, item)"
           >
             @if (expandable()) {
               <td
@@ -309,17 +356,8 @@
               </td>
             }
           </tr>
-
-          @if (expandable() && isRowExpanded(item) && detailTemplate()) {
-            <tr [nzExpand]="isRowExpanded(item)">
-              <ng-container
-                [ngTemplateOutlet]="detailTemplate()!"
-                [ngTemplateOutletContext]="{ $implicit: item }"
-              />
-            </tr>
           }
-          }
-        }
+        </ng-template>
       </tbody>
     </nz-table>
   }

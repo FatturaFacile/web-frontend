@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ResourcePageComponent } from '@shared';
 import { HOSPITALITY_FLOOR_PAGE } from './back-office/floor.page';
 import { HOSPITALITY_LODGING_PAGE } from './back-office/lodging.page';
 
@@ -14,7 +13,7 @@ export const HOSPITALITY_ROUTES: Routes = [
   {
     path: 'floor',
     data: { breadcrumb: 'RES.PAGE.HOSPITALITY_FLOOR', title: 'RES.PAGE.HOSPITALITY_FLOOR', page: HOSPITALITY_FLOOR_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'availability',
@@ -24,6 +23,6 @@ export const HOSPITALITY_ROUTES: Routes = [
   {
     path: 'lodging',
     data: { breadcrumb: 'RES.PAGE.HOSPITALITY_LODGING', title: 'RES.PAGE.HOSPITALITY_LODGING', page: HOSPITALITY_LODGING_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

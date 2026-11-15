@@ -1,4 +1,10 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideAppInitializer, inject } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  LOCALE_ID,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
@@ -31,6 +37,10 @@ registerLocaleData(fr);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Angular's DatePipe/DecimalPipe are pure and inject LOCALE_ID once, so the id is resolved
+    // from the persisted language at bootstrap. Runtime switches are handled by the signal-aware
+    // app pipes (appCurrency, appDecimal, appDate, money).
+    { provide: LOCALE_ID, useFactory: () => inject(I18nService).currentLanguage() },
     provideRouter(routes),
     { provide: TitleStrategy, useExisting: PageTitleStrategy },
     provideHttpClient(

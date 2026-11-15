@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { moduleGuard, platformAdminGuard } from '@core';
-import { ResourcePageComponent } from '@shared';
 import { PRIVACY_COMPLIANCE_PAGE } from './pages/privacy/privacy-compliance.page';
 import { SDI_CHANNEL_PAGE } from './pages/sdi-channel/sdi-channel.page';
 
@@ -67,7 +66,7 @@ export const SETTINGS_ROUTES: Routes = [
     path: 'sdi-channel',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'BREADCRUMB.CANALE_SDI', title: 'PAGE_TITLE.CANALE_DI_FATTURAZIONE_ELETTRONICA', page: SDI_CHANNEL_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'document-templates',
@@ -109,7 +108,7 @@ export const SETTINGS_ROUTES: Routes = [
     path: 'privacy/compliance',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'RES.PAGE.PRIVACY_COMPLIANCE', title: 'RES.PAGE.PRIVACY_COMPLIANCE', page: PRIVACY_COMPLIANCE_PAGE },
-    component: ResourcePageComponent,
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'privacy',
