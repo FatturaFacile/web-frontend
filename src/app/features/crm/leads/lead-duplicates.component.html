@@ -1,0 +1,167 @@
+<app-page-header
+  [title]="'CRM.LEADS.DUPLICATES.TITLE' | translateOr: 'Duplicates'"
+  [subtitle]="'CRM.LEADS.DUPLICATES.SUBTITLE' | translateOr: 'Review possible duplicate leads, then merge or dismiss them'"
+/>
+
+<div class="actions">
+  <a nz-button routerLink="/crm/leads">{{ 'CRM.LEADS.BACK' | translateOr: 'Back to leads' }}</a>
+  <button nz-button type="button" (click)="load()">
+    <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translateOr: 'Refresh' }}
+  </button>
+</div>
+
+@if (loading() && !items().length) {
+  <nz-card><nz-skeleton [nzActive]="true" /></nz-card>
+} @else if (loadError()) {
+  <nz-alert
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="'CRM.LEADS.DUPLICATES.LOAD_ERROR' | translateOr: 'Duplicates could not be loaded.'"
+    [nzAction]="retryTpl"
+  />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+  </ng-template>
+} @else if (!items().length) {
+  <nz-card>
+    <nz-empty [nzNotFoundContent]="'CRM.LEADS.DUPLICATES.EMPTY' | translateOr: 'No pending duplicates'" />
+  </nz-card>
+} @else {
+  <ul class="list">
+    @for (d of items(); track d.id) {
+      <li>
+        <nz-card [nzTitle]="titleTpl" [nzExtra]="extraTpl" class="dup">
+          <ng-template #titleTpl>
+            <nz-tag nzColor="purple">{{ matchLabel(d.match_type) }}</nz-tag>
+            <span>{{ 'CRM.LEADS.DUPLICATES.CONFIDENCE' | translateOr: 'Confidence' }}: {{ confidence(d) }}%</span>
+          </ng-template>
+          <ng-template #extraTpl>
+            <div class="row-actions">
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [disabled]="pendingId() === d.id"
+                (click)="openMerge(d)"
+              >
+                {{ 'CRM.LEADS.DUPLICATES.MERGE' | translateOr: 'Merge' }}
+              </button>
+              <button
+                nz-button
+                type="button"
+                nz-popconfirm
+                [nzLoading]="pendingId() === d.id"
+                [disabled]="pendingId() === d.id"
+                [nzPopconfirmTitle]="'CRM.LEADS.DUPLICATES.CONFIRM_DISMISS' | translateOr: 'Dismiss this duplicate?'"
+                [nzOkText]="'COMMON.CONFIRM' | translateOr: 'Confirm'"
+                [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+                (nzOnConfirm)="dismiss(d)"
+              >
+                {{ 'CRM.LEADS.DUPLICATES.DISMISS' | translateOr: 'Dismiss' }}
+              </button>
+            </div>
+          </ng-template>
+
+          @if (rowErrors()[d.id]; as err) {
+            <nz-alert class="row-error" nzType="error" nzShowIcon [nzMessage]="err" />
+          }
+
+          <div class="side-by-side">
+            <section [attr.aria-label]="'CRM.LEADS.DUPLICATES.LEAD' | translateOr: 'Lead'">
+              <h3>
+                {{ 'CRM.LEADS.DUPLICATES.LEAD' | translateOr: 'Lead' }}:
+                <a [routerLink]="['/crm/leads', d.lead.id]">{{ leadName(d) }}</a>
+              </h3>
+              <dl>
+                <dt>{{ 'CRM.LEADS.COLUMNS.SCORE' | translateOr: 'Score' }}</dt>
+                <dd>
+                  <app-lead-score-badge [score]="d.lead.score" [rating]="d.lead.rating" />
+                  <app-lead-rating-tag [rating]="d.lead.rating" />
+                </dd>
+                <dt>{{ fieldLabel('company_name') }}</dt>
+                <dd>{{ d.lead.company_name || '-' }}</dd>
+                <dt>{{ fieldLabel('email') }}</dt>
+                <dd>{{ d.lead.email || '-' }}</dd>
+                <dt>{{ fieldLabel('phone') }}</dt>
+                <dd>{{ d.lead.phone_e164 || d.lead.phone || '-' }}</dd>
+                <dt>{{ fieldLabel('vat_number') }}</dt>
+                <dd>{{ d.lead.vat_number || '-' }}</dd>
+              </dl>
+            </section>
+            <section [attr.aria-label]="'CRM.LEADS.DUPLICATES.CANDIDATE' | translateOr: 'Possible duplicate'">
+              <h3>
+                {{ candidateTypeLabel(d.candidate.type) }}:
+                @if (d.candidate.type === 'lead') {
+                  <a [routerLink]="['/crm/leads', d.candidate.id]">{{ candidateTitle(d) }}</a>
+                } @else {
+                  {{ candidateTitle(d) }}
+                }
+              </h3>
+              <dl>
+                <dt>{{ fieldLabel('company_name') }}</dt>
+                <dd>{{ candidateValue(d, 'company_name') }}</dd>
+                <dt>{{ fieldLabel('email') }}</dt>
+                <dd>{{ candidateValue(d, 'email') }}</dd>
+                <dt>{{ fieldLabel('phone') }}</dt>
+                <dd>{{ candidateValue(d, 'phone') }}</dd>
+                <dt>{{ fieldLabel('vat_number') }}</dt>
+                <dd>{{ candidateValue(d, 'vat_number') }}</dd>
+              </dl>
+            </section>
+          </div>
+        </nz-card>
+      </li>
+    }
+  </ul>
+  @if (total() > pageSize) {
+    <nz-pagination [nzPageIndex]="page()" [nzPageSize]="pageSize" [nzTotal]="total()" (nzPageIndexChange)="setPage($event)" />
+  }
+}
+
+<nz-modal
+  [nzVisible]="!!merging()"
+  [nzTitle]="'CRM.LEADS.DUPLICATES.MERGE_TITLE' | translateOr: 'Merge records'"
+  [nzOkText]="'CRM.LEADS.DUPLICATES.MERGE' | translateOr: 'Merge'"
+  [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+  [nzOkLoading]="!!pendingId()"
+  (nzOnOk)="confirmMerge()"
+  (nzOnCancel)="closeMerge()"
+>
+  <ng-container *nzModalContent>
+    @if (merging(); as d) {
+      <fieldset class="fieldset">
+        <legend>{{ 'CRM.LEADS.DUPLICATES.SURVIVOR' | translateOr: 'Record to keep' }}</legend>
+        <nz-radio-group [ngModel]="survivor()" (ngModelChange)="survivor.set($event)" nzName="survivor">
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-radio nzValue="lead">{{ 'CRM.LEADS.DUPLICATES.LEAD' | translateOr: 'Lead' }}: {{ leadName(d) }}</label>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label nz-radio nzValue="candidate">{{ candidateTypeLabel(d.candidate.type) }}: {{ candidateTitle(d) }}</label>
+        </nz-radio-group>
+      </fieldset>
+
+      @if (mergeRows().length) {
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label nz-checkbox [ngModel]="pickFields()" (ngModelChange)="pickFields.set($event)">
+          {{ 'CRM.LEADS.DUPLICATES.PICK_FIELDS' | translateOr: 'Choose conflicting fields individually' }}
+        </label>
+        @if (pickFields()) {
+          @for (row of mergeRows(); track row.field) {
+            <fieldset class="fieldset">
+              <legend>{{ fieldLabel(row.field) }}</legend>
+              <nz-radio-group
+                [nzName]="'field-' + row.field"
+                [ngModel]="choiceFor(row.field)"
+                (ngModelChange)="setChoice(row.field, $event)"
+              >
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label nz-radio nzValue="lead">{{ row.lead || '-' }}</label>
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label nz-radio nzValue="candidate">{{ row.candidate || '-' }}</label>
+              </nz-radio-group>
+            </fieldset>
+          }
+        }
+      }
+    }
+  </ng-container>
+</nz-modal>
