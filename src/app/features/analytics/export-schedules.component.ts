@@ -239,9 +239,9 @@ export class ExportSchedulesComponent implements OnInit {
     });
   }
 
-  serverError(path: string): string | null {
+  serverError(path: string): string | undefined {
     const error = this.form.get(path)?.errors?.['serverError'];
-    return typeof error === 'string' ? error : null;
+    return typeof error === 'string' ? error : undefined;
   }
 
   reportName(id: string): string {

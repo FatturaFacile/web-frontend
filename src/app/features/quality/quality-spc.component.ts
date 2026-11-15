@@ -119,6 +119,30 @@ const CHART_PADDING = 24;
           </div>
         }
 
+        <h4>{{ 'QUALITY.SAMPLES' | translate }}</h4>
+        <nz-table #samples [nzData]="data.points" nzSize="small" [nzPageSize]="10">
+          <thead>
+            <tr>
+              <th>{{ 'QUALITY.SAMPLED_AT' | translate }}</th>
+              <th>{{ 'QUALITY.LOT' | translate }}</th>
+              <th class="num">{{ 'QUALITY.MEAN' | translate }}</th>
+              <th class="num">{{ 'QUALITY.RANGE' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (point of samples.data; track point.sample_id) {
+              <tr>
+                <td>{{ point.sampled_at }}</td>
+                <td>{{ point.lot }}</td>
+                <td class="num">{{ point.mean | number: '1.0-5' }}</td>
+                <td class="num">{{ point.range | number: '1.0-5' }}</td>
+                <td><button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'QUALITY.DELETE_CONFIRM' | translate" (nzOnConfirm)="removeSample(point.sample_id)"></button></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
         @if (data.violations.length > 0) {
           <h4>{{ 'QUALITY.VIOLATIONS' | translate }}</h4>
           <ul>
@@ -345,6 +369,19 @@ export class QualitySpcComponent implements OnInit {
         }
         this.sampleVisible.set(false);
         this.select(target);
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('QUALITY.ACTION_ERROR')),
+    });
+  }
+
+  removeSample(sampleId: string): void {
+    const target = this.selected();
+    this.api.deleteSpcSample(sampleId).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('QUALITY.SAMPLE_DELETED'));
+        if (target) {
+          this.select(target);
+        }
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('QUALITY.ACTION_ERROR')),
     });

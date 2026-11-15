@@ -13,6 +13,7 @@ import {
   QualityInstrument,
   QualityInstrumentFilters,
   QualityInstrumentRequest,
+  QualityKpis,
   QualityResponse,
   SpcCharacteristic,
   SpcCharacteristicRequest,
@@ -46,6 +47,14 @@ export class QualityApiService {
 
   addSpcSample(id: string, payload: SpcSampleRequest): Observable<SpcSampleResponse> {
     return this.http.post<SpcSampleResponse>(`${this.base}/spc/characteristics/${id}/samples`, payload);
+  }
+
+  deleteSpcSample(sampleId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/spc/samples/${sampleId}`);
+  }
+
+  getKpis(): Observable<QualityResponse<QualityKpis>> {
+    return this.http.get<QualityResponse<QualityKpis>>(`${this.base}/kpis`);
   }
 
   // Instruments

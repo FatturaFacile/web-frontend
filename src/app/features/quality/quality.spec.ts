@@ -7,6 +7,7 @@ import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
 import { QualityApiService, QualityComplaint, QualityInstrument, SpcCharacteristic, SpcChart, TranslateService } from '@core';
 import { QualityComplaintsComponent } from './quality-complaints.component';
+import { QualityKpisComponent } from './quality-kpis.component';
 import { QualityInstrumentsComponent } from './quality-instruments.component';
 import { QualitySpcComponent } from './quality-spc.component';
 
@@ -218,5 +219,46 @@ describe('QualitySpcComponent', () => {
       instrument_id: null,
       notes: null,
     });
+  });
+});
+
+describe('QualityKpisComponent', () => {
+  const kpis = {
+    as_of: '2027-06-15',
+    open_nonconformities: { total: 3, by_age: { '0-30': 2, '90+': 1 }, by_source: { customer: 3 }, by_severity: { major: 3 }, oldest_days: 95 },
+    capa: { total: 4, open: 2, overdue: 1, completed: 2, completed_on_time: 1, completed_late: 1, on_time_rate: 50, ineffective: 0 },
+    audits: { planned: 1, in_progress: 0, overdue_planned: 0 },
+    procedures: { approved: 5, pending_approval: 1, review_overdue: 0 },
+  };
+
+  it('loads and exposes the breakdowns', () => {
+    const api = { getKpis: vi.fn().mockReturnValue(of({ data: kpis })) };
+    configure(api);
+    const fixture = TestBed.createComponent(QualityKpisComponent);
+    fixture.detectChanges();
+
+    expect(api.getKpis).toHaveBeenCalled();
+    expect(fixture.componentInstance.byAge()).toEqual([{ key: '0-30', count: 2 }, { key: '90+', count: 1 }]);
+    expect(fixture.componentInstance.error()).toBe(false);
+  });
+});
+
+describe('QualitySpcComponent sample deletion', () => {
+  it('deletes a sample then reloads the chart of the selected characteristic', () => {
+    const api = {
+      getCharacteristics: vi.fn().mockReturnValue(of({ data: [] })),
+      deleteSpcSample: vi.fn().mockReturnValue(of(undefined)),
+      getSpcChart: vi.fn().mockReturnValue(of({ data: {} })),
+    };
+    configure(api);
+    const fixture = TestBed.createComponent(QualitySpcComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.selected.set({ id: 'c1' } as SpcCharacteristic);
+
+    component.removeSample('s1');
+
+    expect(api.deleteSpcSample).toHaveBeenCalledWith('s1');
+    expect(api.getSpcChart).toHaveBeenCalledWith('c1');
   });
 });

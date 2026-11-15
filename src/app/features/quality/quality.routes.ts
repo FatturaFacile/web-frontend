@@ -3,7 +3,12 @@ import { ResourcePageComponent } from '@shared';
 import { QUALITY_AUDITS_PAGE, QUALITY_CAPA_PAGE, QUALITY_NONCONFORMITIES_PAGE } from './qms.pages';
 
 export const QUALITY_ROUTES: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'spc' },
+  { path: '', pathMatch: 'full', redirectTo: 'kpis' },
+  {
+    path: 'kpis',
+    data: { breadcrumb: 'NAV.QUALITY_KPIS', title: 'PAGE_TITLE.QUALITY_KPIS' },
+    loadComponent: () => import('./quality-kpis.component').then((m) => m.QualityKpisComponent),
+  },
   {
     path: 'spc',
     data: { breadcrumb: 'NAV.QUALITY_SPC', title: 'PAGE_TITLE.QUALITY_SPC' },
