@@ -38,4 +38,14 @@ export const SUSTAINABILITY_ROUTES: Routes = [
     loadComponent: () =>
       import('./sustainability-materiality.component').then((m) => m.SustainabilityMaterialityComponent),
   },
+  {
+    path: 'esrs',
+    data: { breadcrumb: 'NAV.SUSTAINABILITY_ESRS', title: 'PAGE_TITLE.SUSTAINABILITY_ESRS' },
+    loadComponent: () => import('./sustainability-esrs.component').then((m) => m.SustainabilityEsrsComponent),
+  },
+  {
+    path: 'scope3',
+    data: { breadcrumb: 'NAV.SUSTAINABILITY_SCOPE3', title: 'PAGE_TITLE.SUSTAINABILITY_SCOPE3' },
+    loadComponent: () => import('./sustainability-scope3.component').then((m) => m.SustainabilityScope3Component),
+  },
 ];

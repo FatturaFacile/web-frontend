@@ -1,0 +1,121 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { icons } from '../../icons-provider';
+import { CommunicationApiService, CommunicationCampaign, CrmApiService, TranslateService } from '@core';
+import { CommunicationCampaignsComponent } from './communication-campaigns.component';
+import { isCampaignOpen, localDateTimeToIso } from './communication-inbox.util';
+
+describe('CommunicationCampaignsComponent', () => {
+  let component: CommunicationCampaignsComponent;
+  let fixture: ComponentFixture<CommunicationCampaignsComponent>;
+
+  const campaign: CommunicationCampaign = {
+    id: 'camp-1',
+    name: 'Spring',
+    channel: 'email',
+    purpose: 'marketing',
+    segment_id: 'seg-1',
+    subject: 'Hi',
+    body: 'Hello {{ name }}',
+    status: 'draft',
+    scheduled_at: null,
+    started_at: null,
+    completed_at: null,
+    recipients_count: 0,
+    sent_count: 0,
+    failed_count: 0,
+    suppressed_count: 0,
+    created_at: '2026-11-09T09:00:00Z',
+    updated_at: '2026-11-09T09:00:00Z',
+  };
+
+  const apiSpy = {
+    getCampaigns: vi.fn(),
+    createCampaign: vi.fn(),
+    previewCampaign: vi.fn(),
+    scheduleCampaign: vi.fn(),
+    sendCampaign: vi.fn(),
+    cancelCampaign: vi.fn(),
+  };
+  const crmSpy = { getSegments: vi.fn() };
+  const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
+  const translateSpy = { instant: vi.fn().mockImplementation((key: string) => key), translate: vi.fn().mockImplementation((key: string) => key) };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    apiSpy.getCampaigns.mockReturnValue(of({ data: [campaign] }));
+    apiSpy.createCampaign.mockReturnValue(of({ data: campaign }));
+    apiSpy.previewCampaign.mockReturnValue(of({ data: { total: 3, deliverable: 1, suppressed: { opted_out: 2 } } }));
+    apiSpy.scheduleCampaign.mockReturnValue(of({ data: { ...campaign, status: 'scheduled' } }));
+    apiSpy.sendCampaign.mockReturnValue(of({ data: { ...campaign, status: 'completed' } }));
+    apiSpy.cancelCampaign.mockReturnValue(of({ data: { ...campaign, status: 'cancelled' } }));
+    crmSpy.getSegments.mockReturnValue(of({ data: [{ id: 'seg-1', name: 'Everyone', entity: 'contacts', filters: [] }] }));
+
+    await TestBed.configureTestingModule({
+      imports: [CommunicationCampaignsComponent],
+      providers: [
+        { provide: CommunicationApiService, useValue: apiSpy },
+        { provide: CrmApiService, useValue: crmSpy },
+        { provide: NzMessageService, useValue: messageSpy },
+        { provide: TranslateService, useValue: translateSpy },
+        provideNzIcons(icons),
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(CommunicationCampaignsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('loads campaigns and segments', () => {
+    expect(component.campaigns()).toHaveLength(1);
+    expect(component.segments()).toHaveLength(1);
+  });
+
+  it('creates a campaign with the API payload shape', () => {
+    component.openCreate();
+    component.form.patchValue({ name: ' Spring ', segment_id: 'seg-1', subject: '', body: 'Hello' });
+    component.create();
+
+    expect(apiSpy.createCampaign).toHaveBeenCalledWith({ name: 'Spring', channel: 'email', segment_id: 'seg-1', subject: null, body: 'Hello' });
+    expect(component.createVisible()).toBe(false);
+  });
+
+  it('does not create an invalid campaign', () => {
+    component.openCreate();
+    component.create();
+
+    expect(apiSpy.createCampaign).not.toHaveBeenCalled();
+  });
+
+  it('shows the audience preview with the suppression reasons', () => {
+    component.showPreview(campaign);
+
+    expect(component.preview()?.deliverable).toBe(1);
+    expect(component.suppressionReasons(component.preview()!)).toEqual(['opted_out']);
+  });
+
+  it('schedules with an ISO instant, sends and cancels', () => {
+    component.openSchedule(campaign);
+    component.scheduleAt.set('2027-01-15T10:30');
+    component.schedule();
+    expect(apiSpy.scheduleCampaign).toHaveBeenCalledWith('camp-1', localDateTimeToIso('2027-01-15T10:30'));
+    expect(component.scheduleTarget()).toBeNull();
+
+    component.send(campaign);
+    expect(apiSpy.sendCampaign).toHaveBeenCalledWith('camp-1');
+
+    component.cancel(campaign);
+    expect(apiSpy.cancelCampaign).toHaveBeenCalledWith('camp-1');
+  });
+
+  it('only draft and scheduled campaigns are open', () => {
+    expect(isCampaignOpen('draft')).toBe(true);
+    expect(isCampaignOpen('scheduled')).toBe(true);
+    expect(isCampaignOpen('completed')).toBe(false);
+    expect(isCampaignOpen('sending')).toBe(false);
+  });
+});

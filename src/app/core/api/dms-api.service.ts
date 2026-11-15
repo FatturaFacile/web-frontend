@@ -5,6 +5,15 @@ import { Observable } from 'rxjs';
 import {
   ApiResponse,
   DmsAiSettingsResource,
+  DmsApprovalParams,
+  DmsApprovalRequestResource,
+  DmsApprovalTemplateResource,
+  DmsOcrJobResource,
+  DmsPreservationChainLink,
+  DmsPreservationChainStatus,
+  DmsPreservationChainVerification,
+  DmsRequestApprovalRequest,
+  DmsSaveApprovalTemplateRequest,
   DmsAuditEntry,
   DmsCheckInRequest,
   DmsCheckOutRequest,
@@ -292,5 +301,87 @@ export class DmsApiService {
     payload: DmsUpdateAiSettingRequest,
   ): Observable<ApiResponse<DmsAiSettingsResource>> {
     return this.http.put<ApiResponse<DmsAiSettingsResource>>(`${this.base}/dms/ai-settings`, payload);
+  }
+
+  // --- APPROVALS ---
+  getApprovalTemplates(activeOnly = false): Observable<ApiResponse<DmsApprovalTemplateResource[]>> {
+    return this.http.get<ApiResponse<DmsApprovalTemplateResource[]>>(`${this.base}/dms/approval-templates`, {
+      params: activeOnly ? { active: '1' } : undefined,
+    });
+  }
+
+  createApprovalTemplate(payload: DmsSaveApprovalTemplateRequest): Observable<ApiResponse<DmsApprovalTemplateResource>> {
+    return this.http.post<ApiResponse<DmsApprovalTemplateResource>>(`${this.base}/dms/approval-templates`, payload);
+  }
+
+  updateApprovalTemplate(
+    id: string,
+    payload: Partial<DmsSaveApprovalTemplateRequest>,
+  ): Observable<ApiResponse<DmsApprovalTemplateResource>> {
+    return this.http.put<ApiResponse<DmsApprovalTemplateResource>>(`${this.base}/dms/approval-templates/${id}`, payload);
+  }
+
+  deleteApprovalTemplate(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/dms/approval-templates/${id}`);
+  }
+
+  getApprovalRequests(params?: DmsApprovalParams): Observable<PaginatedResponse<DmsApprovalRequestResource>> {
+    return this.http.get<PaginatedResponse<DmsApprovalRequestResource>>(`${this.base}/dms/approval-requests`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  requestApproval(documentId: string, payload: DmsRequestApprovalRequest): Observable<ApiResponse<DmsApprovalRequestResource>> {
+    return this.http.post<ApiResponse<DmsApprovalRequestResource>>(
+      `${this.base}/dms/documents/${documentId}/approval-requests`,
+      payload,
+    );
+  }
+
+  approveApprovalRequest(id: string, comment?: string): Observable<ApiResponse<DmsApprovalRequestResource>> {
+    return this.http.post<ApiResponse<DmsApprovalRequestResource>>(
+      `${this.base}/dms/approval-requests/${id}/approve`,
+      comment ? { comment } : {},
+    );
+  }
+
+  rejectApprovalRequest(id: string, comment: string): Observable<ApiResponse<DmsApprovalRequestResource>> {
+    return this.http.post<ApiResponse<DmsApprovalRequestResource>>(`${this.base}/dms/approval-requests/${id}/reject`, { comment });
+  }
+
+  cancelApprovalRequest(id: string): Observable<ApiResponse<DmsApprovalRequestResource>> {
+    return this.http.post<ApiResponse<DmsApprovalRequestResource>>(`${this.base}/dms/approval-requests/${id}/cancel`, {});
+  }
+
+  // --- OCR ---
+  queueOcr(documentId: string): Observable<ApiResponse<DmsOcrJobResource>> {
+    return this.http.post<ApiResponse<DmsOcrJobResource>>(`${this.base}/dms/documents/${documentId}/ocr`, {});
+  }
+
+  getOcrJobs(documentId: string, includeText = false): Observable<ApiResponse<DmsOcrJobResource[]>> {
+    return this.http.get<ApiResponse<DmsOcrJobResource[]>>(`${this.base}/dms/documents/${documentId}/ocr`, {
+      params: includeText ? { include_text: '1' } : undefined,
+    });
+  }
+
+  retryOcrJob(id: string): Observable<ApiResponse<DmsOcrJobResource>> {
+    return this.http.post<ApiResponse<DmsOcrJobResource>>(`${this.base}/dms/ocr-jobs/${id}/retry`, {});
+  }
+
+  // --- PRESERVATION CHAIN ---
+  getPreservationChain(): Observable<ApiResponse<DmsPreservationChainLink[]>> {
+    return this.http.get<ApiResponse<DmsPreservationChainLink[]>>(`${this.base}/dms/preservation-chain`);
+  }
+
+  getPreservationChainStatus(): Observable<ApiResponse<DmsPreservationChainStatus>> {
+    return this.http.get<ApiResponse<DmsPreservationChainStatus>>(`${this.base}/dms/preservation-chain/status`);
+  }
+
+  verifyPreservationChain(): Observable<ApiResponse<DmsPreservationChainVerification>> {
+    return this.http.get<ApiResponse<DmsPreservationChainVerification>>(`${this.base}/dms/preservation-chain/verify`);
+  }
+
+  anchorPreservationChain(): Observable<ApiResponse<DmsPreservationChainLink[]>> {
+    return this.http.post<ApiResponse<DmsPreservationChainLink[]>>(`${this.base}/dms/preservation-chain/anchor`, {});
   }
 }

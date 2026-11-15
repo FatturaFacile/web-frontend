@@ -30,6 +30,26 @@ export const CRM_ROUTES: Routes = [
     loadChildren: () => import('./engagement/engagement.routes').then((m) => m.ENGAGEMENT_ROUTES),
   },
   {
+    path: 'territories',
+    data: { breadcrumb: 'NAV.CRMEXT_TERRITORIES', title: 'PAGE_TITLE.CRMEXT_TERRITORIES' },
+    loadComponent: () => import('./territories/territories.component').then((m) => m.TerritoriesComponent),
+  },
+  {
+    path: 'partners',
+    data: { breadcrumb: 'NAV.CRMEXT_PARTNERS', title: 'PAGE_TITLE.CRMEXT_PARTNERS' },
+    loadComponent: () => import('./partners/partners.component').then((m) => m.PartnersComponent),
+  },
+  {
+    path: 'cpq',
+    data: { breadcrumb: 'NAV.CRMEXT_CPQ', title: 'PAGE_TITLE.CRMEXT_CPQ' },
+    loadComponent: () => import('./cpq/cpq.component').then((m) => m.CpqComponent),
+  },
+  {
+    path: 'automation',
+    data: { breadcrumb: 'NAV.CRMEXT_AUTOMATION', title: 'PAGE_TITLE.CRMEXT_AUTOMATION' },
+    loadComponent: () => import('./automation/automation.component').then((m) => m.AutomationComponent),
+  },
+  {
     path: 'pipeline',
     data: { breadcrumb: 'BREADCRUMB.PIPELINE_AND_OPPORTUNITA', title: 'PAGE_TITLE.PIPELINE' },
     loadComponent: () =>

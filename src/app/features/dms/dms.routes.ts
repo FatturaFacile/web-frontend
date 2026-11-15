@@ -6,4 +6,9 @@ export const DMS_ROUTES: Routes = [
     loadComponent: () =>
       import('./dms.component').then((m) => m.DmsComponent),
   },
+  {
+    path: 'workflows',
+    loadComponent: () =>
+      import('./dms-workflows.component').then((m) => m.DmsWorkflowsComponent),
+  },
 ];

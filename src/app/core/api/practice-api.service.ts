@@ -20,6 +20,18 @@ import {
   PracticeRetainerApplyRequest,
   PracticeRetainerBalance,
   PracticeRetainerRequest,
+  PracticeCaseParty,
+  PracticeCasePartyRequest,
+  PracticeConflictCheck,
+  PracticeConflictCheckRequest,
+  PracticeExpense,
+  PracticeExpenseRequest,
+  PracticeFeeProposal,
+  PracticeFeeProposalAcceptRequest,
+  PracticeFeeProposalRequest,
+  PracticeTrustBalance,
+  PracticeTrustTransaction,
+  PracticeTrustTransactionRequest,
 } from '../models';
 
 @Service()
@@ -139,5 +151,85 @@ export class PracticeApiService {
     return this.http.get<ApiResponse<PracticeAppliedRetainer[]>>(
       `${this.base}/fee-notes/${feeNoteId}/retainers`,
     );
+  }
+
+  // --- Matter expenses ---
+  getExpenses(params?: QueryFilterParams & { legal_case_id?: string; is_billed?: boolean }): Observable<PaginatedResponse<PracticeExpense>> {
+    return this.http.get<PaginatedResponse<PracticeExpense>>(`${this.base}/expenses`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  createExpense(payload: PracticeExpenseRequest): Observable<ApiResponse<PracticeExpense>> {
+    return this.http.post<ApiResponse<PracticeExpense>>(`${this.base}/expenses`, payload);
+  }
+
+  updateExpense(id: string, payload: PracticeExpenseRequest): Observable<ApiResponse<PracticeExpense>> {
+    return this.http.put<ApiResponse<PracticeExpense>>(`${this.base}/expenses/${id}`, payload);
+  }
+
+  deleteExpense(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/expenses/${id}`);
+  }
+
+  // --- Client funds (trust) ledger ---
+  getTrustLedger(params?: QueryFilterParams & { client_id?: string; legal_case_id?: string }): Observable<PaginatedResponse<PracticeTrustTransaction>> {
+    return this.http.get<PaginatedResponse<PracticeTrustTransaction>>(`${this.base}/trust-ledger`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  getTrustBalances(): Observable<ApiResponse<PracticeTrustBalance[]>> {
+    return this.http.get<ApiResponse<PracticeTrustBalance[]>>(`${this.base}/trust-ledger/balances`);
+  }
+
+  postTrustTransaction(payload: PracticeTrustTransactionRequest): Observable<ApiResponse<PracticeTrustTransaction>> {
+    return this.http.post<ApiResponse<PracticeTrustTransaction>>(`${this.base}/trust-ledger`, payload);
+  }
+
+  reverseTrustTransaction(id: string, description?: string | null): Observable<ApiResponse<PracticeTrustTransaction>> {
+    return this.http.post<ApiResponse<PracticeTrustTransaction>>(`${this.base}/trust-ledger/${id}/reverse`, { description: description ?? null });
+  }
+
+  // --- Conflicts of interest ---
+  runConflictCheck(payload: PracticeConflictCheckRequest): Observable<ApiResponse<PracticeConflictCheck>> {
+    return this.http.post<ApiResponse<PracticeConflictCheck>>(`${this.base}/conflict-checks`, payload);
+  }
+
+  getConflictChecks(params?: QueryFilterParams): Observable<PaginatedResponse<PracticeConflictCheck>> {
+    return this.http.get<PaginatedResponse<PracticeConflictCheck>>(`${this.base}/conflict-checks`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  getCaseParties(params?: QueryFilterParams & { legal_case_id?: string }): Observable<PaginatedResponse<PracticeCaseParty>> {
+    return this.http.get<PaginatedResponse<PracticeCaseParty>>(`${this.base}/case-parties`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  createCaseParty(payload: PracticeCasePartyRequest): Observable<ApiResponse<PracticeCaseParty>> {
+    return this.http.post<ApiResponse<PracticeCaseParty>>(`${this.base}/case-parties`, payload);
+  }
+
+  deleteCaseParty(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/case-parties/${id}`);
+  }
+
+  // --- Fee proposals ---
+  getFeeProposals(params?: QueryFilterParams & { client_id?: string; status?: string }): Observable<PaginatedResponse<PracticeFeeProposal>> {
+    return this.http.get<PaginatedResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  createFeeProposal(payload: PracticeFeeProposalRequest): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals`, payload);
+  }
+
+  updateFeeProposal(id: string, payload: PracticeFeeProposalRequest): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.put<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}`, payload);
+  }
+
+  sendFeeProposal(id: string): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}/send`, {});
+  }
+
+  acceptFeeProposal(id: string, payload: PracticeFeeProposalAcceptRequest): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}/accept`, payload);
+  }
+
+  declineFeeProposal(id: string, notes?: string | null): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}/decline`, { notes: notes ?? null });
   }
 }

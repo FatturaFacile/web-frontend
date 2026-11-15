@@ -18,6 +18,7 @@ export interface DmsDocumentResource {
   retention_until?: string | null;
   is_checked_out?: boolean;
   checkout_note?: string | null;
+  lock_expires_at?: string | null;
   checked_out_by?: string | null;
   checked_out_at?: string | null;
   tags?: { id: string; name: string }[];
@@ -144,6 +145,8 @@ export interface DmsLinkDocumentRequest {
 
 export interface DmsCheckOutRequest {
   note?: string;
+  /** The lock lapses after this many minutes (5 to 10080); asking again as the holder extends it. */
+  expires_in_minutes?: number;
 }
 
 export interface DmsCheckInRequest {
@@ -194,4 +197,125 @@ export interface DmsDocumentParams {
   tag?: string;
   page?: number;
   per_page?: number;
+}
+
+export type DmsApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type DmsApproverType = 'user' | 'role';
+
+export interface DmsApprovalStep {
+  position?: number;
+  name: string;
+  approver_type: DmsApproverType;
+  approver_user_id?: string | null;
+  approver_role?: string | null;
+}
+
+export interface DmsApprovalTemplateResource {
+  id: string;
+  name: string;
+  document_type: string | null;
+  is_active: boolean;
+  steps?: DmsApprovalStep[];
+}
+
+export interface DmsSaveApprovalTemplateRequest {
+  name: string;
+  document_type?: string | null;
+  is_active?: boolean;
+  steps: DmsApprovalStep[];
+}
+
+export interface DmsApprovalDecision {
+  step_position: number;
+  step_name: string;
+  decided_by: string | null;
+  decision: 'approved' | 'rejected';
+  comment: string | null;
+  decided_at: string;
+}
+
+export interface DmsApprovalRequestResource {
+  id: string;
+  document_id: string;
+  document_title?: string | null;
+  document_version_id: string | null;
+  template_id: string | null;
+  template_name: string;
+  status: DmsApprovalStatus;
+  current_step: number;
+  total_steps: number;
+  current_step_detail: DmsApprovalStep | null;
+  requested_by: string | null;
+  note: string | null;
+  completed_at: string | null;
+  created_at: string;
+  decisions?: DmsApprovalDecision[];
+}
+
+export interface DmsRequestApprovalRequest {
+  template_id: string;
+  note?: string | null;
+}
+
+export interface DmsApprovalParams {
+  status?: DmsApprovalStatus;
+  document_id?: string;
+  awaiting_me?: boolean;
+  page?: number;
+  per_page?: number;
+}
+
+export type DmsOcrStatus = 'queued' | 'processing' | 'completed' | 'failed';
+
+export interface DmsOcrJobResource {
+  id: string;
+  document_id: string;
+  document_version_id: string;
+  status: DmsOcrStatus;
+  engine: string | null;
+  page_count: number | null;
+  confidence: string | null;
+  failure_reason: string | null;
+  attempts: number;
+  started_at: string | null;
+  finished_at: string | null;
+  text_content?: string | null;
+}
+
+export interface DmsPreservationChainLink {
+  id: string;
+  sequence: number;
+  package_id: string;
+  package_hash: string;
+  previous_link_hash: string;
+  link_hash: string;
+  anchored_by: string | null;
+  created_at: string;
+}
+
+export interface DmsPreservationChainVerification {
+  valid: boolean;
+  links_checked: number;
+  broken_at_sequence: number | null;
+  reason: string | null;
+}
+
+export interface DmsPreservationPackageStatus {
+  package_id: string;
+  name: string;
+  document_class: string;
+  closed_at: string | null;
+  retention_until: string | null;
+  retention_expired: boolean;
+  timestamped: boolean;
+  chained: boolean;
+  chain_sequence: number | null;
+  sealing_status: 'sealed' | 'awaiting_anchor';
+}
+
+export interface DmsPreservationChainStatus {
+  closed_packages: number;
+  chained_packages: number;
+  unchained_packages: number;
+  packages: DmsPreservationPackageStatus[];
 }

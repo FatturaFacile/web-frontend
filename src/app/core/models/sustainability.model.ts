@@ -307,6 +307,151 @@ export interface EsgMaterialityAssessmentRequest {
   topics?: EsgMaterialityTopicRequest[];
 }
 
+export const ESG_ESRS_STANDARDS = ['ESRS2', 'E1', 'E2', 'E3', 'E4', 'E5', 'S1', 'S2', 'S3', 'S4', 'G1'] as const;
+
+export type EsgEsrsStandard = (typeof ESG_ESRS_STANDARDS)[number];
+export type EsgEsrsDataType = 'number' | 'text' | 'boolean';
+export type EsgEsrsValueStatus = 'draft' | 'reviewed' | 'approved' | 'not_applicable';
+
+export interface EsgEsrsValue {
+  id: string;
+  datapoint_id: string;
+  status: EsgEsrsValueStatus;
+  value_number: string | null;
+  value_text: string | null;
+  value_boolean: boolean | null;
+  source: 'manual' | 'inventory';
+  omission_reason: string | null;
+  notes: string | null;
+}
+
+export interface EsgEsrsDatapoint {
+  id: string;
+  code: string;
+  standard: EsgEsrsStandard;
+  disclosure: string;
+  name: string;
+  description: string | null;
+  data_type: EsgEsrsDataType;
+  unit: string | null;
+  is_mandatory: boolean;
+  auto_source: string | null;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface EsgEsrsPackageRow extends EsgEsrsDatapoint {
+  is_required: boolean;
+  value: EsgEsrsValue | null;
+}
+
+export interface EsgEsrsPackage {
+  period_id: string;
+  materiality: {
+    assessment_id: string | null;
+    material_standards: string[];
+    assessed_standards: string[];
+    unassessed_standards: string[];
+  };
+  datapoints: EsgEsrsPackageRow[];
+}
+
+export interface EsgEsrsValueLine {
+  datapoint_id: string;
+  status?: EsgEsrsValueStatus | null;
+  value_number?: string | number | null;
+  value_text?: string | null;
+  value_boolean?: boolean | null;
+  omission_reason?: string | null;
+  notes?: string | null;
+}
+
+export interface EsgEsrsCompleteness {
+  period_id: string;
+  is_complete: boolean;
+  percent: string;
+  required: number;
+  complete: number;
+  materiality_assessment_id: string | null;
+  standards: Array<{ standard: string; is_material: boolean; required: number; complete: number; percent: string }>;
+  missing: Array<{
+    datapoint_id: string;
+    code: string;
+    standard: string;
+    name: string;
+    reason: 'no_value' | 'not_approved' | 'omission_reason_missing';
+  }>;
+  issues: string[];
+  warnings: string[];
+  scope3_categories_without_data: number[];
+  open_supplier_requests: number;
+}
+
+export interface EsgScope3Category {
+  category: number;
+  key: string;
+  co2e_kg: string;
+  share_percent: string;
+  records: number;
+  supplier_specific_kg: string;
+  supplier_specific_percent: string;
+  estimated_percent: string;
+  open_supplier_requests: number;
+  has_data: boolean;
+}
+
+export interface EsgScope3Report {
+  period_id: string;
+  total_kg: string;
+  total_tco2e: string;
+  supplier_specific_percent: string;
+  categories_with_data: number;
+  unmapped_kg: string;
+  categories: EsgScope3Category[];
+}
+
+export type EsgSupplierRequestStatus = 'requested' | 'received' | 'applied' | 'declined' | 'cancelled';
+
+export interface EsgSupplierRequest {
+  id: string;
+  reporting_period_id: string;
+  supplier_id: string;
+  supplier_name: string | null;
+  document_requirement_id: string | null;
+  submission_id: string | null;
+  scope3_category: number;
+  activity_type: string;
+  unit: string;
+  quantity: string;
+  status: EsgSupplierRequestStatus;
+  due_date: string | null;
+  reported_co2e_kg: string | null;
+  calculation_method: string | null;
+  emission_factor_id: string | null;
+  activity_record_id: string | null;
+  notes: string | null;
+  received_at: string | null;
+  applied_at: string | null;
+  created_at: string;
+}
+
+export interface EsgSupplierRequestPayload {
+  reporting_period_id: string;
+  supplier_id: string;
+  scope3_category: number;
+  activity_type: string;
+  unit: string;
+  quantity: string;
+  due_date?: string | null;
+  notes?: string | null;
+}
+
+export interface EsgSupplierReceivePayload {
+  reported_co2e_kg: string;
+  calculation_method?: string | null;
+  submission_id?: string | null;
+}
+
 /** The API wraps every record or list in `data`; lists that paginate add the Laravel `meta`. */
 export interface EsgResponse<T> {
   data: T;

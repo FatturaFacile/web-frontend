@@ -1,0 +1,192 @@
+<app-page-header
+  [title]="'DMS_WORKFLOWS.TITLE' | translate"
+  [subtitle]="'DMS_WORKFLOWS.SUBTITLE' | translate"
+>
+</app-page-header>
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'DMS_WORKFLOWS.TAB_APPROVALS' | translate">
+      <div class="approvals-toolbar">
+        <nz-switch [ngModel]="awaitingMe()" (ngModelChange)="toggleAwaitingMe($event)"></nz-switch>
+        <span>{{ 'DMS_WORKFLOWS.AWAITING_ME' | translate }}</span>
+      </div>
+
+      <nz-table #requestsTable [nzData]="requests()" [nzLoading]="loading()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'DMS_WORKFLOWS.DOCUMENT' | translate }}</th>
+            <th>{{ 'DMS_WORKFLOWS.TEMPLATE' | translate }}</th>
+            <th>{{ 'DMS_WORKFLOWS.CURRENT_STEP' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th>{{ 'DMS_WORKFLOWS.REQUESTED_AT' | translate }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (request of requestsTable.data; track request.id) {
+            <tr>
+              <td>{{ request.document_title }}</td>
+              <td>{{ request.template_name }}</td>
+              <td>
+                {{ request.current_step }} / {{ request.total_steps }}
+                @if (request.current_step_detail) {
+                  <span> - {{ request.current_step_detail.name }}</span>
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="statusColor(request.status)">{{ 'DMS_WORKFLOWS.STATUS_' + request.status | translate }}</nz-tag>
+              </td>
+              <td>{{ request.created_at | date: 'short' }}</td>
+              <td>
+                @if (request.status === 'pending') {
+                  <button nz-button nzType="primary" nzSize="small" (click)="approve(request)">{{ 'DMS_WORKFLOWS.APPROVE' | translate }}</button>
+                  <button nz-button nzDanger nzSize="small" (click)="openReject(request)">{{ 'DMS_WORKFLOWS.REJECT' | translate }}</button>
+                  <button nz-button nzSize="small" (click)="cancel(request)">{{ 'DMS_WORKFLOWS.CANCEL' | translate }}</button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6"><nz-empty></nz-empty></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'DMS_WORKFLOWS.TAB_TEMPLATES' | translate">
+      <div class="approvals-toolbar">
+        <button nz-button nzType="primary" (click)="openTemplateModal()">{{ 'DMS_WORKFLOWS.NEW_TEMPLATE' | translate }}</button>
+      </div>
+
+      <nz-table #templatesTable [nzData]="templates()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th>{{ 'DMS_WORKFLOWS.TEMPLATE' | translate }}</th>
+            <th>{{ 'DMS_WORKFLOWS.STEPS' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (template of templatesTable.data; track template.id) {
+            <tr>
+              <td>{{ template.name }}</td>
+              <td>
+                @for (step of template.steps ?? []; track step.position) {
+                  <nz-tag>{{ step.position }}. {{ step.name }} ({{ step.approver_role ?? step.approver_user_id }})</nz-tag>
+                }
+              </td>
+              <td>
+                <nz-tag [nzColor]="template.is_active ? 'green' : 'default'">{{ (template.is_active ? 'DMS_WORKFLOWS.ACTIVE' : 'DMS_WORKFLOWS.INACTIVE') | translate }}</nz-tag>
+              </td>
+              <td>
+                <button nz-button nzDanger nzSize="small" (click)="deleteTemplate(template)">{{ 'DMS_WORKFLOWS.DELETE' | translate }}</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4"><nz-empty></nz-empty></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'DMS_WORKFLOWS.TAB_PRESERVATION' | translate">
+      <div class="approvals-toolbar">
+        <button nz-button nzType="primary" (click)="anchorChain()">{{ 'DMS_WORKFLOWS.ANCHOR' | translate }}</button>
+        <button nz-button (click)="verifyChain()">{{ 'DMS_WORKFLOWS.VERIFY' | translate }}</button>
+        @if (verification(); as result) {
+          <nz-tag [nzColor]="result.valid ? 'green' : 'red'">
+            {{ (result.valid ? 'DMS_WORKFLOWS.CHAIN_VALID' : 'DMS_WORKFLOWS.CHAIN_BROKEN') | translate }}
+            ({{ result.links_checked }})
+            @if (result.reason) {
+              <span> #{{ result.broken_at_sequence }} {{ result.reason }}</span>
+            }
+          </nz-tag>
+        }
+      </div>
+
+      @if (chainStatus(); as status) {
+        <nz-table #packagesTable [nzData]="status.packages" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'DMS_WORKFLOWS.PACKAGE' | translate }}</th>
+              <th>{{ 'DMS_WORKFLOWS.CLOSED_AT' | translate }}</th>
+              <th>{{ 'DMS_WORKFLOWS.RETENTION_UNTIL' | translate }}</th>
+              <th>{{ 'DMS_WORKFLOWS.SEALING' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of packagesTable.data; track item.package_id) {
+              <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.closed_at | date: 'short' }}</td>
+                <td>{{ item.retention_until }}</td>
+                <td>
+                  <nz-tag [nzColor]="item.chained ? 'green' : 'gold'">{{ (item.chained ? 'DMS_WORKFLOWS.SEALED' : 'DMS_WORKFLOWS.AWAITING_ANCHOR') | translate }}</nz-tag>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4"><nz-empty></nz-empty></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="rejectTarget() !== null"
+  [nzTitle]="'DMS_WORKFLOWS.REJECT' | translate"
+  [nzOkText]="'DMS_WORKFLOWS.REJECT' | translate"
+  [nzOkDisabled]="rejectComment.trim() === ''"
+  (nzOnOk)="confirmReject()"
+  (nzOnCancel)="rejectTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <textarea nz-input rows="3" [(ngModel)]="rejectComment" [placeholder]="'DMS_WORKFLOWS.REJECT_REASON' | translate" maxlength="1000"></textarea>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="templateModalVisible()"
+  [nzTitle]="'DMS_WORKFLOWS.NEW_TEMPLATE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzOkDisabled]="!canSaveTemplate()"
+  [nzOkLoading]="savingTemplate()"
+  (nzOnOk)="saveTemplate()"
+  (nzOnCancel)="templateModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <input nz-input [(ngModel)]="templateName" [placeholder]="'DMS_WORKFLOWS.TEMPLATE_NAME' | translate" maxlength="160" />
+
+    @for (step of templateSteps(); track $index) {
+      <div class="template-step">
+        <input
+          nz-input
+          [ngModel]="step.name"
+          (ngModelChange)="updateStep($index, { name: $event })"
+          [placeholder]="'DMS_WORKFLOWS.STEP_NAME' | translate"
+          maxlength="160"
+        />
+        <nz-select [ngModel]="step.approver_type" (ngModelChange)="updateStep($index, { approver_type: $event })">
+          <nz-option nzValue="role" [nzLabel]="'DMS_WORKFLOWS.APPROVER_ROLE' | translate"></nz-option>
+          <nz-option nzValue="user" [nzLabel]="'DMS_WORKFLOWS.APPROVER_USER' | translate"></nz-option>
+        </nz-select>
+        @if (step.approver_type === 'role') {
+          <input nz-input [ngModel]="step.approver_role" (ngModelChange)="updateStep($index, { approver_role: $event })" [placeholder]="'DMS_WORKFLOWS.ROLE_PLACEHOLDER' | translate" maxlength="60" />
+        } @else {
+          <input nz-input [ngModel]="step.approver_user_id" (ngModelChange)="updateStep($index, { approver_user_id: $event })" [placeholder]="'DMS_WORKFLOWS.USER_ID_PLACEHOLDER' | translate" />
+        }
+        <button nz-button nzSize="small" (click)="removeStep($index)" [disabled]="templateSteps().length === 1">{{ 'DMS_WORKFLOWS.REMOVE_STEP' | translate }}</button>
+      </div>
+    }
+    <button nz-button nzSize="small" (click)="addStep()">{{ 'DMS_WORKFLOWS.ADD_STEP' | translate }}</button>
+  </ng-container>
+</nz-modal>

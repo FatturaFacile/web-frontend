@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.status-filter {
+  min-width: 200px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+
+  > nz-form-item {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+}
+
+nz-alert {
+  margin-bottom: var(--space-3);
+}
+
+.qr-payload {
+  display: block;
+  padding: var(--space-3);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
