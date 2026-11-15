@@ -80,6 +80,16 @@ export class SidebarComponent {
           children: [
             { key: 'NAV.CLIENTS', route: '/crm/clients', icon: 'fa-solid fa-address-book' },
             { key: 'NAV.SUPPLIERS', route: '/crm/suppliers', icon: 'fa-solid fa-truck-field' },
+            { key: 'NAV.LEADS', route: '/crm/leads', icon: 'fa-solid fa-bullseye' },
+          ],
+        },
+        {
+          key: 'NAV.LEAD_ADMIN',
+          icon: 'fa-solid fa-sliders',
+          children: [
+            { key: 'NAV.LEAD_SOURCES', route: '/crm/lead-sources', icon: 'fa-solid fa-plug' },
+            { key: 'NAV.LEAD_SCORING', route: '/crm/lead-scoring', icon: 'fa-solid fa-ranking-star' },
+            { key: 'NAV.LEAD_ROUTING', route: '/crm/lead-routing', icon: 'fa-solid fa-route' },
           ],
         },
         {
