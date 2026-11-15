@@ -2,7 +2,8 @@
 title: 'GH-396 Warranty lookup, RMA depot-repair bench, passports, loaners, vendor claims and public estimate page (web frontend)'
 type: 'feature'
 created: '2026-11-15'
-status: 'draft'
+status: 'done'
+baseline_commit: 'ba785f7aa7e60b4433b27b29bd05e2fd269df081'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -55,7 +56,7 @@ context:
 Autonomous run, no human available; none blocks implementation. Revisit at approval.
 
 1. Mobile (Flutter) part of the issue is out of scope for this repo; recorded as a decision. Backend `receive` (condition photos) and `lookup` are mobile-ready; web `receive` supports notes and photo URLs/asset ids only.
-2. Route layout: `/warranty-rma/{lookup,bench,passports,passports/:id,loaners,vendor-claims}` (`authGuard`); public: `/rma-estimate/:token` and `/rma-tracking?rma=&token=` (no guard). The backend spec fixes `tracking_url` as `{APP_FRONTEND_URL}/rma-tracking?rma=...&token=...` but not the `estimate_url` path: assumed `{APP_FRONTEND_URL}/rma-estimate/{token}`; backend story should confirm.
+2. Route layout: `/warranty-rma/{lookup,bench,passports,passports/:id,loaners,vendor-claims}` (`authGuard`); public: `/rma-estimate/:token` and `/rma-tracking?rma=&token=` (no guard). The backend builds `tracking_url` as `{APP_FRONTEND_URL}/rma-tracking?rma={rma_number}&token={token}` and `estimate_url` as `{APP_FRONTEND_URL}/rma-estimate/{token}` (confirmed with the backend story).
 3. Public pages inside the shell: `AppComponent` renders the layout whenever authenticated; public routes carry `data: { publicPage: true }` and `AppComponent` renders a bare outlet for them so staff previewing a link see the customer view.
 4. Data layer: follow the majority convention (`core/api/*-api.service.ts` + `core/models/*.model.ts`, exported through `@core`) rather than the `domain/data-access` repository layering; page state in `@ngrx/signals` stores (pattern of `time-attendance.store.ts`) under `features/warranty-rma/state/`.
 5. Barcode on the label: no new dependency; a tiny pure Code128-B SVG generator in `shared/utils/code128.ts` (unit-tested) renders `barcode_payload`; printing via `window.print()` with `@media print` styles on the label dialog.
@@ -63,7 +64,16 @@ Autonomous run, no human available; none blocks implementation. Revisit at appro
 7. Diagnosis form lines are an editable table (part/labour, qty, unit cost, unit price, defective part serial, supplier id as free text/uuid input until a supplier lookup is wired; reuse `lookup-select` only if a supplier lookup exists).
 8. Permissions: no per-action permission model exists in the frontend; `goodwill` toggle is always shown and the backend rejects (403/422) when not allowed.
 9. Existing `FieldServiceApiService`/`/field-service` mock pages stay untouched; new group is separate, not nested under them.
-10. Currency from RMA `currency`; no CHF/EUR tenant setting read on the web side.
+10. Currency from RMA `currency`; no CHF/EUR tenant setting read on the web side. Vendor claim amounts use the claim `currency` (backend additive field), falling back to EUR.
+11. Translated error codes without double toasts: `errorInterceptor` gained an `HANDLED_ERROR_STATUSES` `HttpContextToken`; the warranty/RMA requests mark 404/409 (lookup, issue, public) or 409 (transitions, loaners, claims) as handled, so the user sees only the message translated from `code`. Other statuses keep the global handling. Known codes: `invalid_transition`, `already_decided`, `estimate_not_pending`, `loaner_already_issued`, `serial_not_found`, `passport_missing`.
+12. Forms use Reactive Forms (not Signal Forms) so 422 responses bind through the existing `applyServerErrors`.
+13. Kanban default shows 7 columns (the 6 of the issue plus `returned`, needed to see loaners still out after return); `closed` only with the "show closed" toggle; `cancelled` never; unknown statuses are appended with no actions. Card buttons list the legal actions and open the drawer with that action's dialog.
+14. Once-only tokens live only in route-scoped memory: `RmaDetailStore.reveal` (estimate link, stripped from the kept RMA) and `SerialLookupStore.issuedLabel` (tracking link); both are cleared when the dialog closes, never persisted or logged.
+15. The lookup page has its own `SerialLookupStore` (6th store) so the lookup/issue matrix rows are unit-testable.
+16. Customer pickers search CRM contacts (`ClientApiService.list`, backend customer = contacts). Supplier and product ids stay free-text inputs (no supplier/product lookup exists).
+17. Label printing uses `window.print()` with global print rules in `styles.scss` toggled by a `rma-label-printing` body class (the modal lives in the CDK overlay, outside component styles).
+18. Passport editing (`PUT`) is available in the API service but not exposed in the UI (not in this story's tasks).
+19. Public pages carry a small language switch; route breadcrumb/title strings stay Italian like every other route of the app (they are not translated anywhere).
 
 ## Code Map
 
@@ -82,19 +92,19 @@ Autonomous run, no human available; none blocks implementation. Revisit at appro
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/app/core/models/warranty-rma.model.ts` + export in `core/models/index.ts` -- types: `EsmEnvelope<T>`, `EsmPaginated<T>`, enums as string unions (`RmaStatus`, `WarrantyStatus`, `EstimateApprovalStatus`, `WarrantyPolicyType`, `VendorClaimStatus`, `LoanerRegisterType`, `DdtCausale`), `EquipmentPassport`, `EquipmentComponent`, `WarrantyExtension`, `WarrantyEvaluation`, `RmaOrder`, `RmaLine`, `RmaBoard*`, `RmaLabel`, `Loaner`, `VendorClaim`, public estimate/tracking DTOs, request payloads -- mirrors backend resources.
-- [ ] `src/app/core/api/warranty-rma-api.service.ts` + export in `core/index.ts` -- `@Service()` with passport (list/create/get/update/addExtension/genealogy/lookup), RMA (list/create/get/label/trackingToken/board + receive, diagnosis, approve/decline estimate, resendEstimate, partsReceived, completeRepair, return, close, cancel), loaners (list/issue/return/markLost), vendor claims (list/get/patch/transition); separate `PublicRmaApiService` for `/public/rma/estimates/{token}` (get/accept/decline) and `/public/rma/tracking`.
-- [ ] `src/app/features/warranty-rma/warranty-rma.routes.ts` + `src/app/app.routes.ts` -- lazy children with breadcrumb/title data; public routes without guard.
-- [ ] `src/app/features/warranty-rma/utils/rma-status.ts` -- status->allowed-actions map, status/warranty/claim tag colour+icon+i18n key helpers, `isLoanerOverdue`/days helpers; pure.
-- [ ] `src/app/features/warranty-rma/state/{rma-board,rma-detail,passport,loaner,vendor-claim}.store.ts` -- signalStores (load, filters, action methods that reload on success and on 409).
-- [ ] `src/app/features/warranty-rma/components/serial-lookup/*` and `rma-label-dialog/*` -- lookup form, warranty card, RMA history, issue-RMA modal, label view with Code128 SVG and print.
-- [ ] `src/app/features/warranty-rma/components/rma-board/*` and `rma-detail-drawer/*` and action dialogs (`receive`, `diagnosis` with lines table, `complete-repair` with replaced components, `return`, `cancel`, estimate resend/approve/decline-on-behalf) -- Kanban columns with count badges, card (serial, customer, warranty tag, estimate status, age, loaner/overdue icon), drawer with tabs (summary, lines, history, loaner, claims), status-dependent action buttons, once-only token reveal with copy.
-- [ ] `src/app/features/warranty-rma/components/{passport-list,passport-detail}/*` -- list with filters (serial, customer, jurisdiction, in/out warranty); detail with warranty block, extensions (add-extension modal), genealogy tabs as-built / as-maintained / history.
-- [ ] `src/app/features/warranty-rma/components/{loaner-register,vendor-claims}/*` -- loaner table with register-type and overdue filters, return / mark-lost confirm; claims table with filters, edit reference/notes, status transition dialog (only legal next states offered).
-- [ ] `src/app/features/warranty-rma/public/{rma-estimate,rma-tracking}.component.ts` -- standalone customer pages (estimate review, accept/decline with name, tracking steps), responsive, no shell.
-- [ ] `src/app/shared/utils/code128.ts` -- Code128-B encoder to bar widths/SVG string.
-- [ ] `src/app/layout/sidebar/sidebar.component.ts`, `src/app/app.component.{ts,html}`, `public/assets/i18n/{it,en,de,fr}.json` -- menu, public-shell switch, translations.
-- [ ] Tests (vitest, `*.spec.ts` next to sources): `warranty-rma-api.service.spec.ts` (URLs, methods, params, public calls), `rma-status.spec.ts`, `code128.spec.ts`, each store spec (mocked API with `vi.fn()`, 409 reload, once-only token not retained after dismiss), `rma-board`/`rma-estimate` component specs (columns render, overdue flag, accept/decline/404/409 states), sidebar/app.component public-route spec.
+- [x] `src/app/core/models/warranty-rma.model.ts` + export in `core/models/index.ts` -- types: `EsmEnvelope<T>`, `EsmPaginated<T>`, enums as string unions (`RmaStatus`, `WarrantyStatus`, `EstimateApprovalStatus`, `WarrantyPolicyType`, `VendorClaimStatus`, `LoanerRegisterType`, `DdtCausale`), `EquipmentPassport`, `EquipmentComponent`, `WarrantyExtension`, `WarrantyEvaluation`, `RmaOrder`, `RmaLine`, `RmaBoard*`, `RmaLabel`, `Loaner`, `VendorClaim`, public estimate/tracking DTOs, request payloads -- mirrors backend resources.
+- [x] `src/app/core/api/warranty-rma-api.service.ts` + export in `core/index.ts` -- `@Service()` with passport (list/create/get/update/addExtension/genealogy/lookup), RMA (list/create/get/label/trackingToken/board + receive, diagnosis, approve/decline estimate, resendEstimate, partsReceived, completeRepair, return, close, cancel), loaners (list/issue/return/markLost), vendor claims (list/get/patch/transition); separate `PublicRmaApiService` for `/public/rma/estimates/{token}` (get/accept/decline) and `/public/rma/tracking`.
+- [x] `src/app/features/warranty-rma/warranty-rma.routes.ts` + `src/app/app.routes.ts` -- lazy children with breadcrumb/title data; public routes without guard.
+- [x] `src/app/features/warranty-rma/utils/rma-status.ts` -- status->allowed-actions map, status/warranty/claim tag colour+icon+i18n key helpers, `isLoanerOverdue`/days helpers; pure.
+- [x] `src/app/features/warranty-rma/state/{rma-board,rma-detail,passport,loaner,vendor-claim}.store.ts` -- signalStores (load, filters, action methods that reload on success and on 409).
+- [x] `src/app/features/warranty-rma/components/serial-lookup/*` and `rma-label-dialog/*` -- lookup form, warranty card, RMA history, issue-RMA modal, label view with Code128 SVG and print.
+- [x] `src/app/features/warranty-rma/components/rma-board/*` and `rma-detail-drawer/*` and action dialogs (`receive`, `diagnosis` with lines table, `complete-repair` with replaced components, `return`, `cancel`, estimate resend/approve/decline-on-behalf) -- Kanban columns with count badges, card (serial, customer, warranty tag, estimate status, age, loaner/overdue icon), drawer with tabs (summary, lines, history, loaner, claims), status-dependent action buttons, once-only token reveal with copy.
+- [x] `src/app/features/warranty-rma/components/{passport-list,passport-detail}/*` -- list with filters (serial, customer, jurisdiction, in/out warranty); detail with warranty block, extensions (add-extension modal), genealogy tabs as-built / as-maintained / history.
+- [x] `src/app/features/warranty-rma/components/{loaner-register,vendor-claims}/*` -- loaner table with register-type and overdue filters, return / mark-lost confirm; claims table with filters, edit reference/notes, status transition dialog (only legal next states offered).
+- [x] `src/app/features/warranty-rma/public/{rma-estimate,rma-tracking}.component.ts` -- standalone customer pages (estimate review, accept/decline with name, tracking steps), responsive, no shell.
+- [x] `src/app/shared/utils/code128.ts` -- Code128-B encoder to bar widths/SVG string.
+- [x] `src/app/layout/sidebar/sidebar.component.ts`, `src/app/app.component.{ts,html}`, `public/assets/i18n/{it,en,de,fr}.json` -- menu, public-shell switch, translations.
+- [x] Tests (vitest, `*.spec.ts` next to sources): `warranty-rma-api.service.spec.ts` (URLs, methods, params, public calls), `rma-status.spec.ts`, `code128.spec.ts`, each store spec (mocked API with `vi.fn()`, 409 reload, once-only token not retained after dismiss), `rma-board`/`rma-estimate` component specs (columns render, overdue flag, accept/decline/404/409 states), sidebar/app.component public-route spec.
 
 **Acceptance Criteria:**
 - Given a serial with a passport, when it is looked up, then warranty status, expiry, days remaining, policy and RMA history render, and "Issue RMA" opens a form that on success shows the label with barcode and tracking URL once.
@@ -108,11 +118,21 @@ Autonomous run, no human available; none blocks implementation. Revisit at appro
 
 ## Implementation Notes
 
-(Agent-owned; empty at planning time.)
+- Implemented directly from this spec (no subagent runtime available). Feature lives in `src/app/features/warranty-rma` (`state/`, `utils/`, `components/`, `public/`, `testing/` fixtures for specs); API in `core/api/{warranty-rma,public-rma}-api.service.ts`, models in `core/models/warranty-rma.model.ts`; Code128-B in `shared/utils/code128.ts`.
+- Aligned with the backend "Contract clarifications and deviations" section added during implementation (extra 409 codes, RMA/loaner/claim additive fields, label nested in `data`).
+- Verification: `pnpm lint` clean, `pnpm test` 39 files / 189 tests green (baseline 23 / 100), `pnpm build` green with lazy chunks for every warranty-rma page. Baseline on main was already green. Running `pnpm` adds `@pnpm/exe` to `pnpm-lock.yaml`; that change is reverted and not committed.
+- Not verified manually against a running backend (no 396 backend available); AXE not run with a tool — labelled controls, icon+text status, `aria-live` regions and ng-zorro modal/drawer focus restore are relied on.
 
 ## Spec Change Log
 
 ## Review Triage Log
+
+| # | Source | Finding | Verdict | Route / evidence |
+|---|--------|---------|---------|------------------|
+| 1 | self-review | Board card shortcuts for payload-less actions (close, parts received, resend estimate) ran immediately, bypassing the drawer's confirmation | medium | Patched: the drawer only auto-opens dialogs for actions with payloads; confirm-only actions wait for the popconfirm in the drawer. |
+| 2 | test (rma-detail.store.spec) | Raw `estimate_token`/`estimate_url` were kept inside the stored RMA after the reveal was dismissed | high | Patched: the store strips both keys from the kept RMA; they only live in `reveal`, cleared on dismiss. |
+
+Note: the multi-agent review layers (blind / edge-case / verification-gap) could not run: no subagent runtime in this autonomous session and no human available to run them separately. A self-review plus the matrix test audit replaced them; an independent review is recommended before merge.
 
 ## Design Notes
 
