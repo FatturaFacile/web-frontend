@@ -1,5 +1,6 @@
 export * from './ui/page-header/page-header.component';
 export * from './pipes/currency-format.pipe';
+export * from './pipes/date-format.pipe';
 export * from './pipes/decimal-format.pipe';
 export * from './pipes/translate.pipe';
 export * from './directives/autofocus.directive';

@@ -69,6 +69,27 @@ describe('BaseTableComponent', () => {
     expect(tr.getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('virtual mode always sets both scroll axes and keeps the paginated scroll untouched', () => {
+    const virtual = create({ data: rows(1), columns, virtualScroll: true, scroll: { y: '300px' } });
+    expect(virtual.componentInstance.tableScroll()).toEqual({ x: '100%', y: '300px' });
+
+    const paginated = create({ data: rows(1), columns, scroll: { x: '900px' } });
+    expect(paginated.componentInstance.tableScroll()).toEqual({ x: '900px' });
+  });
+
+  it('virtual mode shares explicit column widths between header and body via colgroup', () => {
+    const wide: TableColumnDef<Row>[] = [
+      { key: 'id', header: 'Id', width: '120px' },
+      { key: 'name', header: 'Name', width: '240px' },
+    ];
+    const fixture = create({ data: rows(50), columns: wide, virtualScroll: true });
+    const widths = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('col')).map(
+      (c) => (c as HTMLElement).style.width,
+    );
+    expect(widths).toContain('120px');
+    expect(widths).toContain('240px');
+  });
+
   it('virtual mode accepts 100,000 rows, hides pagination and renders only a window', () => {
     const fixture = create({
       data: rows(100_000),
@@ -78,7 +99,7 @@ describe('BaseTableComponent', () => {
       virtualMaxBufferPx: 800,
     });
     const el = fixture.nativeElement as HTMLElement;
-    expect(fixture.componentInstance.tableScroll().y).toBe('480px');
+    expect(fixture.componentInstance.tableScroll()).toEqual({ x: '1200px', y: '480px' });
     expect(el.querySelector('nz-pagination')).toBeNull();
     expect(el.querySelectorAll('tr.table-row').length).toBeLessThan(1000);
   });
