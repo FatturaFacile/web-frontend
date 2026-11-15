@@ -136,6 +136,7 @@ export const TMS_ORDERS_PAGE: ResourcePageConfig = {
       rowLink: { labelKey: 'TMS.OPEN_ORDER', route: '/transportation/orders/{transport_order_id}' },
       titleKey: 'TMS.TAB_TRACKING',
       module: 'transportation',
+      detailPath: '/transportation/tracking-events/{id}',
       list: { path: '/transportation/tracking-events', columns: [tagCol('event_type'), ...cols('location'), col('occurred_at', 'datetime'), ...cols('notes')], filters: [rf.uuid('transport_order_id'), rf.select('event_type', TMS_TRACKING_EVENT_TYPES), rf.date('from'), rf.date('to')] },
       create: act('POST', 'TMS.ACTION_NEW_EVENT', '/transportation/tracking-events', {
         fields: [req(rf.uuid('transport_order_id')), req(rf.select('event_type', TMS_TRACKING_EVENT_TYPES)), rf.text('location', { maxLength: 160 }), req(rf.datetime('occurred_at')), rf.textarea('notes', { maxLength: 5000 })],
@@ -171,6 +172,12 @@ export const TMS_TRIPS_PAGE: ResourcePageConfig = {
       rowActions: [
         edit('/transportation/trips/{id}', tripFields),
         act('POST', 'TMS.ACTION_ADD_ORDERS', '/transportation/trips/{id}/orders', { fields: [req(rf.tags('order_ids'))], visible: whenIn('status', 'planned', 'dispatched') }),
+        act('DELETE', 'RES.A.tms_remove_trip_order', '/transportation/trips/{id}/orders/{orderId}', {
+          fields: [req(rf.uuid('orderId', { labelKey: 'RES.F.order_id' }))],
+          confirm: true,
+          danger: true,
+          visible: whenIn('status', 'planned', 'dispatched'),
+        }),
         act('POST', 'TMS.ACTION_DISPATCH', '/transportation/trips/{id}/dispatch', { visible: whenIn('status', 'planned') }),
         act('POST', 'TMS.ACTION_START', '/transportation/trips/{id}/start', { visible: whenIn('status', 'dispatched') }),
         act('POST', 'TMS.ACTION_COMPLETE', '/transportation/trips/{id}/complete', { fields: [rf.decimal('actual_distance_km', { positive: true }), rf.decimal('actual_cost', { min: 0 })], visible: whenIn('status', 'in_progress') }),

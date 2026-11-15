@@ -53,6 +53,16 @@ export const AUTOMOTIVE_ESTIMATES_PAGE: ResourcePageConfig = {
           fields: estimateLine(),
           visible: whenIn('status', 'draft'),
         }),
+        act('DELETE', 'RES.A.remove_estimate_line', '/workshop/estimates/{id}/lines/{lineId}', {
+          fields: [req(rf.uuid('lineId', { labelKey: 'RES.F.line_id' }))],
+          confirm: true,
+          danger: true,
+          visible: whenIn('status', 'draft'),
+        }),
+        act('GET', 'RES.A.part_availability', '/workshop/parts/{partId}/availability', {
+          fields: [req(rf.uuid('partId', { labelKey: 'RES.F.part_id' }))],
+          showResult: true,
+        }),
         act('POST', 'RES.A.send_estimate', '/workshop/estimates/{id}/send', { visible: whenIn('status', 'draft') }),
         act('POST', 'RES.A.approve_estimate', '/workshop/estimates/{id}/approve', {
           fields: [rf.text('note', { maxLength: 500 })],

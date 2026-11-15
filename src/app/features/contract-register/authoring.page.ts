@@ -30,6 +30,11 @@ export const CONTRACT_AUTHORING_PAGE: ResourcePageConfig = {
           fields: [req(rf.select('status', CLAUSE_STATUSES))],
           visible: whenIn('status', 'draft', 'approved'),
         }),
+        act('DELETE', 'RES.A.delete_clause_fallback', '/contract-authoring/clauses/{id}/fallbacks/{fallbackId}', {
+          fields: [req(rf.uuid('fallbackId', { labelKey: 'RES.F.fallback_id' }))],
+          confirm: true,
+          danger: true,
+        }),
         act('POST', 'RES.A.add_clause_fallback', '/contract-authoring/clauses/{id}/fallbacks', {
           fields: [req(rf.text('title')), req(rf.textarea('body')), rf.integer('rank'), rf.bool('requires_approval')],
           visible: whenIn('status', 'draft', 'approved'),
@@ -121,12 +126,17 @@ export const CONTRACT_AUTHORING_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.sign_signature_request', '/contract-authoring/signature-requests/{requestId}/sign', {
           fields: [req(rf.uuid('requestId', { labelKey: 'RES.F.request_id' })), req(rf.text('token'))],
         }),
+        act('POST', 'RES.A.decline_signature_request', '/contract-authoring/signature-requests/{requestId}/decline', {
+          fields: [req(rf.uuid('requestId', { labelKey: 'RES.F.request_id' })), req(rf.text('token')), req(rf.textarea('reason', { maxLength: 2000 }))],
+          danger: true,
+        }),
         act('POST', 'RES.A.cancel_signature_request', '/contract-authoring/signature-requests/{requestId}/cancel', {
           fields: [req(rf.uuid('requestId', { labelKey: 'RES.F.request_id' }))],
           confirm: true,
           danger: true,
         }),
       ],
+      toolbar: [act('GET', 'RES.A.list_signature_providers', '/contract-authoring/signature-providers', { showResult: true })],
     },
   ],
 };

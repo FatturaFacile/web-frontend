@@ -1,6 +1,11 @@
 import { ResourceAction, ResourceField, ResourcePageConfig } from '@shared';
 import { describe, expect, it } from 'vitest';
 import { hasSeededDictionaries, seededDictionaries } from '../../testing/seeded-dictionaries';
+import { PRESERVATION_PAGE } from './document-trust/preservation.page';
+import { SOD_RULES_PAGE } from './governance/sod-rules.page';
+import { PRIVACY_COMPLIANCE_PAGE } from './settings/pages/privacy/privacy-compliance.page';
+import { SUPPLIER_SELF_SERVICE_PAGE } from './supplier-portal/self-service.page';
+import { TERRITORY_ACCOUNTS_PAGE } from './crm/territory-accounts.page';
 import { LOTS_PAGE, STOCK_REPORTS_PAGE } from './inventory/wms/lots-reports.page';
 import { INVENTORY_SERVICES_PAGE, STOCK_ITEMS_PAGE } from './inventory/wms/items-service.page';
 import { OUTBOUND_PAGE } from './inventory/wms/outbound.page';
@@ -37,6 +42,11 @@ const PAGES: Record<string, ResourcePageConfig> = {
   MFG_PRODUCTION_PAGE,
   MFG_QUALITY_PAGE,
   MFG_PLANNING_PAGE,
+  PRESERVATION_PAGE,
+  SOD_RULES_PAGE,
+  PRIVACY_COMPLIANCE_PAGE,
+  SUPPLIER_SELF_SERVICE_PAGE,
+  TERRITORY_ACCOUNTS_PAGE,
 };
 
 const dictionaries = seededDictionaries;
