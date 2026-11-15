@@ -24,6 +24,7 @@ import {
 } from '@core';
 import { CurrencyFormatPipe, TranslatePipe } from '@shared';
 import { ActionResult } from '../../state/action-result';
+import { esmErrorBody } from '../../utils/rma-status';
 import { RmaDetailStore } from '../../state/rma-detail.store';
 
 type LineRow = FormGroup<{
@@ -176,7 +177,9 @@ export class DiagnosisDialogComponent {
       lines,
     });
     if (!res.ok && res.status === 422) {
-      this.formErrors.set(applyServerErrors(this.form, res.error));
+      // Errors on the `lines` array itself (e.g. "at least one line") have no control to show them.
+      const lineErrors = esmErrorBody(res.error)?.errors?.['lines'] ?? [];
+      this.formErrors.set([...applyServerErrors(this.form, res.error), ...lineErrors]);
       return;
     }
     this.open.set(false);
