@@ -70,6 +70,16 @@ export class BaseTableComponent<TItem extends object = object> {
   readonly showQuickJumper = input<boolean>(false);
   readonly expandable = input<boolean>(false);
   readonly emptyText = input<string | undefined>(undefined);
+  /** Renders only visible rows (CDK virtual scroll); pagination is hidden and row expansion unsupported. */
+  readonly virtualScroll = input<boolean>(false);
+  readonly virtualItemSize = input<number>(44);
+  readonly virtualMaxBufferPx = input<number>(800);
+
+  /** Virtual scrolling needs a bounded viewport height so header and body stay aligned. */
+  readonly tableScroll = computed(() => {
+    const scroll = this.scroll();
+    return this.virtualScroll() ? { ...scroll, y: scroll.y ?? '480px' } : scroll;
+  });
 
   // Templates
   readonly actionsTemplate = input<TemplateRef<{ $implicit: TItem }>>();
@@ -186,6 +196,16 @@ export class BaseTableComponent<TItem extends object = object> {
 
   onRowClick(item: TItem): void {
     this.rowClick.emit(item);
+  }
+
+  /** Keyboard equivalent of a row click (and expand toggle); ignores keys from nested controls. */
+  onRowKeyActivate(event: Event, item: TItem): void {
+    if (event.target !== event.currentTarget) return;
+    event.preventDefault();
+    if (this.expandable()) {
+      this.toggleRowExpanded(item, !this.isRowExpanded(item));
+    }
+    this.onRowClick(item);
   }
 
   isRowExpanded(item: TItem): boolean {
