@@ -686,6 +686,7 @@
   "SALES.INVOICES.FISCAL.BREAKDOWN_TITLE": "Riepilogo fiscale",
   "SALES.INVOICES.FISCAL.ENASARCO": "Contributo ENASARCO",
   "SALES.INVOICES.FISCAL.ENASARCO_HINT": "ENASARCO: provvigioni da inizio anno {ytd} su un massimale di {max}.",
+  "SALES.INVOICES.FISCAL.ERRORS.AMOUNT_OUT_OF_RANGE": "Un importo è troppo elevato: riduci quantità o prezzi.",
   "SALES.INVOICES.FISCAL.ERRORS.ENASARCO_RATE_NOT_CONFIGURED": "Aliquota ENASARCO non configurata per l'anno della fattura: verifica le impostazioni fiscali.",
   "SALES.INVOICES.FISCAL.ERRORS.FORFETTARIO_INCOMPATIBLE": "In regime forfettario non sono ammessi ritenuta, split payment o reverse charge.",
   "SALES.INVOICES.FISCAL.ERRORS.INVALID_NATURA": "Codice natura IVA non valido.",

@@ -686,6 +686,7 @@
   "SALES.INVOICES.FISCAL.BREAKDOWN_TITLE": "Steueraufstellung",
   "SALES.INVOICES.FISCAL.ENASARCO": "ENASARCO-Beitrag",
   "SALES.INVOICES.FISCAL.ENASARCO_HINT": "ENASARCO: Provisionen seit Jahresbeginn {ytd} bei einer Höchstgrenze von {max}.",
+  "SALES.INVOICES.FISCAL.ERRORS.AMOUNT_OUT_OF_RANGE": "Ein Betrag ist zu groß: Mengen oder Preise reduzieren.",
   "SALES.INVOICES.FISCAL.ERRORS.ENASARCO_RATE_NOT_CONFIGURED": "ENASARCO-Satz für das Rechnungsjahr nicht konfiguriert: prüfen Sie die Steuereinstellungen.",
   "SALES.INVOICES.FISCAL.ERRORS.FORFETTARIO_INCOMPATIBLE": "Quellensteuer, Split Payment und Reverse Charge sind im Pauschalregime nicht zulässig.",
   "SALES.INVOICES.FISCAL.ERRORS.INVALID_NATURA": "Ungültiger MwSt-Naturcode.",

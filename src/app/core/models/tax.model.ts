@@ -14,7 +14,8 @@ export type FiscalErrorCode =
   | 'enasarco_rate_not_configured'
   | 'split_payment_incompatible'
   | 'split_payment_requires_vat'
-  | 'invalid_natura';
+  | 'invalid_natura'
+  | 'amount_out_of_range';
 
 /** Cassa previdenziale settings sent with an invoice/preview (`fund`) or stored as tenant default. */
 export interface FundSettings {
