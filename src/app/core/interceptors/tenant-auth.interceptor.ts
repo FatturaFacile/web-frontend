@@ -5,6 +5,7 @@ import { catchError, throwError } from 'rxjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { AuthStore } from '../auth/auth.store';
 import { getXsrfCookie, isBackendApiRequest } from '../auth/csrf.utils';
+import { isLocallyHandled } from '../http/error-handling.context';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -81,7 +82,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(configuredReq).pipe(
     catchError((err: unknown) => {
-      if (err instanceof HttpErrorResponse) {
+      if (err instanceof HttpErrorResponse && !isLocallyHandled(req.context, err.status)) {
         const isAuthEndpoint =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
