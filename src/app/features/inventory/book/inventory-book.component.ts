@@ -131,9 +131,13 @@ export class InventoryBookComponent implements OnInit {
         this.downloadingCsv.set(false);
         saveDownloadedFile(file);
       },
-      error: () => {
-        // Non-422 errors are already toasted by the HTTP interceptor.
+      error: (err: unknown) => {
+        // Non-422 errors are already toasted by the HTTP interceptor; a 422
+        // body arrives as a Blob, so show the localized message instead.
         this.downloadingCsv.set(false);
+        if (httpStatus(err) === 422) {
+          this.message.error(this.i18n.translate(this.bookErrorKey(err)));
+        }
       },
     });
   }
