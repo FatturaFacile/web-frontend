@@ -55,6 +55,12 @@ export const STOCK_ITEMS_PAGE: ResourcePageConfig = {
         act('PUT', 'RES.ACTION.EDIT', '/inventory/items/{id}', { prefill: true, fields: ITEM_FIELDS }),
         act('DELETE', 'RES.ACTION.DELETE', '/inventory/items/{id}', { confirm: true, danger: true }),
       ],
+      toolbar: [
+        act('POST', 'RES.A.stock_adjustment', '/inventory/stock-adjustments', {
+          fields: [req(rf.uuid('product_id')), rf.lookup('warehouse_id', 'warehouses'), req(rf.decimal('quantity')), rf.textarea('notes', { maxLength: 2000 })],
+          showResult: true,
+        }),
+      ],
     },
     {
       id: 'variants',

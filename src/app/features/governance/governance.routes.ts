@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { ResourcePageComponent } from '@shared';
+import { SOD_RULES_PAGE } from './sod-rules.page';
 
 export const GOVERNANCE_ROUTES: Routes = [
   {
@@ -40,5 +42,10 @@ export const GOVERNANCE_ROUTES: Routes = [
     path: 'segregation-of-duties',
     data: { breadcrumb: 'NAV.GOVERNANCE_SOD', title: 'PAGE_TITLE.GOVERNANCE_SOD' },
     loadComponent: () => import('./segregation-of-duties.component').then((m) => m.GovernanceSegregationOfDutiesComponent),
+  },
+  {
+    path: 'document-rules',
+    data: { breadcrumb: 'RES.PAGE.SOD_DOCUMENT_RULES', title: 'RES.PAGE.SOD_DOCUMENT_RULES', page: SOD_RULES_PAGE },
+    component: ResourcePageComponent,
   },
 ];

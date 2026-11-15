@@ -51,6 +51,12 @@ export const HOSPITALITY_LODGING_PAGE: ResourcePageConfig = {
         }),
         act('POST', 'RES.A.check_out', '/hospitality/stays/{id}/check-out', { confirm: true, visible: whenIn('status', 'checked_in'), showResult: true }),
         act('GET', 'RES.A.folio_statement', '/hospitality/stays/{id}/folio-statement', { showResult: true }),
+        act('POST', 'RES.A.folio_void_entry', '/hospitality/folio-entries/{entry_id}/void', {
+          fields: [req(rf.uuid('entry_id'))],
+          confirm: true,
+          danger: true,
+          showResult: true,
+        }),
         act('POST', 'RES.A.invoice_folio', '/hospitality/stays/{id}/invoice', {
           fields: [
             req(rf.lookup('contact_id', 'contacts')),

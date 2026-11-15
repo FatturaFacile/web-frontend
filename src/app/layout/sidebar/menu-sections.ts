@@ -87,6 +87,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.CRM_TERRITORY_ACCOUNTS',
+            route: '/crm/territory-accounts',
+            icon: 'fa-solid fa-location-crosshairs',
+            module: 'crm',
+          },
+          {
             key: 'NAV.CRMEXT_PARTNERS',
             route: '/crm/partners',
             icon: 'fa-solid fa-handshake',
@@ -542,6 +548,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'document_trust',
       },
       {
+        key: 'NAV.DOCUMENT_PRESERVATION',
+        icon: 'fa-solid fa-box-archive',
+        route: '/document-trust/preservation',
+        module: 'document_trust',
+      },
+      {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
         icon: 'fa-solid fa-cart-shopping',
         route: '/ecommerce-integrations',
@@ -580,6 +592,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.SUPPLIER_PORTAL_DOCUMENTS', route: '/supplier-portal/documents', icon: 'fa-solid fa-file-circle-check', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_QUALIFICATION', route: '/supplier-portal/qualification', icon: 'fa-solid fa-ranking-star', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_BANK_CHANGES', route: '/supplier-portal/bank-changes', icon: 'fa-solid fa-building-columns', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_SELF_SERVICE', route: '/supplier-portal/self-service', icon: 'fa-solid fa-store', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_RFQ_RESPONSES', route: '/supplier-portal/rfq-responses', icon: 'fa-solid fa-scale-balanced', module: 'supplier_portal' },
         ],
       },
@@ -605,6 +618,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.GOVERNANCE_FINDINGS', route: '/governance/findings', icon: 'fa-solid fa-magnifying-glass-chart', module: 'governance' },
           { key: 'NAV.GOVERNANCE_ACTIONS', route: '/governance/actions', icon: 'fa-solid fa-list-check', module: 'governance' },
           { key: 'NAV.GOVERNANCE_OBLIGATIONS', route: '/governance/obligations', icon: 'fa-solid fa-calendar-check', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_SOD_RULES', route: '/governance/document-rules', icon: 'fa-solid fa-file-shield', module: 'governance' },
           { key: 'NAV.GOVERNANCE_SOD', route: '/governance/segregation-of-duties', icon: 'fa-solid fa-user-lock', module: 'governance' },
         ],
       },
@@ -1398,6 +1412,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'system',
         children: [
           { key: 'NAV.USERS_ACCESS', route: '/settings/users', icon: 'fa-solid fa-users-gear', module: 'system' },
+          { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
         ],
       },

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { moduleGuard, platformAdminGuard } from '@core';
 import { ResourcePageComponent } from '@shared';
+import { PRIVACY_COMPLIANCE_PAGE } from './pages/privacy/privacy-compliance.page';
 import { SDI_CHANNEL_PAGE } from './pages/sdi-channel/sdi-channel.page';
 
 export const SETTINGS_ROUTES: Routes = [
@@ -103,6 +104,12 @@ export const SETTINGS_ROUTES: Routes = [
     data: { breadcrumb: 'NAV.LOOKUP_TRANSLATIONS', title: 'NAV.LOOKUP_TRANSLATIONS' },
     loadComponent: () =>
       import('./pages/lookup-translations/lookup-translations.component').then((m) => m.LookupTranslationsComponent),
+  },
+  {
+    path: 'privacy/compliance',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'RES.PAGE.PRIVACY_COMPLIANCE', title: 'RES.PAGE.PRIVACY_COMPLIANCE', page: PRIVACY_COMPLIANCE_PAGE },
+    component: ResourcePageComponent,
   },
   {
     path: 'privacy',
