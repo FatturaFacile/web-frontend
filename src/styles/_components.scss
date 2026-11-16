@@ -1,0 +1,30 @@
+// Native controls of the design system (app-input, app-select). A global class because the control is rendered by
+// several components. The size follows the UI density; the border has at least 3:1 contrast (WCAG 1.4.11).
+.app-control {
+  display: block;
+  width: 100%;
+  min-height: var(--ff-density-control-height);
+  padding: 0 var(--ff-density-input-padding-x);
+  background: var(--ff-color-surface);
+  color: var(--ff-color-text);
+  border: 1px solid var(--ff-color-border-input);
+  border-radius: var(--ff-radius-md);
+  font: inherit;
+  font-size: var(--ff-density-font-size);
+
+  &::placeholder {
+    color: var(--ff-color-text-muted);
+    opacity: 1;
+  }
+
+  &:disabled {
+    background: var(--ff-color-surface-alt);
+    color: var(--ff-color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--ff-color-danger);
+    border-width: 2px;
+  }
+}
