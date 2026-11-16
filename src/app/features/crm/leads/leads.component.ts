@@ -1,355 +1,288 @@
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
-import {
-  AbstractControl,
-  FormsModule,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzSpaceModule } from 'ng-zorro-antd/space';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import {
-  applyServerErrors,
-  AuthStore,
-  CrmApiService,
-  CrmLeadFilterParams,
-  FetchGridModel,
+  CreateLeadPayload,
+  DuplicateStrategy,
   I18nService,
-  isValidationError,
+  LeadApiService,
+  LeadBehaviorEvent,
+  LeadRating,
   LeadResource,
-  LeadScoreBreakdownItem,
-  LeadScoreExplanation,
-  serverErrorMessage,
-  StoreLeadPayload,
-  TranslateService,
+  LeadStatus,
+  UpdateLeadPayload,
 } from '@core';
-import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 
-/** A lead needs a name: the company name or at least the last name. */
-const identityRequired: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
-  const company = String(group.get('company_name')?.value ?? '').trim();
-  const lastName = String(group.get('last_name')?.value ?? '').trim();
-  return company || lastName ? null : { identityRequired: true };
+// Hex colours (not antd presets) so the tags keep their colour in the dark theme.
+const RATING_COLORS: Record<LeadRating, string> = { cold: '#2563eb', warm: '#d97706', hot: '#dc2626' };
+const STATUS_COLORS: Record<string, string> = {
+  new: '#475569',
+  contacting: '#0891b2',
+  engaged: '#0891b2',
+  qualified: '#16a34a',
+  disqualified: '#64748b',
+  converted: '#7c3aed',
+  archived: '#64748b',
 };
 
 @Component({
   selector: 'app-crm-leads',
-  styleUrl: './leads.component.scss',
   imports: [
-    BaseTableComponent,
-    ModalActionsDirective,
-    IconActionDirective,
     FormsModule,
-    ReactiveFormsModule,
-    NzCardModule,
-    NzTagModule,
+    RouterLink,
     NzButtonModule,
+    NzCardModule,
+    NzIconModule,
     NzInputModule,
-    NzInputNumberModule,
-    NzSelectModule,
-    NzFormModule,
     NzModalModule,
     NzPopconfirmModule,
-    NzIconModule,
-    NzEmptyModule,
-    NzSpaceModule,
-    NzTooltipModule,
+    NzSelectModule,
+    NzTableModule,
+    NzTagModule,
     PageHeaderComponent,
-    MoneyPipe,
     TranslatePipe,
   ],
   templateUrl: './leads.component.html',
+  styleUrl: './leads.component.scss',
 })
 export class LeadsComponent implements OnInit {
-  private readonly translate = inject(TranslateService);
-  private readonly crmApi = inject(CrmApiService);
+  private readonly api = inject(LeadApiService);
   private readonly message = inject(NzMessageService);
-  private readonly modal = inject(NzModalService);
-  private readonly fb = inject(NonNullableFormBuilder);
-  protected readonly authStore = inject(AuthStore);
-  protected readonly i18n = inject(I18nService);
+  private readonly i18n = inject(I18nService);
 
-  readonly saving = signal(false);
-  readonly grid = new FetchGridModel<LeadResource, CrmLeadFilterParams>((query) => this.crmApi.getLeads(query));
+  protected readonly leads = signal<LeadResource[]>([]);
+  protected readonly loading = signal(false);
+  protected readonly ratingFilter = signal<LeadRating | null>(null);
+  protected readonly statusFilter = signal<LeadStatus | null>(null);
+  protected readonly modalOpen = signal(false);
+  protected readonly saving = signal(false);
+  protected readonly form = signal<CreateLeadPayload>({ country: 'IT', duplicate_strategy: 'notify' });
 
-  private readonly nameTpl = viewChild<TemplateRef<unknown>>('nameTpl');
-  private readonly statusTpl = viewChild<TemplateRef<unknown>>('statusTpl');
-  private readonly ratingTpl = viewChild<TemplateRef<unknown>>('ratingTpl');
-  private readonly scoreTpl = viewChild<TemplateRef<unknown>>('scoreTpl');
-  private readonly countryTpl = viewChild<TemplateRef<unknown>>('countryTpl');
-  private readonly budgetTpl = viewChild<TemplateRef<unknown>>('budgetTpl');
-
-  /** `full_name` is shown as the lead name, else the company name: the server sorts and filters by `display_name`. */
-  readonly columns = computed<TableColumnDef<LeadResource>[]>(() => {
+  protected readonly ratingOptions = computed(() => {
     this.i18n.currentLanguage();
-    return [
-      {
-        key: 'full_name',
-        serverKey: 'display_name',
-        header: this.translate.instant('crmLeadScore.lblLeadCompany'),
-        valueGetter: (lead) => lead.full_name || lead.company_name || '',
-        customCellTemplate: this.nameTpl(),
-      },
-      { key: 'status', header: this.translate.instant('crmLeadScore.lblStatus'), customCellTemplate: this.statusTpl() },
-      {
-        key: 'rating',
-        header: this.translate.instant('crmLeadScore.lblRating'),
-        valueGetter: (lead) => lead.rating || 'N/A',
-        customCellTemplate: this.ratingTpl(),
-      },
-      { key: 'score', header: this.translate.instant('crmLeadScore.lblScore'), customCellTemplate: this.scoreTpl() },
-      { key: 'country', header: this.translate.instant('crmLeadScore.lblCountry'), customCellTemplate: this.countryTpl() },
-      {
-        key: 'estimated_budget',
-        header: this.translate.instant('crmLeadScore.lblEstimatedBudget'),
-        customCellTemplate: this.budgetTpl(),
-      },
-    ];
+    return (['hot', 'warm', 'cold'] as LeadRating[]).map((value) => ({
+      value,
+      label: this.i18n.translate(`CRM.LEADS.RATING.${value.toUpperCase()}`),
+    }));
   });
 
-  // Filters
-  readonly searchTerm = signal('');
-  readonly statusFilter = signal<string | null>(null);
-  readonly ratingFilter = signal<string | null>(null);
+  protected readonly statusOptions = computed(() => {
+    this.i18n.currentLanguage();
+    return (['new', 'qualified', 'disqualified', 'converted'] as LeadStatus[]).map((value) => ({
+      value,
+      label: this.i18n.translate(`CRM.LEADS.STATUS.${value.toUpperCase()}`),
+    }));
+  });
 
-  // Drawer & Modal state
-  readonly createDrawerVisible = signal(false);
-  readonly selectedLeadForScore = signal<LeadResource | null>(null);
-  readonly scoreModalVisible = signal(false);
-  readonly scoreExplanation = signal<LeadScoreExplanation | null>(null);
-
-  /** True after the first attempt to save: the errors of the whole form are then shown. */
-  readonly submitted = signal(false);
-
-  readonly leadForm = this.fb.group(
-    {
-      first_name: this.fb.control('', [Validators.maxLength(100)]),
-      last_name: this.fb.control('', [Validators.maxLength(100)]),
-      company_name: this.fb.control('', [Validators.maxLength(200)]),
-      title: this.fb.control('', [Validators.maxLength(100)]),
-      email: this.fb.control('', [Validators.email, Validators.maxLength(150)]),
-      phone: this.fb.control('', [Validators.maxLength(50)]),
-      country: this.fb.control('CH', [Validators.pattern(/^[A-Za-z]{2}$/)]),
-      estimated_budget: this.fb.control<number | null>(null, [Validators.min(0)]),
-    },
-    { validators: identityRequired },
-  );
-
-  /** Whether the field is one of the two that satisfy the name rule and the form has no name yet. */
-  identityInvalid(key: string): boolean {
-    const { company_name, last_name } = this.leadForm.controls;
-    const shown = this.submitted() || company_name.touched || last_name.touched;
-    return (key === 'company_name' || key === 'last_name') && shown && this.leadForm.hasError('identityRequired');
-  }
-
-  errorTip(path: string): string {
-    const control = this.leadForm.get(path);
-    if (this.identityInvalid(path)) {
-      return this.i18n.translate('CRM.CLIENTS.FORM.NAME_REQUIRED');
-    }
-    if (control?.hasError('email')) {
-      return this.i18n.translate('COMMON.VALIDATION.INVALID_EMAIL');
-    }
-    if (control?.hasError('maxlength') || control?.hasError('pattern') || control?.hasError('min')) {
-      return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
-    }
-    if (control?.hasError('required')) {
-      return this.i18n.translate('COMMON.VALIDATION.REQUIRED');
-    }
-    return serverErrorMessage(this.leadForm, path) ?? '';
-  }
+  protected readonly strategyOptions = computed(() => {
+    this.i18n.currentLanguage();
+    return (['notify', 'merge', 'create'] as DuplicateStrategy[]).map((value) => ({
+      value,
+      label: this.i18n.translate(`CRM.LEADS.STRATEGY.${value.toUpperCase()}`),
+    }));
+  });
 
   ngOnInit(): void {
-    this.leadForm.patchValue({
-      country: this.authStore.activeJurisdiction() || 'CH',
-    });
+    this.load();
   }
 
-  onSearch(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
-    this.searchTerm.set(val);
-    this.grid.setFilter({ search: val || undefined });
+  protected load(): void {
+    this.loading.set(true);
+    this.api
+      .list({
+        rating: this.ratingFilter() ?? undefined,
+        status: this.statusFilter() ?? undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.leads.set(res.data);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
-  onStatusChange(status: string | null): void {
-    this.statusFilter.set(status);
-    this.grid.setFilter({ status: status || undefined });
+  protected setRating(value: LeadRating | null): void {
+    this.ratingFilter.set(value);
+    this.load();
   }
 
-  onRatingChange(rating: string | null): void {
-    this.ratingFilter.set(rating);
-    this.grid.setFilter({ rating: rating || undefined });
+  protected setStatus(value: LeadStatus | null): void {
+    this.statusFilter.set(value);
+    this.load();
   }
 
-  openCreateDrawer(): void {
-    this.submitted.set(false);
-    this.leadForm.reset({
-      first_name: '',
-      last_name: '',
-      company_name: '',
-      title: '',
-      email: '',
-      phone: '',
-      country: this.authStore.activeJurisdiction() || 'CH',
-      estimated_budget: null,
-    });
-    this.createDrawerVisible.set(true);
+  protected ratingColor(rating: LeadRating): string {
+    return RATING_COLORS[rating] ?? '#2563eb';
   }
 
-  closeCreateDrawer(): void {
-    this.createDrawerVisible.set(false);
+  protected statusColor(status: string): string {
+    return STATUS_COLORS[status] ?? '#475569';
   }
 
-  submitCreateLead(): void {
-    this.submitted.set(true);
-    if (this.leadForm.invalid) {
-      this.leadForm.markAllAsTouched();
-      return;
-    }
+  protected statusLabel(status: string): string {
+    return this.i18n.translate(`CRM.LEADS.STATUS.${status.toUpperCase()}`);
+  }
+
+  protected canConvert(lead: LeadResource): boolean {
+    return lead.status !== 'converted' && lead.status !== 'disqualified';
+  }
+
+  protected openCreate(): void {
+    this.form.set({ country: 'IT', duplicate_strategy: 'notify' });
+    this.modalOpen.set(true);
+  }
+
+  protected patchForm(patch: Partial<CreateLeadPayload>): void {
+    this.form.update((f) => ({ ...f, ...patch }));
+  }
+
+  protected save(): void {
+    const payload = Object.fromEntries(
+      Object.entries(this.form()).filter(([, v]) => v !== '' && v !== undefined && v !== null),
+    ) as CreateLeadPayload;
 
     this.saving.set(true);
-    const formVal = this.leadForm.getRawValue();
-    const payload: StoreLeadPayload = {
-      first_name: formVal.first_name || null,
-      last_name: formVal.last_name || null,
-      company_name: formVal.company_name || null,
-      title: formVal.title || null,
-      email: formVal.email || null,
-      phone: formVal.phone || null,
-      country: formVal.country || null,
-      estimated_budget: formVal.estimated_budget,
-    };
-
-    this.crmApi.createLead(payload).subscribe({
-      next: () => {
+    this.api.create(payload).subscribe({
+      next: (res) => {
         this.saving.set(false);
-        this.createDrawerVisible.set(false);
-        this.message.success(this.translate.instant('crmLeadScore.msgLeadCreatedSuccessfully'));
-        this.grid.reload();
+        this.modalOpen.set(false);
+        const key = res.merged
+          ? 'CRM.LEADS.MESSAGES.MERGED'
+          : res.duplicate_ids.length > 0
+            ? 'CRM.LEADS.MESSAGES.CREATED_DUPLICATE'
+            : 'CRM.LEADS.MESSAGES.CREATED';
+        this.message.success(this.i18n.translate(key));
+        this.load();
       },
-      error: (err: unknown) => {
-        this.saving.set(false);
-        if (isValidationError(err)) {
-          applyServerErrors(this.leadForm, err);
-        }
-      },
+      error: () => this.saving.set(false),
     });
   }
 
-  recalculateScore(lead: LeadResource): void {
-    this.crmApi.recalculateLeadScores(lead.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('crmLeadScore.msgScoreRecalculated'));
-        this.grid.reload();
-      },
-      error: () => undefined,
+  protected qualify(lead: LeadResource): void {
+    this.api.qualify(lead.id).subscribe(() => {
+      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.QUALIFIED'));
+      this.load();
     });
   }
 
-  openScoreModal(lead: LeadResource): void {
-    this.selectedLeadForScore.set(lead);
-    this.scoreExplanation.set(null);
-    this.scoreModalVisible.set(true);
-    // Stored score against the score under the model in force now: the server explains both.
-    this.crmApi.getLeadScore(lead.id).subscribe({
-      next: (explanation) => this.scoreExplanation.set(explanation),
-      error: () => this.scoreExplanation.set(null),
+  /** 1-click conversion into Contact, Company (Account) and Opportunity. */
+  protected convert(lead: LeadResource): void {
+    this.api.convert(lead.id).subscribe((res) => {
+      this.message.success(
+        this.i18n.translate('CRM.LEADS.MESSAGES.CONVERTED', { account: res.account.name }),
+      );
+      this.load();
     });
   }
 
-  /** The breakdown of the stored score (the server may send a plain text for old scores). */
-  storedBreakdown(explanation: LeadScoreExplanation): LeadScoreBreakdownItem[] {
-    return Array.isArray(explanation.breakdown) ? explanation.breakdown : [];
+  // --- Detail: edit, score breakdown, engagement events, duplicates / merge -----
+  protected readonly detail = signal<LeadResource | null>(null);
+  protected readonly detailForm = signal<UpdateLeadPayload>({});
+  protected readonly duplicates = signal<LeadResource[]>([]);
+  protected readonly breakdown = computed(() =>
+    Object.entries(this.detail()?.score_breakdown ?? {}).map(([key, points]) => ({ key, points })),
+  );
+
+  protected openDetail(lead: LeadResource): void {
+    this.api.get(lead.id).subscribe((fresh) => this.showDetail(fresh));
   }
 
-  qualify(lead: LeadResource): void {
-    this.crmApi.qualifyLead(lead.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsQualified'));
-        this.grid.reload();
-      },
-      error: () => undefined,
+  private showDetail(lead: LeadResource): void {
+    this.detail.set(lead);
+    this.detailForm.set({
+      first_name: lead.first_name ?? '',
+      last_name: lead.last_name ?? '',
+      company_name: lead.company_name ?? '',
+      title: lead.title ?? '',
+      email: lead.email ?? '',
+      phone: lead.phone ?? '',
+      vat_number: lead.vat_number ?? '',
+      industry: lead.industry ?? '',
+      region: lead.region ?? '',
     });
+    this.api
+      .detectDuplicates({
+        email: lead.email,
+        phone: lead.phone,
+        company_name: lead.company_name,
+        vat_number: lead.vat_number,
+      })
+      .subscribe((list) => this.duplicates.set(list.filter((d) => d.id !== lead.id)));
   }
 
-  disqualify(lead: LeadResource): void {
-    this.crmApi.disqualifyLead(lead.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('crmLeadScore.msgLeadMarkedAsDisqualified'));
-        this.grid.reload();
-      },
-      error: () => undefined,
-    });
+  protected patchDetail(patch: Partial<UpdateLeadPayload>): void {
+    this.detailForm.update((f) => ({ ...f, ...patch }));
   }
 
-  convert(lead: LeadResource): void {
-    this.modal.confirm({
-      nzTitle: this.translate.instant('crmLeadScore.dlgConvertLead'),
-      nzContent: this.translate.instant('crmLeadScore.dlgConvertIntoAccountAndContact', { value: lead.full_name || lead.company_name || '' }),
-      nzOkText: this.translate.instant('crmLeadScore.dlgConvert'),
-      nzOnOk: () => {
-        this.crmApi.convertLead(lead.id, { create_opportunity: true }).subscribe({
-          next: () => {
-            this.message.success(this.translate.instant('crmLeadScore.msgLeadSuccessfullyConverted'));
-            this.grid.reload();
-          },
-          error: () => undefined,
-        });
-      },
-    });
-  }
-
-  deleteLead(lead: LeadResource): void {
-    this.crmApi.deleteLead(lead.id).subscribe({
-      next: () => {
-        this.message.success(this.translate.instant('crmLeadScore.msgLeadDeleted'));
-        this.grid.reload();
-      },
-      error: () => undefined,
-    });
-  }
-
-  getStatusColor(status: string): string {
-    switch (status?.toLowerCase()) {
-      case 'new':
-        return 'blue';
-      case 'contacted':
-        return 'cyan';
-      case 'qualified':
-        return 'green';
-      case 'converted':
-        return 'gold';
-      case 'disqualified':
-        return 'red';
-      default:
-        return 'default';
+  protected saveDetail(): void {
+    const lead = this.detail();
+    if (!lead) {
+      return;
     }
+    this.api.update(lead.id, this.detailForm()).subscribe((updated) => {
+      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.UPDATED'));
+      this.showDetail(updated);
+      this.load();
+    });
   }
 
-  getRatingColor(rating: string): string {
-    switch (rating?.toLowerCase()) {
-      case 'hot':
-        return 'volcano';
-      case 'warm':
-        return 'orange';
-      case 'cold':
-        return 'geekblue';
-      default:
-        return 'default';
+  protected track(event: LeadBehaviorEvent): void {
+    const lead = this.detail();
+    if (!lead) {
+      return;
     }
+    this.api.recordBehavior(lead.id, event).subscribe((updated) => {
+      this.detail.set(updated);
+      this.load();
+    });
+  }
+
+  /** Merges the chosen duplicate into the lead currently open. */
+  protected mergeDuplicate(duplicate: LeadResource): void {
+    const lead = this.detail();
+    if (!lead) {
+      return;
+    }
+    this.api.merge(lead.id, duplicate.id).subscribe((merged) => {
+      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.MERGED_MANUAL'));
+      this.showDetail(merged);
+      this.load();
+    });
+  }
+
+  // --- Disqualify --------------------------------------------------------------
+  protected readonly disqualifying = signal<LeadResource | null>(null);
+  protected readonly disqualifyReason = signal('');
+
+  protected confirmDisqualify(): void {
+    const lead = this.disqualifying();
+    if (!lead || !this.disqualifyReason().trim()) {
+      return;
+    }
+    this.api.disqualify(lead.id, this.disqualifyReason().trim()).subscribe(() => {
+      this.disqualifying.set(null);
+      this.disqualifyReason.set('');
+      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.DISQUALIFIED'));
+      this.load();
+    });
+  }
+
+  protected remove(lead: LeadResource): void {
+    this.api.remove(lead.id).subscribe(() => {
+      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.DELETED'));
+      this.load();
+    });
   }
 }

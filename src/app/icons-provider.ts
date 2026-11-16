@@ -71,6 +71,8 @@ import {
   SafetyOutline,
   ToolOutline,
   TransactionOutline,
+  GlobalOutline,
+  MergeCellsOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -146,4 +148,6 @@ export const icons = [
   SafetyOutline,
   ToolOutline,
   TransactionOutline,
+  GlobalOutline,
+  MergeCellsOutline,
 ];

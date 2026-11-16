@@ -1,0 +1,147 @@
+<app-page-header
+  [title]="'CRM.LEADS.SETTINGS.TITLE' | translate"
+  [subtitle]="'CRM.LEADS.SETTINGS.SUBTITLE' | translate"
+/>
+
+@if (revealed(); as r) {
+  <nz-card class="secret-card">
+    <strong>{{ r.name }}</strong> — {{ "CRM.LEADS.SETTINGS.SECRET_ONCE" | translate }}
+    <div class="sub-text">URL: <code>{{ r.url }}</code></div>
+    <div>
+      <code>{{ r.secret }}</code>
+      <button nz-button nzType="link" type="button" (click)="copy(r.secret)">
+        <nz-icon nzType="copy" />
+      </button>
+      <button nz-button nzType="link" type="button" (click)="revealed.set(null)">
+        {{ "COMMON.CLOSE" | translate }}
+      </button>
+    </div>
+  </nz-card>
+}
+
+<nz-card [nzTitle]="'CRM.LEADS.SETTINGS.WEBHOOKS' | translate" [nzExtra]="webhookExtra">
+  <nz-table #wt [nzData]="webhooks()" nzSize="small" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ "CRM.LEADS.COLUMNS.NAME" | translate }}</th>
+        <th>URL</th>
+        <th>{{ "CRM.LEADS.SETTINGS.RECEIVED" | translate }}</th>
+        <th nzWidth="120px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (w of wt.data; track w.id) {
+        <tr>
+          <td>
+            <strong>{{ w.name }}</strong>
+            <nz-tag>{{ w.provider }}</nz-tag>
+          </td>
+          <td><code>{{ w.url }}</code></td>
+          <td>{{ w.received_count }}</td>
+          <td class="actions-group">
+            <button nz-button nzType="text" nzSize="small" type="button" (click)="rotate(w)" [title]="'CRM.LEADS.SETTINGS.ROTATE' | translate">
+              <nz-icon nzType="sync" />
+            </button>
+            <button
+              nz-button nzType="text" nzDanger nzSize="small" type="button" nz-popconfirm
+              [nzPopconfirmTitle]="'CRM.LEADS.SETTINGS.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="deleteWebhook(w)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+<ng-template #webhookExtra>
+  <button nz-button nzType="primary" nzSize="small" type="button" (click)="webhookModal.set(true)">
+    <nz-icon nzType="plus" /> {{ "CRM.LEADS.SETTINGS.NEW_WEBHOOK" | translate }}
+  </button>
+</ng-template>
+
+<nz-card class="mt" [nzTitle]="'CRM.LEADS.SETTINGS.RULES' | translate" [nzExtra]="ruleExtra">
+  <nz-table #rt [nzData]="rules()" nzSize="small" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th>{{ "CRM.LEADS.COLUMNS.NAME" | translate }}</th>
+        <th>{{ "CRM.LEADS.SETTINGS.CRITERIA" | translate }}</th>
+        <th>{{ "CRM.LEADS.SETTINGS.TEAM" | translate }}</th>
+        <th nzWidth="60px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rt.data; track r.id) {
+        <tr>
+          <td>
+            <strong>{{ r.name }}</strong>
+            <nz-tag>{{ strategyLabel(r.strategy) }}</nz-tag>
+            <span class="sub-text">#{{ r.priority }}</span>
+          </td>
+          <td>{{ criteriaSummary(r) }}</td>
+          <td>
+            @for (id of r.assignee_user_ids; track id) {
+              <nz-tag>{{ userName(id) }}</nz-tag>
+            }
+          </td>
+          <td class="actions-group">
+            <nz-switch nzSize="small" [ngModel]="r.is_active" (ngModelChange)="toggleRule(r, $event)" />
+            <button
+              nz-button nzType="text" nzDanger nzSize="small" type="button" nz-popconfirm
+              [nzPopconfirmTitle]="'CRM.LEADS.SETTINGS.CONFIRM_DELETE' | translate"
+              (nzOnConfirm)="deleteRule(r)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+<ng-template #ruleExtra>
+  <button nz-button nzType="primary" nzSize="small" type="button" (click)="ruleModal.set(true)">
+    <nz-icon nzType="plus" /> {{ "CRM.LEADS.SETTINGS.NEW_RULE" | translate }}
+  </button>
+</ng-template>
+
+<nz-modal
+  [nzVisible]="webhookModal()"
+  [nzTitle]="'CRM.LEADS.SETTINGS.NEW_WEBHOOK' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="!webhookName()"
+  (nzOnOk)="saveWebhook()"
+  (nzOnCancel)="webhookModal.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="form-grid">
+      <input class="full" nz-input [placeholder]="'CRM.LEADS.COLUMNS.NAME' | translate" [ngModel]="webhookName()" (ngModelChange)="webhookName.set($event)" />
+      <nz-select [nzOptions]="providerOptions" [ngModel]="webhookProvider()" (ngModelChange)="webhookProvider.set($event)" />
+      <nz-select [nzOptions]="strategyOptions()" [ngModel]="webhookStrategy()" (ngModelChange)="webhookStrategy.set($event)" />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="ruleModal()"
+  [nzTitle]="'CRM.LEADS.SETTINGS.NEW_RULE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="!ruleName() || ruleAssignees().length === 0"
+  (nzOnOk)="saveRule()"
+  (nzOnCancel)="ruleModal.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="form-grid">
+      <input class="full" nz-input [placeholder]="'CRM.LEADS.COLUMNS.NAME' | translate" [ngModel]="ruleName()" (ngModelChange)="ruleName.set($event)" />
+      <nz-select [nzOptions]="routingOptions()" [ngModel]="ruleStrategy()" (ngModelChange)="ruleStrategy.set($event)" />
+      <input nz-input type="number" min="0" [ngModel]="rulePriority()" (ngModelChange)="rulePriority.set($event)" />
+      @if (ruleStrategy() !== 'round_robin') {
+        <input class="full" nz-input [placeholder]="'CRM.LEADS.SETTINGS.CRITERIA_HINT' | translate" [ngModel]="ruleValues()" (ngModelChange)="ruleValues.set($event)" />
+      }
+      <nz-select class="full" nzMode="multiple" [nzPlaceHolder]="'CRM.LEADS.SETTINGS.TEAM' | translate" [nzOptions]="userOptions()" [ngModel]="ruleAssignees()" (ngModelChange)="ruleAssignees.set($event)" />
+    </div>
+  </ng-container>
+</nz-modal>

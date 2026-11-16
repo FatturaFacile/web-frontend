@@ -1,273 +1,257 @@
 <app-page-header
-  [title]="'crmLeadScore.lblCrmLeads' | translate"
-  [subtitle]="'crmLeads.subtitle' | translate"
->
-  <div class="header-actions">
-    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDrawer()"></button>
-  </div>
-</app-page-header>
+  [title]="'CRM.LEADS.TITLE' | translate"
+  [subtitle]="'CRM.LEADS.SUBTITLE' | translate"
+/>
 
 <nz-card>
-  <div class="filter-bar">
-    <div class="search-box">
-      <nz-input-wrapper>
-        <nz-icon nzInputPrefix nzType="search" />
-        <input
-          type="text"
-          nz-input
-          [placeholder]="'crmLeadScore.lblSearchByNameCompanyEmail' | translate"
-          [value]="searchTerm()"
-          (input)="onSearch($event)"
-        />
-      </nz-input-wrapper>
-    </div>
-
-    <div class="select-filters">
-      <nz-select
-        class="filter-select"
-        [nzPlaceHolder]="'Status: All'"
-        nzAllowClear
-        [ngModel]="statusFilter()"
-        (ngModelChange)="onStatusChange($event)"
-      >
-        <nz-option nzValue="new" [nzLabel]="'crmLeadScore.lblNew' | translate"></nz-option>
-        <nz-option nzValue="contacted" [nzLabel]="'crmLeadScore.lblContacted' | translate"></nz-option>
-        <nz-option nzValue="qualified" [nzLabel]="'crmLeadScore.lblQualified' | translate"></nz-option>
-        <nz-option nzValue="converted" [nzLabel]="'crmLeadScore.lblConverted' | translate"></nz-option>
-        <nz-option nzValue="disqualified" [nzLabel]="'crmLeadScore.lblDisqualified' | translate"></nz-option>
-      </nz-select>
-
-      <nz-select
-        class="filter-select"
-        [nzPlaceHolder]="'Rating: All'"
-        nzAllowClear
-        [ngModel]="ratingFilter()"
-        (ngModelChange)="onRatingChange($event)"
-      >
-        <nz-option nzValue="hot" [nzLabel]="'crmLeadScore.lblHot' | translate"></nz-option>
-        <nz-option nzValue="warm" [nzLabel]="'crmLeadScore.lblWarm' | translate"></nz-option>
-        <nz-option nzValue="cold" [nzLabel]="'crmLeadScore.lblCold' | translate"></nz-option>
-      </nz-select>
-
-      <button nz-button nzType="default" (click)="grid.reload()">
-        <nz-icon nzType="reload" />
-        {{ 'crmLeadScore.lblRefresh' | translate }}
-      </button>
-    </div>
+  <div class="toolbar">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'CRM.LEADS.FILTER_RATING' | translate"
+      [attr.aria-label]="'CRM.LEADS.FILTER_RATING' | translate"
+      [nzOptions]="ratingOptions()"
+      [ngModel]="ratingFilter()"
+      (ngModelChange)="setRating($event ?? null)"
+    />
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'CRM.LEADS.FILTER_STATUS' | translate"
+      [attr.aria-label]="'CRM.LEADS.FILTER_STATUS' | translate"
+      [nzOptions]="statusOptions()"
+      [ngModel]="statusFilter()"
+      (ngModelChange)="setStatus($event ?? null)"
+    />
+    <span class="spacer"></span>
+    <a nz-button routerLink="/crm/lead-settings">
+      <nz-icon nzType="setting" /> {{ "CRM.LEADS.SETTINGS.TITLE" | translate }}
+    </a>
+    <button nz-button nzType="primary" type="button" (click)="openCreate()">
+      <nz-icon nzType="plus" /> {{ "CRM.LEADS.NEW" | translate }}
+    </button>
   </div>
 
-  <app-base-table
-    [grid]="grid"
-    [columns]="columns()"
-    [actionsTemplate]="actionsTpl"
-    exportFileName="leads"
-  />
-
-  <ng-template #nameTpl let-lead>
-    <div class="lead-info">
-      <span class="lead-name">{{ lead.full_name || lead.company_name }}</span>
-      @if (lead.title && lead.company_name) {
-        <span class="lead-sub">{{ lead.title }} &#64; {{ lead.company_name }}</span>
+  <nz-table #table [nzData]="leads()" [nzLoading]="loading()" nzSize="middle" [nzShowPagination]="false" [nzScroll]="{ x: '760px' }">
+    <thead>
+      <tr>
+        <th>{{ "CRM.LEADS.COLUMNS.NAME" | translate }}</th>
+        <th>{{ "CRM.LEADS.COLUMNS.CONTACT" | translate }}</th>
+        <th nzWidth="170px">{{ "CRM.LEADS.COLUMNS.SCORE" | translate }}</th>
+        <th nzWidth="130px">{{ "CRM.LEADS.COLUMNS.STATUS" | translate }}</th>
+        <th nzWidth="200px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (lead of table.data; track lead.id) {
+        <tr>
+          <td>
+            <strong>{{ lead.company_name || lead.full_name }}</strong>
+            @if (lead.company_name && lead.full_name) {
+              <div class="sub-text">{{ lead.full_name }}</div>
+            }
+            @if (lead.duplicate_of_id) {
+              <nz-tag nzColor="#d97706">{{ "CRM.LEADS.DUPLICATE" | translate }}</nz-tag>
+            }
+          </td>
+          <td>
+            <div>{{ lead.email || "-" }}</div>
+            <div class="sub-text">{{ lead.phone || "" }}</div>
+          </td>
+          <td>
+            <nz-tag [nzColor]="ratingColor(lead.rating)">{{ lead.rating_label }}</nz-tag>
+            <span class="score">{{ lead.score }}/100</span>
+          </td>
+          <td>
+            <nz-tag [nzColor]="statusColor(lead.status)">{{ statusLabel(lead.status) }}</nz-tag>
+          </td>
+          <td class="actions-group">
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              type="button"
+              (click)="openDetail(lead)"
+              [title]="'CRM.LEADS.ACTIONS.DETAILS' | translate"
+            >
+              <nz-icon nzType="eye" />
+            </button>
+            @if (canConvert(lead)) {
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                type="button"
+                (click)="disqualifying.set(lead)"
+                [title]="'CRM.LEADS.ACTIONS.DISQUALIFY' | translate"
+              >
+                <nz-icon nzType="stop" />
+              </button>
+            }
+            @if (lead.status === "new") {
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                type="button"
+                (click)="qualify(lead)"
+                [title]="'CRM.LEADS.ACTIONS.QUALIFY' | translate"
+              >
+                <nz-icon nzType="check-circle" />
+              </button>
+            }
+            @if (canConvert(lead)) {
+              <button
+                nz-button
+                nzType="primary"
+                nzSize="small"
+                type="button"
+                nz-popconfirm
+                [nzPopconfirmTitle]="'CRM.LEADS.ACTIONS.CONFIRM_CONVERT' | translate"
+                [nzOkText]="'CRM.LEADS.ACTIONS.CONVERT' | translate"
+                [nzCancelText]="'COMMON.CANCEL' | translate"
+                (nzOnConfirm)="convert(lead)"
+              >
+                {{ "CRM.LEADS.ACTIONS.CONVERT" | translate }}
+              </button>
+            }
+            <button
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'CRM.LEADS.ACTIONS.CONFIRM_DELETE' | translate"
+              [nzOkText]="'COMMON.DELETE' | translate"
+              [nzCancelText]="'COMMON.CANCEL' | translate"
+              (nzOnConfirm)="remove(lead)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </td>
+        </tr>
       }
-      @if (lead.email) {
-        <span class="lead-sub">{{ lead.email }}</span>
-      }
-    </div>
-  </ng-template>
-
-  <ng-template #statusTpl let-lead>
-    <nz-tag [nzColor]="getStatusColor(lead.status)">{{ lead.status }}</nz-tag>
-  </ng-template>
-
-  <ng-template #ratingTpl let-lead>
-    <nz-tag [nzColor]="getRatingColor(lead.rating)">{{ lead.rating || 'N/A' }}</nz-tag>
-  </ng-template>
-
-  <ng-template #scoreTpl let-lead>
-    <nz-space>
-      <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openScoreModal(lead)">
-        {{ lead.score }} pts
-      </button>
-      <button
-        *nzSpaceItem
-        nz-button
-        nzType="text"
-        nzSize="small"
-        nz-tooltip
-        [nzTooltipTitle]="'CRMX.SCORING.RECALCULATE' | translate"
-        (click)="recalculateScore(lead)"
-      >
-        <nz-icon nzType="sync" />
-      </button>
-    </nz-space>
-  </ng-template>
-
-  <ng-template #countryTpl let-lead>
-    <nz-tag>{{ lead.country }}</nz-tag>
-  </ng-template>
-
-  <ng-template #budgetTpl let-lead>
-    {{ lead.estimated_budget ? (lead.estimated_budget | money: authStore.activeCurrency()) : '—' }}
-  </ng-template>
-
-  <ng-template #actionsTpl let-lead>
-    <nz-space>
-      @if (lead.status === 'new' || lead.status === 'contacted') {
-        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="qualify(lead)">
-          {{ 'crmLeadScore.lblQualify' | translate }}
-        </button>
-      }
-      @if (lead.status === 'qualified') {
-        <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="convert(lead)">
-          {{ 'crmLeadScore.lblConvert' | translate }}
-        </button>
-      }
-      @if (lead.status !== 'disqualified' && lead.status !== 'converted') {
-        <button *nzSpaceItem nz-button nzType="text" nzDanger nzSize="small" (click)="disqualify(lead)">
-          {{ 'crmLeadScore.lblDisqualify' | translate }}
-        </button>
-      }
-      <button
-        *nzSpaceItem
-        nz-button
-        nzType="text"
-        nzDanger
-        nzSize="small"
-        nz-popconfirm
-        nzPopconfirmTitle="Are you sure you want to delete this lead?"
-        (nzOnConfirm)="deleteLead(lead)"
-        appIconAction="delete"
-      ></button>
-    </nz-space>
-  </ng-template>
+    </tbody>
+  </nz-table>
 </nz-card>
 
-<!-- Create Lead Drawer -->
 <nz-modal
-  [nzVisible]="createDrawerVisible()"
-  [nzWidth]="720"
-  [nzFooter]="null"
-  [nzTitle]="'crmLeadScore.lblCreateNewLead' | translate"
-  (nzOnCancel)="closeCreateDrawer()"
+  [nzVisible]="!!disqualifying()"
+  [nzTitle]="'CRM.LEADS.ACTIONS.DISQUALIFY' | translate"
+  [nzOkText]="'CRM.LEADS.ACTIONS.DISQUALIFY' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="!disqualifyReason().trim()"
+  (nzOnOk)="confirmDisqualify()"
+  (nzOnCancel)="disqualifying.set(null)"
 >
   <ng-container *nzModalContent>
-    <form nz-form [formGroup]="leadForm" nzLayout="vertical" (ngSubmit)="submitCreateLead()">
-      <nz-form-item>
-        <nz-form-label>{{ 'crmLeadScore.lblCompanyName' | translate }}</nz-form-label>
-        <nz-form-control
-          [nzValidateStatus]="identityInvalid('company_name') ? 'error' : leadForm.controls.company_name"
-          [nzErrorTip]="errorTip('company_name')"
-        >
-          <input nz-input formControlName="company_name" placeholder="Acme Inc." />
-        </nz-form-control>
-      </nz-form-item>
-
-      <div class="form-row">
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'crmLeadScore.lblFirstName' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('first_name')">
-            <input nz-input formControlName="first_name" placeholder="John" />
-          </nz-form-control>
-        </nz-form-item>
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'crmLeadScore.lblLastName' | translate }}</nz-form-label>
-          <nz-form-control
-            [nzValidateStatus]="identityInvalid('last_name') ? 'error' : leadForm.controls.last_name"
-            [nzErrorTip]="errorTip('last_name')"
-          >
-            <input nz-input formControlName="last_name" placeholder="Doe" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-
-      <nz-form-item>
-        <nz-form-label>{{ 'crmLeadScore.lblTitleRole' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="errorTip('title')">
-          <input nz-input formControlName="title" [placeholder]="'crmLeadScore.lblManagingDirector' | translate" />
-        </nz-form-control>
-      </nz-form-item>
-
-      <div class="form-row">
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'COMMON.EMAIL' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('email')">
-            <input nz-input formControlName="email" type="email" [placeholder]="'crmLeadScore.lblJohnExampleCom' | translate" />
-          </nz-form-control>
-        </nz-form-item>
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'crmLeadScore.lblPhone' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('phone')">
-            <input nz-input formControlName="phone" placeholder="+41 91 123 4567" />
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-
-      <div class="form-row">
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'crmLeadScore.lblCountry' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('country')">
-            <nz-select formControlName="country">
-              <nz-option nzValue="CH" nzLabel="Switzerland (CH)"></nz-option>
-              <nz-option nzValue="IT" nzLabel="Italy (IT)"></nz-option>
-              <nz-option nzValue="DE" nzLabel="Germany (DE)"></nz-option>
-              <nz-option nzValue="FR" nzLabel="France (FR)"></nz-option>
-            </nz-select>
-          </nz-form-control>
-        </nz-form-item>
-        <nz-form-item class="form-col">
-          <nz-form-label>{{ 'crmLeadScore.lblEstimatedBudget' | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('estimated_budget')">
-            <nz-input-number
-              formControlName="estimated_budget"
-              [nzMin]="0"
-              [nzStep]="1000"
-             class="w-full"
-            ></nz-input-number>
-          </nz-form-control>
-        </nz-form-item>
-      </div>
-
-      <div class="drawer-footer">
-        <button nz-button type="button" appIconAction="cancel" (click)="closeCreateDrawer()"></button>
-        <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="saving()" [disabled]="leadForm.invalid"></button>
-      </div>
-    </form>
+    <textarea
+      nz-input
+      rows="3"
+      [placeholder]="'CRM.LEADS.FIELDS.REASON' | translate"
+      [ngModel]="disqualifyReason()"
+      (ngModelChange)="disqualifyReason.set($event)"
+    ></textarea>
   </ng-container>
 </nz-modal>
 
-<!-- Score Breakdown Modal -->
 <nz-modal
-  [nzVisible]="scoreModalVisible()"
-  [nzTitle]="'crmLeadScore.lblLeadScoreBreakdown' | translate"
-  [nzFooter]="null"
-  (nzOnCancel)="scoreModalVisible.set(false)"
+  [nzVisible]="!!detail()"
+  [nzTitle]="detail()?.company_name || detail()?.full_name || ''"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CLOSE' | translate"
+  [nzWidth]="720"
+  (nzOnOk)="saveDetail()"
+  (nzOnCancel)="detail.set(null)"
 >
   <ng-container *nzModalContent>
-    @if (selectedLeadForScore(); as lead) {
-      <div class="score-summary">
-        <h4>{{ lead.full_name || lead.company_name }}</h4>
-        <div class="score-badge">Total Score: {{ lead.score }} ({{ lead.rating }})</div>
+    @if (detail(); as d) {
+      <div class="detail-head">
+        <nz-tag [nzColor]="ratingColor(d.rating)">{{ d.rating_label }}</nz-tag>
+        <strong>{{ d.score }}/100</strong>
+        @for (b of breakdown(); track b.key) {
+          <nz-tag>{{ b.key }} +{{ b.points }}</nz-tag>
+        }
       </div>
-      @if (lead.score_calculated_at) {
-        <p class="score-date">Calculated at: {{ lead.score_calculated_at }}</p>
-      }
-      @if (scoreExplanation(); as explanation) {
-        <h5>{{ 'crmLeadScore.stored' | translate }}: {{ explanation.score }} ({{ explanation.rating }})</h5>
-        <ul>
-          @for (item of storedBreakdown(explanation); track $index) {
-            <li>{{ item.rule }}: {{ item.points }} - {{ item.reason }}</li>
-          }
-        </ul>
-        <h5>
-          {{ 'crmLeadScore.current' | translate }}: {{ explanation.current.score }} ({{ explanation.current.rating }},
-          {{ 'crmLeadScore.models.' + explanation.current.model | translate }})
-        </h5>
-        <ul>
-          @for (item of explanation.current.breakdown; track $index) {
-            <li>{{ item.rule }}: {{ item.points }} - {{ item.reason }}</li>
-          }
-        </ul>
+
+      <div class="detail-head">
+        <span class="sub-text">{{ "CRM.LEADS.ENGAGEMENT" | translate }}:</span>
+        <button nz-button nzSize="small" type="button" (click)="track('email_open')">
+          <nz-icon nzType="mail" /> {{ d.email_opens }}
+        </button>
+        <button nz-button nzSize="small" type="button" (click)="track('catalog_download')">
+          <nz-icon nzType="download" /> {{ d.catalog_downloads }}
+        </button>
+        <button nz-button nzSize="small" type="button" (click)="track('site_visit')">
+          <nz-icon nzType="global" /> {{ d.site_visits }}
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.FIRST_NAME' | translate" [ngModel]="detailForm().first_name" (ngModelChange)="patchDetail({ first_name: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.LAST_NAME' | translate" [ngModel]="detailForm().last_name" (ngModelChange)="patchDetail({ last_name: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.COMPANY' | translate" [ngModel]="detailForm().company_name" (ngModelChange)="patchDetail({ company_name: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.VAT' | translate" [ngModel]="detailForm().vat_number" (ngModelChange)="patchDetail({ vat_number: $event })" />
+        <input nz-input type="email" [placeholder]="'CRM.LEADS.FIELDS.EMAIL' | translate" [ngModel]="detailForm().email" (ngModelChange)="patchDetail({ email: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.PHONE' | translate" [ngModel]="detailForm().phone" (ngModelChange)="patchDetail({ phone: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.INDUSTRY' | translate" [ngModel]="detailForm().industry" (ngModelChange)="patchDetail({ industry: $event })" />
+        <input nz-input [placeholder]="'CRM.LEADS.FIELDS.REGION' | translate" [ngModel]="detailForm().region" (ngModelChange)="patchDetail({ region: $event })" />
+      </div>
+
+      @if (duplicates().length > 0) {
+        <h4 class="mt">{{ "CRM.LEADS.POSSIBLE_DUPLICATES" | translate }}</h4>
+        @for (dup of duplicates(); track dup.id) {
+          <div class="dup-row">
+            <span>
+              <strong>{{ dup.company_name || dup.full_name }}</strong>
+              <span class="sub-text">{{ dup.email }} {{ dup.phone }}</span>
+            </span>
+            <button
+              nz-button
+              nzSize="small"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'CRM.LEADS.ACTIONS.CONFIRM_MERGE' | translate"
+              [nzOkText]="'CRM.LEADS.ACTIONS.MERGE' | translate"
+              [nzCancelText]="'COMMON.CANCEL' | translate"
+              (nzOnConfirm)="mergeDuplicate(dup)"
+            >
+              <nz-icon nzType="merge-cells" /> {{ "CRM.LEADS.ACTIONS.MERGE" | translate }}
+            </button>
+          </div>
+        }
       }
     }
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'CRM.LEADS.NEW' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  (nzOnCancel)="modalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="form-grid">
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.FIRST_NAME' | translate" [ngModel]="form().first_name" (ngModelChange)="patchForm({ first_name: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.LAST_NAME' | translate" [ngModel]="form().last_name" (ngModelChange)="patchForm({ last_name: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.COMPANY' | translate" [ngModel]="form().company_name" (ngModelChange)="patchForm({ company_name: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.VAT' | translate" [ngModel]="form().vat_number" (ngModelChange)="patchForm({ vat_number: $event })" />
+      <input nz-input type="email" [placeholder]="'CRM.LEADS.FIELDS.EMAIL' | translate" [ngModel]="form().email" (ngModelChange)="patchForm({ email: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.PHONE' | translate" [ngModel]="form().phone" (ngModelChange)="patchForm({ phone: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.INDUSTRY' | translate" [ngModel]="form().industry" (ngModelChange)="patchForm({ industry: $event })" />
+      <input nz-input [placeholder]="'CRM.LEADS.FIELDS.REGION' | translate" [ngModel]="form().region" (ngModelChange)="patchForm({ region: $event })" />
+      <nz-select
+        class="full"
+        [nzOptions]="strategyOptions()"
+        [attr.aria-label]="'CRM.LEADS.FIELDS.DUPLICATE_STRATEGY' | translate"
+        [ngModel]="form().duplicate_strategy"
+        (ngModelChange)="patchForm({ duplicate_strategy: $event })"
+      />
+    </div>
   </ng-container>
 </nz-modal>
