@@ -66,9 +66,13 @@ export const TRANSFERS_PAGE: ResourcePageConfig = {
       },
       create: act('POST', 'RES.A.new_transfer', '/inventory/transfer-orders', { fields: TRANSFER_FIELDS }),
       rowActions: [
+        act('POST', 'RES.A.approve', '/inventory/transfer-orders/{id}/approve', {
+          confirm: true,
+          visible: whenIn('status', 'draft'),
+        }),
         act('POST', 'RES.A.ship', '/inventory/transfer-orders/{id}/ship', {
           confirm: true,
-          visible: whenIn('status', 'draft', 'open', 'requested', 'pending'),
+          visible: whenIn('status', 'approved'),
         }),
         act('POST', 'RES.A.receive', '/inventory/transfer-orders/{id}/receive', {
           prefill: true,
@@ -78,7 +82,7 @@ export const TRANSFERS_PAGE: ResourcePageConfig = {
         act('POST', 'RES.ACTION.CANCEL', '/inventory/transfer-orders/{id}/cancel', {
           confirm: true,
           danger: true,
-          visible: (row) => !['received', 'cancelled'].includes(String(row['status'])),
+          visible: whenIn('status', 'draft', 'approved'),
         }),
       ],
     },

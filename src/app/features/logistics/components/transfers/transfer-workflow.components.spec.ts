@@ -17,7 +17,7 @@ const transfer = (patch: Partial<StockTransferResource> = {}): StockTransferReso
   purpose: 'inter_warehouse',
   status: 'in_transit',
   origin_warehouse_id: 'w1',
-  transit_warehouse_id: null,
+  transit_bin_id: null,
   destination_warehouse_id: 'w2',
   delivery_note_id: null,
   is_inter_company: false,
