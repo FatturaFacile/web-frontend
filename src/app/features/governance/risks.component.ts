@@ -102,22 +102,22 @@ import {
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
-      color: #1f1f1f;
+      color: var(--ff-color-text);
     }
     .heatmap-cell.is-selected {
-      border-color: #1677ff;
+      border-color: var(--ff-color-primary);
     }
     .heatmap-cell.rating-low {
-      background: #d9f7be;
+      background: var(--ff-color-success-bg);
     }
     .heatmap-cell.rating-medium {
-      background: #fff1b8;
+      background: var(--ff-color-warning-bg);
     }
     .heatmap-cell.rating-high {
-      background: #ffd8a8;
+      background: color-mix(in srgb, var(--ff-color-warning-bg) 50%, var(--ff-color-danger-bg));
     }
     .heatmap-cell.rating-critical {
-      background: #ffa39e;
+      background: var(--ff-color-danger-bg);
     }
     .heatmap-axis {
       text-align: center;
@@ -141,7 +141,7 @@ import {
       flex-wrap: wrap;
     }
     .overdue {
-      color: #cf1322;
+      color: var(--ff-color-danger);
     }
     .w-full {
       width: 100%;

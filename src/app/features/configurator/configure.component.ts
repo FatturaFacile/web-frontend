@@ -314,7 +314,7 @@ const NO_OPTIONS: string[] = [];
     .terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 12px; }
     .terms .wide { grid-column: span 2; }
     .vertical { display: flex; flex-direction: column; gap: 8px; }
-    .delta { color: var(--ant-color-text-secondary, #666); margin-left: 8px; }
+    .delta { color: var(--ff-color-text-secondary); margin-left: 8px; }
     .switch-label { margin-left: 12px; }
     .full { width: 100%; }
     .block { margin-bottom: 12px; display: block; }

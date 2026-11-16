@@ -11,10 +11,10 @@
 
 .claim-required {
   margin-inline-start: 2px;
-  color: var(--ant-color-error, #ff4d4f);
+  color: var(--ff-color-danger);
 }
 
 .claim-error {
-  color: var(--ant-color-error, #ff4d4f);
+  color: var(--ff-color-danger);
   font-size: 12px;
 }

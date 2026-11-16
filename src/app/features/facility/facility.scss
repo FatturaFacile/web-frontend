@@ -54,7 +54,7 @@
   cursor: pointer;
 
   &.active {
-    background: var(--primary-bg, rgba(22, 119, 255, 0.1));
+    background: var(--ff-color-hover);
   }
 }
 
@@ -65,15 +65,15 @@
   border: 1px solid transparent;
 
   &.ok {
-    color: var(--success-color, #389e0d);
-    background: var(--success-bg, #f6ffed);
-    border-color: var(--success-border, #b7eb8f);
+    color: var(--ff-color-success);
+    background: var(--ff-color-success-bg);
+    border-color: var(--ff-color-success);
   }
 
   &.bad {
-    color: var(--error-color, #cf1322);
-    background: var(--error-bg, #fff2f0);
-    border-color: var(--error-border, #ffccc7);
+    color: var(--ff-color-danger);
+    background: var(--ff-color-danger-bg);
+    border-color: var(--ff-color-danger);
   }
 }
 
@@ -98,11 +98,11 @@
     grid-template-columns: repeat(var(--hours), 1fr);
     font-size: 12px;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    border-bottom: 1px solid var(--ff-color-border);
   }
 
   .timeline-row {
-    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    border-bottom: 1px solid var(--ff-color-border);
     min-height: 40px;
 
     .label {
@@ -113,7 +113,7 @@
     .track {
       position: relative;
       cursor: pointer;
-      background-image: linear-gradient(to right, var(--border-color, #f0f0f0) 1px, transparent 1px);
+      background-image: linear-gradient(to right, var(--ff-color-border) 1px, transparent 1px);
       background-size: calc(100% / var(--hours)) 100%;
     }
 
@@ -124,17 +124,17 @@
       border-radius: 4px;
       padding: 2px 6px;
       font-size: 12px;
-      color: #fff;
+      color: var(--ff-color-on-primary);
       overflow: hidden;
       white-space: nowrap;
-      background: var(--primary-color, #1677ff);
+      background: var(--ff-color-primary);
 
       &.checked_in {
-        background: var(--success-color, #389e0d);
+        background: var(--ff-color-success);
       }
 
       &.mine {
-        outline: 2px solid var(--warning-color, #faad14);
+        outline: 2px solid var(--ff-color-warning);
       }
     }
   }
@@ -147,7 +147,7 @@
   overflow-x: auto;
 
   .column {
-    background: var(--bg-secondary, #fafafa);
+    background: var(--ff-color-surface-alt);
     border-radius: 8px;
     padding: 8px;
     min-height: 200px;
@@ -161,28 +161,28 @@
   }
 
   .ticket {
-    background: var(--bg-primary, #fff);
-    border: 1px solid var(--border-color, #f0f0f0);
-    border-left: 4px solid var(--border-color, #d9d9d9);
+    background: var(--ff-color-bg);
+    border: 1px solid var(--ff-color-border);
+    border-left: 4px solid var(--ff-color-border);
     border-radius: 6px;
     padding: 8px 10px;
     margin-bottom: 8px;
     cursor: pointer;
 
     &.urgent {
-      border-left-color: var(--error-color, #cf1322);
+      border-left-color: var(--ff-color-danger);
     }
 
     &.high {
-      border-left-color: var(--warning-color, #fa8c16);
+      border-left-color: var(--ff-color-warning);
     }
 
     &.normal {
-      border-left-color: var(--primary-color, #1677ff);
+      border-left-color: var(--ff-color-primary);
     }
 
     &.overdue .due {
-      color: var(--error-color, #cf1322);
+      color: var(--ff-color-danger);
       font-weight: 600;
     }
   }
@@ -193,13 +193,13 @@
   grid-template-columns: 1fr 180px;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--ff-color-border);
   align-items: center;
 }
 
 .comment {
   padding: 8px 0;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--ff-color-border);
 }
 
 .tree-node {
@@ -212,6 +212,6 @@
   cursor: pointer;
 
   &.active {
-    background: var(--primary-bg, rgba(22, 119, 255, 0.1));
+    background: var(--ff-color-hover);
   }
 }

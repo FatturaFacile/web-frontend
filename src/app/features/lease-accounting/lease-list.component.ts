@@ -141,7 +141,7 @@ const STATUS_COLORS: Record<LeaseStatus, string> = { draft: 'default', active: '
       padding-left: 20px;
     }
     .error {
-      color: var(--ant-error-color, #ff4d4f);
+      color: var(--ff-color-danger);
     }
   `,
 })

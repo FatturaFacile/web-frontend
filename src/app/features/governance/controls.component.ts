@@ -77,7 +77,7 @@ import {
       gap: 4px;
     }
     .overdue {
-      color: #cf1322;
+      color: var(--ff-color-danger);
     }
     .w-full {
       width: 100%;

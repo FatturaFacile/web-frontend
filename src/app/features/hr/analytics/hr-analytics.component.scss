@@ -59,13 +59,13 @@ nz-card {
   flex: 1;
   height: 10px;
   border-radius: 5px;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--ff-color-neutral-bg);
 }
 
 .analytics__bar {
   height: 100%;
   border-radius: 5px;
-  background: var(--ant-primary-color, #1677ff);
+  background: var(--ff-color-primary);
 }
 
 .analytics__bar-value {

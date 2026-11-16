@@ -62,7 +62,7 @@ const nullable = (v: string): string | null => v.trim() || null;
   templateUrl: './diagnosis-dialog.component.html',
   styles: `
     .diag-line {
-      border: 1px solid var(--border-color, #d9d9d9);
+      border: 1px solid var(--ff-color-border);
       border-radius: 8px;
       padding: 8px 16px 16px;
       margin-bottom: 12px;

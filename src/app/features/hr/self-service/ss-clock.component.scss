@@ -5,16 +5,16 @@
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  background: var(--ant-color-fill-secondary, #f5f5f5);
+  background: var(--ff-color-neutral-bg);
 
   &[data-state='Working'] {
-    background: var(--ant-color-success-bg, #f6ffed);
-    border: 1px solid var(--ant-color-success-border, #b7eb8f);
+    background: var(--ff-color-success-bg);
+    border: 1px solid var(--ff-color-success);
   }
 
   &[data-state='OnBreak'] {
-    background: var(--ant-color-warning-bg, #fffbe6);
-    border: 1px solid var(--ant-color-warning-border, #ffe58f);
+    background: var(--ff-color-warning-bg);
+    border: 1px solid var(--ff-color-warning);
   }
 }
 

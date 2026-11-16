@@ -75,8 +75,8 @@ import { formatBiValue } from './bi.util';
   styles: `
     .bi-pivot-scroll { overflow: auto; max-height: 100%; }
     .bi-pivot { border-collapse: collapse; font-size: 13px; width: 100%; }
-    .bi-pivot th, .bi-pivot td { border: 1px solid var(--border-color, #f0f0f0); padding: 4px 8px; white-space: nowrap; text-align: left; }
-    .bi-pivot thead th { background: var(--surface-muted, #fafafa); }
+    .bi-pivot th, .bi-pivot td { border: 1px solid var(--ff-color-border); padding: 4px 8px; white-space: nowrap; text-align: left; }
+    .bi-pivot thead th { background: var(--ff-color-surface-alt); }
     .bi-pivot .num { text-align: right; font-variant-numeric: tabular-nums; }
     .bi-pivot .total, .bi-pivot tfoot th { font-weight: 600; }
   `,

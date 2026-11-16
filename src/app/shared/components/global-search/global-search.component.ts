@@ -31,7 +31,7 @@ const SEARCH_DEBOUNCE_MS = 250;
       align-items: flex-start;
       justify-content: center;
       padding-top: 12vh;
-      background: rgba(0, 0, 0, 0.45);
+      background: var(--ff-color-overlay);
     }
     .gs-panel {
       width: min(640px, 92vw);
@@ -40,15 +40,15 @@ const SEARCH_DEBOUNCE_MS = 250;
       flex-direction: column;
       overflow: hidden;
       border-radius: 8px;
-      background: var(--ant-color-bg-elevated, #fff);
-      color: var(--ant-color-text, #1f1f1f);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      background: var(--ff-color-surface-raised);
+      color: var(--ff-color-text);
+      box-shadow: var(--ff-shadow-elevated);
     }
     .gs-input {
       width: 100%;
       padding: 14px 16px;
       border: 0;
-      border-bottom: 1px solid var(--ant-color-border-secondary, #e5e5e5);
+      border-bottom: 1px solid var(--ff-color-border-subtle);
       font-size: 16px;
       background: transparent;
       color: inherit;
@@ -74,7 +74,7 @@ const SEARCH_DEBOUNCE_MS = 250;
     }
     .gs-item.active,
     .gs-item:hover {
-      background: var(--ant-color-primary-bg, #e6f4ff);
+      background: var(--ff-color-primary-subtle);
     }
     .gs-type {
       flex: none;

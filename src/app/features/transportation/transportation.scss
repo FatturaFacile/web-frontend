@@ -51,7 +51,7 @@
   .tl-item {
     position: relative;
     padding: 0 0 20px 28px;
-    border-left: 2px solid var(--border-color, #d9d9d9);
+    border-left: 2px solid var(--ff-color-border);
     margin-left: 8px;
 
     &:last-child {
@@ -67,16 +67,16 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #1677ff;
+    background: var(--ff-color-primary);
   }
 
   .tl-dot.exception,
   .tl-dot.delay {
-    background: #ff4d4f;
+    background: var(--ff-color-danger);
   }
 
   .tl-dot.delivered {
-    background: #52c41a;
+    background: var(--ff-color-success);
   }
 
   .tl-head {

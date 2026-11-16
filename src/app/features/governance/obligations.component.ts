@@ -91,10 +91,10 @@ export function govDefaultFrameworks(jurisdiction: string | null | undefined): G
       gap: 4px;
     }
     .overdue {
-      color: #cf1322;
+      color: var(--ff-color-danger);
     }
     .soon {
-      color: #d46b08;
+      color: var(--ff-color-warning);
     }
     .w-full {
       width: 100%;

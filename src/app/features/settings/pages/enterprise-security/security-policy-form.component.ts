@@ -127,7 +127,7 @@ import { enterpriseErrorText } from './enterprise-security.util';
   styles: `
     .block { margin-bottom: 16px; display: block; }
     .switch-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .muted { color: rgba(0, 0, 0, 0.65); }
+    .muted { color: var(--ff-color-text-secondary); }
   `,
 })
 export class SecurityPolicyFormComponent implements OnInit {
