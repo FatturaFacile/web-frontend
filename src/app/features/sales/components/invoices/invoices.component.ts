@@ -74,6 +74,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     IconActionDirective,
     ReactiveFormsModule,
     FormsModule,
+    NzModalModule,
     CurrencyPipe,
     DatePipe,
     MoneyPipe,

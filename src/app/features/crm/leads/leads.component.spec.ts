@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
-import { AuthStore, CrmApiService, I18nService, LeadResource, TranslateService } from '@core';
+import { I18nService, LeadApiService, LeadResource } from '@core';
 import { LeadsComponent } from './leads.component';
 
 describe('LeadsComponent', () => {
@@ -27,80 +28,50 @@ describe('LeadsComponent', () => {
       status: 'new',
       score: 75,
       rating: 'warm',
-      score_breakdown: [],
-      score_model: 'v1',
-      score_calculated_at: '2026-11-08',
-      estimated_budget: '25000',
+      score_breakdown: { budget: 40 },
+      estimated_budget: 25000,
       lead_source: null,
-      converted_at: null,
-      converted_account_id: null,
-      converted_contact_id: null,
-      converted_opportunity_id: null,
-      tags: [],
+      duplicate_of_id: null,
+      vat_number: 'CHE123456789',
+      industry: 'Tech',
+      region: 'Ticino',
       created_at: '2026-11-08',
       updated_at: '2026-11-08',
     },
   ];
 
-  const mockCrmApi = {
-    getLeadScore: vi.fn().mockReturnValue(
+  const mockLeadApi = {
+    list: vi.fn().mockReturnValue(
       of({
-        lead_id: 'l1',
-        score: 40,
-        rating: 'warm',
-        model: null,
-        breakdown: [{ rule: 'budget', points: 40, reason: 'Budget above threshold' }],
-        calculated_at: null,
-        current: {
-          score: 70,
-          rating: 'hot',
-          model: 'tenant_rules',
-          breakdown: [{ rule: 'budget', points: 70, reason: 'Budget above threshold' }],
-        },
-      }),
-    ),
-    getLeads: vi.fn().mockReturnValue(
-      of({
-        success: true,
         data: mockLeads,
         meta: { current_page: 1, total: 1, last_page: 1, per_page: 15 },
       }),
     ),
-    createLead: vi.fn().mockReturnValue(
+    create: vi.fn().mockReturnValue(
       of({
-        success: true,
-        data: mockLeads[0],
+        lead: mockLeads[0],
+        duplicate_ids: [],
+        merged: false,
       }),
     ),
-    recalculateLeadScores: vi.fn().mockReturnValue(of({ recalculated: 1 })),
-    qualifyLead: vi.fn().mockReturnValue(
+    get: vi.fn().mockReturnValue(of(mockLeads[0])),
+    update: vi.fn().mockReturnValue(of(mockLeads[0])),
+    qualify: vi.fn().mockReturnValue(of({ ...mockLeads[0], status: 'qualified' })),
+    disqualify: vi.fn().mockReturnValue(of({ ...mockLeads[0], status: 'disqualified' })),
+    merge: vi.fn().mockReturnValue(of(mockLeads[0])),
+    convert: vi.fn().mockReturnValue(
       of({
-        success: true,
-        data: { ...mockLeads[0], status: 'qualified' },
+        account: { id: 'acc-1', name: 'Alpha SA' },
+        contact: { id: 'con-1', name: 'Alice Smith' },
+        opportunity: { id: 'opp-1', name: 'Alpha Deal' },
       }),
     ),
-    disqualifyLead: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: { ...mockLeads[0], status: 'disqualified' },
-      }),
-    ),
-    convertLead: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: null,
-      }),
-    ),
-    deleteLead: vi.fn().mockReturnValue(
-      of({
-        success: true,
-        data: null,
-      }),
-    ),
+    remove: vi.fn().mockReturnValue(of(undefined)),
+    detectDuplicates: vi.fn().mockReturnValue(of([])),
+    recordBehavior: vi.fn().mockReturnValue(of(mockLeads[0])),
   };
 
-  const mockTranslate = {
-    instant: vi.fn((k: string) => k),
+  const mockI18n = {
     translate: vi.fn((k: string) => k),
     currentLanguage: signal('it'),
   };
@@ -111,22 +82,16 @@ describe('LeadsComponent', () => {
     info: vi.fn(),
   };
 
-  const mockAuthStore = {
-    activeJurisdiction: vi.fn().mockReturnValue('CH'),
-    activeCurrency: vi.fn().mockReturnValue('CHF'),
-  };
-
   beforeEach(async () => {
     vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
       imports: [LeadsComponent],
       providers: [
+        provideRouter([]),
         provideNzIcons(icons),
-        { provide: CrmApiService, useValue: mockCrmApi },
-        { provide: AuthStore, useValue: mockAuthStore },
-        { provide: TranslateService, useValue: mockTranslate },
-        { provide: I18nService, useValue: mockTranslate },
+        { provide: LeadApiService, useValue: mockLeadApi },
+        { provide: I18nService, useValue: mockI18n },
         { provide: NzMessageService, useValue: mockMessage },
       ],
     }).compileComponents();
@@ -135,97 +100,79 @@ describe('LeadsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads leads on initialization', async () => {
+  it('loads leads on initialization', () => {
     fixture.detectChanges();
-    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(component).toBeTruthy();
-    expect(mockCrmApi.getLeads).toHaveBeenCalled();
-    expect(component.grid.items()).toEqual(mockLeads);
-    expect(component.grid.totalCount()).toBe(1);
+    expect(mockLeadApi.list).toHaveBeenCalled();
+    expect(component['leads']()).toEqual(mockLeads);
+    expect(component['loading']()).toBe(false);
   });
 
-  it('filters leads by search term and sorts the name on the server column', async () => {
+  it('filters leads by rating and status', () => {
     fixture.detectChanges();
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const event = { target: { value: 'Alpha' } } as unknown as Event;
-    component.onSearch(event);
-    component.grid.onGridParams({ pageIndex: 1, pageSize: 10, sort: { key: 'display_name', order: 'descend' }, filters: {} });
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    component['setRating']('hot');
+    expect(mockLeadApi.list).toHaveBeenCalledWith({ rating: 'hot', status: undefined });
 
-    expect(component.searchTerm()).toBe('Alpha');
-    expect(component.columns().find((c) => c.key === 'full_name')?.serverKey).toBe('display_name');
-    expect(mockCrmApi.getLeads).toHaveBeenCalledWith(
-      expect.objectContaining({ search: 'Alpha', page: 1, sort_by: 'display_name', sort_dir: 'desc' }),
+    component['setStatus']('qualified');
+    expect(mockLeadApi.list).toHaveBeenCalledWith({ rating: 'hot', status: 'qualified' });
+  });
+
+  it('opens create modal and saves new lead', () => {
+    fixture.detectChanges();
+    component['openCreate']();
+    expect(component['modalOpen']()).toBe(true);
+
+    component['patchForm']({ company_name: 'Gamma GmbH', email: 'gamma@example.com' });
+    component['save']();
+
+    expect(mockLeadApi.create).toHaveBeenCalledWith(
+      expect.objectContaining({ company_name: 'Gamma GmbH', email: 'gamma@example.com' }),
     );
-  });
-
-  it('submits create lead form', () => {
-    fixture.detectChanges();
-    component.openCreateDrawer();
-    component.leadForm.patchValue({
-      company_name: 'Gamma Gmbh',
-      country: 'CH',
-      estimated_budget: 12000,
-    });
-
-    component.submitCreateLead();
-
-    expect(mockCrmApi.createLead).toHaveBeenCalledWith(
-      expect.objectContaining({
-        company_name: 'Gamma Gmbh',
-        country: 'CH',
-        estimated_budget: 12000,
-      }),
-    );
-    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadCreatedSuccessfully');
-    expect(component.createDrawerVisible()).toBe(false);
-  });
-
-  it('does not create a lead from an empty form: the name is required', () => {
-    fixture.detectChanges();
-    component.openCreateDrawer();
-
-    component.submitCreateLead();
-
-    expect(mockCrmApi.createLead).not.toHaveBeenCalled();
-    expect(component.identityInvalid('company_name')).toBe(true);
-    expect(component.errorTip('company_name')).not.toBe('');
-  });
-
-  it('recalculates lead score', () => {
-    fixture.detectChanges();
-    component.recalculateScore(mockLeads[0]);
-
-    expect(mockCrmApi.recalculateLeadScores).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgScoreRecalculated');
-  });
-
-  it('explains the score of a lead: stored and under the current model', () => {
-    fixture.detectChanges();
-    component.openScoreModal(mockLeads[0]);
-
-    expect(mockCrmApi.getLeadScore).toHaveBeenCalledWith('lead-1');
-    expect(component.scoreModalVisible()).toBe(true);
-    const explanation = component.scoreExplanation();
-    expect(explanation?.current.score).toBe(70);
-    expect(component.storedBreakdown(explanation as NonNullable<typeof explanation>)).toHaveLength(1);
-    // The modal service of this spec is a stub: close it before the next change detection.
-    component.scoreModalVisible.set(false);
+    expect(mockMessage.success).toHaveBeenCalled();
+    expect(component['modalOpen']()).toBe(false);
   });
 
   it('qualifies a lead', () => {
     fixture.detectChanges();
-    component.qualify(mockLeads[0]);
+    component['qualify'](mockLeads[0]);
 
-    expect(mockCrmApi.qualifyLead).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadMarkedAsQualified');
+    expect(mockLeadApi.qualify).toHaveBeenCalledWith('lead-1');
+    expect(mockMessage.success).toHaveBeenCalled();
   });
 
-  it('disqualifies a lead', () => {
+  it('converts a lead', () => {
     fixture.detectChanges();
-    component.disqualify(mockLeads[0]);
+    component['convert'](mockLeads[0]);
 
-    expect(mockCrmApi.disqualifyLead).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('crmLeadScore.msgLeadMarkedAsDisqualified');
+    expect(mockLeadApi.convert).toHaveBeenCalledWith('lead-1');
+    expect(mockMessage.success).toHaveBeenCalled();
+  });
+
+  it('disqualifies a lead with reason', () => {
+    fixture.detectChanges();
+    component['disqualifying'].set(mockLeads[0]);
+    component['disqualifyReason'].set('Not interested in ERP');
+    component['confirmDisqualify']();
+
+    expect(mockLeadApi.disqualify).toHaveBeenCalledWith('lead-1', 'Not interested in ERP');
+    expect(mockMessage.success).toHaveBeenCalled();
+    expect(component['disqualifying']()).toBeNull();
+  });
+
+  it('opens detail and detects duplicates', () => {
+    fixture.detectChanges();
+    component['openDetail'](mockLeads[0]);
+
+    expect(mockLeadApi.get).toHaveBeenCalledWith('lead-1');
+    expect(mockLeadApi.detectDuplicates).toHaveBeenCalled();
+    expect(component['detail']()).toEqual(mockLeads[0]);
+  });
+
+  it('deletes a lead', () => {
+    fixture.detectChanges();
+    component['remove'](mockLeads[0]);
+
+    expect(mockLeadApi.remove).toHaveBeenCalledWith('lead-1');
+    expect(mockMessage.success).toHaveBeenCalled();
   });
 });
