@@ -60,6 +60,10 @@ Thumbs.db
 /.antigravity
 /.codex
 /.copilotignore
+/.github/copilot-instructions.md
+/.github/instructions/
+/.github/prompts/
+/.github/chatmodes/
 /.cursor/
 /.cursorignore
 /.cursorrules
