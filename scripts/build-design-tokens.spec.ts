@@ -13,7 +13,12 @@ describe('token converters', () => {
     expect(gen.parseCssColor('#0f766e')).toEqual({ r: 15, g: 118, b: 110, a: 1 });
     expect(gen.parseCssColor('#fff')).toEqual({ r: 255, g: 255, b: 255, a: 1 });
     expect(gen.parseCssColor('#00000080').a).toBeCloseTo(0.502, 3);
-    expect(gen.parseCssColor('rgba(20, 184, 166, 0.18)')).toEqual({ r: 20, g: 184, b: 166, a: 0.18 });
+    expect(gen.parseCssColor('rgba(20, 184, 166, 0.18)')).toEqual({
+      r: 20,
+      g: 184,
+      b: 166,
+      a: 0.18,
+    });
     expect(gen.parseCssColor('rgb(255 0 0 / 50%)')).toEqual({ r: 255, g: 0, b: 0, a: 0.5 });
     expect(gen.parseCssColor('red')).toBeNull();
     expect(gen.parseCssColor('#12')).toBeNull();
@@ -40,10 +45,9 @@ describe('token converters', () => {
   });
 
   it('reduces a CSS font stack to installable families', () => {
-    expect(gen.parseFontStack("'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif")).toEqual([
-      'Inter',
-      'Segoe UI',
-    ]);
+    expect(gen.parseFontStack("'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif")).toEqual(
+      ['Inter', 'Segoe UI'],
+    );
   });
 
   it('builds identifiers', () => {
@@ -81,7 +85,10 @@ describe('generated platform outputs', () => {
   });
 
   it('outputs the committed files (run `pnpm tokens:build` if this fails)', () => {
-    for (const [file, content] of Object.entries(gen.buildAllOutputs(tokens)) as [string, string][]) {
+    for (const [file, content] of Object.entries(gen.buildAllOutputs(tokens)) as [
+      string,
+      string,
+    ][]) {
       const onDisk = readFileSync(resolve(process.cwd(), file), 'utf8').replaceAll('\r\n', '\n');
       expect(onDisk, file).toBe(content);
     }

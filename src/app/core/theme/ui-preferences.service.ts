@@ -4,7 +4,6 @@ import { UiPreferencesApiService } from '../api/ui-preferences-api.service';
 import { isHexColor } from './contrast.util';
 import {
   DEFAULT_TENANT_BRANDING,
-  DEFAULT_USER_UI_PREFERENCES,
   TenantBranding,
   THEME_PREFERENCES,
   ThemePreference,
@@ -21,6 +20,10 @@ interface StoredUi {
   density: UiDensity;
   reducedMotion: boolean | null;
   branding: TenantBranding;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isOneOf<T extends string>(list: readonly T[], value: unknown): value is T {
@@ -104,6 +107,9 @@ export class UiPreferencesService {
 
   /** Applies a branding received from the API or edited by an administrator (not sent back). */
   applyBranding(branding: TenantBranding): void {
+    if (!isPlainObject(branding)) {
+      return;
+    }
     this.brandingSignal.set({
       brand_primary_color: colourOrNull(branding.brand_primary_color),
       brand_secondary_color: colourOrNull(branding.brand_secondary_color),
@@ -132,20 +138,20 @@ export class UiPreferencesService {
     });
   }
 
-  private applyUser(prefs: UserUiPreferences): void {
-    this.themeSignal.set(
-      isOneOf(THEME_PREFERENCES, prefs.theme_preference)
-        ? prefs.theme_preference
-        : DEFAULT_USER_UI_PREFERENCES.theme_preference,
-    );
-    this.densitySignal.set(
-      isOneOf(UI_DENSITIES, prefs.ui_density)
-        ? prefs.ui_density
-        : DEFAULT_USER_UI_PREFERENCES.ui_density,
-    );
-    this.reducedMotionSignal.set(
-      typeof prefs.reduced_motion === 'boolean' ? prefs.reduced_motion : null,
-    );
+  /** Only valid fields are applied: an empty or malformed response keeps the values already in force. */
+  private applyUser(prefs: Partial<UserUiPreferences> | null | undefined): void {
+    if (!isPlainObject(prefs)) {
+      return;
+    }
+    if (isOneOf(THEME_PREFERENCES, prefs.theme_preference)) {
+      this.themeSignal.set(prefs.theme_preference);
+    }
+    if (isOneOf(UI_DENSITIES, prefs.ui_density)) {
+      this.densitySignal.set(prefs.ui_density);
+    }
+    if (typeof prefs.reduced_motion === 'boolean' || prefs.reduced_motion === null) {
+      this.reducedMotionSignal.set(prefs.reduced_motion);
+    }
     this.persist();
   }
 

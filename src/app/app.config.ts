@@ -5,6 +5,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
+import { NzA11yPatchService } from './core/a11y/nz-a11y-patch.service';
 import { provideRouter, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
@@ -68,6 +69,9 @@ export const appConfig: ApplicationConfig = {
       const i18n = inject(I18nService);
       // Bootstrap bloccato (splash + spinner) finché le traduzioni non sono caricate
       return i18n.waitForInitialTranslations();
+    }),
+    provideAppInitializer(() => {
+      inject(NzA11yPatchService).start();
     }),
     provideAppInitializer(() => {
       inject(PwaUpdateService).start();

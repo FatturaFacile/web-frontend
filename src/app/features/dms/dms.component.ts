@@ -271,6 +271,7 @@ export class DmsComponent implements OnInit {
   protected tagSubmitting = signal<boolean>(false);
   readonly tagForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(80)]],
+    // Default of a user-chosen tag colour (data, not a theme colour).
     color: ['#1890ff'],
   });
 

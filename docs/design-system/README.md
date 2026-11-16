@@ -27,10 +27,23 @@ Issue #263. The look, the accessibility rules and the theming of the FatturaFaci
 | Accessibility audit | `src/app/features/design-system/design-system.a11y.spec.ts`, `src/testing/axe.ts` |
 | API | `GET/PATCH /api/v1/user/preferences`, `GET/PATCH /api/v1/tenant/branding` (web-api) |
 
-## Why a catalog route and not Storybook
+## Storybook and the catalog route
 
-The repository has no Storybook and adding it means a second build toolchain, extra dependencies and a separate
-Angular builder to keep in step with Angular 22. The `/design-system` route renders the real components with the real
-styles, theme, density and brand controls, and the same page is what the axe audit runs on. It is part of the normal
-build, so it can never drift from the application. If Storybook is wanted later, the components are standalone and take
-only inputs, so stories need no changes to them.
+Components in `src/app/shared/ui/` are documented in Storybook 10 (`@storybook/angular`, with the `addon-a11y` and
+`addon-docs` addons). Stories sit next to each component (`*.stories.ts`), plus `src/stories/tokens.stories.ts` and
+`src/stories/controls.stories.ts`.
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm storybook` | Local Storybook |
+| `pnpm build-storybook` | Static build in `storybook-static/` |
+| `pnpm e2e:a11y` | Playwright + axe accessibility audit (`tests/accessibility*.spec.ts`) |
+
+The `/design-system` route stays as a live catalog rendered with the real application styles; the axe audit
+(`design-system.a11y.spec.ts`) runs on it.
+
+## Sharing tokens with mobile and desktop
+
+`pnpm tokens:sync` copies the generated Dart and XAML files into the sibling repositories
+(`mobile/lib/design/ff_tokens.dart`, `desktop/src/FatturaFacile.Wpf/Themes/FfTokens.*.xaml`). Run it after every
+`pnpm tokens:build`.

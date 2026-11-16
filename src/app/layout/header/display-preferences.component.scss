@@ -59,6 +59,7 @@ legend {
     outline: 3px solid var(--primary-focus);
     outline-offset: 3px;
   }
+  // Brand swatches show the fixed brand colours the user can pick; they are data and do not follow the theme.
   &[data-brand-swatch='teal'] {
     --swatch: #0f766e;
   }

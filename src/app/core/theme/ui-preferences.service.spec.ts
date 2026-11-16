@@ -157,6 +157,18 @@ describe('UiPreferencesService', () => {
     expect(prefs.branding().brand_primary_color).toBe('#0F766E');
   });
 
+  it('keeps the local values when the API answers with an empty or malformed payload', () => {
+    api.getUserPreferences.mockReturnValue(of({ data: [] }));
+    api.getTenantBranding.mockReturnValue(of({ data: [] }));
+    const prefs = create();
+    prefs.setTheme('dark');
+    prefs.setDensity('compact');
+    prefs.loadRemote();
+
+    expect(prefs.themePreference()).toBe('dark');
+    expect(prefs.density()).toBe('compact');
+  });
+
   it('keeps the local values when the API fails', () => {
     api.getUserPreferences.mockReturnValue(throwError(() => new Error('offline')));
     api.getTenantBranding.mockReturnValue(throwError(() => new Error('offline')));

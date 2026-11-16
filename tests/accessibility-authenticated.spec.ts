@@ -44,9 +44,12 @@ async function stubSession(page: Page, theme: string, density: string): Promise<
   );
   await page.route('**/api/v1/**', (route) => {
     const url = route.request().url();
-    const body = /\/auth\/profile|\/auth\/me/.test(url)
-      ? { data: PROFILE }
-      : { data: [], meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 } };
+    // The app does not boot until translations arrive, so they must be served (a minimal dictionary is enough).
+    const body = /\/translations\//.test(url)
+      ? { translations: { 'a11y.skipToContent': 'Skip to content' } }
+      : /\/auth\/profile|\/auth\/me/.test(url)
+        ? { data: PROFILE }
+        : { data: [], meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 } };
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
 }

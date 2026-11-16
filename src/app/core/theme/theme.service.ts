@@ -11,6 +11,7 @@ import {
 import { UiPreferencesService } from './ui-preferences.service';
 
 const DARK_STYLESHEET_ID = 'theme-dark-stylesheet';
+// Browser chrome colours (meta theme-color) must be literals: the browser does not resolve CSS variables there.
 const THEME_COLOR: Record<'light' | 'dark', string> = { light: '#0f766e', dark: '#0b1120' };
 
 /**

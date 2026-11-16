@@ -36,6 +36,7 @@ const PRINT_CLASS = 'rma-label-printing';
                 [attr.viewBox]="'0 0 ' + b.width + ' 60'"
                 preserveAspectRatio="none"
               >
+                <!-- Barcode: black on white in both themes so it stays scannable -->
                 <rect x="0" y="0" [attr.width]="b.width" height="60" fill="#fff" />
                 @for (bar of b.bars; track $index) {
                   <rect [attr.x]="bar.x" y="0" [attr.width]="bar.width" height="60" fill="#000" />
