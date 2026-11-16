@@ -170,4 +170,47 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
       expect((result as UrlTree).toString()).toBe('/dashboard');
     });
   });
+
+  describe('cold refresh (profile not loaded yet)', () => {
+    const stale = { id: 'usr-003', name: 'Anna', email: 'a@example.com', role: 'member', roles: ['member'] };
+
+    it('moduleGuard waits for the full profile before it decides', () => {
+      authStore.login(undefined, stale);
+      authApiMock.me.mockReturnValue(
+        of({ data: { ...stale, role: 'owner', roles: ['owner'], permissions: ['*'], tenants: [] } }),
+      );
+
+      const result = TestBed.runInInjectionContext(() => moduleGuard('crm', 'write')(dummyRoute, dummyState));
+      expect(authApiMock.me).toHaveBeenCalledTimes(1);
+
+      let resolved: unknown;
+      (result as import('rxjs').Observable<unknown>).subscribe((value) => (resolved = value));
+      expect(resolved).toBe(true);
+    });
+
+    it('moduleGuard redirects to /dashboard when the loaded profile has no access', () => {
+      authStore.login(undefined, stale);
+      authApiMock.me.mockReturnValue(of({ data: { ...stale, permissions: [], tenants: [] } }));
+
+      const result = TestBed.runInInjectionContext(() => moduleGuard('system', 'write')(dummyRoute, dummyState));
+
+      let resolved: unknown;
+      (result as import('rxjs').Observable<unknown>).subscribe((value) => (resolved = value));
+      expect(resolved).toBeInstanceOf(UrlTree);
+      expect((resolved as UrlTree).toString()).toBe('/dashboard');
+    });
+
+    it('roleGuard waits for the full profile before it decides', () => {
+      authStore.login(undefined, { id: 'usr-004', name: 'Gino', email: 'g@example.com' });
+      authApiMock.me.mockReturnValue(
+        of({ data: { id: 'usr-004', name: 'Gino', email: 'g@example.com', role: 'ADMIN', roles: ['ADMIN'], tenants: [] } }),
+      );
+
+      const result = TestBed.runInInjectionContext(() => roleGuard(['ADMIN'])(dummyRoute, dummyState));
+
+      let resolved: unknown;
+      (result as import('rxjs').Observable<unknown>).subscribe((value) => (resolved = value));
+      expect(resolved).toBe(true);
+    });
+  });
 });

@@ -94,7 +94,7 @@
         nzType="text"
         nzSize="small"
         nz-tooltip
-        nzTooltipTitle="Recalculate Score"
+        [nzTooltipTitle]="'CRMX.SCORING.RECALCULATE' | translate"
         (click)="recalculateScore(lead)"
       >
         <nz-icon nzType="sync" />
@@ -189,7 +189,7 @@
 
       <div class="form-row">
         <nz-form-item class="form-col">
-          <nz-form-label>Email</nz-form-label>
+          <nz-form-label>{{ 'COMMON.EMAIL' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="errorTip('email')">
             <input nz-input formControlName="email" type="email" [placeholder]="'crmLeadScore.lblJohnExampleCom' | translate" />
           </nz-form-control>

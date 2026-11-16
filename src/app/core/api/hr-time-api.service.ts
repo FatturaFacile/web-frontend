@@ -4,8 +4,12 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  ClockNowPayload,
+  ComplianceAlerts,
   CreateTimeEventPayload,
   DailyTimeRecordPayload,
+  IntegrityResult,
+  LegalExportParams,
   MealBookingPayload,
   MealBookingQuery,
   NightWorkBalance,
@@ -191,6 +195,41 @@ export class HrTimeApiService {
   getNightWorkBalances(params?: { year?: number; user_id?: string }): Observable<ApiResponse<NightWorkBalance[]>> {
     return this.http.get<ApiResponse<NightWorkBalance[]>>(`${this.base}/time/night-work-balances`, {
       params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  // --- Self-service clock (CJEU C-55/18) ---
+
+  /** Clock the authenticated user in/out without HR module access. Hits /hr/me/clock. */
+  clockNow(payload: ClockNowPayload): Observable<ApiResponse<TimeEventResource>> {
+    return this.http.post<ApiResponse<TimeEventResource>>(`${this.base}/me/clock`, payload);
+  }
+
+  /** Employee's own punch history — CJEU C-55/18 read-only self-service access. */
+  getMyEvents(params?: { from?: string; to?: string; page?: number; per_page?: number }): Observable<PaginatedResponse<TimeEventResource>> {
+    return this.http.get<PaginatedResponse<TimeEventResource>>(`${this.base}/me/time/events`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  // --- Legal compliance ---
+
+  /** IT: LUL CSV (Art. 39 D.L. 112/2008). CH: SECO CSV (OLL 1 Art. 73). */
+  exportLegal(params: LegalExportParams): Observable<Blob> {
+    return this.http.get(`${this.base}/time/export`, { params: toHttpParams(params), responseType: 'blob' });
+  }
+
+  /** Verifies the SHA-256 hash chain on time_audit_entries for INL/SECO tamper evidence. */
+  verifyIntegrity(params?: { from?: string; to?: string; employee_id?: string }): Observable<ApiResponse<IntegrityResult>> {
+    return this.http.get<ApiResponse<IntegrityResult>>(`${this.base}/time/verify-integrity`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  /** IT: D.Lgs. 66/2003 (11h rest, 48h rolling avg). CH: OLL 1 (30-min break rule). */
+  getComplianceAlerts(params: { jurisdiction: 'IT' | 'CH'; from: string; to: string; employee_id?: string }): Observable<ApiResponse<ComplianceAlerts>> {
+    return this.http.get<ApiResponse<ComplianceAlerts>>(`${this.base}/time/compliance-alerts`, {
+      params: toHttpParams(params),
     });
   }
 }

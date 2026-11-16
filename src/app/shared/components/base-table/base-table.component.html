@@ -138,7 +138,7 @@
     <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
   } @else {
     <nz-table
-      [nzData]="virtualScroll() ? virtualRows() : displayData()"
+      [nzData]="tableData()"
       [nzFrontPagination]="false"
       [nzLoading]="isLoading()"
       [nzTotal]="rowTotal()"
@@ -220,6 +220,7 @@
                         @if ((filterOptions()[col.key.toString()] ?? []).length > 0) {
                           <div class="filter-options">
                             @for (opt of filterOptions()[col.key.toString()]; track opt.value) {
+                              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -- nz-checkbox renders its own input -->
                               <label
                                 nz-checkbox
                                 [ngModel]="draft(col.key).selected.includes(opt.value)"

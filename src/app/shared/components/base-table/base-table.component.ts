@@ -294,7 +294,12 @@ export class BaseTableComponent<TItem extends object = object> {
   });
 
   /** Rows fed to the virtual viewport: collapsed rows are dropped so the fixed item size stays exact. */
-  readonly virtualRows = computed(() => this.viewRows().filter((row) => !row.hidden));
+  readonly virtualRows = computed(() => this.viewRows().filter((row) => row.kind === 'group' || !row.hidden));
+
+  /** What nz-table iterates: grid rows in virtual mode (the viewport owns the loop), items otherwise. */
+  readonly tableData = computed<readonly unknown[]>(() =>
+    this.virtualScroll() ? this.virtualRows() : this.displayData(),
+  );
 
   rowTrack(row: GridRow<TItem>, index: number): string | number {
     return row.kind === 'group' ? `group:${row.key}:${index}` : this.getItemKey(row.item);

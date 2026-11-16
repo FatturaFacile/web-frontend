@@ -50,7 +50,7 @@ describe('TravelRatesComponent', () => {
   const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
   const translateSpy = {
     instant: vi.fn().mockImplementation((key: string) => key),
-    translate: vi.fn().mockImplementation((key: string) => key),
+    currentLanguage: () => 'it', translate: vi.fn().mockImplementation((key: string) => key),
   };
 
   beforeEach(async () => {

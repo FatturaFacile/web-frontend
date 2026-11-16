@@ -1,0 +1,36 @@
+.clock-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: var(--ant-color-fill-secondary, #f5f5f5);
+
+  &[data-state='Working'] {
+    background: var(--ant-color-success-bg, #f6ffed);
+    border: 1px solid var(--ant-color-success-border, #b7eb8f);
+  }
+
+  &[data-state='OnBreak'] {
+    background: var(--ant-color-warning-bg, #fffbe6);
+    border: 1px solid var(--ant-color-warning-border, #ffe58f);
+  }
+}
+
+.clock-label {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.clock-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+tr.deleted {
+  opacity: 0.45;
+  text-decoration: line-through;
+}

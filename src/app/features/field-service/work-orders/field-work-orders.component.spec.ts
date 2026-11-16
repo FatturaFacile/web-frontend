@@ -50,7 +50,7 @@ describe('FieldWorkOrdersComponent', () => {
         { provide: ClientApiService, useValue: { list: () => of({ data: [{ id: 'c1', company_name: 'Alpha' }] }) } },
         { provide: SettingsApiService, useValue: { getTenantUsers: () => of({ data: [{ id: 'u1', name: 'Tech' }] }) } },
         { provide: PermissionsService, useValue: { canWrite: () => true } },
-        { provide: I18nService, useValue: { translate: (key: string) => key } },
+        { provide: I18nService, useValue: { currentLanguage: () => 'it', translate: (key: string) => key } },
         { provide: NzMessageService, useValue: message },
         { provide: NzModalService, useValue: modal },
       ],
