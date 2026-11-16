@@ -298,7 +298,7 @@ export interface StockTransferResource {
   purpose: TransferPurpose;
   status: TransferStatus;
   origin_warehouse_id: string;
-  transit_warehouse_id: string | null;
+  transit_bin_id: string | null;
   destination_warehouse_id: string;
   delivery_note_id: string | null;
   inter_company_invoice_id?: string | null;
@@ -328,7 +328,6 @@ export interface StockTransferPayload {
   purpose: TransferPurpose;
   origin_warehouse_id: string;
   destination_warehouse_id: string;
-  transit_warehouse_id?: string;
   notes?: string;
   lines: { product_id: string; quantity: number; description?: string }[];
 }
