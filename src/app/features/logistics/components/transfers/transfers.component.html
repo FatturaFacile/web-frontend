@@ -1,0 +1,342 @@
+<app-page-header
+  [title]="'LOGISTICS.TRANSFER.TITLE' | translate"
+  [subtitle]="'LOGISTICS.TRANSFER.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'LOGISTICS.TRANSFER.PURPOSE' | translate"
+      [attr.aria-label]="'LOGISTICS.TRANSFER.PURPOSE' | translate"
+      [nzOptions]="purposeOptions()"
+      [ngModel]="facade.filterParams().purpose"
+      (ngModelChange)="facade.setFilter({ purpose: $event ?? undefined })"
+    />
+    <span class="spacer"></span>
+    @if (auth.can(perm.transfers)) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">
+        <nz-icon nzType="plus" /> {{ 'LOGISTICS.TRANSFER.NEW' | translate }}
+      </button>
+    }
+  </div>
+
+  <nz-table
+    #table
+    [nzData]="facade.items()"
+    [nzLoading]="facade.loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="facade.totalCount()"
+    [nzPageIndex]="facade.pageIndex()"
+    [nzPageSize]="facade.pageSize()"
+    (nzQueryParams)="facade.onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>{{ 'LOGISTICS.TRANSFER.NUMBER' | translate }}</th>
+        <th>{{ 'LOGISTICS.TRANSFER.PURPOSE' | translate }}</th>
+        <th>{{ 'LOGISTICS.TRANSFER.ORIGIN' | translate }}</th>
+        <th>{{ 'LOGISTICS.TRANSFER.DESTINATION' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.STATUS' | translate }}</th>
+        <th>{{ 'LOGISTICS.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (transfer of table.data; track transfer.id) {
+        <tr>
+          <td>
+            <a
+              (click)="openDetail(transfer)"
+              (keydown.enter)="openDetail(transfer)"
+              tabindex="0"
+              role="button"
+            >
+              <strong>{{ transfer.transfer_number }}</strong>
+            </a>
+            @if (transfer.is_inter_company) {
+              <nz-tag nzColor="purple">{{ 'LOGISTICS.TRANSFER.INTER_COMPANY' | translate }}</nz-tag>
+            }
+          </td>
+          <td>{{ purposeKey(transfer.purpose) | translate }}</td>
+          <td>{{ warehouseName(transfer.origin_warehouse_id) }}</td>
+          <td>{{ warehouseName(transfer.destination_warehouse_id) }}</td>
+          <td>
+            <nz-tag [nzColor]="statusColor[transfer.status]">{{
+              statusKey(transfer.status) | translate
+            }}</nz-tag>
+          </td>
+          <td class="actions">
+            @if (auth.can(perm.transfers)) {
+              @if (transfer.status === 'draft') {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="ship(transfer)"
+                >
+                  {{ 'LOGISTICS.TRANSFER.ACTIONS.SHIP' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="cancel(transfer)"
+                >
+                  {{ 'LOGISTICS.TRANSFER.ACTIONS.CANCEL' | translate }}
+                </button>
+              }
+              @if (transfer.status === 'in_transit') {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  (click)="openReceive(transfer)"
+                >
+                  {{ 'LOGISTICS.TRANSFER.ACTIONS.RECEIVE' | translate }}
+                </button>
+              }
+              @if (transfer.status === 'discrepancy_pending') {
+                <button nz-button nzSize="small" type="button" (click)="openDetail(transfer)">
+                  {{ 'LOGISTICS.DISCREPANCY.ACTIONS.RESOLVE' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="createVisible()"
+  nzWidth="620"
+  [nzTitle]="'LOGISTICS.TRANSFER.NEW' | translate"
+  (nzOnClose)="createVisible.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    <form nz-form nzLayout="vertical" [formGroup]="createForm" (ngSubmit)="create()">
+      <nz-form-item>
+        <nz-form-label nzFor="t-purpose" nzRequired>{{
+          'LOGISTICS.TRANSFER.PURPOSE' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-select id="t-purpose" formControlName="purpose" [nzOptions]="purposeOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="t-origin" nzRequired>{{
+          'LOGISTICS.TRANSFER.ORIGIN' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-select
+            id="t-origin"
+            formControlName="origin_warehouse_id"
+            [nzOptions]="originOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="t-destination" nzRequired>{{
+          'LOGISTICS.TRANSFER.DESTINATION' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-select
+            id="t-destination"
+            formControlName="destination_warehouse_id"
+            [nzOptions]="destinationOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+
+      <h4>{{ 'LOGISTICS.DDT.LINES' | translate }}</h4>
+      <div formArrayName="lines">
+        @for (line of lines.controls; track line; let i = $index) {
+          <div class="line" [formGroupName]="i">
+            <nz-select
+              formControlName="product_id"
+              nzShowSearch
+              class="product"
+              [nzOptions]="productOptions()"
+              [attr.aria-label]="'LOGISTICS.DDT.LINE_PRODUCT' | translate"
+            />
+            <nz-input-number
+              formControlName="quantity"
+              [nzMin]="0"
+              [attr.aria-label]="'LOGISTICS.DDT.LINE_QTY' | translate"
+            />
+            <button
+              nz-button
+              nzDanger
+              type="button"
+              [disabled]="lines.length === 1"
+              (click)="removeLine(i)"
+              [attr.aria-label]="'LOGISTICS.DDT.ACTIONS.REMOVE_LINE' | translate"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </div>
+        }
+      </div>
+      <button nz-button type="button" (click)="addLine()">
+        <nz-icon nzType="plus" /> {{ 'LOGISTICS.DDT.ACTIONS.ADD_LINE' | translate }}
+      </button>
+
+      <div class="drawer-footer">
+        <button nz-button nzType="primary" type="submit" [disabled]="createForm.invalid || busy()">
+          {{ 'LOGISTICS.WIZARD.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-drawer>
+
+<nz-drawer
+  [nzVisible]="detail() !== null"
+  nzWidth="720"
+  [nzTitle]="detail()?.transfer_number ?? ''"
+  (nzOnClose)="detail.set(null)"
+>
+  <ng-container *nzDrawerContent>
+    @if (detail(); as transfer) {
+      <nz-steps [nzCurrent]="detailStep()" nzSize="small" class="stepper">
+        <nz-step [nzTitle]="'LOGISTICS.TRANSFER.STEP.DRAFT' | translate" />
+        <nz-step [nzTitle]="'LOGISTICS.TRANSFER.STEP.IN_TRANSIT' | translate" />
+        <nz-step [nzTitle]="'LOGISTICS.TRANSFER.STEP.RECEIVED' | translate" />
+      </nz-steps>
+
+      <p>
+        <nz-tag [nzColor]="statusColor[transfer.status]">{{
+          statusKey(transfer.status) | translate
+        }}</nz-tag>
+        @if (transfer.shipped_at) {
+          {{ transfer.shipped_at | date: 'dd.MM.yyyy HH:mm' }}
+        }
+      </p>
+
+      <nz-table [nzData]="transfer.lines ?? []" [nzShowPagination]="false" nzSize="small">
+        <thead>
+          <tr>
+            <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+            <th>{{ 'LOGISTICS.TRANSFER.QTY_SHIPPED' | translate }}</th>
+            <th>{{ 'LOGISTICS.TRANSFER.QTY_RECEIVED' | translate }}</th>
+            <th>{{ 'LOGISTICS.TRANSFER.DISCREPANCY_REASON' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of transfer.lines ?? []; track line.id) {
+            <tr>
+              <td>{{ productName(line.product_id) }}</td>
+              <td>{{ line.shipped_qty }}</td>
+              <td>{{ line.received_qty }}</td>
+              <td>{{ line.discrepancy_reason }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      @if ((transfer.discrepancies ?? []).length > 0) {
+        <h4>{{ 'LOGISTICS.DISCREPANCY.TITLE' | translate }}</h4>
+        <nz-table [nzData]="transfer.discrepancies ?? []" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+              <th>{{ 'LOGISTICS.DDT.LINE_QTY' | translate }}</th>
+              <th>{{ 'LOGISTICS.DDT.STATUS' | translate }}</th>
+              <th>{{ 'LOGISTICS.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of transfer.discrepancies ?? []; track d.id) {
+              <tr>
+                <td>{{ productName(d.product_id) }}</td>
+                <td>{{ d.discrepancy_qty }}</td>
+                <td>
+                  <nz-tag [nzColor]="discrepancyColor[d.status]">{{
+                    discrepancyKey(d.status) | translate
+                  }}</nz-tag>
+                </td>
+                <td>
+                  @if (d.status === 'pending_approval' && auth.can(perm.transfers)) {
+                    <nz-select
+                      class="resolution"
+                      [nzPlaceHolder]="'LOGISTICS.DISCREPANCY.ACTIONS.RESOLVE' | translate"
+                      [nzOptions]="discrepancyOptions()"
+                      (ngModelChange)="resolve(d, $event)"
+                      [ngModel]="null"
+                      [attr.aria-label]="'LOGISTICS.DISCREPANCY.ACTIONS.RESOLVE' | translate"
+                    />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    }
+  </ng-container>
+</nz-drawer>
+
+<nz-modal
+  [nzVisible]="receiveTarget() !== null"
+  nzWidth="760"
+  [nzTitle]="'LOGISTICS.TRANSFER.ACTIONS.RECEIVE' | translate"
+  [nzOkText]="'LOGISTICS.TRANSFER.ACTIONS.RECEIVE' | translate"
+  [nzCancelText]="'LOGISTICS.CANCEL' | translate"
+  [nzOkDisabled]="busy()"
+  (nzOnOk)="confirmReceive()"
+  (nzOnCancel)="receiveTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    @if (hasDiscrepancy()) {
+      <nz-alert
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'LOGISTICS.TRANSFER.DISCREPANCY_DETECTED' | translate"
+        class="alert"
+      />
+    }
+    <nz-table [nzData]="receiveTarget()?.lines ?? []" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+          <th>{{ 'LOGISTICS.TRANSFER.QTY_SHIPPED' | translate }}</th>
+          <th>{{ 'LOGISTICS.TRANSFER.QTY_RECEIVED' | translate }}</th>
+          <th>{{ 'LOGISTICS.TRANSFER.DISCREPANCY_REASON' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of receiveTarget()?.lines ?? []; track line.id) {
+          <tr>
+            <td>{{ productName(line.product_id) }}</td>
+            <td>{{ line.shipped_qty }}</td>
+            <td>
+              <nz-input-number
+                [nzMin]="0"
+                [nzMax]="+line.shipped_qty"
+                [ngModel]="received()[line.id]?.qty"
+                (ngModelChange)="setReceived(line.id, $event)"
+                [attr.aria-label]="'LOGISTICS.TRANSFER.QTY_RECEIVED' | translate"
+              />
+            </td>
+            <td>
+              @if (missing(line.id, line.shipped_qty) > 0) {
+                <input
+                  nz-input
+                  maxlength="255"
+                  [ngModel]="received()[line.id]?.reason"
+                  (ngModelChange)="setReason(line.id, $event)"
+                  [attr.aria-label]="'LOGISTICS.TRANSFER.DISCREPANCY_REASON' | translate"
+                />
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

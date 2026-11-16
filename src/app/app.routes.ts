@@ -41,6 +41,13 @@ export const routes: Routes = [
       import('./features/sales/sales.routes').then((m) => m.SALES_ROUTES),
   },
   {
+    path: 'logistics',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Logistica & DDT', title: 'Logistica' },
+    loadChildren: () =>
+      import('./features/logistics/logistics.routes').then((m) => m.LOGISTICS_ROUTES),
+  },
+  {
     path: 'purchases',
     canActivate: [authGuard],
     data: { breadcrumb: 'Acquisti & AP', title: 'Acquisti' },

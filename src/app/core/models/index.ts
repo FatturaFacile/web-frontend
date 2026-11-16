@@ -21,3 +21,4 @@ export * from './field-service.model';
 export * from './hr.model';
 export * from './retail.model';
 export * from './warranty-rma.model';
+export * from './logistics.model';

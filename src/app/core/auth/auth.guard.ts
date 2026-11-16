@@ -63,3 +63,39 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
     return hasRole ? true : router.createUrlTree(['/dashboard']);
   };
 };
+
+/**
+ * Restricts a route to users holding at least one of the given permissions (RBAC from `/auth/profile`).
+ *
+ * Race-free on cold refresh (F5) and direct URL navigation: the permissions are awaited from the API whenever the
+ * session was not hydrated with them yet, so the guard never decides on an empty permission list and the
+ * unauthorized page never flashes. Unauthenticated users go to `/login?returnUrl=...`, authenticated users without
+ * the permission go to `/dashboard`.
+ */
+export const permissionGuard = (required: string | readonly string[]): CanActivateFn => {
+  const needed = typeof required === 'string' ? [required] : required;
+
+  return (_route, state) => {
+    const authStore = inject(AuthStore);
+    const router = inject(Router);
+    const authApi = inject(AuthApiService);
+
+    const decide = () =>
+      authStore.canAny(needed) ? true : router.createUrlTree(['/dashboard']);
+
+    if (authStore.isAuthenticated() && authStore.permissionsLoaded()) {
+      return decide();
+    }
+
+    return authApi.me().pipe(
+      map((res) => {
+        authStore.setUser(res.data);
+        return decide();
+      }),
+      catchError(() => {
+        authStore.logout();
+        return of(router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }));
+      })
+    );
+  };
+};

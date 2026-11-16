@@ -1,17 +1,19 @@
-import { Component, inject, linkedSignal } from '@angular/core';
+import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { filter, map } from 'rxjs';
-import { AppStore } from '@core';
+import { AppStore, AuthStore, LOGISTICS_PERMISSIONS } from '@core';
 import { TranslatePipe } from '@shared';
 
 interface MenuItem {
   key: string;
   icon: string;
   route?: string;
-  children?: { key: string; route: string; icon: string }[];
+  /** Permission required to see the entry (RBAC); entries without it are always visible */
+  permission?: string;
+  children?: { key: string; route: string; icon: string; permission?: string }[];
 }
 
 interface MenuSection {
@@ -28,6 +30,7 @@ interface MenuSection {
 })
 export class SidebarComponent {
   readonly appStore = inject(AppStore);
+  private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
   private readonly currentUrl = toSignal(
@@ -61,6 +64,24 @@ export class SidebarComponent {
     return null;
   }
 
+  /** Menu without the entries the user is not allowed to see (groups with no visible child are dropped). */
+  protected readonly visibleSections = computed<readonly MenuSection[]>(() =>
+    this.menuSections
+      .map((section) => ({
+        ...section,
+        items: section.items
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((c) => !c.permission || this.auth.can(c.permission)) }
+              : item,
+          )
+          .filter((item) =>
+            item.children ? item.children.length > 0 : !item.permission || this.auth.can(item.permission),
+          ),
+      }))
+      .filter((section) => section.items.length > 0),
+  );
+
   readonly menuSections: readonly MenuSection[] = [
     {
       items: [
@@ -90,6 +111,30 @@ export class SidebarComponent {
             { key: 'NAV.ORDERS', route: '/sales/orders', icon: 'fa-solid fa-cart-shopping' },
             { key: 'NAV.SDI', route: '/sales/sdi', icon: 'fa-solid fa-receipt' },
             { key: 'NAV.QR_BILL', route: '/sales/qr-bill', icon: 'fa-solid fa-qrcode' },
+          ],
+        },
+        {
+          key: 'NAV.LOGISTICS',
+          icon: 'fa-solid fa-truck-ramp-box',
+          children: [
+            {
+              key: 'NAV.LOGISTICS.DDT',
+              route: '/logistics/delivery-notes',
+              icon: 'fa-solid fa-file-lines',
+              permission: LOGISTICS_PERMISSIONS.view,
+            },
+            {
+              key: 'NAV.LOGISTICS.TRANSFERS',
+              route: '/logistics/transfers',
+              icon: 'fa-solid fa-right-left',
+              permission: LOGISTICS_PERMISSIONS.transfers,
+            },
+            {
+              key: 'NAV.LOGISTICS.CONSIGNMENT',
+              route: '/logistics/consignment',
+              icon: 'fa-solid fa-warehouse',
+              permission: LOGISTICS_PERMISSIONS.view,
+            },
           ],
         },
         {

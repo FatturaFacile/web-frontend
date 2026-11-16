@@ -20,6 +20,8 @@ export interface UserProfile {
   readonly avatar: string;
   readonly role: string;
   readonly roles: string[];
+  /** Effective RBAC permissions of the active tenant (API `/auth/profile`); `undefined` until hydrated. */
+  readonly permissions?: string[];
 }
 
 export interface AuthState {
@@ -100,15 +102,26 @@ const initialState: AuthState = {
 export const AuthStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ tenants, activeTenantId, activeJurisdiction, theme }) => ({
+  withComputed(({ tenants, activeTenantId, activeJurisdiction, theme, user }) => ({
     activeTenant: computed(
       () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]
     ),
     isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
     isDarkMode: computed(() => theme() === 'dark'),
+    permissions: computed(() => user()?.permissions ?? []),
+    permissionsLoaded: computed(() => user()?.permissions !== undefined),
   })),
   withMethods((store, i18n = inject(I18nService)) => ({
+    /** True when the signed-in user holds the permission (reactive when read from a template or computed). */
+    can(permission: string): boolean {
+      return (store.user()?.permissions ?? []).includes(permission);
+    },
+    /** True when the user holds at least one of the permissions. */
+    canAny(permissions: readonly string[]): boolean {
+      const granted = store.user()?.permissions ?? [];
+      return permissions.some((p) => granted.includes(p));
+    },
     login(tenantId = 't-it-01', user?: UserProfile | null): void {
       const tenant = store.tenants().find((t) => t.id === tenantId) ?? store.tenants()[0];
       patchState(store, {

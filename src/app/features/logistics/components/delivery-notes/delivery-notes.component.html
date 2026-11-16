@@ -1,0 +1,257 @@
+<app-page-header
+  [title]="'LOGISTICS.DDT.TITLE' | translate"
+  [subtitle]="'LOGISTICS.DDT.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'LOGISTICS.DDT.STATUS' | translate"
+      [attr.aria-label]="'LOGISTICS.DDT.STATUS' | translate"
+      [nzOptions]="statusOptions()"
+      [ngModel]="facade.filterParams().status"
+      (ngModelChange)="facade.setFilter({ status: $event ?? undefined })"
+    />
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'LOGISTICS.DDT.TYPE' | translate"
+      [attr.aria-label]="'LOGISTICS.DDT.TYPE' | translate"
+      [nzOptions]="typeOptions()"
+      [ngModel]="facade.filterParams().type"
+      (ngModelChange)="facade.setFilter({ type: $event ?? undefined })"
+    />
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'LOGISTICS.DDT.REASON' | translate"
+      [attr.aria-label]="'LOGISTICS.DDT.REASON' | translate"
+      [nzOptions]="reasonOptions()"
+      [ngModel]="facade.filterParams().transport_reason_code"
+      (ngModelChange)="facade.setFilter({ transport_reason_code: $event ?? undefined })"
+    />
+    <nz-range-picker (ngModelChange)="onDateRange($event)" [ngModel]="[]" />
+    <span class="spacer"></span>
+    @if (auth.can(perm.create)) {
+      <a nz-button nzType="primary" routerLink="/logistics/delivery-notes/new">
+        <nz-icon nzType="plus" /> {{ 'LOGISTICS.DDT.NEW' | translate }}
+      </a>
+    }
+  </div>
+
+  <div class="toolbar secondary">
+    @if (auth.can(perm.pdf)) {
+      <span class="pdf-options">
+        <nz-switch
+          [ngModel]="hidePrices()"
+          (ngModelChange)="hidePrices.set($event)"
+          [attr.aria-label]="'LOGISTICS.DDT.PDF_HIDE_PRICES' | translate"
+        />
+        {{ 'LOGISTICS.DDT.PDF_HIDE_PRICES' | translate }}
+        <nz-select
+          class="lang"
+          [nzOptions]="langOptions"
+          [ngModel]="pdfLang()"
+          (ngModelChange)="pdfLang.set($event)"
+          [attr.aria-label]="'LOGISTICS.DDT.PDF_LANGUAGE' | translate"
+        />
+      </span>
+    }
+    <span class="spacer"></span>
+    @if (auth.can(perm.invoice)) {
+      <nz-switch
+        [ngModel]="sameMonth()"
+        (ngModelChange)="sameMonth.set($event)"
+        [attr.aria-label]="'LOGISTICS.DDT.DEFERRED_SAME_MONTH' | translate"
+      />
+      <span class="hint">{{ 'LOGISTICS.DDT.DEFERRED_SAME_MONTH' | translate }}</span>
+      <button
+        nz-button
+        type="button"
+        [disabled]="!canBulkInvoice() || busy()"
+        (click)="bulkInvoice()"
+      >
+        <nz-icon nzType="file-done" />
+        {{ 'LOGISTICS.DDT.ACTIONS.DEFERRED_INVOICE' | translate }} ({{ selected().size }})
+      </button>
+      <button nz-button type="button" [disabled]="busy()" (click)="openGroups()">
+        <nz-icon nzType="group" /> {{ 'LOGISTICS.DDT.ACTIONS.GROUP_BY_CUSTOMER' | translate }}
+      </button>
+    }
+  </div>
+
+  <nz-table
+    #table
+    [nzData]="facade.items()"
+    [nzLoading]="facade.loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="facade.totalCount()"
+    [nzPageIndex]="facade.pageIndex()"
+    [nzPageSize]="facade.pageSize()"
+    (nzQueryParams)="facade.onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="48px"></th>
+        <th>{{ 'LOGISTICS.DDT.NUMBER' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.DATE' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.TYPE' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.STATUS' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.CARRIER' | translate }}</th>
+        <th>{{ 'LOGISTICS.DDT.PACKAGES' | translate }}</th>
+        <th nzWidth="260px">{{ 'LOGISTICS.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (note of table.data; track note.id) {
+        <tr>
+          <td
+            [nzChecked]="isSelected(note.id)"
+            [nzDisabled]="!isInvoiceable(note) || !auth.can(perm.invoice)"
+            (nzCheckedChange)="toggle(note.id, $event)"
+          ></td>
+          <td>
+            <strong>{{ note.ddt_number }}</strong>
+          </td>
+          <td>{{ note.date | date: 'dd.MM.yyyy' }}</td>
+          <td>{{ typeKey(note.type) | translate }}</td>
+          <td>
+            <nz-tag [nzColor]="statusColor[note.status]">{{
+              statusKey(note.status) | translate
+            }}</nz-tag>
+          </td>
+          <td>{{ note.carrier_name }}</td>
+          <td>{{ note.packages_count }}</td>
+          <td class="actions">
+            @if (note.status === 'draft') {
+              @if (auth.can(perm.issue)) {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="issue(note)"
+                >
+                  {{ 'LOGISTICS.DDT.ACTIONS.ISSUE' | translate }}
+                </button>
+              }
+              @if (auth.can(perm.update) && !note.sales_order_id) {
+                <button nz-button nzSize="small" type="button" (click)="edit(note)">
+                  {{ 'LOGISTICS.DDT.ACTIONS.EDIT' | translate }}
+                </button>
+              }
+              @if (auth.can(perm.delete) && !note.sales_order_id) {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  type="button"
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'LOGISTICS.DDT.CONFIRM_DELETE' | translate"
+                  (nzOnConfirm)="remove(note)"
+                >
+                  {{ 'LOGISTICS.DDT.ACTIONS.DELETE' | translate }}
+                </button>
+              }
+            }
+            @if (note.status === 'issued' && auth.can(perm.issue)) {
+              <button
+                nz-button
+                nzSize="small"
+                nzType="primary"
+                type="button"
+                [disabled]="busy()"
+                (click)="dispatch(note)"
+              >
+                {{ 'LOGISTICS.DDT.ACTIONS.DISPATCH' | translate }}
+              </button>
+            }
+            @if (
+              (note.status === 'issued' || note.status === 'in_transit') && auth.can(perm.issue)
+            ) {
+              <button
+                nz-button
+                nzSize="small"
+                type="button"
+                [disabled]="busy()"
+                (click)="openDeliver(note)"
+              >
+                {{ 'LOGISTICS.DDT.ACTIONS.DELIVER' | translate }}
+              </button>
+            }
+            @if (
+              ['draft', 'issued', 'in_transit'].includes(note.status) &&
+              auth.can(perm.cancel) &&
+              !note.stock_transfer_order_id
+            ) {
+              <button
+                nz-button
+                nzSize="small"
+                nzDanger
+                type="button"
+                nz-popconfirm
+                [nzPopconfirmTitle]="'LOGISTICS.DDT.CONFIRM_CANCEL' | translate"
+                (nzOnConfirm)="cancel(note)"
+              >
+                {{ 'LOGISTICS.DDT.ACTIONS.CANCEL' | translate }}
+              </button>
+            }
+            @if (auth.can(perm.pdf)) {
+              <button nz-button nzSize="small" type="button" (click)="downloadPdf(note)">
+                <nz-icon nzType="file-pdf" /> {{ 'LOGISTICS.DDT.ACTIONS.PDF' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="deliverTarget() !== null"
+  [nzTitle]="'LOGISTICS.DDT.ACTIONS.DELIVER' | translate"
+  [nzOkText]="'LOGISTICS.DDT.ACTIONS.DELIVER' | translate"
+  [nzCancelText]="'LOGISTICS.CANCEL' | translate"
+  (nzOnOk)="confirmDeliver()"
+  (nzOnCancel)="deliverTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="signature-name">{{ 'LOGISTICS.DDT.SIGNATURE' | translate }}</label>
+    <input
+      id="signature-name"
+      nz-input
+      [ngModel]="signatureName()"
+      (ngModelChange)="signatureName.set($event)"
+      maxlength="150"
+    />
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="groupsVisible()"
+  [nzTitle]="'LOGISTICS.DDT.ACTIONS.GROUP_BY_CUSTOMER' | translate"
+  [nzOkText]="'LOGISTICS.DDT.ACTIONS.RUN_GROUPED' | translate"
+  [nzCancelText]="'LOGISTICS.CANCEL' | translate"
+  [nzOkDisabled]="groups().length === 0 || busy()"
+  (nzOnOk)="runGrouped()"
+  (nzOnCancel)="groupsVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @for (group of groups(); track group.contact_id + group.currency) {
+      <div class="group">
+        <strong>{{ group.contact_id }}</strong> ({{ group.currency }})
+        <ul>
+          @for (note of group.delivery_notes; track note.id) {
+            <li>{{ note.ddt_number }} — {{ note.date | date: 'dd.MM.yyyy' }}</li>
+          }
+        </ul>
+      </div>
+    } @empty {
+      <p>{{ 'LOGISTICS.DDT.NOTHING_TO_INVOICE' | translate }}</p>
+    }
+  </ng-container>
+</nz-modal>
