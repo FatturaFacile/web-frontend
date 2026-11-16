@@ -139,3 +139,18 @@
 .ant-table-wrapper .ant-table-content {
   overflow-x: auto;
 }
+
+// Comfortable density: roomier tables and controls (the default "compact" density comes from theme.less).
+:root[data-density='comfortable'] {
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-tbody > tr > td { padding-block: var(--space-3); }
+
+  .ant-btn:not(.ant-btn-icon-only),
+  .ant-input,
+  .ant-input-number,
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector,
+  .ant-picker { min-height: 36px; }
+
+  .ant-card-body { padding: var(--space-5); }
+  .ant-form-item { margin-bottom: var(--space-4); }
+}

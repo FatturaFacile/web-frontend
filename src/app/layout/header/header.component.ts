@@ -19,6 +19,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { GlobalSearchService } from '@shared/components/global-search/global-search.service';
 import { AppearanceSwitcherComponent } from './appearance-switcher.component';
 import { NotificationBellComponent } from './notification-bell.component';
+import { DisplayPreferencesComponent } from './display-preferences.component';
 
 @Component({
   selector: 'app-header',
@@ -34,6 +35,7 @@ import { NotificationBellComponent } from './notification-bell.component';
     NzAvatarModule,
     AppearanceSwitcherComponent,
     NotificationBellComponent,
+    DisplayPreferencesComponent,
     TranslatePipe,
   ],
   templateUrl: './header.component.html',

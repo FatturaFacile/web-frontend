@@ -1,0 +1,368 @@
+<nz-drawer
+  [nzVisible]="open()"
+  [nzTitle]="rma()?.rma_number ?? ('RMA.DETAIL.TITLE' | translate)"
+  [nzWidth]="'min(880px, 100vw)'"
+  (nzOnClose)="close()"
+>
+  <ng-container *nzDrawerContent>
+    @if (store.isLoading() && !rma()) {
+      <nz-spin nzSimple class="detail-spin" [nzTip]="'COMMON.LOADING' | translate" />
+    } @else if (store.error() && !rma()) {
+      <p role="alert">{{ 'RMA.ERRORS.LOAD_FAILED' | translate }}</p>
+    } @else if (rma(); as r) {
+      <div class="detail-header">
+        <app-rma-status-tag [tag]="rmaStatusTag(r.status)" />
+        <app-rma-status-tag [tag]="warrantyStatusTag(r.warranty_status)" />
+        @if (estimateApprovalTag(r.estimate.approval_status); as tag) {
+          <app-rma-status-tag [tag]="tag" />
+        }
+        @if (loanerOverdue()) {
+          <span class="overdue-flag" role="status">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            {{ 'RMA.LOANER.OVERDUE_DAYS' | translate: { days: r.loaner?.days_outstanding ?? 0 } }}
+          </span>
+        }
+      </div>
+
+      <div class="detail-actions" role="group" [attr.aria-label]="'COMMON.ACTIONS' | translate">
+        @for (action of actions(); track action) {
+          @if (needsConfirm(action)) {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'RMA.CONFIRM.' + action.toUpperCase() | translate"
+              (nzOnConfirm)="trigger(action)"
+              [nzLoading]="store.busy()"
+            >
+              {{ 'RMA.ACTIONS.' + action.toUpperCase() | translate }}
+            </button>
+          } @else {
+            <button
+              nz-button
+              type="button"
+              [nzType]="
+                action === 'cancel' || action === 'decline_estimate' ? 'default' : 'primary'
+              "
+              [nzDanger]="action === 'cancel' || action === 'decline_estimate'"
+              (click)="trigger(action)"
+            >
+              {{ 'RMA.ACTIONS.' + action.toUpperCase() | translate }}
+            </button>
+          }
+        }
+        @if (loanerAllowed()) {
+          <button nz-button type="button" (click)="setDialogOpen('issue_loaner', true)">
+            <i class="fa-solid fa-laptop" aria-hidden="true"></i>&nbsp;{{
+              'RMA.ACTIONS.ISSUE_LOANER' | translate
+            }}
+          </button>
+        }
+        <button nz-button type="button" (click)="showLabel()">
+          <i class="fa-solid fa-tag" aria-hidden="true"></i>&nbsp;{{
+            'RMA.ACTIONS.LABEL' | translate
+          }}
+        </button>
+        <button
+          nz-button
+          type="button"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'RMA.CONFIRM.REGENERATE_TRACKING' | translate"
+          (nzOnConfirm)="regenerateTracking()"
+        >
+          <i class="fa-solid fa-link" aria-hidden="true"></i>&nbsp;{{
+            'RMA.ACTIONS.NEW_TRACKING_LINK' | translate
+          }}
+        </button>
+      </div>
+
+      <nz-tabs>
+        <nz-tab [nzTitle]="'RMA.DETAIL.SUMMARY' | translate">
+          <nz-descriptions
+            nzBordered
+            nzSize="small"
+            [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }"
+          >
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.SERIAL' | translate">
+              <a [routerLink]="['/warranty-rma/passports', r.equipment_passport_id]">{{
+                r.serial_number
+              }}</a>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.CUSTOMER' | translate">{{
+              r.customer?.name ?? '-'
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.SYMPTOM' | translate">{{
+              r.reported_symptom
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.RECEIVED_AT' | translate">{{
+              (r.received_at | date: 'medium') ?? '-'
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.CONDITION_NOTES' | translate">{{
+              r.receipt_condition_notes ?? '-'
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.DIAGNOSTIC_NOTES' | translate">{{
+              r.lab_bench_diagnostic_notes ?? '-'
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.ESTIMATE.LABOUR' | translate">{{
+              toAmount(r.estimate.labour_total) | appCurrency: currency()
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.ESTIMATE.PARTS' | translate">{{
+              toAmount(r.estimate.parts_total) | appCurrency: currency()
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.ESTIMATE.TOTAL' | translate">
+              <strong>{{ toAmount(r.estimate.total) | appCurrency: currency() }}</strong>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.THRESHOLD' | translate">{{
+              toAmount(r.estimate.preauthorized_threshold) | appCurrency: currency()
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.ESTIMATE.EXPIRES_AT' | translate">{{
+              (r.estimate.expires_at | date: 'medium') ?? '-'
+            }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.ESTIMATE.DECIDED' | translate">
+              @if (r.estimate.decided_at) {
+                {{ r.estimate.decided_at | date: 'medium' }}
+                @if (r.estimate.decided_via) {
+                  ({{ 'RMA.DECIDED_VIA.' + r.estimate.decided_via.toUpperCase() | translate }})
+                }
+              } @else {
+                -
+              }
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.DDT_OUTBOUND' | translate">
+              {{
+                r.ddt.causale_outbound
+                  ? ('RMA.DDT.' + r.ddt.causale_outbound.toUpperCase() | translate)
+                  : '-'
+              }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.DDT_RETURN' | translate">
+              {{
+                r.ddt.causale_return
+                  ? ('RMA.DDT.' + r.ddt.causale_return.toUpperCase() | translate)
+                  : '-'
+              }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.VAT_EXEMPT_ART15' | translate">
+              {{ (r.ddt.vat_exempt_art15_dpr633 ? 'RMA.YES' : 'RMA.NO') | translate }}
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'RMA.FIELDS.REPAIR_OUTCOME' | translate">
+              {{
+                r.repair_outcome
+                  ? ('RMA.OUTCOME.' + r.repair_outcome.toUpperCase() | translate)
+                  : '-'
+              }}
+            </nz-descriptions-item>
+            @if (r.repair_test_notes) {
+              <nz-descriptions-item [nzTitle]="'RMA.FIELDS.TEST_NOTES' | translate">{{
+                r.repair_test_notes
+              }}</nz-descriptions-item>
+            }
+            @if (r.cancellation_reason) {
+              <nz-descriptions-item [nzTitle]="'RMA.FIELDS.CANCELLATION_REASON' | translate">{{
+                r.cancellation_reason
+              }}</nz-descriptions-item>
+            }
+          </nz-descriptions>
+          @if (r.receipt_photos.length) {
+            <h4 class="detail-subtitle">{{ 'RMA.FIELDS.PHOTOS' | translate }}</h4>
+            <ul>
+              @for (photo of r.receipt_photos; track $index) {
+                <li>
+                  @if (photo.url) {
+                    <a [href]="photo.url" target="_blank" rel="noopener noreferrer">{{
+                      photo.caption || photo.url
+                    }}</a>
+                  } @else {
+                    {{ photo.caption || photo.asset_id }}
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </nz-tab>
+
+        <nz-tab [nzTitle]="('RMA.DETAIL.LINES' | translate) + ' (' + r.lines.length + ')'">
+          <nz-table
+            #linesTable
+            [nzData]="r.lines"
+            [nzFrontPagination]="false"
+            nzSize="small"
+            [nzScroll]="{ x: '720px' }"
+            [nzNoResult]="'RMA.DETAIL.NO_LINES' | translate"
+          >
+            <thead>
+              <tr>
+                <th scope="col">{{ 'RMA.FIELDS.LINE_TYPE' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.DESCRIPTION' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.QTY' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.UNIT_COST' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.UNIT_PRICE' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.CHARGED_TO' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.DEFECTIVE_SERIAL' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of linesTable.data; track line.id) {
+                <tr>
+                  <td>{{ 'RMA.LINE_TYPE.' + line.line_type.toUpperCase() | translate }}</td>
+                  <td>{{ line.description }}</td>
+                  <td>{{ toAmount(line.qty) }}</td>
+                  <td>{{ toAmount(line.unit_cost) | appCurrency: currency() }}</td>
+                  <td>{{ toAmount(line.unit_price) | appCurrency: currency() }}</td>
+                  <td>
+                    @if (line.charged_to === 'warranty_provision') {
+                      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                    }
+                    {{ 'RMA.CHARGED_TO.' + line.charged_to.toUpperCase() | translate }}
+                  </td>
+                  <td>{{ line.defective_part_serial ?? '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <nz-tab [nzTitle]="'RMA.DETAIL.HISTORY' | translate">
+          <nz-timeline>
+            @for (h of r.history; track $index) {
+              <nz-timeline-item>
+                <strong>{{ rmaStatusLabelKey(h.to) | translate }}</strong>
+                @if (h.from) {
+                  <span class="history-from"
+                    >({{ 'RMA.DETAIL.FROM' | translate }}
+                    {{ rmaStatusLabelKey(h.from) | translate }})</span
+                  >
+                }
+                <div>
+                  {{ h.at | date: 'medium' }} &middot;
+                  {{ 'RMA.ACTOR.' + h.actor_type.toUpperCase() | translate }}
+                </div>
+                @if (h.note) {
+                  <div>{{ h.note }}</div>
+                }
+              </nz-timeline-item>
+            }
+          </nz-timeline>
+        </nz-tab>
+
+        <nz-tab [nzTitle]="'RMA.DETAIL.LOANER' | translate">
+          @if (r.loaner; as loaner) {
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+              <nz-descriptions-item [nzTitle]="'RMA.LOANER.SERIAL' | translate">{{
+                loaner.loaner_serial_number
+              }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+                <app-rma-status-tag [tag]="loanerStatusTag(loaner.status)" />
+                @if (loanerOverdue()) {
+                  <span class="overdue-flag">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    {{ 'RMA.LOANER.OVERDUE_DAYS' | translate: { days: loaner.days_outstanding } }}
+                  </span>
+                }
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'RMA.LOANER.REGISTER' | translate">{{
+                'RMA.REGISTER.' + loaner.register_type.toUpperCase() | translate
+              }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'RMA.LOANER.ISSUED_AT' | translate">{{
+                loaner.issued_at | date: 'medium'
+              }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'RMA.LOANER.EXPECTED_RETURN' | translate">{{
+                (loaner.expected_return_at | date: 'mediumDate') ?? '-'
+              }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'RMA.LOANER.DAYS_OUTSTANDING' | translate">{{
+                loaner.days_outstanding
+              }}</nz-descriptions-item>
+            </nz-descriptions>
+            <p class="detail-link">
+              <a routerLink="/warranty-rma/loaners">{{ 'RMA.LOANER.OPEN_REGISTER' | translate }}</a>
+            </p>
+          } @else {
+            <p>{{ 'RMA.LOANER.NONE' | translate }}</p>
+          }
+        </nz-tab>
+
+        <nz-tab [nzTitle]="('RMA.DETAIL.CLAIMS' | translate) + ' (' + r.vendor_claims.length + ')'">
+          <nz-table
+            #claimsTable
+            [nzData]="r.vendor_claims"
+            [nzFrontPagination]="false"
+            nzSize="small"
+            [nzNoResult]="'RMA.CLAIMS.EMPTY' | translate"
+          >
+            <thead>
+              <tr>
+                <th scope="col">{{ 'RMA.CLAIMS.SUPPLIER' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.DEFECTIVE_SERIAL' | translate }}</th>
+                <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+                <th scope="col">{{ 'RMA.CLAIMS.AMOUNT' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (claim of claimsTable.data; track claim.id) {
+                <tr>
+                  <td>{{ claim.supplier?.name ?? claim.original_supplier_id }}</td>
+                  <td>{{ claim.defective_part_serial }}</td>
+                  <td><app-rma-status-tag [tag]="vendorClaimTag(claim.status)" /></td>
+                  <td>
+                    {{ toAmount(claim.claimed_amount) | appCurrency: claim.currency || currency() }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+          <p class="detail-link">
+            <a routerLink="/warranty-rma/vendor-claims" [queryParams]="{ rma: r.id }">{{
+              'RMA.CLAIMS.OPEN_LIST' | translate
+            }}</a>
+          </p>
+        </nz-tab>
+      </nz-tabs>
+    }
+  </ng-container>
+</nz-drawer>
+
+<app-rma-receive-dialog
+  [open]="isDialogOpen('receive')"
+  (openChange)="setDialogOpen('receive', $event)"
+  (finished)="afterAction($event)"
+/>
+<app-rma-diagnosis-dialog
+  [open]="isDialogOpen('diagnosis')"
+  (openChange)="setDialogOpen('diagnosis', $event)"
+  [currency]="currency()"
+  (finished)="afterAction($event)"
+/>
+<app-rma-complete-repair-dialog
+  [open]="isDialogOpen('complete_repair')"
+  (openChange)="setDialogOpen('complete_repair', $event)"
+  [components]="passportComponents()"
+  (finished)="afterAction($event)"
+/>
+<app-rma-return-dialog
+  [open]="isDialogOpen('return')"
+  (openChange)="setDialogOpen('return', $event)"
+  (finished)="afterAction($event)"
+/>
+<app-rma-note-action-dialog
+  [open]="
+    isDialogOpen('cancel') || isDialogOpen('approve_estimate') || isDialogOpen('decline_estimate')
+  "
+  (openChange)="!$event && dialog.set(null)"
+  [kind]="
+    dialog() === 'approve_estimate'
+      ? 'approve_estimate'
+      : dialog() === 'decline_estimate'
+        ? 'decline_estimate'
+        : 'cancel'
+  "
+  (finished)="afterAction($event)"
+/>
+<app-rma-issue-loaner-dialog
+  [open]="isDialogOpen('issue_loaner')"
+  (openChange)="setDialogOpen('issue_loaner', $event)"
+  (finished)="afterAction($event)"
+/>
+
+<app-token-reveal-dialog [reveal]="store.reveal()" (closed)="store.dismissReveal()" />
+<app-rma-label-dialog [label]="label()" (closed)="label.set(null)" />

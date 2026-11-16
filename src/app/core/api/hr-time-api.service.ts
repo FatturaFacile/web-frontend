@@ -212,6 +212,11 @@ export class HrTimeApiService {
     });
   }
 
+  /** Art. 4 L. 300/1970 GPS gate: returns whether geolocation is enabled and consent is acknowledged. */
+  getClockSettings(): Observable<ApiResponse<{ geolocation_enabled: boolean; privacy_notice_acknowledged: boolean }>> {
+    return this.http.get<ApiResponse<{ geolocation_enabled: boolean; privacy_notice_acknowledged: boolean }>>(`${this.base}/me/clock-settings`);
+  }
+
   // --- Legal compliance ---
 
   /** IT: LUL CSV (Art. 39 D.L. 112/2008). CH: SECO CSV (OLL 1 Art. 73). */

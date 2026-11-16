@@ -105,3 +105,5 @@ export * from './tenant-admin.model';
 export * from './supplier-portal.model';
 export * from './quality.model';
 export * from './collaboration.model';
+export * from './warranty-rma.model';
+export * from './logistics.model';

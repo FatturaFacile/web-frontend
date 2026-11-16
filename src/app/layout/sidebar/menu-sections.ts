@@ -1,11 +1,14 @@
 /** The side menu: every page the user can open, grouped by section, with the ERP module that guards it. */
+import { LOGISTICS_PERMISSIONS } from '@core/models/logistics.model';
 
 export interface MenuItem {
   key: string;
   icon: string;
   route?: string;
   module?: string;
-  children?: { key: string; route: string; icon: string; module?: string }[];
+  /** Permission of the API (RBAC from `/auth/profile`) required to see the entry; checked together with `module`. */
+  permission?: string;
+  children?: { key: string; route: string; icon: string; module?: string; permission?: string }[];
 }
 
 export interface MenuSection {
@@ -224,6 +227,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             route: '/subscriptions/billing',
             icon: 'fa-solid fa-arrows-rotate',
             module: 'subscriptions',
+          },
+        ],
+      },
+      {
+        key: 'NAV.LOGISTICS',
+        icon: 'fa-solid fa-truck-ramp-box',
+        children: [
+          {
+            key: 'NAV.LOGISTICS.DDT',
+            route: '/logistics/delivery-notes',
+            icon: 'fa-solid fa-file-lines',
+            permission: LOGISTICS_PERMISSIONS.view,
+          },
+          {
+            key: 'NAV.LOGISTICS.TRANSFERS',
+            route: '/logistics/transfers',
+            icon: 'fa-solid fa-right-left',
+            permission: LOGISTICS_PERMISSIONS.transfers,
+          },
+          {
+            key: 'NAV.LOGISTICS.CONSIGNMENT',
+            route: '/logistics/consignment',
+            icon: 'fa-solid fa-warehouse',
+            permission: LOGISTICS_PERMISSIONS.view,
           },
         ],
       },
@@ -865,6 +892,43 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.FS_WORK_ORDERS',
             route: '/field-service/work-orders',
             icon: 'fa-solid fa-clipboard-check',
+            module: 'service',
+          },
+        ],
+      },
+      {
+        key: 'NAV.WARRANTY_RMA',
+        icon: 'fa-solid fa-shield-halved',
+        module: 'service',
+        children: [
+          {
+            key: 'NAV.WARRANTY_LOOKUP',
+            route: '/warranty-rma/lookup',
+            icon: 'fa-solid fa-magnifying-glass',
+            module: 'service',
+          },
+          {
+            key: 'NAV.RMA_BENCH',
+            route: '/warranty-rma/bench',
+            icon: 'fa-solid fa-table-columns',
+            module: 'service',
+          },
+          {
+            key: 'NAV.EQUIPMENT_PASSPORTS',
+            route: '/warranty-rma/passports',
+            icon: 'fa-solid fa-id-card',
+            module: 'service',
+          },
+          {
+            key: 'NAV.LOANERS',
+            route: '/warranty-rma/loaners',
+            icon: 'fa-solid fa-laptop',
+            module: 'service',
+          },
+          {
+            key: 'NAV.VENDOR_CLAIMS',
+            route: '/warranty-rma/vendor-claims',
+            icon: 'fa-solid fa-file-invoice-dollar',
             module: 'service',
           },
         ],
