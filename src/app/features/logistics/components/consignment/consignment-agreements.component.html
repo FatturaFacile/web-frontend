@@ -1,0 +1,142 @@
+@if (auth.can(perm.consignment)) {
+  <div class="toolbar">
+    <button nz-button nzType="primary" type="button" (click)="openCreate()">
+      <nz-icon nzType="plus" /> {{ 'LOGISTICS.AGREEMENT.NEW' | translate }}
+    </button>
+  </div>
+}
+
+<nz-table nzSize="small" [nzData]="agreements()" [nzLoading]="loading()" [nzShowPagination]="false">
+  <thead>
+    <tr>
+      <th>{{ 'LOGISTICS.AGREEMENT.NUMBER' | translate }}</th>
+      <th>{{ 'LOGISTICS.AGREEMENT.DIRECTION' | translate }}</th>
+      <th>{{ 'LOGISTICS.CONSIGNMENT.WAREHOUSE' | translate }}</th>
+      <th>{{ 'LOGISTICS.AGREEMENT.PARTNER' | translate }}</th>
+      <th>{{ 'LOGISTICS.AGREEMENT.VALIDITY' | translate }}</th>
+      <th>{{ 'LOGISTICS.AGREEMENT.BILLING' | translate }}</th>
+      <th>{{ 'LOGISTICS.DDT.STATUS' | translate }}</th>
+      <th>{{ 'LOGISTICS.ACTIONS' | translate }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (a of agreements(); track a.id) {
+      <tr>
+        <td>
+          <strong>{{ a.agreement_number }}</strong>
+        </td>
+        <td>
+          <nz-tag [nzColor]="a.direction === 'customer' ? 'blue' : 'orange'">{{
+            'LOGISTICS.AGREEMENT.DIRECTION.' + a.direction.toUpperCase() | translate
+          }}</nz-tag>
+        </td>
+        <td>{{ warehouseName(a.warehouse_id) }}</td>
+        <td>{{ partnerLabel(a.partner_id) }}</td>
+        <td>
+          {{ a.valid_from | date: 'dd.MM.yyyy' }}
+          @if (a.valid_to) {
+            → {{ a.valid_to | date: 'dd.MM.yyyy' }}
+          }
+        </td>
+        <td>
+          {{ 'LOGISTICS.AGREEMENT.FREQUENCY.' + a.billing_frequency.toUpperCase() | translate }},
+          {{ a.payment_terms_days }} {{ 'LOGISTICS.AGREEMENT.DAYS' | translate }}
+        </td>
+        <td>
+          <nz-tag [nzColor]="a.status === 'active' ? 'green' : 'default'">{{
+            'LOGISTICS.AGREEMENT.STATUS.' + a.status.toUpperCase() | translate
+          }}</nz-tag>
+        </td>
+        <td>
+          @if (a.status === 'active' && auth.can(perm.consignment)) {
+            <button nz-button nzSize="small" nzDanger type="button" (click)="confirmTerminate(a)">
+              {{ 'LOGISTICS.AGREEMENT.TERMINATE' | translate }}
+            </button>
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</nz-table>
+
+<nz-drawer
+  [nzVisible]="createVisible()"
+  nzWidth="520"
+  [nzTitle]="'LOGISTICS.AGREEMENT.NEW' | translate"
+  (nzOnClose)="createVisible.set(false)"
+>
+  <ng-container *nzDrawerContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="create()">
+      <nz-form-item>
+        <nz-form-label nzFor="a-warehouse" nzRequired>{{
+          'LOGISTICS.CONSIGNMENT.WAREHOUSE' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-select
+            id="a-warehouse"
+            formControlName="warehouse_id"
+            [nzOptions]="warehouseOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-partner">{{ 'LOGISTICS.AGREEMENT.PARTNER' | translate }}</nz-form-label>
+        <nz-form-control
+          ><nz-select
+            id="a-partner"
+            nzAllowClear
+            nzShowSearch
+            formControlName="partner_id"
+            [nzOptions]="partnerOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-number">{{ 'LOGISTICS.AGREEMENT.NUMBER' | translate }}</nz-form-label>
+        <nz-form-control
+          ><input nz-input id="a-number" maxlength="50" formControlName="agreement_number"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-period" nzRequired>{{
+          'LOGISTICS.AGREEMENT.VALIDITY' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-range-picker id="a-period" formControlName="period"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-frequency">{{
+          'LOGISTICS.AGREEMENT.BILLING' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-select
+            id="a-frequency"
+            formControlName="billing_frequency"
+            [nzOptions]="frequencyOptions()"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-terms">{{
+          'LOGISTICS.AGREEMENT.PAYMENT_TERMS' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          ><nz-input-number
+            id="a-terms"
+            formControlName="payment_terms_days"
+            [nzMin]="0"
+            [nzMax]="365"
+        /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="a-notes">{{ 'LOGISTICS.TRANSFER.NOTES' | translate }}</nz-form-label>
+        <nz-form-control
+          ><textarea nz-input id="a-notes" rows="2" formControlName="notes"></textarea
+        ></nz-form-control>
+      </nz-form-item>
+      <div class="footer">
+        <button nz-button nzType="primary" type="submit" [disabled]="form.invalid || busy()">
+          {{ 'LOGISTICS.WIZARD.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</nz-drawer>

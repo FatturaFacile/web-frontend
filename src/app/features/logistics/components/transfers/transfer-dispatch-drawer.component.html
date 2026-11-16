@@ -1,0 +1,218 @@
+<nz-drawer
+  [nzVisible]="transfer() !== null"
+  nzWidth="680"
+  [nzTitle]="'LOGISTICS.DISPATCH.TITLE' | translate"
+  (nzOnClose)="close()"
+>
+  <ng-container *nzDrawerContent>
+    @if (transfer(); as t) {
+      <nz-steps nzSize="small" class="stepper" [nzCurrent]="step()">
+        <nz-step [nzTitle]="'LOGISTICS.DISPATCH.STEP_CARRIER' | translate" />
+        <nz-step [nzTitle]="'LOGISTICS.DISPATCH.STEP_PREVIEW' | translate" />
+      </nz-steps>
+
+      @if (step() === 0) {
+        <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="next()">
+          <nz-form-item>
+            <nz-form-label nzFor="d-transport-by" nzRequired>{{
+              'LOGISTICS.DISPATCH.TRANSPORT_BY' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="d-transport-by"
+                formControlName="transport_by"
+                [nzOptions]="transportByOptions()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label
+              nzFor="d-carrier"
+              [nzRequired]="form.controls.transport_by.value === 'carrier'"
+              >{{ 'LOGISTICS.DISPATCH.CARRIER' | translate }}</nz-form-label
+            >
+            <nz-form-control
+              [nzErrorTip]="
+                carrierMissing() ? ('LOGISTICS.DISPATCH.CARRIER_REQUIRED' | translate) : ''
+              "
+              [nzValidateStatus]="carrierMissing() ? 'error' : ''"
+            >
+              <input nz-input id="d-carrier" formControlName="carrier_name" maxlength="255" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="d-plate">{{
+              'LOGISTICS.DISPATCH.LICENSE_PLATE' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input id="d-plate" formControlName="carrier_license_plate" maxlength="30" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="d-terms" nzRequired>{{
+              'LOGISTICS.DISPATCH.CARRIAGE_TERMS' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="d-terms"
+                formControlName="carriage_terms"
+                [nzOptions]="carriageOptions()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="d-appearance">{{
+              'LOGISTICS.DISPATCH.GOODS_APPEARANCE' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <input
+                nz-input
+                id="d-appearance"
+                formControlName="goods_appearance"
+                maxlength="100"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="d-packages">{{
+              'LOGISTICS.DISPATCH.PACKAGES' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                id="d-packages"
+                formControlName="packages_count"
+                [nzMin]="0"
+                [nzPrecision]="0"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="d-weight">{{
+              'LOGISTICS.DISPATCH.GROSS_WEIGHT' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                id="d-weight"
+                formControlName="gross_weight_kg"
+                [nzMin]="0"
+                [nzStep]="0.1"
+              />
+            </nz-form-control>
+          </nz-form-item>
+
+          <div class="footer">
+            <button nz-button nzType="primary" type="submit" [disabled]="!canContinue()">
+              {{ 'LOGISTICS.DISPATCH.NEXT' | translate }}
+            </button>
+            <button nz-button type="button" (click)="close()">
+              {{ 'LOGISTICS.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        <nz-alert
+          class="block"
+          nzType="info"
+          nzShowIcon
+          [nzMessage]="'LOGISTICS.DISPATCH.DDT_NOTICE' | translate"
+        />
+
+        <nz-descriptions
+          class="block"
+          nzBordered
+          nzSize="small"
+          [nzColumn]="1"
+          [nzTitle]="'LOGISTICS.DISPATCH.DDT_PREVIEW' | translate"
+        >
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.TRANSFER.NUMBER' | translate">{{
+            t.transfer_number
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.TRANSFER.PURPOSE' | translate">{{
+            purposeKey(t.purpose) | translate
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DDT.TYPE' | translate">{{
+            ddtTypeKey(ddtType()!) | translate
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.TRANSPORT_REASON' | translate">
+            <nz-tag nzColor="blue">{{ reasonKey(reason()!) | translate }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.TRANSFER.ORIGIN' | translate">{{
+            warehouseName(t.origin_warehouse_id)
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.TRANSFER.DESTINATION' | translate">{{
+            warehouseName(t.destination_warehouse_id)
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.PRICES_ON_DDT' | translate">{{
+            (showsPrices() ? 'LOGISTICS.DISPATCH.PRICES_SHOWN' : 'LOGISTICS.DISPATCH.PRICES_HIDDEN')
+              | translate
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.TRANSPORT_BY' | translate">{{
+            transportByKey(summary().transport_by ?? 'sender') | translate
+          }}</nz-descriptions-item>
+          @if (summary().carrier_name) {
+            <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.CARRIER' | translate">{{
+              summary().carrier_name
+            }}</nz-descriptions-item>
+          }
+          @if (summary().carrier_license_plate) {
+            <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.LICENSE_PLATE' | translate">{{
+              summary().carrier_license_plate
+            }}</nz-descriptions-item>
+          }
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.CARRIAGE_TERMS' | translate">{{
+            carriageKey(summary().carriage_terms ?? 'free') | translate
+          }}</nz-descriptions-item>
+          @if (summary().packages_count !== undefined) {
+            <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.PACKAGES' | translate">{{
+              summary().packages_count
+            }}</nz-descriptions-item>
+          }
+          @if (summary().gross_weight_kg !== undefined) {
+            <nz-descriptions-item [nzTitle]="'LOGISTICS.DISPATCH.GROSS_WEIGHT' | translate">{{
+              summary().gross_weight_kg
+            }}</nz-descriptions-item>
+          }
+        </nz-descriptions>
+
+        <nz-table class="block" nzSize="small" [nzData]="t.lines ?? []" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+              <th>{{ 'LOGISTICS.DDT.LINE_QTY' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of t.lines ?? []; track line.id) {
+              <tr>
+                <td>{{ productName(line.product_id) }}</td>
+                <td>{{ line.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        @if (interCompany()) {
+          <nz-alert
+            class="block"
+            nzType="warning"
+            nzShowIcon
+            [nzMessage]="'LOGISTICS.DISPATCH.INTER_COMPANY_TITLE' | translate"
+            [nzDescription]="'LOGISTICS.DISPATCH.INTER_COMPANY_NOTE' | translate"
+          />
+        }
+        @if (error(); as message) {
+          <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="message" />
+        }
+
+        <div class="footer">
+          <button nz-button nzType="primary" type="button" [disabled]="busy()" (click)="confirm()">
+            {{ 'LOGISTICS.DISPATCH.CONFIRM' | translate }}
+          </button>
+          <button nz-button type="button" [disabled]="busy()" (click)="back()">
+            {{ 'LOGISTICS.DISPATCH.BACK' | translate }}
+          </button>
+        </div>
+      }
+    }
+  </ng-container>
+</nz-drawer>
