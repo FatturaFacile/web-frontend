@@ -4,6 +4,10 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   NotificationPreferences,
+  NotificationAlertRule,
+  NotificationAlertRuleInput,
+  NotificationDelivery,
+  NotificationDevice,
   NotificationRealtimeConfig,
   NotificationSettings,
   PlatformNotification,
@@ -75,5 +79,45 @@ export class PlatformApiService {
 
   getNotificationRealtime(): Observable<PlatformResponse<NotificationRealtimeConfig>> {
     return this.http.get<PlatformResponse<NotificationRealtimeConfig>>(`${this.base}/notifications/realtime`);
+  }
+
+  getNotificationDeliveries(status?: string, page = 1): Observable<PlatformResponse<NotificationDelivery[]>> {
+    let params = new HttpParams().set('page', page);
+    if (status) {
+      params = params.set('status', status);
+    }
+    return this.http.get<PlatformResponse<NotificationDelivery[]>>(`${this.base}/notifications/deliveries`, { params });
+  }
+
+  getNotificationDevices(): Observable<PlatformResponse<NotificationDevice[]>> {
+    return this.http.get<PlatformResponse<NotificationDevice[]>>(`${this.base}/notifications/devices`);
+  }
+
+  deleteNotificationDevice(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/notifications/devices/${id}`);
+  }
+
+  linkTelegram(): Observable<PlatformResponse<{ url: string }>> {
+    return this.http.post<PlatformResponse<{ url: string }>>(`${this.base}/notifications/channels/telegram/link`, {});
+  }
+
+  unlinkTelegram(): Observable<void> {
+    return this.http.delete<void>(`${this.base}/notifications/channels/telegram`);
+  }
+
+  getAlertRules(): Observable<{ data: NotificationAlertRule[]; metrics: string[] }> {
+    return this.http.get<{ data: NotificationAlertRule[]; metrics: string[] }>(`${this.base}/notification-alert-rules`);
+  }
+
+  createAlertRule(body: NotificationAlertRuleInput): Observable<PlatformResponse<NotificationAlertRule>> {
+    return this.http.post<PlatformResponse<NotificationAlertRule>>(`${this.base}/notification-alert-rules`, body);
+  }
+
+  updateAlertRule(id: string, body: NotificationAlertRuleInput): Observable<PlatformResponse<NotificationAlertRule>> {
+    return this.http.put<PlatformResponse<NotificationAlertRule>>(`${this.base}/notification-alert-rules/${id}`, body);
+  }
+
+  deleteAlertRule(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/notification-alert-rules/${id}`);
   }
 }

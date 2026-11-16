@@ -1,6 +1,6 @@
 /** Platform features: recycle bin and in-app notification centre. Mirrors the API of the Platform module. */
 
-export type NotificationChannel = 'database' | 'mail';
+export type NotificationChannel = 'database' | 'mail' | 'push' | 'telegram' | 'whatsapp';
 export type NotificationFrequency = 'immediate' | 'digest';
 export type NotificationCategory = 'general' | 'billing' | 'crm' | 'inventory' | 'hr' | 'system';
 
@@ -58,6 +58,8 @@ export interface NotificationSettings {
   quiet_end: string;
   timezone: string;
   muted_until: string | null;
+  whatsapp_number?: string | null;
+  telegram_linked?: boolean;
 }
 
 /** Connection parameters of the WebSocket server (GET /platform/notifications/realtime). */
@@ -76,3 +78,44 @@ export interface NotificationsChangedEvent {
   unread_count: number;
   notification: PlatformNotification | null;
 }
+
+export type DeliveryStatus = 'queued' | 'sent' | 'opened' | 'failed';
+
+/** A row of the delivery register (GET /platform/notifications/deliveries). */
+export interface NotificationDelivery {
+  id: string;
+  category: NotificationCategory;
+  channel: NotificationChannel;
+  title: string | null;
+  deep_link: string | null;
+  status: DeliveryStatus;
+  error: string | null;
+  sent_at: string | null;
+  opened_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationDevice {
+  id: string;
+  platform: 'ios' | 'android' | 'web';
+  name: string | null;
+  last_seen_at: string | null;
+}
+
+/** An administrator alert rule (GET/POST/PUT /platform/notification-alert-rules). */
+export interface NotificationAlertRule {
+  id: string;
+  name: string;
+  metric: string;
+  threshold: string;
+  currency: string | null;
+  category: NotificationCategory;
+  recipient_user_ids: string[] | null;
+  is_active: boolean;
+}
+
+export type NotificationAlertRuleInput = Pick<NotificationAlertRule, 'name' | 'metric' | 'category'> & {
+  threshold: number;
+  currency: string | null;
+  is_active: boolean;
+};
