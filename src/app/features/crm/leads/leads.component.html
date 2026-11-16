@@ -32,14 +32,14 @@
     </button>
   </div>
 
-  <nz-table #table [nzData]="leads()" [nzLoading]="loading()" nzSize="middle" [nzShowPagination]="false">
+  <nz-table #table [nzData]="leads()" [nzLoading]="loading()" nzSize="middle" [nzShowPagination]="false" [nzScroll]="{ x: '760px' }">
     <thead>
       <tr>
         <th>{{ "CRM.LEADS.COLUMNS.NAME" | translate }}</th>
         <th>{{ "CRM.LEADS.COLUMNS.CONTACT" | translate }}</th>
         <th nzWidth="170px">{{ "CRM.LEADS.COLUMNS.SCORE" | translate }}</th>
         <th nzWidth="130px">{{ "CRM.LEADS.COLUMNS.STATUS" | translate }}</th>
-        <th nzWidth="180px"></th>
+        <th nzWidth="200px"></th>
       </tr>
     </thead>
     <tbody>
