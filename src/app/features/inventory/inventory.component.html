@@ -477,6 +477,7 @@
       <ng-template #productCostTpl let-it>{{ +it.cost_price | money: authStore.activeCurrency() }}</ng-template>
       <ng-template #productPriceTpl let-it>{{ +it.sale_price | money: authStore.activeCurrency() }}</ng-template>
       <ng-template #productActionsTpl let-it>
+        <button nz-button nzType="text" nzSize="small" (click)="openEditModal(it)" appIconAction="edit"></button>
         <button
           nz-button
           nzType="text"
@@ -743,14 +744,17 @@
 <!-- MODAL: CREATE PRODUCT -->
 <nz-modal
   [(nzVisible)]="createModalVisible"
-  [nzTitle]="'INVENTORY.ADD_MODAL_TITLE' | translate"
+  [nzTitle]="(editingProduct() ? 'INVENTORY.EDIT_MODAL_TITLE' : 'INVENTORY.ADD_MODAL_TITLE') | translate"
   [nzOkLoading]="saving()"
+  nzWidth="640px"
   (nzOnCancel)="createModalVisible.set(false)"
   (nzOnOk)="submitCreateProduct()"
   okAction="create"
 >
   <ng-container *nzModalContent>
     <form nz-form [formGroup]="productForm" nzLayout="vertical">
+     <nz-tabs [(nzSelectedIndex)]="productModalTab">
+      <nz-tab [nzTitle]="'CUSTOMS_CODES.PRODUCT.TAB_GENERAL' | translate">
       <nz-form-item>
         <nz-form-label nzRequired>{{ 'INVENTORY.COL_SKU' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="errorTip(productForm, 'sku')">
@@ -814,6 +818,11 @@
           <input nz-input formControlName="hs_code" placeholder="es. 8471.3000" />
         </nz-form-control>
       </nz-form-item>
+      </nz-tab>
+      <nz-tab [nzTitle]="'CUSTOMS_CODES.PRODUCT.TAB_CUSTOMS' | translate">
+        <app-product-customs-origin [form]="productForm.controls.customs" />
+      </nz-tab>
+     </nz-tabs>
     </form>
   </ng-container>
 </nz-modal>

@@ -9,6 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
 import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoice-origin-declaration.component';
 
 /**
  * Read-only detail of an invoice: number (assigned by the server), payment term and, for a foreign-currency invoice,
@@ -30,12 +31,13 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
     NzTableModule,
     NzTagModule,
     TranslatePipe,
+    InvoiceOriginDeclarationComponent,
   ],
   template: `
     <nz-modal
       [nzVisible]="open()"
       [nzTitle]="'SALES.INVOICES.DETAIL.TITLE' | translate"
-      nzWidth="640px"
+      nzWidth="860px"
       [nzFooter]="footer"
       (nzOnCancel)="open.set(false)"
     >
@@ -68,6 +70,53 @@ import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, G
           </nz-descriptions>
           @if (!isForeignCurrency()) {
             <p class="hint">{{ 'SALES.INVOICES.DETAIL.NO_FX_NEEDED' | translate }}</p>
+          }
+          @if (inv.items?.length) {
+            <h4 class="emails-title">{{ 'CUSTOMS_CODES.INVOICE.LINES' | translate }}</h4>
+            <nz-table #lineTable [nzData]="inv.items ?? []" [nzFrontPagination]="false" nzSize="small">
+              <thead>
+                <tr>
+                  <th>{{ 'SALES.INVOICES.ITEM.DESCRIPTION' | translate }}</th>
+                  @if (crossBorder()) {
+                    <th>{{ 'CUSTOMS_CODES.PRODUCT.TARIC_CODE' | translate }}</th>
+                    <th>{{ 'CUSTOMS_CODES.PRODUCT.COUNTRY' | translate }}</th>
+                    <th>{{ 'CUSTOMS_CODES.PRODUCT.ORIGIN_TYPE' | translate }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of lineTable.data; track $index) {
+                  <tr>
+                    <td>{{ line.description }}</td>
+                    @if (crossBorder()) {
+                      <td>
+                        @if (line.taric_code) {
+                          <code>{{ line.taric_code }}</code>
+                        } @else {
+                          -
+                        }
+                      </td>
+                      <td>
+                        {{ line.country_of_origin || '-' }}
+                        @if (line.made_in_label) {
+                          <div class="hint">{{ line.made_in_label }}</div>
+                        }
+                      </td>
+                      <td>
+                        @if (line.origin_type) {
+                          <nz-tag [nzColor]="line.origin_type === 'preferential' ? 'green' : 'default'">
+                            {{ (line.origin_type === 'preferential' ? 'CUSTOMS_CODES.PRODUCT.PREFERENTIAL' : 'CUSTOMS_CODES.PRODUCT.NON_PREFERENTIAL') | translate }}
+                          </nz-tag>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          }
+          @if (crossBorder()) {
+            <app-invoice-origin-declaration [invoice]="inv" />
           }
           <h4 class="emails-title">{{ 'SALES.INVOICES.DETAIL.EMAILS' | translate }}</h4>
           <nz-table #emailTable [nzData]="emails()" [nzFrontPagination]="false" nzSize="small" [nzLoading]="emailsLoading()">
@@ -144,6 +193,9 @@ export class InvoiceDetailModalComponent {
     ),
     { initialValue: [] },
   );
+
+  /** Customs data (TARIC code, origin) and the origin declaration are shown when the customer is in another country. */
+  protected readonly crossBorder = computed(() => isCrossBorderInvoice(this.invoice()));
 
   /** A foreign-currency invoice carries the server-assigned rate against the accounting currency. */
   protected readonly isForeignCurrency = computed(() => {

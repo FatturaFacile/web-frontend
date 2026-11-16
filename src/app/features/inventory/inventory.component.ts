@@ -50,9 +50,12 @@ import {
   WarehouseBinItem,
   WarehouseItem,
   applyServerErrors,
+  madeInLabelFor,
+  normalizeTaricCode,
 } from '@core';
 import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { formErrorTip } from './form-error-tip';
+import { ProductCustomsOriginComponent, taricCodeValidator } from './product-customs-origin.component';
 
 /** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
 function toIsoDay(date: Date): string {
@@ -105,6 +108,7 @@ function differentFromSourceBin(control: AbstractControl): ValidationErrors | nu
     PageHeaderComponent,
     BaseTableComponent,
     TranslatePipe,
+    ProductCustomsOriginComponent,
   ],
   templateUrl: './inventory.component.html',
 })
@@ -137,7 +141,23 @@ export class InventoryComponent implements OnInit {
     sale_price: this.fb.control(0, [Validators.required, Validators.min(0)]),
     tax_rate: this.fb.control(22, [Validators.required, Validators.min(0), Validators.max(100)]),
     hs_code: this.fb.control(''),
+    /** "Customs & Origin" tab: the controls are named as the API fields. */
+    customs: this.fb.group({
+      taric_code: this.fb.control('', [taricCodeValidator]),
+      customs_taric_code_id: this.fb.control<string | null>(null),
+      country_of_origin: this.fb.control<string | null>(null),
+      origin_type: this.fb.control<'preferential' | 'non_preferential' | null>(null),
+      made_in_label: this.fb.control('', [Validators.maxLength(255)]),
+      preferential_agreement_id: this.fb.control<string | null>(null),
+      eur1_required: this.fb.control(false),
+      origin_rule_notes: this.fb.control(''),
+    }),
   });
+
+  /** Product being edited in the modal (null while a new product is created). */
+  readonly editingProduct = signal<ProductItem | null>(null);
+  /** Tab of the product modal: 0 = general data, 1 = customs & origin. */
+  readonly productModalTab = signal(0);
 
   // 2. Stock Levels & Balances
   readonly stockLevels = signal<StockLevelItem[]>([]);
@@ -684,6 +704,8 @@ export class InventoryComponent implements OnInit {
   }
 
   openCreateModal(): void {
+    this.editingProduct.set(null);
+    this.productModalTab.set(0);
     this.productForm.reset({
       sku: '',
       name: '',
@@ -692,6 +714,41 @@ export class InventoryComponent implements OnInit {
       sale_price: 0,
       tax_rate: this.authStore.activeJurisdiction() === 'CH' ? 8.1 : 22,
       hs_code: '',
+      customs: {
+        taric_code: '',
+        customs_taric_code_id: null,
+        country_of_origin: null,
+        origin_type: null,
+        made_in_label: '',
+        preferential_agreement_id: null,
+        eur1_required: false,
+        origin_rule_notes: '',
+      },
+    });
+    this.createModalVisible.set(true);
+  }
+
+  openEditModal(item: ProductItem): void {
+    this.editingProduct.set(item);
+    this.productModalTab.set(0);
+    this.productForm.reset({
+      sku: item.sku,
+      name: item.name,
+      unit_measure: item.unit_measure,
+      cost_price: Number(item.cost_price),
+      sale_price: Number(item.sale_price),
+      tax_rate: Number(item.tax_rate),
+      hs_code: item.hs_code ?? '',
+      customs: {
+        taric_code: item.taric_code ?? '',
+        customs_taric_code_id: item.customs_taric_code_id ?? null,
+        country_of_origin: item.country_of_origin ?? null,
+        origin_type: item.origin_type ?? null,
+        made_in_label: item.made_in_label ?? '',
+        preferential_agreement_id: item.preferential_agreement_id ?? null,
+        eur1_required: item.eur1_required ?? false,
+        origin_rule_notes: item.origin_rule_notes ?? '',
+      },
     });
     this.createModalVisible.set(true);
   }
@@ -704,6 +761,8 @@ export class InventoryComponent implements OnInit {
 
     this.saving.set(true);
     const formVal = this.productForm.getRawValue();
+    const customs = formVal.customs;
+    const country = customs.country_of_origin?.trim().toUpperCase() || null;
     const payload: CreateProductPayload = {
       sku: formVal.sku,
       name: formVal.name,
@@ -712,18 +771,39 @@ export class InventoryComponent implements OnInit {
       sale_price: formVal.sale_price,
       tax_rate: formVal.tax_rate,
       hs_code: formVal.hs_code || null,
+      customs_taric_code_id: customs.customs_taric_code_id || null,
+      taric_code: normalizeTaricCode(customs.taric_code) || null,
+      country_of_origin: country,
+      origin_type: customs.origin_type,
+      made_in_label: customs.made_in_label.trim() || (country ? madeInLabelFor(country) : null),
+      preferential_agreement_id: customs.preferential_agreement_id || null,
+      eur1_required: customs.eur1_required,
+      origin_rule_notes: customs.origin_rule_notes.trim() || null,
     };
 
-    this.inventoryApi.createProduct(payload).subscribe({
+    const editing = this.editingProduct();
+    const request = editing
+      ? this.inventoryApi.updateProduct(editing.id, payload)
+      : this.inventoryApi.createProduct(payload);
+
+    request.subscribe({
       next: () => {
         this.saving.set(false);
         this.createModalVisible.set(false);
-        this.message.success(this.translate.instant('inventory.messages.created'));
+        this.message.success(
+          this.translate.instant(editing ? 'CUSTOMS_CODES.MESSAGES.SAVED' : 'inventory.messages.created'),
+        );
         this.loadProducts();
         this.loadStockLevels();
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
+        applyServerErrors(this.productForm.controls.customs, err);
+        applyServerErrors(this.productForm, err);
+        const generalInvalid = Object.entries(this.productForm.controls).some(
+          ([key, control]) => key !== 'customs' && control.invalid,
+        );
+        this.productModalTab.set(this.productForm.controls.customs.invalid && !generalInvalid ? 1 : 0);
       },
     });
   }

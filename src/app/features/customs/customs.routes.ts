@@ -20,6 +20,17 @@ export const CUSTOMS_ROUTES: Routes = [
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
+    path: 'taric-codes',
+    data: { breadcrumb: 'NAV.CUSTOMS_TARIC_CODES', title: 'NAV.CUSTOMS_TARIC_CODES' },
+    loadComponent: () => import('./codes/taric-codes.component').then((m) => m.TaricCodesComponent),
+  },
+  {
+    path: 'free-trade-agreements',
+    data: { breadcrumb: 'NAV.CUSTOMS_FREE_TRADE_AGREEMENTS', title: 'NAV.CUSTOMS_FREE_TRADE_AGREEMENTS' },
+    loadComponent: () =>
+      import('./codes/free-trade-agreements.component').then((m) => m.FreeTradeAgreementsComponent),
+  },
+  {
     path: 'setup',
     data: { breadcrumb: 'RES.PAGE.CUSTOMS_SETUP', title: 'RES.PAGE.CUSTOMS_SETUP', page: CUSTOMS_SETUP_PAGE },
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),

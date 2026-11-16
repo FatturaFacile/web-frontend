@@ -463,6 +463,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'customs',
           },
           {
+            key: 'NAV.CUSTOMS_TARIC_CODES',
+            route: '/customs/taric-codes',
+            icon: 'fa-solid fa-barcode',
+            module: 'customs',
+          },
+          {
+            key: 'NAV.CUSTOMS_FREE_TRADE_AGREEMENTS',
+            route: '/customs/free-trade-agreements',
+            icon: 'fa-solid fa-handshake',
+            module: 'customs',
+          },
+          {
             key: 'NAV.CUSTOMS_SETUP',
             route: '/customs/setup',
             icon: 'fa-solid fa-sliders',
