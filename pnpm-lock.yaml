@@ -222,8 +222,8 @@ importers:
         specifier: 22.2.4
         version: 22.2.4(@angular/compiler@22.2.4)(typescript@6.0.3)
       '@angular/language-service':
-        specifier: 22.2.4
-        version: 22.2.4
+        specifier: 22.2.6
+        version: 22.2.6
       '@angular/localize':
         specifier: ^22.2.4
         version: 22.2.4(@angular/compiler-cli@22.2.4(@angular/compiler@22.2.4)(typescript@6.0.3))(@angular/compiler@22.2.4)
@@ -468,8 +468,8 @@ packages:
       '@angular/platform-browser': 22.2.4
       rxjs: ^6.5.3 || ^7.4.0
 
-  '@angular/language-service@22.2.4':
-    resolution: {integrity: sha512-68/nCIjlDzujoitDCM5n5zdd+Vi/TMTlVXO34XiqWgZjqhfO9410Cq9Y0m6o5LMGlPX6pQlpW/kPXb/oQMYNjg==}
+  '@angular/language-service@22.2.6':
+    resolution: {integrity: sha512-/6vZCGLMhXGvrrMgfCTKw+lTB50e7a1dwWIBp5ykJ80Ub8YTVI1pCJSAIuJw3b3e0ML2uFQYJLPwa/9glg9YIQ==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0}
 
   '@angular/localize@22.2.4':
@@ -3427,7 +3427,7 @@ snapshots:
       tslib: 2.9.1
       zod: 4.6.7
 
-  '@angular/language-service@22.2.4': {}
+  '@angular/language-service@22.2.6': {}
 
   '@angular/localize@22.2.4(@angular/compiler-cli@22.2.4(@angular/compiler@22.2.4)(typescript@6.0.3))(@angular/compiler@22.2.4)':
     dependencies:
