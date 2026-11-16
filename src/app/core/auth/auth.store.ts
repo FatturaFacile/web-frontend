@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { I18nService, resolveInitialLanguage, SupportedLanguage } from '../i18n';
+import { UiPreferencesService } from '../theme/ui-preferences.service';
 
 export interface Tenant {
   readonly id: string;
@@ -50,7 +51,6 @@ export interface AuthState {
   readonly activeJurisdiction: 'IT' | 'CH';
   readonly activeCurrency: 'EUR' | 'CHF';
   readonly activeLocale: SupportedLanguage;
-  readonly theme: 'light' | 'dark';
   readonly twoFactorSetupRequired: boolean;
 }
 
@@ -92,19 +92,6 @@ export const DEFAULT_USER: UserProfile = {
     role: 'owner',
   },
 };
-
-function getInitialTheme(): 'light' | 'dark' {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const saved = localStorage.getItem('theme') || localStorage.getItem('ff_theme');
-    if (saved === 'dark' || saved === 'light') {
-      return saved;
-    }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-  }
-  return 'light';
-}
 
 function getInitialTenantId(): string {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -215,7 +202,6 @@ function getInitialAuthState(): AuthState {
     activeJurisdiction: initialTenant.jurisdiction,
     activeCurrency: initialTenant.currency,
     activeLocale: resolveInitialLanguage(),
-    theme: getInitialTheme(),
     twoFactorSetupRequired: false,
   };
 }
@@ -225,7 +211,7 @@ const initialState: AuthState = getInitialAuthState();
 export const AuthStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ tenants, activeTenantId, activeJurisdiction, theme, user }) => ({
+  withComputed(({ tenants, activeTenantId, activeJurisdiction, user }, ui = inject(UiPreferencesService)) => ({
     activeTenant: computed(
       () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]
     ),
@@ -259,9 +245,10 @@ export const AuthStore = signalStore(
     }),
     isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
-    isDarkMode: computed(() => theme() === 'dark'),
+    /** The theme in force; the preference itself lives in UiPreferencesService. */
+    isDarkMode: ui.isDark,
   })),
-  withMethods((store, i18n = inject(I18nService)) => ({
+  withMethods((store, i18n = inject(I18nService), ui = inject(UiPreferencesService)) => ({
     login(tenantId?: string, user?: UserProfile | null): void {
       const targetUser = user ?? DEFAULT_USER;
       persistUserId(targetUser);
@@ -391,31 +378,7 @@ export const AuthStore = signalStore(
       patchState(store, { twoFactorSetupRequired: required });
     },
     toggleTheme(): void {
-      const newTheme: 'light' | 'dark' = store.theme() === 'dark' ? 'light' : 'dark';
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('theme', newTheme);
-        localStorage.setItem('ff_theme', newTheme);
-      }
-      if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', newTheme);
-        if (newTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-      patchState(store, { theme: newTheme });
-    },
-    applySavedTheme(): void {
-      const currentTheme = store.theme();
-      if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        if (currentTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
+      ui.toggleTheme();
     },
   }))
 );

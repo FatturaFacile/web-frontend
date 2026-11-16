@@ -6,6 +6,7 @@ import { AuthStore } from '@core/auth/auth.store';
 import { AppStore } from '@core/state/app.store';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
+import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 // Only used inside a @defer block of the template: the compiler moves it into a lazy chunk.
 import { TwoFactorSetupModalComponent } from './features/auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
@@ -21,6 +22,7 @@ import { TwoFactorSetupModalComponent } from './features/auth/components/two-fac
     BreadcrumbComponent,
     GlobalSearchComponent,
     TwoFactorSetupModalComponent,
+    ToastHostComponent,
     TranslatePipe,
   ],
   templateUrl: './app.component.html',
@@ -31,7 +33,6 @@ export class AppComponent implements OnInit {
   private readonly authApi = inject(AuthApiService, { optional: true });
 
   ngOnInit(): void {
-    this.authStore.applySavedTheme();
     this.syncProfileInBackground();
   }
 

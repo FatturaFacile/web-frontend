@@ -71,11 +71,8 @@ pre {
   border-radius: var(--radius-sm);
 }
 
-// Global focus ring (WCAG 2.4.7)
-:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
+// The global focus ring lives in _a11y.scss.
+
 
 .skip-link {
   position: absolute;
@@ -145,6 +142,3 @@ pre {
   }
 }
 
-@media (forced-colors: active) {
-  :focus-visible { outline: 2px solid Highlight; }
-}

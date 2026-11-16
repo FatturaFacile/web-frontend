@@ -1,0 +1,69 @@
+// Accessibility rules that apply to the whole application (WCAG 2.2 AA).
+
+// 2.4.11 Focus Not Obscured: a focused element scrolled into view stays clear of the sticky header.
+html { scroll-padding-top: calc(var(--header-height) + var(--ff-space-4)); }
+
+// 2.4.7 / 2.4.13: a 3px ring in --ff-color-focus, which keeps at least 3:1 on every surface of both themes (checked by
+// src/design-tokens/ff.tokens.spec.ts).
+:focus-visible {
+  outline: var(--ff-a11y-focus-width) solid var(--ff-color-focus);
+  outline-offset: var(--ff-a11y-focus-offset);
+}
+
+// A mouse click on a control does not show the ring; the keyboard always does.
+:focus:not(:focus-visible) { outline: none; }
+
+// 2.5.8 Target Size (Minimum): interactive controls are at least 24x24 CSS pixels.
+button,
+[role='button'],
+[role='menuitem'],
+[role='menuitemradio'],
+[role='tab'],
+select,
+input:not([type='hidden']):not([type='checkbox']):not([type='radio']),
+summary {
+  min-height: var(--ff-a11y-target-min);
+}
+
+button,
+[role='button'],
+[role='menuitem'],
+[role='menuitemradio'],
+[role='tab'] {
+  min-width: var(--ff-a11y-target-min);
+}
+
+// Links inside running text are exempt (inline); links used as controls get the same minimum.
+a.action-btn,
+a.ff-link-control { display: inline-flex; align-items: center; justify-content: center; min-width: var(--ff-a11y-target-min); min-height: var(--ff-a11y-target-min); }
+
+// Visually hidden, still read by screen readers (live regions, labels of icon controls).
+.ff-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 2.3.3 / user choice: data-reduced-motion is set by ThemeService from the user preference or the system setting.
+html[data-reduced-motion='true'] {
+  scroll-behavior: auto;
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; }
+}
