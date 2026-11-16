@@ -48,8 +48,10 @@ describe('SelfServiceComponent', () => {
     const fixture = setup(of({ success: true, message: '', data: profile }));
     await fixture.whenStable();
     fixture.detectChanges();
+    // The clock tab is first and the other tabs render when selected, so the profile itself is not in the DOM yet.
     expect(fixture.nativeElement.querySelector('nz-tabs')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('nz-result')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('hrmSelfService.tabProfile');
   });
 
   it('shows the not-linked state on 403', async () => {

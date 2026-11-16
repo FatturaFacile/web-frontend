@@ -1,0 +1,233 @@
+<div class="catalog">
+  <header>
+    <h1>{{ 'DESIGN_SYSTEM.TITLE' | translate }}</h1>
+    <p class="intro">{{ 'DESIGN_SYSTEM.INTRO' | translate }}</p>
+  </header>
+
+  <section class="section" aria-labelledby="ds-appearance">
+    <h2 id="ds-appearance">{{ 'DESIGN_SYSTEM.APPEARANCE' | translate }}</h2>
+    <div class="row">
+      <fieldset class="group">
+        <legend>{{ 'DESIGN_SYSTEM.THEME' | translate }}</legend>
+        @for (theme of themes; track theme) {
+          <label class="option">
+            <input
+              type="radio"
+              name="ds-theme"
+              [value]="theme"
+              [checked]="prefs.themePreference() === theme"
+              (change)="prefs.setTheme(theme)"
+            />
+            {{ themeLabel(theme) | translate }}
+          </label>
+        }
+      </fieldset>
+      <fieldset class="group">
+        <legend>{{ 'DESIGN_SYSTEM.DENSITY' | translate }}</legend>
+        @for (density of densities; track density) {
+          <label class="option">
+            <input
+              type="radio"
+              name="ds-density"
+              [value]="density"
+              [checked]="prefs.density() === density"
+              (change)="prefs.setDensity(density)"
+            />
+            {{ densityLabel(density) | translate }}
+          </label>
+        }
+      </fieldset>
+      <fieldset class="group">
+        <legend>{{ 'DESIGN_SYSTEM.MOTION' | translate }}</legend>
+        <label class="option">
+          <input
+            type="checkbox"
+            [checked]="prefs.reducedMotion()"
+            (change)="prefs.setReducedMotion(!prefs.reducedMotion())"
+          />
+          {{ 'DESIGN_SYSTEM.REDUCE_MOTION' | translate }}
+        </label>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ds-tokens">
+    <h2 id="ds-tokens">{{ 'DESIGN_SYSTEM.TOKENS' | translate }}</h2>
+    <ul class="swatches">
+      @for (name of swatches; track name) {
+        <li class="swatch">
+          <span class="chip" [style.background]="swatchVariable(name)" aria-hidden="true"></span>
+          <code>--ff-color-{{ name }}</code>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="ds-brand">
+    <h2 id="ds-brand">{{ 'DESIGN_SYSTEM.BRAND' | translate }}</h2>
+    <p>{{ 'DESIGN_SYSTEM.BRAND_HELP' | translate }}</p>
+    <div class="row">
+      <app-form-field
+        [label]="'DESIGN_SYSTEM.BRAND_PRIMARY' | translate"
+        [hint]="'DESIGN_SYSTEM.BRAND_COLOUR_HINT' | translate"
+        [error]="primaryError()"
+      >
+        <app-input [(value)]="primary" placeholder="#0F766E" autocomplete="off" />
+      </app-form-field>
+      <app-form-field
+        [label]="'DESIGN_SYSTEM.BRAND_SECONDARY' | translate"
+        [hint]="'DESIGN_SYSTEM.BRAND_COLOUR_HINT' | translate"
+        [error]="secondaryError()"
+      >
+        <app-input [(value)]="secondary" placeholder="#B45309" autocomplete="off" />
+      </app-form-field>
+    </div>
+    <div class="row">
+      <app-button variant="secondary" (click)="previewBrand()">{{
+        'DESIGN_SYSTEM.BRAND_PREVIEW' | translate
+      }}</app-button>
+      <app-button [loading]="saving()" (click)="saveBrand()">{{
+        'DESIGN_SYSTEM.BRAND_SAVE' | translate
+      }}</app-button>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ds-buttons">
+    <h2 id="ds-buttons">{{ 'DESIGN_SYSTEM.BUTTONS' | translate }}</h2>
+    <div class="row">
+      <app-button>{{ 'DESIGN_SYSTEM.BUTTON_PRIMARY' | translate }}</app-button>
+      <app-button variant="secondary">{{
+        'DESIGN_SYSTEM.BUTTON_SECONDARY' | translate
+      }}</app-button>
+      <app-button variant="danger">{{ 'DESIGN_SYSTEM.BUTTON_DANGER' | translate }}</app-button>
+      <app-button variant="ghost">{{ 'DESIGN_SYSTEM.BUTTON_GHOST' | translate }}</app-button>
+      <app-button [loading]="true">{{ 'DESIGN_SYSTEM.BUTTON_LOADING' | translate }}</app-button>
+      <app-button [disabled]="true">{{ 'DESIGN_SYSTEM.BUTTON_DISABLED' | translate }}</app-button>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ds-forms">
+    <h2 id="ds-forms">{{ 'DESIGN_SYSTEM.FORMS' | translate }}</h2>
+    <div class="row">
+      <app-form-field
+        [label]="'DESIGN_SYSTEM.SAMPLE_NAME' | translate"
+        [hint]="'DESIGN_SYSTEM.SAMPLE_NAME_HINT' | translate"
+        [error]="nameError()"
+        required
+      >
+        <app-input [(value)]="sampleName" autocomplete="organization" />
+      </app-form-field>
+      <app-form-field [label]="'DESIGN_SYSTEM.SAMPLE_COUNTRY' | translate">
+        <app-select
+          [(value)]="sampleCountry"
+          [options]="countries()"
+          [placeholder]="'DESIGN_SYSTEM.SAMPLE_COUNTRY_PLACEHOLDER' | translate"
+        />
+      </app-form-field>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ds-feedback">
+    <h2 id="ds-feedback">{{ 'DESIGN_SYSTEM.FEEDBACK' | translate }}</h2>
+    <div class="stack">
+      <div class="row">
+        <app-badge>{{ 'DESIGN_SYSTEM.BADGE_DRAFT' | translate }}</app-badge>
+        <app-badge tone="primary">{{ 'DESIGN_SYSTEM.BADGE_SENT' | translate }}</app-badge>
+        <app-badge tone="success">{{ 'DESIGN_SYSTEM.BADGE_PAID' | translate }}</app-badge>
+        <app-badge tone="warning">{{ 'DESIGN_SYSTEM.BADGE_DUE' | translate }}</app-badge>
+        <app-badge tone="danger">{{ 'DESIGN_SYSTEM.BADGE_OVERDUE' | translate }}</app-badge>
+        <app-badge tone="info">{{ 'DESIGN_SYSTEM.BADGE_INFO' | translate }}</app-badge>
+      </div>
+      <app-alert tone="info" [heading]="'DESIGN_SYSTEM.ALERT_INFO_TITLE' | translate">{{
+        'DESIGN_SYSTEM.ALERT_INFO' | translate
+      }}</app-alert>
+      <app-alert tone="success" [heading]="'DESIGN_SYSTEM.ALERT_SUCCESS_TITLE' | translate">{{
+        'DESIGN_SYSTEM.ALERT_SUCCESS' | translate
+      }}</app-alert>
+      <app-alert tone="warning" [heading]="'DESIGN_SYSTEM.ALERT_WARNING_TITLE' | translate">{{
+        'DESIGN_SYSTEM.ALERT_WARNING' | translate
+      }}</app-alert>
+      <app-alert tone="danger" [heading]="'DESIGN_SYSTEM.ALERT_DANGER_TITLE' | translate">{{
+        'DESIGN_SYSTEM.ALERT_DANGER' | translate
+      }}</app-alert>
+      <div class="row">
+        <app-button variant="secondary" (click)="showToast('success')">{{
+          'DESIGN_SYSTEM.TOAST_SHOW_SUCCESS' | translate
+        }}</app-button>
+        <app-button variant="secondary" (click)="showToast('info')">{{
+          'DESIGN_SYSTEM.TOAST_SHOW_INFO' | translate
+        }}</app-button>
+        <app-button variant="secondary" (click)="showToast('danger')">{{
+          'DESIGN_SYSTEM.TOAST_SHOW_DANGER' | translate
+        }}</app-button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="ds-data">
+    <h2 id="ds-data">{{ 'DESIGN_SYSTEM.DATA' | translate }}</h2>
+    <app-data-table
+      [caption]="'DESIGN_SYSTEM.TABLE_CAPTION' | translate"
+      [columns]="columns()"
+      [rows]="rows"
+    />
+    <app-card [heading]="'DESIGN_SYSTEM.EMPTY_CARD' | translate">
+      <app-empty-state
+        icon="fa-file-invoice"
+        [heading]="'DESIGN_SYSTEM.EMPTY_TITLE' | translate"
+        [description]="'DESIGN_SYSTEM.EMPTY_DESCRIPTION' | translate"
+      >
+        <app-button>{{ 'DESIGN_SYSTEM.EMPTY_ACTION' | translate }}</app-button>
+      </app-empty-state>
+    </app-card>
+  </section>
+
+  <section class="section" aria-labelledby="ds-overlays">
+    <h2 id="ds-overlays">{{ 'DESIGN_SYSTEM.OVERLAYS' | translate }}</h2>
+    <div class="row">
+      <app-button variant="secondary" (click)="modalOpen.set(true)">{{
+        'DESIGN_SYSTEM.MODAL_OPEN' | translate
+      }}</app-button>
+      <app-button variant="secondary" (click)="drawerOpen.set(true)">{{
+        'DESIGN_SYSTEM.DRAWER_OPEN' | translate
+      }}</app-button>
+      <app-button variant="danger" (click)="confirmOpen.set(true)">{{
+        'DESIGN_SYSTEM.CONFIRM_OPEN' | translate
+      }}</app-button>
+    </div>
+
+    <app-modal [(open)]="modalOpen" [heading]="'DESIGN_SYSTEM.MODAL_TITLE' | translate">
+      <p>{{ 'DESIGN_SYSTEM.MODAL_BODY' | translate }}</p>
+      <div appModalFooter>
+        <app-button (click)="modalOpen.set(false)">{{
+          'DESIGN_SYSTEM.CLOSE' | translate
+        }}</app-button>
+      </div>
+    </app-modal>
+
+    <app-modal
+      [(open)]="drawerOpen"
+      placement="end"
+      [heading]="'DESIGN_SYSTEM.DRAWER_TITLE' | translate"
+    >
+      <p>{{ 'DESIGN_SYSTEM.DRAWER_BODY' | translate }}</p>
+      <div appModalFooter>
+        <app-button (click)="drawerOpen.set(false)">{{
+          'DESIGN_SYSTEM.CLOSE' | translate
+        }}</app-button>
+      </div>
+    </app-modal>
+
+    <app-modal [(open)]="confirmOpen" [heading]="'DESIGN_SYSTEM.CONFIRM_TITLE' | translate">
+      <p>{{ 'DESIGN_SYSTEM.CONFIRM_BODY' | translate }}</p>
+      <div appModalFooter>
+        <app-button variant="secondary" (click)="confirmOpen.set(false)">{{
+          'DESIGN_SYSTEM.CANCEL' | translate
+        }}</app-button>
+        <app-button variant="danger" (click)="confirmDelete()">{{
+          'DESIGN_SYSTEM.CONFIRM_ACTION' | translate
+        }}</app-button>
+      </div>
+    </app-modal>
+  </section>
+</div>

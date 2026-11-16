@@ -1,3 +1,68 @@
+// NG-ZORRO is compiled with a fixed primary colour (theme.less). These rules point its primary surfaces at the
+// --ff-color-primary family, so the tenant brand colour that ThemeService sets at runtime reaches the NG-ZORRO
+// components as well. Without a brand colour the values are the default teal of the design tokens.
+// Nested under html so the rules win over the dark NG-ZORRO stylesheet, which is added to the page later.
+html {
+  a { color: var(--ff-color-text-link); }
+
+  .ant-btn-primary:not(:disabled):not(.ant-btn-dangerous) {
+    background: var(--ff-color-primary);
+    border-color: var(--ff-color-primary);
+    color: var(--ff-color-on-primary);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--ff-color-primary-hover);
+      border-color: var(--ff-color-primary-hover);
+      color: var(--ff-color-on-primary);
+    }
+
+    &:active {
+      background: var(--ff-color-primary-active);
+      border-color: var(--ff-color-primary-active);
+    }
+  }
+
+  .ant-btn-link:not(:disabled) { color: var(--ff-color-text-link); }
+
+  .ant-checkbox-checked .ant-checkbox-inner,
+  .ant-radio-checked .ant-radio-inner,
+  .ant-switch-checked {
+    background-color: var(--ff-color-primary);
+    border-color: var(--ff-color-primary);
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner::after { border-color: var(--ff-color-on-primary); }
+  .ant-radio-checked .ant-radio-inner::after { background-color: var(--ff-color-on-primary); }
+
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-affix-wrapper-focused,
+  .ant-select-focused:not(.ant-select-disabled):not(.ant-select-customize-input) .ant-select-selector,
+  .ant-picker-focused {
+    border-color: var(--ff-color-primary);
+    box-shadow: 0 0 0 2px var(--ff-color-primary-subtle);
+  }
+
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--ff-color-primary); }
+  .ant-tabs-ink-bar { background: var(--ff-color-primary); }
+
+  .ant-pagination-item-active {
+    border-color: var(--ff-color-primary);
+
+    a { color: var(--ff-color-primary); }
+  }
+
+  .ant-menu-item-selected,
+  .ant-menu-submenu-selected > .ant-menu-submenu-title { color: var(--ff-color-primary); }
+
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background: var(--ff-color-primary-subtle);
+    color: var(--ff-color-text);
+  }
+
+  .ant-progress-bg { background-color: var(--ff-color-primary); }
+}
 // Brand accent presets, selected by DisplayPreferencesService through [data-brand] on <html>. Teal is the default and
 // lives in _tokens.scss. Every preset keeps >= 4.5:1 contrast of the primary colour on the card surface (WCAG 1.4.3).
 // Light values need :root[data-theme='light'] so that they never override the dark ones (same specificity otherwise).

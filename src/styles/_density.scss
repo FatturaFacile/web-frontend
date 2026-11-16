@@ -1,0 +1,55 @@
+// UI density: compact (accounting data entry), comfortable (default), spacious (touch and accessibility).
+// ThemeService sets data-density on <html> (the inline script of index.html does it before the first paint, so there
+// is no layout shift). The sizes come from the --ff-density-* tokens; every profile keeps controls and rows at least
+// --ff-a11y-target-min (24px) high, WCAG 2.5.8.
+// Nested under html so the rules win over the NG-ZORRO stylesheets.
+html {
+  font-size: 100%;
+
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-picker,
+  .ant-btn:not(.ant-btn-icon-only):not(.ant-btn-sm) {
+    min-height: var(--ff-density-control-height);
+  }
+
+  .ant-input,
+  .ant-input-number-input,
+  .ant-picker-input > input {
+    padding-inline: var(--ff-density-input-padding-x);
+    font-size: var(--ff-density-font-size);
+  }
+
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    min-height: var(--ff-density-control-height);
+    font-size: var(--ff-density-font-size);
+    align-items: center;
+  }
+
+  .ant-btn { font-size: var(--ff-density-font-size); }
+
+  .ant-btn-icon-only,
+  .ant-checkbox-inner,
+  .ant-radio-inner {
+    min-width: var(--ff-a11y-target-min);
+    min-height: var(--ff-a11y-target-min);
+  }
+
+  .ant-table-wrapper {
+    .ant-table { font-size: var(--ff-density-font-size); }
+
+    .ant-table-tbody > tr > td,
+    .ant-table-thead > tr > th {
+      height: var(--ff-density-row-height);
+      padding-block: 0;
+      padding-inline: var(--ff-density-gap);
+    }
+  }
+
+  .ant-card .ant-card-body { padding: var(--ff-density-card-padding); }
+
+  .ant-form-item { margin-bottom: var(--ff-density-gap); }
+}
+
+body { font-size: var(--ff-density-font-size); }

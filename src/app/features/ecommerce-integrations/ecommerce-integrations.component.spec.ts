@@ -101,6 +101,7 @@ describe('EcommerceIntegrationsComponent', () => {
     const translateMock = {
       instant: vi.fn((key: string) => key),
       translate: vi.fn((key: string) => key),
+      currentLanguage: () => 'it',
       currentLang: vi.fn().mockReturnValue('en'),
       get: vi.fn().mockReturnValue(of('')),
       onLangChange: of({ lang: 'en' }),
