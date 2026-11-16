@@ -144,6 +144,7 @@ import { apiErrorText, blankToNull, decimalOrNull, PROMOTION_STATE_COLORS, today
             </nz-form-item>
           </div>
           <nz-form-item>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <nz-form-control><label nz-checkbox formControlName="is_active">{{ 'REBATES.IS_ACTIVE' | translate }}</label></nz-form-control>
           </nz-form-item>
           <nz-form-item>

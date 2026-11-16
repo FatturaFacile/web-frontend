@@ -167,6 +167,7 @@ function percentagesValidator(control: AbstractControl): ValidationErrors | null
             </nz-form-item>
           }
           <nz-form-item>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <nz-form-control><label nz-checkbox formControlName="is_active">{{ 'BUDGETING.ACTIVE' | translate }}</label></nz-form-control>
           </nz-form-item>
         </form>

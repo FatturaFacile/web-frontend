@@ -138,6 +138,7 @@ import { apiErrorText, RMA_STATUS_COLORS, todayIso } from './returns.util';
             @if (!source.within_window) {
               <nz-form-item>
                 <nz-form-control>
+                  <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                   <label nz-checkbox formControlName="override_window">{{ 'RETURNS.OVERRIDE_WINDOW' | translate }}</label>
                   <div class="muted">{{ 'RETURNS.OVERRIDE_WINDOW_HINT' | translate }}</div>
                 </nz-form-control>

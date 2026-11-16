@@ -64,7 +64,7 @@ export default tseslint.config(
       // Icon-only buttons: appIconAction renders the icon and sets the translated aria-label/tooltip.
       '@angular-eslint/template/elements-content': [
         'error',
-        { allowList: ['aria-label', 'innerHTML', 'innerText', 'outerHTML', 'textContent', 'appIconAction'] },
+        { allowList: ['aria-label', 'innerHTML', 'innerText', 'outerHTML', 'textContent', 'appIconAction', 'appModalAction'] },
       ],
     },
   }

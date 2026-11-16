@@ -32,8 +32,11 @@ import { enterpriseErrorText } from './enterprise-security.util';
           </nz-form-item>
           <nz-form-item>
             <nz-form-control>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label class="switch-row"><nz-switch formControlName="require_mixed_case"></nz-switch> {{ 'ENT_AUTH.POLICY_MIXED_CASE' | translate }}</label>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label class="switch-row"><nz-switch formControlName="require_numbers"></nz-switch> {{ 'ENT_AUTH.POLICY_NUMBERS' | translate }}</label>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label class="switch-row"><nz-switch formControlName="require_symbols"></nz-switch> {{ 'ENT_AUTH.POLICY_SYMBOLS' | translate }}</label>
             </nz-form-control>
           </nz-form-item>
@@ -110,6 +113,7 @@ import { enterpriseErrorText } from './enterprise-security.util';
       </nz-card>
 
       <nz-card [nzTitle]="'ENT_AUTH.POLICY_SSO_ONLY' | translate" [nzLoading]="loading()" class="block">
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="switch-row"><nz-switch formControlName="sso_only"></nz-switch> {{ 'ENT_AUTH.POLICY_SSO_ONLY_LABEL' | translate }}</label>
         <p class="muted">{{ 'ENT_AUTH.POLICY_SSO_ONLY_HINT' | translate }}</p>
         @if (!ssoReady()) {

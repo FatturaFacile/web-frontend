@@ -21,7 +21,9 @@ import { apiErrorText, statusColor } from './credit.util';
     <app-page-header [title]="'CREDIT.WORKLIST_TITLE' | translate" [subtitle]="'CREDIT.WORKLIST_SUBTITLE' | translate"></app-page-header>
 
     <div class="toolbar">
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label><nz-switch [ngModel]="mine()" (ngModelChange)="mine.set($event); load()"></nz-switch> {{ 'CREDIT.MY_CASES' | translate }}</label>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label><nz-switch [ngModel]="dueOnly()" (ngModelChange)="dueOnly.set($event); load()"></nz-switch> {{ 'CREDIT.DUE_ONLY' | translate }}</label>
     </div>
 

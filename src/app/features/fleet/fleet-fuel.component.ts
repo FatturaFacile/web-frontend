@@ -155,6 +155,7 @@ import { apiErrorText, blankToNull, decimalOrNull, loadEmployees, todayIso } fro
             </nz-form-item>
           </div>
           <nz-form-item>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <nz-form-control><label nz-checkbox formControlName="is_full_tank">{{ 'FLEET.FULL_TANK' | translate }}</label></nz-form-control>
           </nz-form-item>
           <div class="form-row">

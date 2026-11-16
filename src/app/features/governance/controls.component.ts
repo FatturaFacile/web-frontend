@@ -103,6 +103,7 @@ import {
             <nz-option [nzValue]="option.value" [nzLabel]="option.labelKey | translate"></nz-option>
           }
         </nz-select>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); load()">{{ 'GOVERNANCE.CONTROLS.TEST_OVERDUE' | translate }}</label>
         <button nz-button (click)="load()"><i class="fa-solid fa-rotate"></i></button>
       </div>
@@ -277,6 +278,7 @@ import {
             <nz-form-control><textarea nz-input rows="3" formControlName="notes" maxlength="4000"></textarea></nz-form-control>
           </nz-form-item>
           @if (testForm.controls.result.value !== 'pass') {
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label nz-checkbox formControlName="raise_finding">{{ 'GOVERNANCE.CONTROLS.RAISE_FINDING' | translate }}</label>
           }
         </form>

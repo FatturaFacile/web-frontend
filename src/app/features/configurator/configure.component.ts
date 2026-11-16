@@ -143,6 +143,7 @@ const NO_OPTIONS: string[] = [];
                 @case ('single') {
                   <nz-radio-group class="vertical" [ngModel]="singleAnswer(group)" (ngModelChange)="chooseSingle(group, $event)" [nzDisabled]="locked()">
                     @for (option of activeOptions(group); track option.id) {
+                      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                       <label nz-radio [nzValue]="option.code">
                         {{ option.name }}
                         <span class="delta">{{ optionDelta(option.price_delta, option.price_from_product) }}</span>

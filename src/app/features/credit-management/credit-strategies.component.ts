@@ -113,6 +113,7 @@ import { apiErrorText, blankToNull, decimalOrNull } from './credit.util';
                 </nz-select>
                 <input nz-input formControlName="template_key" maxlength="120" [attr.aria-label]="'CREDIT.TEMPLATE_KEY' | translate" [placeholder]="'CREDIT.TEMPLATE_KEY' | translate" />
                 <input nz-input type="number" min="0" step="any" formControlName="fee_amount" [attr.aria-label]="'CREDIT.FEE' | translate" [placeholder]="'CREDIT.FEE' | translate" />
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                 <label><nz-switch formControlName="escalates"></nz-switch> {{ 'CREDIT.ESCALATES' | translate }}</label>
                 <button nz-button nzType="text" nzDanger type="button" appIconAction="delete" [disabled]="steps.length === 1" (click)="removeStep($index)"></button>
               </div>

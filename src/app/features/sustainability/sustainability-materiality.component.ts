@@ -207,7 +207,7 @@ export class SustainabilityMaterialityComponent implements OnInit {
 
   save(): void {
     const value = this.form.getRawValue();
-    const topics: EsgMaterialityTopicRequest[] = (value.topics as Array<Record<string, unknown>>).map((topic) => ({
+    const topics: EsgMaterialityTopicRequest[] = (value.topics as Record<string, unknown>[]).map((topic) => ({
       esrs_code: String(topic['esrs_code']),
       name: String(topic['name']),
       impact_score: String(topic['impact_score']),

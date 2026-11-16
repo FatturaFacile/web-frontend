@@ -38,7 +38,7 @@ describe('SsClockComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: NzMessageService, useValue: { error: () => {} } },
+        { provide: NzMessageService, useValue: { error: () => undefined } },
       ],
     });
     httpMock = TestBed.inject(HttpTestingController);

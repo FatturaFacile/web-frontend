@@ -47,6 +47,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
         <nz-empty [nzNotFoundContent]="'CONTRACT_REDLINE.NEED_TWO_VERSIONS' | translate" />
       } @else {
         <div class="redline-pickers">
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label>
             {{ 'CONTRACT_REDLINE.FROM' | translate }}
             <nz-select [(ngModel)]="from" data-test="from">
@@ -55,6 +56,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
               }
             </nz-select>
           </label>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label>
             {{ 'CONTRACT_REDLINE.TO' | translate }}
             <nz-select [(ngModel)]="to" data-test="to">

@@ -154,6 +154,7 @@ type ClaimDialog = 'accept' | 'reject';
       <ng-container *nzModalContent>
         @if (dialog() === 'accept' && deciding()?.is_valid === false) {
           <p class="muted">{{ 'RETURNS.CLAIM_NOT_COVERED_HINT' | translate }}</p>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label nz-checkbox [ngModel]="override()" (ngModelChange)="override.set($event)">{{ 'RETURNS.OVERRIDE_VALIDITY' | translate }}</label>
         }
         <nz-form-item>

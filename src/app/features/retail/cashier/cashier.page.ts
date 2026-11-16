@@ -186,7 +186,7 @@ const toCents = (value: number | string): number => Math.round(Number(value) * 1
     .cashier-free-line, .cashier-payment-form { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
   `,
 })
-export class CashierPage implements OnInit {
+export class CashierComponent implements OnInit {
   private readonly api = inject(RetailApiService);
   private readonly inventory = inject(InventoryApiService);
   private readonly message = inject(NzMessageService);

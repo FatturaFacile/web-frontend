@@ -186,6 +186,7 @@ import { analyticsErrorText } from './analytics-designer.util';
               </nz-form-control>
             </nz-form-item>
           }
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label class="inline"><nz-switch formControlName="is_active"></nz-switch> {{ 'COMMON.ACTIVE' | translate }}</label>
         </form>
       </ng-container>

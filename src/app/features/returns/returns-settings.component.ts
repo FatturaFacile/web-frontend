@@ -110,7 +110,9 @@ import { apiErrorText } from './returns.util';
           </nz-form-item>
           <nz-form-item>
             <nz-form-control>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label nz-checkbox formControlName="is_defect">{{ 'RETURNS.IS_DEFECT' | translate }}</label>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label nz-checkbox formControlName="is_active">{{ 'RETURNS.ACTIVE' | translate }}</label>
             </nz-form-control>
           </nz-form-item>

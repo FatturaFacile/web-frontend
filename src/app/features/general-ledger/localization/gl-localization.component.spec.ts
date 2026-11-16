@@ -454,7 +454,7 @@ describe('GlUsSalesTaxComponent edit and delete', () => {
     ],
   };
 
-  type Sales = {
+  interface Sales {
     editingJurisdictionId(): string | null;
     editingRateId(): string | null;
     editingNexusId(): string | null;
@@ -477,7 +477,7 @@ describe('GlUsSalesTaxComponent edit and delete', () => {
     lookupValid(): boolean;
     lookup(): void;
     rateRows(): { rate: { id: string }; jurisdiction: { id: string } }[];
-  };
+  }
 
   it('updates a jurisdiction without changing its state or level, and deletes it', async () => {
     await configure(true);
@@ -592,7 +592,7 @@ describe('GlUsSalesTaxComponent edit and delete', () => {
 });
 
 describe('GlUs1099Component edit, delete and supplier payment link', () => {
-  type Tax = {
+  interface Tax {
     editingRecipientId(): string | null;
     editingPaymentId(): string | null;
     payments(): unknown[];
@@ -610,7 +610,7 @@ describe('GlUs1099Component edit, delete and supplier payment link', () => {
     savePayment(): void;
     removePayment(item: unknown): void;
     onSupplierPaymentChange(): void;
-  };
+  }
   const recipient = {
     id: 'rc-1',
     name: 'Acme LLC',
@@ -781,7 +781,7 @@ describe('GlUsSalesTaxComponent exemption certificates', () => {
 });
 
 describe('GlCountryReturnsComponent', () => {
-  type Returns = {
+  interface Returns {
     panels(): { key: string; from: string; to: string; previousCredit: number | null; result: unknown }[];
     annualYear: number | null;
     datevConsultant: number | null;
@@ -789,7 +789,7 @@ describe('GlCountryReturnsComponent', () => {
     exportReturn(panel: unknown): void;
     runAnnual(): void;
     exportDatev(panel: unknown): void;
-  };
+  }
   const emptyReturn = { form: 'CA3', country: 'FR', from: '2026-01-01', to: '2026-03-31', boxes: [], vat_due: '0.00', vat_credit: '0.00', warnings: [] };
 
   it('runs and exports the CA3, the Modelo 303 and the UStVA of a period and refuses a reversed range', async () => {
@@ -852,7 +852,7 @@ describe('GlCountryReturnsComponent', () => {
 });
 
 describe('GlLetteringComponent', () => {
-  type Lettering = {
+  interface Lettering {
     accountId: string | null;
     selected(): ReadonlySet<string>;
     balance(): string;
@@ -860,7 +860,7 @@ describe('GlLetteringComponent', () => {
     load(): void;
     letter(): void;
     remove(item: { lettering_code: string }): void;
-  };
+  }
   const ledger = {
     data: {
       account: { id: 'a-1', account_code: '411', name: 'Customers', account_type: 'asset', normal_balance: 'debit' },

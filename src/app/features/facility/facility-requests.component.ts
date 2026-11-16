@@ -88,6 +88,7 @@ const BOARD_COLUMNS: readonly FacilityRequestStatus[] = ['new', 'assigned', 'in_
       </nz-select>
       <input nz-input style="width: 200px" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'FACILITY.SEARCH' | translate" />
       @if (abilities().operate) {
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="onlyMine()" (ngModelChange)="onlyMine.set($event)">{{ 'FACILITY.ASSIGNED_TO_ME' | translate }}</label>
       }
     </div>
@@ -100,7 +101,7 @@ const BOARD_COLUMNS: readonly FacilityRequestStatus[] = ['new', 'assigned', 'in_
             <nz-tag>{{ byStatus()[column].length }}</nz-tag>
           </div>
           @for (item of byStatus()[column]; track item.id) {
-            <div class="ticket" [class]="item.priority" [class.overdue]="item.is_overdue" (click)="open(item)">
+            <div class="ticket" [class]="item.priority" [class.overdue]="item.is_overdue" role="button" tabindex="0" (click)="open(item)" (keydown.enter)="open(item)">
               <div><strong>{{ item.number }}</strong> <nz-tag>{{ ('FACILITY.CATEGORY_' + item.category) | translate }}</nz-tag></div>
               <div>{{ item.title }}</div>
               <div class="muted due">{{ 'FACILITY.DUE' | translate }}: {{ item.due_at | date: 'short' }}</div>
@@ -183,6 +184,7 @@ const BOARD_COLUMNS: readonly FacilityRequestStatus[] = ['new', 'assigned', 'in_
             </nz-form-item>
             <div class="toolbar">
               @if (abilities().operate) {
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                 <label nz-checkbox formControlName="is_internal">{{ 'FACILITY.INTERNAL_NOTE' | translate }}</label>
               }
               <span class="spacer"></span>

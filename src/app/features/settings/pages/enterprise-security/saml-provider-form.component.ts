@@ -117,8 +117,11 @@ import { blankToNull, enterpriseErrorText, formatRoleMapping, parseCertificates,
         </nz-form-item>
         <nz-form-item>
           <nz-form-control>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label class="switch-row"><nz-switch formControlName="sync_role_on_login"></nz-switch> {{ 'ENT_AUTH.SYNC_ROLE_ON_LOGIN' | translate }}</label>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label class="switch-row"><nz-switch formControlName="jit_provisioning"></nz-switch> {{ 'ENT_AUTH.JIT_PROVISIONING' | translate }}</label>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label class="switch-row"><nz-switch formControlName="enabled"></nz-switch> {{ 'ENT_AUTH.ENABLED' | translate }}</label>
           </nz-form-control>
         </nz-form-item>

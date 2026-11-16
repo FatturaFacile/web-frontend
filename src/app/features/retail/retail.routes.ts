@@ -12,7 +12,7 @@ export const RETAIL_ROUTES: Routes = [
   {
     path: 'cashier',
     data: { breadcrumb: 'RES.PAGE.RETAIL_CASHIER', title: 'RES.PAGE.RETAIL_CASHIER' },
-    loadComponent: () => import('./cashier/cashier.page').then((m) => m.CashierPage),
+    loadComponent: () => import('./cashier/cashier.page').then((m) => m.CashierComponent),
   },
   {
     path: 'pos-admin',
