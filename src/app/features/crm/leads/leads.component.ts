@@ -24,15 +24,16 @@ import {
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
-const RATING_COLORS: Record<LeadRating, string> = { cold: 'blue', warm: 'orange', hot: 'red' };
+// Hex colours (not antd presets) so the tags keep their colour in the dark theme.
+const RATING_COLORS: Record<LeadRating, string> = { cold: '#2563eb', warm: '#d97706', hot: '#dc2626' };
 const STATUS_COLORS: Record<string, string> = {
-  new: 'default',
-  contacting: 'processing',
-  engaged: 'processing',
-  qualified: 'green',
-  disqualified: 'default',
-  converted: 'purple',
-  archived: 'default',
+  new: '#475569',
+  contacting: '#0891b2',
+  engaged: '#0891b2',
+  qualified: '#16a34a',
+  disqualified: '#64748b',
+  converted: '#7c3aed',
+  archived: '#64748b',
 };
 
 @Component({
@@ -123,11 +124,11 @@ export class LeadsComponent implements OnInit {
   }
 
   protected ratingColor(rating: LeadRating): string {
-    return RATING_COLORS[rating] ?? 'blue';
+    return RATING_COLORS[rating] ?? '#2563eb';
   }
 
   protected statusColor(status: string): string {
-    return STATUS_COLORS[status] ?? 'default';
+    return STATUS_COLORS[status] ?? '#475569';
   }
 
   protected statusLabel(status: string): string {

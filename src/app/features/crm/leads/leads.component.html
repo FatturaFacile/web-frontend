@@ -51,7 +51,7 @@
               <div class="sub-text">{{ lead.full_name }}</div>
             }
             @if (lead.duplicate_of_id) {
-              <nz-tag nzColor="warning">{{ "CRM.LEADS.DUPLICATE" | translate }}</nz-tag>
+              <nz-tag nzColor="#d97706">{{ "CRM.LEADS.DUPLICATE" | translate }}</nz-tag>
             }
           </td>
           <td>
@@ -213,6 +213,8 @@
               type="button"
               nz-popconfirm
               [nzPopconfirmTitle]="'CRM.LEADS.ACTIONS.CONFIRM_MERGE' | translate"
+              [nzOkText]="'CRM.LEADS.ACTIONS.MERGE' | translate"
+              [nzCancelText]="'COMMON.CANCEL' | translate"
               (nzOnConfirm)="mergeDuplicate(dup)"
             >
               <nz-icon nzType="merge-cells" /> {{ "CRM.LEADS.ACTIONS.MERGE" | translate }}

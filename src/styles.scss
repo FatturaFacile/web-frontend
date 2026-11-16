@@ -266,6 +266,21 @@ html.dark,
     border-color: var(--border-color);
     color: var(--text-secondary);
   }
+
+  // Text/link buttons keep antd's light-theme near-black colour: unreadable on dark surfaces.
+  .ant-btn-text:not(:disabled):not(.ant-btn-dangerous),
+  .ant-btn-link:not(:disabled):not(.ant-btn-dangerous) {
+    color: var(--text-primary);
+  }
+
+  .ant-btn-text:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .ant-btn-text.ant-btn-dangerous:not(:disabled),
+  .ant-btn-link.ant-btn-dangerous:not(:disabled) {
+    color: #f87171;
+  }
 }
 
 .fa-icon-spaced {
