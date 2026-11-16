@@ -56,4 +56,17 @@ describe('MemberAccessFormComponent', () => {
     expect(fixture.nativeElement.querySelector('#ma-email')).not.toBeNull();
     expect(button.disabled).toBe(true);
   });
+
+  it('lists the custom roles after the system roles and sends the custom role id', () => {
+    const { form, emitted, fixture } = setup({
+      customRoles: [{ id: 'r1', name: 'Bookkeeper' }],
+      initialRole: 'accountant',
+      initialCustomRoleId: 'r1',
+    });
+
+    form.submit();
+
+    expect(emitted).toEqual([{ custom_role_id: 'r1', modules: { crm: 'default', treasury: 'default' } }]);
+    expect(fixture.componentInstance.customRoles().length).toBe(1);
+  });
 });

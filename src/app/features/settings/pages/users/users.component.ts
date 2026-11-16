@@ -1,6 +1,15 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AuthStore, I18nService, SettingsApiService, UserResource, SaveTenantMemberPayload, AccessOptions } from '@core';
+import {
+  AccessApiService,
+  AccessOptions,
+  AuthStore,
+  CustomRole,
+  I18nService,
+  SaveTenantMemberPayload,
+  SettingsApiService,
+  UserResource,
+} from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -11,6 +20,9 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable } from 'rxjs';
 import { reportHttpError } from '../../../hr/shared/hr-http.util';
+import { AccessNavComponent } from '../access/access-nav.component';
+import { reportAccessError } from '../access/access-ui.util';
+import { PlanLimitsComponent } from '../access/plan-limits.component';
 import { MemberAccessFormComponent } from './member-access-form.component';
 
 /**
@@ -20,6 +32,7 @@ import { MemberAccessFormComponent } from './member-access-form.component';
 @Component({
   selector: 'app-tenant-users',
   imports: [
+    AccessNavComponent,
     MemberAccessFormComponent,
     NzButtonModule,
     NzCardModule,
@@ -28,6 +41,7 @@ import { MemberAccessFormComponent } from './member-access-form.component';
     NzTableModule,
     NzTagModule,
     PageHeaderComponent,
+    PlanLimitsComponent,
     RouterLink,
     TranslatePipe,
   ],
@@ -36,11 +50,19 @@ import { MemberAccessFormComponent } from './member-access-form.component';
       [title]="'memberAccess.title' | translate"
       [subtitle]="'memberAccess.subtitle' | translate"
     />
+    <app-access-nav />
+    <app-plan-limits [version]="limitsVersion()" />
     <nz-card [nzTitle]="'memberAccess.members' | translate">
       <div class="mb-3">
         <button nz-button nzType="primary" type="button" data-test="add-member" (click)="openAdd()">
           {{ 'memberAccess.add' | translate }}
         </button>
+        <a nz-button routerLink="/settings/access/invitations" data-test="invite-member">
+          {{ 'access.members.invite' | translate }}
+        </a>
+        <a nz-button routerLink="/settings/users/import" data-test="import-members">
+          {{ 'access.members.import' | translate }}
+        </a>
         @if (isPlatformAdmin()) {
           <a nz-button routerLink="/settings/admin/user-tenants" data-test="manage-tenants">
             {{ 'memberAccess.manageTenants' | translate }}
@@ -68,7 +90,7 @@ import { MemberAccessFormComponent } from './member-access-form.component';
               </td>
               <td>{{ member.email }}</td>
               <td>
-                <nz-tag>{{ roleLabel(member.role) }}</nz-tag>
+                <nz-tag data-test="member-role">{{ memberRoleLabel(member) }}</nz-tag>
               </td>
               <td>{{ customModules(member) }}</td>
               <td>
@@ -76,6 +98,23 @@ import { MemberAccessFormComponent } from './member-access-form.component';
                   <button nz-button nzSize="small" type="button" data-test="edit-member" (click)="openEdit(member)">
                     {{ 'memberAccess.edit' | translate }}
                   </button>
+                  @if (member.suspended) {
+                    <button nz-button nzSize="small" type="button" data-test="reactivate-member" (click)="reactivate(member)">
+                      {{ 'access.members.reactivate' | translate }}
+                    </button>
+                  } @else {
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      data-test="suspend-member"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'access.members.confirmSuspend' | translate"
+                      (nzOnConfirm)="suspend(member)"
+                    >
+                      {{ 'access.members.suspend' | translate }}
+                    </button>
+                  }
                   <button
                     nz-button
                     nzSize="small"
@@ -109,6 +148,8 @@ import { MemberAccessFormComponent } from './member-access-form.component';
             [modules]="options().modules"
             [initialRole]="current.member?.role ?? 'member'"
             [initialModules]="current.member?.modules ?? {}"
+            [customRoles]="customRoles()"
+            [initialCustomRoleId]="current.member?.custom_role_id ?? null"
             [showEmail]="current.member === null"
             [saving]="saving()"
             [submitLabelKey]="current.member === null ? 'memberAccess.add' : 'memberAccess.save'"
@@ -121,12 +162,15 @@ import { MemberAccessFormComponent } from './member-access-form.component';
 })
 export class TenantUsersComponent implements OnInit {
   private readonly api = inject(SettingsApiService);
+  private readonly accessApi = inject(AccessApiService);
   private readonly authStore = inject(AuthStore);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
 
   protected readonly members = signal<UserResource[]>([]);
   protected readonly options = signal<AccessOptions>({ roles: [], modules: [], levels: [] });
+  protected readonly customRoles = signal<CustomRole[]>([]);
+  protected readonly limitsVersion = signal(0);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   /** The member being edited, or `null` to add a new one; `null` dialog means closed. */
@@ -142,7 +186,18 @@ export class TenantUsersComponent implements OnInit {
       next: (res) => this.options.set(res.data),
       error: (err: unknown) => reportHttpError(err, this.message, this.i18n),
     });
+    this.accessApi.getRoles().subscribe({
+      next: (res) => this.customRoles.set(res.data.roles),
+      // Without the custom roles the members are still listed with their base role.
+      error: () => this.customRoles.set([]),
+    });
     this.reload();
+  }
+
+  /** Name of the custom role of the member, or the label of the system role. */
+  protected memberRoleLabel(member: UserResource): string {
+    const custom = member.custom_role_id ? this.customRoles().find((role) => role.id === member.custom_role_id) : undefined;
+    return custom?.name ?? this.roleLabel(member.role);
   }
 
   protected roleLabel(role: string): string {
@@ -182,7 +237,7 @@ export class TenantUsersComponent implements OnInit {
       },
       error: (err: unknown) => {
         this.saving.set(false);
-        reportHttpError(err, this.message, this.i18n);
+        reportAccessError(err, this.message, this.i18n);
       },
     });
   }
@@ -197,8 +252,27 @@ export class TenantUsersComponent implements OnInit {
     });
   }
 
+  protected suspend(member: UserResource): void {
+    this.changeState(this.accessApi.suspendMember(member.id), 'access.members.suspended');
+  }
+
+  protected reactivate(member: UserResource): void {
+    this.changeState(this.accessApi.reactivateMember(member.id), 'access.members.reactivated');
+  }
+
+  private changeState(request: Observable<unknown>, successKey: string): void {
+    request.subscribe({
+      next: () => {
+        this.message.success(this.i18n.translate(successKey));
+        this.reload();
+      },
+      error: (err: unknown) => reportAccessError(err, this.message, this.i18n),
+    });
+  }
+
   private reload(): void {
     this.loading.set(true);
+    this.limitsVersion.update((value) => value + 1);
     this.api.getTenantUsers().subscribe({
       next: (res) => {
         this.members.set(res.data);

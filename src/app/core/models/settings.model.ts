@@ -45,6 +45,9 @@ export interface UserResource {
   /** Raw permissions of the membership (`deny:crm`, `crm.read`, `gl.*`). */
   permissions?: string[];
   modules?: MemberModuleLevels;
+  /** Set when the member holds a custom role; `role` then carries the base system role of that custom role. */
+  custom_role_id?: string | null;
+  team_ids?: string[];
   last_login_at?: string | null;
   created_at?: string;
 }
@@ -111,5 +114,7 @@ export interface AccessOptions {
 export interface SaveTenantMemberPayload {
   email?: string;
   role?: string;
+  /** Wins over `role`; sending `role` alone detaches the member from a custom role. */
+  custom_role_id?: string | null;
   modules?: MemberModuleLevels;
 }

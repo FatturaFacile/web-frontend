@@ -84,6 +84,48 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () => import('./pages/users/users.component').then((m) => m.TenantUsersComponent),
   },
   {
+    path: 'users/import',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.import.title', title: 'access.import.title' },
+    loadComponent: () => import('./pages/users/users-import.component').then((m) => m.UsersImportComponent),
+  },
+  {
+    path: 'access/invitations',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.invitations.title', title: 'access.invitations.title' },
+    loadComponent: () => import('./pages/access/invitations.component').then((m) => m.AccessInvitationsComponent),
+  },
+  {
+    path: 'access/roles',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.roles.title', title: 'access.roles.title' },
+    loadComponent: () => import('./pages/access/roles.component').then((m) => m.AccessRolesComponent),
+  },
+  {
+    path: 'access/teams',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.teams.title', title: 'access.teams.title' },
+    loadComponent: () => import('./pages/access/teams.component').then((m) => m.AccessTeamsComponent),
+  },
+  {
+    path: 'access/delegations',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.delegations.title', title: 'access.delegations.title' },
+    loadComponent: () => import('./pages/access/delegations.component').then((m) => m.AccessDelegationsComponent),
+  },
+  {
+    path: 'access/matrix',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.matrix.title', title: 'access.matrix.title' },
+    loadComponent: () => import('./pages/access/matrix.component').then((m) => m.AccessMatrixComponent),
+  },
+  {
+    path: 'access/audit',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'access.audit.title', title: 'access.audit.title' },
+    loadComponent: () => import('./pages/access/audit.component').then((m) => m.AccessAuditComponent),
+  },
+  {
     path: 'admin/user-tenants',
     canActivate: [platformAdminGuard],
     data: { breadcrumb: 'userTenants.title', title: 'userTenants.title' },

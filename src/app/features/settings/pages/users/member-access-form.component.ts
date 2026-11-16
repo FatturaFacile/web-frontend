@@ -2,6 +2,7 @@ import { Component, computed, inject, input, linkedSignal, output, signal } from
 import { FormsModule } from '@angular/forms';
 import { I18nService, MemberModuleLevels, ModuleAccessLevel, SaveTenantMemberPayload } from '@core';
 import { TranslatePipe } from '@shared';
+import { roleSelection, selectionPayload } from '../access/access-ui.util';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -45,6 +46,9 @@ function humanize(code: string): string {
     >
       @for (value of roles(); track value) {
         <nz-option [nzValue]="value" [nzLabel]="roleLabel(value)" />
+      }
+      @for (custom of customRoles(); track custom.id) {
+        <nz-option [nzValue]="'custom:' + custom.id" [nzLabel]="custom.name" />
       }
     </nz-select>
 
@@ -106,6 +110,9 @@ export class MemberAccessFormComponent {
   readonly modules = input.required<readonly string[]>();
   readonly initialRole = input<string>('member');
   readonly initialModules = input<MemberModuleLevels>({});
+  /** Custom roles the member can hold, listed after the system roles. */
+  readonly customRoles = input<readonly { id: string; name: string }[]>([]);
+  readonly initialCustomRoleId = input<string | null>(null);
   readonly showEmail = input(false);
   readonly saving = input(false);
   readonly submitLabelKey = input('memberAccess.save');
@@ -113,7 +120,8 @@ export class MemberAccessFormComponent {
 
   protected readonly levelOptions = LEVELS;
   protected readonly email = signal('');
-  protected readonly role = linkedSignal<string>(() => this.initialRole());
+  /** A system role key, or `custom:<id>` for a custom role. */
+  protected readonly role = linkedSignal<string>(() => roleSelection(this.initialRole(), this.initialCustomRoleId()));
   protected readonly levels = linkedSignal<MemberModuleLevels>(() => ({ ...this.initialModules() }));
 
   protected readonly canSave = computed(() => !this.saving() && (!this.showEmail() || this.email().trim() !== ''));
@@ -137,7 +145,7 @@ export class MemberAccessFormComponent {
     }
     this.saved.emit({
       ...(this.showEmail() ? { email: this.email().trim() } : {}),
-      role: this.role(),
+      ...selectionPayload(this.role()),
       modules,
     });
   }
