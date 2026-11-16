@@ -8,6 +8,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NotificationCategory,
   NotificationChannel,
+  NotificationDevice,
   NotificationFrequency,
   NotificationPreferences,
   NotificationSettings,
@@ -15,11 +16,13 @@ import {
   TranslateService,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { AlertRulesComponent } from './alert-rules.component';
+import { DeliveryLogComponent } from './delivery-log.component';
 
 /** Per-channel switches and delivery frequency of each notification category, plus the do-not-disturb settings. */
 @Component({
   selector: 'app-notification-preferences',
-  imports: [FormsModule, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzSwitchModule, NzTableModule],
+  imports: [AlertRulesComponent, DeliveryLogComponent, FormsModule, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzSwitchModule, NzTableModule],
   template: `
     <app-page-header [title]="'PLATFORM.NOTIFICATION_PREFERENCES' | translate" [subtitle]="'PLATFORM.NOTIFICATION_PREFERENCES_SUBTITLE' | translate"></app-page-header>
 
@@ -103,12 +106,50 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
         </div>
       </nz-card>
     }
+
+    @if (settings(); as channels) {
+      <nz-card class="dnd" [nzTitle]="'PLATFORM.CHANNELS_TITLE' | translate">
+        <div class="row">
+          <strong>Telegram</strong>
+          @if (channels.telegram_linked) {
+            <span>{{ 'PLATFORM.TELEGRAM_LINKED' | translate }}</span>
+            <button nz-button type="button" (click)="unlinkTelegram()">{{ 'PLATFORM.TELEGRAM_UNLINK' | translate }}</button>
+          } @else {
+            <button nz-button type="button" (click)="linkTelegram()">{{ 'PLATFORM.TELEGRAM_LINK' | translate }}</button>
+          }
+        </div>
+        <div class="row">
+          <label>
+            WhatsApp
+            <input type="tel" placeholder="+41791234567" [ngModel]="channels.whatsapp_number ?? ''" (ngModelChange)="patchSettings({ whatsapp_number: $event || null })" />
+          </label>
+          <button nz-button type="button" [nzLoading]="savingSettings()" (click)="saveSettings()">{{ 'PLATFORM.SAVE' | translate }}</button>
+        </div>
+        <div class="row">
+          <strong>{{ 'PLATFORM.DEVICES' | translate }}</strong>
+          @if (devices().length === 0) {
+            <span>{{ 'PLATFORM.NO_DEVICES' | translate }}</span>
+          }
+          @for (device of devices(); track device.id) {
+            <span>{{ device.name ?? device.platform }}</span>
+            <button nz-button nzSize="small" type="button" (click)="removeDevice(device.id)">{{ 'PLATFORM.DELETE' | translate }}</button>
+          }
+        </div>
+      </nz-card>
+    }
+
+    <app-alert-rules class="block" />
+    <app-delivery-log class="block" />
   `,
   styles: `
     .footer {
       margin-top: 16px;
     }
     .dnd {
+      margin-top: 16px;
+    }
+    .block {
+      display: block;
       margin-top: 16px;
     }
     .hint {
@@ -134,6 +175,7 @@ export class NotificationPreferencesComponent implements OnInit {
 
   readonly state = signal<NotificationPreferences | null>(null);
   readonly settings = signal<NotificationSettings | null>(null);
+  readonly devices = signal<NotificationDevice[]>([]);
   readonly saving = signal(false);
   readonly savingSettings = signal(false);
 
@@ -149,6 +191,7 @@ export class NotificationPreferencesComponent implements OnInit {
   ngOnInit(): void {
     this.api.getNotificationPreferences().subscribe((res) => this.state.set(res.data));
     this.api.getNotificationSettings().subscribe((res) => this.settings.set(res.data));
+    this.loadDevices();
   }
 
   isEnabled(channel: NotificationChannel, category: NotificationCategory): boolean {
@@ -213,6 +256,31 @@ export class NotificationPreferencesComponent implements OnInit {
       },
       error: () => this.savingSettings.set(false),
     });
+  }
+
+  /** Opens the Telegram deep link; pressing Start in the bot links the chat. */
+  linkTelegram(): void {
+    this.api.linkTelegram().subscribe((res) => {
+      window.open(res.data.url, '_blank', 'noopener');
+      // The webhook links the chat asynchronously: refresh the state once the user is back.
+      window.addEventListener('focus', () => this.refreshSettings(), { once: true });
+    });
+  }
+
+  unlinkTelegram(): void {
+    this.api.unlinkTelegram().subscribe(() => this.refreshSettings());
+  }
+
+  removeDevice(id: string): void {
+    this.api.deleteNotificationDevice(id).subscribe(() => this.loadDevices());
+  }
+
+  private loadDevices(): void {
+    this.api.getNotificationDevices().subscribe((res) => this.devices.set(res.data));
+  }
+
+  private refreshSettings(): void {
+    this.api.getNotificationSettings().subscribe((res) => this.settings.set(res.data));
   }
 
   private patchPreference(

@@ -78,4 +78,32 @@ describe('PlatformApiService', () => {
     service.getNotificationRealtime().subscribe();
     httpTesting.expectOne({ method: 'GET', url: `${base}/notifications/realtime` }).flush({ data: { enabled: false } });
   });
+
+  it('calls the delivery, device, Telegram and alert rule endpoints', () => {
+    service.getNotificationDeliveries('failed', 2).subscribe();
+    const list = httpTesting.expectOne((r) => r.url === `${base}/notifications/deliveries`);
+    expect(list.request.params.get('status')).toBe('failed');
+    expect(list.request.params.get('page')).toBe('2');
+    list.flush({ data: [] });
+
+    service.getNotificationDevices().subscribe();
+    httpTesting.expectOne({ method: 'GET', url: `${base}/notifications/devices` }).flush({ data: [] });
+    service.deleteNotificationDevice('d1').subscribe();
+    httpTesting.expectOne({ method: 'DELETE', url: `${base}/notifications/devices/d1` }).flush(null);
+
+    service.linkTelegram().subscribe();
+    httpTesting.expectOne({ method: 'POST', url: `${base}/notifications/channels/telegram/link` }).flush({ data: { url: 'https://t.me/x' } });
+    service.unlinkTelegram().subscribe();
+    httpTesting.expectOne({ method: 'DELETE', url: `${base}/notifications/channels/telegram` }).flush(null);
+
+    const rule = { name: 'Unpaid', metric: 'customer_overdue_total', threshold: 10000, currency: 'CHF', category: 'billing' as const, is_active: true };
+    service.getAlertRules().subscribe();
+    httpTesting.expectOne({ method: 'GET', url: `${base}/notification-alert-rules` }).flush({ data: [], metrics: [] });
+    service.createAlertRule(rule).subscribe();
+    expect(httpTesting.expectOne({ method: 'POST', url: `${base}/notification-alert-rules` }).request.body).toEqual(rule);
+    service.updateAlertRule('r1', rule).subscribe();
+    httpTesting.expectOne({ method: 'PUT', url: `${base}/notification-alert-rules/r1` }).flush({ data: {} });
+    service.deleteAlertRule('r1').subscribe();
+    httpTesting.expectOne({ method: 'DELETE', url: `${base}/notification-alert-rules/r1` }).flush(null);
+  });
 });
