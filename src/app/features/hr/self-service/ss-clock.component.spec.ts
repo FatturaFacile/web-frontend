@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting, type TestRequest } fro
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { I18nService } from '@core/i18n/i18n.service';
 import { environment } from '@env';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { SsClockComponent } from './ss-clock.component';
@@ -39,6 +40,7 @@ describe('SsClockComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: NzMessageService, useValue: { error: () => undefined } },
+        { provide: I18nService, useValue: { translate: (key: string) => key, currentLanguage: () => 'it' } },
       ],
     });
     httpMock = TestBed.inject(HttpTestingController);

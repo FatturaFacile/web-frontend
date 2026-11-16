@@ -71,6 +71,8 @@ pre {
   border-radius: var(--radius-sm);
 }
 
+// The global focus ring lives in _a11y.scss.
+
 // Global focus ring (WCAG 2.4.7)
 :focus-visible,
 a:focus-visible,

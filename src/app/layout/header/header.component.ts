@@ -17,6 +17,7 @@ import { TranslateService } from '@core/i18n/i18n.service';
 import { AppStore } from '@core/state/app.store';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { GlobalSearchService } from '@shared/components/global-search/global-search.service';
+import { AppearanceSwitcherComponent } from './appearance-switcher.component';
 import { NotificationBellComponent } from './notification-bell.component';
 import { DisplayPreferencesComponent } from './display-preferences.component';
 
@@ -32,6 +33,7 @@ import { DisplayPreferencesComponent } from './display-preferences.component';
     NzSelectModule,
     NzTagModule,
     NzAvatarModule,
+    AppearanceSwitcherComponent,
     NotificationBellComponent,
     DisplayPreferencesComponent,
     TranslatePipe,
