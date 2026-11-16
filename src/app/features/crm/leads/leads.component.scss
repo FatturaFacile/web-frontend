@@ -1,0 +1,57 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter {
+  width: 170px;
+}
+.spacer {
+  flex: 1;
+}
+.sub-text {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+.score {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.actions-group {
+  text-align: right;
+  white-space: nowrap;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.full {
+  grid-column: 1 / -1;
+}
+.mt {
+  margin-top: 16px;
+}
+.secret-card {
+  margin-bottom: 16px;
+  border-color: #faad14;
+}
+code {
+  word-break: break-all;
+}
+.detail-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.dup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}

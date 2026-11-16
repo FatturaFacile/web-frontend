@@ -13,6 +13,17 @@ export const CRM_ROUTES: Routes = [
       import('./clients/clients.component').then((m) => m.CrmClientsComponent),
   },
   {
+    path: 'leads',
+    data: { breadcrumb: 'Lead', title: 'Lead & Acquisizione' },
+    loadComponent: () => import('./leads/leads.component').then((m) => m.LeadsComponent),
+  },
+  {
+    path: 'lead-settings',
+    data: { breadcrumb: 'Configurazione Lead', title: 'Configurazione acquisizione lead' },
+    loadComponent: () =>
+      import('./leads/lead-settings.component').then((m) => m.LeadSettingsComponent),
+  },
+  {
     path: 'suppliers',
     data: { breadcrumb: 'Fornitori & Listini', title: 'Fornitori & Listini' },
     loadComponent: () =>

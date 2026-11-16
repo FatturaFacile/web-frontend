@@ -79,6 +79,7 @@ export class SidebarComponent {
           icon: 'fa-solid fa-users',
           children: [
             { key: 'NAV.CLIENTS', route: '/crm/clients', icon: 'fa-solid fa-address-book' },
+            { key: 'NAV.LEADS', route: '/crm/leads', icon: 'fa-solid fa-bullseye' },
             { key: 'NAV.SUPPLIERS', route: '/crm/suppliers', icon: 'fa-solid fa-truck-field' },
           ],
         },
