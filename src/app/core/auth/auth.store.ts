@@ -260,8 +260,19 @@ export const AuthStore = signalStore(
     isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
     isDarkMode: computed(() => theme() === 'dark'),
+    permissions: computed(() => user()?.permissions ?? []),
+    permissionsLoaded: computed(() => user()?.permissions !== undefined),
   })),
   withMethods((store, i18n = inject(I18nService)) => ({
+    /** True when the signed-in user holds the permission in the active tenant (reactive in templates and computed). */
+    can(permission: string): boolean {
+      return store.userPermissions().includes(permission);
+    },
+    /** True when the user holds at least one of the permissions in the active tenant. */
+    canAny(permissions: readonly string[]): boolean {
+      const granted = store.userPermissions();
+      return permissions.some((p) => granted.includes(p));
+    },
     login(tenantId?: string, user?: UserProfile | null): void {
       const targetUser = user ?? DEFAULT_USER;
       persistUserId(targetUser);

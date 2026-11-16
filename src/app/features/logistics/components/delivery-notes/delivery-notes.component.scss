@@ -1,0 +1,40 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter {
+  min-width: 180px;
+}
+
+.lang {
+  min-width: 110px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pdf-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.group {
+  margin-bottom: 12px;
+}

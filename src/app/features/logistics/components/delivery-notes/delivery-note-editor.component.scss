@@ -1,0 +1,45 @@
+.steps {
+  margin-bottom: 24px;
+}
+
+.step-body {
+  min-height: 240px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 16px;
+}
+
+.wide {
+  min-width: 220px;
+}
+
+.order {
+  margin-bottom: 12px;
+}
+
+.add-line {
+  margin-top: 12px;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.review dl {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 8px 16px;
+}
+
+.review dt {
+  font-weight: 600;
+}
