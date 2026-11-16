@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ClockNowPayload, ClockState, HrTimeApiService, I18nService, TimeEventResource, TimeEventType } from '@core';
 import { TranslatePipe } from '@shared';
+import { forkJoin } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
@@ -96,6 +97,7 @@ export class SsClockComponent implements OnInit {
   protected readonly todayEvents = signal<TimeEventResource[]>([]);
   protected readonly loading = signal(true);
   protected readonly punching = signal(false);
+  private readonly geoEnabled = signal(false);
 
   protected readonly clockState = computed<ClockState>(() => deriveClockState(this.todayEvents()));
 
@@ -123,8 +125,8 @@ export class SsClockComponent implements OnInit {
       });
     };
 
-    // Art. 4 L. 300/1970: GPS only on punch action (never continuous), only if browser supports it.
-    if (navigator.geolocation) {
+    // Art. 4 L. 300/1970: GPS only on punch action (never continuous), only when employee consent is on file.
+    if (this.geoEnabled() && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) =>
           doPunch({
@@ -143,9 +145,13 @@ export class SsClockComponent implements OnInit {
 
   private loadToday(): void {
     const today = todayIso();
-    this.api.getMyEvents({ from: today, to: today, per_page: 50 }).subscribe({
-      next: (res) => {
-        this.todayEvents.set(res.data);
+    forkJoin({
+      events: this.api.getMyEvents({ from: today, to: today, per_page: 50 }),
+      settings: this.api.getClockSettings(),
+    }).subscribe({
+      next: ({ events, settings }) => {
+        this.todayEvents.set(events.data);
+        this.geoEnabled.set(settings.data.geolocation_enabled && settings.data.privacy_notice_acknowledged);
         this.loading.set(false);
       },
       error: (err: unknown) => {
