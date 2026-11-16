@@ -12,13 +12,13 @@ import { TranslatePipe } from '@shared';
   template: `
     <nz-select
       class="language-select"
-      nzSize="small"
+      nzSize="default"
       [ngModel]="activeLocale()"
       (ngModelChange)="onLocaleChange($event)"
       [attr.aria-label]="'AUTH.LANGUAGE' | translate"
     >
       @for (language of languages; track language.code) {
-        <nz-option [nzValue]="language.code" [nzLabel]="language.flag + ' ' + language.label" />
+        <nz-option [nzValue]="language.code" [nzLabel]="language.flag + ' ' + (nameKey(language.code) | translate)" />
       }
     </nz-select>
   `,
@@ -28,6 +28,10 @@ export class LanguageSelectorComponent {
 
   protected readonly activeLocale = this.authStore.activeLocale;
   protected readonly languages = inject(I18nService).languages;
+
+  protected nameKey(code: string): string {
+    return 'AUTH.LANGUAGE_NAME_' + code.toUpperCase();
+  }
 
   protected onLocaleChange(locale: SupportedLanguage): void {
     this.authStore.setLocale(locale);

@@ -14,7 +14,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { applyServerErrors, AuthApiService, I18nService, isValidationError, RegistrationCountry, TAX_ID_PLACEHOLDERS } from '@core';
 import { environment } from '@env';
 import { TranslatePipe } from '@shared';
-import { LanguageSelectorComponent } from '../../components/language-selector.component';
+import { AuthFooterComponent } from '../../components/auth-footer.component';
+import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
 import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
 
 @Component({
@@ -31,7 +32,8 @@ import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-
     NzIconModule,
     NzInputModule,
     NzSelectModule,
-    LanguageSelectorComponent,
+    AuthFooterComponent,
+    AuthToolbarComponent,
     TranslatePipe,
   ],
   templateUrl: './register.component.html',

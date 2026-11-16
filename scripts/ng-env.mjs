@@ -54,6 +54,7 @@ function loadEnv(names) {
     'DEMO_MODE',
     'TERMS_URL',
     'PRIVACY_URL',
+    'APP_VERSION',
   ])) {
     if (process.env[key]) {
       merged[key] = process.env[key];
@@ -94,6 +95,8 @@ if (command === 'serve' && apiBaseUrl.startsWith('/') && !env.API_PROXY_TARGET) 
   );
 }
 const demoMode = env.DEMO_MODE === 'true';
+const appVersion =
+  env.APP_VERSION || JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 
 console.log(
   `[ng-env] ${command} (${configurations.join(',')}): API_BASE_URL=${apiBaseUrl}` +
@@ -114,6 +117,8 @@ const ngArgs = [
   `NG_APP_TERMS_URL=${JSON.stringify(env.TERMS_URL ?? '')}`,
   '--define',
   `NG_APP_PRIVACY_URL=${JSON.stringify(env.PRIVACY_URL ?? '')}`,
+  '--define',
+  `NG_APP_VERSION=${JSON.stringify(appVersion)}`,
 ];
 const result = spawnSync(process.execPath, ngArgs, {
   cwd: root,

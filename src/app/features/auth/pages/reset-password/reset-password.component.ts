@@ -12,7 +12,8 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { applyServerErrors, AUTH_PROBLEM, AuthApiService, authProblemOf, isValidationError } from '@core';
 import { TranslatePipe } from '@shared';
-import { LanguageSelectorComponent } from '../../components/language-selector.component';
+import { AuthFooterComponent } from '../../components/auth-footer.component';
+import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
 import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
 
 type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'failed';
@@ -34,13 +35,14 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
     NzIconModule,
     NzInputModule,
     NzSpinModule,
-    LanguageSelectorComponent,
+    AuthFooterComponent,
+    AuthToolbarComponent,
     TranslatePipe,
   ],
   template: `
     <main class="login-wrapper">
       <div class="login-box">
-        <app-language-selector />
+        <app-auth-toolbar />
 
         <header class="login-header text-center">
           <h1>Fattura <span class="facile-color">Facile</span></h1>
@@ -183,6 +185,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
             <a routerLink="/login">{{ 'AUTH.BACK_TO_LOGIN' | translate }}</a>
           </p>
         </nz-card>
+        <app-auth-footer />
       </div>
     </main>
   `,

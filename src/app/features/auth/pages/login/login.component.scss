@@ -107,3 +107,9 @@
     }
   }
 }
+
+.theme-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}

@@ -1,6 +1,6 @@
 <main class="login-wrapper">
   <div class="login-box">
-    <!-- Rimosso <app-language-selector /> da qui -->
+    <div class="theme-toolbar"><app-theme-selector /></div>
 
     <header class="login-header text-center">
       <h1>Fattura <span class="facile-color">Facile</span></h1>
@@ -140,8 +140,8 @@
             class="flag-btn"
             [class.active]="currentLang() === 'it'"
             (click)="setLanguage('it')"
-            title="Italiano"
-            aria-label="Italiano"
+            [attr.title]="'AUTH.LANGUAGE_NAME_IT' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_IT' | translate"
           >
             <span class="fi fi-it">🇮🇹</span>
           </button>
@@ -150,8 +150,8 @@
             class="flag-btn"
             [class.active]="currentLang() === 'en'"
             (click)="setLanguage('en')"
-            title="English"
-            aria-label="English"
+            [attr.title]="'AUTH.LANGUAGE_NAME_EN' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_EN' | translate"
           >
             <span class="fi fi-gb">🇬🇧</span>
           </button>
@@ -160,8 +160,8 @@
             class="flag-btn"
             [class.active]="currentLang() === 'de'"
             (click)="setLanguage('de')"
-            title="Deutsch"
-            aria-label="Deutsch"
+            [attr.title]="'AUTH.LANGUAGE_NAME_DE' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_DE' | translate"
           >
             <span class="fi fi-de">🇩🇪</span>
           </button>
@@ -170,16 +170,14 @@
             class="flag-btn"
             [class.active]="currentLang() === 'fr'"
             (click)="setLanguage('fr')"
-            title="Français"
-            aria-label="Français"
+            [attr.title]="'AUTH.LANGUAGE_NAME_FR' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_FR' | translate"
           >
             <span class="fi fi-fr">🇫🇷</span>
           </button>
         </div>
-
-        <!-- FOOTER INFO E SUPPORTO -->
+        <!-- SUPPORTO -->
         <p class="auth-footer-info">
-          © {{ currentYear }} Fattura Facile &nbsp;|&nbsp;
           <a href="mailto:support@fatturafacile.eu">support&#64;fatturafacile.eu</a>
         </p>
       }
@@ -273,6 +271,7 @@
         </div>
       }
     </nz-card>
+    <app-auth-footer />
   </div>
 
   <app-two-factor-setup-modal
