@@ -23,7 +23,7 @@ import { optimisticLockInterceptor } from '@core/interceptors/optimistic-lock.in
 import { paginatedResponseInterceptor } from '@core/interceptors/paginated-response.interceptor';
 import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.interceptor';
 import { I18nService, PageTitleStrategy } from '@core/i18n';
-import { ThemeService } from '@core/theme';
+import { DisplayPreferencesService, ThemeService } from '@core/theme';
 import { PwaUpdateService } from '@core/pwa';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
@@ -64,6 +64,7 @@ export const appConfig: ApplicationConfig = {
     provideNzDateFnsAdapter(),
     provideAppInitializer(() => {
       inject(ThemeService);
+      inject(DisplayPreferencesService);
       const i18n = inject(I18nService);
       // Bootstrap bloccato (splash + spinner) finché le traduzioni non sono caricate
       return i18n.waitForInitialTranslations();
