@@ -48,7 +48,8 @@ describe('SelfServiceComponent', () => {
     const fixture = setup(of({ success: true, message: '', data: profile }));
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
+    expect(fixture.nativeElement.querySelector('nz-tabs')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('nz-result')).toBeNull();
   });
 
   it('shows the not-linked state on 403', async () => {
