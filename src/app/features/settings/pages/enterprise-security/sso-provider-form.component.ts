@@ -150,7 +150,7 @@ import { blankToNull, enterpriseErrorText, formatRoleMapping, parseRoleMapping }
   `,
   styles: `
     .gap { margin-bottom: 16px; display: block; }
-    .muted { color: rgba(0, 0, 0, 0.65); }
+    .muted { color: var(--ff-color-text-secondary); }
     .switch-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .actions { display: flex; gap: 12px; flex-wrap: wrap; }
   `,

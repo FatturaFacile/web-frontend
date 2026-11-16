@@ -41,7 +41,7 @@
 }
 
 .selected-row {
-  background: var(--bg-hover, rgba(24, 144, 255, 0.08));
+  background: var(--ff-color-hover);
 }
 
 tr {
@@ -54,25 +54,25 @@ tr {
   height: auto;
 
   .limit {
-    stroke: #ff4d4f;
+    stroke: var(--ff-color-danger);
     stroke-dasharray: 6 4;
   }
 
   .center {
-    stroke: #52c41a;
+    stroke: var(--ff-color-success);
   }
 
   .series {
     fill: none;
-    stroke: #1677ff;
+    stroke: var(--ff-color-primary);
     stroke-width: 1.5;
   }
 
   circle {
-    fill: #1677ff;
+    fill: var(--ff-color-primary);
 
     &.violation {
-      fill: #ff4d4f;
+      fill: var(--ff-color-danger);
     }
   }
 }

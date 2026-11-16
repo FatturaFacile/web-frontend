@@ -183,13 +183,13 @@ const INVITATION_LABELS: Readonly<Record<string, string>> = {
     }
     .best {
       font-weight: 700;
-      color: #389e0d;
+      color: var(--ff-color-success);
     }
     .missing {
       opacity: 0.5;
     }
     tr.recommended td {
-      background: rgba(22, 119, 255, 0.06);
+      background: var(--ff-color-selected);
     }
   `,
 })

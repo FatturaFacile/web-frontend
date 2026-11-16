@@ -100,9 +100,9 @@ import { apiErrorText, firstMeasure, formatBiValue } from './bi.util';
   styles: `
     .bi-kpi { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; }
     .bi-kpi-value { font-size: 32px; font-weight: 600; }
-    .bi-kpi-label { color: var(--text-secondary, #595959); }
+    .bi-kpi-label { color: var(--ff-color-text-secondary); }
     .bi-drill { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .bi-crumbs, .bi-truncated { color: var(--text-secondary, #595959); font-size: 12px; }
+    .bi-crumbs, .bi-truncated { color: var(--ff-color-text-secondary); font-size: 12px; }
     .num { text-align: right; }
   `,
 })

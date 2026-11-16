@@ -31,8 +31,8 @@ import { TranslatePipe } from '@shared';
   styles: `
     .public-page {
       min-height: 100vh;
-      background: var(--bg-main, #f5f7f9);
-      color: var(--text-primary, #1f1f1f);
+      background: var(--ff-color-bg);
+      color: var(--ff-color-text);
     }
     .public-header {
       display: flex;
@@ -40,8 +40,8 @@ import { TranslatePipe } from '@shared';
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: var(--bg-card, #fff);
-      border-bottom: 1px solid var(--border-color, #e8e8e8);
+      background: var(--ff-color-surface-raised);
+      border-bottom: 1px solid var(--ff-color-border);
     }
     .public-brand {
       font-weight: 700;

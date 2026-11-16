@@ -36,7 +36,7 @@ import { AddExtensionDialogComponent } from './add-extension-dialog.component';
       margin-top: 16px;
     }
     .pd-removed {
-      color: var(--text-secondary, #595959);
+      color: var(--ff-color-text-secondary);
     }
   `,
 })

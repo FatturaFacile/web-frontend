@@ -2,8 +2,8 @@ import { Component, computed, input, output } from '@angular/core';
 import { BiQueryResult } from '@core';
 import { BiChartPoint, chartPoints } from './bi.util';
 
-/** Palette of the series: validated for contrast on both themes. */
-const COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#eb2f96', '#722ed1', '#13c2c2', '#faad14', '#8c8c8c'];
+/** Palette of the series: --ff-color-chart-* tokens, defined per theme (>= 3:1 on the surface in light and dark). */
+const COLORS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `var(--ff-color-chart-${n})`);
 
 interface Slice {
   point: BiChartPoint;
@@ -25,7 +25,7 @@ interface Slice {
           <div class="bi-pie">
             <svg viewBox="-110 -110 220 220" role="img" [attr.aria-label]="label()">
               @for (slice of slices(); track $index) {
-                <path [attr.d]="slice.path" [attr.fill]="slice.color" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(slice.point)" (keydown.enter)="pointClick.emit(slice.point)">
+                <path [attr.d]="slice.path" [style.fill]="slice.color" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(slice.point)" (keydown.enter)="pointClick.emit(slice.point)">
                   <title>{{ slice.point.label }}: {{ slice.point.value }}</title>
                 </path>
               }
@@ -39,9 +39,9 @@ interface Slice {
         }
         @case ('line') {
           <svg viewBox="0 0 400 220" role="img" [attr.aria-label]="label()" class="bi-svg">
-            <polyline [attr.points]="linePoints()" fill="none" stroke="#1677ff" stroke-width="2"></polyline>
+            <polyline [attr.points]="linePoints()" fill="none" style="stroke: var(--ff-color-chart-1)" stroke-width="2"></polyline>
             @for (dot of dots(); track $index) {
-              <circle [attr.cx]="dot.x" [attr.cy]="dot.y" r="4" fill="#1677ff" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(dot.point)" (keydown.enter)="pointClick.emit(dot.point)">
+              <circle [attr.cx]="dot.x" [attr.cy]="dot.y" r="4" style="fill: var(--ff-color-chart-1)" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(dot.point)" (keydown.enter)="pointClick.emit(dot.point)">
                 <title>{{ dot.point.label }}: {{ dot.point.value }}</title>
               </circle>
               <text [attr.x]="dot.x" y="214" text-anchor="middle" class="bi-axis">{{ dot.short }}</text>
@@ -51,7 +51,7 @@ interface Slice {
         @default {
           <svg viewBox="0 0 400 220" role="img" [attr.aria-label]="label()" class="bi-svg">
             @for (bar of bars(); track $index) {
-              <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height" fill="#1677ff" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(bar.point)" (keydown.enter)="pointClick.emit(bar.point)">
+              <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height" style="fill: var(--ff-color-chart-1)" class="bi-point" tabindex="0" role="button" (click)="pointClick.emit(bar.point)" (keydown.enter)="pointClick.emit(bar.point)">
                 <title>{{ bar.point.label }}: {{ bar.point.value }}</title>
               </rect>
               <text [attr.x]="bar.x + bar.width / 2" y="214" text-anchor="middle" class="bi-axis">{{ bar.short }}</text>
@@ -67,9 +67,9 @@ interface Slice {
     .bi-pie svg { width: 160px; height: 160px; }
     .bi-legend { list-style: none; margin: 0; padding: 0; font-size: 12px; }
     .bi-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
-    .bi-axis { font-size: 9px; fill: var(--text-secondary, #8c8c8c); }
+    .bi-axis { font-size: 9px; fill: var(--ff-color-text-secondary); }
     .bi-point { cursor: pointer; }
-    .bi-point:focus { outline: 2px solid #1677ff; }
+    .bi-point:focus { outline: 2px solid var(--ff-color-focus); }
   `,
 })
 export class BiChartComponent {

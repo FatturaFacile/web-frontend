@@ -72,7 +72,7 @@ type TransitionTarget = { kind: 'plan'; plan: GovAuditPlan } | { kind: 'audit'; 
       gap: 4px;
     }
     .late {
-      color: #cf1322;
+      color: var(--ff-color-danger);
     }
     .w-full {
       width: 100%;

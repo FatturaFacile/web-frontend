@@ -32,7 +32,7 @@ export function govActionTargets(
   imports: [DatePipe, NzButtonModule, NzTableModule, NzTagModule, TranslatePipe, GovTransitionModalComponent],
   styles: `
     .overdue {
-      color: #cf1322;
+      color: var(--ff-color-danger);
     }
   `,
   template: `

@@ -170,11 +170,11 @@ import { StatusTagComponent } from '../shared/status-tag.component';
     .ln-overdue {
       display: inline-block;
       margin-left: 4px;
-      color: #a8071a;
+      color: var(--ff-color-danger);
       font-weight: 600;
     }
     .ln-overdue-row td:first-child {
-      border-left: 4px solid #a8071a;
+      border-left: 4px solid var(--ff-color-danger);
     }
   `,
 })

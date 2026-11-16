@@ -13,7 +13,7 @@
 }
 
 .overdue-flag {
-  color: #a8071a;
+  color: var(--ff-color-danger);
   font-weight: 600;
 }
 
@@ -27,5 +27,5 @@
 
 .history-from {
   margin-left: 4px;
-  color: var(--text-secondary, #595959);
+  color: var(--ff-color-text-secondary);
 }

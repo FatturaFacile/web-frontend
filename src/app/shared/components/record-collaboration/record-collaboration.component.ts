@@ -37,7 +37,7 @@ const ACTIVITY_LABEL_KEYS: Record<string, string> = {
       display: flex;
       gap: 4px;
       margin-bottom: 12px;
-      border-bottom: 1px solid var(--ant-color-border-secondary, #e5e5e5);
+      border-bottom: 1px solid var(--ff-color-border-subtle);
     }
     .rc-tab {
       padding: 6px 14px;
@@ -48,8 +48,8 @@ const ACTIVITY_LABEL_KEYS: Record<string, string> = {
       cursor: pointer;
     }
     .rc-tab[aria-selected='true'] {
-      border-bottom-color: var(--ant-color-primary, #1677ff);
-      color: var(--ant-color-primary, #1677ff);
+      border-bottom-color: var(--ff-color-primary);
+      color: var(--ff-color-primary);
     }
     .rc-list {
       margin: 0 0 12px;
@@ -58,7 +58,7 @@ const ACTIVITY_LABEL_KEYS: Record<string, string> = {
     }
     .rc-item {
       padding: 8px 0;
-      border-bottom: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+      border-bottom: 1px solid var(--ff-color-border-subtle);
     }
     .rc-meta {
       font-size: 12px;
@@ -89,8 +89,8 @@ const ACTIVITY_LABEL_KEYS: Record<string, string> = {
       gap: 4px;
       padding: 2px 8px;
       border-radius: 4px;
-      background: var(--rc-tag-color, #1677ff);
-      color: #fff;
+      background: var(--rc-tag-color, var(--ff-color-primary));
+      color: var(--ff-color-on-primary);
       font-size: 12px;
     }
     .rc-tag button {

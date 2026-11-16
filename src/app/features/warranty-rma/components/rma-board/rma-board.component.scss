@@ -9,7 +9,7 @@
 }
 
 .board-generated {
-  color: var(--text-secondary, #595959);
+  color: var(--ff-color-text-secondary);
 }
 
 .board {
@@ -21,8 +21,8 @@
 
 .board-column {
   flex: 0 0 260px;
-  background: var(--bg-card-secondary, #f5f5f5);
-  border: 1px solid var(--border-color, #e8e8e8);
+  background: var(--ff-color-surface-alt);
+  border: 1px solid var(--ff-color-border);
   border-radius: 8px;
   padding: 8px;
 }
@@ -45,8 +45,8 @@
   min-width: 24px;
   padding: 0 8px;
   border-radius: 12px;
-  background: #1f1f1f;
-  color: #fff;
+  background: var(--ff-color-text);
+  color: var(--ff-color-bg);
   text-align: center;
   font-weight: 600;
 }
@@ -61,14 +61,14 @@
 }
 
 .board-card {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-color, #d9d9d9);
+  background: var(--ff-color-surface-raised);
+  border: 1px solid var(--ff-color-border);
   border-radius: 6px;
   padding: 8px;
 }
 
 .board-card-overdue {
-  border-left: 4px solid #a8071a;
+  border-left: 4px solid var(--ff-color-danger);
 }
 
 .board-card-open {
@@ -85,7 +85,7 @@
 }
 
 .board-card-open:focus-visible {
-  outline: 2px solid #0d9488;
+  outline: 2px solid var(--ff-color-focus);
   outline-offset: 2px;
 }
 
@@ -104,12 +104,12 @@
 }
 
 .board-overdue {
-  color: #a8071a;
+  color: var(--ff-color-danger);
   font-weight: 600;
 }
 
 .board-empty {
-  color: var(--text-secondary, #595959);
+  color: var(--ff-color-text-secondary);
   font-size: 12px;
   padding: 8px;
 }

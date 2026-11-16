@@ -85,7 +85,7 @@
               <nz-statistic
                 [nzTitle]="'TRAVEL.VARIANCE' | translate"
                 [nzValue]="budget.variance + ' ' + budget.currency"
-                [nzValueStyle]="{ color: budget.within_budget ? 'var(--success, #52c41a)' : 'var(--error, #f5222d)' }"
+                [nzValueStyle]="{ color: budget.within_budget ? 'var(--ff-color-success)' : 'var(--ff-color-danger)' }"
               ></nz-statistic>
               @if (budget.utilization_percent !== null) {
                 <span class="text-muted">{{ 'TRAVEL.BUDGET_UTILIZATION' | translate: { percent: budget.utilization_percent } }}</span>
