@@ -7,6 +7,7 @@ export * from './alerts.model';
 export * from './banking.model';
 export * from './crm.model';
 export * from './lead.model';
+export type { LeadResource, UpdateLeadPayload } from './lead.model';
 export * from './expenses.model';
 export * from './settings.model';
 export * from './system.model';

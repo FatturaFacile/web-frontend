@@ -11,17 +11,16 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { I18nService, LeadApiService } from '@core';
 import {
   CreateLeadPayload,
   DuplicateStrategy,
-  I18nService,
-  LeadApiService,
   LeadBehaviorEvent,
   LeadRating,
   LeadResource,
   LeadStatus,
   UpdateLeadPayload,
-} from '@core';
+} from '@core/models/lead.model';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
 // Hex colours (not antd presets) so the tags keep their colour in the dark theme.
