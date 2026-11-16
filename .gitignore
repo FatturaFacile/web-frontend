@@ -47,3 +47,22 @@ Thumbs.db
 
 .claude-build/
 .claude/
+
+# Editor / assistant tool configuration (local only)
+/CLAUDE.md
+/AGENTS.md
+/.claude/
+/.claudeignore
+/.agy
+/.agyignore
+/.ai
+/.aiignore
+/.antigravity
+/.codex
+/.copilotignore
+/.cursor/
+/.cursorignore
+/.cursorrules
+/.gemini/
+/.geminiignore
+/.windsurfrules
