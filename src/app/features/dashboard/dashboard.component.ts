@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
   readonly revenueDisplay = computed(() => {
     const kpi = this.kpiSummary();
     const curr = this.authStore.activeCurrency();
-    const val = kpi ? kpi.revenue_month : 0;
+    const val = kpi?.revenue_month ?? 0;
     return curr === 'EUR'
       ? `€ ${val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : `CHF ${val.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -61,7 +61,7 @@ export class DashboardComponent implements OnInit {
   readonly receivablesDisplay = computed(() => {
     const kpi = this.kpiSummary();
     const curr = this.authStore.activeCurrency();
-    const val = kpi ? kpi.open_receivables : 0;
+    const val = kpi?.open_receivables ?? 0;
     return curr === 'EUR'
       ? `€ ${val.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : `CHF ${val.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

@@ -9,7 +9,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
@@ -54,6 +54,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
   selector: 'app-invoices',
   imports: [
     FormsModule,
+    NzModalModule,
     CurrencyPipe,
     DatePipe,
     NzTagModule,
