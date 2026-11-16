@@ -89,6 +89,7 @@ export * from './billing.model';
 export * from './crm-engagement.model';
 export * from './crm-extension.model';
 export * from './catalog.model';
+export * from './customs-codes.model';
 export * from './association-area.model';
 export * from './subscription-billing.model';
 export * from './general-ledger.model';

@@ -1,4 +1,5 @@
 import { QueryFilterParams } from './api.models';
+import { CustomsOriginType } from './customs-codes.model';
 
 /** A catalog product as the API returns it (Product model: the money fields arrive as decimal strings). */
 export interface ProductItem {
@@ -14,6 +15,16 @@ export interface ProductItem {
   hs_code?: string | null;
   min_stock?: number | string | null;
   is_active?: boolean;
+  customs_taric_code_id?: string | null;
+  /** 6, 8 or 10 digit HS / CN / TARIC code. */
+  taric_code?: string | null;
+  /** ISO 3166-1 alpha-2 country of origin. */
+  country_of_origin?: string | null;
+  origin_type?: CustomsOriginType | null;
+  made_in_label?: string | null;
+  preferential_agreement_id?: string | null;
+  eur1_required?: boolean;
+  origin_rule_notes?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -57,6 +68,15 @@ export interface CreateProductPayload {
   tax_rate: number;
   hs_code?: string | null;
   min_stock?: number | null;
+  customs_taric_code_id?: string | null;
+  taric_code?: string | null;
+  country_of_origin?: string | null;
+  origin_type?: CustomsOriginType | null;
+  /** The server derives it from the country when omitted. */
+  made_in_label?: string | null;
+  preferential_agreement_id?: string | null;
+  eur1_required?: boolean;
+  origin_rule_notes?: string | null;
 }
 
 export interface WarehouseItem {

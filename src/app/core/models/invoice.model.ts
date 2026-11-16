@@ -1,5 +1,6 @@
 import { QueryFilterParams } from './api.models';
 import { ContactResource } from './client.model';
+import { CustomsOriginType } from './customs-codes.model';
 
 export type InvoiceStatus = 'draft' | 'approved' | 'posted' | 'issued' | 'paid' | 'cancelled';
 export type PaymentStatus = 'unpaid' | 'partially_paid' | 'paid' | 'overdue';
@@ -29,6 +30,9 @@ export interface InvoiceResource {
   exchange_rate?: number | null;
   exchange_rate_source?: string | null;
   exchange_rate_date?: string | null;
+  free_trade_agreement_id?: string | null;
+  origin_declaration_text?: string | null;
+  duty_exemption_eligible?: boolean;
 }
 
 export interface InvoiceItemResource {
@@ -37,6 +41,11 @@ export interface InvoiceItemResource {
   unit_price: number;
   tax_rate: number;
   discount_percentage?: number | null;
+  /** Snapshots of the product customs data taken when the invoice was issued. */
+  taric_code?: string | null;
+  country_of_origin?: string | null;
+  origin_type?: CustomsOriginType | null;
+  made_in_label?: string | null;
 }
 
 /** GET /sales/invoices/{id} — documented as including contact and items. */
@@ -52,6 +61,10 @@ export interface InvoiceLineItemPayload {
   unit_price: number;
   tax_rate: number;
   discount_percentage?: number | null;
+  taric_code?: string | null;
+  country_of_origin?: string | null;
+  origin_type?: CustomsOriginType | null;
+  made_in_label?: string | null;
 }
 
 /**
@@ -69,6 +82,9 @@ export interface CreateInvoicePayload {
   split_payment?: boolean | null;
   reverse_charge?: boolean | null;
   notes?: string | null;
+  free_trade_agreement_id?: string | null;
+  origin_declaration_text?: string | null;
+  duty_exemption_eligible?: boolean;
   items: InvoiceLineItemPayload[];
 }
 

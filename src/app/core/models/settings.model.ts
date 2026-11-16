@@ -10,6 +10,10 @@ export interface TenantSettings {
   qr_iban?: string | null;
   sdi_code?: string | null;
   pec_email?: string | null;
+  /** Customs approved exporter authorisation number (max 50 characters). */
+  customs_approved_exporter_number?: string | null;
+  /** REX registered exporter number (max 50 characters). */
+  rex_exporter_number?: string | null;
   settings?: Record<string, unknown> | null;
 }
 

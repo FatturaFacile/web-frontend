@@ -78,6 +78,20 @@
               <input nz-input id="pec_email" formControlName="pec_email" type="email" />
             </nz-form-control>
           </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="customs_approved_exporter_number">{{ 'settings.form.customsApprovedExporterNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="customs_approved_exporter_number" formControlName="customs_approved_exporter_number" maxlength="50" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="rex_exporter_number">{{ 'settings.form.rexExporterNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="rex_exporter_number" formControlName="rex_exporter_number" maxlength="50" />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <div class="form-actions">

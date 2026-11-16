@@ -74,6 +74,8 @@ export class SettingsComponent implements OnInit {
     qr_iban: this.fb.control<string>('CH4431999123000889012', [Validators.maxLength(34)]),
     sdi_code: this.fb.control<string>('M5UXCR1', [Validators.minLength(7), Validators.maxLength(7)]),
     pec_email: this.fb.control<string>('rossiimpianti@pec.it', [Validators.email]),
+    customs_approved_exporter_number: this.fb.control<string>('', [Validators.maxLength(50)]),
+    rex_exporter_number: this.fb.control<string>('', [Validators.maxLength(50)]),
   });
 
   readonly branchColumns = computed<TableColumnDef<BranchResource>[]>(() => [
@@ -154,6 +156,8 @@ export class SettingsComponent implements OnInit {
             qr_iban: res.data.qr_iban || '',
             sdi_code: res.data.sdi_code || '',
             pec_email: res.data.pec_email || '',
+            customs_approved_exporter_number: res.data.customs_approved_exporter_number || '',
+            rex_exporter_number: res.data.rex_exporter_number || '',
           });
         }
       },

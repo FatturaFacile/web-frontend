@@ -129,6 +129,7 @@ describe('InventoryComponent', () => {
         data: mockProducts[0],
       }),
     ),
+    updateProduct: vi.fn().mockReturnValue(of({ success: true, data: mockProducts[0] })),
     deleteProduct: vi.fn().mockReturnValue(
       of({
         success: true,
@@ -224,6 +225,7 @@ describe('InventoryComponent', () => {
   const mockTranslate = {
     instant: vi.fn((k: string) => k),
     translate: vi.fn((k: string) => k),
+    currentLanguage: () => 'en',
   };
 
   const mockMessage = {
@@ -460,9 +462,77 @@ describe('InventoryComponent', () => {
       sale_price: 25.5,
       tax_rate: 22,
       hs_code: null,
+      customs_taric_code_id: null,
+      taric_code: null,
+      country_of_origin: null,
+      origin_type: null,
+      made_in_label: null,
+      preferential_agreement_id: null,
+      eur1_required: false,
+      origin_rule_notes: null,
     });
     expect(mockMessage.success).toHaveBeenCalledWith('inventory.messages.created');
     expect(component.createModalVisible()).toBe(false);
+  });
+
+  it('sends the customs and origin fields of the product', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+    component.productForm.patchValue({
+      sku: 'SKU-003',
+      name: 'Watch',
+      cost_price: 100,
+      sale_price: 300,
+      customs: {
+        taric_code: '9101.1100',
+        customs_taric_code_id: 'tc-1',
+        country_of_origin: 'ch',
+        origin_type: 'preferential',
+        made_in_label: '',
+        preferential_agreement_id: 'fta-1',
+        eur1_required: true,
+        origin_rule_notes: ' ',
+      },
+    });
+
+    component.submitCreateProduct();
+
+    expect(mockInventoryApi.createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taric_code: '91011100',
+        customs_taric_code_id: 'tc-1',
+        country_of_origin: 'CH',
+        origin_type: 'preferential',
+        made_in_label: 'Swiss Made',
+        preferential_agreement_id: 'fta-1',
+        eur1_required: true,
+        origin_rule_notes: null,
+      }),
+    );
+  });
+
+  it('refuses a customs code that is not 6, 8 or 10 digits', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+    component.productForm.patchValue({ sku: 'S', name: 'N', customs: { taric_code: '12345' } });
+
+    expect(component.productForm.controls.customs.controls.taric_code.hasError('taricCode')).toBe(true);
+    component.submitCreateProduct();
+
+    expect(mockInventoryApi.createProduct).not.toHaveBeenCalled();
+  });
+
+  it('updates an existing product from the edit modal', () => {
+    fixture.detectChanges();
+    component.openEditModal({ ...mockProducts[0], country_of_origin: 'IT', taric_code: '847130' });
+    expect(component.productForm.controls.customs.controls.taric_code.value).toBe('847130');
+
+    component.submitCreateProduct();
+
+    expect(mockInventoryApi.updateProduct).toHaveBeenCalledWith(
+      mockProducts[0].id,
+      expect.objectContaining({ taric_code: '847130', country_of_origin: 'IT', made_in_label: 'Made in Italy' }),
+    );
   });
 
   it('deletes product and reloads list', () => {
