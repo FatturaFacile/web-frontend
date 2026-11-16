@@ -1,0 +1,241 @@
+<nz-modal
+  [nzVisible]="warehouse() !== null"
+  nzWidth="900"
+  [nzTitle]="'LOGISTICS.CONSIGNMENT.DECLARE' | translate"
+  [nzFooter]="footer"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    @if (warehouse(); as w) {
+      <nz-steps nzSize="small" class="stepper" [nzCurrent]="step()">
+        <nz-step [nzTitle]="'LOGISTICS.DECLARATION.STEP_LINES' | translate" />
+        <nz-step [nzTitle]="'LOGISTICS.DECLARATION.STEP_PREVIEW' | translate" />
+      </nz-steps>
+
+      @if (step() === 0) {
+        <div class="block">
+          <label class="field" for="decl-period">{{
+            'LOGISTICS.CONSIGNMENT.PERIOD' | translate
+          }}</label>
+          <nz-range-picker
+            id="decl-period"
+            [ngModel]="period()"
+            (ngModelChange)="period.set($event ?? [])"
+          />
+        </div>
+        @if (agreementOptions().length > 0) {
+          <div class="block">
+            <label class="field" for="decl-agreement">{{
+              'LOGISTICS.DECLARATION.AGREEMENT' | translate
+            }}</label>
+            <nz-select
+              id="decl-agreement"
+              class="wide"
+              nzAllowClear
+              [nzOptions]="agreementOptions()"
+              [ngModel]="agreementId()"
+              (ngModelChange)="agreementId.set($event ?? null)"
+            />
+          </div>
+        }
+
+        <nz-table nzSize="small" class="block" [nzData]="rows()" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+              <th>{{ 'LOGISTICS.DDT.LINE_QTY' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.CONSIGNMENT.RESIDUAL' | translate }}</th>
+              <th>{{ 'LOGISTICS.DECLARATION.UNIT_PRICE' | translate }}</th>
+              <th>{{ 'LOGISTICS.DECLARATION.TAX_RATE' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.NET' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.index) {
+              <tr [class.invalid]="row.issues.length > 0">
+                <td>
+                  <nz-select
+                    class="wide"
+                    nzShowSearch
+                    [nzOptions]="productOptions()"
+                    [ngModel]="row.line.product_id || null"
+                    (ngModelChange)="setProduct(row.index, $event)"
+                    [attr.aria-label]="'LOGISTICS.DDT.LINE_PRODUCT' | translate"
+                  />
+                </td>
+                <td>
+                  <nz-input-number
+                    [nzMin]="0"
+                    [ngModel]="row.line.quantity"
+                    (ngModelChange)="setNumber(row.index, 'quantity', $event)"
+                    [attr.aria-label]="'LOGISTICS.DDT.LINE_QTY' | translate"
+                  />
+                  @for (issue of row.issues; track issue) {
+                    <span class="issue" role="alert">{{
+                      'LOGISTICS.DECLARATION.ISSUE.' + issue | translate
+                    }}</span>
+                  }
+                </td>
+                <td class="num">{{ row.residual }}</td>
+                <td>
+                  <nz-input-number
+                    [nzMin]="0"
+                    [nzStep]="0.01"
+                    [ngModel]="row.line.unit_price"
+                    (ngModelChange)="setNumber(row.index, 'unit_price', $event)"
+                    [attr.aria-label]="'LOGISTICS.DECLARATION.UNIT_PRICE' | translate"
+                  />
+                </td>
+                <td>
+                  <nz-input-number
+                    [nzMin]="0"
+                    [nzMax]="100"
+                    [ngModel]="row.line.tax_rate"
+                    (ngModelChange)="setNumber(row.index, 'tax_rate', $event)"
+                    [attr.aria-label]="'LOGISTICS.DECLARATION.TAX_RATE' | translate"
+                  />
+                </td>
+                <td class="num">{{ row.net | currency: 'EUR' }}</td>
+                <td>
+                  <button
+                    nz-button
+                    nzDanger
+                    type="button"
+                    [disabled]="rows().length === 1"
+                    (click)="removeLine(row.index)"
+                    [attr.aria-label]="'LOGISTICS.DDT.ACTIONS.REMOVE_LINE' | translate"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        <button nz-button type="button" (click)="addLine()">
+          <nz-icon nzType="plus" /> {{ 'LOGISTICS.DDT.ACTIONS.ADD_LINE' | translate }}
+        </button>
+
+        <div class="block totals">
+          <strong
+            >{{ 'LOGISTICS.DECLARATION.TOTAL_NET' | translate }}:
+            {{ totals().net | currency: 'EUR' }}</strong
+          >
+        </div>
+      } @else {
+        <nz-alert
+          class="block"
+          nzType="info"
+          nzShowIcon
+          [nzMessage]="
+            (documentKind() === 'sales_invoice'
+              ? 'LOGISTICS.DECLARATION.PREVIEW_INVOICE'
+              : 'LOGISTICS.DECLARATION.PREVIEW_PURCHASE_ORDER'
+            ) | translate
+          "
+          [nzDescription]="'LOGISTICS.DECLARATION.OWNERSHIP_NOTE' | translate"
+        />
+
+        <nz-descriptions class="block" nzBordered nzSize="small" [nzColumn]="2">
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.CONSIGNMENT.WAREHOUSE' | translate"
+            >{{ w.warehouse_code }} — {{ w.warehouse_name }}</nz-descriptions-item
+          >
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.CONSIGNMENT.PERIOD' | translate">{{
+            periodLabel()
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'LOGISTICS.DECLARATION.DOCUMENT' | translate">
+            <nz-tag [nzColor]="documentKind() === 'sales_invoice' ? 'green' : 'blue'">{{
+              (documentKind() === 'sales_invoice'
+                ? 'LOGISTICS.DECLARATION.DOC_SALES_INVOICE'
+                : 'LOGISTICS.DECLARATION.DOC_PURCHASE_ORDER'
+              ) | translate
+            }}</nz-tag>
+          </nz-descriptions-item>
+          @if (agreementLabel(); as agreement) {
+            <nz-descriptions-item [nzTitle]="'LOGISTICS.DECLARATION.AGREEMENT' | translate">{{
+              agreement
+            }}</nz-descriptions-item>
+          }
+        </nz-descriptions>
+
+        <nz-table nzSize="small" class="block" [nzData]="rows()" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DDT.LINE_QTY' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.UNIT_PRICE' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.TAX_RATE' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.NET' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.TAX' | translate }}</th>
+              <th class="num">{{ 'LOGISTICS.DECLARATION.GROSS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.index) {
+              <tr>
+                <td>{{ productLabel(row.line.product_id) }}</td>
+                <td class="num">{{ row.line.quantity }}</td>
+                <td class="num">{{ row.line.unit_price | currency: 'EUR' }}</td>
+                <td class="num">{{ row.line.tax_rate }}%</td>
+                <td class="num">{{ row.net | currency: 'EUR' }}</td>
+                <td class="num">{{ row.tax | currency: 'EUR' }}</td>
+                <td class="num">{{ row.gross | currency: 'EUR' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <div class="totals">
+          @for (rate of totals().byRate; track rate.rate) {
+            <div>
+              {{ 'LOGISTICS.DECLARATION.TAX_RATE' | translate }} {{ rate.rate }}%:
+              {{ rate.net | currency: 'EUR' }} + {{ rate.tax | currency: 'EUR' }}
+            </div>
+          }
+          <div>
+            {{ 'LOGISTICS.DECLARATION.TOTAL_NET' | translate }}:
+            {{ totals().net | currency: 'EUR' }}
+          </div>
+          <div>
+            {{ 'LOGISTICS.DECLARATION.TAX' | translate }}: {{ totals().tax | currency: 'EUR' }}
+          </div>
+          <div>
+            <strong
+              >{{ 'LOGISTICS.DECLARATION.TOTAL_GROSS' | translate }}:
+              {{ totals().gross | currency: 'EUR' }}</strong
+            >
+          </div>
+        </div>
+
+        @if (error(); as message) {
+          <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="message" />
+        }
+      }
+    }
+  </ng-container>
+
+  <ng-template #footer>
+    @if (step() === 0) {
+      <button nz-button type="button" (click)="close()">
+        {{ 'LOGISTICS.CANCEL' | translate }}
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        [disabled]="!stepOneValid()"
+        (click)="next()"
+      >
+        {{ 'LOGISTICS.DISPATCH.NEXT' | translate }}
+      </button>
+    } @else {
+      <button nz-button type="button" [disabled]="busy()" (click)="back()">
+        {{ 'LOGISTICS.DISPATCH.BACK' | translate }}
+      </button>
+      <button nz-button nzType="primary" type="button" [disabled]="busy()" (click)="confirm()">
+        {{ 'LOGISTICS.DECLARATION.CONFIRM' | translate }}
+      </button>
+    }
+  </ng-template>
+</nz-modal>

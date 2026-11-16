@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { InventoryPage } from './pages/ErpPages';
 
 test.describe('Critical Flow: Inventory & Warehouse Movements (Magazzino)', () => {
-  let inventoryPage: InventoryPage;
+  let _inventoryPage: InventoryPage;
 
   test.beforeEach(async ({ page }) => {
-    inventoryPage = new InventoryPage(page);
+    _inventoryPage = new InventoryPage(page);
   });
 
   test('executes stock load, issues DDT movement, and verifies negative-stock prevention', async ({ page }) => {

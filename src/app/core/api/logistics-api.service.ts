@@ -5,6 +5,9 @@ import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import { ApiResponse, PaginatedResponse } from '../models/api.models';
 import {
+  ConsignmentAgreement,
+  ConsignmentAgreementFilters,
+  ConsignmentAgreementPayload,
   ConsignmentLedgerWarehouse,
   ConsumptionPayload,
   ConsumptionReport,
@@ -20,17 +23,24 @@ import {
   LookupWarehouse,
   OpenOrder,
   ReceiveLinePayload,
+  ScanTransferResult,
+  ShipTransferPayload,
   StockTransferFilterParams,
   StockTransferPayload,
   StockTransferResource,
+  ThirdPartyRegister,
+  ThirdPartyRegisterFilters,
   TransferDiscrepancy,
   UnbilledGroup,
+  VendorReceiptPayload,
 } from '../models/logistics.model';
 
 @Service()
 export class LogisticsApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/logistics`;
+  /** Versioned WMS prefix; the legacy `/logistics` prefix serves the same transfer and consignment routes. */
+  private readonly wms = `${environment.apiBaseUrl}/wms`;
 
   // ---- Delivery notes (DDT)
   listDeliveryNotes(
@@ -188,7 +198,7 @@ export class LogisticsApiService {
 
   shipTransfer(
     id: string,
-    delivery: Record<string, unknown> = {},
+    delivery: ShipTransferPayload = {},
   ): Observable<ApiResponse<StockTransferResource>> {
     return this.http.post<ApiResponse<StockTransferResource>>(
       `${this.base}/transfers/${id}/ship`,
@@ -199,11 +209,35 @@ export class LogisticsApiService {
   receiveTransfer(
     id: string,
     lines: ReceiveLinePayload[],
+    final?: boolean,
   ): Observable<ApiResponse<StockTransferResource>> {
     return this.http.post<ApiResponse<StockTransferResource>>(
       `${this.base}/transfers/${id}/receive`,
-      { lines },
+      final === undefined ? { lines } : { lines, final },
     );
+  }
+
+  /** Manager sign-off of a draft transfer (permission `logistics.transfers.approve`). */
+  approveTransfer(id: string): Observable<ApiResponse<StockTransferResource>> {
+    return this.http.post<ApiResponse<StockTransferResource>>(
+      `${this.wms}/transfers/${id}/approve`,
+      {},
+    );
+  }
+
+  /** Closes a received transfer (permission `logistics.transfers.approve`). */
+  closeTransfer(id: string): Observable<ApiResponse<StockTransferResource>> {
+    return this.http.post<ApiResponse<StockTransferResource>>(
+      `${this.wms}/transfers/${id}/close`,
+      {},
+    );
+  }
+
+  /** Resolves a line code scan against the transfer and returns the line with its outstanding quantity. */
+  scanTransferLine(id: string, code: string): Observable<ApiResponse<ScanTransferResult>> {
+    return this.http.post<ApiResponse<ScanTransferResult>>(`${this.wms}/transfers/${id}/scan`, {
+      code,
+    });
   }
 
   cancelTransfer(id: string): Observable<ApiResponse<StockTransferResource>> {
@@ -232,7 +266,81 @@ export class LogisticsApiService {
     );
   }
 
-  // ---- Consignment / subcontracting
+  /** Resolves one discrepancy of a transfer; the transfer closes with the last one (permission approve). */
+  resolveTransferDiscrepancy(
+    transferId: string,
+    discrepancyId: string,
+    resolution: DiscrepancyResolution,
+  ): Observable<ApiResponse<TransferDiscrepancy>> {
+    return this.http.post<ApiResponse<TransferDiscrepancy>>(
+      `${this.wms}/transfers/${transferId}/discrepancies/${discrepancyId}/resolve`,
+      { resolution },
+    );
+  }
+
+  // ---- Third-party register, valuation, declarations and agreements
+  thirdPartyRegister(
+    filters: ThirdPartyRegisterFilters = {},
+  ): Observable<ApiResponse<ThirdPartyRegister>> {
+    return this.http.get<ApiResponse<ThirdPartyRegister>>(
+      `${this.wms}/reports/third-party-register`,
+      {
+        params: toHttpParams(filters),
+      },
+    );
+  }
+
+  fiscalValuation(): Observable<ApiResponse<InventoryValuation>> {
+    return this.http.get<ApiResponse<InventoryValuation>>(
+      `${this.wms}/reports/inventory-valuation`,
+    );
+  }
+
+  listDeclarations(warehouseId?: string): Observable<PaginatedResponse<ConsumptionReport>> {
+    return this.http.get<PaginatedResponse<ConsumptionReport>>(
+      `${this.wms}/consignment/declarations`,
+      { params: toHttpParams({ warehouse_id: warehouseId }) },
+    );
+  }
+
+  createDeclaration(payload: ConsumptionPayload): Observable<ApiResponse<ConsumptionReport>> {
+    return this.http.post<ApiResponse<ConsumptionReport>>(
+      `${this.wms}/consignment/declarations`,
+      payload,
+    );
+  }
+
+  listAgreements(
+    filters: ConsignmentAgreementFilters = {},
+  ): Observable<PaginatedResponse<ConsignmentAgreement>> {
+    return this.http.get<PaginatedResponse<ConsignmentAgreement>>(
+      `${this.wms}/consignment/agreements`,
+      { params: toHttpParams(filters) },
+    );
+  }
+
+  createAgreement(
+    payload: ConsignmentAgreementPayload,
+  ): Observable<ApiResponse<ConsignmentAgreement>> {
+    return this.http.post<ApiResponse<ConsignmentAgreement>>(
+      `${this.wms}/consignment/agreements`,
+      payload,
+    );
+  }
+
+  terminateAgreement(id: string): Observable<ApiResponse<ConsignmentAgreement>> {
+    return this.http.post<ApiResponse<ConsignmentAgreement>>(
+      `${this.wms}/consignment/agreements/${id}/terminate`,
+      {},
+    );
+  }
+
+  /** Books vendor-owned consignment goods into a vendor consignment warehouse (they stay off balance sheet). */
+  receiveVendorConsignment(payload: VendorReceiptPayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.wms}/consignment/vendor-receipts`, payload);
+  }
+
+  // ---- Consignment / subcontracting (legacy endpoints)
   consignmentLedger(
     filters: { warehouse_id?: string; partner_id?: string; from?: string; to?: string } = {},
   ): Observable<ApiResponse<ConsignmentLedgerWarehouse[]>> {
