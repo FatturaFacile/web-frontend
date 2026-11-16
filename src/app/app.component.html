@@ -1,6 +1,6 @@
 <a class="skip-link" href="#main-content">{{ 'a11y.skipToContent' | translate }}</a>
 
-@if (!authStore.isAuthenticated()) {
+@if (!authStore.isAuthenticated() || publicPage()) {
   <main id="main-content" tabindex="-1">
     <router-outlet></router-outlet>
   </main>

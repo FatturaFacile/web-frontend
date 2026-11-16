@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { errorInterceptor } from './error.interceptor';
+import { errorInterceptor, HANDLED_ERROR_STATUSES } from './error.interceptor';
 import { AuthStore } from '../auth/auth.store';
 import { I18nService } from '../i18n';
 
@@ -160,5 +160,21 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
 
     expect(authStore.isAuthenticated()).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/login'], expect.anything());
+  });
+
+  it('leaves statuses declared as handled by the caller alone', () => {
+    const context = new HttpContext().set(HANDLED_ERROR_STATUSES, [404, 409]);
+    http.get('/api/x', { context }).subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/x')
+      .flush({ code: 'invalid_transition' }, { status: 409, statusText: 'Conflict' });
+    expect(messageService.warning).not.toHaveBeenCalled();
+    expect(messageService.error).not.toHaveBeenCalled();
+
+    http.get('/api/y', { context }).subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/y')
+      .flush({ message: 'Boom' }, { status: 500, statusText: 'Server Error' });
+    expect(messageService.error).toHaveBeenCalledWith('Boom');
   });
 });

@@ -1,0 +1,446 @@
+<app-page-header
+  [title]="(isEditing() ? 'LOGISTICS.DDT.EDIT' : 'LOGISTICS.DDT.NEW') | translate"
+  [subtitle]="'LOGISTICS.DDT.WIZARD_SUBTITLE' | translate"
+/>
+
+<nz-card [nzLoading]="loading()">
+  <nz-steps [nzCurrent]="step()" nzSize="small" class="steps">
+    <nz-step [nzTitle]="'LOGISTICS.WIZARD.STEP_DOCUMENT' | translate" />
+    <nz-step [nzTitle]="'LOGISTICS.WIZARD.STEP_LINES' | translate" />
+    <nz-step [nzTitle]="'LOGISTICS.WIZARD.STEP_LOGISTICS' | translate" />
+    <nz-step [nzTitle]="'LOGISTICS.WIZARD.STEP_REVIEW' | translate" />
+  </nz-steps>
+
+  @switch (step()) {
+    @case (0) {
+      <form nz-form nzLayout="vertical" [formGroup]="header" class="step-body">
+        @if (!isEditing()) {
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-mode">{{
+              'LOGISTICS.WIZARD.MODE' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ddt-mode"
+                [ngModel]="mode()"
+                (ngModelChange)="setMode($event)"
+                [ngModelOptions]="{ standalone: true }"
+                [nzOptions]="modeOptions()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        }
+        <div class="grid">
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-type" nzRequired>{{
+              'LOGISTICS.DDT.TYPE' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ddt-type"
+                formControlName="type"
+                [nzOptions]="typeOptions()"
+                [nzDisabled]="mode() === 'from_orders' || isEditing()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-reason">{{
+              'LOGISTICS.DDT.REASON' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ddt-reason"
+                formControlName="transport_reason_code"
+                [nzOptions]="reasonOptions()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-date" nzRequired>{{
+              'LOGISTICS.DDT.DATE' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ddt-date" formControlName="date" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-contact" [nzRequired]="needsCustomer()">{{
+              'LOGISTICS.DDT.CUSTOMER' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ddt-contact"
+                formControlName="contact_id"
+                nzShowSearch
+                nzServerSearch
+                nzAllowClear
+                [nzOptions]="partnerOptions()"
+                (nzOnSearch)="searchPartners($event)"
+                (ngModelChange)="onCustomerChange()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          @if (!needsCustomer() && mode() === 'standalone') {
+            <nz-form-item>
+              <nz-form-label nzFor="ddt-supplier">{{
+                'LOGISTICS.DDT.SUPPLIER' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <nz-select
+                  id="ddt-supplier"
+                  formControlName="supplier_id"
+                  nzShowSearch
+                  nzServerSearch
+                  nzAllowClear
+                  [nzOptions]="partnerOptions()"
+                  (nzOnSearch)="searchPartners($event)"
+                />
+              </nz-form-control>
+            </nz-form-item>
+          }
+          <nz-form-item>
+            <nz-form-label nzFor="ddt-origin">{{
+              'LOGISTICS.TRANSFER.ORIGIN' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ddt-origin"
+                formControlName="origin_warehouse_id"
+                nzAllowClear
+                [nzOptions]="warehouseOptions()"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          @if (!needsCustomer()) {
+            <nz-form-item>
+              <nz-form-label nzFor="ddt-destination">{{
+                'LOGISTICS.TRANSFER.DESTINATION' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <nz-select
+                  id="ddt-destination"
+                  formControlName="destination_warehouse_id"
+                  nzAllowClear
+                  [nzOptions]="warehouseOptions()"
+                />
+              </nz-form-control>
+            </nz-form-item>
+          }
+        </div>
+      </form>
+    }
+
+    @case (1) {
+      <div class="step-body">
+        @if (mode() === 'from_orders') {
+          @for (order of selectedCustomerOrders(); track order.id) {
+            <nz-card class="order" [nzTitle]="order.order_number" [nzExtra]="shipAll">
+              <ng-template #shipAll>
+                <button nz-button nzSize="small" type="button" (click)="shipAllRemaining(order)">
+                  {{ 'LOGISTICS.WIZARD.SHIP_ALL' | translate }}
+                </button>
+              </ng-template>
+              <nz-table [nzData]="order.items" [nzShowPagination]="false" nzSize="small">
+                <thead>
+                  <tr>
+                    <th>{{ 'LOGISTICS.DDT.LINE_DESCRIPTION' | translate }}</th>
+                    <th>{{ 'LOGISTICS.WIZARD.ORDERED' | translate }}</th>
+                    <th>{{ 'LOGISTICS.WIZARD.REMAINING' | translate }}</th>
+                    <th>{{ 'LOGISTICS.WIZARD.TO_SHIP' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of order.items; track item.id) {
+                    <tr>
+                      <td>{{ item.description }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>{{ item.remaining }}</td>
+                      <td>
+                        <nz-input-number
+                          [nzMin]="0"
+                          [nzMax]="item.remaining"
+                          [nzStep]="1"
+                          [ngModel]="orderQuantity(item.id)"
+                          (ngModelChange)="setOrderQuantity(item.id, $event)"
+                          [attr.aria-label]="'LOGISTICS.WIZARD.TO_SHIP' | translate"
+                        />
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </nz-table>
+            </nz-card>
+          } @empty {
+            <nz-alert
+              nzType="info"
+              nzShowIcon
+              [nzMessage]="'LOGISTICS.WIZARD.NO_OPEN_ORDERS' | translate"
+            />
+          }
+        } @else {
+          <nz-table [nzData]="lines.controls" [nzShowPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+                <th>{{ 'LOGISTICS.DDT.LINE_DESCRIPTION' | translate }}</th>
+                <th>{{ 'LOGISTICS.DDT.LINE_QTY' | translate }}</th>
+                <th>{{ 'LOGISTICS.DDT.LINE_UNIT_PRICE' | translate }}</th>
+                <th>{{ 'LOGISTICS.DDT.LINE_TAX' | translate }}</th>
+                <th>{{ 'LOGISTICS.DDT.LINE_UNIT_WEIGHT' | translate }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of lines.controls; track line; let i = $index) {
+                <tr [formGroup]="line">
+                  <td>
+                    <nz-select
+                      formControlName="product_id"
+                      nzShowSearch
+                      nzServerSearch
+                      nzAllowClear
+                      class="wide"
+                      [nzOptions]="productOptions()"
+                      (nzOnSearch)="searchProducts($event)"
+                      (ngModelChange)="onProductPicked(i, $event)"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_PRODUCT' | translate"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      nz-input
+                      formControlName="description"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_DESCRIPTION' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      formControlName="quantity"
+                      [nzMin]="0"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_QTY' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      formControlName="unit_price"
+                      [nzMin]="0"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_UNIT_PRICE' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      formControlName="tax_rate"
+                      [nzMin]="0"
+                      [nzMax]="100"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_TAX' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      formControlName="unit_weight_kg"
+                      [nzMin]="0"
+                      [attr.aria-label]="'LOGISTICS.DDT.LINE_UNIT_WEIGHT' | translate"
+                    />
+                  </td>
+                  <td>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      type="button"
+                      [disabled]="lines.length === 1"
+                      (click)="removeLine(i)"
+                      [attr.aria-label]="'LOGISTICS.DDT.ACTIONS.REMOVE_LINE' | translate"
+                    >
+                      <nz-icon nzType="delete" />
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+          <button nz-button type="button" class="add-line" (click)="addLine()">
+            <nz-icon nzType="plus" /> {{ 'LOGISTICS.DDT.ACTIONS.ADD_LINE' | translate }}
+          </button>
+        }
+      </div>
+    }
+
+    @case (2) {
+      <form nz-form nzLayout="vertical" [formGroup]="logistics" class="step-body">
+        <div class="grid">
+          <nz-form-item>
+            <nz-form-label nzFor="l-transport-by">{{
+              'LOGISTICS.DDT.TRANSPORT_BY' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-select
+                id="l-transport-by"
+                formControlName="transport_by"
+                nzAllowClear
+                [nzOptions]="transportByOptions()"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-carriage">{{
+              'LOGISTICS.DDT.CARRIAGE_TERMS' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-select
+                id="l-carriage"
+                formControlName="carriage_terms"
+                nzAllowClear
+                [nzOptions]="carriageOptions()"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-incoterms">{{
+              'LOGISTICS.DDT.INCOTERMS' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-select
+                id="l-incoterms"
+                formControlName="incoterms"
+                nzAllowClear
+                [nzOptions]="incotermOptions"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-carrier">{{
+              'LOGISTICS.DDT.CARRIER' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><input id="l-carrier" nz-input formControlName="carrier_name"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-carrier-vat">{{
+              'LOGISTICS.DDT.CARRIER_VAT' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><input id="l-carrier-vat" nz-input formControlName="carrier_vat_number"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-plate">{{
+              'LOGISTICS.DDT.LICENSE_PLATE' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><input id="l-plate" nz-input formControlName="carrier_license_plate"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-departure">{{
+              'LOGISTICS.DDT.DEPARTURE' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-date-picker id="l-departure" formControlName="departure_time" nzShowTime
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-appearance">{{
+              'LOGISTICS.DDT.APPEARANCE' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><input id="l-appearance" nz-input formControlName="goods_appearance"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-packages">{{
+              'LOGISTICS.DDT.PACKAGES' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-input-number id="l-packages" formControlName="packages_count" [nzMin]="0"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-gross">{{
+              'LOGISTICS.DDT.GROSS_WEIGHT' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-input-number id="l-gross" formControlName="gross_weight_kg" [nzMin]="0"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-net">{{
+              'LOGISTICS.DDT.NET_WEIGHT' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-input-number id="l-net" formControlName="net_weight_kg" [nzMin]="0"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-volume">{{ 'LOGISTICS.DDT.VOLUME' | translate }}</nz-form-label>
+            <nz-form-control
+              ><nz-input-number id="l-volume" formControlName="volume_m3" [nzMin]="0"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-tracking">{{
+              'LOGISTICS.DDT.TRACKING' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><input id="l-tracking" nz-input formControlName="tracking_number"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-show-prices">{{
+              'LOGISTICS.DDT.SHOW_PRICES' | translate
+            }}</nz-form-label>
+            <nz-form-control
+              ><nz-switch id="l-show-prices" formControlName="show_prices"
+            /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <nz-form-item>
+          <nz-form-label nzFor="l-notes">{{ 'LOGISTICS.DDT.NOTES' | translate }}</nz-form-label>
+          <nz-form-control>
+            <textarea id="l-notes" nz-input rows="3" formControlName="notes"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-alert
+          nzType="info"
+          nzShowIcon
+          [nzMessage]="'LOGISTICS.WIZARD.AUTO_CALC_HINT' | translate"
+        />
+      </form>
+    }
+
+    @case (3) {
+      <div class="step-body review">
+        <dl>
+          <dt>{{ 'LOGISTICS.DDT.TYPE' | translate }}</dt>
+          <dd>{{ typeKeyOf(header.controls.type.value) | translate }}</dd>
+          <dt>{{ 'LOGISTICS.DDT.REASON' | translate }}</dt>
+          <dd>{{ reasonKeyOf(header.controls.transport_reason_code.value) | translate }}</dd>
+          <dt>{{ 'LOGISTICS.DDT.PACKAGES' | translate }}</dt>
+          <dd>{{ logistics.controls.packages_count.value }}</dd>
+          <dt>{{ 'LOGISTICS.DDT.GROSS_WEIGHT' | translate }}</dt>
+          <dd>{{ logistics.controls.gross_weight_kg.value }}</dd>
+          <dt>{{ 'LOGISTICS.DDT.LINES' | translate }}</dt>
+          <dd>{{ mode() === 'from_orders' ? selectedOrderLines() : lines.length }}</dd>
+        </dl>
+      </div>
+    }
+  }
+
+  <div class="footer">
+    <a nz-button routerLink="/logistics/delivery-notes">{{ 'LOGISTICS.CANCEL' | translate }}</a>
+    <span class="spacer"></span>
+    @if (step() > 0) {
+      <button nz-button type="button" (click)="previous()">
+        {{ 'LOGISTICS.WIZARD.BACK' | translate }}
+      </button>
+    }
+    @if (step() < 3) {
+      <button nz-button nzType="primary" type="button" [disabled]="!stepValid()" (click)="next()">
+        {{ 'LOGISTICS.WIZARD.NEXT' | translate }}
+      </button>
+    } @else {
+      <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+        {{ 'LOGISTICS.WIZARD.SAVE' | translate }}
+      </button>
+    }
+  </div>
+</nz-card>

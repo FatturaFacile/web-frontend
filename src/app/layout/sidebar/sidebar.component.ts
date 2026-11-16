@@ -101,9 +101,16 @@ export class SidebarComponent {
               return null;
             }
 
+            if (item.permission && !this.authStore.can(item.permission)) {
+              return null;
+            }
+
             if (item.children) {
               const filteredChildren = item.children.filter((child) => {
                 const childModule = child.module ?? item.module;
+                if (child.permission && !this.authStore.can(child.permission)) {
+                  return false;
+                }
                 return !childModule || this.permissions.canRead(childModule);
               });
 
