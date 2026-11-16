@@ -33,14 +33,29 @@
   margin-top: 24px;
 }
 
-.stepper {
-  margin-bottom: 16px;
-}
-
 .resolution {
   min-width: 190px;
 }
 
 .alert {
   margin-bottom: 12px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.summary {
+  margin-bottom: 16px;
+}
+
+.notes {
+  margin-top: 16px;
+}
+
+.variance {
+  background: var(--ant-color-warning-bg, #fffbe6);
 }

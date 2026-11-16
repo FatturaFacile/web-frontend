@@ -3,134 +3,142 @@
   [subtitle]="'LOGISTICS.CONSIGNMENT.SUBTITLE' | translate"
 />
 
-@if (valuation(); as v) {
-  <div class="stats">
-    <nz-card>
-      <nz-statistic
-        [nzValue]="(v.total_balance_sheet_value | currency: 'EUR')!"
-        [nzTitle]="'LOGISTICS.CONSIGNMENT.BALANCE_SHEET_VALUE' | translate"
-      />
-    </nz-card>
-    <nz-card>
-      <nz-statistic
-        [nzValue]="(v.excluded_third_party_value | currency: 'EUR')!"
-        [nzTitle]="'LOGISTICS.CONSIGNMENT.EXCLUDED_VALUE' | translate"
-      />
-    </nz-card>
+<nz-card class="filters">
+  <div class="toolbar">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      nzShowSearch
+      [nzPlaceHolder]="'LOGISTICS.REGISTER.PARTNER' | translate"
+      [attr.aria-label]="'LOGISTICS.REGISTER.PARTNER' | translate"
+      [nzOptions]="partnerOptions()"
+      [ngModel]="partnerId()"
+      (ngModelChange)="setPartner($event)"
+    />
+    <nz-range-picker
+      [ngModel]="period()"
+      (ngModelChange)="setPeriod($event)"
+      [attr.aria-label]="'LOGISTICS.CONSIGNMENT.PERIOD' | translate"
+    />
   </div>
-}
+</nz-card>
 
-@for (warehouse of ledger(); track warehouse.warehouse_id) {
-  <nz-card class="warehouse" [nzTitle]="titleTpl" [nzExtra]="extraTpl" [nzLoading]="loading()">
-    <ng-template #titleTpl>
-      {{ warehouse.warehouse_code }} — {{ warehouse.warehouse_name }}
-      <nz-tag>{{ typeKey(warehouse.warehouse_type) | translate }}</nz-tag>
-      @if (!warehouse.on_balance_sheet) {
-        <nz-tag nzColor="orange">{{ 'LOGISTICS.CONSIGNMENT.OFF_BALANCE' | translate }}</nz-tag>
-      }
-    </ng-template>
-    <ng-template #extraTpl>
-      <strong
-        >{{ 'LOGISTICS.CONSIGNMENT.FISCAL_VALUE' | translate }}:
-        {{ warehouse.total_fiscal_value | currency: 'EUR' }}</strong
-      >
-      @if (canDeclare(warehouse)) {
-        <button
-          nz-button
-          nzType="primary"
-          nzSize="small"
-          type="button"
-          class="declare"
-          (click)="openDeclare(warehouse)"
+<ng-template #section let-warehouses let-emptyKey="emptyKey">
+  @for (warehouse of warehouses; track warehouse.warehouse_id) {
+    <nz-card class="warehouse" [nzTitle]="titleTpl" [nzExtra]="extraTpl" [nzLoading]="loading()">
+      <ng-template #titleTpl>
+        {{ warehouse.warehouse_code }} — {{ warehouse.warehouse_name }}
+        <nz-tag>{{ typeKey(warehouse.warehouse_type) | translate }}</nz-tag>
+        @if (!warehouse.on_balance_sheet) {
+          <nz-tag nzColor="orange">{{ 'LOGISTICS.CONSIGNMENT.OFF_BALANCE' | translate }}</nz-tag>
+        }
+      </ng-template>
+      <ng-template #extraTpl>
+        <strong
+          >{{ 'LOGISTICS.CONSIGNMENT.FISCAL_VALUE' | translate }}:
+          {{ warehouse.total_fiscal_value | currency: 'EUR' }}</strong
         >
-          {{ 'LOGISTICS.CONSIGNMENT.DECLARE' | translate }}
-        </button>
-      }
-    </ng-template>
+        @if (canDeclare(warehouse)) {
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="small"
+            type="button"
+            class="declare"
+            (click)="declareTarget.set(warehouse)"
+          >
+            {{ 'LOGISTICS.CONSIGNMENT.DECLARE' | translate }}
+          </button>
+        }
+      </ng-template>
 
-    <nz-table [nzData]="warehouse.rows" [nzShowPagination]="false" nzSize="small">
-      <thead>
-        <tr>
-          <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.OPENING' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.SENT' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.CONSUMED' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.RETURNED' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.RESIDUAL' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.FISCAL_VALUE' | translate }}</th>
-          <th>{{ 'LOGISTICS.CONSIGNMENT.DDT_REFS' | translate }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of warehouse.rows; track row.product_id) {
+      <nz-table [nzData]="warehouse.rows" [nzShowPagination]="false" nzSize="small">
+        <thead>
           <tr>
-            <td>{{ row.sku }} — {{ row.name }}</td>
-            <td>{{ row.opening_qty }}</td>
-            <td>{{ row.sent_qty }}</td>
-            <td>{{ row.consumed_qty }}</td>
-            <td>{{ row.returned_qty }}</td>
-            <td>
-              <strong>{{ row.residual_qty }}</strong>
-            </td>
-            <td>{{ row.fiscal_value | currency: 'EUR' }}</td>
-            <td>{{ row.ddt_references.join(', ') }}</td>
+            <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.OPENING' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.SENT' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.CONSUMED' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.RETURNED' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.RESIDUAL' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.FISCAL_VALUE' | translate }}</th>
+            <th>{{ 'LOGISTICS.CONSIGNMENT.DDT_REFS' | translate }}</th>
           </tr>
-        }
-      </tbody>
-    </nz-table>
-  </nz-card>
-}
+        </thead>
+        <tbody>
+          @for (row of warehouse.rows; track row.product_id) {
+            <tr>
+              <td>{{ row.sku }} — {{ row.name }}</td>
+              <td>{{ row.opening_qty }}</td>
+              <td>{{ row.sent_qty }}</td>
+              <td>{{ row.consumed_qty }}</td>
+              <td>{{ row.returned_qty }}</td>
+              <td>
+                <strong>{{ row.residual_qty }}</strong>
+              </td>
+              <td>{{ row.fiscal_value | currency: 'EUR' }}</td>
+              <td>{{ row.ddt_references.join(', ') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+  } @empty {
+    <nz-empty [nzNotFoundContent]="emptyKey | translate" />
+  }
+</ng-template>
 
-<nz-modal
-  [nzVisible]="declareTarget() !== null"
-  nzWidth="640"
-  [nzTitle]="'LOGISTICS.CONSIGNMENT.DECLARE' | translate"
-  [nzOkText]="'LOGISTICS.CONSIGNMENT.DECLARE' | translate"
-  [nzCancelText]="'LOGISTICS.CANCEL' | translate"
-  [nzOkDisabled]="declareForm.invalid || busy()"
-  (nzOnOk)="declare()"
-  (nzOnCancel)="declareTarget.set(null)"
->
-  <ng-container *nzModalContent>
-    <form nz-form nzLayout="vertical" [formGroup]="declareForm">
-      <nz-form-item>
-        <nz-form-label nzFor="c-period" nzRequired>{{
-          'LOGISTICS.CONSIGNMENT.PERIOD' | translate
-        }}</nz-form-label>
-        <nz-form-control
-          ><nz-range-picker id="c-period" formControlName="period"
-        /></nz-form-control>
-      </nz-form-item>
-      <div formArrayName="lines">
-        @for (line of lines.controls; track line; let i = $index) {
-          <div class="line" [formGroupName]="i">
-            <nz-select
-              formControlName="product_id"
-              class="product"
-              [nzOptions]="productOptions()"
-              [attr.aria-label]="'LOGISTICS.DDT.LINE_PRODUCT' | translate"
-            />
-            <nz-input-number
-              formControlName="quantity"
-              [nzMin]="0"
-              [attr.aria-label]="'LOGISTICS.DDT.LINE_QTY' | translate"
-            />
-            <button
-              nz-button
-              nzDanger
-              type="button"
-              [disabled]="lines.length === 1"
-              (click)="removeLine(i)"
-              [attr.aria-label]="'LOGISTICS.DDT.ACTIONS.REMOVE_LINE' | translate"
-            >
-              <nz-icon nzType="delete" />
-            </button>
-          </div>
-        }
-      </div>
-      <button nz-button type="button" (click)="addLine()">
-        <nz-icon nzType="plus" /> {{ 'LOGISTICS.DDT.ACTIONS.ADD_LINE' | translate }}
-      </button>
-    </form>
-  </ng-container>
-</nz-modal>
+<nz-tabs nzType="card">
+  <nz-tab [nzTitle]="customersTitle">
+    <ng-template #customersTitle>
+      {{ 'LOGISTICS.REGISTER.TAB_CUSTOMERS' | translate }} ({{ counts().customers }})
+    </ng-template>
+    <ng-container
+      [ngTemplateOutlet]="section"
+      [ngTemplateOutletContext]="{
+        $implicit: register()?.goods_at_customers ?? [],
+        emptyKey: 'LOGISTICS.REGISTER.EMPTY_CUSTOMERS',
+      }"
+    />
+  </nz-tab>
+  <nz-tab [nzTitle]="subcontractorsTitle">
+    <ng-template #subcontractorsTitle>
+      {{ 'LOGISTICS.REGISTER.TAB_SUBCONTRACTORS' | translate }} ({{ counts().subcontractors }})
+    </ng-template>
+    <ng-container
+      [ngTemplateOutlet]="section"
+      [ngTemplateOutletContext]="{
+        $implicit: register()?.goods_at_subcontractors ?? [],
+        emptyKey: 'LOGISTICS.REGISTER.EMPTY_SUBCONTRACTORS',
+      }"
+    />
+  </nz-tab>
+  <nz-tab [nzTitle]="vendorTitle">
+    <ng-template #vendorTitle>
+      {{ 'LOGISTICS.REGISTER.TAB_VENDOR' | translate }} ({{ counts().vendor }})
+    </ng-template>
+    <ng-container
+      [ngTemplateOutlet]="section"
+      [ngTemplateOutletContext]="{
+        $implicit: register()?.vendor_consignment_held ?? [],
+        emptyKey: 'LOGISTICS.REGISTER.EMPTY_VENDOR',
+      }"
+    />
+  </nz-tab>
+  <nz-tab [nzTitle]="'LOGISTICS.VALUATION.TAB' | translate">
+    @if (valuation(); as v) {
+      <app-valuation-summary [valuation]="v" />
+    }
+  </nz-tab>
+  <nz-tab [nzTitle]="'LOGISTICS.AGREEMENT.TAB' | translate">
+    <app-consignment-agreements />
+  </nz-tab>
+</nz-tabs>
+
+<app-consumption-declaration-wizard
+  [warehouse]="declareTarget()"
+  [products]="products()"
+  [agreements]="agreements()"
+  (closed)="declareTarget.set(null)"
+  (declared)="onDeclared()"
+/>

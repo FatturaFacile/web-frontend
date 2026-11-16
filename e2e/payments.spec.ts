@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { PaymentsPage } from './pages/ErpPages';
 
 test.describe('Critical Flow: Payments Reconciliation (Incasso)', () => {
-  let paymentsPage: PaymentsPage;
+  let _paymentsPage: PaymentsPage;
 
   test.beforeEach(async ({ page }) => {
-    paymentsPage = new PaymentsPage(page);
+    _paymentsPage = new PaymentsPage(page);
   });
 
   test('records partial and full payments against issued invoice, verifying status transitions', async ({ page }) => {

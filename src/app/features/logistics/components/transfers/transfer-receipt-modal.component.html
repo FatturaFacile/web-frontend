@@ -1,0 +1,154 @@
+<nz-modal
+  [nzVisible]="transfer() !== null"
+  nzWidth="980"
+  [nzTitle]="'LOGISTICS.RECEIPT.TITLE' | translate"
+  [nzFooter]="footer"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    <div class="toggle">
+      <nz-switch
+        [ngModel]="partial()"
+        (ngModelChange)="partial.set($event)"
+        [attr.aria-label]="'LOGISTICS.RECEIPT.PARTIAL' | translate"
+      />
+      <span>{{ 'LOGISTICS.RECEIPT.PARTIAL' | translate }}</span>
+      <span class="spacer"></span>
+      <button nz-button nzSize="small" type="button" (click)="receiveAll()">
+        {{ 'LOGISTICS.RECEIPT.RECEIVE_ALL' | translate }}
+      </button>
+    </div>
+
+    @if (partial()) {
+      <nz-alert
+        class="block"
+        nzType="info"
+        nzShowIcon
+        [nzMessage]="'LOGISTICS.RECEIPT.PARTIAL_HINT' | translate"
+      />
+    }
+    @if (validation().hasDiscrepancy) {
+      <nz-alert
+        class="block"
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'LOGISTICS.RECEIPT.DISCREPANCY_HINT' | translate"
+      />
+    }
+    @if (validation().nothingReceived) {
+      <nz-alert
+        class="block"
+        nzType="error"
+        nzShowIcon
+        [nzMessage]="'LOGISTICS.RECEIPT.NOTHING_RECEIVED' | translate"
+      />
+    }
+    @if (error(); as message) {
+      <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+
+    <nz-table nzSize="small" [nzData]="rows()" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th>{{ 'LOGISTICS.DDT.LINE_PRODUCT' | translate }}</th>
+          <th class="num">{{ 'LOGISTICS.TRANSFER.QTY_SHIPPED' | translate }}</th>
+          <th class="num">{{ 'LOGISTICS.RECEIPT.ALREADY_BOOKED' | translate }}</th>
+          <th class="num">{{ 'LOGISTICS.RECEIPT.OUTSTANDING' | translate }}</th>
+          <th>{{ 'LOGISTICS.RECEIPT.GOOD' | translate }}</th>
+          <th>{{ 'LOGISTICS.RECEIPT.DAMAGED' | translate }}</th>
+          <th>{{ 'LOGISTICS.RECEIPT.VARIANCE' | translate }}</th>
+          <th>{{ 'LOGISTICS.TRANSFER.DISCREPANCY_REASON' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.line.id) {
+          <tr [class.variance]="row.variance.hasVariance" [class.invalid]="row.issues.length > 0">
+            <td>{{ productName(row.line.product_id) }}</td>
+            <td class="num">{{ row.shipped }}</td>
+            <td class="num">{{ row.alreadyReceived }} / {{ row.alreadyDamaged }}</td>
+            <td class="num">
+              <strong>{{ row.variance.outstanding }}</strong>
+            </td>
+            <td>
+              <nz-input-number
+                [nzMin]="0"
+                [nzMax]="row.variance.outstanding"
+                [ngModel]="row.input.good"
+                (ngModelChange)="setGood(row.line.id, $event)"
+                [attr.aria-label]="'LOGISTICS.RECEIPT.GOOD' | translate"
+              />
+            </td>
+            <td>
+              <nz-input-number
+                [nzMin]="0"
+                [nzMax]="row.variance.outstanding"
+                [ngModel]="row.input.damaged"
+                (ngModelChange)="setDamaged(row.line.id, $event)"
+                [attr.aria-label]="'LOGISTICS.RECEIPT.DAMAGED' | translate"
+              />
+            </td>
+            <td>
+              <div class="tags">
+                @if (row.variance.damaged > 0) {
+                  <nz-tag nzColor="error"
+                    >{{ 'LOGISTICS.RECEIPT.DAMAGED' | translate }}
+                    {{ row.variance.damaged }}</nz-tag
+                  >
+                }
+                @if (row.variance.shortage > 0) {
+                  <nz-tag nzColor="warning"
+                    >{{ 'LOGISTICS.RECEIPT.SHORTAGE' | translate }}
+                    {{ row.variance.shortage }}</nz-tag
+                  >
+                }
+                @if (partial() && row.variance.remaining > 0) {
+                  <nz-tag nzColor="processing"
+                    >{{ 'LOGISTICS.RECEIPT.STILL_IN_TRANSIT' | translate }}
+                    {{ row.variance.remaining }}</nz-tag
+                  >
+                }
+                @if (!row.variance.hasVariance && row.variance.remaining === 0) {
+                  <nz-tag nzColor="success">{{ 'LOGISTICS.RECEIPT.COMPLETE' | translate }}</nz-tag>
+                }
+              </div>
+              @for (issue of row.issues; track issue) {
+                <span class="issue" role="alert">{{
+                  'LOGISTICS.RECEIPT.ISSUE.' + issue | translate
+                }}</span>
+              }
+            </td>
+            <td>
+              @if (row.variance.hasVariance) {
+                <input
+                  nz-input
+                  maxlength="255"
+                  [ngModel]="row.input.reason"
+                  (ngModelChange)="setReason(row.line.id, $event)"
+                  [attr.aria-label]="'LOGISTICS.TRANSFER.DISCREPANCY_REASON' | translate"
+                />
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+
+  <ng-template #footer>
+    <button nz-button type="button" [disabled]="busy()" (click)="close()">
+      {{ 'LOGISTICS.CANCEL' | translate }}
+    </button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      [disabled]="busy() || !validation().valid"
+      (click)="confirm()"
+    >
+      {{
+        (partial() ? 'LOGISTICS.RECEIPT.CONFIRM_PARTIAL' : 'LOGISTICS.RECEIPT.CONFIRM_FINAL')
+          | translate
+      }}
+    </button>
+  </ng-template>
+</nz-modal>

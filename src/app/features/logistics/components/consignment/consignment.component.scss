@@ -22,3 +22,18 @@
 .product {
   flex: 1;
 }
+
+.filters {
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter {
+  min-width: 240px;
+}
