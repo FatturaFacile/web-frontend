@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
@@ -7,14 +7,18 @@ import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { interval } from 'rxjs';
 // Deep imports keep the `@core` and `@shared` barrels out of the initial bundle (the header is part of it).
 import { PlatformApiService } from '@core/api/platform-api.service';
+import { NotificationRealtimeService } from '@core/realtime/notification-realtime.service';
 import type { PlatformNotification } from '@core/models/platform.model';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 
 const POLL_INTERVAL_MS = 60_000;
+/** With a live WebSocket the poll only guards against missed events. */
+const REALTIME_POLL_INTERVAL_MS = 300_000;
 
 /**
  * The bell of the layout header: unread count (refreshed every minute) and a dropdown with the latest notifications of
- * the user, which can be marked read one by one or all at once. Links to the notification preferences.
+ * the user, which can be marked read one by one or all at once. Links to the notification preferences. The counter is
+ * pushed live over WebSocket when the server offers one (see NotificationRealtimeService), otherwise polled.
  */
 @Component({
   selector: 'app-notification-bell',
@@ -143,16 +147,35 @@ export class NotificationBellComponent implements OnInit {
   private readonly api = inject(PlatformApiService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly realtime = inject(NotificationRealtimeService);
+  private lastPoll = 0;
 
   readonly notifications = signal<PlatformNotification[]>([]);
   readonly unreadCount = signal(0);
   readonly hasUnread = computed(() => this.unreadCount() > 0);
 
+  constructor() {
+    // A live event carries the new unread count; the list is reloaded only to show the new item.
+    effect(() => {
+      const change = this.realtime.changes();
+      if (change === null) {
+        return;
+      }
+      this.unreadCount.set(change.unread_count);
+      untracked(() => this.refresh());
+    });
+  }
+
   ngOnInit(): void {
     this.refresh();
+    void this.realtime.start();
     interval(POLL_INTERVAL_MS)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.refresh());
+      .subscribe(() => {
+        if (!this.realtime.connected() || Date.now() - this.lastPoll >= REALTIME_POLL_INTERVAL_MS) {
+          this.refresh();
+        }
+      });
   }
 
   onVisibleChange(visible: boolean): void {
@@ -176,6 +199,7 @@ export class NotificationBellComponent implements OnInit {
   }
 
   private refresh(): void {
+    this.lastPoll = Date.now();
     this.api.getNotifications(false, 10).subscribe({
       next: (res) => {
         this.notifications.set(res.data);

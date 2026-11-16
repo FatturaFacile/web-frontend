@@ -4,6 +4,8 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   NotificationPreferences,
+  NotificationRealtimeConfig,
+  NotificationSettings,
   PlatformNotification,
   PlatformResponse,
   RecycleBinRecord,
@@ -61,5 +63,17 @@ export class PlatformApiService {
 
   updateNotificationPreferences(body: UpdateNotificationPreferencesRequest): Observable<PlatformResponse<NotificationPreferences>> {
     return this.http.put<PlatformResponse<NotificationPreferences>>(`${this.base}/notifications/preferences`, body);
+  }
+
+  getNotificationSettings(): Observable<PlatformResponse<NotificationSettings>> {
+    return this.http.get<PlatformResponse<NotificationSettings>>(`${this.base}/notifications/settings`);
+  }
+
+  updateNotificationSettings(body: Partial<NotificationSettings>): Observable<PlatformResponse<NotificationSettings>> {
+    return this.http.put<PlatformResponse<NotificationSettings>>(`${this.base}/notifications/settings`, body);
+  }
+
+  getNotificationRealtime(): Observable<PlatformResponse<NotificationRealtimeConfig>> {
+    return this.http.get<PlatformResponse<NotificationRealtimeConfig>>(`${this.base}/notifications/realtime`);
   }
 }

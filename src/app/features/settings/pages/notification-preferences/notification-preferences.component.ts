@@ -1,14 +1,22 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NotificationCategory, NotificationChannel, NotificationPreferences, PlatformApiService, TranslateService } from '@core';
+import {
+  NotificationCategory,
+  NotificationChannel,
+  NotificationFrequency,
+  NotificationPreferences,
+  NotificationSettings,
+  PlatformApiService,
+  TranslateService,
+} from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 
-/** Per-channel switches of each notification category of the signed-in user. */
+/** Per-channel switches and delivery frequency of each notification category, plus the do-not-disturb settings. */
 @Component({
   selector: 'app-notification-preferences',
   imports: [FormsModule, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzSwitchModule, NzTableModule],
@@ -37,6 +45,17 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
                       (ngModelChange)="setEnabled(channel, category, $event)"
                       [attr.aria-label]="('PLATFORM.CHANNEL_' + channel.toUpperCase() | translate) + ' - ' + ('PLATFORM.CATEGORY_' + category.toUpperCase() | translate)"
                     ></nz-switch>
+                    @if (channel !== 'database' && isEnabled(channel, category)) {
+                      <select
+                        class="frequency"
+                        [ngModel]="frequency(channel, category)"
+                        (ngModelChange)="setFrequency(channel, category, $event)"
+                        [attr.aria-label]="('PLATFORM.FREQUENCY' | translate) + ': ' + ('PLATFORM.CHANNEL_' + channel.toUpperCase() | translate) + ' - ' + ('PLATFORM.CATEGORY_' + category.toUpperCase() | translate)"
+                      >
+                        <option value="immediate">{{ 'PLATFORM.FREQUENCY_IMMEDIATE' | translate }}</option>
+                        <option value="digest">{{ 'PLATFORM.FREQUENCY_DIGEST' | translate }}</option>
+                      </select>
+                    }
                   </td>
                 }
               </tr>
@@ -48,10 +67,63 @@ import { PageHeaderComponent, TranslatePipe } from '@shared';
         </div>
       }
     </nz-card>
+
+    @if (settings(); as dnd) {
+      <nz-card class="dnd" [nzTitle]="'PLATFORM.DND_TITLE' | translate">
+        <p class="hint">{{ 'PLATFORM.DND_HINT' | translate }}</p>
+        <div class="row">
+          <nz-switch [ngModel]="dnd.quiet_hours_enabled" (ngModelChange)="patchSettings({ quiet_hours_enabled: $event })" [attr.aria-label]="'PLATFORM.QUIET_HOURS_ENABLED' | translate"></nz-switch>
+          <span>{{ 'PLATFORM.QUIET_HOURS_ENABLED' | translate }}</span>
+        </div>
+        @if (dnd.quiet_hours_enabled) {
+          <div class="row">
+            <label>
+              {{ 'PLATFORM.QUIET_FROM' | translate }}
+              <input type="time" [ngModel]="dnd.quiet_start" (ngModelChange)="patchSettings({ quiet_start: $event })" />
+            </label>
+            <label>
+              {{ 'PLATFORM.QUIET_TO' | translate }}
+              <input type="time" [ngModel]="dnd.quiet_end" (ngModelChange)="patchSettings({ quiet_end: $event })" />
+            </label>
+            <span class="tz">{{ 'PLATFORM.TIMEZONE' | translate }}: {{ dnd.timezone }}</span>
+          </div>
+        }
+        <div class="row">
+          @if (snoozedUntil(); as until) {
+            <span>{{ 'PLATFORM.SNOOZED_UNTIL' | translate }} {{ until }}</span>
+            <button nz-button type="button" (click)="snooze(null)">{{ 'PLATFORM.SNOOZE_CLEAR' | translate }}</button>
+          } @else {
+            <span>{{ 'PLATFORM.SNOOZE' | translate }}</span>
+            <button nz-button type="button" (click)="snooze(1)">{{ 'PLATFORM.SNOOZE_1H' | translate }}</button>
+            <button nz-button type="button" (click)="snooze(8)">{{ 'PLATFORM.SNOOZE_8H' | translate }}</button>
+          }
+        </div>
+        <div class="footer">
+          <button nz-button nzType="primary" type="button" [nzLoading]="savingSettings()" (click)="saveSettings()">{{ 'PLATFORM.SAVE' | translate }}</button>
+        </div>
+      </nz-card>
+    }
   `,
   styles: `
     .footer {
       margin-top: 16px;
+    }
+    .dnd {
+      margin-top: 16px;
+    }
+    .hint {
+      color: var(--text-secondary);
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .frequency {
+      margin-left: 8px;
+      font: inherit;
     }
   `,
 })
@@ -61,25 +133,52 @@ export class NotificationPreferencesComponent implements OnInit {
   private readonly translate = inject(TranslateService);
 
   readonly state = signal<NotificationPreferences | null>(null);
+  readonly settings = signal<NotificationSettings | null>(null);
   readonly saving = signal(false);
+  readonly savingSettings = signal(false);
+
+  /** The snooze end as a local date-time string while it is still in the future, otherwise null. */
+  readonly snoozedUntil = computed(() => {
+    const until = this.settings()?.muted_until;
+    if (!until || new Date(until).getTime() <= Date.now()) {
+      return null;
+    }
+    return new Date(until).toLocaleString();
+  });
 
   ngOnInit(): void {
     this.api.getNotificationPreferences().subscribe((res) => this.state.set(res.data));
+    this.api.getNotificationSettings().subscribe((res) => this.settings.set(res.data));
   }
 
   isEnabled(channel: NotificationChannel, category: NotificationCategory): boolean {
     return this.state()?.preferences.find((p) => p.channel === channel && p.category === category)?.enabled ?? true;
   }
 
+  frequency(channel: NotificationChannel, category: NotificationCategory): NotificationFrequency {
+    return this.state()?.preferences.find((p) => p.channel === channel && p.category === category)?.frequency ?? 'immediate';
+  }
+
   setEnabled(channel: NotificationChannel, category: NotificationCategory, enabled: boolean): void {
-    const current = this.state();
-    if (current === null) {
-      return;
+    this.patchPreference(channel, category, { enabled });
+  }
+
+  setFrequency(channel: NotificationChannel, category: NotificationCategory, frequency: NotificationFrequency): void {
+    this.patchPreference(channel, category, { frequency });
+  }
+
+  patchSettings(changes: Partial<NotificationSettings>): void {
+    const current = this.settings();
+    if (current !== null) {
+      this.settings.set({ ...current, ...changes });
     }
-    this.state.set({
-      ...current,
-      preferences: current.preferences.map((p) => (p.channel === channel && p.category === category ? { ...p, enabled } : p)),
-    });
+  }
+
+  /** Snoozes all notifications for the given number of hours, or resumes them when null. Saved right away. */
+  snooze(hours: number | null): void {
+    const until = hours === null ? null : new Date(Date.now() + hours * 3_600_000).toISOString();
+    this.patchSettings({ muted_until: until });
+    this.saveSettings();
   }
 
   save(): void {
@@ -95,6 +194,39 @@ export class NotificationPreferencesComponent implements OnInit {
         this.message.success(this.translate.instant('PLATFORM.SAVED'));
       },
       error: () => this.saving.set(false),
+    });
+  }
+
+  saveSettings(): void {
+    const current = this.settings();
+    if (current === null) {
+      return;
+    }
+    this.savingSettings.set(true);
+    // An expired snooze is dropped: the API only accepts a snooze that ends in the future.
+    const body = this.snoozedUntil() === null ? { ...current, muted_until: null } : current;
+    this.api.updateNotificationSettings(body).subscribe({
+      next: (res) => {
+        this.settings.set(res.data);
+        this.savingSettings.set(false);
+        this.message.success(this.translate.instant('PLATFORM.SAVED'));
+      },
+      error: () => this.savingSettings.set(false),
+    });
+  }
+
+  private patchPreference(
+    channel: NotificationChannel,
+    category: NotificationCategory,
+    changes: { enabled?: boolean; frequency?: NotificationFrequency },
+  ): void {
+    const current = this.state();
+    if (current === null) {
+      return;
+    }
+    this.state.set({
+      ...current,
+      preferences: current.preferences.map((p) => (p.channel === channel && p.category === category ? { ...p, ...changes } : p)),
     });
   }
 }
