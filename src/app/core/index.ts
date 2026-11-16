@@ -27,6 +27,7 @@ export * from './api/crm-api.service';
 export * from './api/crm-extension-api.service';
 export * from './api/expenses-api.service';
 export * from './api/settings-api.service';
+export * from './api/access-api.service';
 export * from './api/system-api.service';
 export * from './api/treasury-api.service';
 export * from './api/dashboard-api.service';

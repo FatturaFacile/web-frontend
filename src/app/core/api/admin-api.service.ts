@@ -8,6 +8,7 @@ import {
   ApiResponse,
   DocumentQuotaState,
   PaginatedResponse,
+  PlanLimits,
   PlatformTenantRecord,
   PlatformUserRecord,
   QueryFilterParams,
@@ -15,6 +16,7 @@ import {
   TenantAccessDecisionPayload,
   TenantAccessRequestRecord,
   TenantAccessRequestStatus,
+  UpdateTenantPlanPayload,
   UserTenantAccess,
 } from '../models';
 
@@ -90,5 +92,10 @@ export class AdminApiService {
 
   removeUserTenant(userId: string, tenantId: string): Observable<ApiResponse<UserTenantAccess[]>> {
     return this.http.delete<ApiResponse<UserTenantAccess[]>>(`${this.base}/users/${userId}/tenants/${tenantId}`);
+  }
+
+  /** Sets the plan of a tenant and its optional user / custom role limits (`null` removes an override). */
+  updateTenantPlan(tenantId: string, payload: UpdateTenantPlanPayload): Observable<ApiResponse<PlanLimits>> {
+    return this.http.put<ApiResponse<PlanLimits>>(`${this.base}/tenants/${tenantId}/plan`, payload);
   }
 }

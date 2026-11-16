@@ -75,6 +75,15 @@ export const routes: Routes = [
       ),
   },
   {
+    // Public: the person opening the link of an invitation email may have no account yet, or be signed in already.
+    path: 'accept-invitation',
+    data: { title: 'access.accept.title' },
+    loadComponent: () =>
+      import('./features/auth/pages/accept-invitation/accept-invitation.component').then(
+        (m) => m.AcceptInvitationComponent,
+      ),
+  },
+  {
     path: 'password-updated',
     canActivate: [guestGuard],
     data: { title: 'PAGE_TITLE.PASSWORD_AGGIORNATA' },

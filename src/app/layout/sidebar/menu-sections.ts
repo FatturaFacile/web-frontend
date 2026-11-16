@@ -1488,6 +1488,9 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'system',
         children: [
           { key: 'NAV.USERS_ACCESS', route: '/settings/users', icon: 'fa-solid fa-users-gear', module: 'system' },
+          { key: 'NAV.ACCESS_ROLES', route: '/settings/access/roles', icon: 'fa-solid fa-user-tag', module: 'system' },
+          { key: 'NAV.ACCESS_TEAMS', route: '/settings/access/teams', icon: 'fa-solid fa-people-group', module: 'system' },
+          { key: 'NAV.ACCESS_AUDIT', route: '/settings/access/audit', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
         ],

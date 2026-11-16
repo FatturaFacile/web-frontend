@@ -103,6 +103,7 @@ export * from './payroll-compliance.model';
 export * from './short-time.model';
 export * from './hr-time-extras.model';
 export * from './tenant-admin.model';
+export * from './access.model';
 export * from './supplier-portal.model';
 export * from './quality.model';
 export * from './collaboration.model';
