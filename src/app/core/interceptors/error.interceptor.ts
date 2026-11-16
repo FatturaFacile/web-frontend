@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -14,6 +14,12 @@ interface ProblemDetails {
   message?: string;
   errors?: Record<string, string[]>;
 }
+
+/**
+ * HTTP statuses the caller renders itself (e.g. 404/409 with a translated `code`):
+ * no global toast is shown for them. 401 and network errors keep the global handling.
+ */
+export const HANDLED_ERROR_STATUSES = new HttpContextToken<readonly number[]>(() => []);
 
 /**
  * Global RFC 7807 Problem Details and system error interceptor.
@@ -67,6 +73,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (isAuthCheck && (err.status === 401 || err.status === 403)) {
           // Authentication/verification endpoints manage their own inline form feedback.
+        } else if (req.context.get(HANDLED_ERROR_STATUSES).includes(err.status)) {
+          // The caller maps this status to its own (translated) message.
         } else if (err.status === 401) {
           const returnUrl = router.url;
           authStore.logout();

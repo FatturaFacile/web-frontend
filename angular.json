@@ -43,7 +43,11 @@
               "src/theme.less",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.scss",
-              { "input": "src/theme-dark.less", "bundleName": "theme-dark", "inject": false }
+              {
+                "input": "src/theme-dark.less",
+                "bundleName": "theme-dark",
+                "inject": false
+              }
             ]
           },
           "configurations": {
@@ -112,8 +116,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "ssl": true,
-           "sslCert": "certs/localhost.crt",
-           "sslKey": "certs/localhost.key"
+            "sslCert": "certs/localhost.crt",
+            "sslKey": "certs/localhost.key"
           },
           "configurations": {
             "production": {
@@ -135,6 +139,34 @@
           "options": {
             "runnerConfig": "vitest.config.ts",
             "coverage": true
+          }
+        },
+        "storybook": {
+          "builder": "@storybook/angular:start-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "tsConfig": ".storybook/tsconfig.json",
+            "compodoc": false,
+            "styles": [
+              "src/theme.less",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/styles.scss"
+            ],
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular:build-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "tsConfig": ".storybook/tsconfig.json",
+            "compodoc": false,
+            "styles": [
+              "src/theme.less",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/styles.scss"
+            ],
+            "outputDir": "storybook-static"
           }
         }
       }

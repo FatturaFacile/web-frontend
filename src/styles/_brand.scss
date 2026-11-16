@@ -63,3 +63,56 @@ html {
 
   .ant-progress-bg { background-color: var(--ff-color-primary); }
 }
+// Brand accent presets, selected by DisplayPreferencesService through [data-brand] on <html>. Teal is the default and
+// lives in _tokens.scss. Every preset keeps >= 4.5:1 contrast of the primary colour on the card surface (WCAG 1.4.3).
+// Light values need :root[data-theme='light'] so that they never override the dark ones (same specificity otherwise).
+
+@mixin brand($name, $light, $light-hover, $light-active, $light-tint, $dark, $dark-hover, $dark-active, $dark-tint, $dark-contrast) {
+  :root[data-theme='light'][data-brand='#{$name}'] {
+    --primary-color: #{$light};
+    --primary-hover: #{$light-hover};
+    --primary-active: #{$light-active};
+    --primary-focus: #{$light};
+    --primary-light: #{$light-tint};
+    --primary-contrast: #ffffff;
+    --brand-teal: #{$light};
+  }
+  :root[data-theme='dark'][data-brand='#{$name}'] {
+    --primary-color: #{$dark};
+    --primary-hover: #{$dark-hover};
+    --primary-active: #{$dark-active};
+    --primary-focus: #{$dark};
+    --primary-light: #{$dark-tint};
+    --primary-contrast: #{$dark-contrast};
+    --brand-teal: #{$dark};
+  }
+}
+
+@include brand('indigo', #4338ca, #3730a3, #312e81, #e0e7ff, #a5b4fc, #c7d2fe, #e0e7ff, #25235a, #1e1b4b);
+@include brand('purple', #7e22ce, #6b21a8, #581c87, #f3e8ff, #d8b4fe, #e9d5ff, #f3e8ff, #3b1a5a, #3b0764);
+@include brand('amber', #b45309, #92400e, #78350f, #fef3c7, #fbbf24, #fcd34d, #fde68a, #4a3510, #451a03);
+
+// NG-ZORRO bakes its primary colour in at build time (theme.less); these overrides make its main controls follow
+// the --primary-* tokens, so the brand accent applies to the whole application.
+.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous) {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--primary-contrast);
+
+  &:hover,
+  &:focus-visible { background: var(--primary-hover); border-color: var(--primary-hover); color: var(--primary-contrast); }
+  &:active { background: var(--primary-active); border-color: var(--primary-active); }
+}
+
+.ant-btn-link, a { color: var(--primary-color); }
+
+.ant-checkbox-checked .ant-checkbox-inner,
+.ant-radio-checked .ant-radio-inner,
+.ant-switch-checked { background-color: var(--primary-color); border-color: var(--primary-color); }
+.ant-radio-checked .ant-radio-inner::after { background-color: var(--primary-contrast); }
+.ant-checkbox-checked .ant-checkbox-inner::after { border-color: var(--primary-contrast); }
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--primary-color); }
+.ant-tabs-ink-bar { background: var(--primary-color); }
+.ant-pagination-item-active { border-color: var(--primary-color); a { color: var(--primary-color); } }
+.ant-progress-bg { background-color: var(--primary-color); }

@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting, type TestRequest } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -33,6 +33,7 @@ describe('SsClockComponent', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [HostComponent],
       providers: [
@@ -47,13 +48,23 @@ describe('SsClockComponent', () => {
 
   afterEach(() => httpMock.verify());
 
+  // The clock loads today's events and the clock settings together; the dictionary request of the real I18nService is
+  // answered too, so that no request stays open.
+  function loadToday(events: unknown, inspect?: (req: TestRequest) => void): void {
+    const req = httpMock.expectOne((r) => r.url === `${me}/time/events`);
+    inspect?.(req);
+    req.flush(events);
+    httpMock
+      .expectOne(`${me}/clock-settings`)
+      .flush({ success: true, message: '', data: { geolocation_enabled: false, privacy_notice_acknowledged: false } });
+    httpMock.match((r) => r.url.includes('/translations/')).forEach((t) => t.flush({ locale: 'en', translations: {} }));
+  }
+
   it('loads today events on init and derives Off state when no events', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne((r) => r.url === `${me}/time/events`);
-    expect(req.request.params.get('per_page')).toBe('50');
-    req.flush(page([]));
+    loadToday(page([]), (req) => expect(req.request.params.get('per_page')).toBe('50'));
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
@@ -64,7 +75,7 @@ describe('SsClockComponent', () => {
   it('derives Working state from last In event and shows break/out buttons', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    httpMock.expectOne((r) => r.url === `${me}/time/events`).flush(page([makeEvent('e1', 'In')]));
+    loadToday(page([makeEvent('e1', 'In')]));
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
@@ -76,9 +87,7 @@ describe('SsClockComponent', () => {
   it('derives OnBreak state from last BreakStart event', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    httpMock
-      .expectOne((r) => r.url === `${me}/time/events`)
-      .flush(page([makeEvent('e1', 'In'), makeEvent('e2', 'BreakStart')]));
+    loadToday(page([makeEvent('e1', 'In'), makeEvent('e2', 'BreakStart')]));
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
@@ -90,7 +99,7 @@ describe('SsClockComponent', () => {
 
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    httpMock.expectOne((r) => r.url === `${me}/time/events`).flush(page([]));
+    loadToday(page([]));
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;

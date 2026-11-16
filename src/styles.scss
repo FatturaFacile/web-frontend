@@ -1,5 +1,6 @@
 // Global styles. Everything else lives in the SCSS file of each component.
 @use 'styles/tokens';
+@use 'styles/brand';
 @use 'styles/base';
 @use 'styles/ng-zorro';
 @use 'styles/brand';
@@ -7,3 +8,4 @@
 @use 'styles/components';
 @use 'styles/a11y';
 @use 'styles/utilities';
+@use 'styles/warranty-rma';
