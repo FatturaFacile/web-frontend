@@ -6,6 +6,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzResultModule } from 'ng-zorro-antd/result';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { SsClockComponent } from './ss-clock.component';
 import { SsDocumentsComponent } from './ss-documents.component';
 import { SsLeaveComponent } from './ss-leave.component';
 import { SsProfileComponent } from './ss-profile.component';
@@ -22,6 +23,7 @@ import { SsTrainingComponent } from './ss-training.component';
     NzTabsModule,
     PageHeaderComponent,
     TranslatePipe,
+    SsClockComponent,
     SsProfileComponent,
     SsLeaveComponent,
     SsTrainingComponent,
@@ -52,6 +54,9 @@ import { SsTrainingComponent } from './ss-training.component';
     } @else if (profile(); as me) {
       <nz-card>
         <nz-tabs>
+          <nz-tab [nzTitle]="'hrmSelfService.tabClock' | translate">
+            <app-ss-clock />
+          </nz-tab>
           <nz-tab [nzTitle]="'hrmSelfService.tabProfile' | translate">
             <app-ss-profile [profile]="me" />
           </nz-tab>

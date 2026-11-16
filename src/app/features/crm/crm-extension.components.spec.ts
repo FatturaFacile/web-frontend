@@ -34,7 +34,8 @@ const quote: CrmQuoteConfiguration = {
 };
 
 /** The templates read protected members; the specs drive them through the same names. */
-type Driver = Record<string, (...args: unknown[]) => unknown> & Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test driver that reaches protected members by name
+type Driver = Record<string, any>;
 
 function configure(api: Record<string, unknown>): void {
   TestBed.configureTestingModule({

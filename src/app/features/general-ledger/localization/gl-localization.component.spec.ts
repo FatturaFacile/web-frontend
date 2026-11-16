@@ -77,7 +77,7 @@ async function configure(canWrite: boolean): Promise<void> {
       { provide: GeneralLedgerApiService, useValue: api },
       { provide: PermissionsService, useValue: { canWrite: () => canWrite } },
       { provide: NzMessageService, useValue: message },
-      { provide: I18nService, useValue: { translate: (key: string) => key } },
+      { provide: I18nService, useValue: { currentLanguage: () => 'it', translate: (key: string) => key } },
     ],
   }).compileComponents();
 }

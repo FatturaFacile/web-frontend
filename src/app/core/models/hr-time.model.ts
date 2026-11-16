@@ -79,8 +79,12 @@ export interface TimeEventResource {
   source: TimeEventSource;
   note: string | null;
   created_by: string | null;
+  deleted_at?: string | null;
   deleted_by: string | null;
   deletion_reason: string | null;
+  amended_from_id?: string | null;
+  source_device?: string | null;
+  has_gps?: boolean;
 }
 
 export interface CreateTimeEventPayload {
@@ -157,6 +161,7 @@ export interface TimeAuditEntry {
   actor_id: string | null;
   actor_name: string;
   occurred_at: string;
+  record_hash?: string | null;
 }
 
 export interface OvertimeRuleResource {
@@ -231,6 +236,9 @@ export interface TimeProfileResource {
   hire_date: string | null;
   termination_date: string | null;
   canton: string | null;
+  jurisdiction?: string;
+  income_threshold_confirmed?: boolean;
+  waiver_signed_date?: string | null;
 }
 
 export interface TimeProfilePayload {
@@ -250,5 +258,52 @@ export interface TimeProfilePayload {
   hire_date?: string | null;
   termination_date?: string | null;
   canton?: string | null;
+  jurisdiction?: string;
+  income_threshold_confirmed?: boolean;
+  waiver_signed_date?: string | null;
   reason?: string | null;
 }
+
+/** Self-service clock punch — hits /hr/me/clock, no HR module access needed. */
+export interface ClockNowPayload {
+  event_type: TimeEventType;
+  note?: string | null;
+  /** Art. 4 L. 300/1970: GPS only on punch action if profile has geolocation_enabled + privacy_notice_acknowledged_at. */
+  latitude?: number | null;
+  longitude?: number | null;
+  gps_accuracy_meters?: number | null;
+}
+
+/** Parameters for LUL (IT, Art. 39 D.L. 112/2008) or SECO (CH, OLL 1 Art. 73) legal export. */
+export interface LegalExportParams {
+  jurisdiction: 'IT' | 'CH';
+  employee_id?: string;
+  from: string;
+  to: string;
+  format: 'lul_csv' | 'seco_csv';
+}
+
+/** SHA-256 hash chain integrity verification result (CJEU C-55/18 tamper evidence). */
+export interface IntegrityResult {
+  verified: boolean;
+  entries_checked: number;
+  broken_at_id: string | null;
+}
+
+export interface ComplianceAlert {
+  type: 'rest_violation' | 'avg_violation' | 'break_violation';
+  employee_id: string;
+  employee_name: string;
+  date: string;
+  details: string;
+}
+
+/** D.Lgs. 66/2003 (IT) or OLL 1 (CH) compliance alert summary. */
+export interface ComplianceAlerts {
+  jurisdiction: 'IT' | 'CH';
+  alerts: ComplianceAlert[];
+  checked_from: string;
+  checked_to: string;
+}
+
+export type ClockState = 'Off' | 'Working' | 'OnBreak';

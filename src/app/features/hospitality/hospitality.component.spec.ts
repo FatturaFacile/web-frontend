@@ -131,7 +131,7 @@ describe('HospitalityComponent', () => {
 
   const translateSpy = {
     instant: vi.fn().mockImplementation((key: string) => key),
-    translate: vi.fn().mockImplementation((key: string) => key),
+    currentLanguage: () => 'it', translate: vi.fn().mockImplementation((key: string) => key),
   };
 
   beforeEach(async () => {
