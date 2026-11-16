@@ -15,7 +15,7 @@ import { IconActionDirective, PageHeaderComponent, TranslatePipe } from '@shared
 import { BiShareComponent } from './bi-share.component';
 import { apiErrorText, formatBiValue, VISIBILITY_COLORS } from './bi.util';
 
-type Change = { snapshot: string | number | null; current: string | number | null; change: string | number | null };
+interface Change { snapshot: string | number | null; current: string | number | null; change: string | number | null }
 
 /** The saved queries with their schedule, their snapshots (taken now or on schedule, compared with today) and their shares. */
 @Component({

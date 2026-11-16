@@ -135,6 +135,7 @@ export function govDefaultFrameworks(jurisdiction: string | null | undefined): G
             <nz-option [nzValue]="status" [nzLabel]="'GOVERNANCE.OBLIGATION_STATUS.' + status.toUpperCase() | translate"></nz-option>
           }
         </nz-select>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); load()">{{ 'GOVERNANCE.OBLIGATIONS.OVERDUE_ONLY' | translate }}</label>
         <button nz-button (click)="load()"><i class="fa-solid fa-rotate"></i></button>
       </div>

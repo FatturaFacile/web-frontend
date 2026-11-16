@@ -108,7 +108,8 @@ const TO_HOUR = 21;
                       <strong>{{ row.space.code }}</strong> {{ row.space.name }}
                       <div class="muted">{{ ('FACILITY.KIND_' + row.space.kind) | translate }} · {{ row.space.capacity }}</div>
                     </div>
-                    <div class="track" (click)="onTrackClick($event, row.space)">
+                    <!-- Pointer shortcut to book a slot; the keyboard path is the "new booking" button of the page -->
+                    <div class="track" role="presentation" (click)="onTrackClick($event, row.space)">
                       @for (item of row.slots; track item.booking.id) {
                         <div
                           class="slot"
@@ -117,6 +118,7 @@ const TO_HOUR = 21;
                           [style.left.%]="item.slot.left"
                           [style.width.%]="item.slot.width"
                           [title]="(item.booking.user?.name ?? '') + ' ' + (item.booking.title ?? '')"
+                          role="presentation"
                           (click)="$event.stopPropagation()"
                         >
                           {{ item.booking.user?.name }} {{ item.booking.title }}

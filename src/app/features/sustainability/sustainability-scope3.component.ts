@@ -31,7 +31,7 @@ const STATUS_COLORS: Readonly<Record<EsgSupplierRequestStatus, string>> = {
 };
 
 /** Scope 3 activity types per GHG Protocol category with their units (mirrors the API activity catalog). */
-const SCOPE3_ACTIVITIES: ReadonlyArray<{ category: number; activity_type: string; units: readonly string[] }> = [
+const SCOPE3_ACTIVITIES: readonly { category: number; activity_type: string; units: readonly string[] }[] = [
   { category: 1, activity_type: 'purchased_goods', units: ['EUR', 'CHF'] },
   { category: 2, activity_type: 'capital_goods', units: ['EUR', 'CHF'] },
   { category: 3, activity_type: 'fuel_energy_related', units: ['kWh'] },

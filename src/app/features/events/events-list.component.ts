@@ -133,6 +133,7 @@ import { apiErrorText, blankToNull, EVENT_STATUS_COLORS, nowInput, toApiDateTime
             </nz-form-item>
           </div>
           <nz-form-item>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <nz-form-control><label nz-checkbox formControlName="waitlist_enabled">{{ 'EVENTS.WAITLIST_ENABLED' | translate }}</label></nz-form-control>
           </nz-form-item>
           <nz-form-item>

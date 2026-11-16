@@ -67,7 +67,7 @@ import { apiErrorText, blankToNull, clientName, loadCases, loadClients, todayIso
           @for (row of balanceTable.data; track row.client_id) {
             <tr>
               <td>
-                <a (click)="clientId.set(row.client_id); load()">{{ row.client_name }}</a>
+                <a role="button" tabindex="0" (click)="clientId.set(row.client_id); load()" (keydown.enter)="clientId.set(row.client_id); load()">{{ row.client_name }}</a>
               </td>
               <td class="num">{{ row.total | number: '1.2-2' }}</td>
             </tr>

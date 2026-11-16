@@ -25,7 +25,7 @@ import { apiErrorText } from './events.util';
             <nz-option [nzValue]="event.id" [nzLabel]="event.code + ' - ' + event.name"></nz-option>
           }
         </nz-select>
-        <input nz-input style="width: 320px" [ngModel]="token()" (ngModelChange)="token.set($event)" (keyup.enter)="submit()" [placeholder]="'EVENTS.QR_TOKEN' | translate" autofocus />
+        <input nz-input style="width: 320px" [ngModel]="token()" (ngModelChange)="token.set($event)" (keyup.enter)="submit()" [placeholder]="'EVENTS.QR_TOKEN' | translate" />
         <button nz-button nzType="primary" [disabled]="token().trim() === ''" (click)="submit()">{{ 'EVENTS.CHECKIN' | translate }}</button>
       </div>
 

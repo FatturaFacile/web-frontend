@@ -20,6 +20,7 @@ import { apiErrorText } from './credit.util';
     <app-page-header [title]="'CREDIT.EXPOSURES_TITLE' | translate" [subtitle]="'CREDIT.EXPOSURES_SUBTITLE' | translate"></app-page-header>
 
     <div class="toolbar">
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label><nz-switch [ngModel]="overLimitOnly()" (ngModelChange)="overLimitOnly.set($event); load()"></nz-switch> {{ 'CREDIT.OVER_LIMIT_ONLY' | translate }}</label>
     </div>
 

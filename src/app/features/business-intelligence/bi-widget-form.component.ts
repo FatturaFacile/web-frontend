@@ -47,7 +47,9 @@ import { apiErrorText, drillableDimensions, specDimensionKeys } from './bi.util'
       </nz-form-item>
 
       <nz-radio-group [ngModel]="source()" name="source" (ngModelChange)="source.set($event)" class="bi-source">
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-radio nzValue="query">{{ 'BI.SOURCE_QUERY' | translate }}</label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-radio nzValue="inline">{{ 'BI.SOURCE_INLINE' | translate }}</label>
       </nz-radio-group>
 

@@ -155,6 +155,7 @@ import { apiErrorText, loadCases, todayIso } from './practice-firm.util';
             <nz-form-label nzRequired nzFor="exp-description">{{ 'PRACTICEFIRM.DESCRIPTION' | translate }}</nz-form-label>
             <nz-form-control><input nz-input id="exp-description" formControlName="description" maxlength="255" /></nz-form-control>
           </nz-form-item>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label nz-checkbox formControlName="is_billable">{{ 'PRACTICEFIRM.BILLABLE' | translate }}</label>
         </form>
       </ng-container>

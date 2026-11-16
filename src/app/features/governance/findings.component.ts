@@ -105,7 +105,9 @@ import {
             <nz-option [nzValue]="option.value" [nzLabel]="option.labelKey | translate"></nz-option>
           }
         </nz-select>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="openOnly()" (ngModelChange)="openOnly.set($event); load()">{{ 'GOVERNANCE.FINDINGS.OPEN_ONLY' | translate }}</label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); load()">{{ 'GOVERNANCE.FINDINGS.OVERDUE_ONLY' | translate }}</label>
         <button nz-button (click)="load()"><i class="fa-solid fa-rotate"></i></button>
       </div>

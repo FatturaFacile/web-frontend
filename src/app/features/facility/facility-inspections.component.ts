@@ -83,6 +83,7 @@ interface ChecklistRow {
                   <nz-option [nzValue]="value" [nzLabel]="('FACILITY.INSPECTION_' + value.toUpperCase()) | translate"></nz-option>
                 }
               </nz-select>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label nz-checkbox [ngModel]="onlyMine()" (ngModelChange)="onlyMine.set($event); loadInspections()">{{ 'FACILITY.ASSIGNED_TO_ME' | translate }}</label>
             </div>
             <nz-table #inspectionTable [nzData]="inspections()" [nzLoading]="loading()" nzSize="small" [nzPageSize]="25">
@@ -222,6 +223,7 @@ interface ChecklistRow {
                 <nz-option nzValue="number" [nzLabel]="'FACILITY.ITEM_NUMBER' | translate"></nz-option>
                 <nz-option nzValue="text" [nzLabel]="'FACILITY.ITEM_TEXT' | translate"></nz-option>
               </nz-select>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <label nz-checkbox [ngModel]="row.required" (ngModelChange)="updateRow($index, { required: $event })" [ngModelOptions]="{ standalone: true }">{{ 'FACILITY.REQUIRED' | translate }}</label>
               <button type="button" nz-button nzType="text" nzDanger appIconAction="delete" (click)="removeRow($index)"></button>
             </div>
@@ -243,8 +245,11 @@ interface ChecklistRow {
             </div>
             @if (item.type === 'pass_fail') {
               <nz-radio-group [ngModel]="answers()[item.key]?.result ?? null" (ngModelChange)="setAnswer(item.key, { result: $event })">
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                 <label nz-radio-button nzValue="pass">{{ 'FACILITY.PASS' | translate }}</label>
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                 <label nz-radio-button nzValue="fail">{{ 'FACILITY.FAIL' | translate }}</label>
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
                 <label nz-radio-button nzValue="na">{{ 'FACILITY.NA' | translate }}</label>
               </nz-radio-group>
             } @else {

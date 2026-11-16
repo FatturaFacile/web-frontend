@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { InventoryApiService, RetailApiService, RetailTicketPreview } from '@core';
-import { CashierPage } from './cashier.page';
+import { CashierComponent } from './cashier.page';
 
 const preview: RetailTicketPreview = {
   items: [],
@@ -34,13 +34,13 @@ function setup() {
     ],
   });
 
-  const fixture = TestBed.createComponent(CashierPage);
+  const fixture = TestBed.createComponent(CashierComponent);
   fixture.detectChanges();
 
   return { api, component: fixture.componentInstance };
 }
 
-describe('CashierPage', () => {
+describe('CashierComponent', () => {
   it('loads the open session and prices the ticket with the server promotions', () => {
     const { api, component } = setup();
 

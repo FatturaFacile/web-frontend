@@ -129,6 +129,7 @@ export type PlanningCycleAction = 'submit' | 'approve' | 'reject' | 'lock' | 'pu
           </nz-form-item>
           @if (action() === 'approve') {
             <nz-form-item>
+              <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
               <nz-form-control [nzExtra]="'PLANNING.ACCEPT_OVERLOAD_HINT' | translate"><label nz-checkbox formControlName="accept_overload">{{ 'PLANNING.ACCEPT_OVERLOAD' | translate }}</label></nz-form-control>
             </nz-form-item>
           }

@@ -176,7 +176,9 @@ import {
     <div class="gov-layout">
       <nz-card [nzTitle]="'GOVERNANCE.HEATMAP.TITLE' | translate">
         <nz-radio-group [ngModel]="basis()" (ngModelChange)="changeBasis($event)" nzButtonStyle="solid" nzSize="small">
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label nz-radio-button nzValue="residual">{{ 'GOVERNANCE.HEATMAP.RESIDUAL' | translate }}</label>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label nz-radio-button nzValue="inherent">{{ 'GOVERNANCE.HEATMAP.INHERENT' | translate }}</label>
         </nz-radio-group>
         <table class="heatmap" [attr.aria-label]="'GOVERNANCE.HEATMAP.TITLE' | translate">

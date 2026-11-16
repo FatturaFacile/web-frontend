@@ -283,6 +283,7 @@ const FORMAT_EXTENSIONS: Record<AnalyticsExportFormat, string> = { csv: 'csv', e
           <label for="report-description">{{ 'COMMON.DESCRIPTION' | translate }}</label>
           <textarea nz-input id="report-description" rows="2" maxlength="2000" [ngModel]="reportDescription()" (ngModelChange)="reportDescription.set($event)"></textarea>
         </div>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="inline"><nz-switch [ngModel]="reportShared()" (ngModelChange)="reportShared.set($event)"></nz-switch> {{ 'ANALYTICS_BI.SHARE_WITH_COMPANY' | translate }}</label>
         @if (!reportShared()) {
           <div class="field">

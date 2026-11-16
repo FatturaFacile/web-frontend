@@ -373,14 +373,14 @@ export interface EsgEsrsCompleteness {
   required: number;
   complete: number;
   materiality_assessment_id: string | null;
-  standards: Array<{ standard: string; is_material: boolean; required: number; complete: number; percent: string }>;
-  missing: Array<{
+  standards: { standard: string; is_material: boolean; required: number; complete: number; percent: string }[];
+  missing: {
     datapoint_id: string;
     code: string;
     standard: string;
     name: string;
     reason: 'no_value' | 'not_approved' | 'omission_reason_missing';
-  }>;
+  }[];
   issues: string[];
   warnings: string[];
   scope3_categories_without_data: number[];

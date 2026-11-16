@@ -73,7 +73,7 @@ const KIND_ICONS: Record<FacilitySpaceKind, string> = {
     <div class="split">
       <nz-card class="main-card" [nzTitle]="'FACILITY.BUILDINGS' | translate">
         @for (building of buildings(); track building.id) {
-          <div class="building-item" [class.active]="building.id === buildingId()" (click)="selectBuilding(building.id)">
+          <div class="building-item" [class.active]="building.id === buildingId()" role="button" tabindex="0" (click)="selectBuilding(building.id)" (keydown.enter)="selectBuilding(building.id)">
             <span><strong>{{ building.code }}</strong> {{ building.name }}<span class="muted"> {{ building.city }}</span></span>
             @if (!building.is_active) {
               <nz-tag>{{ 'FACILITY.INACTIVE' | translate }}</nz-tag>
@@ -95,7 +95,7 @@ const KIND_ICONS: Record<FacilitySpaceKind, string> = {
         </ng-template>
 
         <ng-template #nodeTpl let-node let-depth="depth">
-          <div class="tree-node" [style.padding-left.px]="depth * 20 + 8" [class.active]="node.id === selected()?.id" (click)="selectNode(node.id)">
+          <div class="tree-node" [style.padding-left.px]="depth * 20 + 8" [class.active]="node.id === selected()?.id" role="button" tabindex="0" (click)="selectNode(node.id)" (keydown.enter)="selectNode(node.id)">
             <i [class]="iconOf(node.kind)" aria-hidden="true"></i>
             <strong>{{ node.code }}</strong> {{ node.name }}
             @if (node.is_bookable) {

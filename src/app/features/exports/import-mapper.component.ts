@@ -33,6 +33,7 @@ import { reportHttpError } from '../hr/shared/hr-http.util';
             </nz-select>
           </div>
         }
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="dryRun()" (ngModelChange)="dryRun.set($event)">{{ 'exportsPage.importDryRun' | translate }}</label>
         <div class="mt-3">
           <button nz-button nzType="primary" type="button" [nzLoading]="busy()" [disabled]="!canWrite() || Object.keys(mapping()).length === 0" (click)="run()">

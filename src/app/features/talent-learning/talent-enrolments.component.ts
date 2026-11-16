@@ -62,6 +62,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
           <nz-option [nzValue]="value" [nzLabel]="'TALENT_LEARNING.ENROLMENT_' + key(value) | translate"></nz-option>
         }
       </nz-select>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); changeFilter()">{{ 'TALENT_LEARNING.OVERDUE_ONLY' | translate }}</label>
     </div>
 

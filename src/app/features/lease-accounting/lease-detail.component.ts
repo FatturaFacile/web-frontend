@@ -225,6 +225,7 @@ const STATUS_COLORS: Record<LeaseStatus, string> = { draft: 'default', active: '
         <ng-container *nzModalContent>
           <p>{{ 'LEASES.ACTIVATE_CONFIRM' | translate }}</p>
           @if (l.exemption === 'none') {
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label>
               <nz-switch [(ngModel)]="postRecognition" [attr.aria-label]="'LEASES.FIELD.post_recognition' | translate" />
               {{ 'LEASES.FIELD.post_recognition' | translate }}

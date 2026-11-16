@@ -60,7 +60,9 @@ import { GOV_ACTION_TRANSITIONS } from './governance.shared';
             <nz-option [nzValue]="status" [nzLabel]="'GOVERNANCE.ACTION_STATUS.' + status.toUpperCase() | translate"></nz-option>
           }
         </nz-select>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="mine()" (ngModelChange)="mine.set($event); load()">{{ 'GOVERNANCE.ACTIONS.MINE' | translate }}</label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-checkbox [ngModel]="overdueOnly()" (ngModelChange)="overdueOnly.set($event); load()">{{ 'GOVERNANCE.ACTIONS.OVERDUE_ONLY' | translate }}</label>
       </div>
       <app-gov-action-list [actions]="actions()" [loading]="loading()" [showFinding]="true" [pageSize]="15" (changed)="reload()" />
