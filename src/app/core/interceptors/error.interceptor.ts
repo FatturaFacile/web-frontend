@@ -1,10 +1,16 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { catchError, throwError } from 'rxjs';
 import { AuthStore } from '../auth/auth.store';
 import { I18nService } from '../i18n';
+
+/**
+ * HTTP statuses the caller renders itself (e.g. 404/409 with a translated `code`):
+ * no global toast is shown for them. 401 and network errors keep the global handling.
+ */
+export const HANDLED_ERROR_STATUSES = new HttpContextToken<readonly number[]>(() => []);
 
 /**
  * Surfaces system errors as toasts. HTTP 422 (Laravel validation) is passed
@@ -36,6 +42,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (isAuthCheck) {
           // The login form and auth guard handle 401 without emitting a session toast.
+        } else if (req.context.get(HANDLED_ERROR_STATUSES).includes(err.status)) {
+          // The caller maps this status to its own message.
         } else if (err.status === 401) {
           const returnUrl = router.url;
           injector.get(AuthStore).logout();
