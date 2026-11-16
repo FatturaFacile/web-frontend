@@ -113,28 +113,8 @@
     <!-- In-app notification centre -->
     <app-notification-bell />
 
-    <!-- Dark/Light theme toggle -->
-    <button
-      type="button"
-      class="action-btn theme-toggle"
-      (click)="authStore.toggleTheme()"
-      [title]="
-        authStore.isDarkMode()
-          ? ('HEADER.THEME_LIGHT' | translate)
-          : ('HEADER.THEME_DARK' | translate)
-      "
-      [attr.aria-label]="
-        authStore.isDarkMode()
-          ? ('HEADER.THEME_LIGHT' | translate)
-          : ('HEADER.THEME_DARK' | translate)
-      "
-    >
-      @if (authStore.isDarkMode()) {
-        <i class="fa-solid fa-sun" aria-hidden="true"></i>
-      } @else {
-        <i class="fa-solid fa-moon" aria-hidden="true"></i>
-      }
-    </button>
+    <!-- Theme and density quick switcher -->
+    <app-appearance-switcher />
 
     <!-- User profile dropdown -->
     <div class="user-profile">

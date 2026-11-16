@@ -14,7 +14,7 @@
       [nzCollapsed]="appStore.isCollapsed()"
       [nzTrigger]="null"
     >
-      <app-sidebar />
+      <app-sidebar role="navigation" [attr.aria-label]="'DESIGN_SYSTEM.NAV_MAIN' | translate" />
     </nz-sider>
     <nz-layout class="main-layout">
       <nz-header class="main-header">
@@ -32,6 +32,8 @@
   </nz-layout>
   <app-global-search />
 }
+
+<app-toast-host />
 
 <!-- The modal (QR code, steps) is only needed when the account must set up two-factor authentication: load it on demand. -->
 @defer (when authStore.twoFactorSetupRequired()) {
