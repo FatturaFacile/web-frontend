@@ -16,12 +16,15 @@ import {
   AuthApiService,
   authProblemOf,
   AuthStore,
+  SupportedLanguage,
   I18nService,
   isValidationError,
   LoginResult,
   SsoLoginService,
 } from '@core';
 import { TranslatePipe } from '@shared';
+import { AuthFooterComponent } from '../../components/auth-footer.component';
+import { ThemeSelectorComponent } from '../../components/theme-selector.component';
 import { environment } from '@env';
 import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
@@ -36,6 +39,8 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
   selector: 'app-login',
   styleUrl: './login.component.scss',
   imports: [
+    AuthFooterComponent,
+    ThemeSelectorComponent,
     ReactiveFormsModule,
     RouterLink,
     NzCardModule,
@@ -62,12 +67,7 @@ export class LoginComponent {
   private readonly sso = inject(SsoLoginService);
 
   // Footer & Language
-  protected readonly currentYear = new Date().getFullYear();
-  protected readonly currentLang = signal<string>(
-    typeof (this.i18n as unknown as { currentLang?: () => string }).currentLang === 'function'
-      ? (this.i18n as unknown as { currentLang: () => string }).currentLang()
-      : 'it',
-  );
+  protected readonly currentLang = this.i18n.currentLanguage;
 
   protected readonly isSubmitting = signal(false);
   protected readonly passwordVisible = signal(false);
@@ -98,16 +98,8 @@ export class LoginComponent {
     recoveryCode: this.fb.control(''),
   });
 
-  protected setLanguage(lang: string): void {
-    if (
-      typeof (this.i18n as unknown as { setLanguage?: (l: string) => void }).setLanguage ===
-      'function'
-    ) {
-      (this.i18n as unknown as { setLanguage: (l: string) => void }).setLanguage(lang);
-    } else if (typeof (this.i18n as unknown as { use?: (l: string) => void }).use === 'function') {
-      (this.i18n as unknown as { use: (l: string) => void }).use(lang);
-    }
-    this.currentLang.set(lang);
+  protected setLanguage(lang: SupportedLanguage): void {
+    this.authStore.setLocale(lang);
   }
 
   protected onSubmit(): void {

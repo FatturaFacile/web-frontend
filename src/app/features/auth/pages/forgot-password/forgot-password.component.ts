@@ -10,7 +10,8 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { ApiResponse, applyServerErrors, AuthApiService, isValidationError } from '@core';
 import { TranslatePipe } from '@shared';
-import { LanguageSelectorComponent } from '../../components/language-selector.component';
+import { AuthFooterComponent } from '../../components/auth-footer.component';
+import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
 
 /** The backend answers the same way for every address, and so does this page. */
 @Component({
@@ -24,13 +25,14 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
     NzCardModule,
     NzFormModule,
     NzInputModule,
-    LanguageSelectorComponent,
+    AuthFooterComponent,
+    AuthToolbarComponent,
     TranslatePipe,
   ],
   template: `
     <main class="login-wrapper">
       <div class="login-box">
-        <app-language-selector />
+        <app-auth-toolbar />
 
         <header class="login-header text-center">
           <h1>Fattura <span class="facile-color">Facile</span></h1>
@@ -79,6 +81,7 @@ import { LanguageSelectorComponent } from '../../components/language-selector.co
             <a routerLink="/login">{{ 'AUTH.BACK_TO_LOGIN' | translate }}</a>
           </p>
         </nz-card>
+        <app-auth-footer />
       </div>
     </main>
   `,
