@@ -60,7 +60,8 @@ describe('PortalComponent', () => {
   let translateMock: {
     instant: ReturnType<typeof vi.fn>;
     get: ReturnType<typeof vi.fn>;
-    currentLanguage: () => 'it', translate: ReturnType<typeof vi.fn>;
+    currentLanguage: () => string;
+    translate: ReturnType<typeof vi.fn>;
   };
 
   const mockAccess: PortalAccessData = {
@@ -192,6 +193,7 @@ describe('PortalComponent', () => {
     translateMock = {
       instant: vi.fn((key: string) => key),
       translate: vi.fn((key: string) => key),
+      currentLanguage: () => 'it',
       get: vi.fn((key: string) => of(key)),
     };
 

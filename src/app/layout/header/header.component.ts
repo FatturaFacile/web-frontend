@@ -18,6 +18,7 @@ import { AppStore } from '@core/state/app.store';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { GlobalSearchService } from '@shared/components/global-search/global-search.service';
 import { NotificationBellComponent } from './notification-bell.component';
+import { DisplayPreferencesComponent } from './display-preferences.component';
 
 @Component({
   selector: 'app-header',
@@ -32,6 +33,7 @@ import { NotificationBellComponent } from './notification-bell.component';
     NzTagModule,
     NzAvatarModule,
     NotificationBellComponent,
+    DisplayPreferencesComponent,
     TranslatePipe,
   ],
   templateUrl: './header.component.html',
