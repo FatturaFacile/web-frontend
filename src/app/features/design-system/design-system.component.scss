@@ -1,0 +1,80 @@
+.catalog {
+  display: grid;
+  gap: var(--ff-space-5);
+  max-width: 1100px;
+}
+
+.intro {
+  max-width: 70ch;
+  color: var(--ff-color-text-secondary);
+}
+
+.section {
+  display: grid;
+  gap: var(--ff-space-3);
+  padding: var(--ff-density-card-padding);
+  background: var(--ff-color-surface);
+  border: 1px solid var(--ff-color-border);
+  border-radius: var(--ff-radius-lg);
+}
+
+.section > h2 {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ff-space-4);
+}
+
+.row > app-form-field {
+  flex: 1 1 260px;
+}
+
+.stack {
+  display: grid;
+  gap: var(--ff-space-3);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.group legend {
+  color: var(--ff-color-text-secondary);
+  font-weight: 600;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--ff-space-2);
+  min-height: var(--ff-a11y-target-min);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--ff-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--ff-space-2);
+}
+
+.chip {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ff-color-border);
+  border-radius: var(--ff-radius-sm);
+}

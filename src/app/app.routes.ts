@@ -593,6 +593,14 @@ export const routes: Routes = [
       import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
   },
   {
+    // The live catalog of the design system: tokens, components, theme, density and brand controls.
+    path: 'design-system',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'DESIGN_SYSTEM.TITLE', title: 'DESIGN_SYSTEM.TITLE' },
+    loadComponent: () =>
+      import('./features/design-system/design-system.component').then((m) => m.DesignSystemComponent),
+  },
+  {
     path: 'tools',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.TOOLS', title: 'PAGE_TITLE.STRUMENTI' },

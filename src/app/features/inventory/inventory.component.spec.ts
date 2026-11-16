@@ -224,6 +224,7 @@ describe('InventoryComponent', () => {
   const mockTranslate = {
     instant: vi.fn((k: string) => k),
     translate: vi.fn((k: string) => k),
+    currentLanguage: () => 'it',
   };
 
   const mockMessage = {
