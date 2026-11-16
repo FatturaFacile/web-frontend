@@ -1,0 +1,46 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter {
+  min-width: 200px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.line {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.product {
+  flex: 1;
+}
+
+.drawer-footer {
+  margin-top: 24px;
+}
+
+.stepper {
+  margin-bottom: 16px;
+}
+
+.resolution {
+  min-width: 190px;
+}
+
+.alert {
+  margin-bottom: 12px;
+}
