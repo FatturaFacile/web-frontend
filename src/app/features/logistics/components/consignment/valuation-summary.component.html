@@ -1,0 +1,75 @@
+<div class="groups">
+  <nz-card [nzTitle]="'LOGISTICS.VALUATION.OWNED_TITLE' | translate">
+    <nz-statistic
+      [nzValue]="(breakdown().ownedTotal | currency: 'EUR')!"
+      [nzTitle]="'LOGISTICS.CONSIGNMENT.BALANCE_SHEET_VALUE' | translate"
+    />
+    @for (bucket of breakdown().owned; track bucket.key) {
+      <div class="bucket">
+        <div class="bucket-head">
+          <span>
+            {{ bucketKey(bucket.key) | translate }}
+            <small class="hint">{{ hintKey(bucket.key) | translate }}</small>
+          </span>
+          <strong>{{ bucket.value | currency: 'EUR' }}</strong>
+        </div>
+        <nz-progress
+          nzSize="small"
+          [nzPercent]="bucket.share"
+          [nzShowInfo]="false"
+          [attr.aria-label]="bucketKey(bucket.key) | translate"
+        />
+        <small class="hint">{{ bucket.share | number: '1.0-1' }}%</small>
+      </div>
+    }
+  </nz-card>
+
+  <nz-card class="third-party" [nzTitle]="'LOGISTICS.VALUATION.THIRD_PARTY_TITLE' | translate">
+    <nz-statistic
+      [nzValue]="(breakdown().thirdParty.value | currency: 'EUR')!"
+      [nzTitle]="'LOGISTICS.CONSIGNMENT.EXCLUDED_VALUE' | translate"
+    />
+    <div class="bucket">
+      <div class="bucket-head">
+        <span>
+          {{ bucketKey(breakdown().thirdParty.key) | translate }}
+          <small class="hint">{{ hintKey(breakdown().thirdParty.key) | translate }}</small>
+        </span>
+        <nz-tag nzColor="orange">{{ 'LOGISTICS.CONSIGNMENT.OFF_BALANCE' | translate }}</nz-tag>
+      </div>
+    </div>
+    <small class="hint"
+      >{{ 'LOGISTICS.VALUATION.PHYSICAL_TOTAL' | translate }}:
+      {{ breakdown().physicalTotal | currency: 'EUR' }}</small
+    >
+  </nz-card>
+</div>
+
+@if (warehouses().length > 0) {
+  <nz-card [nzTitle]="'LOGISTICS.VALUATION.BY_WAREHOUSE' | translate">
+    <nz-table nzSize="small" [nzData]="warehouses()" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th>{{ 'LOGISTICS.CONSIGNMENT.WAREHOUSE' | translate }}</th>
+          <th>{{ 'LOGISTICS.WAREHOUSE.TYPE' | translate }}</th>
+          <th>{{ 'LOGISTICS.VALUATION.BUCKET' | translate }}</th>
+          <th class="num">{{ 'LOGISTICS.CONSIGNMENT.FISCAL_VALUE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (w of warehouses(); track w.warehouse_id) {
+          <tr>
+            <td>{{ w.warehouse_code }}</td>
+            <td>{{ typeKey(w.warehouse_type) | translate }}</td>
+            <td>
+              <nz-tag [nzColor]="w.on_balance_sheet ? 'green' : 'orange'">{{
+                bucketKey(w.bucket) | translate
+              }}</nz-tag>
+            </td>
+            <td class="num">{{ w.value | currency: 'EUR' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+}

@@ -12,9 +12,12 @@ export const DDT_STATUS_COLOR: Record<DeliveryNoteStatus, string> = {
 
 export const TRANSFER_STATUS_COLOR: Record<TransferStatus, string> = {
   draft: 'default',
+  approved: 'blue',
   in_transit: 'processing',
+  partially_received: 'cyan',
   received: 'success',
   discrepancy_pending: 'warning',
+  closed: 'green',
   reconciled: 'green',
   cancelled: 'error',
 };
@@ -29,7 +32,7 @@ export const DISCREPANCY_COLOR: Record<DiscrepancyStatus, string> = {
 /** i18n key helpers: the dictionaries come from the API (LogisticsFrontendTranslations seeder). */
 export const ddtStatusKey = (s: DeliveryNoteStatus): string =>
   `LOGISTICS.DDT.STATUS.${s.toUpperCase()}`;
-export const ddtTypeKey = (t: DeliveryNoteType): string => `LOGISTICS.DDT.TYPE.${t.toUpperCase()}`;
+export const ddtTypeKey = (t: DeliveryNoteType | string): string => `LOGISTICS.DDT.TYPE.${t.toUpperCase()}`;
 export const reasonKey = (r: string): string => `LOGISTICS.REASON.${r.toUpperCase()}`;
 export const carriageKey = (c: string): string => `LOGISTICS.CARRIAGE.${c.toUpperCase()}`;
 export const transportByKey = (c: string): string => `LOGISTICS.TRANSPORT_BY.${c.toUpperCase()}`;
@@ -39,6 +42,15 @@ export const transferPurposeKey = (p: string): string =>
   `LOGISTICS.TRANSFER.PURPOSE.${p.toUpperCase()}`;
 export const discrepancyKey = (s: DiscrepancyStatus): string =>
   `LOGISTICS.DISCREPANCY.STATUS.${s.toUpperCase()}`;
+export const movementTypeKey = (t: string): string =>
+  `LOGISTICS.TRANSFER.MOVEMENT.${t.toUpperCase()}`;
+export const statusFilterKey = (s: string): string =>
+  `LOGISTICS.TRANSFER.FILTER.${s.toUpperCase()}`;
+export const trackerStepKey = (s: string): string => `LOGISTICS.TRACKER.STEP.${s.toUpperCase()}`;
+export const valuationBucketKey = (b: string): string =>
+  `LOGISTICS.VALUATION.BUCKET.${b.toUpperCase()}`;
+export const valuationBucketHintKey = (b: string): string =>
+  `LOGISTICS.VALUATION.BUCKET.${b.toUpperCase()}_HINT`;
 export const warehouseTypeKey = (t: string): string =>
   `LOGISTICS.WAREHOUSE.TYPE.${t.toUpperCase()}`;
 
@@ -59,3 +71,8 @@ export const INVOICEABLE: readonly DeliveryNoteStatus[] = [
   'delivered',
   'partially_invoiced',
 ];
+
+/** Business errors come back as 422 {success:false, message}, already translated by the API. */
+export function apiErrorMessage(err: unknown): string | undefined {
+  return (err as { error?: { message?: string } } | null)?.error?.message;
+}
