@@ -65,4 +65,17 @@ describe('PlatformApiService', () => {
     const put = httpTesting.expectOne({ method: 'PUT', url: `${base}/notifications/preferences` });
     expect(put.request.body).toEqual(body);
   });
+
+  it('calls the notification settings and realtime endpoints', () => {
+    service.getNotificationSettings().subscribe();
+    httpTesting.expectOne({ method: 'GET', url: `${base}/notifications/settings` }).flush({ data: {} });
+
+    service.updateNotificationSettings({ quiet_hours_enabled: true, quiet_start: '22:00' }).subscribe();
+    const put = httpTesting.expectOne({ method: 'PUT', url: `${base}/notifications/settings` });
+    expect(put.request.body).toEqual({ quiet_hours_enabled: true, quiet_start: '22:00' });
+    put.flush({ data: {} });
+
+    service.getNotificationRealtime().subscribe();
+    httpTesting.expectOne({ method: 'GET', url: `${base}/notifications/realtime` }).flush({ data: { enabled: false } });
+  });
 });

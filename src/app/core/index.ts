@@ -132,3 +132,4 @@ export * from './api/supplier-portal-api.service';
 export * from './api/quality-api.service';
 export * from './api/collaboration-api.service';
 export * from './api/logistics-api.service';
+export * from './realtime/notification-realtime.service';
