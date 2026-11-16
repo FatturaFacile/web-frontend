@@ -100,3 +100,24 @@ export const platformAdminGuard: CanActivateFn = () => {
   const decide = (): true | UrlTree => (authStore.user()?.is_platform_admin ? true : router.createUrlTree(['/dashboard']));
   return profile ? profile.pipe(map(decide)) : decide();
 };
+
+/**
+ * Restricts a route to users holding at least one of the given permissions (RBAC from `/auth/profile`).
+ *
+ * Race-free on cold refresh (F5) and direct URL navigation: the guard waits for the full profile whenever the store
+ * holds only the login answer, so it never decides on an empty permission list. Use it after `authGuard`; members
+ * without the permission go to `/dashboard`.
+ */
+export const permissionGuard = (required: string | readonly string[]): CanActivateFn => {
+  const needed = typeof required === 'string' ? [required] : required;
+
+  return () => {
+    const authStore = inject(AuthStore);
+    const router = inject(Router);
+    const profile = loadFullProfileIfNeeded();
+    const decide = (): true | UrlTree => (authStore.canAny(needed) ? true : router.createUrlTree(['/dashboard']));
+
+    return profile ? profile.pipe(map(decide)) : decide();
+  };
+};
+
