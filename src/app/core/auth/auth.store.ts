@@ -245,11 +245,12 @@ export const AuthStore = signalStore(
     }),
     isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
     isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
-    isDarkMode: computed(() => theme() === 'dark'),
+    /** The theme in force; the preference itself lives in UiPreferencesService. */
+    isDarkMode: ui.isDark,
     permissions: computed(() => user()?.permissions ?? []),
     permissionsLoaded: computed(() => user()?.permissions !== undefined),
   })),
-  withMethods((store, i18n = inject(I18nService)) => ({
+  withMethods((store, i18n = inject(I18nService), ui = inject(UiPreferencesService)) => ({
     /** True when the signed-in user holds the permission in the active tenant (reactive in templates and computed). */
     can(permission: string): boolean {
       return store.userPermissions().includes(permission);

@@ -8,9 +8,33 @@ html {
     background: var(--bg-primary);
   }
 
+  // Labels of checkboxes and radios must follow the theme text colour (the dark NG-ZORRO sheet leaves them near-black)
+  .ant-checkbox-wrapper,
+  .ant-radio-wrapper {
+    color: var(--text-primary);
+  }
+
+  // Breadcrumb links and text buttons take the theme colours (the NG-ZORRO defaults fail contrast in one theme or the other)
+  .ant-breadcrumb a,
+  .ant-breadcrumb li:last-child,
+  .ant-breadcrumb li:last-child a,
+  nz-breadcrumb-item:last-child .ant-breadcrumb-link,
+  nz-breadcrumb-item:last-child .ant-breadcrumb-link a {
+    color: var(--text-secondary);
+  }
+
+  .ant-breadcrumb a:hover {
+    color: var(--text-link);
+  }
+
+  .ant-btn-text {
+    color: var(--text-primary);
+  }
+
   // Cards
   .ant-card {
     background: var(--bg-card);
+    color: var(--text-primary);
     border-color: var(--border-color);
     border-radius: var(--radius-lg);
     box-shadow: var(--card-shadow);

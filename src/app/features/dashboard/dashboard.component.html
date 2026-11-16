@@ -75,7 +75,7 @@
     <div nz-col [nzXs]="24" [nzLg]="14">
       <nz-card [nzTitle]="'DASHBOARD.RECENT_DOCS' | translate" [nzExtra]="refreshTpl">
         <ng-template #refreshTpl>
-          <button nz-button nzType="text" nzSize="small" (click)="loadData()">
+          <button nz-button nzType="text" nzSize="small" [attr.aria-label]="'COMMON.REFRESH' | translate" (click)="loadData()">
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
         </ng-template>

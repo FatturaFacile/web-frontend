@@ -46,6 +46,7 @@ export class SignaturePadComponent {
     const point = this.point(event);
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
+    // Ink on a paper surface that stays light in both themes (--paper-surface), so the ink is a literal.
     ctx.strokeStyle = '#111';
     ctx.beginPath();
     ctx.moveTo(point.x, point.y);

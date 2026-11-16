@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [angular()],
   test: {
     globals: true,
-    // Playwright E2E specs live in tests/ and must not be run by Vitest
+    // Playwright E2E specs live in tests/ and e2e/ and must not be run by Vitest
     // Agent worktrees under .claude/ hold full repo copies and must not be collected either
-    exclude: [...configDefaults.exclude, 'tests/**', '.claude/**'],
+    exclude: [...configDefaults.exclude, 'tests/**', 'e2e/**', '.claude/**'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     testTimeout: 20000,

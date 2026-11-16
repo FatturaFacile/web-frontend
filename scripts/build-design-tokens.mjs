@@ -263,7 +263,9 @@ export function buildDart(model) {
   p('// ignore_for_file: public_member_api_docs, lines_longer_than_80_chars');
   p("import 'package:flutter/material.dart';");
   p();
-  p('/// Semantic colours, one const instance per theme. Registered on `ThemeData.extensions` by [ffThemeData].');
+  p(
+    '/// Semantic colours, one const instance per theme. Registered on `ThemeData.extensions` by [ffThemeData].',
+  );
   p('@immutable');
   p('class FfColors extends ThemeExtension<FfColors> {');
   p('  const FfColors({');
@@ -299,26 +301,37 @@ export function buildDart(model) {
 
   p('/// Spacing scale (logical pixels).');
   p('abstract final class FfSpace {');
-  for (const [n, v] of entries(model.space)) p(`  static const double ${camel(n, 'space')} = ${dartDouble(v)};`);
+  for (const [n, v] of entries(model.space))
+    p(`  static const double ${camel(n, 'space')} = ${dartDouble(v)};`);
   p('}');
   p();
   p('/// Corner radii (logical pixels).');
   p('abstract final class FfRadius {');
-  for (const [n, v] of entries(model.radius)) p(`  static const double ${camel(n)} = ${dartDouble(v)};`);
+  for (const [n, v] of entries(model.radius))
+    p(`  static const double ${camel(n)} = ${dartDouble(v)};`);
   p('}');
   p();
-  p('/// Type scale and families. Family lists are in preference order; the first installed one wins.');
+  p(
+    '/// Type scale and families. Family lists are in preference order; the first installed one wins.',
+  );
   p('abstract final class FfFont {');
-  for (const [n, v] of entries(model.fontSize)) p(`  static const double ${camel(n, 'size')} = ${dartDouble(v)};`);
+  for (const [n, v] of entries(model.fontSize))
+    p(`  static const double ${camel(n, 'size')} = ${dartDouble(v)};`);
   for (const [n, v] of entries(model.fontFamily)) {
     p(`  static const String ${camel(n, 'family')} = '${v[0] ?? ''}';`);
-    p(`  static const List<String> ${camel(n, 'family')}Fallback = [${v.slice(1).map((f) => `'${f}'`).join(', ')}];`);
+    p(
+      `  static const List<String> ${camel(n, 'family')}Fallback = [${v
+        .slice(1)
+        .map((f) => `'${f}'`)
+        .join(', ')}];`,
+    );
   }
   p('}');
   p();
   p('/// Accessibility minimums (WCAG 2.2 AA): target size and focus ring.');
   p('abstract final class FfA11y {');
-  for (const [n, v] of entries(model.a11y)) p(`  static const double ${camel(n)} = ${dartDouble(v)};`);
+  for (const [n, v] of entries(model.a11y))
+    p(`  static const double ${camel(n)} = ${dartDouble(v)};`);
   p('}');
   p();
 
@@ -368,7 +381,9 @@ export function buildDart(model) {
   p(`    focusColor: ${pick('focus', pick('primary', 'Colors.teal'))},`);
   p('    fontFamily: FfFont.familyBase,');
   p('    fontFamilyFallback: FfFont.familyBaseFallback,');
-  p('    visualDensity: density == FfDensity.compact ? VisualDensity.compact : VisualDensity.standard,');
+  p(
+    '    visualDensity: density == FfDensity.compact ? VisualDensity.compact : VisualDensity.standard,',
+  );
   p('    materialTapTargetSize: MaterialTapTargetSize.padded,');
   p('    extensions: <ThemeExtension<dynamic>>[colors],');
   p('  );');
