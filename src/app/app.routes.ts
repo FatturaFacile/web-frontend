@@ -105,6 +105,13 @@ export const routes: Routes = [
       import('./features/sales/sales.routes').then((m) => m.SALES_ROUTES),
   },
   {
+    path: 'logistics',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'Logistica & DDT', title: 'Logistica' },
+    loadChildren: () =>
+      import('./features/logistics/logistics.routes').then((m) => m.LOGISTICS_ROUTES),
+  },
+  {
     path: 'purchases',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.ACQUISTI_AND_AP', title: 'PAGE_TITLE.ACQUISTI' },
@@ -436,6 +443,13 @@ export const routes: Routes = [
       import('./features/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
   },
   {
+    path: 'warranty-rma',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'Garanzie & RMA', title: 'Garanzie & RMA' },
+    loadChildren: () =>
+      import('./features/warranty-rma/warranty-rma.routes').then((m) => m.WARRANTY_RMA_ROUTES),
+  },
+  {
     path: 'automotive',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.AUTOMOTIVE_AND_GOMME', title: 'PAGE_TITLE.AUTOMOTIVE' },
@@ -564,6 +578,19 @@ export const routes: Routes = [
     data: { breadcrumb: 'BREADCRUMB.BENVENUTO', title: 'PAGE_TITLE.BENVENUTO' },
     loadChildren: () =>
       import('./features/welcome').then((m) => m.WELCOME_ROUTES),
+  },
+  // Customer-facing RMA pages: no guard, rendered without the application shell (`data.publicPage`).
+  {
+    path: 'rma-estimate/:token',
+    data: { publicPage: true, title: 'Preventivo riparazione' },
+    loadComponent: () =>
+      import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
+  },
+  {
+    path: 'rma-tracking',
+    data: { publicPage: true, title: 'Stato riparazione' },
+    loadComponent: () =>
+      import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
   },
   {
     path: 'tools',

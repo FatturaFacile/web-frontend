@@ -21,3 +21,4 @@ export * from './ui/action-icon';
 export * from './components/global-search/global-search.component';
 export * from './components/global-search/global-search.service';
 export * from './components/record-collaboration/record-collaboration.component';
+export * from './utils/code128';
