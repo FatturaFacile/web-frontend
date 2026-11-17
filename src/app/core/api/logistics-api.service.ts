@@ -354,6 +354,10 @@ export class LogisticsApiService {
     return this.http.get<ApiResponse<InventoryValuation>>(`${this.base}/consignment/valuation`);
   }
 
+  listConsumptionReports(): Observable<PaginatedResponse<ConsumptionReport>> {
+    return this.http.get<PaginatedResponse<ConsumptionReport>>(`${this.base}/consignment/consumption-reports`);
+  }
+
   declareConsumption(payload: ConsumptionPayload): Observable<ApiResponse<ConsumptionReport>> {
     return this.http.post<ApiResponse<ConsumptionReport>>(
       `${this.base}/consignment/consumption-reports`,

@@ -41,7 +41,15 @@ export class BusinessIntelligenceApiService {
     return this.http.get<BiResponse<BiDataset[]>>(`${this.base}/datasets`);
   }
 
+  getDataset(key: string): Observable<BiResponse<BiDataset>> {
+    return this.http.get<BiResponse<BiDataset>>(`${this.base}/datasets/${key}`);
+  }
+
   // Calculated measures
+  getCalculatedMeasure(id: string): Observable<BiResponse<BiCalculatedMeasure>> {
+    return this.http.get<BiResponse<BiCalculatedMeasure>>(`${this.base}/calculated-measures/${id}`);
+  }
+
   getCalculatedMeasures(dataset?: string): Observable<BiResponse<BiCalculatedMeasure[]>> {
     return this.http.get<BiResponse<BiCalculatedMeasure[]>>(`${this.base}/calculated-measures`, { params: this.params({ dataset, per_page: 100 }) });
   }

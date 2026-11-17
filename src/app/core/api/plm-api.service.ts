@@ -61,6 +61,11 @@ export class PlmApiService {
     return this.http.get<PlmResponse<PlmItemRevision[]>>(`${this.base}/revisions`, { params: this.params(filters) });
   }
 
+  /** A single item revision. */
+  getRevision(id: string): Observable<PlmResponse<PlmItemRevision>> {
+    return this.http.get<PlmResponse<PlmItemRevision>>(`${this.base}/revisions/${id}`);
+  }
+
   createRevision(payload: PlmItemRevisionRequest): Observable<PlmResponse<PlmItemRevision>> {
     return this.http.post<PlmResponse<PlmItemRevision>>(`${this.base}/revisions`, payload);
   }

@@ -183,4 +183,22 @@ describe('ConstructionApiService', () => {
     expect(Object.keys(req.request.body as object).sort()).toEqual(['amount', 'certified_on', 'description']);
     req.flush({ data: {} });
   });
+
+  it('reads, updates and deletes a construction site', () => {
+    service.getSite('s1').subscribe();
+    const get = httpMock.expectOne(`${base}/sites/s1`);
+    expect(get.request.method).toBe('GET');
+    get.flush({ data: {} });
+
+    service.updateSite('s1', { name: 'Cantiere' }).subscribe();
+    const put = httpMock.expectOne(`${base}/sites/s1`);
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ name: 'Cantiere' });
+    put.flush({ data: {} });
+
+    service.deleteSite('s1').subscribe();
+    const del = httpMock.expectOne(`${base}/sites/s1`);
+    expect(del.request.method).toBe('DELETE');
+    del.flush(null);
+  });
 });

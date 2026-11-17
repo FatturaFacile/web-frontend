@@ -239,6 +239,98 @@ export class CrmExtensionApiService {
     return this.http.post<CrmExtensionResponse<{ handled: number }>>(`${this.base}/automation-sequences/run`, {});
   }
 
+  // Single-record endpoints (show / update / delete) and territory helpers
+  getTerritory(id: string): Observable<CrmExtensionResponse<CrmTerritory>> {
+    return this.http.get<CrmExtensionResponse<CrmTerritory>>(`${this.base}/territories/${id}`);
+  }
+
+  /** Accounts currently assigned to a territory. */
+  getTerritoryAccounts(id: string): Observable<CrmExtensionResponse<unknown[]>> {
+    return this.http.get<CrmExtensionResponse<unknown[]>>(`${this.base}/territories/${id}/accounts`);
+  }
+
+  /** Manually assigns an account to a territory. */
+  assignAccountToTerritory(accountId: string, territoryId: string | null): Observable<CrmExtensionResponse<unknown>> {
+    return this.http.post<CrmExtensionResponse<unknown>>(`${this.base}/accounts/${accountId}/territory`, { territory_id: territoryId });
+  }
+
+  getSalesQuota(id: string): Observable<CrmExtensionResponse<CrmSalesQuota>> {
+    return this.http.get<CrmExtensionResponse<CrmSalesQuota>>(`${this.base}/sales-quotas/${id}`);
+  }
+
+  updateSalesQuota(id: string, payload: Partial<CrmSalesQuotaRequest>): Observable<CrmExtensionResponse<CrmSalesQuota>> {
+    return this.http.put<CrmExtensionResponse<CrmSalesQuota>>(`${this.base}/sales-quotas/${id}`, payload);
+  }
+
+  getPartnerTier(id: string): Observable<CrmExtensionResponse<CrmPartnerTier>> {
+    return this.http.get<CrmExtensionResponse<CrmPartnerTier>>(`${this.base}/partner-tiers/${id}`);
+  }
+
+  updatePartnerTier(id: string, payload: Partial<CrmPartnerTierRequest>): Observable<CrmExtensionResponse<CrmPartnerTier>> {
+    return this.http.put<CrmExtensionResponse<CrmPartnerTier>>(`${this.base}/partner-tiers/${id}`, payload);
+  }
+
+  deletePartnerTier(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/partner-tiers/${id}`);
+  }
+
+  getPartner(id: string): Observable<CrmExtensionResponse<CrmPartner>> {
+    return this.http.get<CrmExtensionResponse<CrmPartner>>(`${this.base}/partners/${id}`);
+  }
+
+  updatePartner(id: string, payload: Partial<CrmPartnerRequest>): Observable<CrmExtensionResponse<CrmPartner>> {
+    return this.http.put<CrmExtensionResponse<CrmPartner>>(`${this.base}/partners/${id}`, payload);
+  }
+
+  /** Re-evaluates the tier of a single partner. */
+  evaluatePartnerTier(id: string): Observable<CrmExtensionResponse<CrmPartner>> {
+    return this.http.post<CrmExtensionResponse<CrmPartner>>(`${this.base}/partners/${id}/evaluate-tier`, {});
+  }
+
+  getDealRegistration(id: string): Observable<CrmExtensionResponse<CrmDealRegistration>> {
+    return this.http.get<CrmExtensionResponse<CrmDealRegistration>>(`${this.base}/deal-registrations/${id}`);
+  }
+
+  getMdfFund(id: string): Observable<CrmExtensionResponse<CrmMdfFund>> {
+    return this.http.get<CrmExtensionResponse<CrmMdfFund>>(`${this.base}/mdf-funds/${id}`);
+  }
+
+  deleteMdfFund(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/mdf-funds/${id}`);
+  }
+
+  getMdfFundClaims(id: string): Observable<CrmExtensionResponse<CrmMdfClaim[]>> {
+    return this.http.get<CrmExtensionResponse<CrmMdfClaim[]>>(`${this.base}/mdf-funds/${id}/claims`);
+  }
+
+  getPricingRule(id: string): Observable<CrmExtensionResponse<CrmPricingRule>> {
+    return this.http.get<CrmExtensionResponse<CrmPricingRule>>(`${this.base}/pricing-rules/${id}`);
+  }
+
+  updatePricingRule(id: string, payload: Partial<CrmPricingRuleRequest>): Observable<CrmExtensionResponse<CrmPricingRule>> {
+    return this.http.put<CrmExtensionResponse<CrmPricingRule>>(`${this.base}/pricing-rules/${id}`, payload);
+  }
+
+  getDiscountThreshold(id: string): Observable<CrmExtensionResponse<CrmDiscountThreshold>> {
+    return this.http.get<CrmExtensionResponse<CrmDiscountThreshold>>(`${this.base}/discount-thresholds/${id}`);
+  }
+
+  updateDiscountThreshold(id: string, payload: Partial<CrmDiscountThresholdRequest>): Observable<CrmExtensionResponse<CrmDiscountThreshold>> {
+    return this.http.put<CrmExtensionResponse<CrmDiscountThreshold>>(`${this.base}/discount-thresholds/${id}`, payload);
+  }
+
+  getQuoteConfiguration(id: string): Observable<CrmExtensionResponse<CrmQuoteConfiguration>> {
+    return this.http.get<CrmExtensionResponse<CrmQuoteConfiguration>>(`${this.base}/quote-configurations/${id}`);
+  }
+
+  updateQuoteConfiguration(id: string, payload: Partial<CrmQuoteConfigurationRequest>): Observable<CrmExtensionResponse<CrmQuoteConfiguration>> {
+    return this.http.put<CrmExtensionResponse<CrmQuoteConfiguration>>(`${this.base}/quote-configurations/${id}`, payload);
+  }
+
+  getAutomationSequence(id: string): Observable<CrmExtensionResponse<CrmAutomationSequence>> {
+    return this.http.get<CrmExtensionResponse<CrmAutomationSequence>>(`${this.base}/automation-sequences/${id}`);
+  }
+
   private params(values?: Record<string, string | number | boolean | undefined | null>): HttpParams {
     let params = new HttpParams();
     for (const [key, value] of Object.entries(values ?? {})) {

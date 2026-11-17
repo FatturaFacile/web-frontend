@@ -80,4 +80,11 @@ describe('EventsApiService', () => {
     expect(checkIn.request.body).toEqual({ qr_token: 'tok', event_id: null });
     checkIn.flush({ data: {} });
   });
+
+  it('reads a single registration', () => {
+    service.getRegistration('rg-1').subscribe();
+    const req = httpMock.expectOne((r) => r.url.endsWith('/events/registrations/rg-1'));
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: {} });
+  });
 });

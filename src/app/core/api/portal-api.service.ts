@@ -196,6 +196,13 @@ export class PortalApiService {
     });
   }
 
+  /** Customs shipment requests already sent through the portal link. */
+  getCustomsShipmentRequests(token: string, params?: QueryFilterParams): Observable<PaginatedResponse<CustomsPortalDossier>> {
+    return this.http.get<PaginatedResponse<CustomsPortalDossier>>(`${this.base}/customs/${token}/shipment-requests`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
   createCustomsShipmentRequest(token: string, payload: CustomsPortalShipmentRequest): Observable<ApiResponse<CustomsPortalDossier>> {
     return this.http.post<ApiResponse<CustomsPortalDossier>>(`${this.base}/customs/${token}/shipment-requests`, payload);
   }

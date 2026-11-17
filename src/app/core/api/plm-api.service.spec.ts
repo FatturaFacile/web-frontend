@@ -75,4 +75,10 @@ describe('PlmApiService', () => {
     expect(items).toEqual([{ id: 'it-1', label: 'BRG-1 - Bearing' }]);
     expect(boms).toEqual([{ id: 'bm-1', label: 'BOM-1 (A) - Pump' }]);
   });
+
+  it('reads a single item revision', () => {
+    service.getRevision('rev-1').subscribe();
+    const req = httpMock.expectOne((r) => r.url.endsWith('/plm/revisions/rev-1') && r.method === 'GET');
+    req.flush({ data: { id: 'rev-1' } });
+  });
 });

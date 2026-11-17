@@ -254,4 +254,11 @@ describe('PracticeApiService', () => {
     expect(expire.request.method).toBe('POST');
     expire.flush({ data: { expired: 2 } });
   });
+
+  it('fetches a single fee proposal', () => {
+    service.getFeeProposal('fp-1').subscribe();
+    const req = httpMock.expectOne((r) => r.url.endsWith('/practice/fee-proposals/fp-1'));
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { id: 'fp-1' } });
+  });
 });

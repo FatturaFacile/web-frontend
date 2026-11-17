@@ -33,6 +33,25 @@ export class ContractRegisterApiService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBaseUrl;
 
+  // --- LINKED DOCUMENTS (DMS) ---
+  getContractDocuments(kind: ContractKind, id: string): Observable<{ data: Record<string, unknown>[] }> {
+    return this.http.get<{ data: Record<string, unknown>[] }>(`${this.base}/contract-register/${kind}/${id}/documents`);
+  }
+
+  attachContractDocument(
+    kind: ContractKind,
+    id: string,
+    documentId: string,
+  ): Observable<{ data: Record<string, unknown> }> {
+    return this.http.post<{ data: Record<string, unknown> }>(`${this.base}/contract-register/${kind}/${id}/documents`, {
+      document_id: documentId,
+    });
+  }
+
+  detachContractDocument(kind: ContractKind, id: string, documentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/contract-register/${kind}/${id}/documents/${documentId}`);
+  }
+
   // --- CONTRACTS ---
   getContracts(params?: ContractRegisterParams): Observable<PaginatedResponse<ContractResource>> {
     return this.http.get<PaginatedResponse<ContractResource>>(`${this.base}/contract-register`, {

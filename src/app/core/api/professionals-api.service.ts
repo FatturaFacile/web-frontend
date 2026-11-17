@@ -13,6 +13,18 @@ import {
   TimeLog,
 } from '../models';
 
+/** Body of `POST /professionals/fee-notes`; rates are percentages. */
+export interface CreateFeeNotePayload {
+  legal_case_id?: string | null;
+  client_id: string;
+  note_number: string;
+  date: string;
+  taxable_fees: number;
+  cpa_rate?: number | null;
+  ritenuta_rate?: number | null;
+  vat_rate?: number | null;
+}
+
 @Service()
 export class ProfessionalsApiService {
   private readonly http = inject(HttpClient);
@@ -34,5 +46,10 @@ export class ProfessionalsApiService {
 
   getFeeNotes(params?: QueryFilterParams): Observable<PaginatedResponse<FeeNote>> {
     return this.http.get<PaginatedResponse<FeeNote>>(`${this.base}/fee-notes`, { params: params ? toHttpParams(params) : undefined });
+  }
+
+  /** Issues a fee note (nota di parcella). */
+  createFeeNote(payload: CreateFeeNotePayload): Observable<ApiResponse<FeeNote>> {
+    return this.http.post<ApiResponse<FeeNote>>(`${this.base}/fee-notes`, payload);
   }
 }

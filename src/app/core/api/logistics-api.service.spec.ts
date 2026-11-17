@@ -95,6 +95,13 @@ describe('LogisticsApiService', () => {
     expect(http.expectOne(`${base}/consignment/consumption-reports`).request.method).toBe('POST');
   });
 
+  it('lists the consumption reports of the consignment', () => {
+    api.listConsumptionReports().subscribe();
+    const req = http.expectOne(`${base}/consignment/consumption-reports`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: [] });
+  });
+
   describe('WMS workflow endpoints', () => {
     const wms = `${environment.apiBaseUrl}/wms`;
 

@@ -137,6 +137,10 @@ export class PlanningApiService {
     return this.http.get<PlanningResponse<PlanningResource[]>>(`${this.base}/resources`, { params: this.params({ per_page: 100 }) });
   }
 
+  getResource(id: string): Observable<PlanningResponse<PlanningResource>> {
+    return this.http.get<PlanningResponse<PlanningResource>>(`${this.base}/resources/${id}`);
+  }
+
   createResource(payload: PlanningResourceRequest): Observable<PlanningResponse<PlanningResource>> {
     return this.http.post<PlanningResponse<PlanningResource>>(`${this.base}/resources`, payload);
   }

@@ -73,4 +73,16 @@ describe('BusinessIntelligenceApiService', () => {
     expect(biLayoutsOverlap({ x: 0, y: 0, w: 6, h: 4 }, { x: 6, y: 0, w: 6, h: 4 })).toBe(false);
     expect(biLayoutsOverlap({ x: 0, y: 0, w: 6, h: 4 }, { x: 5, y: 3, w: 2, h: 2 })).toBe(true);
   });
+
+  it('reads a single dataset and a single calculated measure', () => {
+    service.getDataset('sales').subscribe();
+    const dataset = httpMock.expectOne((r) => r.url.endsWith('/business-intelligence/datasets/sales'));
+    expect(dataset.request.method).toBe('GET');
+    dataset.flush({ data: {} });
+
+    service.getCalculatedMeasure('m1').subscribe();
+    const measure = httpMock.expectOne((r) => r.url.endsWith('/business-intelligence/calculated-measures/m1'));
+    expect(measure.request.method).toBe('GET');
+    measure.flush({ data: {} });
+  });
 });

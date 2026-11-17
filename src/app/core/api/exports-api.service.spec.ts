@@ -90,4 +90,11 @@ describe('ExportsApiService', () => {
     expect(body.get('dry_run')).toBe('1');
     run.flush({ success: true, message: '', data: {} });
   });
+
+  it('reads a single export job', () => {
+    service.getJob('j-1').subscribe();
+    const req = httpMock.expectOne(`${base}/jobs/j-1`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true, message: '', data: { id: 'j-1' } });
+  });
 });
