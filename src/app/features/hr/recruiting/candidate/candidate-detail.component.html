@@ -1,0 +1,301 @@
+@if (loadError()) {
+  <nz-alert
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="'hr.recruiting.errors.loadCandidate' | translate"
+    [nzAction]="retryTpl"
+  />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" type="button" (click)="load()">
+      {{ 'hr.recruiting.actions.retry' | translate }}
+    </button>
+  </ng-template>
+}
+
+<nz-spin [nzSpinning]="loading()">
+  @if (application(); as app) {
+    <app-page-header [title]="app.full_name" [subtitle]="app.job_opening_title" />
+
+    <div class="toolbar">
+      <a nz-button [routerLink]="['/hr/recruiting/openings', app.job_opening_id, 'board']">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        {{ 'hr.recruiting.candidate.backToBoard' | translate }}
+      </a>
+      <nz-tag nzColor="blue">{{ stageLabel(app.stage) | translate }}</nz-tag>
+      @if (app.is_anonymized) {
+        <nz-tag>{{ 'hr.recruiting.board.anonymized' | translate }}</nz-tag>
+      }
+      <span class="spacer"></span>
+      <button
+        nz-button
+        type="button"
+        [disabled]="readOnly() || busy()"
+        [cdkMenuTriggerFor]="consentMenu"
+      >
+        <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+        {{ 'hr.recruiting.candidate.extendConsent' | translate }}
+      </button>
+      <ng-template #consentMenu>
+        <div class="menu" cdkMenu>
+          @for (m of retentionOptions; track m) {
+            <button
+              type="button"
+              class="menu__item"
+              cdkMenuItem
+              (cdkMenuItemTriggered)="extendConsent(m)"
+            >
+              {{ 'hr.recruiting.candidate.extendByMonths' | translate: { months: m } }}
+            </button>
+          }
+        </div>
+      </ng-template>
+      <button
+        nz-button
+        type="button"
+        [disabled]="readOnly() || busy() || !app.cv"
+        (click)="reparseCv()"
+      >
+        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+        {{ 'hr.recruiting.candidate.reparseCv' | translate }}
+      </button>
+      <button
+        nz-button
+        nzDanger
+        type="button"
+        [disabled]="readOnly() || busy()"
+        (click)="confirmAnonymize()"
+      >
+        <i class="fa-solid fa-user-secret" aria-hidden="true"></i>
+        {{ 'hr.recruiting.candidate.anonymize' | translate }}
+      </button>
+    </div>
+
+    <div class="split">
+      <div class="split__left">
+        <app-cv-viewer [applicationId]="app.id" [cv]="app.cv" />
+      </div>
+      <div class="split__right">
+        <nz-tabs>
+          <nz-tab [nzTitle]="'hr.recruiting.candidate.tabs.profile' | translate">
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.email' | translate">
+                {{ app.email ?? '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.phone' | translate">
+                {{ app.phone ?? '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.source' | translate">
+                {{ 'hr.recruiting.sources.' + app.source | translate }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.appliedAt' | translate">
+                {{ app.created_at | date: 'dd.MM.yyyy' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.averageScore' | translate">
+                {{ app.average_score === null ? '-' : (app.average_score | number: '1.2-2') }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.consent' | translate">
+                {{
+                  'hr.recruiting.candidate.consentGiven'
+                    | translate: { version: app.consent.text_version }
+                }}
+                {{ app.consent.given_at | date: 'dd.MM.yyyy' }}
+                @if (app.consent.expires_at) {
+                  &middot; {{ 'hr.recruiting.candidate.consentExpiresOn' | translate }}
+                  {{ app.consent.expires_at | date: 'dd.MM.yyyy' }}
+                }
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.cvParse' | translate">
+                {{ 'hr.recruiting.cvParse.' + app.cv_parse_status | translate }}
+              </nz-descriptions-item>
+              @if (app.rejection; as rej) {
+                <nz-descriptions-item [nzTitle]="'hr.recruiting.candidate.rejection' | translate">
+                  {{ 'hr.recruiting.rejectionReasons.' + rej.reason_code | translate }}
+                  @if (rej.note) {
+                    &middot; {{ rej.note }}
+                  }
+                </nz-descriptions-item>
+              }
+            </nz-descriptions>
+
+            @if (app.cover_letter) {
+              <h3 class="section-title">{{ 'hr.recruiting.candidate.coverLetter' | translate }}</h3>
+              <p class="pre">{{ app.cover_letter }}</p>
+            }
+
+            <h3 class="section-title">
+              {{ 'hr.recruiting.candidate.extractedProfile' | translate }}
+            </h3>
+            @if (app.extracted_profile; as profile) {
+              @if (profile.skills.length) {
+                <ul class="chips" [attr.aria-label]="'hr.recruiting.board.skills' | translate">
+                  @for (s of profile.skills; track s) {
+                    <li>
+                      <nz-tag>{{ s }}</nz-tag>
+                    </li>
+                  }
+                </ul>
+              }
+              @if (profile.experience.length) {
+                <h4>{{ 'hr.recruiting.candidate.experience' | translate }}</h4>
+                <ul>
+                  @for (e of profile.experience; track $index) {
+                    <li>
+                      <strong>{{ e.role }}</strong> &middot; {{ e.company }} ({{ e.period }})
+                      @if (e.summary) {
+                        <div class="muted">{{ e.summary }}</div>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+              @if (profile.education.length) {
+                <h4>{{ 'hr.recruiting.candidate.education' | translate }}</h4>
+                <ul>
+                  @for (e of profile.education; track $index) {
+                    <li>{{ e.degree }} &middot; {{ e.institution }} ({{ e.period }})</li>
+                  }
+                </ul>
+              }
+              @if (profile.languages.length) {
+                <h4>{{ 'hr.recruiting.candidate.languages' | translate }}</h4>
+                <ul>
+                  @for (l of profile.languages; track $index) {
+                    <li>{{ l.language }}: {{ l.level }}</li>
+                  }
+                </ul>
+              }
+            } @else {
+              <p class="muted">{{ 'hr.recruiting.candidate.noExtractedProfile' | translate }}</p>
+            }
+
+            <form
+              nz-form
+              nzLayout="vertical"
+              class="notes"
+              (submit)="$event.preventDefault(); saveNotes()"
+            >
+              <nz-form-item>
+                <nz-form-label nzFor="candidate-notes">{{
+                  'hr.recruiting.candidate.notes' | translate
+                }}</nz-form-label>
+                <nz-form-control>
+                  <textarea
+                    id="candidate-notes"
+                    nz-input
+                    rows="4"
+                    [formField]="notesForm.notes"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+              <button nz-button type="submit" [disabled]="readOnly()" [nzLoading]="notesSaving()">
+                {{ 'hr.recruiting.candidate.saveNotes' | translate }}
+              </button>
+            </form>
+          </nz-tab>
+
+          <nz-tab [nzTitle]="'hr.recruiting.candidate.tabs.scorecards' | translate">
+            @if (scorecards().length) {
+              <ul class="scorecards">
+                @for (sc of scorecards(); track sc.id) {
+                  <li class="scorecards__item">
+                    <div class="scorecards__head">
+                      <strong>{{ sc.interviewer_name }}</strong>
+                      <nz-tag>{{ stageLabel(sc.stage) | translate }}</nz-tag>
+                      <nz-tag nzColor="blue">{{
+                        'hr.recruiting.recommendations.' + sc.recommendation | translate
+                      }}</nz-tag>
+                      <span
+                        >{{ 'hr.recruiting.scorecard.average' | translate }}:
+                        {{ sc.overall_score | number: '1.2-2' }}</span
+                      >
+                    </div>
+                    <ul class="muted">
+                      @for (c of sc.criteria_scores; track $index) {
+                        <li>
+                          {{ c.criterion }}: {{ c.score }}/5
+                          @if (c.comment) {
+                            &middot; {{ c.comment }}
+                          }
+                        </li>
+                      }
+                    </ul>
+                    @if (sc.notes) {
+                      <p class="pre">{{ sc.notes }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <nz-empty [nzNotFoundContent]="'hr.recruiting.scorecard.none' | translate" />
+            }
+            <h3 class="section-title">{{ 'hr.recruiting.scorecard.formTitle' | translate }}</h3>
+            <app-scorecard-form
+              [applicationId]="app.id"
+              [disabled]="readOnly()"
+              (saved)="onScorecardSaved($event)"
+            />
+          </nz-tab>
+
+          <nz-tab [nzTitle]="'hr.recruiting.candidate.tabs.offer' | translate">
+            <app-offer-panel
+              [application]="app"
+              (offerChanged)="onOfferChanged($event)"
+              (hired)="onHired($event)"
+              (reloadRequested)="load()"
+            />
+          </nz-tab>
+
+          <nz-tab [nzTitle]="'hr.recruiting.candidate.tabs.history' | translate">
+            @if (app.history.length) {
+              <ol class="history">
+                @for (h of app.history; track h.id) {
+                  <li>
+                    <span class="muted">{{ h.created_at | date: 'dd.MM.yyyy HH:mm' }}</span>
+                    @if (h.from_stage) {
+                      {{ stageLabel(h.from_stage) | translate }} &rarr;
+                    }
+                    <strong>{{ stageLabel(h.to_stage) | translate }}</strong>
+                    @if (h.note) {
+                      &middot; {{ h.note }}
+                    }
+                  </li>
+                }
+              </ol>
+            } @else {
+              <nz-empty [nzNotFoundContent]="'hr.recruiting.candidate.noHistory' | translate" />
+            }
+          </nz-tab>
+
+          <nz-tab [nzTitle]="'hr.recruiting.candidate.tabs.emails' | translate">
+            <nz-table
+              #emailsTable
+              [nzData]="app.emails"
+              [nzShowPagination]="false"
+              nzSize="small"
+              [nzNoResult]="'hr.recruiting.candidate.noEmails' | translate"
+            >
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'hr.recruiting.candidate.emailStage' | translate }}</th>
+                  <th scope="col">{{ 'hr.recruiting.candidate.emailSubject' | translate }}</th>
+                  <th scope="col">{{ 'hr.recruiting.candidate.emailStatus' | translate }}</th>
+                  <th scope="col">{{ 'hr.recruiting.candidate.emailSentAt' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of emailsTable.data; track e.id) {
+                  <tr>
+                    <td>{{ stageLabel(e.stage) | translate }}</td>
+                    <td>{{ e.subject }}</td>
+                    <td>{{ 'hr.recruiting.emailStatus.' + e.status | translate }}</td>
+                    <td>{{ e.sent_at ? (e.sent_at | date: 'dd.MM.yyyy HH:mm') : '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+        </nz-tabs>
+      </div>
+    </div>
+  }
+</nz-spin>

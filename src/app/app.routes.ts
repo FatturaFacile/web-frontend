@@ -187,6 +187,12 @@ export const routes: Routes = [
       import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
   },
   {
+    // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
+    path: 'careers',
+    loadChildren: () =>
+      import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

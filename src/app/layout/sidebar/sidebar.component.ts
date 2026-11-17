@@ -125,6 +125,7 @@ export class SidebarComponent {
           children: [
             { key: 'NAV.TIME_ATTENDANCE', route: '/time-attendance', icon: 'fa-solid fa-clock' },
             { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie' },
+            { key: 'NAV.RECRUITING', route: '/hr/recruiting', icon: 'fa-solid fa-user-plus' },
             { key: 'NAV.EXPENSES', route: '/purchases/expenses', icon: 'fa-solid fa-wallet' },
           ],
         },

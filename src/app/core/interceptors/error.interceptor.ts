@@ -5,6 +5,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { catchError, throwError } from 'rxjs';
 import { AuthStore } from '../auth/auth.store';
 import { I18nService } from '../i18n';
+import { isLocallyHandled } from '../http/error-handling.context';
 
 /**
  * HTTP statuses the caller renders itself (e.g. 404/409 with a translated `code`):
@@ -27,7 +28,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((err: unknown) => {
-      if (err instanceof HttpErrorResponse && err.status !== 422) {
+      if (
+        err instanceof HttpErrorResponse &&
+        err.status !== 422 &&
+        !isLocallyHandled(req.context, err.status)
+      ) {
         const i18n = injector.get(I18nService);
         const isAuthCheck =
           req.url.endsWith('/auth/login') ||

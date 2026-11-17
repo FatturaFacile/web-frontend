@@ -1,0 +1,262 @@
+<app-page-header
+  [title]="'hr.recruiting.settings.title' | translate"
+  [subtitle]="'hr.recruiting.settings.subtitle' | translate"
+/>
+
+<div class="toolbar">
+  <a nz-button routerLink="/hr/recruiting/openings">
+    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    {{ 'hr.recruiting.openings.title' | translate }}
+  </a>
+</div>
+
+@if (loadError()) {
+  <nz-alert
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="'hr.recruiting.errors.loadSettings' | translate"
+    [nzAction]="retryTpl"
+  />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" type="button" (click)="load()">
+      {{ 'hr.recruiting.actions.retry' | translate }}
+    </button>
+  </ng-template>
+}
+
+<nz-spin [nzSpinning]="loading()">
+  <nz-card>
+    <nz-tabs>
+      <nz-tab [nzTitle]="'hr.recruiting.settings.tabs.careers' | translate">
+        <form nz-form nzLayout="vertical" (submit)="$event.preventDefault(); save()">
+          <nz-form-item>
+            <span class="switch-label">
+              <nz-switch nzId="settings-careers-enabled" [formField]="settingsForm.enabled" />
+              <label for="settings-careers-enabled">{{
+                'hr.recruiting.settings.careersEnabled' | translate
+              }}</label>
+            </span>
+          </nz-form-item>
+          <div class="grid">
+            <nz-form-item>
+              <nz-form-label nzFor="settings-slug">{{
+                'hr.recruiting.settings.slug' | translate
+              }}</nz-form-label>
+              <nz-form-control
+                [nzValidateStatus]="slugError() ? 'error' : ''"
+                [nzErrorTip]="slugError()"
+                [nzExtra]="'hr.recruiting.settings.slugHint' | translate"
+              >
+                <input
+                  id="settings-slug"
+                  nz-input
+                  autocomplete="off"
+                  [formField]="settingsForm.slug"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="settings-company">{{
+                'hr.recruiting.settings.companyName' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input id="settings-company" nz-input [formField]="settingsForm.company_name" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="settings-privacy-url">{{
+                'hr.recruiting.settings.privacyUrl' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input
+                  id="settings-privacy-url"
+                  nz-input
+                  type="url"
+                  [formField]="settingsForm.privacy_policy_url"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="settings-consent-version">{{
+                'hr.recruiting.settings.consentVersion' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input
+                  id="settings-consent-version"
+                  nz-input
+                  [formField]="settingsForm.consent_text_version"
+                />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <h3 class="section-title">{{ 'hr.recruiting.settings.localizedTexts' | translate }}</h3>
+          <nz-tabs nzSize="small">
+            @for (l of locales; track l) {
+              <nz-tab [nzTitle]="'hr.recruiting.locales.' + l | translate">
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'settings-intro-' + l">{{
+                    'hr.recruiting.settings.intro' | translate
+                  }}</nz-form-label>
+                  <nz-form-control>
+                    <textarea
+                      [id]="'settings-intro-' + l"
+                      nz-input
+                      rows="3"
+                      [formField]="settingsForm.intro[l]"
+                    ></textarea>
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'settings-privacy-' + l">{{
+                    'hr.recruiting.settings.privacyNotice' | translate
+                  }}</nz-form-label>
+                  <nz-form-control>
+                    <textarea
+                      [id]="'settings-privacy-' + l"
+                      nz-input
+                      rows="4"
+                      [formField]="settingsForm.privacy_notice[l]"
+                    ></textarea>
+                  </nz-form-control>
+                </nz-form-item>
+              </nz-tab>
+            }
+          </nz-tabs>
+
+          <h3 class="section-title">{{ 'hr.recruiting.settings.embedding' | translate }}</h3>
+          @if (careersUrl()) {
+            <dl class="embed">
+              <dt>{{ 'hr.recruiting.settings.publicUrl' | translate }}</dt>
+              <dd>
+                <code>{{ careersUrl() }}</code>
+                <button nz-button nzSize="small" type="button" (click)="copy(careersUrl())">
+                  {{ 'hr.recruiting.settings.copy' | translate }}
+                </button>
+              </dd>
+              <dt>{{ 'hr.recruiting.settings.iframeSnippet' | translate }}</dt>
+              <dd>
+                <code>{{ embedSnippet() }}</code>
+                <button nz-button nzSize="small" type="button" (click)="copy(embedSnippet())">
+                  {{ 'hr.recruiting.settings.copy' | translate }}
+                </button>
+              </dd>
+              <dt>{{ 'hr.recruiting.settings.feedJson' | translate }}</dt>
+              <dd>
+                <code>{{ feedJsonUrl() }}</code>
+                <button nz-button nzSize="small" type="button" (click)="copy(feedJsonUrl())">
+                  {{ 'hr.recruiting.settings.copy' | translate }}
+                </button>
+              </dd>
+              <dt>{{ 'hr.recruiting.settings.feedRss' | translate }}</dt>
+              <dd>
+                <code>{{ feedRssUrl() }}</code>
+                <button nz-button nzSize="small" type="button" (click)="copy(feedRssUrl())">
+                  {{ 'hr.recruiting.settings.copy' | translate }}
+                </button>
+              </dd>
+            </dl>
+          } @else {
+            <p class="muted">{{ 'hr.recruiting.settings.embedNeedsSlug' | translate }}</p>
+          }
+        </form>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="'hr.recruiting.settings.tabs.retention' | translate">
+        <label for="settings-retention">{{
+          'hr.recruiting.settings.retentionHelp' | translate
+        }}</label>
+        <nz-select
+          nzId="settings-retention"
+          class="retention-select"
+          [formField]="settingsForm.retention_months"
+        >
+          @for (m of retentionOptions; track m) {
+            <nz-option
+              [nzValue]="m"
+              [nzLabel]="'hr.recruiting.settings.months' | translate: { months: m }"
+            />
+          }
+        </nz-select>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="'hr.recruiting.settings.tabs.pipeline' | translate">
+        <div class="table-scroll">
+          <table class="pipeline">
+            <caption class="sr-only">
+              {{
+                'hr.recruiting.settings.tabs.pipeline' | translate
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'hr.recruiting.settings.stage' | translate }}</th>
+                <th scope="col">{{ 'hr.recruiting.settings.stageEnabled' | translate }}</th>
+                <th scope="col">{{ 'hr.recruiting.settings.autoEmail' | translate }}</th>
+                @for (l of locales; track l) {
+                  <th scope="col">
+                    {{ 'hr.recruiting.settings.labelFor' | translate: { locale: l } }}
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (st of model().stages; track st.stage; let i = $index) {
+                <tr>
+                  <th scope="row">{{ stageLabel(st.stage) | translate }}</th>
+                  <td>
+                    <nz-switch
+                      [formField]="settingsForm.stages[i].enabled"
+                      [nzDisabled]="isMandatory(st.stage)"
+                      [attr.aria-label]="
+                        ('hr.recruiting.settings.stageEnabled' | translate) +
+                        ' - ' +
+                        (stageLabel(st.stage) | translate)
+                      "
+                    />
+                  </td>
+                  <td>
+                    <nz-switch
+                      [formField]="settingsForm.stages[i].auto_email"
+                      [attr.aria-label]="
+                        ('hr.recruiting.settings.autoEmail' | translate) +
+                        ' - ' +
+                        (stageLabel(st.stage) | translate)
+                      "
+                    />
+                  </td>
+                  @for (l of locales; track l) {
+                    <td>
+                      <input
+                        nz-input
+                        nzSize="small"
+                        [formField]="settingsForm.stages[i].labels[l]"
+                        [attr.aria-label]="
+                          ('hr.recruiting.settings.labelFor' | translate: { locale: l }) +
+                          ' - ' +
+                          (stageLabel(st.stage) | translate)
+                        "
+                      />
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="'hr.recruiting.settings.tabs.emails' | translate">
+        <ng-template nz-tab>
+          <app-email-templates-editor [companyName]="model().company_name" />
+        </ng-template>
+      </nz-tab>
+    </nz-tabs>
+
+    <div class="actions">
+      <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+        {{ 'hr.recruiting.settings.save' | translate }}
+      </button>
+    </div>
+  </nz-card>
+</nz-spin>

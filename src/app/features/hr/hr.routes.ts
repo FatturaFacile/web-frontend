@@ -12,4 +12,10 @@ export const HR_ROUTES: Routes = [
     loadComponent: () =>
       import('./hr.component').then((m) => m.HrComponent),
   },
+  {
+    path: 'recruiting',
+    data: { breadcrumb: 'NAV.RECRUITING' },
+    loadChildren: () =>
+      import('./recruiting/recruiting.routes').then((m) => m.RECRUITING_ROUTES),
+  },
 ];
