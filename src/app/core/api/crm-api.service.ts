@@ -39,8 +39,8 @@ import {
   CrmSegmentUpdatePayload,
   LeadResource,
   LeadScoreExplanation,
-  LeadScoringRule,
-  LeadScoringRulePayload,
+  EngagementScoringRule,
+  EngagementScoringRulePayload,
   MergeContactsPayload,
   OpportunityResource,
   PaginatedResponse,
@@ -332,16 +332,16 @@ export class CrmApiService {
   }
 
   // --- Lead scoring rules ---
-  getLeadScoringRules(): Observable<ApiResponse<LeadScoringRule[]>> {
-    return this.http.get<ApiResponse<LeadScoringRule[]>>(`${this.base}/lead-scoring-rules`);
+  getLeadScoringRules(): Observable<ApiResponse<EngagementScoringRule[]>> {
+    return this.http.get<ApiResponse<EngagementScoringRule[]>>(`${this.base}/lead-scoring-rules`);
   }
 
-  createLeadScoringRule(payload: LeadScoringRulePayload): Observable<ApiResponse<LeadScoringRule>> {
-    return this.http.post<ApiResponse<LeadScoringRule>>(`${this.base}/lead-scoring-rules`, payload);
+  createLeadScoringRule(payload: EngagementScoringRulePayload): Observable<ApiResponse<EngagementScoringRule>> {
+    return this.http.post<ApiResponse<EngagementScoringRule>>(`${this.base}/lead-scoring-rules`, payload);
   }
 
-  updateLeadScoringRule(id: string, payload: LeadScoringRulePayload): Observable<ApiResponse<LeadScoringRule>> {
-    return this.http.put<ApiResponse<LeadScoringRule>>(`${this.base}/lead-scoring-rules/${id}`, payload);
+  updateLeadScoringRule(id: string, payload: EngagementScoringRulePayload): Observable<ApiResponse<EngagementScoringRule>> {
+    return this.http.put<ApiResponse<EngagementScoringRule>>(`${this.base}/lead-scoring-rules/${id}`, payload);
   }
 
   deleteLeadScoringRule(id: string): Observable<ApiResponse<unknown>> {

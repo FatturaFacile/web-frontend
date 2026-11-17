@@ -1,0 +1,110 @@
+<nz-modal
+  [nzVisible]="open()"
+  [nzTitle]="
+    rule()
+      ? ('CRM.LEAD_SCORING.RULES.EDIT' | translateOr: 'Edit scoring rule')
+      : ('CRM.LEAD_SCORING.RULES.NEW' | translateOr: 'New scoring rule')
+  "
+  [nzOkText]="'COMMON.SAVE' | translateOr: 'Save'"
+  [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+  [nzOkLoading]="saving()"
+  [nzWidth]="640"
+  (nzOnOk)="save()"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (formError()) {
+      <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="formError()!" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
+      <nz-form-item>
+        <nz-form-label nzFor="rule_code" nzRequired>{{ 'CRM.LEAD_SCORING.RULES.CODE' | translateOr: 'Code' }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('code') ?? ('COMMON.REQUIRED' | translateOr: 'Required')">
+          <input nz-input id="rule_code" formControlName="code" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rule_name" nzRequired>{{ 'CRM.LEAD_SCORING.RULES.NAME' | translateOr: 'Name' }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('name') ?? ('COMMON.REQUIRED' | translateOr: 'Required')">
+          <input nz-input id="rule_name" formControlName="name" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rule_category">{{ 'CRM.LEAD_SCORING.RULES.CATEGORY' | translateOr: 'Category' }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('category') ?? ''">
+          <nz-select nzId="rule_category" formControlName="category">
+            <nz-option nzValue="demographic" [nzLabel]="'CRM.LEAD_SCORING.RULES.DEMOGRAPHIC' | translateOr: 'Demographic (lead field)'" />
+            <nz-option nzValue="behavioral" [nzLabel]="'CRM.LEAD_SCORING.RULES.BEHAVIORAL' | translateOr: 'Behavioral (activity event)'" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      @if (category() === 'behavioral') {
+        <nz-form-item>
+          <nz-form-label nzFor="rule_event_type" nzRequired>{{
+            'CRM.LEADS.EVENTS.TYPE' | translateOr: 'Event type'
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('event_type') ?? ''">
+            <nz-select nzId="rule_event_type" formControlName="event_type" [nzOptions]="eventTypeOptions()" />
+          </nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label nzFor="rule_field" nzRequired>{{
+            'CRM.LEAD_SCORING.RULES.FIELD' | translateOr: 'Lead field (e.g. industry, employee_count, state_region)'
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('field') ?? ''">
+            <input nz-input id="rule_field" formControlName="field" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+      <nz-form-item>
+        <nz-form-label nzFor="rule_operator">{{ 'CRM.LEAD_SCORING.RULES.OPERATOR' | translateOr: 'Operator' }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('operator') ?? ''">
+          <nz-select nzId="rule_operator" formControlName="operator" [nzOptions]="operatorOptions()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rule_value">{{
+          'CRM.LEAD_SCORING.RULES.VALUE' | translateOr: 'Value (text or JSON, e.g. ["IT","CH"] or [10,50])'
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('value') ?? ''">
+          <input nz-input id="rule_value" formControlName="value" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rule_points" nzRequired>{{
+          'CRM.LEAD_SCORING.RULES.POINTS' | translateOr: 'Points (negative allowed)'
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('points') ?? ''">
+          <nz-input-number nzId="rule_points" [nzMin]="-100" [nzMax]="100" formControlName="points" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="rule_max">{{
+          'CRM.LEAD_SCORING.RULES.MAX_APPLICATIONS' | translateOr: 'Max applications (optional)'
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('max_applications') ?? ''">
+          <nz-input-number nzId="rule_max" [nzMin]="1" formControlName="max_applications" />
+        </nz-form-control>
+      </nz-form-item>
+      @if (category() === 'behavioral') {
+        <nz-form-item>
+          <nz-form-label nzFor="rule_decay">{{
+            'CRM.LEAD_SCORING.RULES.DECAY_DAYS' | translateOr: 'Counts for days (optional)'
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('decay_days') ?? ''">
+            <nz-input-number nzId="rule_decay" [nzMin]="1" formControlName="decay_days" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+      <nz-form-item>
+        <nz-form-control>
+          <span class="switch">
+            <nz-switch nzId="rule_is_active" formControlName="is_active" />
+            <label for="rule_is_active">{{ 'COMMON.ACTIVE' | translateOr: 'Active' }}</label>
+          </span>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

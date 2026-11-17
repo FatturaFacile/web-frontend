@@ -1,0 +1,63 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.spacer {
+  flex: 1;
+}
+.block {
+  margin-bottom: 16px;
+}
+.block-top {
+  margin-top: 16px;
+}
+.sub-text {
+  font-size: 12px;
+  color: #595959;
+}
+.url {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.url code {
+  word-break: break-all;
+}
+.row-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.conditions {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 8px 12px 0;
+  margin-bottom: 16px;
+}
+.conditions legend {
+  font-size: 14px;
+  font-weight: 600;
+  width: auto;
+  padding: 0 4px;
+  margin: 0;
+  border: 0;
+}

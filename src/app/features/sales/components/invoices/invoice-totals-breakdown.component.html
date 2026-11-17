@@ -1,0 +1,154 @@
+<section class="breakdown" [attr.aria-busy]="loading()" aria-live="polite">
+  <h4>{{ 'SALES.INVOICES.FISCAL.BREAKDOWN_TITLE' | translate }}</h4>
+
+  @if (error(); as message) {
+    <nz-alert class="note" nzType="warning" nzShowIcon [nzMessage]="message" />
+  }
+
+  <nz-spin [nzSpinning]="loading()" [nzTip]="'SALES.INVOICES.FISCAL.UPDATING' | translate">
+    @if (totals(); as t) {
+      <dl class="totals">
+        <dt>{{ 'SALES.INVOICES.TOTALS.NET' | translate }}</dt>
+        <dd data-testid="net">{{ t.net | currency: currency() : 'symbol' : '1.2-2' }}</dd>
+
+        @if (hasFund()) {
+          <dt>
+            {{ 'SALES.INVOICES.FISCAL.TOTALS.FUND' | translate }}
+            ({{ result()!.fund!.type }} {{ result()!.fund!.percent | number: '1.0-2' }}%)
+          </dt>
+          <dd data-testid="fund">{{ t.fund | currency: currency() : 'symbol' : '1.2-2' }}</dd>
+        }
+
+        <dt>{{ 'SALES.INVOICES.FISCAL.TOTALS.TAXABLE_VAT' | translate }}</dt>
+        <dd data-testid="taxable-vat">
+          {{ t.taxable_vat | currency: currency() : 'symbol' : '1.2-2' }}
+        </dd>
+
+        <dt>
+          {{
+            (result()!.split_payment
+              ? 'SALES.INVOICES.FISCAL.TOTALS.VAT_SPLIT'
+              : 'SALES.INVOICES.TOTALS.VAT'
+            ) | translate
+          }}
+        </dt>
+        <dd data-testid="vat">{{ t.vat | currency: currency() : 'symbol' : '1.2-2' }}</dd>
+
+        @if (stampApplied()) {
+          <dt>
+            {{
+              (result()!.stamp_duty.charged_to_customer
+                ? 'SALES.INVOICES.FISCAL.TOTALS.STAMP_DUTY'
+                : 'SALES.INVOICES.FISCAL.TOTALS.STAMP_DUTY_ISSUER'
+              ) | translate
+            }}
+          </dt>
+          <dd data-testid="stamp-duty">
+            {{ result()!.stamp_duty.amount | currency: currency() : 'symbol' : '1.2-2' }}
+          </dd>
+        }
+
+        <dt>{{ 'SALES.INVOICES.TOTALS.GROSS' | translate }}</dt>
+        <dd data-testid="gross">
+          <strong>{{ t.gross | currency: currency() : 'symbol' : '1.2-2' }}</strong>
+        </dd>
+
+        @if (hasWithholding()) {
+          <dt>
+            {{ 'SALES.INVOICES.FISCAL.TOTALS.WITHHOLDING' | translate }}
+            ({{ result()!.withholding!.rate | number: '1.0-2' }}%)
+          </dt>
+          <dd data-testid="withholding">
+            − {{ t.withholding | currency: currency() : 'symbol' : '1.2-2' }}
+          </dd>
+        }
+
+        @if (hasEnasarco()) {
+          <dt>
+            {{ 'SALES.INVOICES.FISCAL.TOTALS.ENASARCO' | translate }}
+            ({{ result()!.enasarco!.rate | number: '1.0-2' }}%)
+          </dt>
+          <dd data-testid="enasarco">
+            − {{ t.enasarco | currency: currency() : 'symbol' : '1.2-2' }}
+          </dd>
+        }
+
+        @if (result()!.split_payment) {
+          <dt>{{ 'SALES.INVOICES.FISCAL.TOTALS.SPLIT_PAYMENT_VAT' | translate }}</dt>
+          <dd data-testid="split-vat">
+            − {{ t.split_payment_vat | currency: currency() : 'symbol' : '1.2-2' }}
+          </dd>
+        }
+
+        <dt class="due">{{ 'SALES.INVOICES.FISCAL.TOTALS.DUE' | translate }}</dt>
+        <dd class="due" data-testid="due">
+          <strong>{{ t.due | currency: currency() : 'symbol' : '1.2-2' }}</strong>
+        </dd>
+      </dl>
+
+      @if (hasEnasarco()) {
+        <p class="hint" data-testid="enasarco-hint">
+          {{
+            'SALES.INVOICES.FISCAL.ENASARCO_HINT'
+              | translate
+                : {
+                    ytd:
+                      (result()!.enasarco!.ytd_commissions
+                        | currency: currency() : 'symbol' : '1.2-2') ?? '',
+                    max:
+                      (result()!.enasarco!.annual_maximum
+                        | currency: currency() : 'symbol' : '1.2-2') ?? '',
+                  }
+          }}
+        </p>
+      }
+
+      @if (result()!.vat_summary.length) {
+        <table class="vat-summary">
+          <caption>
+            {{
+              'SALES.INVOICES.FISCAL.VAT_SUMMARY' | translate
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">{{ 'SALES.INVOICES.ITEM.TAX_RATE' | translate }}</th>
+              <th scope="col">{{ 'SALES.INVOICES.FISCAL.NATURA' | translate }}</th>
+              <th scope="col" class="num">{{ 'SALES.INVOICES.FISCAL.TAXABLE' | translate }}</th>
+              <th scope="col" class="num">{{ 'SALES.INVOICES.FISCAL.TAX' | translate }}</th>
+              <th scope="col">{{ 'SALES.INVOICES.FISCAL.PAYABILITY' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of result()!.vat_summary; track $index) {
+              <tr>
+                <td>{{ row.rate | number: '1.0-2' }}%</td>
+                <td>{{ row.natura ?? '—' }}</td>
+                <td class="num">{{ row.taxable | currency: currency() : 'symbol' : '1.2-2' }}</td>
+                <td class="num">{{ row.tax | currency: currency() : 'symbol' : '1.2-2' }}</td>
+                <td>{{ row.payability ?? '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      @if (result()!.legal_notices.length) {
+        <div class="notices" data-testid="legal-notices">
+          <h5>{{ 'SALES.INVOICES.FISCAL.LEGAL_NOTICES' | translate }}</h5>
+          <ul>
+            @for (n of result()!.legal_notices; track $index) {
+              <li>{{ n }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @for (w of result()!.warnings; track $index) {
+        <nz-alert class="note" nzType="info" nzShowIcon [nzMessage]="w" />
+      }
+    } @else {
+      <p class="hint">{{ 'SALES.INVOICES.FISCAL.NO_PREVIEW' | translate }}</p>
+    }
+  </nz-spin>
+</section>

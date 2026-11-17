@@ -1,0 +1,51 @@
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.spacer {
+  flex: 1;
+}
+.block {
+  margin-bottom: 16px;
+}
+.block-top {
+  margin-top: 16px;
+}
+.breakdown {
+  width: 100%;
+  border-collapse: collapse;
+}
+.breakdown th,
+.breakdown td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+}
+.breakdown .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.neg {
+  color: #a8071a;
+}
+.sub-text {
+  font-size: 12px;
+  color: #595959;
+}
+.meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

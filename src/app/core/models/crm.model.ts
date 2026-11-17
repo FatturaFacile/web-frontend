@@ -27,7 +27,7 @@ export interface ContactStatement {
   entries: ContactStatementEntry[];
 }
 
-export interface LeadScoreBreakdownItem {
+export interface CrmLeadScoreBreakdownItem {
   rule: string;
   points: number;
   reason: string;
@@ -47,7 +47,7 @@ export interface LeadResource {
   status: string;
   score: number;
   rating: string;
-  score_breakdown: string | LeadScoreBreakdownItem[];
+  score_breakdown: string | CrmLeadScoreBreakdownItem[];
   score_model: string | null;
   score_calculated_at: string | null;
   estimated_budget: string | null;
@@ -237,12 +237,12 @@ export interface LeadScoreExplanation {
   score: number;
   rating: string;
   model: string | null;
-  breakdown: string | LeadScoreBreakdownItem[];
+  breakdown: string | CrmLeadScoreBreakdownItem[];
   calculated_at: string | null;
   current: {
     score: number;
     rating: 'hot' | 'warm' | 'cold';
     model: 'default' | 'tenant_rules';
-    breakdown: LeadScoreBreakdownItem[];
+    breakdown: CrmLeadScoreBreakdownItem[];
   };
 }

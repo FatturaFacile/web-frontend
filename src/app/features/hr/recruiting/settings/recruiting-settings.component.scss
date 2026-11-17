@@ -1,0 +1,91 @@
+.toolbar {
+  margin-bottom: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 16px;
+}
+
+.switch-label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 15px;
+  margin: 16px 0 8px;
+}
+
+.muted {
+  color: rgb(0 0 0 / 65%);
+}
+
+.embed {
+  dt {
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  dd {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 4px 0 0;
+
+    code {
+      flex: 1;
+      overflow-wrap: anywhere;
+      background: #f5f5f5;
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.pipeline {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  input {
+    min-width: 120px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.retention-select {
+  display: block;
+  max-width: 240px;
+  margin-top: 8px;
+}
+
+.actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}

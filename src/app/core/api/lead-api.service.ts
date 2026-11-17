@@ -1,116 +1,262 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
-  ConvertLeadPayload,
-  ConvertLeadResponse,
-  CreateLeadPayload,
-  CreateLeadResponse,
-  CreateWebhookPayload,
-  LeadBehaviorEvent,
+  Lead,
+  LeadActivityEvent,
+  LeadActivityEventPayload,
+  LeadConvertPayload,
+  LeadConvertResult,
+  LeadDuplicateCandidate,
+  LeadDuplicateFilterParams,
   LeadFilterParams,
-  LeadListResponse,
-  LeadResource,
+  LeadMergePayload,
   LeadRoutingRule,
-  LeadWebhookEndpoint,
-  SaveRoutingRulePayload,
-  UpdateLeadPayload,
-} from '../models/lead.model';
+  LeadRoutingRulePayload,
+  LeadScorePreview,
+  LeadScorePreviewPayload,
+  LeadScoringRule,
+  LeadScoringRulePayload,
+  LeadSetting,
+  LeadSource,
+  LeadSourcePayload,
+  PaginatedResponse,
+  QueryFilterParams,
+} from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The lead endpoints document `{data, meta}` while most of the API wraps
+ * payloads in `{success, message, data}`, and some resources are returned raw.
+ * Accept all three shapes.
+ */
+export function unwrapApiData<T>(res: unknown): T {
+  if (isRecord(res) && 'data' in res) {
+    const keys = Object.keys(res);
+    const envelopeKeys = ['data', 'meta', 'success', 'message', 'links'];
+    if (keys.every((k) => envelopeKeys.includes(k))) {
+      return res['data'] as T;
+    }
+  }
+  return res as T;
+}
+
+/** Takes `data` from an envelope that carries sibling keys (`lead`, `routing`, ...). */
+function unwrapDataKey<T>(res: unknown): T {
+  return (isRecord(res) && 'data' in res ? res['data'] : res) as T;
+}
+
+/** Normalizes any list response to the app's `PaginatedResponse`, defaulting missing meta. */
+export function toPaginated<T>(res: unknown, params?: QueryFilterParams): PaginatedResponse<T> {
+  const data = unwrapApiData<unknown>(res);
+  const items = Array.isArray(data) ? (data as T[]) : [];
+  const meta = isRecord(res) && isRecord(res['meta']) ? res['meta'] : {};
+  const num = (v: unknown, fallback: number): number =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  const perPage = num(meta['per_page'], params?.per_page ?? items.length);
+  const total = num(meta['total'], items.length);
+  return {
+    success: isRecord(res) && typeof res['success'] === 'boolean' ? (res['success'] as boolean) : true,
+    message: isRecord(res) && typeof res['message'] === 'string' ? (res['message'] as string) : '',
+    data: items,
+    meta: {
+      current_page: num(meta['current_page'], params?.page ?? 1),
+      from: typeof meta['from'] === 'number' ? (meta['from'] as number) : null,
+      to: typeof meta['to'] === 'number' ? (meta['to'] as number) : null,
+      per_page: perPage,
+      last_page: num(meta['last_page'], perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1),
+      total,
+    },
+  };
+}
 
 @Service()
 export class LeadApiService {
   private readonly http = inject(HttpClient);
-  private readonly crm = `${environment.apiBaseUrl}/crm`;
-  private readonly base = `${this.crm}/leads`;
+  private readonly base = `${environment.apiBaseUrl}/crm`;
 
-  list(filters?: LeadFilterParams): Observable<LeadListResponse> {
-    return this.http.get<LeadListResponse>(this.base, {
-      params: filters ? toHttpParams(filters) : undefined,
-    });
+  // --- Leads ---------------------------------------------------------------
+
+  listLeads(filters: LeadFilterParams = {}): Observable<PaginatedResponse<Lead>> {
+    return this.http
+      .get<unknown>(`${this.base}/leads`, { params: toHttpParams(filters) })
+      .pipe(map((res) => toPaginated<Lead>(res, filters)));
   }
 
-  create(payload: CreateLeadPayload): Observable<CreateLeadResponse> {
-    return this.http.post<CreateLeadResponse>(this.base, payload);
+  getLead(id: string): Observable<Lead> {
+    return this.http.get<unknown>(`${this.base}/leads/${id}`).pipe(map((r) => unwrapApiData<Lead>(r)));
   }
 
-  qualify(id: string): Observable<LeadResource> {
-    return this.http.post<LeadResource>(`${this.base}/${id}/qualify`, {});
+  listEvents(leadId: string): Observable<LeadActivityEvent[]> {
+    return this.http
+      .get<unknown>(`${this.base}/leads/${leadId}/events`)
+      .pipe(map((r) => toPaginated<LeadActivityEvent>(r).data));
   }
 
-  disqualify(id: string, reason: string): Observable<LeadResource> {
-    return this.http.post<LeadResource>(`${this.base}/${id}/disqualify`, { reason });
+  addEvent(leadId: string, payload: LeadActivityEventPayload): Observable<LeadActivityEvent> {
+    return this.http
+      .post<unknown>(`${this.base}/leads/${leadId}/events`, payload)
+      .pipe(map((r) => unwrapDataKey<LeadActivityEvent>(r)));
   }
 
-  merge(id: string, duplicateId: string): Observable<LeadResource> {
-    return this.http.post<LeadResource>(`${this.base}/${id}/merge`, { duplicate_id: duplicateId });
+  rescore(leadId: string): Observable<Lead> {
+    return this.http
+      .post<unknown>(`${this.base}/leads/${leadId}/rescore`, {})
+      .pipe(map((r) => unwrapApiData<Lead>(r)));
   }
 
-  /** One-click conversion into Account + Contact + Opportunity. */
-  convert(id: string, payload: ConvertLeadPayload = {}): Observable<ConvertLeadResponse> {
-    return this.http.post<ConvertLeadResponse>(`${this.base}/${id}/convert`, payload);
+  route(leadId: string): Observable<Lead> {
+    return this.http
+      .post<unknown>(`${this.base}/leads/${leadId}/route`, {})
+      .pipe(map((r) => unwrapDataKey<Lead>(r)));
   }
 
-  remove(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  convert(leadId: string, payload: LeadConvertPayload): Observable<LeadConvertResult> {
+    return this.http
+      .post<unknown>(`${this.base}/leads/${leadId}/convert`, payload)
+      .pipe(map((r) => unwrapApiData<LeadConvertResult>(r)));
   }
 
-  // --- Web-to-Lead endpoints -------------------------------------------------
-  listWebhooks(): Observable<{ data: LeadWebhookEndpoint[] }> {
-    return this.http.get<{ data: LeadWebhookEndpoint[] }>(`${this.crm}/lead-webhooks`);
+  // --- Duplicates ----------------------------------------------------------
+
+  listDuplicates(
+    filters: LeadDuplicateFilterParams = { status: 'pending' },
+  ): Observable<PaginatedResponse<LeadDuplicateCandidate>> {
+    return this.http
+      .get<unknown>(`${this.base}/duplicates`, { params: toHttpParams(filters) })
+      .pipe(map((res) => toPaginated<LeadDuplicateCandidate>(res, filters)));
   }
 
-  createWebhook(payload: CreateWebhookPayload): Observable<LeadWebhookEndpoint> {
-    return this.http.post<LeadWebhookEndpoint>(`${this.crm}/lead-webhooks`, payload);
+  mergeDuplicate(id: string, payload: LeadMergePayload): Observable<unknown> {
+    return this.http
+      .post<unknown>(`${this.base}/duplicates/${id}/merge`, payload)
+      .pipe(map((r) => unwrapApiData<unknown>(r)));
   }
 
-  rotateWebhookSecret(id: string): Observable<LeadWebhookEndpoint> {
-    return this.http.post<LeadWebhookEndpoint>(`${this.crm}/lead-webhooks/${id}/rotate-secret`, {});
+  dismissDuplicate(id: string): Observable<unknown> {
+    return this.http
+      .post<unknown>(`${this.base}/duplicates/${id}/dismiss`, {})
+      .pipe(map((r) => unwrapApiData<unknown>(r)));
   }
 
-  deleteWebhook(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.crm}/lead-webhooks/${id}`);
+  // --- Scoring rules and settings -----------------------------------------
+
+  listScoringRules(): Observable<LeadScoringRule[]> {
+    return this.http
+      .get<unknown>(`${this.base}/scoring-rules`)
+      .pipe(map((r) => toPaginated<LeadScoringRule>(r).data));
   }
 
-  // --- Routing rules ---------------------------------------------------------
-  listRoutingRules(): Observable<{ data: LeadRoutingRule[] }> {
-    return this.http.get<{ data: LeadRoutingRule[] }>(`${this.crm}/lead-routing-rules`);
+  getScoringRule(id: string): Observable<LeadScoringRule> {
+    return this.http
+      .get<unknown>(`${this.base}/scoring-rules/${id}`)
+      .pipe(map((r) => unwrapApiData<LeadScoringRule>(r)));
   }
 
-  createRoutingRule(payload: SaveRoutingRulePayload): Observable<LeadRoutingRule> {
-    return this.http.post<LeadRoutingRule>(`${this.crm}/lead-routing-rules`, payload);
+  createScoringRule(payload: LeadScoringRulePayload): Observable<LeadScoringRule> {
+    return this.http
+      .post<unknown>(`${this.base}/scoring-rules`, payload)
+      .pipe(map((r) => unwrapApiData<LeadScoringRule>(r)));
   }
 
-  deleteRoutingRule(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.crm}/lead-routing-rules/${id}`);
+  updateScoringRule(id: string, payload: Partial<LeadScoringRulePayload>): Observable<LeadScoringRule> {
+    return this.http
+      .put<unknown>(`${this.base}/scoring-rules/${id}`, payload)
+      .pipe(map((r) => unwrapApiData<LeadScoringRule>(r)));
   }
 
-  get(id: string): Observable<LeadResource> {
-    return this.http.get<LeadResource>(`${this.base}/${id}`);
+  deleteScoringRule(id: string): Observable<unknown> {
+    return this.http.delete<unknown>(`${this.base}/scoring-rules/${id}`);
   }
 
-  update(id: string, payload: UpdateLeadPayload): Observable<LeadResource> {
-    return this.http.put<LeadResource>(`${this.base}/${id}`, payload);
+  previewScore(payload: LeadScorePreviewPayload): Observable<LeadScorePreview> {
+    return this.http
+      .post<unknown>(`${this.base}/scoring-rules/preview`, payload)
+      .pipe(map((r) => unwrapApiData<LeadScorePreview>(r)));
   }
 
-  /** Leads matching the given email / phone (E.164 normalised) / VAT number / company name. */
-  detectDuplicates(params: {
-    email?: string | null;
-    phone?: string | null;
-    company_name?: string | null;
-    vat_number?: string | null;
-  }): Observable<LeadResource[]> {
-    const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => !!v));
-    return this.http.get<LeadResource[]>(`${this.base}/duplicates`, { params: toHttpParams(clean) });
+  getSettings(): Observable<LeadSetting> {
+    return this.http.get<unknown>(`${this.base}/lead-settings`).pipe(map((r) => unwrapApiData<LeadSetting>(r)));
   }
 
-  /** Records an engagement event and re-scores the lead. */
-  recordBehavior(id: string, event: LeadBehaviorEvent, count = 1): Observable<LeadResource> {
-    return this.http.post<LeadResource>(`${this.base}/${id}/behavior`, { event, count });
+  updateSettings(payload: LeadSetting): Observable<LeadSetting> {
+    return this.http
+      .put<unknown>(`${this.base}/lead-settings`, payload)
+      .pipe(map((r) => unwrapApiData<LeadSetting>(r)));
   }
 
-  updateRoutingRule(id: string, payload: Partial<SaveRoutingRulePayload>): Observable<LeadRoutingRule> {
-    return this.http.put<LeadRoutingRule>(`${this.crm}/lead-routing-rules/${id}`, payload);
+  // --- Routing rules -------------------------------------------------------
+
+  listRoutingRules(): Observable<LeadRoutingRule[]> {
+    return this.http
+      .get<unknown>(`${this.base}/routing-rules`)
+      .pipe(map((r) => toPaginated<LeadRoutingRule>(r).data));
+  }
+
+  getRoutingRule(id: string): Observable<LeadRoutingRule> {
+    return this.http
+      .get<unknown>(`${this.base}/routing-rules/${id}`)
+      .pipe(map((r) => unwrapApiData<LeadRoutingRule>(r)));
+  }
+
+  createRoutingRule(payload: LeadRoutingRulePayload): Observable<LeadRoutingRule> {
+    return this.http
+      .post<unknown>(`${this.base}/routing-rules`, payload)
+      .pipe(map((r) => unwrapApiData<LeadRoutingRule>(r)));
+  }
+
+  updateRoutingRule(id: string, payload: Partial<LeadRoutingRulePayload>): Observable<LeadRoutingRule> {
+    return this.http
+      .put<unknown>(`${this.base}/routing-rules/${id}`, payload)
+      .pipe(map((r) => unwrapApiData<LeadRoutingRule>(r)));
+  }
+
+  deleteRoutingRule(id: string): Observable<unknown> {
+    return this.http.delete<unknown>(`${this.base}/routing-rules/${id}`);
+  }
+
+  reorderRoutingRules(ids: string[]): Observable<unknown> {
+    return this.http.post<unknown>(`${this.base}/routing-rules/reorder`, { ids });
+  }
+
+  // --- Lead sources --------------------------------------------------------
+
+  listSources(): Observable<LeadSource[]> {
+    return this.http
+      .get<unknown>(`${this.base}/lead-sources`)
+      .pipe(map((r) => toPaginated<LeadSource>(r).data));
+  }
+
+  createSource(payload: LeadSourcePayload): Observable<LeadSource> {
+    return this.http
+      .post<unknown>(`${this.base}/lead-sources`, payload)
+      .pipe(map((r) => unwrapApiData<LeadSource>(r)));
+  }
+
+  updateSource(id: string, payload: Partial<LeadSourcePayload>): Observable<LeadSource> {
+    return this.http
+      .put<unknown>(`${this.base}/lead-sources/${id}`, payload)
+      .pipe(map((r) => unwrapApiData<LeadSource>(r)));
+  }
+
+  deleteSource(id: string): Observable<unknown> {
+    return this.http.delete<unknown>(`${this.base}/lead-sources/${id}`);
+  }
+
+  getSource(id: string): Observable<LeadSource> {
+    return this.http
+      .get<unknown>(`${this.base}/lead-sources/${id}`)
+      .pipe(map((r) => unwrapApiData<LeadSource>(r)));
+  }
+
+  rotateSourceSecret(id: string, rotate?: 'both' | 'webhook_secret' | 'api_key'): Observable<LeadSource> {
+    return this.http
+      .post<unknown>(`${this.base}/lead-sources/${id}/rotate-secret`, rotate ? { rotate } : {})
+      .pipe(map((r) => unwrapApiData<LeadSource>(r)));
   }
 }
