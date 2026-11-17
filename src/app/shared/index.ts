@@ -4,3 +4,4 @@ export * from './pipes/translate.pipe';
 export * from './directives/autofocus.directive';
 export * from './utils/date.utils';
 export * from './components/base-table';
+export * from './utils/code128';
