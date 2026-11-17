@@ -137,6 +137,10 @@ export interface PriceListItem {
   valid_to?: string | null;
   parent_price_list_id?: string | null;
   price_adjustment_percent?: number | null;
+  code?: string | null;
+  channel?: string | null;
+  rounding_mode?: string | null;
+  priority?: number | null;
   items?: {
     product_id: string;
     price: number;
@@ -157,6 +161,10 @@ export interface StorePriceListPayload {
   valid_to?: string | null;
   parent_price_list_id?: string | null;
   price_adjustment_percent?: number | null;
+  code?: string | null;
+  channel?: string | null;
+  rounding_mode?: string | null;
+  priority?: number | null;
   items?: {
     product_id: string;
     price: number;

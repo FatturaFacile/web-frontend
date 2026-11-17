@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AuthStore,
@@ -12,6 +12,7 @@ import {
   I18nService,
   InventoryApiService,
   PermissionsService,
+  PricingApiService,
   SalesCycleApiService,
 } from '@core';
 import { icons } from '../../../../icons-provider';
@@ -65,6 +66,7 @@ describe('CycleOrdersComponent', () => {
         provideNzIcons(icons),
         { provide: SalesCycleApiService, useValue: salesApi },
         { provide: BillingApiService, useValue: billingApi },
+        { provide: PricingApiService, useValue: { checkDocumentMargin: vi.fn().mockReturnValue(throwError(() => new Error('no pricing'))) } },
         { provide: ClientApiService, useValue: { list: vi.fn().mockReturnValue(of(page([]))) } },
         {
           provide: InventoryApiService,
