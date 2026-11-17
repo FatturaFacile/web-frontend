@@ -1,0 +1,9 @@
+# Windsurf Rules
+
+See `AGENTS.md` at repository root for complete instructions, coding standards, and commands.
+
+- Framework: Angular 22 standalone, TypeScript strict mode, NG-ZORRO.
+- Reactivity: Signals (`signal()`, `computed()`, `input()`, `output()`) and `@ngrx/signals`.
+- Control Flow: Native syntax (`@if`, `@for`, `@switch`).
+- Accessibility: WCAG AA / AXE zero-violation policy.
+- Verification: `pnpm run lint`, `pnpm exec tsc --noEmit -p tsconfig.app.json`, `pnpm test`.
