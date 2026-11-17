@@ -1,0 +1,159 @@
+<app-page-header
+  [title]="'INVENTORY.LANDED_COSTS.NEW_TITLE' | translate"
+  [subtitle]="'INVENTORY.LANDED_COSTS.NEW_SUBTITLE' | translate"
+/>
+
+<nz-card class="iv-card">
+  <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="iv-form-grid">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-date">{{ 'COMMON.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(form, 'document_date') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-date-picker nzId="lc-date" formControlName="document_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-type">{{ 'INVENTORY.LANDED_COSTS.COST_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(form, 'cost_type') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="lc-type" formControlName="cost_type">
+            @for (t of costTypes; track t) {
+              <nz-option [nzValue]="t" [nzLabel]="typeLabels[t] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-key">{{ 'INVENTORY.LANDED_COSTS.ALLOCATION_KEY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(form, 'allocation_key') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="lc-key" formControlName="allocation_key">
+            @for (k of allocationKeys; track k) {
+              <nz-option [nzValue]="k" [nzLabel]="keyLabels[k] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-amount">{{ 'COMMON.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="serverError(form, 'total_amount') ?? ('INVENTORY.VALIDATION.POSITIVE_AMOUNT' | translate)"
+        >
+          <input nz-input id="lc-amount" inputmode="decimal" formControlName="total_amount" placeholder="0.00" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="lc-currency">{{ 'INVENTORY.LANDED_COSTS.CURRENCY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(form, 'currency') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="lc-currency" formControlName="currency">
+            @for (c of currencies; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="lc-invoice">{{ 'INVENTORY.LANDED_COSTS.SUPPLIER_INVOICE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(form, 'supplier_invoice_id') ?? ''">
+          <input nz-input id="lc-invoice" formControlName="supplier_invoice_id" />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="lc-receipts">{{ 'INVENTORY.LANDED_COSTS.RECEIPTS' | translate }}</nz-form-label>
+      <nz-form-control
+        [nzErrorTip]="serverError(form, 'receipt_ids') ?? ('INVENTORY.VALIDATION.RECEIPTS_REQUIRED' | translate)"
+        [nzExtra]="manualReceipts() ? ('INVENTORY.LANDED_COSTS.RECEIPTS_MANUAL_HINT' | translate) : ''"
+      >
+        <nz-select
+          nzId="lc-receipts"
+          [nzMode]="manualReceipts() ? 'tags' : 'multiple'"
+          nzShowSearch
+          formControlName="receipt_ids"
+          [nzPlaceHolder]="'INVENTORY.LANDED_COSTS.RECEIPTS_PLACEHOLDER' | translate"
+        >
+          @for (r of receipts(); track r.id) {
+            <nz-option
+              [nzValue]="r.id"
+              [nzLabel]="r.receipt_number + (r.received_date ? ' (' + r.received_date + ')' : '')"
+            />
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzFor="lc-notes">{{ 'INVENTORY.LANDED_COSTS.NOTES' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input id="lc-notes" rows="2" formControlName="notes"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+
+    @if (formErrors().length) {
+      <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="formErrTpl" />
+      <ng-template #formErrTpl>
+        <ul class="iv-error-list">
+          @for (e of formErrors(); track $index) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      </ng-template>
+    }
+
+    <div class="iv-actions">
+      <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="saving()">
+        {{ 'INVENTORY.LANDED_COSTS.SAVE_DRAFT' | translate }}
+      </button>
+      <a nz-button routerLink="/inventory/landed-costs">{{ 'COMMON.CANCEL' | translate }}</a>
+    </div>
+  </form>
+</nz-card>
+
+<nz-card class="iv-card" [nzTitle]="'INVENTORY.LANDED_COSTS.PREVIEW_TITLE' | translate">
+  <div aria-live="polite">
+    @if (previewErrors().length) {
+      <nz-alert class="iv-alert" nzType="warning" nzShowIcon [nzMessage]="previewErrTpl" />
+      <ng-template #previewErrTpl>
+        <ul class="iv-error-list">
+          @for (e of previewErrors(); track $index) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      </ng-template>
+    }
+    @if (preview(); as p) {
+      <nz-table #allocTable [nzData]="p.allocations" [nzLoading]="previewLoading()" nzSize="small" [nzShowPagination]="false" [nzPageSize]="1000">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'INVENTORY.LANDED_COSTS.RECEIPT' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_ITEM' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.COST_LAYERS.COL_LOT' | translate }}</th>
+            <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.BASIS' | translate }}</th>
+            <th scope="col" class="iv-num">{{ 'INVENTORY.LANDED_COSTS.ALLOCATED' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of allocTable.data; track $index) {
+            <tr>
+              <td>{{ receiptLabel(a.receipt_id) }}</td>
+              <td>{{ a.sku || a.item_id }}</td>
+              <td>{{ a.lot_id || '-' }}</td>
+              <td class="iv-num">{{ a.basis_value | number: '1.0-4' }}</td>
+              <td class="iv-num">{{ a.allocated_amount | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      <p class="iv-section-title">
+        {{ 'INVENTORY.LANDED_COSTS.ALLOCATED_TOTAL' | translate }}: {{ p.totals.allocated | number: '1.2-2' }}
+        ·
+        <span class="iv-diff" [class.iv-diff-alert]="!isZero(p.totals.difference)">
+          {{ 'INVENTORY.LANDED_COSTS.DIFFERENCE' | translate }}: {{ p.totals.difference | number: '1.2-2' }}
+        </span>
+      </p>
+    } @else if (previewLoading()) {
+      <p class="iv-muted">{{ 'INVENTORY.LANDED_COSTS.PREVIEW_LOADING' | translate }}</p>
+    } @else if (!previewErrors().length) {
+      <p class="iv-muted">{{ 'INVENTORY.LANDED_COSTS.PREVIEW_HINT' | translate }}</p>
+    }
+  </div>
+</nz-card>

@@ -1,0 +1,81 @@
+.public-title {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+.public-spin {
+  display: block;
+  margin: 48px auto;
+}
+
+.public-neutral-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.public-fields,
+.public-totals {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0 0 16px;
+}
+
+.public-fields dt,
+.public-totals dt {
+  font-weight: 600;
+}
+
+.public-fields dd,
+.public-totals dd {
+  margin: 0;
+}
+
+.public-totals {
+  margin-top: 16px;
+  justify-content: end;
+}
+
+.public-totals dd {
+  text-align: right;
+}
+
+.public-grand {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.public-num {
+  text-align: right;
+}
+
+.public-decision {
+  margin-top: 16px;
+}
+
+.public-decision-result {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+.public-label {
+  display: block;
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+.public-hint {
+  color: var(--text-secondary, #595959);
+  margin: 12px 0;
+}
+
+.public-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.public-steps {
+  margin-top: 16px;
+}

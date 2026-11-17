@@ -1,0 +1,74 @@
+:host {
+  display: block;
+}
+
+.iv-card {
+  margin-bottom: 16px;
+}
+
+.iv-alert {
+  margin-bottom: 16px;
+}
+
+.iv-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.iv-filter {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.iv-inline-select {
+  min-width: 180px;
+}
+
+.iv-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+}
+
+.iv-muted {
+  color: #595959;
+}
+
+.iv-error-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.iv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.iv-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.iv-diff {
+  font-weight: 600;
+}
+
+.iv-section-title {
+  margin: 16px 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.iv-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  column-gap: 16px;
+}
+
+.iv-diff-alert {
+  color: #cf1322;
+}

@@ -141,6 +141,10 @@ export class SidebarComponent {
             { key: 'NAV.STOCK', route: '/inventory/stock', icon: 'fa-solid fa-warehouse' },
             { key: 'NAV.DDT', route: '/inventory/ddt', icon: 'fa-solid fa-truck-ramp-box' },
             { key: 'NAV.CUSTOMS', route: '/inventory/customs', icon: 'fa-solid fa-passport' },
+            { key: 'NAV.VALUATION', route: '/inventory/valuation', icon: 'fa-solid fa-scale-balanced' },
+            { key: 'NAV.COST_LAYERS', route: '/inventory/cost-layers', icon: 'fa-solid fa-layer-group' },
+            { key: 'NAV.LANDED_COSTS', route: '/inventory/landed-costs', icon: 'fa-solid fa-truck-fast' },
+            { key: 'NAV.INVENTORY_BOOK', route: '/inventory/book', icon: 'fa-solid fa-book' },
           ],
         },
         {
@@ -156,6 +160,29 @@ export class SidebarComponent {
               key: 'NAV.REPORTS',
               route: '/field-service/reports',
               icon: 'fa-solid fa-screwdriver-wrench',
+            },
+          ],
+        },
+        {
+          key: 'NAV.WARRANTY_RMA',
+          icon: 'fa-solid fa-shield-halved',
+          children: [
+            {
+              key: 'NAV.WARRANTY_LOOKUP',
+              route: '/warranty-rma/lookup',
+              icon: 'fa-solid fa-magnifying-glass',
+            },
+            { key: 'NAV.RMA_BENCH', route: '/warranty-rma/bench', icon: 'fa-solid fa-table-columns' },
+            {
+              key: 'NAV.EQUIPMENT_PASSPORTS',
+              route: '/warranty-rma/passports',
+              icon: 'fa-solid fa-id-card',
+            },
+            { key: 'NAV.LOANERS', route: '/warranty-rma/loaners', icon: 'fa-solid fa-laptop' },
+            {
+              key: 'NAV.VENDOR_CLAIMS',
+              route: '/warranty-rma/vendor-claims',
+              icon: 'fa-solid fa-file-invoice-dollar',
             },
           ],
         },

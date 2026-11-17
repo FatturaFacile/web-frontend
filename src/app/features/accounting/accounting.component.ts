@@ -20,6 +20,7 @@ import {
   TranslatePipe,
 } from '@shared';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
+import { TaxNavComponent } from './tax/tax-nav.component';
 
 @Component({
   selector: 'app-accounting',
@@ -38,6 +39,7 @@ import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-d
     BaseTableComponent,
     PageHeaderComponent,
     LedgerEntryFormDrawerComponent,
+    TaxNavComponent,
     TranslatePipe,
   ],
   providers: [TableStateService],

@@ -1,0 +1,179 @@
+<app-rma-public-shell [brand]="estimate()?.company_name ?? null">
+  <h1 class="public-title">{{ 'RMA.PUBLIC.ESTIMATE_TITLE' | translate }}</h1>
+
+  @switch (state()) {
+    @case ('loading') {
+      <nz-spin nzSimple class="public-spin" [nzTip]="'COMMON.LOADING' | translate" />
+    }
+    @case ('invalid') {
+      <nz-card class="public-neutral">
+        <p class="public-neutral-title">
+          <i class="fa-solid fa-link-slash" aria-hidden="true"></i>
+          {{ 'RMA.PUBLIC.INVALID_LINK' | translate }}
+        </p>
+        <p>{{ 'RMA.PUBLIC.INVALID_LINK_HINT' | translate }}</p>
+      </nz-card>
+    }
+    @case ('error') {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="'RMA.PUBLIC.UNAVAILABLE' | translate" />
+    }
+    @case ('ready') {
+      @if (estimate(); as e) {
+        <nz-card>
+          <dl class="public-fields">
+            <dt>{{ 'RMA.FIELDS.RMA_NUMBER' | translate }}</dt>
+            <dd>{{ e.rma_number }}</dd>
+            <dt>{{ 'RMA.FIELDS.SERIAL' | translate }}</dt>
+            <dd>{{ e.serial_number }}</dd>
+            @if (e.product_name) {
+              <dt>{{ 'RMA.FIELDS.PRODUCT' | translate }}</dt>
+              <dd>{{ e.product_name }}</dd>
+            }
+            @if (e.reported_symptom) {
+              <dt>{{ 'RMA.FIELDS.SYMPTOM' | translate }}</dt>
+              <dd>{{ e.reported_symptom }}</dd>
+            }
+            @if (e.diagnosis_summary) {
+              <dt>{{ 'RMA.PUBLIC.DIAGNOSIS' | translate }}</dt>
+              <dd>{{ e.diagnosis_summary }}</dd>
+            }
+            @if (e.expires_at) {
+              <dt>{{ 'RMA.ESTIMATE.EXPIRES_AT' | translate }}</dt>
+              <dd>{{ e.expires_at | date: 'medium' }}</dd>
+            }
+          </dl>
+
+          <nz-table
+            #lines
+            class="public-lines"
+            [nzData]="e.lines"
+            [nzFrontPagination]="false"
+            [nzShowPagination]="false"
+            nzSize="small"
+            [nzScroll]="{ x: '480px' }"
+          >
+            <thead>
+              <tr>
+                <th scope="col">{{ 'RMA.FIELDS.DESCRIPTION' | translate }}</th>
+                <th scope="col" class="public-num">{{ 'RMA.FIELDS.QTY' | translate }}</th>
+                <th scope="col" class="public-num">{{ 'RMA.FIELDS.UNIT_PRICE' | translate }}</th>
+                <th scope="col" class="public-num">{{ 'COMMON.TOTAL' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of lines.data; track $index) {
+                <tr>
+                  <td>{{ line.description }}</td>
+                  <td class="public-num">{{ toAmount(line.qty) }}</td>
+                  <td class="public-num">
+                    {{ toAmount(line.unit_price) | appCurrency: currency() }}
+                  </td>
+                  <td class="public-num">
+                    {{ toAmount(line.total_price) | appCurrency: currency() }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <dl class="public-totals">
+            <dt>{{ 'RMA.ESTIMATE.LABOUR' | translate }}</dt>
+            <dd>{{ toAmount(e.labour_total) | appCurrency: currency() }}</dd>
+            <dt>{{ 'RMA.ESTIMATE.PARTS' | translate }}</dt>
+            <dd>{{ toAmount(e.parts_total) | appCurrency: currency() }}</dd>
+            <dt class="public-grand">{{ 'RMA.ESTIMATE.TOTAL' | translate }}</dt>
+            <dd class="public-grand">{{ toAmount(e.total) | appCurrency: currency() }}</dd>
+          </dl>
+        </nz-card>
+
+        <nz-card class="public-decision" aria-live="polite">
+          @if (decision(); as d) {
+            @if (alreadyDecided()) {
+              <nz-alert
+                nzType="info"
+                nzShowIcon
+                [nzMessage]="'RMA.ERRORS.ALREADY_DECIDED' | translate"
+              />
+            }
+            <p class="public-decision-result" role="status">
+              @if (d === 'approved') {
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                {{ 'RMA.PUBLIC.DECISION_APPROVED' | translate }}
+              } @else {
+                <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                {{ 'RMA.PUBLIC.DECISION_DECLINED' | translate }}
+              }
+            </p>
+            <div class="public-actions">
+              <button nz-button nzType="primary" type="button" disabled>
+                {{ 'RMA.PUBLIC.ACCEPT' | translate }}
+              </button>
+              <button nz-button type="button" disabled>
+                {{ 'RMA.PUBLIC.DECLINE' | translate }}
+              </button>
+            </div>
+          } @else {
+            <form (ngSubmit)="decide('approved')">
+              <label class="public-label" for="estimate-name">
+                {{ 'RMA.PUBLIC.YOUR_NAME' | translate }} <span aria-hidden="true">*</span>
+              </label>
+              <input
+                nz-input
+                id="estimate-name"
+                name="name"
+                autocomplete="name"
+                required
+                [attr.aria-invalid]="!!nameError()"
+                [attr.aria-describedby]="nameError() ? 'estimate-name-error' : null"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+              />
+              @if (nameError(); as err) {
+                <p id="estimate-name-error" class="rma-form-error" role="alert">
+                  {{ err | translate }}
+                </p>
+              }
+              <label class="public-label" for="estimate-reason">{{
+                'RMA.PUBLIC.DECLINE_REASON' | translate
+              }}</label>
+              <textarea
+                nz-input
+                id="estimate-reason"
+                name="reason"
+                rows="2"
+                [ngModel]="reason()"
+                (ngModelChange)="reason.set($event)"
+              ></textarea>
+              <p class="public-hint">{{ 'RMA.PUBLIC.DECISION_HINT' | translate }}</p>
+              <div class="public-actions">
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="submit"
+                  [nzLoading]="submitting() === 'approved'"
+                  [disabled]="!!submitting()"
+                >
+                  <i class="fa-solid fa-check" aria-hidden="true"></i>&nbsp;{{
+                    'RMA.PUBLIC.ACCEPT' | translate
+                  }}
+                </button>
+                <button
+                  nz-button
+                  nzDanger
+                  type="button"
+                  [nzLoading]="submitting() === 'declined'"
+                  [disabled]="!!submitting()"
+                  (click)="decide('declined')"
+                >
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>&nbsp;{{
+                    'RMA.PUBLIC.DECLINE' | translate
+                  }}
+                </button>
+              </div>
+            </form>
+          }
+        </nz-card>
+      }
+    }
+  }
+</app-rma-public-shell>
