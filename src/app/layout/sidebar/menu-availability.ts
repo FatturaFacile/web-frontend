@@ -250,6 +250,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/sales/invoices',
   '/sales/orders',
   '/sales/qr-bill',
+  '/sales/recurring-contracts',
   '/sales/sdi',
   '/sectors/craft-lab',
   '/sectors/mechanic',
