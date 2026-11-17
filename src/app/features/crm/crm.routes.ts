@@ -15,7 +15,7 @@ export const CRM_ROUTES: Routes = [
   },
   {
     path: 'clients/:id',
-    data: { breadcrumb: 'Customer 360', title: 'Customer 360' },
+    data: { breadcrumb: 'CRM.CUSTOMER360.TITLE', title: 'CRM.CUSTOMER360.TITLE' },
     loadComponent: () =>
       import('./clients/customer-360.component').then((m) => m.Customer360Component),
   },

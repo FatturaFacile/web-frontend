@@ -13,7 +13,6 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { catchError, forkJoin, of } from 'rxjs';
 import { PageHeaderComponent } from '@shared';
-import { humanize, translateOr } from '../leads/lead-i18n';
 
 interface TimelineEntry {
   kind: string;
@@ -40,75 +39,67 @@ interface TimelineEntry {
     PageHeaderComponent,
   ],
   template: `
-    <app-page-header
-      [title]="name()"
-      [subtitle]="label('CRM.CUSTOMER360.SUBTITLE', 'Customer 360')"
-    />
-    <a nz-button nzType="link" routerLink="/crm/clients">{{
-      label('CRM.CUSTOMER360.BACK', 'Back to customers')
-    }}</a>
+    <app-page-header [title]="name()" [subtitle]="label('CRM.CUSTOMER360.SUBTITLE')" />
+    <a nz-button nzType="link" routerLink="/crm/clients">{{ label('CRM.CUSTOMER360.BACK') }}</a>
 
     @if (loading()) {
       <nz-skeleton [nzActive]="true" />
     } @else {
-      <nz-card [nzTitle]="label('CRM.CUSTOMER360.REGISTRY', 'Registry')">
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.REGISTRY')">
         <nz-descriptions nzBordered [nzColumn]="2">
-          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.VAT', 'VAT / tax id')">{{
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.VAT')">{{
             taxId()
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.COUNTRY', 'Country')">{{
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.COUNTRY')">{{
             contact()['country']
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.EMAIL', 'E-mail')">{{
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.EMAIL')">{{
             contact()['email']
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.PHONE', 'Phone')">{{
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.PHONE')">{{
             contact()['phone']
           }}</nz-descriptions-item>
         </nz-descriptions>
       </nz-card>
 
-      <nz-card
-        [nzTitle]="label('CRM.CUSTOMER360.CONTRACTS', 'Maintenance contracts')"
-        class="c360-card"
-      >
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.CONTRACTS')" class="c360-card">
         @for (contract of contracts(); track contract['id']) {
           <div class="c360-row">
             <strong>{{ contract['contract_number'] }}</strong> {{ contract['title'] }}
-            <nz-tag>{{ humanize(str(contract['status'])) }}</nz-tag>
+            <nz-tag>{{ value(contract['status']) }}</nz-tag>
             @if (contract['low_balance']) {
-              <nz-tag nzColor="orange">{{ label('RES.F.low_balance', 'Low balance') }}</nz-tag>
+              <nz-tag nzColor="orange">{{ label('RES.F.low_balance') }}</nz-tag>
             }
-            <span>{{ contract['remaining_hours'] }} / {{ contract['included_hours'] }} h</span>
+            <span
+              >{{ contract['remaining_hours'] }} / {{ contract['included_hours'] }}
+              {{ label('CRM.CUSTOMER360.HOURS_SHORT') }}</span
+            >
           </div>
         } @empty {
           <nz-empty />
         }
       </nz-card>
 
-      <nz-card
-        [nzTitle]="label('CRM.CUSTOMER360.INSTALLED_BASE', 'Installed base and repair history')"
-        class="c360-card"
-      >
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.INSTALLED_BASE')" class="c360-card">
         <nz-collapse>
           @for (asset of assets(); track asset['id']) {
             <nz-collapse-panel
               [nzHeader]="str(asset['serial_number']) + ' · ' + str(asset['installation_site'])"
               (nzActiveChange)="onOpen($event, str(asset['id']))"
             >
-              <nz-tag>{{ humanize(str(asset['asset_status'])) }}</nz-tag>
-              <nz-tag>{{ humanize(str(asset['warranty_status'])) }}</nz-tag>
+              <nz-tag>{{ value(asset['asset_status']) }}</nz-tag>
+              <nz-tag>{{ value(asset['warranty_status']) }}</nz-tag>
               @if (history()[str(asset['id'])]; as entries) {
                 <nz-timeline>
                   @for (entry of entries; track $index) {
                     <nz-timeline-item>
-                      {{ entry.occurredAt | date: 'medium' }} — {{ humanize(entry.kind) }}
+                      {{ entry.occurredAt | date: 'medium' }} — {{ kind(entry.kind) }}
                       {{ entry.reference }}
                       @if (entry.status) {
-                        ({{ humanize(entry.status) }})
+                        ({{ value(entry.status) }})
                       }
                       @if (entry.hours) {
-                        {{ entry.hours }} h
+                        {{ entry.hours }} {{ label('CRM.CUSTOMER360.HOURS_SHORT') }}
                       }
                     </nz-timeline-item>
                   } @empty {
@@ -150,7 +141,6 @@ export class Customer360Component {
   protected readonly contracts = signal<ResourceRow[]>([]);
   protected readonly assets = signal<ResourceRow[]>([]);
   protected readonly history = signal<Record<string, TimelineEntry[]>>({});
-  protected readonly humanize = humanize;
 
   protected readonly name = computed(() => this.str(this.contact()['name']) || '…');
   protected readonly taxId = computed(() => {
@@ -183,8 +173,16 @@ export class Customer360Component {
       });
   }
 
-  protected label(key: string, fallback: string): string {
-    return translateOr(this.i18n, key, fallback);
+  protected label(key: string): string {
+    return this.i18n.translate(key);
+  }
+
+  protected value(raw: unknown): string {
+    return this.i18n.translate(`RES.V.${this.str(raw)}`);
+  }
+
+  protected kind(raw: string): string {
+    return this.i18n.translate(`CRM.CUSTOMER360.KIND_${raw.toUpperCase()}`);
   }
 
   protected str(value: unknown): string {
