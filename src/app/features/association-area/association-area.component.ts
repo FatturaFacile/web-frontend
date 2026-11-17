@@ -7,6 +7,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { FormsModule } from '@angular/forms';
+import { AreaBallotsComponent } from './area-ballots.component';
 import { AreaActivityComponent } from './area-activity.component';
 import { AreaInstructorComponent } from './area-instructor.component';
 import { AreaMoneyComponent } from './area-money.component';
@@ -21,6 +22,7 @@ import { AreaProfileComponent } from './area-profile.component';
   styleUrl: './association-area.component.scss',
   imports: [
     AreaActivityComponent,
+    AreaBallotsComponent,
     AreaInstructorComponent,
     AreaMoneyComponent,
     AreaProfileComponent,
@@ -61,6 +63,9 @@ import { AreaProfileComponent } from './area-profile.component';
             </nz-tab>
             <nz-tab [nzTitle]="'ASSOC_AREA.ACTIVITY' | translate">
               <ng-template nz-tab><app-area-activity [memberId]="person.id" [isWard]="!isSelf()" /></ng-template>
+            </nz-tab>
+            <nz-tab [nzTitle]="'ASSOC_AREA.BALLOTS' | translate">
+              <ng-template nz-tab><app-area-ballots /></ng-template>
             </nz-tab>
             <nz-tab [nzTitle]="'ASSOC_AREA.INSTRUCTOR' | translate">
               <ng-template nz-tab><app-area-instructor /></ng-template>

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { PLANNING_ADMIN_PAGE } from './planning-admin.page';
 
 export const PLANNING_ROUTES: Routes = [
   {
@@ -27,5 +28,10 @@ export const PLANNING_ROUTES: Routes = [
     path: 'resources',
     data: { breadcrumb: 'NAV.PLANNING_RESOURCES', title: 'PAGE_TITLE.PLANNING_RESOURCES' },
     loadComponent: () => import('./planning-resources.component').then((m) => m.PlanningResourcesComponent),
+  },
+  {
+    path: 'admin',
+    data: { breadcrumb: 'RES.PAGE.PLANNING_ADMIN', title: 'RES.PAGE.PLANNING_ADMIN', page: PLANNING_ADMIN_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

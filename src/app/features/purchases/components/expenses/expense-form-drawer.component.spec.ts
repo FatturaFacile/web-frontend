@@ -12,12 +12,15 @@ import { ExpenseFormDrawerComponent } from './expense-form-drawer.component';
 describe('ExpenseFormDrawerComponent', () => {
   let fixture: ComponentFixture<ExpenseFormDrawerComponent>;
   let component: ExpenseFormDrawerComponent;
-  let api: { createExpense: ReturnType<typeof vi.fn>; updateExpense: ReturnType<typeof vi.fn> };
+  let api: Record<'createExpense' | 'updateExpense' | 'getExpense' | 'uploadExpenseAttachment' | 'downloadExpenseAttachment', ReturnType<typeof vi.fn>>;
 
   beforeEach(async () => {
     api = {
       createExpense: vi.fn().mockReturnValue(of({ data: { id: 'e-1' } })),
       updateExpense: vi.fn().mockReturnValue(of({ data: { id: 'e-1' } })),
+      getExpense: vi.fn().mockReturnValue(of({ data: { id: 'e-1', attachments: [{ id: 'a-1', expense_id: 'e-1', original_name: 'r.pdf', mime_type: 'application/pdf', size: 1 }] } })),
+      uploadExpenseAttachment: vi.fn().mockReturnValue(of({ data: {} })),
+      downloadExpenseAttachment: vi.fn().mockReturnValue(of(new Blob(['x']))),
     };
     TestBed.configureTestingModule({
       imports: [ExpenseFormDrawerComponent],
@@ -66,5 +69,25 @@ describe('ExpenseFormDrawerComponent', () => {
     for (const legacy of ['amount', 'merchant', 'description']) {
       expect(payload).not.toHaveProperty(legacy);
     }
+  });
+
+  it('lists the receipts of an edited expense and uploads new ones as files[]', () => {
+    fixture.componentRef.setInput('expense', { id: 'e-1', date: '2026-11-09', amount_gross: 5, currency: 'EUR', status: 'draft' });
+    fixture.detectChanges();
+    expect(api.getExpense).toHaveBeenCalledWith('e-1');
+    expect(component['attachments']().map((a) => a.id)).toEqual(['a-1']);
+
+    const file = new File(['x'], 'scan.pdf', { type: 'application/pdf' });
+    component['upload']({ target: { files: [file], value: '' } } as unknown as Event);
+    const body = api.uploadExpenseAttachment.mock.calls[0][1] as FormData;
+    expect(api.uploadExpenseAttachment.mock.calls[0][0]).toBe('e-1');
+    expect(body.getAll('files[]')).toHaveLength(1);
+  });
+
+  it('downloads a receipt through the API', () => {
+    URL.createObjectURL = vi.fn(() => 'blob:x');
+    URL.revokeObjectURL = vi.fn();
+    component['download']({ id: 'a-1', expense_id: 'e-1', original_name: 'r.pdf', mime_type: 'application/pdf', size: 1 });
+    expect(api.downloadExpenseAttachment).toHaveBeenCalledWith('e-1', 'a-1');
   });
 });

@@ -3,6 +3,7 @@
   [subtitle]="'projects.subtitle' | translate"
 >
   <div class="header-actions">
+    <a nz-button routerLink="planning">{{ 'PRJ.LBL_PLANNING' | translate }}</a>
     <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
   </div>
 </app-page-header>
@@ -65,7 +66,12 @@
                 <a *nzSpaceItem nz-button nzType="link" nzSize="small" [routerLink]="[p.id, 'control']">
                   {{ 'PRJ.CONTROL' | translate }}
                 </a>
-                @if (p.status === 'draft' || p.status === 'paused') {
+                @if (p.status === 'paused') {
+                  <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="resume(p)">
+                    {{ 'PRJ.LBL_RESUME' | translate }}
+                  </button>
+                }
+                @if (p.status === 'draft') {
                   <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="start(p)">
                     {{ 'PRJ.LBL_START' | translate }}
                   </button>

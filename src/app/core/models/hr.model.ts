@@ -9,6 +9,8 @@ export interface EmployeeResource {
   last_name: string;
   full_name: string;
   work_email: string;
+  phone?: string | null;
+  personal_email?: string | null;
   department_id?: string | null;
   department_name?: string | null;
   team_id?: string | null;

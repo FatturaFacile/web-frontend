@@ -57,6 +57,15 @@ import { BaseTableComponent, MoneyPipe, PageHeaderComponent, TableColumnDef, Tra
 import { formErrorTip } from './form-error-tip';
 import { ProductCustomsOriginComponent, taricCodeValidator } from './product-customs-origin.component';
 
+/** API decimals arrive as strings; an empty value stays null so the field is cleared rather than set to 0. */
+function toNumberOrNull(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 /** Local calendar day as YYYY-MM-DD (the API wants a company day, not a UTC instant). */
 function toIsoDay(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -151,6 +160,13 @@ export class InventoryComponent implements OnInit {
       preferential_agreement_id: this.fb.control<string | null>(null),
       eur1_required: this.fb.control(false),
       origin_rule_notes: this.fb.control(''),
+      swiss_hs_code: this.fb.control('', [Validators.pattern(/^\d{8}$/)]),
+      supplementary_unit: this.fb.control('', [Validators.maxLength(10)]),
+      customs_duty_rate: this.fb.control<number | null>(null, [Validators.min(0), Validators.max(999)]),
+      net_weight_kg: this.fb.control<number | null>(null, [Validators.min(0)]),
+      gross_weight_kg: this.fb.control<number | null>(null, [Validators.min(0)]),
+      packages_count: this.fb.control<number | null>(null, [Validators.min(0)]),
+      preferential_origin_eligible: this.fb.control(false),
     }),
   });
 
@@ -723,6 +739,13 @@ export class InventoryComponent implements OnInit {
         preferential_agreement_id: null,
         eur1_required: false,
         origin_rule_notes: '',
+        swiss_hs_code: '',
+        supplementary_unit: '',
+        customs_duty_rate: null,
+        net_weight_kg: null,
+        gross_weight_kg: null,
+        packages_count: null,
+        preferential_origin_eligible: false,
       },
     });
     this.createModalVisible.set(true);
@@ -748,6 +771,13 @@ export class InventoryComponent implements OnInit {
         preferential_agreement_id: item.preferential_agreement_id ?? null,
         eur1_required: item.eur1_required ?? false,
         origin_rule_notes: item.origin_rule_notes ?? '',
+        swiss_hs_code: item.swiss_hs_code ?? '',
+        supplementary_unit: item.supplementary_unit ?? '',
+        customs_duty_rate: toNumberOrNull(item.customs_duty_rate),
+        net_weight_kg: toNumberOrNull(item.net_weight_kg),
+        gross_weight_kg: toNumberOrNull(item.gross_weight_kg),
+        packages_count: item.packages_count ?? null,
+        preferential_origin_eligible: item.preferential_origin_eligible ?? false,
       },
     });
     this.createModalVisible.set(true);
@@ -779,6 +809,13 @@ export class InventoryComponent implements OnInit {
       preferential_agreement_id: customs.preferential_agreement_id || null,
       eur1_required: customs.eur1_required,
       origin_rule_notes: customs.origin_rule_notes.trim() || null,
+      swiss_hs_code: customs.swiss_hs_code.trim() || null,
+      supplementary_unit: customs.supplementary_unit.trim() || null,
+      customs_duty_rate: customs.customs_duty_rate,
+      net_weight_kg: customs.net_weight_kg,
+      gross_weight_kg: customs.gross_weight_kg,
+      packages_count: customs.packages_count,
+      preferential_origin_eligible: customs.preferential_origin_eligible,
     };
 
     const editing = this.editingProduct();

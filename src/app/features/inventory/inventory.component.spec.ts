@@ -470,6 +470,13 @@ describe('InventoryComponent', () => {
       preferential_agreement_id: null,
       eur1_required: false,
       origin_rule_notes: null,
+      swiss_hs_code: null,
+      supplementary_unit: null,
+      customs_duty_rate: null,
+      net_weight_kg: null,
+      gross_weight_kg: null,
+      packages_count: null,
+      preferential_origin_eligible: false,
     });
     expect(mockMessage.success).toHaveBeenCalledWith('inventory.messages.created');
     expect(component.createModalVisible()).toBe(false);
@@ -509,6 +516,45 @@ describe('InventoryComponent', () => {
         origin_rule_notes: null,
       }),
     );
+  });
+
+  it('sends the cross-border customs fields of the product and validates the Swiss code', () => {
+    fixture.detectChanges();
+    component.openCreateModal();
+    component.productForm.patchValue({
+      sku: 'SKU-004',
+      name: 'Cheese',
+      customs: {
+        swiss_hs_code: '04069000',
+        supplementary_unit: ' kg ',
+        customs_duty_rate: 12.5,
+        net_weight_kg: 1.2,
+        gross_weight_kg: 1.5,
+        packages_count: 3,
+        preferential_origin_eligible: true,
+      },
+    });
+
+    component.submitCreateProduct();
+
+    expect(mockInventoryApi.createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        swiss_hs_code: '04069000',
+        supplementary_unit: 'kg',
+        customs_duty_rate: 12.5,
+        net_weight_kg: 1.2,
+        gross_weight_kg: 1.5,
+        packages_count: 3,
+        preferential_origin_eligible: true,
+      }),
+    );
+
+    mockInventoryApi.createProduct.mockClear();
+    component.openCreateModal();
+    component.productForm.patchValue({ sku: 'S', name: 'N', customs: { swiss_hs_code: '1234' } });
+    expect(component.productForm.controls.customs.controls.swiss_hs_code.invalid).toBe(true);
+    component.submitCreateProduct();
+    expect(mockInventoryApi.createProduct).not.toHaveBeenCalled();
   });
 
   it('refuses a customs code that is not 6, 8 or 10 digits', () => {

@@ -8,6 +8,7 @@ import {
   Jurisdiction,
   LaravelPaginationMeta,
   PassportGenealogy,
+  UpdatePassportPayload,
   WarrantyRmaApiService,
 } from '@core';
 import { ActionResult, RmaNotifier, runRequest } from './action-result';
@@ -112,6 +113,20 @@ export const PassportStore = signalStore(
       }
       patchState(store, { passport: res.data.data });
       notifier.success('RMA.MESSAGES.EXTENSION_ADDED');
+      return { ok: true, data: res.data.data };
+    },
+    async updatePassport(
+      id: string,
+      payload: UpdatePassportPayload,
+    ): Promise<ActionResult<EquipmentPassport>> {
+      patchState(store, { saving: true });
+      const res = await runRequest(api.updatePassport(id, payload));
+      patchState(store, { saving: false });
+      if (!res.ok) {
+        return res;
+      }
+      patchState(store, { passport: res.data.data });
+      notifier.success('RMA.MESSAGES.PASSPORT_UPDATED');
       return { ok: true, data: res.data.data };
     },
   })),

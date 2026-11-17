@@ -16,7 +16,12 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import {
+  IconActionDirective,
+  ModalActionsDirective,
+  TranslatePipe,
+  ViesVerifyComponent,
+} from '@shared';
 import {
   applyServerErrors,
   ClientApiService,
@@ -26,6 +31,7 @@ import {
   ContactResource,
   ContactType,
   I18nService,
+  isEuMemberState,
   serverErrorMessage,
 } from '@core';
 
@@ -70,6 +76,7 @@ function exactLengthWhenFilled(length: number): ValidatorFn {
     NzSelectModule,
     NzButtonModule,
     TranslatePipe,
+    ViesVerifyComponent,
   ],
   templateUrl: './client-form-drawer.component.html',
 })
@@ -241,6 +248,11 @@ export class ClientFormDrawerComponent {
       }
       control.updateValueAndValidity({ emitEvent: false });
     }
+  }
+
+  /** The VIES check only applies to counterparties of an EU Member State. */
+  isEuCountry(): boolean {
+    return isEuMemberState(this.form.controls.country.value);
   }
 
   errorTip(path: string): string {

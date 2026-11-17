@@ -46,6 +46,7 @@ import {
   TranslateService,
 } from '@core';
 import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective, ModalActionsDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { downloadBlob } from '@shared/utils/download-blob';
 import { uuidFormat } from '@shared/utils/uuid-validator';
 import { validationTipKey } from '@shared/utils/validation-tip';
 
@@ -631,6 +632,16 @@ export class DmsComponent implements OnInit {
         this.approvalSubmitting.set(false);
         this.message.error(this.failureText(err, this.translate.instant('DMS.MSG_APPROVAL_ERROR')));
       },
+    });
+  }
+
+  downloadVersion(version: DmsDocumentVersionResource): void {
+    const doc = this.selectedDocument();
+    if (!doc) return;
+
+    this.dmsApi.downloadVersion(doc.id, version.id).subscribe({
+      next: (blob) => downloadBlob(blob, version.original_name),
+      error: () => this.message.error(this.translate.instant('DMS.MSG_ERRORE_DOWNLOAD')),
     });
   }
 

@@ -113,6 +113,7 @@ export class PortalComponent implements OnInit {
   readonly stockMovementsHasMore = signal<boolean>(false);
   private stockMovementsPage = 1;
   readonly customsDossiers = signal<CustomsPortalDossier[]>([]);
+  readonly customsRequests = signal<(Partial<CustomsPortalShipmentRequest> & { id?: string; status?: string })[]>([]);
 
   // Modals & Drawers visibility
   readonly approveModalVisible = signal<boolean>(false);
@@ -378,6 +379,10 @@ export class PortalComponent implements OnInit {
   }
 
   loadCustoms(): void {
+    this.portalApi.getCustomsShipmentRequests(this.token()).subscribe({
+      next: (res) => this.customsRequests.set((res.data as unknown as (Partial<CustomsPortalShipmentRequest> & { id?: string; status?: string })[]) || []),
+      error: () => undefined,
+    });
     this.portalApi.getCustomsDossiers(this.token()).subscribe({
       next: (res) => {
         this.customsDossiers.set(res.data || []);

@@ -35,6 +35,8 @@ describe('CommunicationCampaignsComponent', () => {
   const apiSpy = {
     getCampaigns: vi.fn(),
     createCampaign: vi.fn(),
+    updateCampaign: vi.fn(),
+    deleteCampaign: vi.fn(),
     previewCampaign: vi.fn(),
     scheduleCampaign: vi.fn(),
     sendCampaign: vi.fn(),
@@ -49,6 +51,8 @@ describe('CommunicationCampaignsComponent', () => {
     vi.clearAllMocks();
     apiSpy.getCampaigns.mockReturnValue(of({ data: [campaign] }));
     apiSpy.createCampaign.mockReturnValue(of({ data: campaign }));
+    apiSpy.updateCampaign.mockReturnValue(of({ data: campaign }));
+    apiSpy.deleteCampaign.mockReturnValue(of(undefined));
     apiSpy.previewCampaign.mockReturnValue(of({ data: { total: 3, deliverable: 1, suppressed: { opted_out: 2 } } }));
     apiSpy.scheduleCampaign.mockReturnValue(of({ data: { ...campaign, status: 'scheduled' } }));
     apiSpy.sendCampaign.mockReturnValue(of({ data: { ...campaign, status: 'completed' } }));
@@ -112,6 +116,21 @@ describe('CommunicationCampaignsComponent', () => {
 
     component.cancel(campaign);
     expect(apiSpy.cancelCampaign).toHaveBeenCalledWith('camp-1');
+  });
+
+  it('edits an open campaign with PUT instead of creating a new one', () => {
+    component.openEdit(campaign);
+    expect(component.form.getRawValue().name).toBe('Spring');
+    component.form.patchValue({ name: 'Summer' });
+    component.create();
+    expect(apiSpy.updateCampaign).toHaveBeenCalledWith('camp-1', expect.objectContaining({ name: 'Summer' }));
+    expect(apiSpy.createCampaign).not.toHaveBeenCalled();
+  });
+
+  it('deletes a campaign and reloads the list', () => {
+    component.remove(campaign);
+    expect(apiSpy.deleteCampaign).toHaveBeenCalledWith('camp-1');
+    expect(apiSpy.getCampaigns).toHaveBeenCalledTimes(2);
   });
 
   it('only draft and scheduled campaigns are open', () => {

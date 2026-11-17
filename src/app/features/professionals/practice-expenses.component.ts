@@ -97,6 +97,9 @@ import { apiErrorText, loadCases, todayIso } from './practice-firm.util';
                 <div class="row-actions">
                   @if (row.has_receipt) {
                     <button nz-button nzType="link" (click)="downloadReceipt(row)">{{ 'PRACTICEFIRM.RECEIPT' | translate }}</button>
+                    <button nz-button nzType="text" nzDanger nz-popconfirm [nzPopconfirmTitle]="'PRACTICEFIRM.DELETE_RECEIPT_CONFIRM' | translate" (nzOnConfirm)="removeReceipt(row)">
+                      {{ 'PRACTICEFIRM.DELETE_RECEIPT' | translate }}
+                    </button>
                   }
                   <button nz-button nzType="default" (click)="pickReceipt(row, receiptInput)">{{ 'PRACTICEFIRM.ATTACH_RECEIPT' | translate }}</button>
                   @if (!row.is_billed) {
@@ -266,6 +269,16 @@ export class PracticeExpensesComponent implements OnInit {
   downloadReceipt(expense: PracticeExpense): void {
     this.api.downloadExpenseReceipt(expense.id).subscribe({
       next: (blob) => downloadBlob(blob, expense.receipt_name ?? `${expense.id}`),
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  removeReceipt(expense: PracticeExpense): void {
+    this.api.deleteExpenseReceipt(expense.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PRACTICEFIRM.RECEIPT_DELETED'));
+        this.load();
+      },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
     });
   }

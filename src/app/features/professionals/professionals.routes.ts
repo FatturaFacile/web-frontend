@@ -28,4 +28,9 @@ export const PROFESSIONALS_ROUTES: Routes = [
     data: { breadcrumb: 'NAV.PRACTICE_TRUST', title: 'PAGE_TITLE.PRACTICE_TRUST' },
     loadComponent: () => import('./practice-trust.component').then((m) => m.PracticeTrustComponent),
   },
+  {
+    path: 'manual-fee-note',
+    data: { breadcrumb: 'Parcella manuale', title: 'Parcella manuale' },
+    loadComponent: () => import('./manual-fee-note.page').then((m) => m.ManualFeeNoteComponent),
+  },
 ];

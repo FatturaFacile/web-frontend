@@ -125,6 +125,36 @@ export const CONSTRUCTION_TRADES_PAGE: ResourcePageConfig = {
       rowActions: [
         act('GET', 'RES.A.view_settlement', '/construction-trades/bids/{id}/settlement', { showResult: true }),
         act('POST', 'RES.A.approve_settlement', '/construction-trades/bids/{id}/settlement/approve', { confirm: true, showResult: true }),
+        act('PUT', 'RES.ACTION.EDIT', '/construction-trades/bids/{id}', {
+          prefill: true,
+          fields: [
+            rf.uuid('construction_site_id'),
+            req(rf.uuid('contact_id')),
+            req(rf.text('title', { maxLength: 190 })),
+            req(rf.select('language', ['de', 'fr', 'it', 'en'])),
+            req(rf.text('currency', { maxLength: 3 })),
+            req(rf.decimal('tax_rate', { min: 0, max: 100 })),
+            rf.date('valid_until'),
+            rf.textarea('notes', { maxLength: 2000 }),
+          ],
+        }),
+        act('DELETE', 'RES.A.remove_bid_position', '/construction-trades/bids/{id}/positions/{position_id}', {
+          fields: [req(rf.uuid('position_id'))],
+          confirm: true,
+          danger: true,
+        }),
+        act('GET', 'RES.A.view_site_costs', '/construction-trades/bids/{id}/site-costs', { showResult: true }),
+        act('POST', 'RES.A.record_site_cost', '/construction-trades/bids/{id}/site-costs', {
+          fields: [
+            req(rf.select('cost_type', ['labour', 'material', 'machine', 'other'])),
+            req(rf.date('cost_date', { notInFuture: true })),
+            rf.uuid('bid_position_id'),
+            rf.uuid('worker_user_id'),
+            req(rf.text('description', { maxLength: 255 })),
+            req(rf.decimal('quantity', { min: 0 })),
+            req(rf.decimal('unit_cost', { min: 0 })),
+          ],
+        }),
         act('GET', 'RES.A.tender_specification', '/construction-trades/bids/{id}/tender-specification', {
           fields: [rf.bool('with_prices')],
           download: true,
@@ -160,11 +190,23 @@ export const CONSTRUCTION_TRADES_PAGE: ResourcePageConfig = {
         columns: [...cols('description', 'contract_amount'), tagCol('status'), col('starts_on', 'date'), col('ends_on', 'date')],
       },
       rowActions: [
+        act('GET', 'RES.A.view_subcontract', '/construction-trades/subcontracts/{id}', { showResult: true }),
         act('POST', 'RES.A.close_subcontract', '/construction-trades/subcontracts/{id}/status', {
           fields: [req(rf.select('status', ['completed', 'cancelled']))],
           visible: whenIn('status', 'active'),
         }),
       ],
+    },
+    {
+      id: 'site-documents',
+      titleKey: 'RES.P.site_documents',
+      module: 'construction_trades',
+      list: {
+        path: '/construction-trades/sites/{siteId}/documents',
+        scope: SITE_SCOPE,
+        columns: [...cols('title', 'kind'), col('issued_on', 'date'), col('expires_on', 'date')],
+      },
+      rowActions: [act('DELETE', 'RES.A.delete_site_document', '/construction-trades/site-documents/{id}', { confirm: true, danger: true })],
     },
     {
       id: 'diary',

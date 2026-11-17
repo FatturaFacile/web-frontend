@@ -127,6 +127,7 @@ describe('DmsComponent', () => {
     placeLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], legal_hold: true } })),
     releaseLegalHold: vi.fn().mockReturnValue(of({ success: true, data: { ...mockDocuments[0], legal_hold: false } })),
     getDocumentVersions: vi.fn().mockReturnValue(of({ success: true, data: mockVersions })),
+    downloadVersion: vi.fn().mockReturnValue(of(new Blob(['x']))),
     verifyVersion: vi.fn().mockReturnValue(of({ success: true, data: { is_valid: true } })),
     getDocumentLinks: vi.fn().mockReturnValue(of({ success: true, data: mockLinks })),
     linkDocument: vi.fn().mockReturnValue(of({ success: true, data: mockLinks[0] })),
@@ -254,6 +255,12 @@ describe('DmsComponent', () => {
     component.verifySha256(version);
     expect(mockDmsApi.verifyVersion).toHaveBeenCalledWith(doc.id, version.id);
     expect(mockMessage.success).toHaveBeenCalled();
+
+    // Download the stored file of the version
+    URL.createObjectURL = vi.fn().mockReturnValue('blob:x');
+    URL.revokeObjectURL = vi.fn();
+    component.downloadVersion(version);
+    expect(mockDmsApi.downloadVersion).toHaveBeenCalledWith(doc.id, version.id);
 
     // Confirm extraction
     const extr = mockExtractions[0];

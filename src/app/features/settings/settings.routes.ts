@@ -133,11 +133,29 @@ export const SETTINGS_ROUTES: Routes = [
       import('./pages/users/user-tenants.component').then((m) => m.UserTenantsComponent),
   },
   {
+    path: 'admin/tenant-plan',
+    canActivate: [platformAdminGuard],
+    data: { breadcrumb: 'tenantPlan.title', title: 'tenantPlan.title' },
+    loadComponent: () => import('./pages/users/tenant-plan.component').then((m) => m.TenantPlanComponent),
+  },
+  {
     path: 'admin/access-requests',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'NAV.ADMIN_ACCESS_REQUESTS', title: 'NAV.ADMIN_ACCESS_REQUESTS' },
     loadComponent: () =>
       import('./pages/access-requests/access-requests.component').then((m) => m.AccessRequestsComponent),
+  },
+  {
+    path: 'webhooks',
+    canActivate: [moduleGuard('integrations', 'read')],
+    data: { breadcrumb: 'Webhook', title: 'Webhook' },
+    loadComponent: () => import('./pages/webhooks/webhooks.component').then((m) => m.WebhooksComponent),
+  },
+  {
+    path: 'tags',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'Tag condivisi', title: 'Tag condivisi' },
+    loadComponent: () => import('./pages/tags/tags.component').then((m) => m.CollaborationTagsComponent),
   },
   {
     path: 'lookups',

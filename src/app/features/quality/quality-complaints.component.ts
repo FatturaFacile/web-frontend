@@ -18,6 +18,7 @@ import {
   ComplaintSeverity,
   ComplaintStatus,
   QualityApiService,
+  QualityExtraApiService,
   QualityComplaint,
   QualityComplaintRequest,
   TranslateService,
@@ -88,6 +89,12 @@ const TEXT_ACTIONS: Partial<Record<ComplaintAction, string>> = {
               <td><nz-tag [nzColor]="color(row.status)">{{ ('QUALITY.COMPLAINT_' + row.status.toUpperCase()) | translate }}</nz-tag></td>
               <td>
                 <div class="row-actions">
+                  @if (row.status !== 'closed' && row.status !== 'rejected') {
+                    <button nz-button nzType="text" (click)="openEditModal(row)">{{ 'QUALITY.ACTION_EDIT' | translate }}</button>
+                    @if (!row.nonconformity_id) {
+                      <button nz-button nzType="text" (click)="openLinkModal(row)">{{ 'QUALITY.ACTION_LINK_NC' | translate }}</button>
+                    }
+                  }
                   @if (row.status === 'received') {
                     <button nz-button nzType="text" (click)="run(row, 'investigate')">{{ 'QUALITY.ACTION_INVESTIGATE' | translate }}</button>
                   }
@@ -117,7 +124,7 @@ const TEXT_ACTIONS: Partial<Record<ComplaintAction, string>> = {
       }
     </nz-card>
 
-    <nz-modal [(nzVisible)]="createVisible" [nzTitle]="'QUALITY.NEW_COMPLAINT' | translate" (nzOnCancel)="createVisible.set(false)" (nzOnOk)="create()" okAction="save" [nzOkDisabled]="form.invalid">
+    <nz-modal [(nzVisible)]="createVisible" [nzTitle]="(editingId() ? 'QUALITY.ACTION_EDIT' : 'QUALITY.NEW_COMPLAINT') | translate" (nzOnCancel)="createVisible.set(false)" (nzOnOk)="create()" okAction="save" [nzOkDisabled]="form.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="form" nzLayout="vertical">
           <nz-form-item>
@@ -168,6 +175,21 @@ const TEXT_ACTIONS: Partial<Record<ComplaintAction, string>> = {
       </ng-container>
     </nz-modal>
 
+    <nz-modal [(nzVisible)]="linkVisible" [nzTitle]="'QUALITY.ACTION_LINK_NC' | translate" (nzOnCancel)="linkVisible.set(false)" (nzOnOk)="submitLink()" okAction="save" [nzOkDisabled]="linkForm.invalid">
+      <ng-container *nzModalContent>
+        <form nz-form [formGroup]="linkForm" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzFor="cmp-nc">{{ 'QUALITY.NONCONFORMITY_ID' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input id="cmp-nc" formControlName="nonconformity_id" maxlength="36" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="cmp-capa">{{ 'QUALITY.CAPA_ACTION_ID' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input id="cmp-capa" formControlName="capa_action_id" maxlength="36" /></nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+    </nz-modal>
+
     <nz-modal [(nzVisible)]="textVisible" [nzTitle]="('QUALITY.ACTION_' + textActionKey()) | translate" (nzOnCancel)="textVisible.set(false)" (nzOnOk)="submitText()" okAction="save" [nzOkDisabled]="requiresText() && textForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="textForm" nzLayout="vertical">
@@ -181,6 +203,7 @@ const TEXT_ACTIONS: Partial<Record<ComplaintAction, string>> = {
 })
 export class QualityComplaintsComponent implements OnInit {
   private readonly api = inject(QualityApiService);
+  private readonly extraApi = inject(QualityExtraApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -191,6 +214,9 @@ export class QualityComplaintsComponent implements OnInit {
   readonly loading = signal(false);
   readonly createVisible = signal(false);
   readonly textVisible = signal(false);
+  readonly linkVisible = signal(false);
+  readonly editingId = signal<string | null>(null);
+  private linkTarget: QualityComplaint | null = null;
   readonly textTarget = signal<{ complaint: QualityComplaint; action: ComplaintAction } | null>(null);
 
   readonly form = this.fb.group({
@@ -202,6 +228,11 @@ export class QualityComplaintsComponent implements OnInit {
     product_description: [''],
     description: ['', [Validators.required]],
   });
+
+  readonly linkForm = this.fb.group(
+    { nonconformity_id: [''], capa_action_id: [''] },
+    { validators: (group) => (group.value.nonconformity_id?.trim() || group.value.capa_action_id?.trim() ? null : { target: true }) },
+  );
 
   readonly textForm = this.fb.group({ text: [''] });
 
@@ -237,6 +268,7 @@ export class QualityComplaintsComponent implements OnInit {
   }
 
   openCreateModal(): void {
+    this.editingId.set(null);
     this.form.reset({ customer_name: '', received_at: todayIso(), channel: 'email', severity: 'minor', reference: '', product_description: '', description: '' });
     this.createVisible.set(true);
   }
@@ -252,7 +284,9 @@ export class QualityComplaintsComponent implements OnInit {
       description: value.description.trim(),
       severity: value.severity,
     };
-    this.api.createComplaint(payload).subscribe({
+    const id = this.editingId();
+    const request$ = id ? this.extraApi.updateComplaint(id, payload) : this.api.createComplaint(payload);
+    request$.subscribe({
       next: () => {
         this.message.success(this.translate.instant('QUALITY.SAVED'));
         this.createVisible.set(false);
@@ -260,6 +294,46 @@ export class QualityComplaintsComponent implements OnInit {
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('QUALITY.ACTION_ERROR')),
     });
+  }
+
+  openEditModal(complaint: QualityComplaint): void {
+    this.editingId.set(complaint.id);
+    this.form.reset({
+      customer_name: complaint.customer_name,
+      received_at: complaint.received_at.slice(0, 10),
+      channel: complaint.channel,
+      severity: complaint.severity,
+      reference: complaint.reference ?? '',
+      product_description: complaint.product_description ?? '',
+      description: complaint.description,
+    });
+    this.createVisible.set(true);
+  }
+
+  openLinkModal(complaint: QualityComplaint): void {
+    this.linkTarget = complaint;
+    this.linkForm.reset({ nonconformity_id: '', capa_action_id: '' });
+    this.linkVisible.set(true);
+  }
+
+  submitLink(): void {
+    if (!this.linkTarget || this.linkForm.invalid) {
+      return;
+    }
+    const value = this.linkForm.getRawValue();
+    this.extraApi
+      .linkComplaint(this.linkTarget.id, {
+        nonconformity_id: blankToNull(value.nonconformity_id),
+        capa_action_id: blankToNull(value.capa_action_id),
+      })
+      .subscribe({
+        next: () => {
+          this.message.success(this.translate.instant('QUALITY.SAVED'));
+          this.linkVisible.set(false);
+          this.load();
+        },
+        error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('QUALITY.ACTION_ERROR')),
+      });
   }
 
   run(complaint: QualityComplaint, action: ComplaintAction, payload: Record<string, string | null> = {}): void {

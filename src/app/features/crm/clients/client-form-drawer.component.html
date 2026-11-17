@@ -42,6 +42,13 @@
             [nzErrorTip]="errorTip(f.key)"
           >
             <input nz-input [id]="f.key" [formControlName]="f.key" />
+            @if (f.key === 'vat_number' && isEuCountry()) {
+              <app-vies-verify
+                [vatNumber]="form.controls.vat_number.value"
+                [country]="form.controls.country.value"
+                [contactId]="contact()?.id ?? null"
+              />
+            }
           </nz-form-control>
         </nz-form-item>
       }

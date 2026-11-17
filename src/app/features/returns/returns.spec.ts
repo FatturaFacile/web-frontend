@@ -289,7 +289,7 @@ describe('ReturnsRmasComponent', () => {
 });
 
 describe('ReturnsRmaDetailComponent', () => {
-  const api = { getRma: vi.fn(), approveRma: vi.fn(), rejectRma: vi.fn(), receiveRma: vi.fn(), inspectRma: vi.fn(), resolveRma: vi.fn(), closeRma: vi.fn() };
+  const api = { getRma: vi.fn(), approveRma: vi.fn(), rejectRma: vi.fn(), receiveRma: vi.fn(), inspectRma: vi.fn(), resolveRma: vi.fn(), closeRma: vi.fn(), updateRma: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -305,6 +305,21 @@ describe('ReturnsRmaDetailComponent', () => {
     expect(fixture.componentInstance.can('inspected')).toBe(true);
     expect(fixture.componentInstance.can('resolved')).toBe(false);
     expect(fixture.componentInstance.can('rejected')).toBe(false);
+  });
+
+  it('edits a requested return with a partial update', () => {
+    api.updateRma.mockReturnValue(of({ data: { ...rma, status: 'requested', notes: 'new' } }));
+    const fixture = TestBed.createComponent(ReturnsRmaDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openDialog('edit');
+    expect(component.editForm.getRawValue().reason_code).toBe(rma.reason_code);
+    component.editForm.patchValue({ notes: 'new' });
+    component.submit();
+
+    expect(api.updateRma).toHaveBeenCalledWith('rma-1', expect.objectContaining({ notes: 'new' }));
+    expect(component.dialog()).toBeNull();
   });
 
   it('inspects the received lines with one disposition each and refuses a supplier return without a supplier', () => {
@@ -501,6 +516,7 @@ describe('ReturnsSupplierReturnsComponent', () => {
   const api = {
     getSupplierReturns: vi.fn(),
     createSupplierReturn: vi.fn(),
+    updateSupplierReturn: vi.fn(),
     shipSupplierReturn: vi.fn(),
     creditSupplierReturn: vi.fn(),
     closeSupplierReturn: vi.fn(),
@@ -511,11 +527,26 @@ describe('ReturnsSupplierReturnsComponent', () => {
     vi.clearAllMocks();
     api.getSupplierReturns.mockReturnValue(of({ data: [supplierReturn] }));
     api.createSupplierReturn.mockReturnValue(of({ data: supplierReturn }));
+    api.updateSupplierReturn.mockReturnValue(of({ data: supplierReturn }));
     api.shipSupplierReturn.mockReturnValue(of({ data: { ...supplierReturn, status: 'shipped' } }));
     api.creditSupplierReturn.mockReturnValue(of({ data: { ...supplierReturn, status: 'credited' } }));
     api.closeSupplierReturn.mockReturnValue(of({ data: { ...supplierReturn, status: 'closed' } }));
     api.cancelSupplierReturn.mockReturnValue(of({ data: { ...supplierReturn, status: 'cancelled' } }));
     configure(api, ReturnsSupplierReturnsComponent);
+  });
+
+  it('edits a draft supplier return through the update endpoint', () => {
+    const fixture = TestBed.createComponent(ReturnsSupplierReturnsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit(supplierReturn);
+    expect(component.editingId()).toBe(supplierReturn.id);
+    component.form.patchValue({ carrier: 'DHL' });
+    component.save();
+
+    expect(api.updateSupplierReturn).toHaveBeenCalledWith(supplierReturn.id, expect.objectContaining({ carrier: 'DHL', supplier_id: 'sup-1' }));
+    expect(api.createSupplierReturn).not.toHaveBeenCalled();
   });
 
   it('shows the actions of the status machine and drafts a return with its lines', () => {

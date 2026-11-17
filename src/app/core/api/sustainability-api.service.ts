@@ -10,6 +10,7 @@ import {
   EsgEmissionFactorRequest,
   EsgEsrsCompleteness,
   EsgEsrsDatapoint,
+  EsgEsrsDatapointInput,
   EsgEsrsPackage,
   EsgEsrsValue,
   EsgEsrsValueLine,
@@ -231,6 +232,16 @@ export class SustainabilityApiService {
   // ESRS reporting package
   getEsrsDatapoints(filters?: { standard?: string; active?: boolean }): Observable<EsgResponse<EsgEsrsDatapoint[]>> {
     return this.http.get<EsgResponse<EsgEsrsDatapoint[]>>(`${this.base}/esrs/datapoints`, { params: this.params(filters) });
+  }
+
+  /** POST /sustainability/esrs/datapoints: custom data point of the company catalog. */
+  createEsrsDatapoint(payload: EsgEsrsDatapointInput): Observable<EsgResponse<EsgEsrsDatapoint>> {
+    return this.http.post<EsgResponse<EsgEsrsDatapoint>>(`${this.base}/esrs/datapoints`, payload);
+  }
+
+  /** PUT /sustainability/esrs/datapoints/{id}: the code never changes. */
+  updateEsrsDatapoint(id: string, payload: Partial<Omit<EsgEsrsDatapointInput, 'code'>>): Observable<EsgResponse<EsgEsrsDatapoint>> {
+    return this.http.put<EsgResponse<EsgEsrsDatapoint>>(`${this.base}/esrs/datapoints/${id}`, payload);
   }
 
   installEsrsCatalog(): Observable<{ created: number }> {
