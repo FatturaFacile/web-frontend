@@ -601,12 +601,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
   },
-  // Public careers page of a company (no session, no application shell).
-  {
-    path: 'careers/:slug',
-    data: { publicPage: true, title: 'Lavora con noi' },
-    loadComponent: () => import('./features/careers/careers.component').then((m) => m.CareersComponent),
-  },
   {
     path: 'rma-tracking',
     data: { publicPage: true, title: 'Stato riparazione' },
@@ -668,6 +662,7 @@ export const routes: Routes = [
   {
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
     path: 'careers',
+    data: { publicPage: true, title: 'Lavora con noi' },
     loadChildren: () =>
       import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
   },
