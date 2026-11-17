@@ -85,9 +85,7 @@ export interface InventoryBookParams {
   require_closed?: boolean;
 }
 
-export interface PutawayRulePayload {
-  [key: string]: unknown;
-}
+export type PutawayRulePayload = Record<string, unknown>;
 
 export interface ReorderRulePayload {
   stock_item_id?: string;
@@ -103,9 +101,7 @@ export interface CycleCountPlanPayload {
   [key: string]: unknown;
 }
 
-export interface ProductChargePayload {
-  [key: string]: unknown;
-}
+export type ProductChargePayload = Record<string, unknown>;
 
 export interface BarcodeLabelPayload {
   target: 'item' | 'lot' | 'serial' | 'bin' | 'package';
