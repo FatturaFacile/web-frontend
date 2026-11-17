@@ -52,6 +52,7 @@ export * from './lease-accounting.model';
 export * from './travel.model';
 export * from './sustainability.model';
 export * from './fleet.model';
+export * from './pricing.model';
 export * from './rebates.model';
 export * from './events.model';
 export * from './plm.model';

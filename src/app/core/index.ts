@@ -97,6 +97,7 @@ export * from './api/lease-accounting-api.service';
 export * from './api/travel-api.service';
 export * from './api/sustainability-api.service';
 export * from './api/fleet-api.service';
+export * from './api/pricing-api.service';
 export * from './api/rebates-api.service';
 export * from './api/events-api.service';
 export * from './api/plm-api.service';

@@ -904,6 +904,15 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.PRICING_MANAGEMENT',
+        icon: 'fa-solid fa-money-bill-trend-up',
+        module: 'pricing',
+        children: [
+          { key: 'NAV.PRICING_LISTS', route: '/pricing', icon: 'fa-solid fa-list-ol', module: 'pricing' },
+          { key: 'NAV.PRICING_COMMERCIAL', route: '/pricing/commercial', icon: 'fa-solid fa-tags', module: 'pricing' },
+        ],
+      },
+      {
         key: 'NAV.REBATES_MANAGEMENT',
         icon: 'fa-solid fa-percent',
         module: 'rebates',

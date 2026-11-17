@@ -341,6 +341,13 @@ export const routes: Routes = [
       import('./features/plm/plm.routes').then((m) => m.PLM_ROUTES),
   },
   {
+    path: 'pricing',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.PRICING_MANAGEMENT', title: 'PAGE_TITLE.PRICING' },
+    loadChildren: () =>
+      import('./features/pricing/pricing.routes').then((m) => m.PRICING_ROUTES),
+  },
+  {
     path: 'rebates',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.REBATES_MANAGEMENT', title: 'PAGE_TITLE.REBATES' },

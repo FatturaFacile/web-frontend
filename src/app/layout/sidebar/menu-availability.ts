@@ -188,6 +188,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/events/admin',
   '/plm',
   '/plm/revisions',
+  '/pricing',
+  '/pricing/commercial',
   '/rebates',
   '/rebates/agreements',
   '/rebates/promotions',
