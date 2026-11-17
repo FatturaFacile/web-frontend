@@ -1,0 +1,69 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.spacer {
+  flex: 1;
+}
+.hint,
+.sub-text {
+  font-size: 12px;
+  color: #595959;
+}
+.block {
+  margin-bottom: 16px;
+}
+.rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.handle {
+  cursor: grab;
+  color: #595959;
+}
+.pos {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+.body {
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row-actions {
+  white-space: nowrap;
+}
+.cdk-drag-preview {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+}
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
