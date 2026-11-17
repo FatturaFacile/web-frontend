@@ -1,0 +1,136 @@
+<main class="portal" [attr.lang]="portal.locale()">
+  @if (portal.pageNotFound() || notFound()) {
+    <nz-result
+      nzStatus="404"
+      [nzTitle]="'careers.notFoundTitle' | translate"
+      [nzSubTitle]="'careers.notFoundBody' | translate"
+    />
+  } @else {
+    @if (!portal.embed()) {
+      <header class="portal__header">
+        <div>
+          <h1 class="portal__title">
+            {{ portal.page()?.company_name ?? ('careers.pageTitle' | translate) }}
+          </h1>
+          <p class="portal__subtitle">{{ 'careers.pageTitle' | translate }}</p>
+        </div>
+        <app-careers-locale-switcher
+          [locale]="portal.locale()"
+          [locales]="portal.availableLocales()"
+          (changed)="portal.setLocale($event)"
+        />
+      </header>
+      @if (portal.page()?.intro; as intro) {
+        <p class="portal__intro">{{ intro }}</p>
+      }
+    } @else {
+      <div class="portal__embed-bar">
+        <app-careers-locale-switcher
+          [locale]="portal.locale()"
+          [locales]="portal.availableLocales()"
+          (changed)="portal.setLocale($event)"
+        />
+      </div>
+    }
+
+    <form class="filters" role="search" (submit)="$event.preventDefault(); applyFilters()">
+      <label class="filters__field">
+        <span class="filters__label">{{ 'careers.search' | translate }}</span>
+        <input
+          nz-input
+          type="search"
+          name="search"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+      <label class="filters__field">
+        <span class="filters__label">{{ 'careers.location' | translate }}</span>
+        <input
+          nz-input
+          type="text"
+          name="location"
+          [ngModel]="location()"
+          (ngModelChange)="location.set($event)"
+        />
+      </label>
+      <div class="filters__field">
+        <span class="filters__label" id="careers-employment-label">{{
+          'careers.employmentType' | translate
+        }}</span>
+        <nz-select
+          name="employment"
+          nzAllowClear
+          [nzPlaceHolder]="'careers.allTypes' | translate"
+          [ngModel]="employmentType()"
+          (ngModelChange)="employmentType.set($event)"
+          aria-labelledby="careers-employment-label"
+        >
+          @for (t of employmentTypes; track t) {
+            <nz-option [nzValue]="t" [nzLabel]="'careers.employmentTypes.' + t | translate" />
+          }
+        </nz-select>
+      </div>
+      <button nz-button nzType="primary" type="submit" class="filters__submit">
+        {{ 'careers.filter' | translate }}
+      </button>
+    </form>
+
+    @if (error() || portal.pageError()) {
+      <div class="portal__error" role="alert">
+        <p>{{ 'careers.loadError' | translate }}</p>
+        <button nz-button type="button" (click)="portal.loadPage(); loadJobs()">
+          {{ 'careers.retry' | translate }}
+        </button>
+      </div>
+    }
+
+    <nz-spin [nzSpinning]="loading()">
+      @if (jobs().length) {
+        <ul class="jobs">
+          @for (job of jobs(); track job.id) {
+            <li class="jobs__item">
+              <h2 class="jobs__title">
+                <a
+                  [routerLink]="['/careers', portal.slug(), 'jobs', job.id]"
+                  [queryParams]="portal.linkParams()"
+                  >{{ job.title }}</a
+                >
+              </h2>
+              <p class="jobs__meta">
+                @if (job.department_name) {
+                  <span>{{ job.department_name }}</span>
+                }
+                <span>{{ job.location_site }}</span>
+                <span>{{ 'careers.employmentTypes.' + job.employment_type | translate }}</span>
+                @if (job.closes_at) {
+                  <span
+                    >{{ 'careers.closesAt' | translate }}
+                    {{ job.closes_at | date: 'dd.MM.yyyy' }}</span
+                  >
+                }
+              </p>
+            </li>
+          }
+        </ul>
+        @if (total() > pageSize) {
+          <nz-pagination
+            class="portal__pagination"
+            [nzPageIndex]="pageIndex()"
+            [nzPageSize]="pageSize"
+            [nzTotal]="total()"
+            (nzPageIndexChange)="onPageChange($event)"
+          />
+        }
+      } @else if (!loading() && !error()) {
+        <nz-empty [nzNotFoundContent]="'careers.noJobs' | translate" />
+      }
+    </nz-spin>
+
+    @if (!portal.embed() && portal.page()?.privacy_policy_url; as url) {
+      <footer class="portal__footer">
+        <a [href]="url" target="_blank" rel="noopener">{{ 'careers.privacyPolicy' | translate }}</a>
+      </footer>
+    }
+  }
+</main>

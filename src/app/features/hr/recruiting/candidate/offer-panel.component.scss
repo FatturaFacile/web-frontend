@@ -1,0 +1,67 @@
+:host {
+  display: block;
+}
+
+.hire-result {
+  margin-bottom: 16px;
+}
+
+.offer {
+  margin-bottom: 24px;
+
+  &__status {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__alert {
+    margin-top: 12px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+
+  &__body summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  &__letter {
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 8px;
+    max-height: 400px;
+    overflow: auto;
+  }
+
+  &__none {
+    color: rgb(0 0 0 / 65%);
+  }
+}
+
+.offer-form {
+  &__title {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
+
+  &__actions {
+    margin-top: 12px;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  column-gap: 16px;
+}
+
+nz-input-number {
+  width: 100%;
+}

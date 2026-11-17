@@ -21,3 +21,7 @@ export * from './field-service.model';
 export * from './hr.model';
 export * from './retail.model';
 export * from './lead.model';
+export * from './recruiting.model';
+export * from './tax.model';
+export * from './tax.constants';
+export * from './warranty-rma.model';

@@ -1,0 +1,197 @@
+<fieldset class="fiscal" [formGroup]="form()">
+  <legend>{{ 'SALES.INVOICES.FISCAL.TITLE' | translate }}</legend>
+
+  @if (forfettario()) {
+    <nz-alert
+      class="lock"
+      nzType="info"
+      nzShowIcon
+      data-testid="forfettario-lock"
+      [nzMessage]="'SALES.INVOICES.FISCAL.FORFETTARIO_LOCKED' | translate"
+    />
+  }
+
+  <div class="flags">
+    <div>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label nz-checkbox id="split_payment" formControlName="split_payment">
+        {{ 'SALES.INVOICES.FISCAL.SPLIT_PAYMENT' | translate }}
+      </label>
+      @if (error('split_payment'); as e) {
+        <p class="field-error" role="alert" data-testid="split-payment-error">{{ e }}</p>
+      }
+    </div>
+    <div>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label nz-checkbox id="reverse_charge" formControlName="reverse_charge">
+        {{ 'SALES.INVOICES.FISCAL.REVERSE_CHARGE' | translate }}
+      </label>
+      @if (error('reverse_charge'); as e) {
+        <p class="field-error" role="alert">{{ e }}</p>
+      }
+    </div>
+    <div>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label
+        nz-checkbox
+        id="stamp_duty_charged_to_customer"
+        formControlName="stamp_duty_charged_to_customer"
+      >
+        {{ 'SALES.INVOICES.FISCAL.STAMP_TO_CUSTOMER' | translate }}
+      </label>
+    </div>
+    <div>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+      <label nz-checkbox id="enasarco" formControlName="enasarco">
+        {{ 'SALES.INVOICES.FISCAL.ENASARCO' | translate }}
+      </label>
+      @if (error('enasarco'); as e) {
+        <p class="field-error" role="alert" data-testid="enasarco-error">{{ e }}</p>
+      }
+    </div>
+  </div>
+
+  <nz-form-item class="payability">
+    <nz-form-label nzFor="vat_payability">{{
+      'SALES.INVOICES.FISCAL.PAYABILITY' | translate
+    }}</nz-form-label>
+    <nz-form-control>
+      <nz-select nzId="vat_payability" formControlName="vat_payability">
+        <nz-option nzValue="I" [nzLabel]="'SALES.INVOICES.FISCAL.PAYABILITY_I' | translate" />
+        <nz-option nzValue="D" [nzLabel]="'SALES.INVOICES.FISCAL.PAYABILITY_D' | translate" />
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="block">
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-checkbox id="fund_enabled" formControlName="fund_enabled">
+      {{ 'SALES.INVOICES.FISCAL.FUND' | translate }}
+    </label>
+    @if (error('fund'); as e) {
+      <p class="field-error" role="alert">{{ e }}</p>
+    }
+    @if (form().get('fund_enabled')?.value) {
+      <div class="row" formGroupName="fund">
+        <nz-form-item>
+          <nz-form-label nzFor="fund_type">{{
+            'SALES.INVOICES.FISCAL.FUND_TYPE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('fund.type') ?? ''">
+            <nz-select nzId="fund_type" formControlName="type">
+              @for (o of fundTypes; track o.code) {
+                <nz-option [nzValue]="o.code" [nzLabel]="o.code + ' – ' + o.description" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="fund_percent">{{
+            'SALES.INVOICES.FISCAL.RATE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('fund.percent') ?? ''">
+            <nz-input-number
+              nzId="fund_percent"
+              formControlName="percent"
+              [nzMin]="0"
+              [nzMax]="100"
+              [nzStep]="0.5"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="fund_vat_rate">{{
+            'SALES.INVOICES.FISCAL.FUND_VAT_RATE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('fund.vat_rate') ?? ''">
+            <nz-input-number
+              nzId="fund_vat_rate"
+              formControlName="vat_rate"
+              [nzMin]="0"
+              [nzMax]="100"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="fund_natura">{{
+            'SALES.INVOICES.FISCAL.NATURA' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('fund.natura') ?? ''">
+            <nz-select nzId="fund_natura" formControlName="natura" nzAllowClear>
+              @for (o of naturaCodes; track o.code) {
+                <nz-option [nzValue]="o.code" [nzLabel]="o.code + ' – ' + o.description" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label nz-checkbox class="inline" formControlName="withholding_applies">
+          {{ 'SALES.INVOICES.FISCAL.FUND_WITHHOLDING_APPLIES' | translate }}
+        </label>
+      </div>
+    }
+  </div>
+
+  <div class="block">
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-checkbox id="withholding_enabled" formControlName="withholding_enabled">
+      {{ 'SALES.INVOICES.FISCAL.WITHHOLDING' | translate }}
+    </label>
+    @if (error('withholding'); as e) {
+      <p class="field-error" role="alert" data-testid="withholding-error">{{ e }}</p>
+    }
+    @if (form().get('withholding_enabled')?.value) {
+      <div class="row" formGroupName="withholding">
+        <nz-form-item>
+          <nz-form-label nzFor="wh_type">{{
+            'SALES.INVOICES.FISCAL.WITHHOLDING_TYPE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('withholding.type') ?? ''">
+            <nz-select nzId="wh_type" formControlName="type">
+              @for (o of withholdingTypes; track o.code) {
+                <nz-option [nzValue]="o.code" [nzLabel]="o.code + ' – ' + o.description" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="wh_reason">{{
+            'SALES.INVOICES.FISCAL.WITHHOLDING_REASON' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('withholding.reason') ?? ''">
+            <nz-select nzId="wh_reason" formControlName="reason">
+              @for (r of reasons; track r) {
+                <nz-option [nzValue]="r" [nzLabel]="r" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="wh_rate">{{
+            'SALES.INVOICES.FISCAL.RATE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('withholding.rate') ?? ''">
+            <nz-input-number nzId="wh_rate" formControlName="rate" [nzMin]="0" [nzMax]="100" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="wh_taxable">{{
+            'SALES.INVOICES.FISCAL.TAXABLE_PERCENT' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="error('withholding.taxable_percent') ?? ''">
+            <nz-input-number
+              nzId="wh_taxable"
+              formControlName="taxable_percent"
+              [nzMin]="0"
+              [nzMax]="100"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label nz-checkbox class="inline" formControlName="includes_fund">
+          {{ 'SALES.INVOICES.FISCAL.INCLUDES_FUND' | translate }}
+        </label>
+      </div>
+    }
+  </div>
+</fieldset>

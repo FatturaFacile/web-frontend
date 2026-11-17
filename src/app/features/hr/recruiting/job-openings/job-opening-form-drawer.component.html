@@ -1,0 +1,294 @@
+<nz-drawer
+  [nzVisible]="open()"
+  [nzWidth]="720"
+  [nzTitle]="
+    (isEdit() ? 'hr.recruiting.openings.editTitle' : 'hr.recruiting.openings.newTitle') | translate
+  "
+  [nzFooter]="footerTpl"
+  (nzOnClose)="close()"
+>
+  <ng-container *nzDrawerContent>
+    <form nz-form nzLayout="vertical" (submit)="$event.preventDefault(); submit()">
+      <nz-form-item>
+        <nz-form-label nzFor="opening-position" nzRequired>{{
+          'hr.recruiting.openings.position' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="status('position_id', openingForm.position_id().invalid())"
+          [nzErrorTip]="errorTip('position_id', openingForm.position_id().invalid())"
+        >
+          <nz-select
+            nzId="opening-position"
+            nzShowSearch
+            [formField]="openingForm.position_id"
+            [nzPlaceHolder]="'hr.recruiting.openings.positionPlaceholder' | translate"
+          >
+            @for (pos of positions(); track pos.id) {
+              <nz-option
+                [nzValue]="pos.id"
+                [nzLabel]="
+                  pos.department_name ? pos.title + ' (' + pos.department_name + ')' : pos.title
+                "
+              />
+            }
+          </nz-select>
+          @if (positionsError()) {
+            <p class="hint hint--error" role="alert">
+              {{ 'hr.recruiting.errors.loadPositions' | translate }}
+              <button nz-button nzType="link" type="button" (click)="loadPositions()">
+                {{ 'hr.recruiting.actions.retry' | translate }}
+              </button>
+            </p>
+          }
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="grid">
+        <nz-form-item>
+          <nz-form-label nzFor="opening-location" nzRequired>{{
+            'hr.recruiting.openings.location' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="status('location_site', openingForm.location_site().invalid())"
+            [nzErrorTip]="errorTip('location_site', openingForm.location_site().invalid())"
+          >
+            <input id="opening-location" nz-input [formField]="openingForm.location_site" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="opening-employment" nzRequired>{{
+            'hr.recruiting.openings.employmentType' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="status('employment_type', openingForm.employment_type().invalid())"
+            [nzErrorTip]="errorTip('employment_type', openingForm.employment_type().invalid())"
+          >
+            <nz-select nzId="opening-employment" [formField]="openingForm.employment_type">
+              @for (t of employmentTypes; track t) {
+                <nz-option
+                  [nzValue]="t"
+                  [nzLabel]="'hr.recruiting.employmentTypes.' + t | translate"
+                />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="opening-count">{{
+            'hr.recruiting.openings.openingsCount' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="status('openings_count', openingForm.openings_count().invalid())"
+            [nzErrorTip]="
+              errorTip(
+                'openings_count',
+                openingForm.openings_count().invalid(),
+                'hr.recruiting.validation.min1'
+              )
+            "
+          >
+            <nz-input-number
+              nzId="opening-count"
+              [nzMin]="1"
+              [formField]="openingForm.openings_count"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="opening-closes">{{
+            'hr.recruiting.openings.closesAt' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="status('closes_at', false)"
+            [nzErrorTip]="errorTip('closes_at', false)"
+          >
+            <input id="opening-closes" nz-input type="date" [formField]="openingForm.closes_at" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <fieldset class="fieldset">
+        <legend>{{ 'hr.recruiting.openings.salaryRange' | translate }}</legend>
+        <label
+          nz-checkbox
+          nzId="opening-salary-enabled"
+          for="opening-salary-enabled"
+          [formField]="openingForm.salary_enabled"
+          >{{ 'hr.recruiting.openings.salaryPublic' | translate }}</label
+        >
+        @if (model().salary_enabled) {
+          <div class="grid grid--3">
+            <nz-form-item>
+              <nz-form-label nzFor="opening-salary-min">{{
+                'hr.recruiting.openings.salaryMin' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <nz-input-number
+                  nzId="opening-salary-min"
+                  [nzMin]="0"
+                  [formField]="openingForm.salary_min"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="opening-salary-max">{{
+                'hr.recruiting.openings.salaryMax' | translate
+              }}</nz-form-label>
+              <nz-form-control
+                [nzValidateStatus]="
+                  status('salary_range_public.max', openingForm.salary_max().invalid())
+                "
+                [nzErrorTip]="
+                  errorTip(
+                    'salary_range_public.max',
+                    openingForm.salary_max().invalid(),
+                    'hr.recruiting.validation.salaryRange'
+                  )
+                "
+              >
+                <nz-input-number
+                  nzId="opening-salary-max"
+                  [nzMin]="0"
+                  [formField]="openingForm.salary_max"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="opening-salary-currency">{{
+                'hr.recruiting.openings.currency' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <nz-select nzId="opening-salary-currency" [formField]="openingForm.salary_currency">
+                  @for (c of currencies; track c) {
+                    <nz-option [nzValue]="c" [nzLabel]="c" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <p class="hint">{{ 'hr.recruiting.openings.salaryPeriod' | translate }}</p>
+        }
+      </fieldset>
+
+      <nz-form-item>
+        <nz-form-label nzFor="opening-languages" nzRequired>{{
+          'hr.recruiting.openings.languages' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="
+            status('published_languages', openingForm.published_languages().invalid())
+          "
+          [nzErrorTip]="
+            errorTip('published_languages', openingForm.published_languages().invalid())
+          "
+        >
+          <nz-select
+            nzId="opening-languages"
+            nzMode="multiple"
+            [formField]="openingForm.published_languages"
+          >
+            @for (l of locales; track l) {
+              <nz-option [nzValue]="l" [nzLabel]="'hr.recruiting.locales.' + l | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (model().published_languages.length) {
+        <nz-tabs>
+          @for (l of model().published_languages; track l) {
+            <nz-tab [nzTitle]="'hr.recruiting.locales.' + l | translate">
+              <nz-form-item>
+                <nz-form-label [nzFor]="'opening-title-' + l" nzRequired>{{
+                  'hr.recruiting.openings.jobTitle' | translate
+                }}</nz-form-label>
+                <nz-form-control
+                  [nzValidateStatus]="
+                    status(
+                      'translations.' + l + '.title',
+                      openingForm.translations[l].title().invalid()
+                    )
+                  "
+                  [nzErrorTip]="
+                    errorTip(
+                      'translations.' + l + '.title',
+                      openingForm.translations[l].title().invalid()
+                    )
+                  "
+                >
+                  <input
+                    [id]="'opening-title-' + l"
+                    nz-input
+                    [formField]="openingForm.translations[l].title"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label [nzFor]="'opening-description-' + l" nzRequired>{{
+                  'hr.recruiting.openings.description' | translate
+                }}</nz-form-label>
+                <nz-form-control
+                  [nzValidateStatus]="
+                    status(
+                      'translations.' + l + '.description',
+                      openingForm.translations[l].description().invalid()
+                    )
+                  "
+                  [nzErrorTip]="
+                    errorTip(
+                      'translations.' + l + '.description',
+                      openingForm.translations[l].description().invalid()
+                    )
+                  "
+                >
+                  <textarea
+                    [id]="'opening-description-' + l"
+                    nz-input
+                    rows="5"
+                    [formField]="openingForm.translations[l].description"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label [nzFor]="'opening-requirements-' + l">{{
+                  'hr.recruiting.openings.requirements' | translate
+                }}</nz-form-label>
+                <nz-form-control>
+                  <textarea
+                    [id]="'opening-requirements-' + l"
+                    nz-input
+                    rows="4"
+                    [formField]="openingForm.translations[l].requirements"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label [nzFor]="'opening-benefits-' + l">{{
+                  'hr.recruiting.openings.benefits' | translate
+                }}</nz-form-label>
+                <nz-form-control>
+                  <textarea
+                    [id]="'opening-benefits-' + l"
+                    nz-input
+                    rows="3"
+                    [formField]="openingForm.translations[l].benefits"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+            </nz-tab>
+          }
+        </nz-tabs>
+      }
+    </form>
+  </ng-container>
+  <ng-template #footerTpl>
+    <div class="footer">
+      <button nz-button type="button" (click)="close()">
+        {{ 'common.actions.cancel' | translate }}
+      </button>
+      <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="submit()">
+        {{ 'common.actions.save' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</nz-drawer>
