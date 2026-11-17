@@ -85,6 +85,9 @@
     <nz-tab [nzTitle]="'PURCHASES.LBL_FATTURE_FORNITORE_CICLO_PASSIVO_AP' | translate">
       <div class="tab-header">
         <span class="muted">{{ 'PURCHASES.LBL_FATTURE_PASSIVE_REGISTRATE_IMPORTAZIONE_SDI_FATTURAPA' | translate }}</span>
+        <button nz-button nzType="default" (click)="openQrBillModal()" data-testid="open-qr-bill-upload">
+          <nz-icon nzType="qrcode" /> {{ 'qrBill.upload.title' | translate }}
+        </button>
         <button nz-button nzType="default" (click)="openImportSdiModal()">
           <nz-icon nzType="upload" /> {{ 'PURCHASES.LBL_IMPORTA_XML_SDI_PASSIVO' | translate }}
         </button>
@@ -430,6 +433,21 @@
         </nz-form-control>
       </nz-form-item>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Swiss QR-bill supplier invoice (PDF / image / camera) -->
+<nz-modal
+  [nzVisible]="qrBillModalVisible()"
+  [nzTitle]="'qrBill.upload.title' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!qrBillDraft()"
+  (nzOnCancel)="qrBillModalVisible.set(false)"
+  okAction="confirm"
+  (nzOnOk)="submitQrBillDraft()"
+>
+  <ng-container *nzModalContent>
+    <app-supplier-qr-upload (parsed)="qrBillDraft.set($event)" />
   </ng-container>
 </nz-modal>
 

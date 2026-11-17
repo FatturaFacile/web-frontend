@@ -156,7 +156,7 @@ export class ProcurementApiService {
     return this.http.get<ApiResponse<SupplierInvoiceApproval>>(`${this.baseUrl}/supplier-invoices/${id}/approval`);
   }
 
-  scanPassiveInvoiceQrBill(payload: { qr_text: string }): Observable<ApiResponse<SupplierInvoice>> {
+  scanPassiveInvoiceQrBill(payload: { qr_payload: string; total_tax?: number | null }): Observable<ApiResponse<SupplierInvoice>> {
     return this.http.post<ApiResponse<SupplierInvoice>>(`${this.purchasesUrl}/passive-invoices/scan-qr-bill`, payload);
   }
 

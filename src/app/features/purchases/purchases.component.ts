@@ -1,4 +1,6 @@
 import { DatePipe } from '@angular/common';
+import { ParsedQrBill } from '@core/models/swiss-qr-bill.model';
+import { SupplierQrUploadComponent } from './components/supplier-qr-upload/supplier-qr-upload.component';
 import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   AbstractControl,
@@ -93,6 +95,7 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
   selector: 'app-purchases',
   styleUrl: './purchases.component.scss',
   imports: [
+    SupplierQrUploadComponent,
     BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
@@ -179,6 +182,8 @@ export class PurchasesComponent implements OnInit {
   // --- Supplier Invoices State ---
   protected readonly invoiceGrid = new FetchGridModel<SupplierInvoice>((query) => this.procurementApi.getSupplierInvoices(query));
   readonly importSdiModalVisible = signal(false);
+  readonly qrBillModalVisible = signal(false);
+  readonly qrBillDraft = signal<ParsedQrBill | null>(null);
   readonly selectedXmlFile = signal<File | null>(null);
 
   // --- Reason dialog (reject an order, approve a match variance) ---
@@ -708,6 +713,33 @@ export class PurchasesComponent implements OnInit {
           },
           error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
         });
+      },
+    });
+  }
+
+  openQrBillModal(): void {
+    this.qrBillDraft.set(null);
+    this.qrBillModalVisible.set(true);
+  }
+
+  /** Records the supplier invoice draft decoded from the uploaded QR-bill (no manual re-typing of the payment data). */
+  submitQrBillDraft(): void {
+    const draft = this.qrBillDraft();
+    if (!draft) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.procurementApi.scanPassiveInvoiceQrBill({ qr_payload: draft.payload }).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.qrBillModalVisible.set(false);
+        this.message.success(this.translate.instant('qrBill.upload.success'));
+        this.loadSupplierInvoices();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.message.error(apiErrorText(err) || this.translate.instant('qrBill.upload.failure'));
       },
     });
   }

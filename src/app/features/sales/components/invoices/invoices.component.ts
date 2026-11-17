@@ -17,6 +17,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzQRCodeComponent } from 'ng-zorro-antd/qr-code';
+import { QrBillPreviewComponent } from '../qr-bill-preview/qr-bill-preview.component';
 import {
   CreateCreditNotePayload,
   I18nService,
@@ -92,6 +93,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     NzDividerModule,
     NzFormModule,
     NzQRCodeComponent,
+    QrBillPreviewComponent,
     BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
@@ -118,6 +120,7 @@ export class InvoicesComponent {
   // Swiss QR-Bill Modal
   readonly qrModalVisible = signal(false);
   readonly currentQrBill = signal<SwissQrBillData | null>(null);
+  protected readonly qrInvoiceId = signal<string | null>(null);
 
   // SDI Logs Modal
   readonly sdiLogsModalVisible = signal(false);
@@ -286,6 +289,7 @@ export class InvoicesComponent {
   viewQrBill(inv: InvoiceResource): void {
     this.run(inv, this.api.getQrBill(inv.id), null, (res) => {
       this.currentQrBill.set(res.data);
+      this.qrInvoiceId.set(inv.id);
       this.qrModalVisible.set(true);
     });
   }

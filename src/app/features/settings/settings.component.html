@@ -66,6 +66,35 @@
           </nz-form-item>
 
           <nz-form-item>
+            <nz-form-label nzFor="qrr_prefix">{{ 'settings.form.qrrPrefix' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="qrr_prefix" formControlName="qrr_prefix" maxlength="6" inputmode="numeric" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="default_reference_type">{{ 'settings.form.defaultReferenceType' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="default_reference_type" formControlName="default_reference_type">
+                <nz-option nzValue="QRR" [nzLabel]="'settings.options.refQrr' | translate" />
+                <nz-option nzValue="SCOR" [nzLabel]="'settings.options.refScor' | translate" />
+                <nz-option nzValue="NON" [nzLabel]="'settings.options.refNon' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="qr_bill_perforation">{{ 'settings.form.perforation' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="qr_bill_perforation" formControlName="qr_bill_perforation">
+                <nz-option nzValue="NONE" [nzLabel]="'settings.options.perfNone' | translate" />
+                <nz-option nzValue="DASHED_LINE" [nzLabel]="'settings.options.perfDashed' | translate" />
+                <nz-option nzValue="DASHED_LINE_WITH_SCISSORS" [nzLabel]="'settings.options.perfDashedScissors' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
             <nz-form-label nzFor="sdi_code">{{ 'settings.form.sdiCode' | translate }}</nz-form-label>
             <nz-form-control [nzErrorTip]="invalidTip">
               <input nz-input id="sdi_code" formControlName="sdi_code" maxlength="7" />

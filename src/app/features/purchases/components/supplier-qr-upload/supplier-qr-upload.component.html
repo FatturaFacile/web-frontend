@@ -1,0 +1,39 @@
+<nz-spin [nzSpinning]="parsing()" [nzTip]="'qrBill.upload.parsing' | translate">
+  <nz-upload
+    nzType="drag"
+    nzAccept="application/pdf,image/png,image/jpeg,image/webp"
+    [nzShowUploadList]="false"
+    [nzBeforeUpload]="beforeUpload"
+    data-testid="qr-dropzone"
+  >
+    <p class="ant-upload-drag-icon"><nz-icon nzType="inbox" /></p>
+    <p class="ant-upload-text">{{ 'qrBill.upload.hint' | translate }}</p>
+  </nz-upload>
+
+  <label class="camera" nz-button>
+    <nz-icon nzType="camera" /> {{ 'qrBill.upload.camera' | translate }}
+    <input type="file" accept="image/*" capture="environment" hidden data-testid="qr-camera" (change)="onCameraCapture($event)" />
+  </label>
+
+  @if (error(); as key) {
+    <nz-alert nzType="error" nzShowIcon [nzMessage]="key | translate" data-testid="qr-error" />
+  }
+
+  @if (result(); as qr) {
+    <nz-alert
+      [nzType]="qr.valid ? 'success' : 'warning'"
+      nzShowIcon
+      [nzMessage]="(qr.valid ? 'qrBill.upload.success' : 'qrBill.upload.invalid') | translate"
+    />
+    <nz-descriptions nzBordered nzSize="small" [nzColumn]="1" data-testid="qr-result">
+      <nz-descriptions-item [nzTitle]="'qrBill.upload.creditor' | translate">{{ qr.draft.supplier_name }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'qrBill.upload.iban' | translate">{{ qr.iban }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'qrBill.upload.amount' | translate">
+        {{ qr.amount === null ? '-' : (qr.amount | money: qr.currency) }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'qrBill.upload.reference' | translate">
+        {{ qr.reference ?? ('qrBill.preview.referenceTypeNon' | translate) }}
+      </nz-descriptions-item>
+    </nz-descriptions>
+  }
+</nz-spin>

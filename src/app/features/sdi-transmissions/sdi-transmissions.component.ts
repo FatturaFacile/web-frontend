@@ -15,13 +15,17 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { reportHttpError } from '../hr/shared/hr-http.util';
+import { SdiHtmlPreviewComponent } from './sdi-html-preview.component';
+import { SupplierFatturaPaImporterComponent } from './supplier-fatturapa-importer.component';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'default',
+  generated: 'cyan',
   sending: 'processing',
   sent: 'blue',
   delivered: 'success',
@@ -34,10 +38,18 @@ const STATUS_COLORS: Record<string, string> = {
 /** History of the invoices handed to SDI: status, identifier, the last provider error and a retry for a failed transmission. */
 @Component({
   selector: 'app-sdi-transmissions',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzCardModule, NzEmptyModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
+  imports: [
+    DatePipe, FormsModule, NzButtonModule, NzCardModule, NzEmptyModule, NzInputModule, NzModalModule, NzSelectModule, NzTableModule, NzTagModule,
+    PageHeaderComponent, SdiHtmlPreviewComponent, SupplierFatturaPaImporterComponent, TranslatePipe,
+  ],
   styles: ['.toolbar { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); } .sdi-error { display: block; color: var(--text-secondary); }'],
   template: `
     <app-page-header [title]="'sdiTransmissions.title' | translate" [subtitle]="'sdiTransmissions.subtitle' | translate" />
+    @if (canWrite()) {
+      <nz-card [nzTitle]="'sdiTransmissions.import.title' | translate">
+        <app-supplier-fatturapa-importer (imported)="reload()" />
+      </nz-card>
+    }
     <nz-card>
       <div class="toolbar">
         <input nz-input style="width: 240px" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="reload()" [placeholder]="'sdiTransmissions.search' | translate" [attr.aria-label]="'sdiTransmissions.search' | translate" />
@@ -71,6 +83,7 @@ const STATUS_COLORS: Record<string, string> = {
               <td>{{ row.sdi_identifier ?? '-' }}</td>
               <td>{{ row.sent_at ? (row.sent_at | date: 'short') : '-' }}</td>
               <td>
+                <button nz-button nzSize="small" type="button" (click)="openPreview(row)" data-testid="sdi-preview">{{ 'sdiTransmissions.preview' | translate }}</button>
                 @if (row.can_retry && canWrite()) {
                   <button nz-button nzSize="small" type="button" (click)="retry(row)">{{ 'sdiTransmissions.retry' | translate }}</button>
                 }
@@ -83,6 +96,11 @@ const STATUS_COLORS: Record<string, string> = {
         <nz-empty [nzNotFoundContent]="'sdiTransmissions.empty' | translate"></nz-empty>
       }
     </nz-card>
+    <nz-modal [nzVisible]="previewVisible()" [nzTitle]="'sdiTransmissions.preview' | translate" nzWidth="900px" [nzFooter]="null" (nzOnCancel)="closePreview()">
+      <ng-container *nzModalContent>
+        <app-sdi-html-preview [content]="previewContent()" />
+      </ng-container>
+    </nz-modal>
   `,
 })
 export class SdiTransmissionsComponent implements OnInit {
@@ -98,6 +116,24 @@ export class SdiTransmissionsComponent implements OnInit {
   protected readonly page = signal(1);
   protected readonly status = signal<SdiTransmissionStatus | null>(null);
   protected readonly search = signal('');
+
+  protected readonly previewVisible = signal(false);
+  protected readonly previewContent = signal<Blob | null>(null);
+
+  openPreview(row: SdiTransmission): void {
+    this.api.previewHtml(row.invoice_id).subscribe({
+      next: (html) => {
+        this.previewContent.set(html);
+        this.previewVisible.set(true);
+      },
+      error: (error: unknown) => reportHttpError(error, this.message, this.i18n),
+    });
+  }
+
+  closePreview(): void {
+    this.previewVisible.set(false);
+    this.previewContent.set(null);
+  }
 
   protected canWrite(): boolean {
     return this.permissions.canWrite('invoicing');
