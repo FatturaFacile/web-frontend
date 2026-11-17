@@ -4,6 +4,7 @@ import { AbstractControl, FormGroup, ReactiveFormsModule, ValidationErrors } fro
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
@@ -42,6 +43,7 @@ export function taricCodeValidator(control: AbstractControl): ValidationErrors |
     NzAutocompleteModule,
     NzFormModule,
     NzInputModule,
+    NzInputNumberModule,
     NzRadioModule,
     NzSelectModule,
     NzSwitchModule,
@@ -133,6 +135,54 @@ export function taricCodeValidator(control: AbstractControl): ValidationErrors |
           <textarea nz-input formControlName="origin_rule_notes" rows="3"></textarea>
         </nz-form-control>
       </nz-form-item>
+
+      <h4 class="section-title">{{ 'CUSTOMS_CODES.PRODUCT.CROSS_BORDER_SECTION' | translate }}</h4>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.SWISS_HS_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'CUSTOMS_CODES.PRODUCT.SWISS_HS_CODE_ERROR' | translate">
+          <input nz-input formControlName="swiss_hs_code" inputmode="numeric" maxlength="8" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.SUPPLEMENTARY_UNIT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <input nz-input formControlName="supplementary_unit" maxlength="10" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.DUTY_RATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number formControlName="customs_duty_rate" [nzMin]="0" [nzMax]="999" [nzStep]="0.1" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.NET_WEIGHT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number formControlName="net_weight_kg" [nzMin]="0" [nzStep]="0.001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.GROSS_WEIGHT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number formControlName="gross_weight_kg" [nzMin]="0" [nzStep]="0.001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.PACKAGES_COUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <nz-input-number formControlName="packages_count" [nzMin]="0" [nzStep]="1" [nzPrecision]="0" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'CUSTOMS_CODES.PRODUCT.PREFERENTIAL_ELIGIBLE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch formControlName="preferential_origin_eligible"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
     </div>
   `,
   styles: `
@@ -148,8 +198,17 @@ export function taricCodeValidator(control: AbstractControl): ValidationErrors |
       margin-inline: 0;
       white-space: nowrap;
     }
-    nz-select {
+    nz-select,
+    nz-input-number {
       width: 100%;
+    }
+    .section-title {
+      margin: 16px 0 8px;
+    }
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
     }
   `,
 })

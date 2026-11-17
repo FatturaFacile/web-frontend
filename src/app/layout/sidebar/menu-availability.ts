@@ -93,6 +93,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/customs/operations',
   '/customs/setup',
   '/customs/taric-codes',
+  '/customs/trade-compliance',
   '/dashboard',
   '/dms',
   '/dms/workflows',

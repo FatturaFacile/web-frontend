@@ -27,6 +27,14 @@ export interface ProductItem {
   preferential_agreement_id?: string | null;
   eur1_required?: boolean;
   origin_rule_notes?: string | null;
+  /** Swiss 8 digit tariff number. */
+  swiss_hs_code?: string | null;
+  supplementary_unit?: string | null;
+  customs_duty_rate?: number | string | null;
+  net_weight_kg?: number | string | null;
+  gross_weight_kg?: number | string | null;
+  packages_count?: number | null;
+  preferential_origin_eligible?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -79,6 +87,13 @@ export interface CreateProductPayload {
   preferential_agreement_id?: string | null;
   eur1_required?: boolean;
   origin_rule_notes?: string | null;
+  swiss_hs_code?: string | null;
+  supplementary_unit?: string | null;
+  customs_duty_rate?: number | null;
+  net_weight_kg?: number | null;
+  gross_weight_kg?: number | null;
+  packages_count?: number | null;
+  preferential_origin_eligible?: boolean;
 }
 
 export interface WarehouseItem {

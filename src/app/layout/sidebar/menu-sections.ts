@@ -574,6 +574,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'customs',
           },
           {
+            key: 'NAV.CUSTOMS_TRADE_COMPLIANCE',
+            route: '/customs/trade-compliance',
+            icon: 'fa-solid fa-earth-europe',
+            module: 'customs',
+          },
+          {
             key: 'NAV.CUSTOMS_OPERATIONS',
             route: '/customs/operations',
             icon: 'fa-solid fa-boxes-packing',
@@ -649,12 +655,6 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.WMS_REPORTS',
             route: '/inventory/reports',
             icon: 'fa-solid fa-chart-column',
-            module: 'inventory',
-          },
-          {
-            key: 'NAV.WMS_VALUATION',
-            route: '/inventory/valuation',
-            icon: 'fa-solid fa-scale-balanced',
             module: 'inventory',
           },
           {
